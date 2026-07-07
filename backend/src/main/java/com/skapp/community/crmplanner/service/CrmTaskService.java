@@ -5,10 +5,13 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 
 public interface CrmTaskService {
 
 	ResponseEntityDto getTasks(CrmTaskFilterDto filterDto);
+
+	ResponseEntityDto getTaskById(Long id);
 
 	ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto);
 
@@ -17,5 +20,7 @@ public interface CrmTaskService {
 	ResponseEntityDto deleteTask(Long id);
 
 	ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto);
+
+	ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto);
 
 }

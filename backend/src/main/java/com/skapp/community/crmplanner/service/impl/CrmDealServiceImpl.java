@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealStageId(requestDto.getStageId());
 		CrmValidations.validateDealContactId(requestDto.getContactId());
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
+		validateDealCreationLimit();
 
 		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
@@ -111,6 +113,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(stage);
 
 		CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
@@ -150,6 +153,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	protected void validateDealCreationLimit() {
+		// This method is a placeholder for enterprise deal creation limit validation
+	}
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
@@ -179,7 +186,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		List<Long> uniqueStageIds = new ArrayList<>(new LinkedHashSet<>(requestDto.getStageIds()));
 
-		List<CrmDealStage> stages = crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds);
+		List<CrmDealStage> stages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIdInAndIsDeletedFalse(uniqueStageIds));
 		if (stages.size() != uniqueStageIds.size()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 		}
@@ -187,31 +195,40 @@ public class CrmDealServiceImpl implements CrmDealService {
 		int limit = requestDto.getLimit() > 0 ? requestDto.getLimit() : CrmConstants.DEALS_PER_STAGE_LIMIT;
 		Integer requestedPage = requestDto.getPage();
 		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
+		PageRequest pageRequest = PageRequest.of(page, limit);
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
 
-		List<CrmDealsByStageResponseDto> result = new ArrayList<>();
-
+		Map<Long, Page<CrmDeal>> dealPagesByStage = new LinkedHashMap<>();
 		for (Long stageId : uniqueStageIds) {
 			long totalCount = stageCounts.getOrDefault(stageId, 0L);
-			PageRequest pageRequest = PageRequest.of(page, limit);
+			dealPagesByStage.put(stageId, crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
+		}
 
-			Page<CrmDeal> dealsPage = crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount);
+		List<Long> allDealIds = dealPagesByStage.values()
+			.stream()
+			.flatMap(p -> p.getContent().stream())
+			.map(CrmDeal::getId)
+			.toList();
+		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
+
+		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
+			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);
+
 			List<CrmDealByStageItemResponseDto> deals = crmMapper
 				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
+			deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
-
 			stageResult.setTotalCount(dealsPage.getTotalElements());
 			stageResult.setCurrentPage(dealsPage.getNumber());
 			stageResult.setTotalPages(dealsPage.getTotalPages());
 			stageResult.setPageSize(dealsPage.getSize());
 			stageResult.setHasNextPage(dealsPage.hasNext());
 			stageResult.setDeals(deals);
-
-			result.add(stageResult);
-		}
+			return stageResult;
+		}).toList();
 
 		log.info("getDealsByStages: execution ended");
 		return new ResponseEntityDto(false, result);
@@ -222,8 +239,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmBoardStageResponseDto> stages = crmMapper
-			.crmDealStagesToCrmBoardStageResponseDtos(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> visibleStages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
 		List<CrmBoardContactResponseDto> contacts = crmMapper
 			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
@@ -259,7 +277,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
@@ -283,7 +301,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, deal.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
@@ -297,6 +315,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDealStage newStage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getNewStageId())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+		validateDealStageAccess(newStage);
 
 		if (deal.getStage().getId().equals(newStage.getId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ALREADY_IN_STAGE);
@@ -313,6 +332,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("updateDealStage: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealById(Long id) {
+		log.info("getDealById: execution started", id);
+
+		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
+		if (deal == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		log.info("getDealById: execution ended", id);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
@@ -349,6 +382,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
+	}
+
+	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
+		return stages;
+	}
+
+	protected void validateDealStageAccess(CrmDealStage stage) {
+		// This method is a placeholder for enterprise deal stage access validation
 	}
 
 	@Override

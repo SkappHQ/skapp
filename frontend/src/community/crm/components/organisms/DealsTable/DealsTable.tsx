@@ -9,14 +9,39 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
-import { formatValue } from "~community/crm/utils/crmUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
+import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
+
 import { useContainerWidth } from "./utils/dealsTableUtils";
+
+interface OwnerCellProps {
+  owner: CrmDealListItem["owner"];
+}
+
+const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
+  const fullName = concatStrings([owner.firstName, owner.lastName ?? ""]);
+  const imageUrl = useGetImageUrl(owner.authPic ?? "");
+
+  return (
+    <AvatarChip
+      avatarProps={{
+        id: String(owner.employeeId),
+        firstName: owner.firstName,
+        lastName: owner.lastName ?? "",
+        src: imageUrl ?? "",
+        size: "sm"
+      }}
+      label={fullName}
+      backgroundColor="bg-secondary-background"
+    />
+  );
+};
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -44,6 +69,7 @@ const DealsTable: FC<Props> = ({
   onLoadMore
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
@@ -127,19 +153,22 @@ const DealsTable: FC<Props> = ({
     (): DealRow[] =>
       allDeals.map((deal: CrmDealListItem) => {
         const formattedAmount = formatValue(deal.amount);
-        const ownerFullName = concatStrings([deal.owner?.firstName, deal.owner?.lastName ?? ""]);
 
         return {
           id: String(deal.id),
           dealName: (
             <div className="flex items-center gap-2">
-              <div
-                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink"
-              >
-                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
+              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+                <HandshakeIcon
+                  width="14"
+                  height="14"
+                  fill="var(--color-white)"
+                />
               </div>
               <span className="body2">#{deal.id}</span>
-              <span className="body2">{deal.name}</span>
+              <span className="body2 block w-full truncate" title={deal.name}>
+                {deal.name}
+              </span>
             </div>
           ),
           value: (
@@ -153,27 +182,29 @@ const DealsTable: FC<Props> = ({
                 className="size-2 rounded-full shrink-0"
                 style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
               />
-              <span className="body2">{deal.stageName}</span>
+              <span className="body2">{getStageByName(deal.stageName)}</span>
             </div>
           ),
-          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
-          dealOwner: (
-            <AvatarChip
-              avatarProps={{
-                id: String(deal.owner.employeeId),
-                firstName: deal.owner.firstName,
-                lastName: deal.owner.lastName ?? "",
-                src: deal?.owner?.authPic ?? "",
-                size: "sm"
-              }}
-              label={ownerFullName}
-              backgroundColor="bg-secondary-background"
-            />
-          )
+          companyName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal?.companyName ?? undefined}
+            >
+              {deal?.companyName ?? "-"}
+            </span>
+          ),
+          contactName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal.contactName}
+            >
+              {deal.contactName}
+            </span>
+          ),
+          dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
-    [allDeals]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(
@@ -183,24 +214,23 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-150 rounded-lg shadow-lg"
-    >
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
         emptyStateTitle={
-          searchKeyword.trim() ? noSearchResultsTitle : translateText(["noDealsTitle"])
+          searchKeyword.trim()
+            ? noSearchResultsTitle
+            : translateText(["noDealsTitle"])
         }
         emptyStateDescription={
           searchKeyword.trim()

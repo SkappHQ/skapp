@@ -13,17 +13,21 @@ import {
 } from "~community/crm/api/utils/ApiEndpoints";
 import {
   companyQueryKeys,
-  contactQueryKeys
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContact,
   CrmContactCreatePayload,
-  CrmContactDetailResponseType,
-  CrmContactLookup,
+  CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
-  CrmOwnersResponseType
+  CrmOwnersResponseType,
+  EditContactPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface ContactMetricsSearchParams {
   page: number;
@@ -100,9 +104,37 @@ export const useCreateNewContact = (
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
       });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError: onError
+  });
+};
+
+const editContact = async ({ id, ...payload }: EditContactPayload) => {
+  const response = await authFetch.patch(
+    contactEndpoints.EDIT_CONTACT(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditContact = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: editContact,
+    onSuccess: ({ id }) => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(id)
+      });
+      onSuccess();
+    },
+    onError
   });
 };
 
@@ -149,10 +181,10 @@ export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
   enabled: boolean = true
-): UseQueryResult<CrmContactLookup[]> => {
+): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
-    queryFn: async (): Promise<CrmContactLookup[]> => {
+    queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: { searchKeyword, size }
       });
@@ -179,9 +211,7 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (
-  id: number
-): Promise<CrmContactDetailResponseType> => {
+const fetchContactById = async (id: number): Promise<CrmContact> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -189,11 +219,44 @@ const fetchContactById = async (
 export const useGetContactById = (
   id: number,
   enabled = true
-): UseQueryResult<CrmContactDetailResponseType> => {
+): UseQueryResult<CrmContact> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
     refetchOnWindowFocus: false,
     enabled
+  });
+};
+
+const deleteContact = async (id: number): Promise<void> => {
+  await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
+};
+
+export const useDeleteContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
   });
 };

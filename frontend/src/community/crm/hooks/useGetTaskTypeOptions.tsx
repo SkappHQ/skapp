@@ -1,31 +1,25 @@
 import { useMemo } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { CrmTaskCategory } from "~community/crm/types/CommonTypes";
 
-// TODO: Replace with API-fetched categories once backend is implemented
-const STATIC_TASK_CATEGORIES: CrmTaskCategory[] = [
-  { id: 1, name: "Call", orderIndex: 0 },
-  { id: 2, name: "Email", orderIndex: 1 },
-  { id: 3, name: "Meeting", orderIndex: 2 },
-  { id: 4, name: "Other", orderIndex: 3 }
-];
+import { useGetTaskTypes } from "../api/TaskApi";
 
-const useGetTaskTypeOptions = () => {
-  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
+const useGetTaskTypeOptions = (translateText: TranslatorFunctionType) => {
+  const { data: taskCategories } = useGetTaskTypes();
 
   const options = useMemo(
     () =>
-      STATIC_TASK_CATEGORIES.map((category) => ({
+      (taskCategories?.taskTypes ?? []).map((category) => ({
         id: category.id.toString(),
         label: translateText(["taskTypes", category.name.toLowerCase()]),
         value: category.id.toString()
       })),
-    [translateText]
+    [translateText, taskCategories]
   );
 
-  const getCategoryById = (id: number): CrmTaskCategory | undefined =>
-    STATIC_TASK_CATEGORIES.find((c) => c.id === id);
+  const getCategoryById = (id: number | null): CrmTaskCategory | null =>
+    taskCategories?.taskTypes?.find((c) => c.id === id) ?? null;
 
   return { options, getCategoryById };
 };

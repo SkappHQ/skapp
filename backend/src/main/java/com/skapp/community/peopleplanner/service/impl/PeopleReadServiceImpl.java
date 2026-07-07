@@ -13,6 +13,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeEmergency;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeCommonDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmergencyDetailsDto;
@@ -29,6 +30,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
+import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.EmployeeProfileViewAccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 	private final JsonMapper objectMapper;
 
 	private final UserService userService;
+
+	private final EmployeeSkillService employeeSkillService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -115,6 +119,7 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 			EmployeeProfileViewAccessLevel accessLevel) {
 		EmployeePersonalDetailsDto dto = new EmployeePersonalDetailsDto();
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
+		dto.setSkills(mapEmployeeSkills(employee));
 
 		if (accessLevel.canSeeSensitiveData()) {
 			dto.setContact(mapPersonalContactDetails(employee));
@@ -132,6 +137,16 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		}
 
 		return dto;
+	}
+
+	private List<EmployeeSkillDto> mapEmployeeSkills(Employee employee) {
+		return employeeSkillService.getEmployeeSkills(employee.getEmployeeId()).stream().map(s -> {
+			EmployeeSkillDto skillDto = new EmployeeSkillDto();
+			skillDto.setSkillId(s.getId());
+			skillDto.setSkillType(s.getSkillType());
+			skillDto.setName(s.getName());
+			return skillDto;
+		}).toList();
 	}
 
 	private EmployeePersonalGeneralDetailsDto mapPersonalGeneralDetails(Employee employee,

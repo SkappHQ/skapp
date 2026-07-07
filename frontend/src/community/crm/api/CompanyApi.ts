@@ -15,6 +15,7 @@ import {
 } from "../types/CommonTypes";
 import { companyEndpoints } from "./utils/ApiEndpoints";
 import { companyQueryKeys } from "./utils/QueryKeys";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface CompanyMetricSearchParams {
   page: number;
@@ -73,6 +74,9 @@ export const useCreateNewCompany = (
       queryClient.invalidateQueries({
         queryKey: companyQueryKeys.GET_COMPANY_DATA
       });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError: onError
@@ -129,6 +133,9 @@ export const useDeleteCompany = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: companyQueryKeys.GET_COMPANY_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },

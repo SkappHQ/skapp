@@ -9,9 +9,11 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import lombok.experimental.UtilityClass;
 
 import java.net.MalformedURLException;
@@ -19,11 +21,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @UtilityClass
 public class CrmValidations {
 
-	public static boolean isEditRestricted(User currentUser, Long ownerEmployeeId) {
+	public static boolean isOwnerRestrictedForRepresentative(User currentUser, Long ownerEmployeeId) {
 		Role currentCrmRole = currentUser.getEmployee().getEmployeeRole().getCrmRole();
 		return currentCrmRole == Role.CRM_SALES_REPRESENTATIVE
 				&& !currentUser.getEmployee().getEmployeeId().equals(ownerEmployeeId);
@@ -197,6 +202,12 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateRelatedTaskContextFilter(Long contactId, Long dealId) {
+		if (contactId == null && dealId == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_CONTEXT_FILTER_REQUIRED);
+		}
+	}
+
 	public static void validateTaskTargets(Long contactId, Long companyId, Long dealId) {
 		if (contactId == null && companyId == null && dealId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TARGET_REQUIRED);
@@ -256,6 +267,37 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDealStageName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_REQUIRED);
+		}
+		if (name.length() < CrmConstants.DEAL_STAGE_NAME_MIN_LENGTH
+				|| name.length() > CrmConstants.DEAL_STAGE_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_LENGTH);
+		}
+		if (!name.matches(CrmConstants.DEAL_STAGE_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageDescription(String description) {
+		if (description == null || description.isBlank()) {
+			return;
+		}
+		if (description.length() > CrmConstants.DEAL_STAGE_DESCRIPTION_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_TOO_LONG);
+		}
+		if (!description.matches(CrmConstants.DEAL_STAGE_DESCRIPTION_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DESCRIPTION_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealStageColor(CrmDealStageColors color) {
+		if (color == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_COLOR_REQUIRED);
+		}
+	}
+
 	public static void validateDomain(String domain) {
 		if (domain == null || domain.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED);
@@ -263,6 +305,24 @@ public class CrmValidations {
 
 		if (domain.length() > CrmConstants.DOMAIN_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DOMAIN_INVALID);
+		}
+	}
+
+	public static void validateDealStageReorderRequest(List<CrmDealStageReorderRequestDto> stages) {
+		if (stages == null || stages.isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
+		}
+
+		Set<Long> ids = new HashSet<>();
+		Set<Integer> orderIndexes = new HashSet<>();
+
+		for (CrmDealStageReorderRequestDto stage : stages) {
+			if (stage.getId() == null || stage.getOrderIndex() == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
+			}
+			if (!ids.add(stage.getId()) || !orderIndexes.add(stage.getOrderIndex())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_DUPLICATE_VALUES);
+			}
 		}
 	}
 

@@ -1,5 +1,4 @@
-import { Checkbox } from "@mui/material";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Checkbox } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -108,11 +107,8 @@ const AddTeamSelectMembers: FC<Props> = ({
                 >
                   <Checkbox
                     checked={usersChecked?.includes(user)}
-                    inputProps={{
-                      "aria-label": `${user?.firstName ?? ""} ${user?.lastName ?? ""} ${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`
-                    }}
-                    sx={{ p: 0, color: "primary.main", "&.Mui-checked": { color: "primary.main" } }}
-                    onClick={handelToggle(user)}
+                    ariaLabel={`${user?.firstName ?? ""} ${user?.lastName ?? ""} ${user?.jobLevel ?? ""} ${user?.jobRole ?? ""}`}
+                    onChange={() => handelToggle(user)()}
                   />
                   <AvatarChip
                     firstName={user?.firstName}

@@ -19,7 +19,6 @@ import { useAddBulkUsers } from "~community/people/api/PeopleApi";
 import useUserBulkConvert from "~community/people/hooks/useUserBulkConvert";
 import useUserBulkValidation from "~community/people/hooks/useUserBulkValidation";
 import { usePeopleStore } from "~community/people/store/store";
-import { AllJobFamilyType } from "~community/people/types/JobFamilyTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 import { convertUserBulkCsvHeaders } from "~community/people/utils/userBulkUploadUtils";
@@ -27,13 +26,11 @@ import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 interface Props {
-  jobRoleList: AllJobFamilyType[] | undefined;
   setBulkUploadData: Dispatch<SetStateAction<BulkUploadResponse | undefined>>;
   setPopupType: (value: DirectoryModalTypes) => void;
 }
 
 const UserBulkCsvUpload: FC<Props> = ({
-  jobRoleList = [],
   setBulkUploadData,
   setPopupType
 }) => {
@@ -78,8 +75,7 @@ const UserBulkCsvUpload: FC<Props> = ({
             results?.data?.length > 0
           ) {
             const newUserArray = convertUsers(
-              results?.data as BulkUploadUser[],
-              jobRoleList
+              results?.data as BulkUploadUser[]
             );
             setBulkUploadUsers(newUserArray);
           } else {
@@ -187,7 +183,9 @@ const UserBulkCsvUpload: FC<Props> = ({
           isLoading={isPending}
           disabled={bulkUserAttachment?.length === 0}
           aria-label={translateAria(["uploadPeople"])}
-          className={getBlinkClass(bulkUserAttachment?.length > 0)}
+          className={getBlinkClass(
+            ongoingQuickSetup.INVITE_EMPLOYEES && bulkUserAttachment?.length > 0
+          )}
           icon={<ArrowRightIcon />}
           iconPosition="end"
         >

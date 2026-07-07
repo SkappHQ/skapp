@@ -1,62 +1,94 @@
 import {
   DeleteButtonIcon,
   EditIcon,
-  KebabMenu,
+  MenuItemProps,
   SidePanel,
-  SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
-const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
+import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
+
+const CompanySidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const { isCrmSalesManager } = useSessionData();
+  // TODO: Replace with real isLoading from useGetCompanyById when API is wired
+  const isLoading = false;
 
   const [activeTab, setActiveTab] = useState<SidePanelTabEnum>(
     SidePanelTabEnum.TASKS
   );
 
-  const { setIsCompanyModalOpen, setCompanyModalType } = useCrmStore(
-    (store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType
-    })
-  );
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    setSelectedCompany,
+    closeCrmSidePanel,
+    setIsCompanyModalOpen,
+    setCompanyModalType
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    setSelectedCompany: store.setSelectedCompany,
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    setCompanyModalType: store.setCompanyModalType
+  }));
 
-  const openCompanyModal = (type: CrmModalTypes) => {
-    setCompanyModalType(type);
-    setIsCompanyModalOpen(true);
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
+
+  const handleClose = () => {
+    setSelectedCompany(null);
+    closeCrmSidePanel();
   };
-
-  const menuItems = [
-    {
-      id: "edit",
-      label: translateText(["editCompany"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => openCompanyModal(CrmModalTypes.EDIT_COMPANY_MODAL)
-    },
-    {
-      id: "delete",
-      label: translateText(["deleteCompany"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["editCompany"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
       },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => openCompanyModal(CrmModalTypes.DELETE_COMPANY_MODAL)
-    }
-  ];
+      {
+        id: "delete",
+        label: translateText(["deleteCompany"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text",
+        onClick: () => {
+          setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+          setIsCompanyModalOpen(true);
+        }
+      }
+    ],
+    [translateText]
+  );
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -64,8 +96,8 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
         // Pass the real API data to SidePanelDealSection when available
         return <SidePanelDealSection deals={[]} />;
       case SidePanelTabEnum.TASKS:
-        // Implement SidePanelTaskSection here
-        return null;
+        // Pass the real API data to SidePanelTasksSection when available
+        return <SidePanelTasksSection tasks={[]} />;
       case SidePanelTabEnum.CONTACTS:
         // Implement SidePanelContactSection here
         return null;
@@ -92,33 +124,42 @@ const CompanySidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       closeOnBackdropClick
+      header={
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+        ) : undefined
+      }
       headerActions={
-        <KebabMenu
-          id={"company-actions"}
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton count={1} />
+        ) : (
+          <CompanySidePanelHeaderActions
+            isCrmSalesManager={Boolean(isCrmSalesManager)}
+            menuItems={menuItems}
+          />
+        )
       }
     >
-      <div className="flex flex-col pb-4 gap-[16px]">
-        {/*Add company info section here, similar to ContactSidePanel*/}
-        <div className="flex flex-col pt-2 w-full">
-          <Tabs
-            tabs={tabs}
-            activeTabId={activeTab}
-            onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
-          />
-        </div>
-        <hr className="border-secondary-accent" />
-        {renderTabContent()}
+      <div className="flex flex-col pb-4 gap-4">
+        {isLoading ? (
+          <CompanySidePanelSkeleton />
+        ) : (
+          <>
+            {/*Add company info section here, similar to ContactSidePanel*/}
+            <div className="flex flex-col pt-2 w-full">
+              <Tabs
+                tabs={tabs}
+                activeTabId={activeTab}
+                onTabChange={(tabId) => setActiveTab(tabId as SidePanelTabEnum)}
+              />
+              <hr className="border-secondary-accent" />
+            </div>
+
+            {renderTabContent()}
+          </>
+        )}
       </div>
     </SidePanel>
   );

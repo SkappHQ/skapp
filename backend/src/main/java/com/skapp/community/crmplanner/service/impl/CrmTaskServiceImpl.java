@@ -18,8 +18,11 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskViewResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -83,6 +86,23 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getTaskById(Long id) {
+		log.info("getTaskById: execution started");
+
+		CrmTask task = crmTaskDao.findByIdWithAssociations(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
+		}
+
+		log.info("getTaskById: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskViewResponseDto(task));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
 		log.info("getCompletedTasks: execution started");
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
@@ -105,6 +125,35 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
+		log.info("getRelatedTasks: execution started");
+
+		CrmValidations.validateRelatedTaskContextFilter(filterDto.getContactId(), filterDto.getDealId());
+
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, ownerId, pageable);
+
+		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent()
+			.stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getRelatedTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
 	@Transactional
 	public ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto) {
 		log.info("createTask: execution started");
@@ -115,6 +164,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 				requestDto.getDealId());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
+		validateTaskCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
@@ -162,6 +212,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
 	}
 
+	protected void validateTaskCreationLimit() {
+		// This method is a placeholder for enterprise task creation limit validation
+	}
+
 	@Override
 	@Transactional
 	public ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto) {
@@ -171,7 +225,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_EDIT_DENIED);
 		}
 
@@ -246,7 +300,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isEditRestricted(currentUser, task.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DELETE_DENIED);
 		}
 
