@@ -16,41 +16,28 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .required(translator(["validations", "name"]))
       .max(CONTACT_NAME_MAX_LENGTH, translator(["validations", "nameLength"]))
       .matches(isContactNameValid(), {
         message: translator(["validations", "nameInvalidCharacters"]),
         excludeEmptyString: true
-      }),
+      })
+      .required(translator(["validations", "name"])),
     email: Yup.string()
-      .test(
-        "email-required",
-        translator(["validations", "email"]),
-        (inputEmail) => Boolean(inputEmail?.trim())
-      )
-      .test(
-        "email-format",
-        translator(["validations", "invalidEmail"]),
-        (inputEmail) =>
-          !inputEmail?.trim() || isValidEmail().test(inputEmail.trim())
-      )
-      .test(
-        "email-max-length",
-        translator(["validations", "emailLength"]),
-        (inputEmail) =>
-          !inputEmail?.trim() ||
-          inputEmail.trim().length <= CONTACT_EMAIL_MAX_LENGTH
-      ),
+      .trim()
+      .max(CONTACT_EMAIL_MAX_LENGTH, translator(["validations", "emailLength"]))
+      .matches(isValidEmail(), {
+        message: translator(["validations", "invalidEmail"]),
+        excludeEmptyString: true
+      })
+      .required(translator(["validations", "email"])),
     contactNumber: Yup.string()
+      .trim()
       .nullable()
       .optional()
-      .test(
-        "valid-contact-number",
-        translator(["validations", "contactNumber"]),
-        (inputContactNumber) =>
-          !inputContactNumber?.trim() ||
-          isValidPhoneNumber().test(inputContactNumber.trim())
-      ),
+      .matches(isValidPhoneNumber(), {
+        message: translator(["validations", "contactNumber"]),
+        excludeEmptyString: true
+      }),
     companyId: Yup.number().nullable().optional(),
     ownerId: Yup.number()
       .nullable()
