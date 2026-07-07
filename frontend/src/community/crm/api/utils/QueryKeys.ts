@@ -77,5 +77,6 @@ export const taskQueryKeys = {
     searchKeyword
   ],
   RELATED_TASKS: ["crm-related-tasks"],
-  GET_TASK_TYPES: ["get-task-types"]
+  GET_TASK_TYPES: ["get-task-types"],
+  GET_TASK_BY_ID: (id: number) => ["get-task-by-id", id]
 };

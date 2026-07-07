@@ -11,11 +11,11 @@ import {
   CrmCompletedTaskResponseType,
   CrmTaskCategoryResponseType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
   RelatedTasksPage,
   RelatedTasksParams,
-  UpdateTaskStatusPayload
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -198,11 +198,14 @@ const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
+export const useUpdateTask = (
+  onSuccess?: () => void,
+  onError?: () => void
+) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
-    onSuccess: async () => {
+    onSuccess: async ({ id }) => {
       await queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
       });
@@ -212,7 +215,10 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_DATA
       });
-      onSuccess();
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
+      });
+      if (onSuccess) onSuccess();
     },
     onError
   });
@@ -225,5 +231,17 @@ export const useGetTaskTypes = () => {
       const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
       return response?.data?.results?.[0];
     }
+  });
+};
+
+const fetchTaskById = async (id: number): Promise<CrmTaskDetailType> => {
+  const response = await authFetch.get(taskEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+}
+
+export const useGetTaskById = (id: number) => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_BY_ID(id),
+    queryFn: () => fetchTaskById(id)
   });
 };
