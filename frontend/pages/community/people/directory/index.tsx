@@ -82,6 +82,7 @@ const Directory: NextPage = () => {
         secondaryBtnText={
           isAdmin ? translateText(["peoples.importPeople"]) : undefined
         }
+        secondaryBtnClassName="import-people-btn"
         onPrimaryButtonClick={() => {
           setIsDirectoryModalOpen(true);
           setDirectoryModalType(DirectoryModalTypes.ADD_NEW_RESOURCE);

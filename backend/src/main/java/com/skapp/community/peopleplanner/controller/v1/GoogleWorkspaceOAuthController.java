@@ -37,35 +37,15 @@ public class GoogleWorkspaceOAuthController {
     }
 
     /**
-     * Step 2 — Google redirects back here after admin approves (or denies).
-     * We exchange the code for tokens, save them, then redirect the admin
-     * back to the Skapp settings page. If Google reports an error (denial)
-     * or the token exchange itself fails, redirect back with an error flag
-     * instead of letting the request 400/500 in the browser.
+     * Step 2 — Google redirects back here after admin approves.
+     * We exchange the code for tokens, save them, then redirect
+     * the admin back to the Skapp settings page.
      */
     @GetMapping("/callback")
     public ResponseEntity<Void> handleCallback(
-            @RequestParam(required = false) String code,
-            @RequestParam(required = false) String state,
-            @RequestParam(required = false) String error) {
-        if (error != null || code == null) {
-            log.warn("Google OAuth callback did not return a code (error={})", error);
-            return ResponseEntity
-                    .status(HttpStatus.FOUND)
-                    .location(URI.create(frontendUrl + "/settings?google=error"))
-                    .build();
-        }
-
-        try {
-            oAuthService.handleCallback(code, state);
-        } catch (Exception e) {
-            log.error("Google OAuth callback processing failed", e);
-            return ResponseEntity
-                    .status(HttpStatus.FOUND)
-                    .location(URI.create(frontendUrl + "/settings?google=error"))
-                    .build();
-        }
-
+            @RequestParam String code,
+            @RequestParam String state) {
+        oAuthService.handleCallback(code, state);
         return ResponseEntity
                 .status(HttpStatus.FOUND)
                 .location(URI.create(frontendUrl + "/settings?google=connected"))
