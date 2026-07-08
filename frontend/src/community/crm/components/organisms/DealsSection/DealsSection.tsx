@@ -10,8 +10,9 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
-import useDealDetailPanel from "~community/crm/hooks/useDealDetailPanel";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 
@@ -20,8 +21,6 @@ const DealsSection: FC = () => {
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const { openDealDetail } = useDealDetailPanel();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -46,7 +45,9 @@ const DealsSection: FC = () => {
   };
 
   const handleDealOnClick = (deal: CrmDealListItem) => {
-    openDealDetail(deal.id);
+    const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();
+    setSelectedDealId(deal.id);
+    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };
 
   useEffect(() => {

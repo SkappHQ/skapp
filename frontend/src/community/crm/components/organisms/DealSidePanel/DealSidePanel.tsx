@@ -8,7 +8,6 @@ import { useGetDealById } from "~community/crm/api/crmDealApi";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import useDealDetailPanel from "~community/crm/hooks/useDealDetailPanel";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
@@ -28,7 +27,11 @@ const DealSidePanel: FC = () => {
     })
   );
 
-  const { closeDealDetail } = useDealDetailPanel();
+  const handleClose = () => {
+    const { setSelectedDealId, closeCrmSidePanel } = useCrmStore.getState();
+    setSelectedDealId(null);
+    closeCrmSidePanel();
+  };
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -70,7 +73,7 @@ const DealSidePanel: FC = () => {
     <>
       <SidePanel
         isOpen={isOpen}
-        onClose={closeDealDetail}
+        onClose={handleClose}
         closeOnBackdropClick
         header={
           <div className="flex flex-col gap-3 pl-2">
