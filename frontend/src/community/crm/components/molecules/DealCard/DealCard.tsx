@@ -91,18 +91,18 @@ const DealCard: FC<DealCardProps> = ({
           </div>
         )}
 
-        <div
-          className={`flex items-center gap-1.5${amount ? "" : " invisible"}`}
-        >
-          <span className="shrink-0 text-secondary-icon">
-            <DealValueIcon className="h-4 w-4" />
-          </span>
-          <span className="body3">{amount ? formatValue(amount) : ""}</span>
-        </div>
+        {amount && (
+          <div className={`flex items-center gap-1.5`}>
+            <span className="shrink-0 text-secondary-icon">
+              <DealValueIcon className="h-4 w-4" />
+            </span>
+            <span className="body3">{formatValue(amount)}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-2">
-        {taskCount != null && (
+        {taskCount ? (
           <Badge
             size="sm"
             backgroundColor="bg-label-bg-slate"
@@ -116,7 +116,7 @@ const DealCard: FC<DealCardProps> = ({
             />
             {taskCount}
           </Badge>
-        )}
+        ) : null}
 
         <PriorityLabel priority={priority} />
       </div>
