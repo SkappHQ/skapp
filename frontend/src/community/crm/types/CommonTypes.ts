@@ -323,6 +323,11 @@ export interface CrmDealAddFormTypes {
   description: string;
 }
 
+export interface CrmInlineDealAddFormTypes {
+  name: string;
+  contactId: string;
+}
+
 export interface CrmCreateDealPayload {
   name: string;
   stageId: number;

@@ -10,7 +10,10 @@ import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelAddDeal from "~community/crm/components/molecules/SidePanelAddDeal/SidePanelAddDeal";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookup,
+  DetailPanelDealResponseType
+} from "~community/crm/types/CommonTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,9 +23,10 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
+  defaultContact?: CrmContactLookup;
 }
 
-const SidePanelDealSection: FC<Props> = ({ deals }) => {
+const SidePanelDealSection: FC<Props> = ({ deals, defaultContact }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
@@ -48,7 +52,12 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
 
   const renderAddDealAction = () => {
     if (isAddingDeal) {
-      return <SidePanelAddDeal onClose={handleCloseAddDeal} />;
+      return (
+        <SidePanelAddDeal
+          onClose={handleCloseAddDeal}
+          defaultContact={defaultContact}
+        />
+      );
     }
 
     return (
@@ -82,7 +91,12 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
     }
 
     if (isAddingDeal) {
-      return <SidePanelAddDeal onClose={handleCloseAddDeal} />;
+      return (
+        <SidePanelAddDeal
+          onClose={handleCloseAddDeal}
+          defaultContact={defaultContact}
+        />
+      );
     }
 
     return (

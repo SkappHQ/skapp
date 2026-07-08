@@ -13,6 +13,7 @@ interface Props {
   searchPlaceholder: string;
   noResultsText: string;
   ariaLabel?: string;
+  isInvalid?: boolean;
 }
 
 const AddDealContactSearch: FC<Props> = ({
@@ -23,7 +24,8 @@ const AddDealContactSearch: FC<Props> = ({
   placeholder,
   searchPlaceholder,
   noResultsText,
-  ariaLabel
+  ariaLabel,
+  isInvalid = false
 }) => {
   const renderPillTrigger = (
     contact: CrmContactLookup | null,
@@ -31,7 +33,11 @@ const AddDealContactSearch: FC<Props> = ({
   ) => (
     <button
       type="button"
-      className="flex w-full items-center justify-between gap-2 rounded-lg border border-transparent bg-secondary-background px-3 py-2.5 cursor-pointer"
+      className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 cursor-pointer ${
+        isInvalid
+          ? "border-semantic-red-accent bg-semantic-red-background"
+          : "border-transparent bg-secondary-background"
+      }`}
       {...triggerProps}
       ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
     >
@@ -56,6 +62,8 @@ const AddDealContactSearch: FC<Props> = ({
       searchPlaceholder={searchPlaceholder}
       noResultsText={noResultsText}
       ariaLabel={ariaLabel}
+      ariaInvalid={isInvalid}
+      ariaRequired
       width="w-full"
       renderTrigger={renderPillTrigger}
     />

@@ -1,54 +1,45 @@
 import { Spinner, SubTaskInput } from "@rootcodelabs/skapp-ui";
-import { useQueryClient } from "@tanstack/react-query";
+import { useFormik } from "formik";
 import { FC, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
 import { useCreateDeal } from "~community/crm/api/crmDealApi";
-import { contactQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
+import {
+  CRM_ERROR_DEAL_EXISTS,
+  DEAL_NAME_MAX_LENGTH
+} from "~community/crm/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
-import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
-import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
-  CrmCreateDealPayload
+  CrmCreateDealPayload,
+  CrmInlineDealAddFormTypes
 } from "~community/crm/types/CommonTypes";
+import { inlineAddDealValidations } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import AddDealContactSearch from "./AddDealContactSearch";
 
 interface Props {
   onClose: () => void;
+  defaultContact?: CrmContactLookup;
 }
 
-const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
+const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
-  const queryClient = useQueryClient();
-
-  const { selectedContactId, getContactById } = useCrmStore((store) => ({
-    selectedContactId: store.selectedContactId,
-    getContactById: store.getContactById
-  }));
 
   const [selectedContact, setSelectedContact] =
-    useState<CrmContactLookup | null>(() => {
-      const contact = selectedContactId
-        ? getContactById(selectedContactId)
-        : undefined;
-      return contact
-        ? { id: contact.id, name: contact.name, company: contact.company }
-        : null;
-    });
+    useState<CrmContactLookup | null>(defaultContact ?? null);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -61,18 +52,12 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const { initialStageId } = useGetMappedDealStages();
-  const { data: currentUser } = useGetUserPersonalDetails();
+  const { initialStageId, isLoading: isStagesLoading } =
+    useGetMappedDealStages();
+  const { data: currentUser, isLoading: isUserLoading } =
+    useGetUserPersonalDetails();
 
   const handleCreateDealSuccess = () => {
-    if (selectedContactId) {
-      queryClient.invalidateQueries({
-        queryKey: contactQueryKeys.CONTACT_BY_ID(selectedContactId)
-      });
-    }
-    queryClient.invalidateQueries({
-      queryKey: contactQueryKeys.GET_CONTACT_DATA
-    });
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -86,7 +71,17 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
     onClose();
   };
 
-  const handleCreateDealError = () => {
+  const handleCreateDealError = (error: ErrorResponse) => {
+    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
+
+    if (messageKey === CRM_ERROR_DEAL_EXISTS) {
+      formik.setFieldError(
+        "name",
+        translateText(["inlineAddDeal", "validations", "dealNameExists"])
+      );
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -104,21 +99,19 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
     handleCreateDealError
   );
 
-  const handleSave = (name: string) => {
-    if (
-      isPending ||
-      !isDealNameValid().test(name) ||
-      !selectedContact ||
-      initialStageId === undefined ||
-      !currentUser?.employeeId
-    ) {
+  const isPreparingDefaults = isStagesLoading || isUserLoading;
+  const isBusy = isPending || isPreparingDefaults;
+  const busyLabelKey = isPending ? "saving" : "loading";
+
+  const handleSubmit = (values: CrmInlineDealAddFormTypes) => {
+    if (initialStageId === undefined || !currentUser?.employeeId) {
       return;
     }
 
     const payload: CrmCreateDealPayload = {
-      name,
+      name: values.name.trim(),
       stageId: initialStageId,
-      contactId: selectedContact.id,
+      contactId: Number(values.contactId),
       ownerId: Number(currentUser.employeeId),
       priority: CrmPriorityEnum.MEDIUM
     };
@@ -126,9 +119,36 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
     createDeal(payload);
   };
 
+  const formik = useFormik<CrmInlineDealAddFormTypes>({
+    initialValues: {
+      name: "",
+      contactId: defaultContact ? String(defaultContact.id) : ""
+    },
+    validationSchema: inlineAddDealValidations(translateText),
+    validateOnChange: true,
+    validateOnBlur: false,
+    onSubmit: handleSubmit
+  });
+
+  const handleContactChange = (contact: CrmContactLookup | null) => {
+    setSelectedContact(contact);
+    formik.setFieldValue("contactId", contact ? String(contact.id) : "");
+  };
+
+  const handleNameChange = (value: string) => {
+    formik.setFieldValue("name", value);
+  };
+
+  const handleSave = () => {
+    if (isBusy) {
+      return;
+    }
+    formik.submitForm();
+  };
+
   return (
     <div
-      className={`relative ${isPending ? "opacity-50 pointer-events-none" : ""}`}
+      className={`relative ${isBusy ? "opacity-50 pointer-events-none" : ""}`}
     >
       <SubTaskInput
         prefixNode={
@@ -136,8 +156,11 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
             <AddDealContactSearch
               contacts={contacts}
               selectedContact={selectedContact}
-              onChange={setSelectedContact}
+              onChange={handleContactChange}
               onSearch={setContactSearchTerm}
+              isInvalid={
+                !!(formik.touched.contactId && formik.errors.contactId)
+              }
               placeholder={translateText([
                 "inlineAddDeal",
                 "contactPlaceholder"
@@ -157,9 +180,11 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
         }
         onSave={handleSave}
         onCancel={onClose}
+        onValueChange={handleNameChange}
         placeholder={translateText(["inlineAddDeal", "dealNamePlaceholder"])}
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
+        errorMessage={formik.touched.name ? formik.errors.name : undefined}
         ariaLabels={{
           group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
           saveButton: translateText([
@@ -174,12 +199,16 @@ const SidePanelAddDeal: FC<Props> = ({ onClose }) => {
           ])
         }}
       />
-      {isPending && (
+      {isBusy && (
         <div
           className="absolute inset-0 flex items-center justify-center"
           role="status"
           aria-live="polite"
-          aria-label={translateText(["inlineAddDeal", "ariaLabels", "saving"])}
+          aria-label={translateText([
+            "inlineAddDeal",
+            "ariaLabels",
+            busyLabelKey
+          ])}
         >
           <Spinner size={24} />
         </div>

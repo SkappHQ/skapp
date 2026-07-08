@@ -8,6 +8,19 @@ import {
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
 
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .required()
+      .max(DEAL_NAME_MAX_LENGTH)
+      .matches(
+        isDealNameValid(),
+        translator(["inlineAddDeal", "validations", "dealNameInvalidChars"])
+      ),
+    contactId: Yup.string().required()
+  });
+
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()

@@ -457,7 +457,12 @@
           "saveDeal": "Save deal",
           "cancelAddDeal": "Cancel adding deal",
           "contact": "Contact",
-          "saving": "Saving deal"
+          "saving": "Saving deal",
+          "loading": "Loading"
+        },
+        "validations": {
+          "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name."
         },
         "toastMessages": {
           "successTitle": "Deal added successfully",
