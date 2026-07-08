@@ -21,7 +21,7 @@ import {
   CrmDealDetailResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
-import { getStageHexColor } from "~community/crm/utils/crmUtil";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
@@ -67,7 +67,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           <div className="inline-flex items-center gap-2.5">
             <div
               className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: getStageHexColor(stage.color) }}
+              style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
             />
             <span className="body2">{stage.name}</span>
           </div>

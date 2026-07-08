@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
-import { getStageHexColor } from "~community/crm/utils/crmUtil";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface Props {
   deal: DetailPanelDealResponseType;
@@ -19,7 +19,7 @@ const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
       prefixIcon={
         <span
           className="inline-block h-2 w-2 rounded-full"
-          style={{ backgroundColor: getStageHexColor(deal.stage.color) }}
+          style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
         />
       }
     />
