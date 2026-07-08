@@ -19,16 +19,21 @@ import DealTitleSection from "./DealTitleSection";
 const DealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { isCrmSidePanelOpen, crmSidePanelType, selectedDealId } = useCrmStore(
-    (store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      selectedDealId: store.selectedDealId
-    })
-  );
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    selectedDealId,
+    setSelectedDealId,
+    closeCrmSidePanel
+  } = useCrmStore((store) => ({
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
+    selectedDealId: store.selectedDealId,
+    setSelectedDealId: store.setSelectedDealId,
+    closeCrmSidePanel: store.closeCrmSidePanel
+  }));
 
   const handleClose = () => {
-    const { setSelectedDealId, closeCrmSidePanel } = useCrmStore.getState();
     setSelectedDealId(null);
     closeCrmSidePanel();
   };

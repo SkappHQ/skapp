@@ -22,6 +22,11 @@ const DealsSection: FC = () => {
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const { setSelectedDealId, openCrmSidePanel } = useCrmStore((store) => ({
+    setSelectedDealId: store.setSelectedDealId,
+    openCrmSidePanel: store.openCrmSidePanel
+  }));
+
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
       {
@@ -45,7 +50,6 @@ const DealsSection: FC = () => {
   };
 
   const handleDealOnClick = (deal: CrmDealListItem) => {
-    const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();
     setSelectedDealId(deal.id);
     openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };
