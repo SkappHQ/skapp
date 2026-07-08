@@ -5,7 +5,7 @@ import { DragIcon, StatusCard } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { getStageHexColor } from "~community/crm/utils/crmUtil";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 interface DraggableDealStageCardProps {
@@ -61,7 +61,7 @@ const DraggableDealStageCard = ({
         id={stage.id.toString()}
         color={{
           label: stage.color,
-          code: STAGE_COLOR_MAP[stage.color]
+          code: getStageHexColor(stage.color)
         }}
         title={stage.name}
         description={stage.description ?? ""}

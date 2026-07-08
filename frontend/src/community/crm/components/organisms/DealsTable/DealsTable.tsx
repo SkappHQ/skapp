@@ -13,10 +13,9 @@ import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { formatValue } from "~community/crm/utils/crmUtil";
+import { formatValue, getStageColorClass } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
@@ -196,8 +195,7 @@ const DealsTable: FC<Props> = ({
           stage: (
             <div className="inline-flex items-center gap-2">
               <div
-                className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
+                className={`size-2 rounded-full shrink-0 ${getStageColorClass(deal.stage.color)}`}
               />
               <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
