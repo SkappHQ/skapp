@@ -110,6 +110,28 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
       )}
 
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
+        <PropertyRow label={translateText(["contact"])}>
+          <div className="flex flex-col w-full">
+            <ContactPopupSearch
+              contacts={contacts}
+              selectedContact={selectedContact}
+              onChange={(contact) => {
+                if (contact && contact.id !== selectedContact?.id) {
+                  setSelectedContact(contact);
+                  onContactChange(contact);
+                }
+              }}
+              onSearch={setContactSearchTerm}
+              placeholder={translateText(["placeholders", "none"])}
+              searchPlaceholder={translateText([
+                "placeholders",
+                "contactSearch"
+              ])}
+              noResultsText={translateText(["placeholders", "noResults"])}
+            />
+          </div>
+        </PropertyRow>
+
         <PropertyField
           label={translateText(["value"])}
           value={amount}
@@ -145,28 +167,6 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               }}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
-              noResultsText={translateText(["placeholders", "noResults"])}
-            />
-          </div>
-        </PropertyRow>
-
-        <PropertyRow label={translateText(["contact"])}>
-          <div className="flex flex-col w-full">
-            <ContactPopupSearch
-              contacts={contacts}
-              selectedContact={selectedContact}
-              onChange={(contact) => {
-                if (contact && contact.id !== selectedContact?.id) {
-                  setSelectedContact(contact);
-                  onContactChange(contact);
-                }
-              }}
-              onSearch={setContactSearchTerm}
-              placeholder={translateText(["placeholders", "none"])}
-              searchPlaceholder={translateText([
-                "placeholders",
-                "contactSearch"
-              ])}
               noResultsText={translateText(["placeholders", "noResults"])}
             />
           </div>
