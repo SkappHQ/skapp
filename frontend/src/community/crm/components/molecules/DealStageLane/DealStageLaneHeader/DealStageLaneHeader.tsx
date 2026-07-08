@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react";
 
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
-import { getStageColorClass } from "~community/crm/utils/crmUtil";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
@@ -38,7 +38,8 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
       aria-labelledby={`crm-stage-${stage.id}`}
     >
       <div
-        className={`h-1.75 rounded-lg m-2 ${getStageColorClass(stage.color)}`}
+        className="h-1.75 rounded-lg m-2"
+        style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
       />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">

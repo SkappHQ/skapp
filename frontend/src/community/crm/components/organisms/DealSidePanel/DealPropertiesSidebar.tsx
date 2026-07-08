@@ -21,7 +21,7 @@ import {
   CrmDealDetailResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
-import { getStageColorClass } from "~community/crm/utils/crmUtil";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
@@ -61,12 +61,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const stageOptions = useMemo(
     () =>
       dealStages.map((stage) => ({
-        id: stage.id,
-        value: stage.id,
+        id: String(stage.id),
+        value: String(stage.id),
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
-              className={`size-2 rounded-full shrink-0 ${getStageColorClass(stage.color)}`}
+              className="size-2 rounded-full shrink-0"
+              style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
             />
             <span className="body2">{stage.name}</span>
           </div>
