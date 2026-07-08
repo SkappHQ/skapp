@@ -34,6 +34,7 @@ import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -266,7 +267,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		List<CrmContactLookupResponseDto> contactDtos = contactPage.getContent()
 			.stream()
-			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.map(this::toLookupDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -279,9 +280,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
+	private CrmContactLookupResponseDto toLookupDto(CrmContact contact) {
+		CrmContactLookupResponseDto dto = crmMapper.crmContactToCrmContactLookupResponseDto(contact);
+		if (CrmUtil.hasDeletedCompany(contact)) {
+			dto.setCompany(null);
+		}
+		return dto;
+	}
+
 	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
 			Map<Long, CrmTaskSummary> taskSummaryMap) {
 		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
+		if (CrmUtil.hasDeletedCompany(contact)) {
+			dto.setCompany(null);
+		}
 
 		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
 		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
@@ -309,6 +321,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
 
 		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
+		if (CrmUtil.hasDeletedCompany(contact)) {
+			dto.setCompany(null);
+		}
 
 		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
 		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());

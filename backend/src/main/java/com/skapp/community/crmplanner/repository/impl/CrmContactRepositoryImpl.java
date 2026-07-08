@@ -12,7 +12,6 @@ import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.util.CrmQueryUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -95,8 +94,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
 		}
 
-		predicates.add(CrmQueryUtil.companyNotDeleted(cb, company));
-
 		return predicates.toArray(new Predicate[0]);
 	}
 
@@ -116,10 +113,9 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
-		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
-				JoinType.LEFT);
+		contact.fetch(CrmContact_.company, JoinType.LEFT);
 
-		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)), CrmQueryUtil.companyNotDeleted(cb, company));
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
 		return entityManager.createQuery(query).getResultList();
@@ -148,8 +144,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-
-		predicates.add(CrmQueryUtil.companyNotDeleted(cb, company));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {

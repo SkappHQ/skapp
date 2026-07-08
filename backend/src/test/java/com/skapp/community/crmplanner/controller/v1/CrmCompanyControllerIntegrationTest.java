@@ -5,9 +5,14 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.service.CrmContactService;
+import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -100,6 +105,10 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final CrmContactService contactService;
+
+	private final CrmDealService dealService;
 
 	private String authToken;
 
@@ -266,8 +275,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Delete company with associated records - Keeps records active but hides them from lists")
-	void deleteCompany_WithAssociatedRecords_KeepsRecordsButHidesThemFromLists() throws Exception {
+	@DisplayName("Delete company with associated records - Keeps contacts and deals visible but hides tasks")
+	void deleteCompany_WithAssociatedRecords_KeepsContactsAndDealsVisibleButHidesTasks() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -332,12 +341,27 @@ class CrmCompanyControllerIntegrationTest {
 		CrmTask remainingTask = crmTaskDao.findById(taskId).orElseThrow();
 		assertThat(remainingTask.getIsDeleted()).isFalse();
 
-		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmDeal::getId)
-			.doesNotContain(dealId);
-		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContact::getId)
-			.doesNotContain(contactId);
+		PageDto contactsPage = (PageDto) contactService.getContactMetrics(new CrmContactMetricRequestDto())
+			.getResults()
+			.get(0);
+		@SuppressWarnings("unchecked")
+		java.util.List<CrmContactListItemDto> contactItems = (java.util.List<CrmContactListItemDto>) contactsPage
+			.getItems();
+		assertThat(contactItems).filteredOn(c -> c.getId().equals(contactId))
+			.as("contact remains visible after its company is deleted")
+			.singleElement()
+			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
+
+		CrmDealFilterDto dealFilter = new CrmDealFilterDto();
+		dealFilter.setSize(100);
+		PageDto dealsPage = (PageDto) dealService.getDeals(dealFilter).getResults().get(0);
+		@SuppressWarnings("unchecked")
+		java.util.List<CrmDealResponseDto> dealItems = (java.util.List<CrmDealResponseDto>) dealsPage.getItems();
+		assertThat(dealItems).filteredOn(d -> d.getId().equals(dealId))
+			.as("deal remains visible after its company is deleted")
+			.singleElement()
+			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
+
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).doesNotContain(taskId);
 	}
 
