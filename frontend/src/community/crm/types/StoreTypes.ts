@@ -2,6 +2,7 @@ import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
   CrmCompanyDetailType,
   CrmCompanyMetricsType,
+  CrmCompanyRelationsUpdate,
   CrmContact,
   CrmTaskDetailType
 } from "./CommonTypes";
@@ -15,21 +16,21 @@ interface ActionTypes {
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
   setCompanies: (companies: CrmCompanyMetricsType[]) => void;
-  updateCompany: (company: Partial<CrmCompanyDetailType>) => void;
+  updateCompany: (company: CrmCompanyRelationsUpdate) => void;
   getCompanyById: (id: number) => CrmCompanyDetailType | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
-  updateTask: (task: Partial<CrmTaskDetailType>) => void;
+  updateTask: (task: CrmTaskDetailType) => void;
   openCrmSidePanel: (type: CrmSidePanelTypes) => void;
   pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
   popCrmSidePanel: () => void;
   closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
   setContacts: (contacts: CrmContact[]) => void;
-  updateContact: (contact: Partial<CrmContact>) => void;
+  updateContact: (contact: CrmContact) => void;
   getContactById: (id: number) => CrmContact | undefined;
   setSelectedDealId: (dealId: number | null) => void;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;

@@ -19,7 +19,7 @@ const CrmContactSlice = (
   setSelectedContactId: (selectedContactId: number | null) =>
     set({ selectedContactId: selectedContactId }),
   setContacts: (contacts: CrmContact[]) => set({ contacts }),
-  updateContact: (contact: Partial<CrmContact>) =>
+  updateContact: (contact: CrmContact) =>
     set({ contacts: mergeContactUpdate(get().contacts, contact) }),
   getContactById: (id: number) =>
     get().contacts.find((contact) => contact.id === id)

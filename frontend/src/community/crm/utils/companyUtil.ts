@@ -1,10 +1,14 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 
-import { CrmCompanyDetailType, MetricItem } from "../types/CommonTypes";
+import {
+  CrmCompanyDetailType,
+  CrmCompanyRelationsUpdate,
+  MetricItem
+} from "../types/CommonTypes";
 
 export const mergeCompanyUpdate = (
   companies: CrmCompanyDetailType[],
-  update: Partial<CrmCompanyDetailType>
+  update: CrmCompanyRelationsUpdate
 ): CrmCompanyDetailType[] =>
   companies.map((company) =>
     company.id === update.id ? { ...company, ...update } : company

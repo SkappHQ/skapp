@@ -56,6 +56,13 @@ export interface CrmCompanyDetailType extends CrmCompanyMetricsType {
   contacts?: CrmContact[];
 }
 
+export interface CrmCompanyRelationsUpdate {
+  id: number;
+  tasks?: CrmTaskDetailType[];
+  deals?: CrmDealListItem[];
+  contacts?: CrmContact[];
+}
+
 export interface MetricChip {
   label: string;
   icon?: ReactElement;

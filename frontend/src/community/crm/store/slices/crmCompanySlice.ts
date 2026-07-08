@@ -1,7 +1,7 @@
 import { SetType } from "~community/common/types/CommonTypes";
 import {
-  CrmCompanyDetailType,
-  CrmCompanyMetricsType
+  CrmCompanyMetricsType,
+  CrmCompanyRelationsUpdate
 } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
@@ -22,7 +22,7 @@ const CrmCompanySlice = (
   setSelectedCompanyId: (selectedCompanyId: number | null) =>
     set({ selectedCompanyId }),
   setCompanies: (companies: CrmCompanyMetricsType[]) => set({ companies }),
-  updateCompany: (company: Partial<CrmCompanyDetailType>) =>
+  updateCompany: (company: CrmCompanyRelationsUpdate) =>
     set({ companies: mergeCompanyUpdate(get().companies, company) }),
   getCompanyById: (id: number) =>
     get().companies.find((company) => company.id === id)

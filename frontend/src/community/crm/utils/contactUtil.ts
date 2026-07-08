@@ -9,7 +9,7 @@ import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
 export const mergeContactUpdate = (
   contacts: CrmContact[],
-  update: Partial<CrmContact>
+  update: CrmContact
 ): CrmContact[] =>
   contacts.map((contact) =>
     contact.id === update.id ? { ...contact, ...update } : contact
