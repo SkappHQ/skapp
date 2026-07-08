@@ -147,10 +147,7 @@ const editDeal = async ({
   return response?.data?.results?.[0];
 };
 
-export const useEditDeal = (
-  onSuccess: () => void,
-  onError: (error: AxiosError) => void
-) => {
+export const useEditDeal = (onError: (error: AxiosError) => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editDeal,
@@ -162,7 +159,6 @@ export const useEditDeal = (
       queryClient.invalidateQueries({
         queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
       });
-      onSuccess();
     },
     onError
   });

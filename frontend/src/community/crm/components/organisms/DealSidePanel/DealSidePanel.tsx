@@ -53,24 +53,14 @@ const DealSidePanel: FC = () => {
 
   const { data: deal, isLoading } = useGetDealById(selectedDealId!);
 
-  const { mutate: editDeal } = useEditDeal(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["toastMessages", "editSuccessTitle"]),
-        description: translateText(["toastMessages", "editSuccessDescription"])
-      });
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toastMessages", "editErrorTitle"]),
-        description: translateText(["toastMessages", "editErrorDescription"])
-      });
-    }
-  );
+  const { mutate: editDeal } = useEditDeal(() => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "editErrorTitle"]),
+      description: translateText(["toastMessages", "editErrorDescription"])
+    });
+  });
 
   const updateDeal = (fields: CrmDealEditFields): void => {
     editDeal({ id: selectedDealId!, fields });

@@ -8,46 +8,6 @@ import {
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
 
-// Field-level validators shared by the inline edit flow (DealSidePanel).
-// They reuse the same constants and regex as addDealValidations so the two
-// flows enforce an identical set of rules.
-export const validateDealName = (
-  name: string,
-  translator: TranslatorFunctionType
-): string | undefined => {
-  const trimmedName = name.trim();
-  if (!trimmedName) {
-    return translator(["validations", "dealNameRequired"]);
-  }
-  if (trimmedName.length > DEAL_NAME_MAX_LENGTH) {
-    return translator(["validations", "dealNameMaxLength"]);
-  }
-  if (!isDealNameValid().test(trimmedName)) {
-    return translator(["validations", "dealNameInvalidChars"]);
-  }
-  return undefined;
-};
-
-export const validateDealDescription = (
-  description: string,
-  translator: TranslatorFunctionType
-): string | undefined => {
-  if (description.length > DEAL_DESCRIPTION_MAX_LENGTH) {
-    return translator(["validations", "descriptionMaxLength"]);
-  }
-  return undefined;
-};
-
-export const validateDealAmount = (
-  amount: string,
-  translator: TranslatorFunctionType
-): string | undefined => {
-  if (amount && !(Number(amount) > 0)) {
-    return translator(["validations", "amountInvalid"]);
-  }
-  return undefined;
-};
-
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
@@ -83,3 +43,36 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       translator(["validations", "descriptionMaxLength"])
     )
   });
+
+const validateField = (
+  fieldName: string,
+  value: unknown,
+  translator: TranslatorFunctionType
+): string | undefined => {
+  try {
+    (
+      Yup.reach(addDealValidations(translator), fieldName) as Yup.AnySchema
+    ).validateSync(value);
+    return undefined;
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      return error.message;
+    }
+    throw error;
+  }
+};
+
+export const validateDealName = (
+  name: string,
+  translator: TranslatorFunctionType
+): string | undefined => validateField("name", name, translator);
+
+export const validateDealDescription = (
+  description: string,
+  translator: TranslatorFunctionType
+): string | undefined => validateField("description", description, translator);
+
+export const validateDealAmount = (
+  amount: string,
+  translator: TranslatorFunctionType
+): string | undefined => validateField("amount", amount, translator);
