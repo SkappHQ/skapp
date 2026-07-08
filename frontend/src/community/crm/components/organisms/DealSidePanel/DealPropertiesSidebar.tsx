@@ -14,7 +14,6 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
@@ -22,6 +21,7 @@ import {
   CrmDealDetailResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { getStageColorClass } from "~community/crm/utils/crmUtil";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
@@ -66,8 +66,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
+              className={`size-2 rounded-full shrink-0 ${getStageColorClass(stage.color)}`}
             />
             <span className="body2">{stage.name}</span>
           </div>

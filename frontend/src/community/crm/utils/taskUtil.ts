@@ -174,7 +174,7 @@ export const getChangedTaskFields = (
 
 export const mergeTaskUpdate = (
   tasks: CrmTaskDetailType[],
-  update: Partial<CrmTaskDetailType>
+  update: CrmTaskDetailType
 ): CrmTaskDetailType[] =>
   tasks.map((task) => (task.id === update.id ? { ...task, ...update } : task));
 

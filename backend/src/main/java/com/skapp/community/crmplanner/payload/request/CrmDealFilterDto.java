@@ -27,4 +27,6 @@ public class CrmDealFilterDto {
 
 	private Long companyId;
 
+	private Long contactId;
+
 }

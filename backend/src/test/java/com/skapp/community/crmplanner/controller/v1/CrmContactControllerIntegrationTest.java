@@ -848,17 +848,41 @@ class CrmContactControllerIntegrationTest {
 	// --- getContactsLookup ---
 
 	@Test
-	@DisplayName("Lookup contacts with keyword matching company name only - Returns the contact")
-	void getContactsLookup_KeywordMatchesCompanyNameOnly_ReturnsContact() throws Exception {
-		Long companyId = savedCompany("Globex Corporation").getId();
-		savedNamedContact("John Doe", companyId, "john.doe@lookup.com");
+	@DisplayName("Get contacts lookup filtered by dealId - Returns only the contact linked to that deal")
+	void getContactsLookup_FilterByDealId_ReturnsOnlyLinkedContact() throws Exception {
+		CrmCompany company = savedCompany();
 
-		performRequest(get(LOOKUP_PATH).param("searchKeyword", "globex").accept(MediaType.APPLICATION_JSON))
+		CrmContact contactA = new CrmContact();
+		contactA.setName("Lookup Contact A");
+		contactA.setEmail("lookup.contact.a@example.com");
+		contactA.setCompany(company);
+		contactA.setOwner(employeeDao.getReferenceById(1L));
+		contactA = crmContactDao.save(contactA);
+
+		CrmContact contactB = new CrmContact();
+		contactB.setName("Lookup Contact B");
+		contactB.setEmail("lookup.contact.b@example.com");
+		contactB.setCompany(company);
+		contactB.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contactB);
+
+		CrmDealStage stage = savedStage(CrmDealStageType.OPEN);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Deal for Lookup Contact A");
+		deal.setStage(stage);
+		deal.setContact(contactA);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal = crmDealDao.save(deal);
+
+		performRequest(get(LOOKUP_PATH).param("dealId", deal.getId().toString()).accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("John Doe"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Lookup Contact A"));
 	}
 
 	@Test

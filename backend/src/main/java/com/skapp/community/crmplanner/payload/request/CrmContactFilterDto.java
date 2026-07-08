@@ -13,4 +13,6 @@ public class CrmContactFilterDto {
 
 	private String searchKeyword;
 
+	private Long dealId;
+
 }
