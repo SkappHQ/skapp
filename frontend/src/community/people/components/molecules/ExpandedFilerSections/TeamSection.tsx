@@ -51,65 +51,39 @@ const TeamSection = ({
     }
   };
 
-  return (
-    <div>
-      <div>
-        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
-          {translateText(["teams"])}
-        </p>
+  const renderTeamsContent = () => {
+    if (!teams || teams.length === 0) {
+      return <p className="body2">{translateText(["noTeamsAvailable"])}</p>;
+    }
 
+    if (teams.length > 8) {
+      return (
         <div>
-          {!teams || teams.length === 0 ? (
-            <p className="body2">{translateText(["noTeamsAvailable"])}</p>
-          ) : teams.length > 8 ? (
-            <div>
-              <FilterSearch
-                id="search-team-input"
-                setIsPopperOpen={setIsPopperOpen}
-                isPopperOpen={isPopperOpen}
-                placeHolder={translateText(["searchTeamsPlaceholder"])}
-                labelStyles={{ mb: "0.25rem" }}
-                componentStyles={{ mr: "1.25rem", my: 2 }}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                value={searchTerm}
-                error={searchErrors}
-                onSelectOption={(result) =>
-                  onSelectOption(result as FilterButtonTypes)
-                }
-                popperStyles={{
-                  width: "100%"
-                }}
-                filterSearchResult={true}
-                suggestions={teams}
-                selectedOptions={
-                  employeeDataFilter?.team as FilterSearchSuggestionsType[]
-                }
-              />
-              {employeeDataFilter?.team &&
-                employeeDataFilter.team.length > 0 && (
-                  <SelectableItemList<string | number>
-                    items={employeeDataFilter.team.map((team) => ({
-                      label: team.text,
-                      value: team.id ?? ""
-                    }))}
-                    selectedValues={employeeDataFilter.team.map(
-                      (team) => team.id ?? ""
-                    )}
-                    onChipClick={(id) => {
-                      const teamToRemove = employeeDataFilter.team.find(
-                        (t) => (t.id ?? "") === id
-                      );
-                      if (teamToRemove) {
-                        handleTeamSelect(teamToRemove);
-                      }
-                    }}
-                    chipRefs={basicChipRef}
-                  />
-                )}
-            </div>
-          ) : (
+          <FilterSearch
+            id="search-team-input"
+            setIsPopperOpen={setIsPopperOpen}
+            isPopperOpen={isPopperOpen}
+            placeHolder={translateText(["searchTeamsPlaceholder"])}
+            labelStyles={{ mb: "0.25rem" }}
+            componentStyles={{ mr: "1.25rem", my: 2 }}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            error={searchErrors}
+            onSelectOption={(result) =>
+              onSelectOption(result as FilterButtonTypes)
+            }
+            popperStyles={{
+              width: "100%"
+            }}
+            filterSearchResult={true}
+            suggestions={teams}
+            selectedOptions={
+              employeeDataFilter?.team as FilterSearchSuggestionsType[]
+            }
+          />
+          {employeeDataFilter?.team && employeeDataFilter.team.length > 0 && (
             <SelectableItemList<string | number>
-              items={teams.map((team) => ({
+              items={employeeDataFilter.team.map((team) => ({
                 label: team.text,
                 value: team.id ?? ""
               }))}
@@ -117,15 +91,46 @@ const TeamSection = ({
                 (team) => team.id ?? ""
               )}
               onChipClick={(id) => {
-                const team = teams?.find((t) => (t.id ?? "") === id);
-                if (team) {
-                  handleTeamSelect(team);
+                const teamToRemove = employeeDataFilter.team.find(
+                  (t) => (t.id ?? "") === id
+                );
+                if (teamToRemove) {
+                  handleTeamSelect(teamToRemove);
                 }
               }}
               chipRefs={basicChipRef}
             />
           )}
         </div>
+      );
+    }
+
+    return (
+      <SelectableItemList<string | number>
+        items={teams.map((team) => ({
+          label: team.text,
+          value: team.id ?? ""
+        }))}
+        selectedValues={employeeDataFilter.team.map((team) => team.id ?? "")}
+        onChipClick={(id) => {
+          const team = teams?.find((t) => (t.id ?? "") === id);
+          if (team) {
+            handleTeamSelect(team);
+          }
+        }}
+        chipRefs={basicChipRef}
+      />
+    );
+  };
+
+  return (
+    <div>
+      <div>
+        <p className={`mb-2 ${isSmallScreen ? "subtitle4" : "subtitle3"}`}>
+          {translateText(["teams"])}
+        </p>
+
+        <div>{renderTeamsContent()}</div>
       </div>
     </div>
   );
