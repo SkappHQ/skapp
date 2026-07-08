@@ -1,4 +1,4 @@
-import { buildContactOptions, buildOwnerOptions } from "../dealUtil";
+import { buildContactOptions, buildOwnerOptions } from "./dealUtil";
 
 interface TestOwner {
   employeeId: number;
@@ -65,11 +65,11 @@ describe("buildContactOptions", () => {
     { id: 20, name: "Beta Lead", company: null }
   ];
 
-  it("should build contact dropdown options with company name in the label", () => {
+  it("should build contact dropdown options", () => {
     const result = buildContactOptions(contacts);
 
     expect(result).toEqual([
-      { id: 10, value: 10, label: "Acme Buyer Acme" },
+      { id: 10, value: 10, label: "Acme Buyer" },
       { id: 20, value: 20, label: "Beta Lead" }
     ]);
   });

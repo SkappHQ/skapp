@@ -96,8 +96,11 @@ const OwnerPopupSearch: FC<Props> = ({
       <OwnerTriggerContent
         key={option.id}
         user={user}
-        triggerProps={triggerProps}
-        disabled={!isCrmSalesManager}
+        onSelect={() => {
+          if (isCrmSalesManager) {
+            triggerProps.onClick();
+          }
+        }}
       />
     ) : null;
   };

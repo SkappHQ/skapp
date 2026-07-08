@@ -33,7 +33,7 @@ interface ContactMetricsSearchParams {
   page: number;
   size: number;
   searchKeyword?: string;
-  companyId?: number | null;
+  companyId?: number;
 }
 
 const fetchContactMetrics = async ({
@@ -43,12 +43,7 @@ const fetchContactMetrics = async ({
   companyId
 }: ContactMetricsSearchParams): Promise<CrmContactMetricsResponseType> => {
   const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
-    params: {
-      page,
-      size,
-      searchKeyword,
-      ...(companyId != null && { companyId })
-    }
+    params: { page, size, searchKeyword, companyId }
   });
   return response?.data?.results?.[0];
 };
@@ -56,8 +51,7 @@ const fetchContactMetrics = async ({
 export const useGetContactMetrics = (
   searchKeyword: string,
   size: number,
-  companyId?: number | null,
-  enabled?: boolean
+  companyId?: number
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
@@ -75,8 +69,7 @@ export const useGetContactMetrics = (
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
-    },
-    enabled
+    }
   });
 };
 
@@ -187,18 +180,13 @@ export const useGetOwnerLookup = (
 export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
-  enabled: boolean,
-  dealId?: number | null
+  enabled: boolean = true
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
-    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size, dealId),
+    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
     queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-        params: {
-          searchKeyword,
-          size,
-          ...(dealId != null && { dealId })
-        }
+        params: { searchKeyword, size }
       });
       return response?.data?.results?.[0];
     },

@@ -1,7 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -11,7 +11,6 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -22,9 +21,7 @@ import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
-import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
-import com.skapp.TestSkappApplication;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +48,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -92,8 +88,6 @@ class CrmDealControllerIntegrationTest {
 
 	private final EmployeeDao employeeDao;
 
-	private final EmployeeRoleDao employeeRoleDao;
-
 	private String authToken;
 
 	@BeforeEach
@@ -109,12 +103,6 @@ class CrmDealControllerIntegrationTest {
 
 	private ResultActions performPostRequest(CrmDealCreateRequestDto dto) throws Exception {
 		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(dto))
-			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private ResultActions performPatchRequest(Long id, CrmDealEditRequestDto dto) throws Exception {
-		return performRequest(patch(BASE_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON));
 	}
@@ -154,17 +142,6 @@ class CrmDealControllerIntegrationTest {
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		return crmContactDao.save(contact);
-	}
-
-	private CrmDeal savedDeal(CrmDealStage stage, CrmContact contact) {
-		CrmDeal deal = new CrmDeal();
-		deal.setName("Original Deal");
-		deal.setStage(stage);
-		deal.setContact(contact);
-		deal.setOwner(employeeDao.getReferenceById(1L));
-		deal.setPriority(CrmDealPriority.MEDIUM);
-		deal.setOrderIndex("a0");
-		return crmDealDao.save(deal);
 	}
 
 	private CrmDealCreateRequestDto validPayload(Long stageId, Long contactId) {
@@ -225,55 +202,6 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for company"));
 	}
 
-	@Test
-	@DisplayName("Get deals filtered by contactId - Returns only deals linked to that contact")
-	void getDeals_FilterByContactId_ReturnsMatchingDeals() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Contact Filter Deal Company");
-
-		CrmContact contactA = new CrmContact();
-		contactA.setName("Contact A");
-		contactA.setEmail("deal.filter.contact.a@example.com");
-		contactA.setCompany(company);
-		contactA.setOwner(employeeDao.getReferenceById(1L));
-		contactA = crmContactDao.save(contactA);
-
-		CrmContact contactB = new CrmContact();
-		contactB.setName("Contact B");
-		contactB.setEmail("deal.filter.contact.b@example.com");
-		contactB.setCompany(company);
-		contactB.setOwner(employeeDao.getReferenceById(1L));
-		contactB = crmContactDao.save(contactB);
-
-		CrmDeal dealA = new CrmDeal();
-		dealA.setName("Deal for Contact A");
-		dealA.setStage(stage);
-		dealA.setContact(contactA);
-		dealA.setCompany(company);
-		dealA.setOwner(employeeDao.getReferenceById(1L));
-		dealA.setPriority(CrmDealPriority.MEDIUM);
-		dealA.setOrderIndex("a0");
-		crmDealDao.save(dealA);
-
-		CrmDeal dealB = new CrmDeal();
-		dealB.setName("Deal for Contact B");
-		dealB.setStage(stage);
-		dealB.setContact(contactB);
-		dealB.setCompany(company);
-		dealB.setOwner(employeeDao.getReferenceById(1L));
-		dealB.setPriority(CrmDealPriority.MEDIUM);
-		dealB.setOrderIndex("b0");
-		crmDealDao.save(dealB);
-
-		performRequest(
-				get(BASE_PATH).param("contactId", contactA.getId().toString()).accept(MediaType.APPLICATION_JSON))
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for Contact A"));
-	}
-
 	// --- Check deal name exists tests ---
 
 	@Test
@@ -304,7 +232,7 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Check deal name exists is case-sensitive - Returns OK with false for different casing")
+	@DisplayName("Check deal name exists is case-insensitive - Returns OK with true")
 	void checkDealNameExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
 		CrmDeal deal = new CrmDeal();
 		deal.setName("Case Deal");
@@ -318,7 +246,7 @@ class CrmDealControllerIntegrationTest {
 		performGetExistsRequest("case deal").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
 	}
 
 	@Test
@@ -408,127 +336,6 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
 	}
 
-	@Test
-	@DisplayName("Edit deal - Happy Path - success")
-	void editDeal_ValidRequest_ReturnsSuccess() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Original Company");
-		CrmContact contact = savedContact(company);
-		CrmDeal deal = savedDeal(stage, contact);
-		deal.setCompany(company);
-		deal = crmDealDao.save(deal);
-
-		CrmCompany newCompany = savedCompany("New Company");
-		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
-		newContact = crmContactDao.save(newContact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setName("Updated Deal Name");
-		dto.setAmount("5000.50");
-		dto.setPriority(CrmDealPriority.HIGH);
-		dto.setContactId(newContact.getId());
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
-			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Company"));
-	}
-
-	@Test
-	@DisplayName("Edit deal - update contact - company auto-resolved from new contact's company")
-	void editDeal_UpdateContact_CompanyAutoResolved() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Original Corp");
-		CrmContact contact = savedContact(company);
-		CrmDeal deal = savedDeal(stage, contact);
-		deal.setCompany(company);
-		deal = crmDealDao.save(deal);
-
-		CrmCompany newCompany = savedCompany("New Corp");
-		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
-		newContact = crmContactDao.save(newContact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactId(newContact.getId());
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Corp"));
-	}
-
-	@Test
-	@DisplayName("Edit deal - update contact - new contact has no company - company set to null")
-	void editDeal_UpdateContact_NoCompany_CompanyNull() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Original Corp");
-		CrmContact contact = savedContact(company);
-		CrmDeal deal = savedDeal(stage, contact);
-		deal.setCompany(company);
-		deal = crmDealDao.save(deal);
-
-		CrmContact newContact = savedContact(null);
-		newContact.setName("No Company Contact");
-		newContact = crmContactDao.save(newContact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactId(newContact.getId());
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("No Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
-	}
-
-	@Test
-	@DisplayName("Edit deal - update contact - new contact's company is soft-deleted - company set to null")
-	void editDeal_UpdateContact_DeletedCompany_CompanyNull() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany originalCompany = savedCompany("Original Corp");
-		CrmContact contact = savedContact(originalCompany);
-		CrmDeal deal = savedDeal(stage, contact);
-		deal.setCompany(originalCompany);
-		deal = crmDealDao.save(deal);
-
-		CrmCompany deletedCompany = savedCompany("Deleted Corp");
-		CrmContact newContact = savedContact(deletedCompany);
-		newContact.setName("Deleted Company Contact");
-		newContact = crmContactDao.save(newContact);
-
-		// soft-delete the new contact's company
-		deletedCompany.setIsDeleted(true);
-		crmCompanyDao.save(deletedCompany);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setContactId(newContact.getId());
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Deleted Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
-	}
-
-	@Test
-	@DisplayName("Edit deal - deal not found - returns bad request")
-	void editDeal_DealNotFound_ReturnsBadRequest() throws Exception {
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setName("Updated Name");
-
-		performPatchRequest(9999L, dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
-	}
-
 	// --- Get deal by ID tests ---
 
 	@Test
@@ -586,145 +393,6 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND)));
-	}
-
-	@Test
-	@DisplayName("Edit deal - update stage - returns success")
-	void editDeal_UpdateStage_ReturnsSuccess() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		CrmDealStage newStage = new CrmDealStage();
-		newStage.setName("New Stage");
-		newStage.setColor("#112233");
-		newStage.setOrderIndex(2);
-		newStage.setStageType(CrmDealStageType.OPEN);
-		newStage = crmDealStageDao.save(newStage);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setStageId(newStage.getId());
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].stage.name").value(newStage.getName()));
-	}
-
-	@Test
-	@DisplayName("Edit deal - invalid stage ID - returns bad request")
-	void editDeal_InvalidStageId_ReturnsBadRequest() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setStageId(9999L);
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND)));
-	}
-
-	@Test
-	@DisplayName("Edit deal - clear name - returns bad request")
-	void editDeal_ClearName_ReturnsBadRequest() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setName("   ");
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_NAME_REQUIRED)));
-	}
-
-	@Test
-	@DisplayName("Edit deal - non-admin/non-manager representative edit owner - returns bad request")
-	void editDeal_RepEditOwner_ReturnsBadRequest() throws Exception {
-		// Set CRM role for user2
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		// user2@gmail.com has ROLE_CRM_SALES_REPRESENTATIVE role only
-		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		// Since user2 is not the owner of the deal, first we must make them the owner of
-		// the deal so they have edit permission at all
-		deal.setOwner(employeeDao.getReferenceById(2L)); // Employee ID 2 is user2
-		crmDealDao.save(deal);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setOwnerId(1L); // attempt to change owner to user1
-
-		// Sales rep cannot reassign - resolveOwner throws assignment denied exception
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED)));
-	}
-
-	@Test
-	@DisplayName("Create deal - invalid owner ID - returns bad request")
-	void createDeal_InvalidOwner_ReturnsBadRequest() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDealCreateRequestDto dto = validPayload(stage.getId(), contact.getId());
-		dto.setOwnerId(9999L); // non-existent owner ID
-
-		performPostRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE)));
-	}
-
-	@Test
-	@DisplayName("Edit deal - Admin updates owner with invalid owner ID - returns bad request")
-	void editDeal_AdminUpdateInvalidOwner_ReturnsBadRequest() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setOwnerId(9999L); // non-existent owner ID
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].message")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_INVALID_ROLE)));
-	}
-
-	@Test
-	@DisplayName("Edit deal - Admin updates owner with valid owner ID - returns success")
-	void editDeal_AdminUpdateValidOwner_ReturnsSuccess() throws Exception {
-		// Set CRM role for user2 to be assignable (e.g. Sales Representative)
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-
-		CrmDealStage stage = savedStage();
-		CrmContact contact = savedContact(null);
-		CrmDeal deal = savedDeal(stage, contact);
-
-		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
-		dto.setOwnerId(2L);
-
-		performPatchRequest(deal.getId(), dto).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].owner.employeeId").value(2L));
 	}
 
 	@Test

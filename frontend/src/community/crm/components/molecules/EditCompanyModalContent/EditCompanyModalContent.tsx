@@ -37,14 +37,10 @@ const EditCompanyModalContent: React.FC = () => {
 
   const industryOptions = useGetIndustryOptions();
 
-  const { setIsCompanyModalOpen, selectedCompanyId, getCompanyById } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      selectedCompanyId: store.selectedCompanyId,
-      getCompanyById: store.getCompanyById
-    }));
-
-  const selectedCompany = getCompanyById(selectedCompanyId!);
+  const { setIsCompanyModalOpen, selectedCompany } = useCrmStore((store) => ({
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    selectedCompany: store.selectedCompany
+  }));
 
   const initialValues: CrmCompanyEditFormTypes = {
     name: selectedCompany?.name || "",

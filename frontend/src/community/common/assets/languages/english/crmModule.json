@@ -19,8 +19,7 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner",
-        "suggested": "Suggested"
+        "owner": "Contact owner"
       },
       "placeholders": {
         "name": "Enter name",
@@ -49,14 +48,14 @@
         "cancel": "Cancel Add Contact"
       },
       "validations": {
-        "name": "Contact name is required",
-        "nameLength": "Contact name is too long",
-        "nameInvalidCharacters": "Contact name contains invalid characters",
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
         "email": "Email is required",
-        "invalidEmail": "Invalid email address",
-        "emailLength": "Email is too long",
-        "contactNumber": "Invalid contact number",
-        "owner": "Owner is required"
+        "invalidEmail": "Please enter a valid email address",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
@@ -90,8 +89,7 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner",
-        "suggested": "Suggested"
+        "owner": "Contact owner"
       },
       "placeholders": {
         "name": "Enter name",
@@ -120,14 +118,14 @@
         "cancel": "Cancel Edit Contact"
       },
       "validations": {
-        "name": "Contact name is required",
-        "nameLength": "Contact name is too long",
-        "nameInvalidCharacters": "Contact name contains invalid characters",
+        "name": "Name is required",
+        "nameLength": "Name must be less than 50 characters",
         "email": "Email is required",
-        "invalidEmail": "Invalid email address",
-        "emailLength": "Email is too long",
-        "contactNumber": "Invalid contact number",
-        "owner": "Owner is required"
+        "invalidEmail": "Please enter a valid email address",
+        "contactNumber": "Contact number is invalid",
+        "contactNumberLength": "Contact number is too long",
+        "characterLength": "Entry must be less than 50 characters",
+        "owner": "Contact owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact updated successfully",
@@ -303,6 +301,7 @@
     },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
+        "title": "Contacts",
         "columns": {
           "contact": "CONTACT",
           "email": "EMAIL",
@@ -389,11 +388,6 @@
         "tasks": "Tasks",
         "deals": "Deals",
         "contacts": "Contacts"
-      },
-      "metrics": {
-        "accountValue": "Account value",
-        "openDeals": "Open deals",
-        "closedDeals": "Closed deals"
       }
     }
   },

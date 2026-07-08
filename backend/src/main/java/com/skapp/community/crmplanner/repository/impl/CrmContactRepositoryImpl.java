@@ -129,8 +129,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
 				JoinType.LEFT);
 
-		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
-
+		List<Predicate> predicates = buildLookupPredicates(cb, contact, company, filterDto);
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
@@ -141,8 +140,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
 	}
 
-	private <T> List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<T> query,
-			Root<CrmContact> contact, Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
+	private List<Predicate> buildLookupPredicates(CriteriaBuilder cb, Root<CrmContact> contact,
+			Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
@@ -154,15 +153,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.like(cb.lower(company.get(CrmCompany_.name)), likePattern, '\\')));
 		}
 
-		if (filterDto.getDealId() != null) {
-			Subquery<Long> dealSub = query.subquery(Long.class);
-			Root<CrmDeal> deal = dealSub.from(CrmDeal.class);
-			dealSub.select(deal.get(CrmDeal_.contact).get(CrmContact_.id))
-				.where(cb.equal(deal.get(CrmDeal_.id), filterDto.getDealId()),
-						cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-			predicates.add(contact.get(CrmContact_.id).in(dealSub));
-		}
-
 		return predicates;
 	}
 
@@ -171,7 +161,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Root<CrmContact> contact = countQuery.from(CrmContact.class);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 		countQuery.select(cb.count(contact));
-		countQuery.where(buildLookupPredicates(cb, countQuery, contact, company, filterDto).toArray(new Predicate[0]));
+		countQuery.where(buildLookupPredicates(cb, contact, company, filterDto).toArray(new Predicate[0]));
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
 

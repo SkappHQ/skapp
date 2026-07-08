@@ -20,7 +20,7 @@ const CrmTaskSlice = (
     set({ selectedTaskId: selectedTaskId }),
   setTasks: (tasks: CrmTaskDetailType[]) => set({ tasks }),
   getTaskById: (id: number) => get().tasks.find((task) => task.id === id),
-  updateTask: (task: CrmTaskDetailType) =>
+  updateTask: (task: Partial<CrmTaskDetailType>) =>
     set({ tasks: mergeTaskUpdate(get().tasks, task) })
 });
 

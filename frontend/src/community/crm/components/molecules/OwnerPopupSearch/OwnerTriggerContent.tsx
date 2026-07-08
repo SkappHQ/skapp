@@ -1,31 +1,28 @@
-import { AvatarChip, TriggerProps } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 export interface OwnerTriggerContentProps {
   user: CrmOwner;
-  triggerProps?: TriggerProps;
-  disabled?: boolean;
+  onSelect?: () => void;
 }
 
 const OwnerTriggerContent: FC<OwnerTriggerContentProps> = ({
   user,
-  triggerProps,
-  disabled = false
+  onSelect
 }) => {
   const resolvedSrc = useGetImageUrl(user?.authPic ?? "");
 
   return (
     <button
       className={`flex items-center w-full min-h-8 cursor-pointer rounded-lg`}
-      {...triggerProps}
-      ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
-      onClick={disabled ? undefined : triggerProps?.onClick}
+      onClick={onSelect}
     >
       <AvatarChip
-        label={user.firstName}
+        label={concatStrings([user.firstName, user.lastName ?? ""])}
         avatarProps={{
           id: String(user.employeeId),
           firstName: user.firstName,

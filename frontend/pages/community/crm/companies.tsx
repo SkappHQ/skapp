@@ -9,7 +9,6 @@ import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePan
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
-import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
@@ -19,11 +18,11 @@ const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule", "companies");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
+  const { setIsCompanyModalOpen, setCompanyModalType, selectedCompany } =
     useCrmStore((store) => ({
       setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType,
-      selectedCompanyId: store.selectedCompanyId
+      selectedCompany: store.selectedCompany
     }));
 
   const onPrimaryButtonClick = () => {
@@ -44,7 +43,7 @@ const Companies: NextPage = () => {
       module={Modules.CRM}
     >
       <>
-        {selectedCompanyId && (
+        {selectedCompany && (
           <SidePanelWrapper>
             <CompanySidePanel />
             <AddDealSidePanel />
@@ -52,7 +51,6 @@ const Companies: NextPage = () => {
         )}
 
         <CompanyModalController />
-        <TaskModalController />
         <CompanyTable />
       </>
     </ContentLayout>

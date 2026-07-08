@@ -33,7 +33,6 @@ const SidePanelTasksSection: FC<Props> = ({
   onFetchNextPage = () => {}
 }) => {
   const { guardCrmCreate } = useCrmLimitGuard();
-
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType
@@ -48,7 +47,7 @@ const SidePanelTasksSection: FC<Props> = ({
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
-    onLoadMore: onFetchNextPage
+    onLoadMore: onFetchNextPage,
   });
 
   const handleAddTask = () => {

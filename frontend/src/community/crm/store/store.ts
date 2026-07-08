@@ -15,7 +15,7 @@ export const useCrmStore = create<
 >(
   devtools(
     (set, get) => ({
-      ...CrmCompanySlice(set, get),
+      ...CrmCompanySlice(set),
       ...CrmContactSlice(set, get),
       ...CrmDealSlice(set),
       ...CrmTaskSlice(set, get),

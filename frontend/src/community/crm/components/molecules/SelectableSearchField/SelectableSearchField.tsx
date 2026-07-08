@@ -11,7 +11,6 @@ interface Props {
   placeholder: string;
   selectedValue: string;
   onClear: () => void;
-  isOpenOnFocus?: boolean;
   clearAriaLabel: string;
   fieldAriaLabel: string;
   searchValue: string;
@@ -33,8 +32,7 @@ const SelectableSearchField: React.FC<Props> = ({
   onSearchChange,
   items,
   onSelect,
-  emptyMessage,
-  isOpenOnFocus = true
+  emptyMessage
 }) => {
   if (selectedValue) {
     return (
@@ -68,7 +66,6 @@ const SelectableSearchField: React.FC<Props> = ({
       items={items}
       onSelect={onSelect}
       emptyMessage={emptyMessage}
-      isOpenOnFocus={isOpenOnFocus}
     />
   );
 };

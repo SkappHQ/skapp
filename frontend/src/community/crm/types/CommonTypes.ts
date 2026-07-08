@@ -35,7 +35,7 @@ export interface CrmCompanyMetricsType {
   industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
-  openTaskCount: number;
+  tasks: number;
   overdue: number;
   openValue: string;
   accountValue: string;
@@ -48,19 +48,6 @@ export interface CrmCompanyMetricsResponseType {
   totalItems: number;
   currentPage: number;
   totalPages: number;
-}
-
-export interface CrmCompanyDetailType extends CrmCompanyMetricsType {
-  tasks?: CrmTaskDetailType[];
-  deals?: CrmDealListItem[];
-  contacts?: CrmContact[];
-}
-
-export interface CrmCompanyRelationsUpdate {
-  id: number;
-  tasks?: CrmTaskDetailType[];
-  deals?: CrmDealListItem[];
-  contacts?: CrmContact[];
 }
 
 export interface MetricChip {
@@ -285,12 +272,12 @@ export interface CrmTaskCategoryResponseType {
 export interface CrmDealListItem {
   id: number;
   name: string;
-  stage: CrmDealStageType;
+  stageName: string;
+  stageColor: string;
   amount: string;
   companyName: string | null;
   contactName: string;
   owner: CrmOwner;
-  description: string | null;
 }
 
 export interface CrmDealDetailResponseType {

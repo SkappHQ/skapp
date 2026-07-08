@@ -6,17 +6,16 @@ import {
 } from "@tanstack/react-query";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
   CrmCompanyCreatePayload,
   CrmCompanyDomainSearchResponseType,
-  CrmDealPaginatedResponse,
   EditCompanyPayload
 } from "../types/CommonTypes";
-import { companyEndpoints, crmDealEndpoints } from "./utils/ApiEndpoints";
-import { companyQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import { companyEndpoints } from "./utils/ApiEndpoints";
+import { companyQueryKeys } from "./utils/QueryKeys";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface CompanyMetricSearchParams {
   page: number;
@@ -161,23 +160,6 @@ export const useSearchCompaniesByDomain = (
   return useQuery({
     queryKey: companyQueryKeys.SEARCH_COMPANIES_BY_DOMAIN(domain),
     queryFn: () => fetchCompaniesByDomain(domain),
-    enabled
-  });
-};
-
-const fetchDealsByCompany = async (
-  companyId: number
-): Promise<CrmDealPaginatedResponse> => {
-  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
-    params: { companyId }
-  });
-  return response?.data?.results?.[0];
-};
-
-export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
-  return useQuery({
-    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
-    queryFn: () => fetchDealsByCompany(companyId),
     enabled
   });
 };

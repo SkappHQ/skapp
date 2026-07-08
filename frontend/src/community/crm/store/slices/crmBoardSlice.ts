@@ -20,10 +20,7 @@ const CrmBoardSlice = (set: SetType<CrmBoardSliceTypes>) => ({
   addDealToStage: (deal: CrmBoardDealSliceType) =>
     set((state) => ({
       boardStageDeals: addDealToStageMap(state.boardStageDeals, deal)
-    })),
-  preselectedStageId: null,
-  setPreselectedStageId: (stageId: number | null) =>
-    set({ preselectedStageId: stageId })
+    }))
 });
 
 export default CrmBoardSlice;

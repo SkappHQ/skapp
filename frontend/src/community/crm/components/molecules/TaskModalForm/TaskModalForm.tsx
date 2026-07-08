@@ -119,22 +119,16 @@ const TaskModalForm: FC<TaskFormProps> = ({
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
-  const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 || !!formik.values.dealId;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isContactSearchEnabled,
-    formik.values.dealId
+    debouncedContactSearchText.length > 0
   );
 
-  const isDealSearchEnabled =
-    debouncedDealSearchText.length > 0 || !!formik.values.contactId;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isDealSearchEnabled,
-    formik.values.contactId
+    debouncedDealSearchText.length > 0
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
@@ -344,7 +338,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
         items={contactDropdownItems}
         onSelect={handleContactSelect}
         emptyMessage={translateText(["emptyStates", "noContacts"])}
-        isOpenOnFocus={isContactSearchEnabled}
       />
 
       <SelectableSearchField
@@ -360,7 +353,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
         items={dealDropdownItems}
         onSelect={handleDealSelect}
         emptyMessage={translateText(["emptyStates", "noDeals"])}
-        isOpenOnFocus={isDealSearchEnabled}
       />
 
       <TextArea

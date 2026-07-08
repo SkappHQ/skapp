@@ -26,6 +26,8 @@ public class CrmTaskEditRequestDto {
 
 	private Long contactId;
 
+	private Long companyId;
+
 	private Long dealId;
 
 }
