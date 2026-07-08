@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useEffect, useRef } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -10,35 +11,32 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
   const containerRef = useRef<HTMLDivElement>(null);
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
     setIsTaskModalOpen,
     setTaskModalType,
-    selectedTask,
-    setSelectedTask,
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen
+    selectedTaskId,
+    setSelectedTaskId
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType,
-    selectedTask: store.selectedTask,
-    setSelectedTask: store.setSelectedTask,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    selectedTaskId: store.selectedTaskId,
+    setSelectedTaskId: store.setSelectedTaskId
   }));
 
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedTask(null);
-  };
-
   const onPrimaryButtonClick = () => {
-    setIsTaskModalOpen(true);
-    setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
+      setSelectedTaskId(null);
+      setIsTaskModalOpen(true);
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+    });
   };
 
   useEffect(() => {
@@ -64,14 +62,13 @@ const Tasks: NextPage = () => {
         padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
       }}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
     >
       <>
-        {selectedTask && (
+        {selectedTaskId && (
           <SidePanelWrapper>
-            <TaskSidePanel
-              isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
-            />
+            <TaskSidePanel />
           </SidePanelWrapper>
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">

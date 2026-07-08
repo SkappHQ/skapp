@@ -13,6 +13,7 @@ import {
 } from "~community/people/api/utils/QueryKeys";
 import {
   AddTeamType,
+  EmployeeTransferableTeamsType,
   GetManagerTeamsResponseType,
   TeamNamesType,
   TeamResponseType,
@@ -166,6 +167,20 @@ export const useGetTeamDetailsById = (teamId: number) => {
     queryFn: async () => {
       const response = await authFetch.get(teamEndpoints.TEAM_BY_ID(teamId));
       return response?.data?.results?.[0];
+    }
+  });
+};
+
+export const useGetEmployeeTransferableTeams = (
+  teamId: number
+): UseQueryResult<EmployeeTransferableTeamsType[]> => {
+  return useQuery({
+    queryKey: teamQueryKeys.GET_EMPLOYEE_TRANSFERABLE_TEAMS(teamId),
+    queryFn: async () => {
+      const response = await authFetch.get(
+        teamEndpoints.GET_EMPLOYEE_TRANSFERABLE_TEAMS(teamId)
+      );
+      return response?.data?.results;
     }
   });
 };

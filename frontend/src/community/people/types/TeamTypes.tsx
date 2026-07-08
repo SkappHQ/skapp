@@ -26,6 +26,11 @@ export interface TeamType {
   teamMembers: EmployeeType[];
 }
 
+export interface EmployeeTransferableTeamsType {
+  employeeId: number;
+  transferableTeams: TeamNamesType[];
+}
+
 export enum TeamModelTypes {
   ADD_TEAM = "ADD_TEAM",
   UNSAVED_ADD_TEAM = "UNSAVED_ADD_TEAM",
@@ -102,3 +107,4 @@ export interface GetManagerTeamsResponseType {
   totalItems: number;
   totalPages: number;
 }
+

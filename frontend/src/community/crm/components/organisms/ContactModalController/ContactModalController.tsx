@@ -6,26 +6,29 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 
 import AddContactModalContent from "../../molecules/AddContactModalContent/AddContactModalContent";
+import DeleteContactModalContent from "../../molecules/DeleteContactModalContent/DeleteContactModalContent";
 import EditContactModalContent from "../../molecules/EditContactModalContent/EditContactModalContent";
 
 const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
-  const { isAddContactModalOpen, contactModalType, setIsAddContactModalOpen } =
+  const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
     useCrmStore((store) => ({
-      isAddContactModalOpen: store.isAddContactModalOpen,
+      isContactModalOpen: store.isContactModalOpen,
       contactModalType: store.contactModalType,
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen
+      setIsContactModalOpen: store.setIsContactModalOpen
     }));
 
   const handleCloseModal = (): void => {
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return translateText(["addContactModal", "title"]);
+      case CrmModalTypes.DELETE_CONTACT_MODAL:
+        return translateText(["deleteContactModal", "title"]);
       case CrmModalTypes.EDIT_CONTACT_MODAL:
         return translateText(["editContactModal", "title"]);
       default:
@@ -37,6 +40,8 @@ const ContactModalController = () => {
     switch (contactModalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return <AddContactModalContent />;
+      case CrmModalTypes.DELETE_CONTACT_MODAL:
+        return <DeleteContactModalContent />;
       case CrmModalTypes.EDIT_CONTACT_MODAL:
         return <EditContactModalContent />;
       default:
@@ -46,7 +51,7 @@ const ContactModalController = () => {
 
   return (
     <SmallModal
-      isOpen={isAddContactModalOpen}
+      isOpen={isContactModalOpen}
       onClose={handleCloseModal}
       modalHeader={getModalTitle(contactModalType)}
       content={getModalContent()}

@@ -1,13 +1,16 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskType } from "~community/crm/types/CommonTypes";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useUpdateTask } from "~community/crm/api/TaskApi";
+import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
 
 interface Props {
-  task: CrmTaskType;
+  task: TaskRowResponseType;
   onRowClick?: () => void;
   isShowContact?: boolean;
   isCheckTaskVisible?: boolean;
@@ -22,7 +25,36 @@ const TaskRow: FC<Props> = ({
   className
 }) => {
   const translateText = useTranslator("crmModule", "tasks");
-  const applyCompletedStyle = task.isCompleted && isCheckTaskVisible;
+
+  const { setToastMessage } = useToast();
+
+  const [taskCompleted, setTaskCompleted] = useState(task.isCompleted);
+
+  useEffect(() => {
+    setTaskCompleted(task.isCompleted);
+  }, [task.isCompleted]);
+
+  const handleUpdateCompletionError = () => {
+    setTaskCompleted(task.isCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  };
+
+  const { mutate: updateCompletion } = useUpdateTask();
+
+  const handleToggleChange = (checked: boolean) => {
+    setTaskCompleted(checked);
+    updateCompletion(
+      { id: task.id, isCompleted: checked },
+      { onError: handleUpdateCompletionError }
+    );
+  };
+
+  const applyCompletedStyle = taskCompleted && isCheckTaskVisible;
 
   return (
     <div
@@ -35,7 +67,13 @@ const TaskRow: FC<Props> = ({
         if (e.key === "Enter" || e.key === " ") onRowClick?.();
       }}
     >
-      {isCheckTaskVisible && <TaskRowCheckbox task={task} />}
+      {isCheckTaskVisible && (
+        <TaskRowCheckbox
+          task={task}
+          handleToggleChange={handleToggleChange}
+          isTaskCompleted={taskCompleted}
+        />
+      )}
 
       <TaskRowContent
         task={task}

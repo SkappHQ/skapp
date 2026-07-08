@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -81,9 +80,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
 		log.info("createContact: execution started");
 
-		User currentUser = userService.getCurrentUser();
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId(), requestDto.getCompanyId());
+		validateContactCreationLimit();
+
+		User currentUser = userService.getCurrentUser();
 
 		String lowercaseEmail = requestDto.getEmail().toLowerCase();
 		if (crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(lowercaseEmail)) {
@@ -105,6 +106,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("createContact: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	protected void validateContactCreationLimit() {
+		// This method is a placeholder for enterprise contact creation limit validation
 	}
 
 	@Override
@@ -319,12 +324,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.toList();
 		dto.setDeals(dealDtos);
 
-		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
-			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
-			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
-					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
-			return taskDto;
-		}).toList();
+		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
 		dto.setTasks(taskDtos);
 
 		log.info("getContactById: execution ended");

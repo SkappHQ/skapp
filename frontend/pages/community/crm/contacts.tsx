@@ -1,42 +1,36 @@
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const {
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen,
-    setSelectedContactId,
-    setIsAddContactModalOpen,
-    setContactModalType,
-    selectedContactId
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContactId: store.setSelectedContactId,
-    setIsAddContactModalOpen: store.setIsAddContactModalOpen,
-    setContactModalType: store.setContactModalType,
-    selectedContactId: store.selectedContactId
-  }));
-
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedContactId(null);
-  };
+  const { setIsContactModalOpen, setContactModalType, selectedContactId } =
+    useCrmStore((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      setContactModalType: store.setContactModalType,
+      selectedContactId: store.selectedContactId
+    }));
 
   const onPrimaryButtonClick = () => {
-    setIsAddContactModalOpen(true);
-    setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
+    guardCrmCreate(CrmLimitResource.CONTACTS, () => {
+      setIsContactModalOpen(true);
+      setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
+    });
   };
 
   return (
@@ -46,18 +40,19 @@ const Contacts: NextPage = () => {
       primaryButtonText={translateText(["addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
     >
       <>
         {selectedContactId && (
           <SidePanelWrapper>
-            <ContactSidePanel
-              isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
-            />
+            <ContactSidePanel />
+            <AddDealSidePanel />
           </SidePanelWrapper>
         )}
 
         <ContactModalController />
+        <TaskModalController />
         <ContactTable />
       </>
     </ContentLayout>

@@ -1,12 +1,9 @@
 import { DropdownOption } from "@rootcodelabs/skapp-ui";
 
+import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+
 interface OptionSource {
   employeeId: number;
-}
-
-interface ContactOptionSource {
-  id: number;
-  name: string;
 }
 
 export const buildOwnerOptions = <T extends OptionSource>(
@@ -29,13 +26,13 @@ export const buildOwnerOptions = <T extends OptionSource>(
   return isSelectedMissing ? [toOption(selectedItem), ...base] : base;
 };
 
-export const buildContactOptions = <T extends ContactOptionSource>(
-  items: T[]
+export const buildContactOptions = (
+  items: CrmContactLookup[]
 ): DropdownOption[] => {
-  const toOption = (item: T): DropdownOption => ({
+  const toOption = (item: CrmContactLookup): DropdownOption => ({
     id: item.id,
     value: item.id,
-    label: item.name
+    label: item.company?.name ? `${item.name} ${item.company.name}` : item.name
   });
 
   return items.map(toOption);

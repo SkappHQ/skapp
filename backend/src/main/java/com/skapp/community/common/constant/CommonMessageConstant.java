@@ -135,7 +135,8 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_WORK_LOCATION_NAME_REQUIRED("api.error.common.work-location-name-required"),
 	COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED("api.error.common.work-location-name-length-exceeded"),
 	COMMON_ERROR_WORK_LOCATION_EMPLOYEE_ASSIGNMENT_CONFLICT(
-			"api.error.common.work-location-employee-assignment-conflict");
+			"api.error.common.work-location-employee-assignment-conflict"),
+	COMMON_ERROR_YAML_READ_FAILED("api.error.common.yaml-read-failed");
 
 	private final String messageKey;
 

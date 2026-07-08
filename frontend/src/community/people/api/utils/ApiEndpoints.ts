@@ -36,7 +36,9 @@ export const peoplesEndpoints = {
   GET_SUPERVISOR_ROLES: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/supervised-employees-teams`,
   REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
-    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`
+    `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`,
+  GET_SKILLS: `${moduleAPIPath.PEOPLE}/skills`,
+  CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`
 };
 
 export const authEndpoints = {
@@ -58,7 +60,8 @@ export const teamEndpoints = {
   UPDATE_TEAM: (teamId: number) => `/teams/${teamId}`,
   MANAGER_ALL_TEAMS: `teams/manager`,
   TRANSFER_TEAM: (teamId: string): string => `teams/team-transfer/${teamId}`,
-  TEAM_BY_ID: (teamId: number) => `/teams/${teamId}`
+  TEAM_BY_ID: (teamId: number) => `/teams/${teamId}`,
+  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => `/teams/${teamId}/transferable-teams`
 };
 
 export const jobFamilyEndpoints = {

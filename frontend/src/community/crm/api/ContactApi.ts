@@ -1,5 +1,4 @@
 import {
-  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -14,18 +13,21 @@ import {
 } from "~community/crm/api/utils/ApiEndpoints";
 import {
   companyQueryKeys,
-  contactQueryKeys
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContact,
   CrmContactCreatePayload,
-  CrmContactDetailResponseType,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface ContactMetricsSearchParams {
   page: number;
@@ -71,18 +73,6 @@ export const useGetContactMetrics = (
   });
 };
 
-export const useGetSelectedContactById = (selectedContactId: number) => {
-  const queryClient = useQueryClient();
-
-  const contacts = queryClient
-    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
-      queryKey: contactQueryKeys.ALL
-    })
-    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
-
-  return contacts.find((contact) => contact.id === selectedContactId);
-};
-
 export const useGetCrmCompanies = (size: number) => {
   return useQuery({
     queryKey: companyQueryKeys.CRM_COMPANIES(size),
@@ -114,6 +104,9 @@ export const useCreateNewContact = (
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
       });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError: onError
@@ -132,9 +125,12 @@ export const useEditContact = (onSuccess: () => void, onError: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editContact,
-    onSuccess: () => {
+    onSuccess: ({ id }) => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(id)
       });
       onSuccess();
     },
@@ -215,9 +211,7 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (
-  id: number
-): Promise<CrmContactDetailResponseType> => {
+const fetchContactById = async (id: number): Promise<CrmContact> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -225,11 +219,44 @@ const fetchContactById = async (
 export const useGetContactById = (
   id: number,
   enabled = true
-): UseQueryResult<CrmContactDetailResponseType> => {
+): UseQueryResult<CrmContact> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
     refetchOnWindowFocus: false,
     enabled
+  });
+};
+
+const deleteContact = async (id: number): Promise<void> => {
+  await authFetch.delete(contactEndpoints.DELETE_CONTACT(id));
+};
+
+export const useDeleteContact = (
+  onSuccess: () => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteContact,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_OPEN_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
   });
 };

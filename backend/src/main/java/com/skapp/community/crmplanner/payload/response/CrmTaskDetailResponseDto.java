@@ -14,16 +14,16 @@ public class CrmTaskDetailResponseDto {
 
 	private String name;
 
-	private String type;
+	private String typeName;
 
 	private CrmTaskPriority priority;
 
 	private LocalDateTime dueAt;
 
-	private Boolean isOverdue;
-
 	private Boolean isCompleted;
 
 	private CrmOwnerResponseDto owner;
+
+	private CrmContactLookupResponseDto contact;
 
 }

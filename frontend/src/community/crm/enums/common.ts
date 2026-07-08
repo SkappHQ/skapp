@@ -6,7 +6,7 @@ export enum CrmPriorityEnum {
 
 export enum CrmTaskTabEnum {
   MY_TASKS = "my-tasks",
-  TEAM_TASKS = "team-tasks",
+  ALL_TASKS = "all-tasks",
   COMPLETED_TASKS = "completed-tasks"
 }
 
@@ -73,4 +73,19 @@ export enum CrmDealStageColorsEnum {
   LIME = "LIME",
   ROSEWOOD = "ROSEWOOD",
   INDIGO = "INDIGO"
+}
+
+export enum DealViewEnum {
+  LIST = "LIST",
+  KANBAN = "KANBAN"
+}
+
+export enum DefaultStageNameEnum {
+  LEAD = "LEAD",
+  QUALIFIED = "QUALIFIED",
+  DEMO_SCHEDULED = "DEMO_SCHEDULED",
+  PROPOSAL_SENT = "PROPOSAL_SENT",
+  NEGOTIATION = "NEGOTIATION",
+  WON = "WON",
+  LOST = "LOST"
 }

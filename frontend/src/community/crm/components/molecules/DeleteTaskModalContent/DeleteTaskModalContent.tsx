@@ -11,15 +11,15 @@ const DeleteTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const {
-    selectedTask,
-    setSelectedTask,
+    selectedTaskId,
+    setSelectedTaskId,
     setIsTaskModalOpen,
-    setIsCrmSidePanelOpen
+    closeCrmSidePanel
   } = useCrmStore((store) => ({
-    selectedTask: store.selectedTask,
-    setSelectedTask: store.setSelectedTask,
+    selectedTaskId: store.selectedTaskId,
+    setSelectedTaskId: store.setSelectedTaskId,
     setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    closeCrmSidePanel: store.closeCrmSidePanel
   }));
 
   const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
@@ -37,8 +37,8 @@ const DeleteTaskModalContent: FC = () => {
     });
 
     handleCloseModal();
-    setIsCrmSidePanelOpen(false);
-    setSelectedTask(null);
+    closeCrmSidePanel();
+    setSelectedTaskId(null);
   };
 
   const handleError = () => {
@@ -56,8 +56,8 @@ const DeleteTaskModalContent: FC = () => {
   );
 
   const handleDeleteTask = () => {
-    if (selectedTask?.id === undefined) return;
-    deleteTask(selectedTask.id);
+    if (selectedTaskId === null) return;
+    deleteTask(selectedTaskId);
   };
 
   return (

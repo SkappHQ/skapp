@@ -1,15 +1,10 @@
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  useEditContact,
-  useGetSelectedContactById
-} from "~community/crm/api/ContactApi";
+import { useEditContact } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmContactFormValues
-} from "~community/crm/types/CommonTypes";
+import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
 import { getChangedContactFields } from "~community/crm/utils/crmUtil";
 
 const EditContactModalContent = () => {
@@ -19,18 +14,17 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsAddContactModalOpen, selectedContactId, setSelectedContactId } =
+  const { setIsContactModalOpen, selectedContactId, getContactById } =
     useCrmStore((store) => ({
-      setIsAddContactModalOpen: store.setIsAddContactModalOpen,
+      setIsContactModalOpen: store.setIsContactModalOpen,
       selectedContactId: store.selectedContactId,
-      setSelectedContactId: store.setSelectedContactId
+      getContactById: store.getContactById
     }));
 
-  const selectedContact = useGetSelectedContactById(selectedContactId);
+  const selectedContact = getContactById(selectedContactId!);
 
   const handleCloseModal = () => {
-    setSelectedContactId(null);
-    setIsAddContactModalOpen(false);
+    setIsContactModalOpen(false);
   };
 
   const { mutate: editContact, isPending } = useEditContact(

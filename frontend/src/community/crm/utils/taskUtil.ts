@@ -4,17 +4,22 @@ import {
   MeetingFilledIcon,
   PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { ComponentType, ReactElement, createElement } from "react";
+import { ComponentType, ReactElement, SVGProps, createElement } from "react";
 
 import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   getCurrentDateAtMidnight,
+  getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import {
+  CrmTaskDetailType,
+  CrmTaskFormTypes,
+  CrmTaskUpdatePayload
+} from "~community/crm/types/CommonTypes";
 
 import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
@@ -22,6 +27,7 @@ import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 export interface TaskDueDateInfo {
   textKey: string;
   dateValue?: string;
+  dayCount?: number;
   colorClass: string;
 }
 
@@ -35,11 +41,16 @@ export const getDueDateStatus = (
   const today = getCurrentDateAtMidnight();
 
   if (!isCompleted && due < today) {
-    return { textKey: "dueDateOverdue", colorClass: "text-semantic-red-text" };
+    const dayCount = getDayDifference(due, today);
+    return {
+      textKey: "dueDateOverdue",
+      dayCount,
+      colorClass: "text-semantic-red-text"
+    };
   }
 
   if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", colorClass: "text-semantic-amber-text" };
+    return { textKey: "dueDateToday", colorClass: "text-secondary-text" };
   }
 
   return {
@@ -49,24 +60,33 @@ export const getDueDateStatus = (
   };
 };
 
-const TASK_TYPE_ICON_MAP: Record<string, ComponentType> = {
+const TASK_TYPE_ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
   email: EmailFilledIcon,
   call: PhoneFilledIcon,
   meeting: MeetingFilledIcon,
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (typeName: string): ReactElement => {
-  return createElement(TASK_TYPE_ICON_MAP[typeName.toLowerCase()]);
+export const getTaskTypeIcon = (
+  typeName: string,
+  size = 20
+): ReactElement => {
+  return createElement(
+    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
+      ChecklistVerificationFilledIcon,
+    { width: size, height: size }
+  );
 };
+
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
-): { icon: ReactElement; bgColor: string } => {
+): { icon: ReactElement; bgColor: string; textColor: string } => {
   const option = PRIORITY_OPTIONS.find((o) => o.value === priority)!;
   return {
     icon: createElement(option.IconComponent),
-    bgColor: option.backgroundColor
+    bgColor: option.backgroundColor,
+    textColor: option.textColor
   };
 };
 
@@ -118,6 +138,45 @@ export const groupTasksByDueDate = (
     isOpenTasksEmpty
   };
 };
+
+export const getChangedTaskFields = (
+  newValues: CrmTaskFormTypes,
+  originalValues: CrmTaskFormTypes
+): Partial<CrmTaskUpdatePayload> => {
+  const changedFields: Partial<CrmTaskUpdatePayload> = {};
+  if (newValues.name !== originalValues.name) {
+    changedFields.name = newValues.name.trim();
+  }
+  if (newValues.type?.id !== originalValues.type?.id) {
+    changedFields.typeId = newValues.type?.id;
+  }
+  if (newValues.dueDate !== originalValues.dueDate) {
+    changedFields.dueAt = newValues.dueDate;
+  }
+  if (newValues.priority !== originalValues.priority) {
+    changedFields.priority = newValues.priority;
+  }
+  if (newValues.contactId !== originalValues.contactId) {
+    changedFields.contactId = newValues.contactId;
+  }
+  if (newValues.dealId !== originalValues.dealId) {
+    changedFields.dealId = newValues.dealId;
+  }
+  if (newValues.owner !== originalValues.owner) {
+    changedFields.ownerId = newValues.owner;
+  }
+  if (newValues.notes !== originalValues.notes) {
+    changedFields.notes = newValues.notes.trim();
+  }
+
+  return changedFields;
+};
+
+export const mergeTaskUpdate = (
+  tasks: CrmTaskDetailType[],
+  update: Partial<CrmTaskDetailType>
+): CrmTaskDetailType[] =>
+  tasks.map((task) => (task.id === update.id ? { ...task, ...update } : task));
 
 export const getTaskGroups = (
   tasks: CrmTaskDetailType[],

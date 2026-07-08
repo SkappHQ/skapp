@@ -35,6 +35,7 @@ import {
   peoplesEndpoints
 } from "~community/people/api/utils/ApiEndpoints";
 import { peopleQueryKeys } from "~community/people/api/utils/QueryKeys";
+import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
@@ -58,6 +59,8 @@ import {
   AllEmployeeDataResponse,
   L1EmployeeType,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload,
+  SkillResponseDto,
+  SkillType,
   SupervisorRolesData
 } from "../types/PeopleTypes";
 
@@ -74,6 +77,37 @@ export const useGetBannerData = (): UseQueryResult<number> => {
   return useQuery({
     queryKey: peopleQueryKeys.PENDING_EMPLOYEE_COUNT,
     queryFn: getBannerData
+  });
+};
+
+export const useGetSkills = (): UseQueryResult<SkillType[]> => {
+  return useQuery<AxiosResponse, Error, SkillType[]>({
+    queryKey: peopleQueryKeys.GET_SKILLS,
+    queryFn: async () => authFetch.get(peoplesEndpoints.GET_SKILLS),
+    select: (response) =>
+      (response?.data?.results ?? []).map(
+        (skill: { id: number; name: string; skillType: string }) => ({
+          skillId: skill.id,
+          name: skill.name,
+          skillType: skill.skillType as SkillTypes
+        })
+      )
+  });
+};
+
+export const useCreateCustomSkills = () => {
+  return useMutation({
+    mutationFn: async (skills: SkillType[]): Promise<SkillType[]> => {
+      const response = await authFetch.post(
+        peoplesEndpoints.CREATE_CUSTOM_SKILLS,
+        { skills }
+      );
+      return (response?.data?.results ?? []).map((skill: SkillResponseDto) => ({
+        skillId: skill.id,
+        name: skill.name,
+        skillType: skill.skillType
+      }));
+    }
   });
 };
 
@@ -615,14 +649,16 @@ export const useReactivateTerminatedUser = (
       return authFetch.patch(peoplesEndpoints.REACTIVATE_EMPLOYEE(employeeId));
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId) });
+      queryClient.invalidateQueries({
+        queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(employeeId)
+      });
       onSuccess();
     },
     onError
   });
 };
 
-export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {  
+export const useCheckIfUserHasManagers = (): UseQueryResult<boolean> => {
   return useQuery({
     queryKey: peopleQueryKeys.CHECK_IF_CURRENT_USER_HAS_MANAGERS,
     queryFn: async () => {

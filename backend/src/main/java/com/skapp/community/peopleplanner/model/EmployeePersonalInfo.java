@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.model;
 
+import com.skapp.community.common.util.converter.FieldEncryptionConverter;
 import com.skapp.community.common.util.converter.JsonTypeConverter;
 import com.skapp.community.peopleplanner.type.BloodGroup;
 import com.skapp.community.peopleplanner.type.Ethnicity;
@@ -52,6 +53,7 @@ public class EmployeePersonalInfo {
 	private Ethnicity ethnicity;
 
 	@Column(name = "ssn")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String ssn;
 
 	@Column(name = "previous_employment_details", columnDefinition = "json")
@@ -62,9 +64,11 @@ public class EmployeePersonalInfo {
 	private String nationality;
 
 	@Column(name = "nin")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String nin;
 
 	@Column(name = "passport_no")
+	@Convert(converter = FieldEncryptionConverter.class)
 	private String passportNo;
 
 	@Column(name = "marital_status")
