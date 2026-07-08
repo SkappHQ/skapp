@@ -5,6 +5,7 @@ import { FC } from "react";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
 import EsignatureModuleIcon from "~community/common/assets/Icons/EsignatureModuleIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
+import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import ROUTES from "~community/common/constants/routes";
 import { TimePeriodEnums } from "~community/common/enums/CommonEnums";
 import { IconProps } from "~community/common/types/IconTypes";
@@ -42,6 +43,9 @@ export const getNotificationIcon = (
     case NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER:
     case NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER:
       return EsignatureModuleIcon;
+    case NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED:
+    case NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED:
+      return PeopleModuleIcon;
     default:
       return null;
   }
@@ -163,6 +167,11 @@ export const handleNotifyRow = ({
     if (resourceId && !isNaN(Number(resourceId))) {
       router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
     }
+  } else if (
+    notificationType === NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED ||
+    notificationType === NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED
+  ) {
+    router.push(ROUTES.PEOPLE.SYNC_CHANGES);
   }
   mutate(id);
 };

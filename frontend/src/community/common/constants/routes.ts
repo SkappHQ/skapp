@@ -67,7 +67,10 @@ const ROUTES = {
     PENDING: "/people/directory/pending",
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
-    ADD: "/people/directory/add"
+    ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
+    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
     BASE: "/configurations",
@@ -181,4 +184,8 @@ export const employeeRestrictedRoutes = [
   ROUTES.PEOPLE.ADD
 ];
 
-export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+export const managerRestrictedRoutes = [
+  ROUTES.PEOPLE.ADD,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
+];

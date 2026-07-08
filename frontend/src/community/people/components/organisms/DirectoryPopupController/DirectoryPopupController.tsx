@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
@@ -15,9 +15,15 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import ConnectGoogleWorkspaceModal from "~enterprise/people/components/molecules/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
+import UploadTypeSelectModal from "~enterprise/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
 
 const DirectoryPopupController = () => {
   const translatedTexts = useTranslator("peopleModule", "peoples");
+  const translateGoogleWorkspace = useTranslator(
+    "peopleEnterprise",
+    "googleWorkspaceImport"
+  );
 
   const {
     directoryModalType,
@@ -50,7 +56,9 @@ const DirectoryPopupController = () => {
       case DirectoryModalTypes.ADD_NEW_RESOURCE:
         return "Add people";
       case DirectoryModalTypes.UPLOAD_TYPE_SELECT:
-        return translatedTexts(["uploadTypeSelectorModalTitle"]);
+        return translateGoogleWorkspace(["chooserTitle"]);
+      case DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE:
+        return translateGoogleWorkspace(["connectTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
@@ -122,8 +130,27 @@ const DirectoryPopupController = () => {
         DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
         <GuestToInternalUserConfirmationModal />
       )}
+      {directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT && (
+        <UploadTypeSelectModal />
+      )}
+      {directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE && (
+        <ConnectGoogleWorkspaceModal />
+      )}
     </>
   );
+
+  if (directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT) {
+    return (
+      <LargeModal
+        id="import-people-modal"
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+        modalHeader={getModalTitle()}
+        className="relative w-[831px] h-fit max-h-[85vh] overflow-hidden"
+        content={modalContent}
+      />
+    );
+  }
 
   return (
     <SmallModal
