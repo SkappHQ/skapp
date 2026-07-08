@@ -33,14 +33,14 @@ const DealSidePanel: FC = () => {
     closeCrmSidePanel: store.closeCrmSidePanel
   }));
 
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
+
   const handleClose = () => {
     setSelectedDealId(null);
     closeCrmSidePanel();
   };
-
-  const isOpen =
-    isCrmSidePanelOpen &&
-    crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
 
   const { data: deal, isLoading } = useGetDealById(selectedDealId!);
 
