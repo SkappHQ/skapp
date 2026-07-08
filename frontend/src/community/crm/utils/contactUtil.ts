@@ -7,6 +7,14 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
+export const mergeContactUpdate = (
+  contacts: CrmContact[],
+  update: CrmContact
+): CrmContact[] =>
+  contacts.map((contact) =>
+    contact.id === update.id ? { ...contact, ...update } : contact
+  );
+
 export interface CompanyDropdownItem extends SearchableDropdownItem {
   isPrioritized?: boolean;
 }

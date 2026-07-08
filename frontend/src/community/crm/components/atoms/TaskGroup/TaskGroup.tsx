@@ -34,6 +34,7 @@ const TaskGroup: FC<TaskGroupProps> = ({
               key={task.id}
               task={task}
               isCheckTaskVisible={isCheckTaskVisible}
+              isShowContact={true}
               onRowClick={() => {
                 setSelectedTaskId(task.id);
                 openCrmSidePanel(CrmSidePanelTypes.TASK_SIDE_PANEL);
