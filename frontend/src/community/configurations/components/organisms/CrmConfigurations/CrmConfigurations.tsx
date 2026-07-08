@@ -8,6 +8,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
 
+import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -20,12 +21,16 @@ import { CrmDealStageEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import CrmCurrencyPreferences from "~enterprise/configurations/components/organisms/CrmCurrencyPreferences/CrmCurrencyPreferences";
 import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const CrmConfigurations = () => {
   const translateText = useTranslator("configurations", "crm");
+
+  const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
@@ -133,49 +138,53 @@ const CrmConfigurations = () => {
 
   return (
     <div className="flex flex-col gap-6 w-[49rem]">
-      <div className="flex flex-col gap-4">
-        <div>
-          <h2 className="subtitle2">
-            {translateText(["currencySection", "currencyPreferencesTitle"])}
-          </h2>
-          <p className="body1 text-secondary-text mt-4">
-            {translateText([
-              "currencySection",
-              "currencyPreferencesDescription"
-            ])}
-          </p>
-        </div>
-        <div className="flex flex-row items-center gap-3">
-          <Dropdown
-            options={[
-              {
-                id: "usd",
-                label: translateText([
-                  "currencySection",
-                  "currencyOptions",
-                  "usd"
-                ]),
-                value: "USD"
-              }
-            ]}
-            value="USD"
-            variant="primary-disabled"
-            ariaLabel={translateText([
-              "currencySection",
-              "ariaLabel",
-              "selectCurrency"
-            ])}
-            width="100%"
-          />
-
-          <div className="flex flex-row items-center gap-2">
-            <InfoIcon width={32} height={32} />
-            <p className="body2">
-              {translateText(["currencySection", "currencyInfoNote"])}
+      {isEnterprise ? (
+        <CrmCurrencyPreferences />
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="subtitle2">
+              {translateText(["currencySection", "currencyPreferencesTitle"])}
+            </h2>
+            <p className="body1 text-secondary-text mt-4">
+              {translateText([
+                "currencySection",
+                "currencyPreferencesDescription"
+              ])}
             </p>
           </div>
+          <div className="flex flex-row items-center gap-3">
+            <Dropdown
+              options={[
+                {
+                  id: "usd",
+                  label: translateText([
+                    "currencySection",
+                    "currencyOptions",
+                    "usd"
+                  ]),
+                  value: "USD"
+                }
+              ]}
+              value="USD"
+              variant="primary-disabled"
+              ariaLabel={translateText([
+                "currencySection",
+                "ariaLabel",
+                "selectCurrency"
+              ])}
+              width="100%"
+            />
+
+            <div className="flex flex-row items-center gap-2">
+              <InfoIcon width={32} height={32} />
+              <p className="body2">
+                {translateText(["currencySection", "currencyInfoNote"])}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
       <hr className="w-full border-t border-secondary-accent" />
       <div className="flex flex-col gap-4">
         <div className="flex flex-row items-center justify-between mb-4">
