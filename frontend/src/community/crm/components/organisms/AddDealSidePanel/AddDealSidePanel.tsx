@@ -14,6 +14,7 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
+import useDealNameDuplicateCheck from "~community/crm/hooks/useDealNameDuplicateCheck";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
@@ -139,6 +140,8 @@ const AddDealSidePanel: FC = () => {
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
+  const isDuplicateName = useDealNameDuplicateCheck(values.name);
+
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);
     e.target.style.height = "auto";
@@ -170,7 +173,7 @@ const AddDealSidePanel: FC = () => {
               variant="primary"
               size="md"
               onClick={() => submitForm()}
-              disabled={isSubmitting || isPending}
+              disabled={isSubmitting || isPending || isDuplicateName}
               isLoading={isPending}
               icon={<PlusIcon fill="black" />}
               iconPosition="end"
@@ -182,7 +185,10 @@ const AddDealSidePanel: FC = () => {
         }
       >
         <div className="flex flex-col gap-6 h-full">
-          <DealNameStageSection formik={formik} />
+          <DealNameStageSection
+            formik={formik}
+            isDuplicateName={isDuplicateName}
+          />
 
           <div className="flex gap-6 items-start flex-1">
             <div className="w-2/3">

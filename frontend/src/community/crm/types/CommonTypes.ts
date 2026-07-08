@@ -334,6 +334,10 @@ export interface CrmCreateDealPayload {
   closingAt?: string | null;
 }
 
+export interface CrmDealNameExistsResponse {
+  isExists: boolean;
+}
+
 export interface CrmCompanyEditFormTypes {
   name: string;
   industry: CrmIndustryEnum;

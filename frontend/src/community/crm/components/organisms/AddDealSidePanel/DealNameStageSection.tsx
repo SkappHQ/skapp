@@ -11,10 +11,20 @@ import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;
+  isDuplicateName: boolean;
 }
 
-const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
+const DealNameStageSection: FC<DealNameStageSectionProps> = ({
+  formik,
+  isDuplicateName
+}) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+
+  const nameErrorMessage = isDuplicateName
+    ? translateText(["validations", "dealNameExists"])
+    : formik.touched.name
+      ? formik.errors.name
+      : undefined;
 
   const {
     dealStages,
@@ -76,10 +86,8 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
           value={formik.values.name}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          state={
-            formik.touched.name && formik.errors.name ? "error" : "default"
-          }
-          errorMessage={formik.touched.name ? formik.errors.name : undefined}
+          state={nameErrorMessage ? "error" : "default"}
+          errorMessage={nameErrorMessage}
           fullWidth
           aria-label={translateText(["ariaLabels", "dealName"])}
         />

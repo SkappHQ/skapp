@@ -4,9 +4,12 @@ import {
   InputField,
   TickIcon
 } from "@rootcodelabs/skapp-ui";
+import { useFormik } from "formik";
 import { FC, KeyboardEventHandler, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useDealNameDuplicateCheck from "~community/crm/hooks/useDealNameDuplicateCheck";
+import { dealTitleValidations } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
   name: string;
@@ -14,22 +17,47 @@ interface DealTitleSectionProps {
 
 const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateValidationText = useTranslator(
+    "crmModule",
+    "deals",
+    "addDealSidePanel"
+  );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedTitle, setEditedTitle] = useState<string>("");
+
+  const formik = useFormik({
+    initialValues: { name },
+    validationSchema: dealTitleValidations(translateValidationText),
+    validateOnChange: true,
+    validateOnBlur: false,
+    enableReinitialize: true,
+    onSubmit: () => {
+      // Edit API call
+      setIsEditing(false);
+    }
+  });
+
+  const isDuplicateName = useDealNameDuplicateCheck(
+    isEditing ? formik.values.name : "",
+    name
+  );
+
+  const titleErrorMessage = isDuplicateName
+    ? translateValidationText(["validations", "dealNameExists"])
+    : formik.errors.name;
 
   const handleClick = () => {
+    formik.resetForm({ values: { name } });
     setIsEditing(true);
-    setEditedTitle(name);
   };
 
   const handleSave = () => {
-    // Edit API call
-    setIsEditing(false);
+    if (isDuplicateName) return;
+    formik.submitForm();
   };
 
   const handleDiscard = () => {
-    setEditedTitle(name);
+    formik.resetForm({ values: { name } });
     setIsEditing(false);
   };
 
@@ -52,10 +80,13 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
       <div className="flex gap-6 items-center min-w-0">
         <div className="flex-1 min-w-0 p-1">
           <InputField
-            value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
+            name="name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
             onKeyDown={handleInputKeyDown}
             className="w-full"
+            state={titleErrorMessage ? "error" : "default"}
+            errorMessage={titleErrorMessage}
             autoFocus
           />
         </div>

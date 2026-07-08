@@ -12,5 +12,6 @@ export const DEAL_TABLE_COLUMN_WIDTH_RATIO = {
 };
 
 export const DEAL_NAME_MAX_LENGTH = 255;
+export const DEAL_NAME_DEBOUNCE_DELAY = 500;
 export const DEAL_DESCRIPTION_MAX_LENGTH = 2000;
 export const DEAL_KANBAN_PAGE_SIZE = 20;

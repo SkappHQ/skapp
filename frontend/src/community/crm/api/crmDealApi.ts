@@ -14,6 +14,7 @@ import {
   CrmDealCreateResponseType,
   CrmDealDetailResponseType,
   CrmDealFilterParams,
+  CrmDealNameExistsResponse,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
@@ -85,6 +86,27 @@ export const useCreateDeal = (
       onSuccess(createdDeal);
     },
     onError
+  });
+};
+
+export const useCheckDealNameExists = (
+  name: string,
+  enabled: boolean
+): UseQueryResult<CrmDealNameExistsResponse> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
+    queryFn: async ({ signal }): Promise<CrmDealNameExistsResponse> => {
+      const response = await authFetch.get(
+        crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
+        {
+          params: { name },
+          signal
+        }
+      );
+      return response?.data?.results?.[0];
+    },
+    enabled,
+    retry: false
   });
 };
 
