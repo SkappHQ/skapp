@@ -119,7 +119,6 @@ const SyncingPage: NextPage = () => {
             mode="single"
             progress={progress}
             max={100}
-            color="bg-primary"
             backgroundColor="bg-gray-200"
             height="h-2"
             width="w-full"

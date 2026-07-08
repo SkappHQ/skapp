@@ -65,6 +65,11 @@ const GoogleWorkspaceSyncBanner = () => {
           r.changeType === StagingChangeType.UPDATED &&
           r.googleStatus === "SUSPENDED"
       ).length,
+      updatedCount: records.filter(
+        (r) =>
+          r.changeType === StagingChangeType.UPDATED &&
+          r.googleStatus !== "SUSPENDED"
+      ).length,
       removedCount: records.filter(
         (r) => r.changeType === StagingChangeType.REMOVED
       ).length
@@ -73,7 +78,10 @@ const GoogleWorkspaceSyncBanner = () => {
 
   const lastSyncedAt = lastSyncChanges?.[0]?.syncedAt;
   const totalPending =
-    counts.newCount + counts.suspendedCount + counts.removedCount;
+    counts.newCount +
+    counts.suspendedCount +
+    counts.updatedCount +
+    counts.removedCount;
 
   if (!isConnected) return null;
 
@@ -132,6 +140,13 @@ const GoogleWorkspaceSyncBanner = () => {
                     ["googleWorkspaceSync", "suspendedCountChip"],
                     { count: counts.suspendedCount }
                   )}
+                </Label>
+              )}
+              {counts.updatedCount > 0 && (
+                <Label backgroundColor="bg-blue-100" textColor="text-blue-700">
+                  {translateText(["googleWorkspaceSync", "updatedCountChip"], {
+                    count: counts.updatedCount
+                  })}
                 </Label>
               )}
               {counts.removedCount > 0 && (

@@ -28,7 +28,7 @@ import {
 const STAGING_QUERY_REFETCH_MS = 5000;
 const SYNC_INVALIDATE_DELAY_MS = 5000;
 
-type SectionKey = "new" | "suspended" | "removed";
+type SectionKey = "new" | "suspended" | "updated" | "removed";
 
 interface StatusPillConfig {
   label: string;
@@ -250,6 +250,15 @@ const SyncChanges: NextPage = () => {
       ),
     [allRecords]
   );
+  const updated = useMemo(
+    () =>
+      allRecords.filter(
+        (r) =>
+          r.changeType === StagingChangeType.UPDATED &&
+          r.googleStatus !== GoogleAccountStatus.SUSPENDED
+      ),
+    [allRecords]
+  );
   const removed = useMemo(
     () => allRecords.filter((r) => r.changeType === StagingChangeType.REMOVED),
     [allRecords]
@@ -329,6 +338,12 @@ const SyncChanges: NextPage = () => {
     bg: theme.palette.amber.mid,
     color: theme.palette.amber.dark,
     dot: theme.palette.amber.main
+  };
+  const updatedStatusPill: StatusPillConfig = {
+    label: translateText(["googleWorkspaceSync", "statusUpdated"]),
+    bg: theme.palette.info.light,
+    color: theme.palette.info.dark,
+    dot: theme.palette.info.main
   };
   const removedStatusPill: StatusPillConfig = {
     label: translateText(["googleWorkspaceSync", "statusRemoved"]),
@@ -463,6 +478,29 @@ const SyncChanges: NextPage = () => {
                 isActing={actingSection === "suspended"}
                 statusPill={suspendedStatusPill}
                 onAction={(ids) => handleAction("suspended", ids)}
+              />
+            )}
+
+            {updated.length > 0 && (
+              <SectionTable
+                sectionKey="updated"
+                dotColor={updatedStatusPill.dot}
+                titleLabel={translateText(
+                  ["googleWorkspaceSync", "updatedHeading"],
+                  { count: updated.length }
+                )}
+                actionLabel={translateText(["googleWorkspaceSync", "updateInSkappLabel"])}
+                partialActionLabel={(count) =>
+                  translateText(
+                    ["googleWorkspaceSync", "updateSelectedLabel"],
+                    { count }
+                  )
+                }
+                emptyLabel={translateText(["googleWorkspaceSync", "noUpdated"])}
+                records={updated}
+                isActing={actingSection === "updated"}
+                statusPill={updatedStatusPill}
+                onAction={(ids) => handleAction("updated", ids)}
               />
             )}
 
