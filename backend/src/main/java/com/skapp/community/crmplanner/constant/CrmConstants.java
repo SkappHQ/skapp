@@ -38,7 +38,7 @@ public class CrmConstants {
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 
-	public static final String CONTACT_NAME_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
+	public static final String CONTACT_NAME_REGEX = "^[\\p{L} \\-.,']+$";
 
 	public static final int COMPANY_NAME_MAX_LENGTH = 30;
 
