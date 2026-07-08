@@ -4,7 +4,7 @@ import {
   groupItemsByPriority,
   toDropdownOptions,
   toSelectedDropdownOption
-} from "./crmUtil";
+} from "../crmUtil";
 
 interface TestItem {
   id: number;
@@ -42,7 +42,9 @@ describe("toDropdownOptions", () => {
       { id: 3, name: "Item 3" }
     ];
 
-    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
+    const result = toDropdownOptions(
+      items.map((i) => ({ id: i.id, label: i.name }))
+    );
 
     expect(result).toEqual([
       { id: 1, value: 1, label: "Item 1" },
@@ -63,7 +65,10 @@ describe("toDropdownOptions", () => {
     ];
 
     const result = toDropdownOptions(
-      users.map((u) => ({ id: u.employeeId, label: `${u.firstName} ${u.lastName}` }))
+      users.map((u) => ({
+        id: u.employeeId,
+        label: `${u.firstName} ${u.lastName}`
+      }))
     );
 
     expect(result).toEqual([
@@ -78,7 +83,9 @@ describe("toDropdownOptions", () => {
   it("should handle string ids", () => {
     const items = [{ id: "abc-123", name: "String ID Item" }];
 
-    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
+    const result = toDropdownOptions(
+      items.map((i) => ({ id: i.id, label: i.name }))
+    );
 
     expect(result).toEqual([
       {

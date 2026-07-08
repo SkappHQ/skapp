@@ -112,11 +112,19 @@ export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
     ? EmptyStateTypeEnum.NO_DATA
     : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-export const dealStageColors: ColorOption[] = Object.entries(
-  STAGE_COLOR_MAP
-).map(([key, color]) => ({
-  id: key,
-  name: key,
-  value: key,
-  color
-}));
+export const getStageHexColor = (color: string): string =>
+  STAGE_COLOR_MAP[color] ?? "";
+
+export const getStageColorClass = (color: string): string => {
+  const hex = getStageHexColor(color);
+  return hex ? `bg-[${hex}]` : "";
+};
+
+export const dealStageColors: ColorOption[] = Object.keys(STAGE_COLOR_MAP).map(
+  (key) => ({
+    id: key,
+    name: key,
+    value: key,
+    color: getStageHexColor(key)
+  })
+);
