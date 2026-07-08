@@ -303,7 +303,6 @@
     },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
-        "title": "Contacts",
         "columns": {
           "contact": "CONTACT",
           "email": "EMAIL",
@@ -390,6 +389,11 @@
         "tasks": "Tasks",
         "deals": "Deals",
         "contacts": "Contacts"
+      },
+      "metrics": {
+        "accountValue": "Account value",
+        "openDeals": "Open deals",
+        "closedDeals": "Closed deals"
       }
     }
   },
