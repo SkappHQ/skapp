@@ -23,6 +23,7 @@ import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
@@ -46,6 +47,12 @@ import java.util.Map;
 public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 	private final EntityManager entityManager;
+
+	private Expression<BigDecimal> safeAmountAsDecimal(CriteriaBuilder cb, Path<String> amount) {
+		return cb.<BigDecimal>selectCase()
+			.when(cb.or(cb.isNull(amount), cb.equal(amount, "")), cb.nullLiteral(BigDecimal.class))
+			.otherwise(amount.cast(BigDecimal.class));
+	}
 
 	@Override
 	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable) {
@@ -257,7 +264,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
 
 		query.select(cb.construct(CrmDealSummary.class, deal.get(CrmDeal_.contact).get(CrmContact_.id),
-				cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO),
+				cb.coalesce(cb.sum(safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount))), BigDecimal.ZERO),
 				cb.count(deal.get(CrmDeal_.id))));
 
 		query.where(deal.get(CrmDeal_.contact).get(CrmContact_.id).in(contactIds),
@@ -291,13 +298,13 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		Expression<BigDecimal> totalRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
 			.when(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.WON),
-					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
+					safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount)))
 			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
 
 		Expression<BigDecimal> pipelineRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
 			.when(cb.or(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.OPEN),
 					cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.INITIAL)),
-					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
+					safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount)))
 			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
 
 		Expression<Long> activeDealsCount = cb.coalesce(cb.sum(cb.<Long>selectCase()

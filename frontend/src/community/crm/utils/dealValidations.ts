@@ -48,12 +48,12 @@ const validateField = (
   fieldName: string,
   value: unknown,
   translator: TranslatorFunctionType
-): string | undefined => {
+): string => {
   try {
     (
       Yup.reach(addDealValidations(translator), fieldName) as Yup.AnySchema
     ).validateSync(value);
-    return undefined;
+    return "";
   } catch (error) {
     if (error instanceof Yup.ValidationError) {
       return error.message;
@@ -65,14 +65,14 @@ const validateField = (
 export const validateDealName = (
   name: string,
   translator: TranslatorFunctionType
-): string | undefined => validateField("name", name, translator);
+): string => validateField("name", name, translator);
 
 export const validateDealDescription = (
   description: string,
   translator: TranslatorFunctionType
-): string | undefined => validateField("description", description, translator);
+): string => validateField("description", description, translator);
 
 export const validateDealAmount = (
   amount: string,
   translator: TranslatorFunctionType
-): string | undefined => validateField("amount", amount, translator);
+): string => validateField("amount", amount, translator);

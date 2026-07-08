@@ -4,9 +4,10 @@ import {
   InputField,
   TickIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEventHandler, useState } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 import { validateDealName } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
@@ -17,51 +18,31 @@ interface DealTitleSectionProps {
 const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedTitle, setEditedTitle] = useState<string>("");
-  const [error, setError] = useState<string | undefined>(undefined);
-
-  const handleClick = () => {
-    setIsEditing(true);
-    setEditedTitle(name);
-    setError(undefined);
-  };
-
-  const handleChange = (value: string) => {
-    setEditedTitle(value);
-    setError(validateDealName(value, translateText));
-  };
-
-  const handleSave = () => {
-    const validationError = validateDealName(editedTitle, translateText);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-    const trimmedTitle = editedTitle.trim();
-    if (trimmedTitle !== name) {
-      onSave(trimmedTitle);
-    }
-    setIsEditing(false);
-  };
-
-  const handleDiscard = () => {
-    setEditedTitle(name);
-    setError(undefined);
-    setIsEditing(false);
-  };
+  const {
+    isEditing,
+    value: editedTitle,
+    error,
+    activateEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({
+    value: name,
+    validate: (value) => validateDealName(value, translateText),
+    onSave
+  });
 
   const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleSave();
+      save();
     }
   };
 
   const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleClick();
+      activateEditing();
     }
   };
 
@@ -71,7 +52,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
         <div className="flex-1 min-w-0 p-1">
           <InputField
             value={editedTitle}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) => changeValue(e.target.value)}
             onKeyDown={handleInputKeyDown}
             className="w-full"
             state={error ? "error" : "default"}
@@ -85,14 +66,14 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
               aria-label={translateText(["ariaLabels", "saveTitle"])}
               isRounded={true}
               icon={<TickIcon fill="var(--color-primary-accent)" />}
-              onClick={handleSave}
+              onClick={save}
               variant="outlined"
             />
             <IconButton
               aria-label={translateText(["ariaLabels", "discardTitle"])}
               isRounded={true}
               icon={<CloseIcon />}
-              onClick={handleDiscard}
+              onClick={discard}
             />
           </div>
         </div>
@@ -108,7 +89,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
           tabIndex={0}
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editTitle"])}
-          onClick={handleClick}
+          onClick={activateEditing}
           onKeyDown={handleTitleKeyDown}
         >
           {name}

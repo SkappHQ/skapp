@@ -1,7 +1,8 @@
 import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEventHandler, useState } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 import { validateDealDescription } from "~community/crm/utils/dealValidations";
 
 interface DealDescriptionSectionProps {
@@ -17,49 +18,24 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 
   const isDescriptionEmpty = !description?.trim();
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedDescription, setEditedDescription] = useState<string>("");
-  const [error, setError] = useState<string | undefined>(undefined);
+  const {
+    isEditing,
+    value: editedDescription,
+    error,
+    activateEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({
+    value: description ?? "",
+    validate: (value) => validateDealDescription(value, translateText),
+    onSave
+  });
 
-  const handleClick = () => {
-    setIsEditing(true);
-    setEditedDescription(description ?? "");
-    setError(undefined);
-  };
-
-  const handleChange = (value: string) => {
-    setEditedDescription(value);
-    setError(validateDealDescription(value, translateText));
-  };
-
-  const handleSave = () => {
-    const validationError = validateDealDescription(
-      editedDescription,
-      translateText
-    );
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-    const trimmedDescription = editedDescription.trim();
-    if (trimmedDescription !== (description ?? "").trim()) {
-      onSave(trimmedDescription);
-    }
-    setIsEditing(false);
-  };
-
-  const handleDiscard = () => {
-    setEditedDescription(description ?? "");
-    setError(undefined);
-    setIsEditing(false);
-  };
-
-  const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (
-    e
-  ) => {
+  const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleClick();
+      activateEditing();
     }
   };
 
@@ -70,7 +46,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div className="flex flex-col gap-3">
           <TextArea
             value={editedDescription}
-            onChange={(e) => handleChange(e.target.value)}
+            onChange={(e) => changeValue(e.target.value)}
             className="w-full body2"
             rows={4}
             state={error ? "error" : "default"}
@@ -79,7 +55,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           />
           <div className="flex gap-2 justify-end">
             <ButtonV2
-              onClick={handleDiscard}
+              onClick={discard}
               size="md"
               type="button"
               variant="tertiary"
@@ -87,7 +63,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
               {translateText(["buttons", "discard"])}
             </ButtonV2>
             <ButtonV2
-              onClick={handleSave}
+              onClick={save}
               size="md"
               type="button"
               variant="primary"
@@ -102,7 +78,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           tabIndex={0}
           className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
-          onClick={handleClick}
+          onClick={activateEditing}
           onKeyDown={handlekeyDown}
         >
           {isDescriptionEmpty ? (
