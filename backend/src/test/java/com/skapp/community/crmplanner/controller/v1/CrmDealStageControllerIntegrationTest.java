@@ -409,23 +409,42 @@ class CrmDealStageControllerIntegrationTest {
 	// POST /v1/crm/deal/stage/reorder
 
 	@Test
-	@DisplayName("Reorder OPEN stages - Returns OK, minimum orderIndex stage becomes INITIAL")
-	void reorderDealStages_ValidOpenStages_ReturnsOkAndUpdatesInitial() throws Exception {
+	@DisplayName("Reorder OPEN stages keeping INITIAL fixed - Returns OK and preserves stage types")
+	void reorderDealStages_ValidOpenStages_ReturnsOkAndPreservesTypes() throws Exception {
 		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		Integer initialOrderIndex = crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex();
 		List<Long> ids = openStageIds();
 
-		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 5), reorderEntry(ids.get(0), 3),
-				reorderEntry(ids.get(1), 1), reorderEntry(ids.get(2), 2), reorderEntry(ids.get(3), 4));
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, initialOrderIndex),
+				reorderEntry(ids.get(0), 4), reorderEntry(ids.get(1), 2), reorderEntry(ids.get(2), 3),
+				reorderEntry(ids.get(3), 5));
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
+		assertEquals(initialOrderIndex, crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
-		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
+	}
+
+	@Test
+	@DisplayName("Reorder that moves INITIAL stage - Returns Bad Request")
+	void reorderDealStages_MovesInitialStage_ReturnsBadRequest() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		List<Long> ids = openStageIds();
+
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 5), reorderEntry(ids.get(0), 1),
+				reorderEntry(ids.get(1), 2), reorderEntry(ids.get(2), 3), reorderEntry(ids.get(3), 4));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CANNOT_REORDER_INITIAL_STAGE)));
 	}
 
 	@Test
