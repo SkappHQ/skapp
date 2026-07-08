@@ -65,15 +65,11 @@ const DealStagesDraggableContent = ({
     const oldIndex = draggableStages.findIndex(
       (stage) => stage.id === active.id
     );
-    const newIndex = draggableStages.findIndex(
-      (stage) => stage.id === over.id
-    );
+    const newIndex = draggableStages.findIndex((stage) => stage.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(draggableStages, oldIndex, newIndex).map(
-      (stage, index) => ({ ...stage, orderIndex: index + 1 + initialStages.length })
-    );
+    const reordered = arrayMove(draggableStages, oldIndex, newIndex);
 
     onStagesReorder([...initialStages, ...reordered, ...terminalStages]);
   };
