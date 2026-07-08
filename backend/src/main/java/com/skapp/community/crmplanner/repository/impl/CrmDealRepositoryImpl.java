@@ -126,6 +126,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			predicates.add(cb.equal(deal.get(CrmDeal_.company).get(CrmCompany_.id), filterDto.getCompanyId()));
 		}
 
+		if (filterDto.getContactId() != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), filterDto.getContactId()));
+		}
+
 		return predicates;
 	}
 
