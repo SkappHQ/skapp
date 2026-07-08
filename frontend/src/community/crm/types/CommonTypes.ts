@@ -185,7 +185,7 @@ export interface CrmDealType {
   isDeleted: boolean;
 }
 
-export interface CrmDealCreateResponseType {
+export interface CrmDealResponseType {
   id: number;
   name: string;
   description: string | null;
@@ -269,26 +269,20 @@ export interface CrmTaskCategoryResponseType {
   taskTypes: CrmTaskCategory[];
 }
 
-export interface CrmDealListItem {
-  id: number;
-  name: string;
-  stageName: string;
-  stageColor: string;
-  amount: string;
-  companyName: string | null;
-  contactName: string;
-  owner: CrmOwner;
-}
 
-export interface CrmDealDetailResponseType {
+export interface CrmDealDetailType {
   id: number;
   name: string;
-  description: string | null;
   amount: string | null;
   owner: CrmOwner;
-  stageId: number;
-  priority: CrmPriorityEnum;
-  contact: CrmContactLookup;
+  stageName?: string;
+  stageColor?: string;
+  companyName?: string | null;
+  contactName?: string;
+  description?: string | null;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
+  contact?: CrmContactLookup;
 }
 
 export interface CrmDealEditFields {
@@ -302,7 +296,7 @@ export interface CrmDealEditFields {
 }
 
 export interface CrmDealPaginatedResponse {
-  items: CrmDealListItem[];
+  items: CrmDealResponseType[];
   currentPage: number;
   totalItems: number;
   totalPages: number;

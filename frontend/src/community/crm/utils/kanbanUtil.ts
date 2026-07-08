@@ -62,6 +62,19 @@ export const mapCreatedDealToSlice = (
   stageId: deal.stage.id
 });
 
+export const mapEditedDealToSlice = (
+  deal: CrmDealCreateResponseType
+): Omit<CrmBoardDealSliceType, "taskCount"> => ({
+  id: deal.id,
+  name: deal.name,
+  contactName: deal.contactName ?? "",
+  companyName: deal.companyName,
+  owner: deal.owner,
+  amount: deal.amount,
+  priority: deal.priority,
+  stageId: deal.stage.id
+});
+
 export const findDealById = (
   stageMap: CrmBoardStageDealsType[],
   dealId: number
@@ -129,6 +142,49 @@ export const addDealToStageMap = (
         }
       : stage
   );
+
+export const updateDealInStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  deal: Omit<CrmBoardDealSliceType, "taskCount">
+): CrmBoardStageDealsType[] => {
+  const currentStageId = findStageIdByDealId(stageMap, deal.id);
+  if (currentStageId === null) return stageMap;
+
+  const existingDeal = stageMap
+    .find((stage) => stage.stageId === currentStageId)
+    ?.deals.find((d) => d.id === deal.id);
+
+  const updatedDeal: CrmBoardDealSliceType = {
+    ...deal,
+    taskCount: existingDeal?.taskCount ?? 0
+  };
+
+  if (currentStageId === deal.stageId)
+    return stageMap.map((stage) =>
+      stage.stageId === currentStageId
+        ? {
+            ...stage,
+            deals: stage.deals.map((d) => (d.id === deal.id ? updatedDeal : d))
+          }
+        : stage
+    );
+
+  return stageMap.map((stage) => {
+    if (stage.stageId === currentStageId)
+      return {
+        ...stage,
+        deals: stage.deals.filter((d) => d.id !== deal.id),
+        totalCount: stage.totalCount - 1
+      };
+    if (stage.stageId === deal.stageId)
+      return {
+        ...stage,
+        deals: [...stage.deals, updatedDeal],
+        totalCount: stage.totalCount + 1
+      };
+    return stage;
+  });
+};
 
 export const computeReorderWithinStage = (
   sourceDeals: CrmBoardDealSliceType[],

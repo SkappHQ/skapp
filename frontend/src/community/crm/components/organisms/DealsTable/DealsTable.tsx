@@ -15,13 +15,13 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { CrmDealDetailType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface OwnerCellProps {
-  owner: CrmDealListItem["owner"];
+  owner: CrmDealDetailType["owner"];
 }
 
 const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
@@ -56,10 +56,10 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  allDeals: CrmDealListItem[];
+  allDeals: CrmDealDetailType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
-  onDealClick?: (deal: CrmDealListItem) => void;
+  onDealClick?: (deal: CrmDealDetailType) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -153,7 +153,7 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      allDeals.map((deal: CrmDealListItem) => {
+      allDeals.map((deal: CrmDealDetailType) => {
         const formattedAmount = formatValue(deal.amount);
 
         return {
@@ -197,9 +197,13 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
+                style={{
+                  backgroundColor: STAGE_COLOR_MAP[deal.stageColor ?? ""]
+                }}
               />
-              <span className="body2">{getStageByName(deal.stageName)}</span>
+              <span className="body2">
+                {getStageByName(deal.stageName ?? "")}
+              </span>
             </div>
           ),
           companyName: (

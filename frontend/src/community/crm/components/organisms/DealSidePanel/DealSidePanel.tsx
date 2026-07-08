@@ -3,7 +3,7 @@ import {
   KebabMenu,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -18,6 +18,7 @@ import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { mapDealToStore } from "~community/crm/utils/crmUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -31,13 +32,17 @@ const DealSidePanel: FC = () => {
     crmSidePanelType,
     selectedDealId,
     setSelectedDealId,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    getDealById,
+    updateDeal: updateDealInStore
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
     selectedDealId: store.selectedDealId,
     setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    getDealById: store.getDealById,
+    updateDeal: store.updateDeal
   }));
 
   const isOpen =
@@ -51,7 +56,15 @@ const DealSidePanel: FC = () => {
 
   const { setToastMessage } = useToast();
 
-  const { data: deal, isLoading } = useGetDealById(selectedDealId!);
+  const { data: dealDetail, isLoading } = useGetDealById(selectedDealId!);
+
+  useEffect(() => {
+    if (dealDetail) {
+      updateDealInStore(mapDealToStore(dealDetail));
+    }
+  }, [dealDetail]);
+
+  const selectedDeal = getDealById(selectedDealId!);
 
   const { mutate: editDeal } = useEditDeal(() => {
     setToastMessage({
@@ -137,13 +150,13 @@ const DealSidePanel: FC = () => {
         ) : (
           <div className="flex flex-col gap-6">
             <DealTitleSection
-              name={deal?.name ?? ""}
+              name={selectedDeal?.name ?? ""}
               onSave={(name) => updateDeal({ name })}
             />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
                 <DealDescriptionSection
-                  description={deal?.description ?? ""}
+                  description={selectedDeal?.description ?? ""}
                   onSave={(description) => updateDeal({ description })}
                 />
                 <div className="flex flex-col gap-3">
@@ -158,7 +171,7 @@ const DealSidePanel: FC = () => {
                 </div>
               </div>
               <DealPropertiesSidebar
-                deal={deal!}
+                deal={selectedDeal!}
                 isOpen={isOpen}
                 onStageChange={(stageId) => updateDeal({ stageId })}
                 onAmountChange={(amount) => updateDeal({ amount })}
@@ -178,7 +191,7 @@ const DealSidePanel: FC = () => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealName={deal?.name ?? ""}
+        dealName={selectedDeal?.name ?? ""}
       />
     </>
   );

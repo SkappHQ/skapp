@@ -40,7 +40,12 @@ export interface CrmTaskSliceTypes extends Pick<
 
 export interface CrmDealSliceTypes extends Pick<
   CrmStore,
-  "selectedDealId" | "setSelectedDealId"
+  | "selectedDealId"
+  | "setSelectedDealId"
+  | "deals"
+  | "setDeals"
+  | "getDealById"
+  | "updateDeal"
 > {}
 
 export interface CrmBoardSliceTypes extends Pick<
@@ -49,6 +54,7 @@ export interface CrmBoardSliceTypes extends Pick<
   | "setBoardStageDeals"
   | "appendBoardStageDeals"
   | "addDealToStage"
+  | "updateDealInStage"
   | "preselectedStageId"
   | "setPreselectedStageId"
 > {}

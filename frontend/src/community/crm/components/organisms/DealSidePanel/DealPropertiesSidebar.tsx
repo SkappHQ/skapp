@@ -19,13 +19,13 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
   CrmContactLookup,
-  CrmDealDetailResponseType,
+  CrmDealDetailType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
-  deal: CrmDealDetailResponseType;
+  deal: CrmDealDetailType;
   isOpen?: boolean;
   onStageChange: (stageId: number) => void;
   onAmountChange: (amount: string) => void;
@@ -46,13 +46,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const [amount, setAmount] = useState<string>(deal.amount ?? "");
-  const [priority, setPriority] = useState<CrmPriorityEnum>(deal.priority);
+  const [priority, setPriority] = useState<CrmPriorityEnum>(deal.priority!);
   const [selectedStageId, setSelectedStageId] = useState<string>(
     String(deal.stageId)
   );
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner>(deal.owner);
   const [selectedContact, setSelectedContact] =
-    useState<CrmContactLookup | null>(deal.contact);
+    useState<CrmContactLookup | null>(deal.contact ?? null);
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
 
   const debouncedContactSearchTerm = useDebounce(

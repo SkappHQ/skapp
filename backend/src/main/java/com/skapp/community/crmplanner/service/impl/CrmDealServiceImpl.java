@@ -340,7 +340,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
@@ -463,8 +463,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override

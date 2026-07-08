@@ -1,5 +1,4 @@
 import {
-  UseInfiniteQueryResult,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -9,10 +8,10 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCreateDealPayload,
-  CrmDealCreateResponseType,
-  CrmDealDetailResponseType,
+  CrmDealResponseType,
   CrmDealEditFields,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
@@ -21,16 +20,18 @@ import {
   CrmDealStageType,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
+import { mapDealToStore } from "~community/crm/utils/crmUtil";
+import { mapEditedDealToSlice } from "~community/crm/utils/kanbanUtil";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmBoardQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
   params: CrmDealFilterParams,
   enabled: boolean = true
-): UseInfiniteQueryResult<CrmDealPaginatedResponse> => {
+) => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
@@ -66,13 +67,13 @@ export const useGetDealStages = (
 
 const createDeal = async (
   payload: CrmCreateDealPayload
-): Promise<CrmDealCreateResponseType> => {
+): Promise<CrmDealResponseType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
 
 export const useCreateDeal = (
-  onSuccess: (createdDeal: CrmDealCreateResponseType) => void,
+  onSuccess: (createdDeal: CrmDealResponseType) => void,
   onError: (error: AxiosError) => void
 ) => {
   const queryClient = useQueryClient();
@@ -116,7 +117,7 @@ export const useGetDealLookup = (
 
 const fetchDealById = async (
   id: number
-): Promise<CrmDealDetailResponseType> => {
+): Promise<CrmDealResponseType> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -124,7 +125,7 @@ const fetchDealById = async (
 export const useGetDealById = (
   id: number,
   enabled: boolean = true
-): UseQueryResult<CrmDealDetailResponseType> => {
+): UseQueryResult<CrmDealResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),
@@ -139,7 +140,7 @@ const editDeal = async ({
 }: {
   id: number;
   fields: CrmDealEditFields;
-}): Promise<CrmDealDetailResponseType> => {
+}): Promise<CrmDealResponseType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.EDIT_DEAL(id),
     fields
@@ -148,17 +149,15 @@ const editDeal = async ({
 };
 
 export const useEditDeal = (onError: (error: AxiosError) => void) => {
-  const queryClient = useQueryClient();
+  const { updateDeal, updateDealInStage } = useCrmStore((store) => ({
+    updateDeal: store.updateDeal,
+    updateDealInStage: store.updateDealInStage
+  }));
   return useMutation({
     mutationFn: editDeal,
-    onSuccess: ({ id }) => {
-      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
-      queryClient.invalidateQueries({
-        queryKey: crmDealQueryKeys.DEAL_BY_ID(id)
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
-      });
+    onSuccess: (updatedDeal) => {
+      updateDeal(mapDealToStore(updatedDeal));
+      updateDealInStage(mapEditedDealToSlice(updatedDeal));
     },
     onError
   });
