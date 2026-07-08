@@ -42,7 +42,7 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired,
   ariaLabel,
-  width = "100%",
+  width = "w-full",
   renderTrigger
 }) => {
   const getContactId = (contact: CrmContactLookup) => contact.id;
@@ -74,14 +74,11 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const contact = findById(contacts, Number(option?.id), getContactId);
-
     if (renderTrigger) {
-      return renderTrigger(
-        option ? (contact ?? selectedContact) : null,
-        triggerProps
-      );
+      return renderTrigger(selectedContact, triggerProps);
     }
+
+    const contact = findById(contacts, Number(option?.id), getContactId);
 
     if (contact && option) {
       return (

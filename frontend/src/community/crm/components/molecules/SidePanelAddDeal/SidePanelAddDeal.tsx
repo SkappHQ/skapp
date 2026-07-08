@@ -99,9 +99,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
     handleCreateDealError
   );
 
-  const isPreparingDefaults = isStagesLoading || isUserLoading;
-  const isBusy = isPending || isPreparingDefaults;
-  const busyLabelKey = isPending ? "saving" : "loading";
+  const isFormDisabled = isPending || isStagesLoading || isUserLoading;
 
   const handleSubmit = (values: CrmInlineDealAddFormTypes) => {
     if (initialStageId === undefined || !currentUser?.employeeId) {
@@ -140,7 +138,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   };
 
   const handleSave = () => {
-    if (isBusy) {
+    if (isFormDisabled) {
       return;
     }
     formik.submitForm();
@@ -148,7 +146,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
 
   return (
     <div
-      className={`relative ${isBusy ? "opacity-50 pointer-events-none" : ""}`}
+      className={`relative ${isFormDisabled ? "opacity-50 pointer-events-none" : ""}`}
     >
       <SubTaskInput
         prefixNode={
@@ -199,16 +197,16 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
           ])
         }}
       />
-      {isBusy && (
+      {isFormDisabled && (
         <div
           className="absolute inset-0 flex items-center justify-center"
           role="status"
           aria-live="polite"
-          aria-label={translateText([
-            "inlineAddDeal",
-            "ariaLabels",
-            busyLabelKey
-          ])}
+          aria-label={
+            isPending
+              ? translateText(["inlineAddDeal", "ariaLabels", "saving"])
+              : translateText(["inlineAddDeal", "ariaLabels", "loading"])
+          }
         >
           <Spinner size={24} />
         </div>
