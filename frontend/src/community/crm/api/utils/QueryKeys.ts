@@ -89,5 +89,9 @@ export const taskQueryKeys = {
   ) => ["get-completed-tasks", searchKeyword, companyId],
   GET_TASK_TYPES: ["get-task-types"],
   RELATED_TASKS: ["crm-related-tasks"],
+  RELATED_TASKS_BY_PARAMS: (params: RelatedTasksParams) => [
+    "crm-related-tasks",
+    params
+  ],
   GET_TASK_BY_ID: (id: number) => ["get-task-by-id", id]
 };
