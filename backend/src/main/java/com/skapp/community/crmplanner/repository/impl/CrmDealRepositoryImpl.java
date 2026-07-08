@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
+import com.skapp.community.crmplanner.util.CrmQueryUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -21,11 +22,9 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -103,6 +102,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+		predicates.add(CrmQueryUtil.companyNotDeleted(cb, companyJoin));
+
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
 			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
@@ -124,8 +126,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		}
 
 		if (filterDto.getCompanyId() != null) {
-			predicates.add(cb.equal(deal.get(CrmDeal_.company).get(CrmCompany_.id), filterDto.getCompanyId()));
-			predicates.add(cb.isFalse(deal.get(CrmDeal_.company).get(CrmCompany_.isDeleted)));
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), filterDto.getCompanyId()));
 		}
 
 		return predicates;
@@ -139,7 +140,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 
 		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
-		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
+		predicates.add(CrmQueryUtil.companyNotDeleted(cb, companyJoin));
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
@@ -212,7 +213,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 
 		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
-		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
+		predicates.add(CrmQueryUtil.companyNotDeleted(cb, companyJoin));
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
@@ -234,8 +235,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		deal.fetch(CrmDeal_.stage, JoinType.INNER);
 		deal.fetch(CrmDeal_.owner, JoinType.INNER);
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+
 		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
-				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)), CrmQueryUtil.companyNotDeleted(cb, companyJoin));
 
 		return entityManager.createQuery(query).getResultList();
 	}
@@ -268,9 +271,11 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 				cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO),
 				cb.count(deal.get(CrmDeal_.id))));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+
 		query.where(deal.get(CrmDeal_.contact).get(CrmContact_.id).in(contactIds),
 				cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.WON),
-				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)), CrmQueryUtil.companyNotDeleted(cb, companyJoin));
 
 		query.groupBy(deal.get(CrmDeal_.contact).get(CrmContact_.id));
 
@@ -315,8 +320,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		query.select(cb.construct(CrmContactDealMetrics.class, totalRevenue, pipelineRevenue, activeDealsCount));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+
 		query.where(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), contactId),
-				cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+				cb.isFalse(deal.get(CrmDeal_.isDeleted)), CrmQueryUtil.companyNotDeleted(cb, companyJoin));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}

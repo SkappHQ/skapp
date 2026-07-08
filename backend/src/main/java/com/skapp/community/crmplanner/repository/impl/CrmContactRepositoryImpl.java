@@ -12,6 +12,7 @@ import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.util.CrmQueryUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
@@ -94,7 +95,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
 		}
 
-		predicates.add(cb.or(cb.isNull(company), cb.isFalse(company.get(CrmCompany_.isDeleted))));
+		predicates.add(CrmQueryUtil.companyNotDeleted(cb, company));
 
 		return predicates.toArray(new Predicate[0]);
 	}
@@ -118,8 +119,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
 				JoinType.LEFT);
 
-		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)),
-				cb.or(cb.isNull(company), cb.isFalse(company.get(CrmCompany_.isDeleted))));
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)), CrmQueryUtil.companyNotDeleted(cb, company));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
 		return entityManager.createQuery(query).getResultList();
@@ -149,8 +149,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
-		Join<CrmContact, CrmCompany> companyJoin = contact.join(CrmContact_.company, JoinType.LEFT);
-		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
+		predicates.add(CrmQueryUtil.companyNotDeleted(cb, company));
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
