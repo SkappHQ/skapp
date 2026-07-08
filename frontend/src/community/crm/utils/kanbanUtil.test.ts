@@ -11,7 +11,7 @@ import type {
 } from "~community/crm/types/BoardTypes";
 import type {
   CrmContactLookup,
-  CrmDealCreateResponseType,
+  CrmDealResponseType,
   CrmDealStageType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
@@ -333,7 +333,7 @@ describe("computeReorderWithinStage", () => {
 // ─── mapCreatedDealToSlice ───────────────────────────────────────────────────
 
 describe("mapCreatedDealToSlice", () => {
-  const response: CrmDealCreateResponseType = {
+  const response: CrmDealResponseType = {
     id: 42,
     name: "New Deal",
     description: null,
@@ -342,6 +342,7 @@ describe("mapCreatedDealToSlice", () => {
     orderIndex: "a0",
     amount: "1500",
     companyName: "Acme Corp",
+    contactId: 21,
     contactName: "Acme Lead",
     owner: OWNER
   };

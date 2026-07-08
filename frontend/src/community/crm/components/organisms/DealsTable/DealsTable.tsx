@@ -15,13 +15,13 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import { CrmDealDetailType } from "~community/crm/types/CommonTypes";
+import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface OwnerCellProps {
-  owner: CrmDealDetailType["owner"];
+  owner: CrmDealResponseType["owner"];
 }
 
 const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
@@ -56,10 +56,10 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  allDeals: CrmDealDetailType[];
+  allDeals: CrmDealResponseType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
-  onDealClick?: (deal: CrmDealDetailType) => void;
+  onDealClick?: (deal: CrmDealResponseType) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -153,7 +153,7 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      allDeals.map((deal: CrmDealDetailType) => {
+      allDeals.map((deal: CrmDealResponseType) => {
         const formattedAmount = formatValue(deal.amount);
 
         return {
@@ -198,11 +198,11 @@ const DealsTable: FC<Props> = ({
               <div
                 className="size-2 rounded-full shrink-0"
                 style={{
-                  backgroundColor: STAGE_COLOR_MAP[deal.stageColor ?? ""]
+                  backgroundColor: STAGE_COLOR_MAP[deal.stage.color]
                 }}
               />
               <span className="body2">
-                {getStageByName(deal.stageName ?? "")}
+                {getStageByName(deal.stage.name)}
               </span>
             </div>
           ),
@@ -217,9 +217,9 @@ const DealsTable: FC<Props> = ({
           contactName: (
             <span
               className="body2 block w-full truncate"
-              title={deal.contactName}
+              title={deal.contactName ?? undefined}
             >
-              {deal.contactName}
+              {deal.contactName ?? "-"}
             </span>
           ),
           dealOwner: <OwnerCell owner={deal.owner} />

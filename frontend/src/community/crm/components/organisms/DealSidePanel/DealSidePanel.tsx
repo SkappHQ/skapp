@@ -18,7 +18,6 @@ import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { mapDealToStore } from "~community/crm/utils/crmUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -60,7 +59,7 @@ const DealSidePanel: FC = () => {
 
   useEffect(() => {
     if (dealDetail) {
-      updateDealInStore(mapDealToStore(dealDetail));
+      updateDealInStore(dealDetail);
     }
   }, [dealDetail]);
 

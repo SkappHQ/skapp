@@ -3,8 +3,7 @@ import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   CrmContactFormValues,
-  CrmDealCreateResponseType,
-  CrmDealDetailType,
+  CrmDealResponseType,
   CrmDealStageCreatePayload,
   CrmDealStageFormTypes
 } from "~community/crm/types/CommonTypes";
@@ -20,27 +19,10 @@ export const formatValue = (value: NumericValue): string => {
   return `$${parsed.toFixed(2)}`;
 };
 
-export const mapDealToStore = (
-  deal: CrmDealCreateResponseType
-): CrmDealDetailType => ({
-  id: deal.id,
-  name: deal.name,
-  description: deal.description,
-  amount: deal.amount,
-  owner: deal.owner,
-  priority: deal.priority,
-  stageId: deal.stage.id,
-  stageName: deal.stage.name,
-  stageColor: deal.stage.color,
-  contact: deal.contact,
-  contactName: deal.contact?.name ?? "",
-  companyName: deal.contact?.company?.name ?? null
-});
-
 export const mergeDealsList = (
-  existingDeals: CrmDealDetailType[],
-  incomingDeals: CrmDealDetailType[]
-): CrmDealDetailType[] =>
+  existingDeals: CrmDealResponseType[],
+  incomingDeals: CrmDealResponseType[]
+): CrmDealResponseType[] =>
   incomingDeals.map((deal) => {
     const existingDeal = existingDeals.find(
       (existing) => existing.id === deal.id
@@ -49,9 +31,9 @@ export const mergeDealsList = (
   });
 
 export const mergeDealUpdate = (
-  deals: CrmDealDetailType[],
-  update: CrmDealDetailType
-): CrmDealDetailType[] =>
+  deals: CrmDealResponseType[],
+  update: CrmDealResponseType
+): CrmDealResponseType[] =>
   deals.some((deal) => deal.id === update.id)
     ? deals.map((deal) =>
         deal.id === update.id ? { ...deal, ...update } : deal

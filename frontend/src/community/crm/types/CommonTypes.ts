@@ -194,6 +194,7 @@ export interface CrmDealResponseType {
   orderIndex: string;
   amount: string | null;
   companyName: string | null;
+  contactId: number | null;
   contactName: string | null;
   owner: CrmOwner;
 }
@@ -269,21 +270,6 @@ export interface CrmTaskCategoryResponseType {
   taskTypes: CrmTaskCategory[];
 }
 
-
-export interface CrmDealDetailType {
-  id: number;
-  name: string;
-  amount: string | null;
-  owner: CrmOwner;
-  stageName?: string;
-  stageColor?: string;
-  companyName?: string | null;
-  contactName?: string;
-  description?: string | null;
-  stageId?: number;
-  priority?: CrmPriorityEnum;
-  contact?: CrmContactLookup;
-}
 
 export interface CrmDealEditFields {
   name?: string;

@@ -1,5 +1,3 @@
-"use client";
-
 import { InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
 
@@ -15,7 +13,7 @@ interface PropertyFieldProps {
   inputType?: PropertyFieldInputType;
   min?: number;
   max?: number;
-  validate?: (value: string) => string | undefined;
+  validate?: (value: string) => string;
   onChange?: (value: string) => void;
   onSave?: (value: string) => void;
 }

@@ -11,9 +11,8 @@ import {
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmDealDetailType } from "~community/crm/types/CommonTypes";
+import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { mapDealToStore } from "~community/crm/utils/crmUtil";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 
@@ -50,7 +49,7 @@ const DealsSection: FC = () => {
 
   useEffect(() => {
     if (allDeals) {
-      setDeals(allDeals.map(mapDealToStore));
+      setDeals(allDeals);
     }
   }, [allDeals]);
 
@@ -60,7 +59,7 @@ const DealsSection: FC = () => {
     }
   };
 
-  const handleDealOnClick = (deal: CrmDealDetailType) => {
+  const handleDealOnClick = (deal: CrmDealResponseType) => {
     setSelectedDealId(deal.id);
     openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };

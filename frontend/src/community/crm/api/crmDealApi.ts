@@ -20,7 +20,6 @@ import {
   CrmDealStageType,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
-import { mapDealToStore } from "~community/crm/utils/crmUtil";
 import { mapEditedDealToSlice } from "~community/crm/utils/kanbanUtil";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -156,7 +155,7 @@ export const useEditDeal = (onError: (error: AxiosError) => void) => {
   return useMutation({
     mutationFn: editDeal,
     onSuccess: (updatedDeal) => {
-      updateDeal(mapDealToStore(updatedDeal));
+      updateDeal(updatedDeal);
       updateDealInStage(mapEditedDealToSlice(updatedDeal));
     },
     onError

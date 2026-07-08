@@ -11,7 +11,7 @@ import type {
 } from "~community/crm/types/BoardTypes";
 import type {
   CrmContactLookup,
-  CrmDealCreateResponseType,
+  CrmDealResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
@@ -49,7 +49,7 @@ export const mapStageDealsToSlice = (
 });
 
 export const mapCreatedDealToSlice = (
-  deal: CrmDealCreateResponseType
+  deal: CrmDealResponseType
 ): CrmBoardDealSliceType => ({
   id: deal.id,
   name: deal.name,
@@ -63,7 +63,7 @@ export const mapCreatedDealToSlice = (
 });
 
 export const mapEditedDealToSlice = (
-  deal: CrmDealCreateResponseType
+  deal: CrmDealResponseType
 ): Omit<CrmBoardDealSliceType, "taskCount"> => ({
   id: deal.id,
   name: deal.name,
