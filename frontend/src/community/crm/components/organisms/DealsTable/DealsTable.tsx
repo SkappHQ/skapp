@@ -15,7 +15,7 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { formatValue, getStageColorClass } from "~community/crm/utils/crmUtil";
+import { formatValue, getStageHexColor } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
@@ -195,7 +195,8 @@ const DealsTable: FC<Props> = ({
           stage: (
             <div className="inline-flex items-center gap-2">
               <div
-                className={`size-2 rounded-full shrink-0 ${getStageColorClass(deal.stage.color)}`}
+                className="size-2 rounded-full shrink-0"
+                style={{ backgroundColor: getStageHexColor(deal.stage.color) }}
               />
               <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>

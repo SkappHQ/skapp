@@ -115,11 +115,6 @@ export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
 export const getStageHexColor = (color: string): string =>
   STAGE_COLOR_MAP[color] ?? "";
 
-export const getStageColorClass = (color: string): string => {
-  const hex = getStageHexColor(color);
-  return hex ? `bg-[${hex}]` : "";
-};
-
 export const dealStageColors: ColorOption[] = Object.keys(STAGE_COLOR_MAP).map(
   (key) => ({
     id: key,

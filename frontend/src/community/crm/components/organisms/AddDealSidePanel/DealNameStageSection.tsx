@@ -7,7 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
-import { getStageColorClass } from "~community/crm/utils/crmUtil";
+import { getStageHexColor } from "~community/crm/utils/crmUtil";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;
@@ -56,7 +56,8 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div
-              className={`size-2 rounded-full shrink-0 ${getStageColorClass(s.color)}`}
+              className="size-2 rounded-full shrink-0"
+              style={{ backgroundColor: getStageHexColor(s.color) }}
             />
             <span className="body2">{s.name}</span>
           </div>
