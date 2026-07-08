@@ -12,6 +12,8 @@ import { useGetDealById } from "~community/crm/api/crmDealApi";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
+import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
@@ -85,33 +87,41 @@ const DealSidePanel: FC = () => {
         onClose={handleClose}
         closeOnBackdropClick
         header={
-          <div className="flex flex-col gap-3 pl-2">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
-                <HandshakeIcon
-                  width="14"
-                  height="14"
-                  fill="var(--color-white)"
-                />
+          isLoading ? (
+            <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+          ) : (
+            <div className="flex flex-col gap-3 pl-2">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+                  <HandshakeIcon
+                    width="14"
+                    height="14"
+                    fill="var(--color-white)"
+                  />
+                </div>
+                <span className="body1 text-secondary-icon">
+                  #{selectedDealId}
+                </span>
               </div>
-              <span className="body1 text-secondary-icon">
-                #{selectedDealId}
-              </span>
             </div>
-          </div>
+          )
         }
         headerActions={
-          <KebabMenu
-            id="deal-actions"
-            menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          isLoading ? (
+            <SidePanelHeaderActionsSkeleton />
+          ) : (
+            <KebabMenu
+              id="deal-actions"
+              menuItems={menuItems}
+              anchorButton={{
+                "aria-label": translateText(["kebabMenuAriaLabel"])
+              }}
+              className={{
+                anchorElement:
+                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              }}
+            />
+          )
         }
       >
         {isLoading ? (
@@ -142,7 +152,6 @@ const DealSidePanel: FC = () => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealId={selectedDealId!}
         dealName={deal?.name ?? ""}
       />
     </>

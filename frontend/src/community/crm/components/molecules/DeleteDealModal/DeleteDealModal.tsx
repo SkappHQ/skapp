@@ -1,28 +1,29 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { IconName } from "~community/common/types/IconTypes";
 import { useDeleteDeal } from "~community/crm/api/crmDealApi";
+import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStore } from "~community/crm/store/store";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  dealId: number;
   dealName: string;
 }
 
-const DeleteDealModal = ({ isOpen, onClose, dealId, dealName }: Props) => {
+const DeleteDealModal: FC<Props> = ({ isOpen, onClose, dealName }) => {
   const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
   const { setToastMessage } = useToast();
 
-  const { setSelectedDealId, closeCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel
-  }));
+  const { selectedDealId, setSelectedDealId, closeCrmSidePanel } =
+    useCrmStore((store) => ({
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId,
+      closeCrmSidePanel: store.closeCrmSidePanel
+    }));
 
   const handleSuccess = (): void => {
     setToastMessage({
@@ -54,7 +55,8 @@ const DeleteDealModal = ({ isOpen, onClose, dealId, dealName }: Props) => {
   );
 
   const handleDeleteDeal = (): void => {
-    deleteDeal(dealId);
+    if (selectedDealId === null) return;
+    deleteDeal(selectedDealId);
   };
 
   return (
@@ -63,36 +65,17 @@ const DeleteDealModal = ({ isOpen, onClose, dealId, dealName }: Props) => {
       onClose={onClose}
       modalHeader={translateText(["areYouSureModalTitle"])}
       content={
-        <p>
-          {translateText(["description"], {
+        <CrmDeleteModalContent
+          description={translateText(["description"], {
             dealName
           })}
-        </p>
+          isPending={isPending}
+          confirmLabel={translateText(["buttons", "confirm"])}
+          cancelLabel={translateText(["buttons", "cancel"])}
+          onConfirm={handleDeleteDeal}
+          onClose={onClose}
+        />
       }
-      buttons={{
-        buttonLeft: {
-          variant: "tertiary",
-          onClick: onClose,
-          icon: <Icon name={IconName.CLOSE_ICON} />,
-          iconPosition: "end",
-          disabled: isPending,
-          children: translateText(["buttons", "cancel"])
-        },
-        buttonRight: {
-          variant: "error",
-          onClick: handleDeleteDeal,
-          icon: (
-            <Icon
-              name={IconName.DELETE_BUTTON_ICON}
-              fill="var(--color-semantic-red-text)"
-            />
-          ),
-          iconPosition: "end",
-          isLoading: isPending,
-          disabled: isPending,
-          children: translateText(["buttons", "confirm"])
-        }
-      }}
     />
   );
 };
