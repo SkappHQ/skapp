@@ -14,11 +14,11 @@ const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
 
   return (
     <Chip
-      label={getStageByName(deal.stage.name)}
+      label={getStageByName(deal?.stage?.name)}
       size="sm"
       prefixIcon={
         <span
-          className={`inline-block h-2 w-2 rounded-full ${getStageColorClass(deal.stage.color)}`}
+          className={`inline-block h-2 w-2 rounded-full ${getStageColorClass(deal?.stage?.color)}`}
         />
       }
     />
