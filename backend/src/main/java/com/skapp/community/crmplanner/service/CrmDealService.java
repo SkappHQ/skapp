@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
@@ -22,6 +23,8 @@ public interface CrmDealService {
 	ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto);
 
 	ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto);
+
+	ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto);
 
 	ResponseEntityDto getDealById(Long id);
 
