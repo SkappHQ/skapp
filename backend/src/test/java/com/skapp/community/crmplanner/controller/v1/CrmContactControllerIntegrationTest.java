@@ -247,6 +247,27 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create contact without companyId - Returns Created with no company")
+	void createContact_WithoutCompanyId_ReturnsCreated() throws Exception {
+		performPostRequest(createValidPayload(null)).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Create contact with non-existent companyId - Returns Bad Request with company-not-found error")
+	void createContact_NonExistentCompanyId_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload(999999L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
 	@DisplayName("Create contact with leading/trailing spaces - Spaces trimmed")
 	void createContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
 		Long companyId = savedCompany().getId();
@@ -283,6 +304,29 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		CrmContactCreateRequestDto dto = createValidPayload(companyId);
 		dto.setEmail("not-an-email");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create contact with apostrophe and comma in name - Returns Created")
+	void createContact_NameWithApostropheAndComma_ReturnsCreated() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setName("O'Brien, Jane");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("O'Brien, Jane"));
+	}
+
+	@Test
+	@DisplayName("Create contact with numbers in name - Returns Bad Request")
+	void createContact_NameWithNumbers_ReturnsBadRequest() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setName("Jane Smith 123");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -389,6 +433,19 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Edit contact with non-existent companyId - Returns Bad Request with company-not-found error")
+	void editContact_NonExistentCompanyId_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		performPatchRequest(contactId, editValidPayload(999999L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
