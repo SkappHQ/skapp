@@ -1,50 +1,38 @@
-import {
-  DeleteButtonIcon,
-  KebabMenu,
-  SidePanel
-} from "@rootcodelabs/skapp-ui";
+import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useGetDealById } from "~community/crm/api/crmDealApi";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
-import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import useDealDetailPanel from "~community/crm/hooks/useDealDetailPanel";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import DealTitleSection from "./DealTitleSection";
 
 const DealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    selectedDealId,
-    setSelectedDealId,
-    closeCrmSidePanel
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    selectedDealId: store.selectedDealId,
-    setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel
-  }));
+  const { isCrmSidePanelOpen, crmSidePanelType, selectedDealId } = useCrmStore(
+    (store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedDealId: store.selectedDealId
+    })
+  );
+
+  const { closeDealDetail } = useDealDetailPanel();
 
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
-
-  const handleClose = (): void => {
-    setSelectedDealId(null);
-    closeCrmSidePanel();
-  };
 
   const { data: deal, isLoading } = useGetDealById(selectedDealId!);
 
@@ -82,7 +70,7 @@ const DealSidePanel: FC = () => {
     <>
       <SidePanel
         isOpen={isOpen}
-        onClose={handleClose}
+        onClose={closeDealDetail}
         closeOnBackdropClick
         header={
           <div className="flex flex-col gap-3 pl-2">

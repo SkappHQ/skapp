@@ -10,9 +10,8 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
-import { useCrmStore } from "~community/crm/store/store";
+import useDealDetailPanel from "~community/crm/hooks/useDealDetailPanel";
 import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 
@@ -22,10 +21,7 @@ const DealsSection: FC = () => {
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { setSelectedDealId, openCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedDealId: store.setSelectedDealId,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const { openDealDetail } = useDealDetailPanel();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -50,8 +46,7 @@ const DealsSection: FC = () => {
   };
 
   const handleDealOnClick = (deal: CrmDealListItem) => {
-    setSelectedDealId(deal.id);
-    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
+    openDealDetail(deal.id);
   };
 
   useEffect(() => {

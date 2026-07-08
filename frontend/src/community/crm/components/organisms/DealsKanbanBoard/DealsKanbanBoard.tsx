@@ -13,6 +13,7 @@ import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
 import { useBoardData } from "~community/crm/hooks/useBoardData";
+import useDealDetailPanel from "~community/crm/hooks/useDealDetailPanel";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
@@ -35,6 +36,8 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     searchKeyword
   });
 
+  const { openDealDetail } = useDealDetailPanel();
+
   const {
     stageMap,
     activeDeal,
@@ -48,12 +51,6 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
     setPreselectedStageId(stageId);
     openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
-  };
-
-  const handleDealClick = (dealId: number) => {
-    const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();
-    setSelectedDealId(dealId);
-    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };
 
   return (
@@ -81,7 +78,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 totalCount={stageDeals?.totalCount ?? 0}
                 isOver={overStageId === stage.id}
                 searchKeyword={searchKeyword}
-                onDealClick={handleDealClick}
+                onDealClick={openDealDetail}
                 onAddDeal={handleAddDeal}
               />
             );
