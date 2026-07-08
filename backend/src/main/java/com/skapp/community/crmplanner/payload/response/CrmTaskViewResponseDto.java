@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.response;
 
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,9 +15,7 @@ public class CrmTaskViewResponseDto {
 
 	private String name;
 
-	private Long typeId;
-
-	private String typeName;
+	private CrmTaskType type;
 
 	private CrmTaskPriority priority;
 

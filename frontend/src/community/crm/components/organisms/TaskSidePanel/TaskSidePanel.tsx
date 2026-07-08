@@ -88,10 +88,7 @@ const TaskSidePanel: FC = () => {
     }
   }, [taskDetail]);
 
-  const storedTask = getTaskById(selectedTaskId!);
-  const selectedTask = taskDetail
-    ? { ...storedTask, ...taskDetail }
-    : storedTask;
+  const selectedTask = getTaskById(selectedTaskId!);
 
   const dealId = selectedTask?.deal?.id ?? null;
   const contactId = selectedTask?.contactId ?? null;

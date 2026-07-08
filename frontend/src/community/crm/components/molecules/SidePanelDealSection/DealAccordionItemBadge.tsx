@@ -10,12 +10,12 @@ interface Props {
 
 const DealAccordionItemBadge: React.FC<Props> = ({ deal }) => (
   <Chip
-    label={deal.stage.name}
+    label={deal?.stage?.name}
     size="sm"
     prefixIcon={
       <span
         className="inline-block h-2 w-2 rounded-full"
-        style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
+        style={{ backgroundColor: STAGE_COLOR_MAP[deal?.stage?.color] }}
       />
     }
   />

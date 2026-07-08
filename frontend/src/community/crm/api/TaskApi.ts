@@ -38,12 +38,7 @@ export const useGetRelatedTasks = (
     initialPageParam: 0,
     queryKey: taskQueryKeys.RELATED_TASKS_BY_PARAMS(params),
     queryFn: ({ pageParam }) =>
-      fetchRelatedTasks({
-        page: pageParam,
-        contactId: params.contactId,
-        dealId: params.dealId,
-        size: params.size
-      }),
+      fetchRelatedTasks({ ...params, page: pageParam }),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
