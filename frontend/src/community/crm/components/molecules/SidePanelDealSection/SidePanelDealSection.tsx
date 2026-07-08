@@ -67,9 +67,9 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
     );
   };
 
-  return (
-    <div className="flex flex-col gap-4">
-      {hasDeals ? (
+  const renderDealsContent = () => {
+    if (hasDeals) {
+      return (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
             items={accordionItems}
@@ -78,29 +78,35 @@ const SidePanelDealSection: FC<Props> = ({ deals }) => {
           />
           <div className="mt-2">{renderAddDealAction()}</div>
         </div>
-      ) : isAddingDeal ? (
-        <SidePanelAddDeal onClose={handleCloseAddDeal} />
-      ) : (
-        <EmptyDataView
-          icon={<SearchIcon />}
-          title={translateText(["emptyTitle"])}
-          description={translateText(["emptyDescription"])}
-          button={{
-            children: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            disabled: isCheckingCrmLimit,
-            isLoading: isCheckingCrmLimit,
-            icon: <PlusIcon />,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
-          className={{
-            wrapper: "h-[228px] bg-secondary-background rounded-lg"
-          }}
-        />
-      )}
-    </div>
-  );
+      );
+    }
+
+    if (isAddingDeal) {
+      return <SidePanelAddDeal onClose={handleCloseAddDeal} />;
+    }
+
+    return (
+      <EmptyDataView
+        icon={<SearchIcon />}
+        title={translateText(["emptyTitle"])}
+        description={translateText(["emptyDescription"])}
+        button={{
+          children: translateText(["addDealBtn"]),
+          variant: "tertiary",
+          onClick: handleAddDeal,
+          disabled: isCheckingCrmLimit,
+          isLoading: isCheckingCrmLimit,
+          icon: <PlusIcon />,
+          "aria-label": translateText(["ariaLabels", "addDealBtn"])
+        }}
+        className={{
+          wrapper: "h-[228px] bg-secondary-background rounded-lg"
+        }}
+      />
+    );
+  };
+
+  return <div className="flex flex-col gap-4">{renderDealsContent()}</div>;
 };
 
 export default SidePanelDealSection;
