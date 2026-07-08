@@ -10,7 +10,7 @@ public interface StagingReviewService {
 
     List<ExternalSyncStaging> getPendingRecords();
 
-    void approve(List<Long> ids);
+    Map<String, Integer> approve(List<Long> ids);
     void reject(List<Long> ids);
     Map<String, Object> getLastSyncChanges();
 

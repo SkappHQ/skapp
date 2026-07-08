@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ public class GoogleWorkspaceOAuthController {
      * then redirects the admin browser to it.
      */
     @GetMapping("/initiate")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
     public ResponseEntity<Map<String, String>> initiateOAuth() {
         String url = oAuthService.buildAuthorizationUrl();
         return ResponseEntity.ok(Map.of("url", url));
@@ -88,6 +90,7 @@ public class GoogleWorkspaceOAuthController {
      * removes the connection from the database.
      */
     @DeleteMapping("/disconnect")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_PEOPLE_ADMIN')")
     public ResponseEntity<Void> disconnect() {
         oAuthService.disconnect();
         return ResponseEntity.noContent().build();

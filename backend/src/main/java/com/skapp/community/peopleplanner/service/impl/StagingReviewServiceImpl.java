@@ -82,28 +82,48 @@ public class StagingReviewServiceImpl implements StagingReviewService {
 
     @Override
     @Transactional
-    public void approve(List<Long> ids) {
+    public Map<String, Integer> approve(List<Long> ids) {
         String reviewer = currentUserEmail();
         List<ExternalSyncStaging> records = stagingDao.findAllById(ids);
+        int imported = 0;
+        int skippedDuplicate = 0;
+
         for (ExternalSyncStaging record : records) {
             try {
-                switch (record.getChangeType()) {
-                    case NEW, UPDATED -> applyUpsert(record);
-                    case REMOVED -> applyDeactivation(record);
+                // A NEW-staged record whose email already belongs to a real
+                // Employee is a duplicate (e.g. created manually, or via a
+                // different sync channel, since this row was staged) — skip
+                // the upsert so it doesn't clobber that employee's existing
+                // data. UPDATED/REMOVED are excluded from this check since
+                // they're expected to target an existing employee by design.
+                boolean isDuplicate = record.getChangeType() == ExternalSyncStaging.ChangeType.NEW
+                        && employeeDao.findEmployeeByEmail(record.getEmail()) != null;
+
+                if (isDuplicate) {
+                    skippedDuplicate++;
+                } else {
+                    switch (record.getChangeType()) {
+                        case NEW, UPDATED -> applyUpsert(record);
+                        case REMOVED -> applyDeactivation(record);
+                    }
+                    imported++;
+
+                    if (record.getChangeType() == ExternalSyncStaging.ChangeType.NEW) {
+                        sendInviteEmail(record.getEmail());
+                    }
                 }
+
                 record.setDecision(Decision.APPROVED);
                 record.setReviewedAt(Instant.now());
                 record.setReviewedBy(reviewer);
                 stagingDao.save(record);
-
-                if (record.getChangeType() == ExternalSyncStaging.ChangeType.NEW) {
-                    sendInviteEmail(record.getEmail());
-                }
             } catch (Exception e) {
                 log.error("Failed to approve staging record id={}, email={}: {}",
                         record.getId(), record.getEmail(), e.getMessage(), e);
             }
         }
+
+        return Map.of("imported", imported, "skippedDuplicate", skippedDuplicate);
     }
 
     @Override

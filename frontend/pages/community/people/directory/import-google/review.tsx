@@ -643,7 +643,7 @@ const ReviewPage: NextPage = () => {
           </Typography>
           <Stack direction="row" gap="0.75rem" justifyContent="flex-end">
             <ButtonV2
-              variant="tertiary"
+              variant="primary"
               size="md"
               onClick={() => setShowExitDialog(false)}
             >

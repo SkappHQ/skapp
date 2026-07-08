@@ -52,8 +52,9 @@ const ConnectGoogleWorkspaceModal = (): JSX.Element => {
         title: translateText(["googleWorkspaceImport", "connectErrorTitle"]),
         description: translateText([
           "googleWorkspaceImport",
-          "connectErrorDescription"
-        ])
+          "connectCallbackErrorDescription"
+        ]),
+        autoHideDuration: null
       });
       setIsConnecting(false);
     }
