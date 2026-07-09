@@ -26,6 +26,8 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { inlineAddDealValidations } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 import AddDealContactSearch from "./AddDealContactSearch";
 
@@ -105,18 +107,23 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
     handleCreateDealError
   );
 
-  const isFormDisabled = isPending || isStagesLoading || isUserLoading;
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const isFormDisabled =
+    isPending || isStagesLoading || isUserLoading || isCheckingCrmLimit;
 
   const handleSubmit = (values: CrmInlineDealAddFormTypes) => {
-    const payload: CrmCreateDealPayload = {
-      name: values.name.trim(),
-      stageId: initialStageId!,
-      contactId: Number(values.contactId),
-      ownerId: Number(currentUser?.employeeId),
-      priority: CrmPriorityEnum.MEDIUM
-    };
+    guardCrmCreate(CrmLimitResource.DEALS, () => {
+      const payload: CrmCreateDealPayload = {
+        name: values.name.trim(),
+        stageId: initialStageId!,
+        contactId: Number(values.contactId),
+        ownerId: Number(currentUser?.employeeId),
+        priority: CrmPriorityEnum.MEDIUM
+      };
 
-    createDeal(payload);
+      createDeal(payload);
+    });
   };
 
   const formik = useFormik<CrmInlineDealAddFormTypes>({
