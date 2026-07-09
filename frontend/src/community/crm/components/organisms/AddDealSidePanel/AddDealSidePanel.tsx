@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -31,6 +31,16 @@ import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
 
+const initialValues: CrmDealAddFormTypes = {
+  name: "",
+  stageId: "",
+  contactId: "",
+  ownerId: "",
+  priority: CrmPriorityEnum.MEDIUM,
+  amount: "",
+  description: ""
+};
+
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
   const { setToastMessage } = useToast();
@@ -41,17 +51,13 @@ const AddDealSidePanel: FC = () => {
   const {
     isCrmSidePanelOpen,
     crmSidePanelType,
-    selectedContactId,
-    getContactById,
-    popCrmSidePanel,
+    closeCrmSidePanel,
     addDealToStage,
     setPreselectedStageId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
-    selectedContactId: store.selectedContactId,
-    getContactById: store.getContactById,
-    popCrmSidePanel: store.popCrmSidePanel,
+    closeCrmSidePanel: store.closeCrmSidePanel,
     addDealToStage: store.addDealToStage,
     setPreselectedStageId: store.setPreselectedStageId
   }));
@@ -59,10 +65,6 @@ const AddDealSidePanel: FC = () => {
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
-
-  useEffect(() => {
-    setSelectedContact(getContactById(selectedContactId!) ?? null);
-  }, [selectedContactId]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -87,7 +89,7 @@ const AddDealSidePanel: FC = () => {
     formik.resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    popCrmSidePanel();
+    closeCrmSidePanel();
   };
 
   const handleCreateDealError = () => {
@@ -118,25 +120,11 @@ const AddDealSidePanel: FC = () => {
     createDeal(payload);
   };
 
-  const initialValues: CrmDealAddFormTypes = useMemo(
-    () => ({
-      name: "",
-      stageId: "",
-      contactId: selectedContactId ? String(selectedContactId) : "",
-      ownerId: "",
-      priority: CrmPriorityEnum.MEDIUM,
-      amount: "",
-      description: ""
-    }),
-    [selectedContactId]
-  );
-
   const formik = useFormik<CrmDealAddFormTypes>({
     initialValues,
     validationSchema: addDealValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
-    enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
@@ -161,7 +149,7 @@ const AddDealSidePanel: FC = () => {
     resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    popCrmSidePanel();
+    closeCrmSidePanel();
   };
 
   return (

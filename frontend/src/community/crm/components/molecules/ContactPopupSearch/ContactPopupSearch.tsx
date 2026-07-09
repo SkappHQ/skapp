@@ -65,9 +65,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const contact =
-      findById(contacts, Number(option?.id), getContactId) ??
-      (Number(option?.id) === selectedContact?.id ? selectedContact : null);
+    const contact = findById(contacts, Number(option?.id), getContactId);
 
     if (contact && option) {
       return (
@@ -115,7 +113,7 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       ariaRequired={ariaRequired}
-      width="100%"
+      width="w-full"
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption | null, triggerProps)
       }

@@ -23,6 +23,21 @@ export const dealTitleValidations = (translator: TranslatorFunctionType) =>
     name: dealNameValidation(translator)
   });
 
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .required(
+        translator(["inlineAddDeal", "validations", "dealNameRequired"])
+      )
+      .max(DEAL_NAME_MAX_LENGTH)
+      .matches(
+        isDealNameValid(),
+        translator(["inlineAddDeal", "validations", "dealNameInvalidChars"])
+      ),
+    contactId: Yup.string().required()
+  });
+
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: dealNameValidation(translator),
