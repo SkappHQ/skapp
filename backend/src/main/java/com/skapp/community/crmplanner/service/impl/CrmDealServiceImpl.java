@@ -262,27 +262,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 	}
 
 	private CrmBoardContactResponseDto toBoardContactDto(CrmContact contact) {
-		CrmBoardContactResponseDto dto = crmMapper.crmContactToCrmBoardContactResponseDto(contact);
-		if (CrmUtil.hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
+		return CrmUtil.toBoardContactDto(crmMapper, contact);
 	}
 
 	private CrmDealResponseDto toDealResponseDto(CrmDeal deal) {
-		CrmDealResponseDto dto = crmMapper.crmDealToCrmDealResponseDto(deal);
-		if (CrmUtil.hasDeletedCompany(deal)) {
-			dto.setCompanyName(null);
-		}
-		return dto;
+		return CrmUtil.toDealResponseDto(crmMapper, deal);
 	}
 
 	private CrmDealByStageItemResponseDto toStageItemDto(CrmDeal deal, Map<Long, Long> taskCountMap) {
-		CrmDealByStageItemResponseDto dto = crmMapper.crmDealToCrmDealByStageItemResponseDto(deal);
+		CrmDealByStageItemResponseDto dto = CrmUtil.toDealByStageItemDto(crmMapper, deal);
 		dto.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L));
-		if (CrmUtil.hasDeletedCompany(deal)) {
-			dto.setCompanyId(null);
-		}
 		return dto;
 	}
 

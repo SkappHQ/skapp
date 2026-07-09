@@ -281,19 +281,12 @@ public class CrmContactServiceImpl implements CrmContactService {
 	}
 
 	private CrmContactLookupResponseDto toLookupDto(CrmContact contact) {
-		CrmContactLookupResponseDto dto = crmMapper.crmContactToCrmContactLookupResponseDto(contact);
-		if (CrmUtil.hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
+		return CrmUtil.toContactLookupDto(crmMapper, contact);
 	}
 
 	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
 			Map<Long, CrmTaskSummary> taskSummaryMap) {
-		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
-		if (CrmUtil.hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
+		CrmContactListItemDto dto = CrmUtil.toContactListItemDto(crmMapper, contact);
 
 		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
 		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
@@ -320,10 +313,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
 		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
 
-		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
-		if (CrmUtil.hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
+		CrmContactDetailResponseDto dto = CrmUtil.toContactDetailDto(crmMapper, contact);
 
 		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
 		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
