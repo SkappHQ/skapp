@@ -147,10 +147,9 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		CrmValidations.validateDealStageReorderRequest(changedStages);
 
 		List<CrmDealStage> existingStages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
-
-		existingStages = existingStages.stream()
-			.filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc())
+			.stream()
+			.filter(stage -> stage.getStageType() == CrmDealStageType.OPEN)
 			.toList();
 
 		if (existingStages.size() != changedStages.size()) {
@@ -170,19 +169,11 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			stage.setOrderIndex(newStage.getOrderIndex());
 		});
 
-		updateStageTypesAfterReorder(existingStages);
 		crmDealStageDao.saveAll(existingStages);
 
 		log.info("reorderDealStages: execution ended");
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
-	}
-
-	private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {
-		CrmDealStage firstStage = Collections.min(reorderedStages, Comparator.comparing(CrmDealStage::getOrderIndex));
-
-		reorderedStages.forEach(stage -> stage
-			.setStageType(stage.getId().equals(firstStage.getId()) ? CrmDealStageType.INITIAL : CrmDealStageType.OPEN));
 	}
 
 	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
