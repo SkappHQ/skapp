@@ -6,8 +6,12 @@ export interface CrmCompanySliceTypes extends Pick<
   | "setIsCompanyModalOpen"
   | "companyModalType"
   | "setCompanyModalType"
-  | "selectedCompany"
-  | "setSelectedCompany"
+  | "selectedCompanyId"
+  | "setSelectedCompanyId"
+  | "companies"
+  | "setCompanies"
+  | "updateCompany"
+  | "getCompanyById"
 > {}
 
 export interface CrmContactSliceTypes extends Pick<

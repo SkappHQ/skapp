@@ -11,16 +11,16 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
 import { useEditDeal, useGetDealById } from "~community/crm/api/crmDealApi";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { CrmDealEditFields } from "~community/crm/types/CommonTypes";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
-import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmDealEditFields } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import DealTitleSection from "./DealTitleSection";
 
 const DealSidePanel: FC = () => {
@@ -48,7 +48,7 @@ const DealSidePanel: FC = () => {
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
 
-  const handleClose = (): void => {
+  const handleClose = () => {
     setSelectedDealId(null);
     closeCrmSidePanel();
   };

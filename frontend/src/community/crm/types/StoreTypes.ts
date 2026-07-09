@@ -1,6 +1,8 @@
 import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
+  CrmCompanyDetailType,
   CrmCompanyMetricsType,
+  CrmCompanyRelationsUpdate,
   CrmContact,
   CrmDealResponseType,
   CrmTaskDetailType
@@ -13,13 +15,16 @@ interface ActionTypes {
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
   setIsContactModalOpen: (isContactModalOpen: boolean) => void;
   setContactModalType: (contactModalType: CrmModalTypes) => void;
-  setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
+  setSelectedCompanyId: (selectedCompanyId: number | null) => void;
+  setCompanies: (companies: CrmCompanyMetricsType[]) => void;
+  updateCompany: (company: CrmCompanyRelationsUpdate) => void;
+  getCompanyById: (id: number) => CrmCompanyDetailType | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
-  updateTask: (task: Partial<CrmTaskDetailType>) => void;
+  updateTask: (task: CrmTaskDetailType) => void;
   openCrmSidePanel: (type: CrmSidePanelTypes) => void;
   pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
   popCrmSidePanel: () => void;
@@ -44,7 +49,8 @@ export interface CrmStore extends ActionTypes {
   companyModalType: CrmModalTypes;
   isContactModalOpen: boolean;
   contactModalType: CrmModalTypes;
-  selectedCompany: CrmCompanyMetricsType | null;
+  selectedCompanyId: number | null;
+  companies: CrmCompanyDetailType[];
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
   selectedTaskId: number | null;
@@ -53,7 +59,7 @@ export interface CrmStore extends ActionTypes {
   crmSidePanelType: CrmSidePanelTypes | null;
   previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
-  contacts: Record<number, CrmContact>;
+  contacts: CrmContact[];
   selectedDealId: number | null;
   deals: CrmDealResponseType[];
   boardStageDeals: CrmBoardStageDealsType[];
