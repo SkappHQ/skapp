@@ -4,10 +4,10 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;
@@ -20,11 +20,12 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
 
-  const nameErrorMessage = isDuplicateName
-    ? translateText(["validations", "dealNameExists"])
-    : formik.touched.name
-      ? formik.errors.name
-      : undefined;
+  let nameErrorMessage: string | undefined;
+  if (isDuplicateName) {
+    nameErrorMessage = translateText(["validations", "dealNameExists"]);
+  } else if (formik.touched.name) {
+    nameErrorMessage = formik.errors.name;
+  }
 
   const {
     dealStages,

@@ -16,7 +16,6 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { DEAL_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
@@ -145,13 +144,12 @@ const AddDealSidePanel: FC = () => {
 
   const debouncedDealName = useDebounce(
     values.name.trim(),
-    DEAL_NAME_DEBOUNCE_DELAY
+    SEARCH_DEBOUNCE_DELAY
   );
   const { data: dealNameData } = useCheckDealNameExists(
     debouncedDealName,
     debouncedDealName.length > 0
   );
-  const isDuplicateName = dealNameData?.isExists === true;
 
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);
@@ -184,7 +182,9 @@ const AddDealSidePanel: FC = () => {
               variant="primary"
               size="md"
               onClick={() => submitForm()}
-              disabled={isSubmitting || isPending || isDuplicateName}
+              disabled={
+                isSubmitting || isPending || dealNameData?.isExists === true
+              }
               isLoading={isPending}
               icon={<PlusIcon fill="black" />}
               iconPosition="end"
@@ -198,7 +198,7 @@ const AddDealSidePanel: FC = () => {
         <div className="flex flex-col gap-6 h-full">
           <DealNameStageSection
             formik={formik}
-            isDuplicateName={isDuplicateName}
+            isDuplicateName={dealNameData?.isExists === true}
           />
 
           <div className="flex gap-6 items-start flex-1">

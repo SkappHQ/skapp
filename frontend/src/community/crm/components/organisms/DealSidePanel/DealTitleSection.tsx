@@ -10,7 +10,7 @@ import { FC, KeyboardEventHandler, useState } from "react";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckDealNameExists } from "~community/crm/api/crmDealApi";
-import { DEAL_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/dealConstants";
+import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 import { dealTitleValidations } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
@@ -36,14 +36,17 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
 
   const debouncedDealName = useDebounce(
     formik.values.name.trim(),
-    DEAL_NAME_DEBOUNCE_DELAY
+    SEARCH_DEBOUNCE_DELAY
   );
+
+  const shouldCheckDealName =
+    isEditing &&
+    debouncedDealName.length > 0 &&
+    debouncedDealName !== name.trim();
 
   const { data: dealNameData } = useCheckDealNameExists(
     debouncedDealName,
-    isEditing &&
-      debouncedDealName.length > 0 &&
-      debouncedDealName !== name.trim()
+    shouldCheckDealName
   );
 
   const isDuplicateName =

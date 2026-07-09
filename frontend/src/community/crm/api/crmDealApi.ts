@@ -89,24 +89,26 @@ export const useCreateDeal = (
   });
 };
 
+const checkDealNameExists = async (
+  name: string
+): Promise<CrmDealNameExistsResponse> => {
+  const response = await authFetch.get(
+    crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
+    {
+      params: { name }
+    }
+  );
+  return response?.data?.results?.[0];
+};
+
 export const useCheckDealNameExists = (
   name: string,
   enabled: boolean
 ): UseQueryResult<CrmDealNameExistsResponse> => {
   return useQuery({
     queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
-    queryFn: async ({ signal }): Promise<CrmDealNameExistsResponse> => {
-      const response = await authFetch.get(
-        crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
-        {
-          params: { name },
-          signal
-        }
-      );
-      return response?.data?.results?.[0];
-    },
-    enabled,
-    retry: false
+    queryFn: () => checkDealNameExists(name),
+    enabled
   });
 };
 
