@@ -10,13 +10,17 @@ import { useEditDeal, useGetDealById } from "~community/crm/api/crmDealApi";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import { useRefreshStageDeals } from "~community/crm/hooks/useRefreshStageDeals";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmDealEditPayload,
   CrmDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
+import {
+  findStageIdByDealId,
+  mapCreatedDealToSlice
+} from "~community/crm/utils/kanbanUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -34,7 +38,8 @@ const DealSidePanel: FC = () => {
     closeCrmSidePanel,
     getDealById,
     updateDeal: updateDealInStore,
-    updateDealInStage
+    updateDealInStage,
+    boardStageDeals
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
@@ -42,6 +47,7 @@ const DealSidePanel: FC = () => {
     setSelectedDealId: store.setSelectedDealId,
     closeCrmSidePanel: store.closeCrmSidePanel,
     getDealById: store.getDealById,
+    boardStageDeals: store.boardStageDeals,
     updateDeal: store.updateDeal,
     updateDealInStage: store.updateDealInStage
   }));
@@ -70,9 +76,23 @@ const DealSidePanel: FC = () => {
 
   const selectedDeal = getDealById(selectedDealId!);
 
+  const { refreshStages } = useRefreshStageDeals();
+
   const handleSuccess = (updatedDeal: CrmDealResponseType): void => {
     updateDealInStore(updatedDeal);
-    updateDealInStage(mapCreatedDealToSlice(updatedDeal));
+
+    const previousStageId = findStageIdByDealId(
+      boardStageDeals,
+      updatedDeal.id
+    );
+    const hasStageChanged =
+      previousStageId !== null && previousStageId !== updatedDeal.stage.id;
+
+    if (hasStageChanged) {
+      refreshStages([previousStageId, updatedDeal.stage.id]);
+    } else {
+      updateDealInStage(mapCreatedDealToSlice(updatedDeal));
+    }
   };
 
   const handleError = (): void => {

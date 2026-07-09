@@ -116,6 +116,17 @@ export const appendDealsToStageMap = (
       : stage
   );
 
+export const replaceStagesInStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  refreshedStages: CrmBoardStageDealsType[]
+): CrmBoardStageDealsType[] =>
+  stageMap.map(
+    (stage) =>
+      refreshedStages.find(
+        (refreshed) => refreshed.stageId === stage.stageId
+      ) ?? stage
+  );
+
 export const addDealToStageMap = (
   stageMap: CrmBoardStageDealsType[],
   deal: CrmBoardDealSliceType

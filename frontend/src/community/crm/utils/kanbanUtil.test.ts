@@ -22,6 +22,7 @@ import {
   getNeighbourDealIds,
   mapCreatedDealToSlice,
   normalizeStageDeals,
+  replaceStagesInStageMap,
   resolveBoardDeal,
   updateDealInStageMap
 } from "./kanbanUtil";
@@ -468,5 +469,54 @@ describe("updateDealInStageMap", () => {
     updateDealInStageMap(stageMap, { ...mkSliceDeal(1), name: "Changed" });
 
     expect(JSON.stringify(stageMap)).toBe(snapshot);
+  });
+});
+
+// ─── replaceStagesInStageMap ─────────────────────────────────────────────────
+
+describe("replaceStagesInStageMap", () => {
+  it("should replace matching stages and keep the rest untouched", () => {
+    const stageMap = [
+      mkStageEntry(10, [mkSliceDeal(1), mkSliceDeal(2)]),
+      mkStageEntry(20, [mkSliceDeal(3, 20)]),
+      mkStageEntry(30, [mkSliceDeal(4, 30)])
+    ];
+    const refreshedSource = mkStageEntry(10, [mkSliceDeal(2)]);
+    const refreshedTarget = mkStageEntry(20, [
+      mkSliceDeal(3, 20),
+      mkSliceDeal(1, 20)
+    ]);
+
+    const result = replaceStagesInStageMap(stageMap, [
+      refreshedSource,
+      refreshedTarget
+    ]);
+
+    expect(result[0]).toBe(refreshedSource);
+    expect(result[1]).toBe(refreshedTarget);
+    expect(result[2]).toBe(stageMap[2]);
+  });
+
+  it("should preserve the original stage order", () => {
+    const stageMap = [
+      mkStageEntry(10, []),
+      mkStageEntry(20, []),
+      mkStageEntry(30, [])
+    ];
+
+    const result = replaceStagesInStageMap(stageMap, [
+      mkStageEntry(30, [mkSliceDeal(1, 30)]),
+      mkStageEntry(10, [mkSliceDeal(2, 10)])
+    ]);
+
+    expect(result.map((s) => s.stageId)).toEqual([10, 20, 30]);
+  });
+
+  it("should return an equivalent map when no stages match", () => {
+    const stageMap = [mkStageEntry(10, [mkSliceDeal(1)])];
+
+    const result = replaceStagesInStageMap(stageMap, [mkStageEntry(99, [])]);
+
+    expect(result).toEqual(stageMap);
   });
 });

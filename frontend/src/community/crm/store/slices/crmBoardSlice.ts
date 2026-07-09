@@ -7,6 +7,7 @@ import { CrmBoardSliceTypes } from "~community/crm/types/SliceTypes";
 import {
   addDealToStageMap,
   appendDealsToStageMap,
+  replaceStagesInStageMap,
   updateDealInStageMap
 } from "~community/crm/utils/kanbanUtil";
 
@@ -26,9 +27,19 @@ const CrmBoardSlice = (set: SetType<CrmBoardSliceTypes>) => ({
     set((state) => ({
       boardStageDeals: updateDealInStageMap(state.boardStageDeals, deal)
     })),
+  replaceBoardStageDeals: (stageDeals: CrmBoardStageDealsType[]) =>
+    set((state) => ({
+      boardStageDeals: replaceStagesInStageMap(
+        state.boardStageDeals,
+        stageDeals
+      )
+    })),
   preselectedStageId: null,
   setPreselectedStageId: (stageId: number | null) =>
-    set({ preselectedStageId: stageId })
+    set({ preselectedStageId: stageId }),
+  boardSearchKeyword: "",
+  setBoardSearchKeyword: (boardSearchKeyword: string) =>
+    set({ boardSearchKeyword })
 });
 
 export default CrmBoardSlice;

@@ -39,9 +39,11 @@ interface ActionTypes {
   updateDeal: (deal: CrmDealResponseType) => void;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
+  replaceBoardStageDeals: (stageDeals: CrmBoardStageDealsType[]) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
   updateDealInStage: (deal: CrmBoardDealSliceType) => void;
   setPreselectedStageId: (stageId: number | null) => void;
+  setBoardSearchKeyword: (boardSearchKeyword: string) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -64,4 +66,5 @@ export interface CrmStore extends ActionTypes {
   deals: CrmDealResponseType[];
   boardStageDeals: CrmBoardStageDealsType[];
   preselectedStageId: number | null;
+  boardSearchKeyword: string;
 }

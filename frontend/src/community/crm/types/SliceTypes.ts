@@ -57,8 +57,11 @@ export interface CrmBoardSliceTypes extends Pick<
   | "boardStageDeals"
   | "setBoardStageDeals"
   | "appendBoardStageDeals"
+  | "replaceBoardStageDeals"
   | "addDealToStage"
   | "updateDealInStage"
   | "preselectedStageId"
   | "setPreselectedStageId"
+  | "boardSearchKeyword"
+  | "setBoardSearchKeyword"
 > {}
