@@ -132,11 +132,11 @@ const ContactSidePanel: FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={contact?.deals ?? []} />;
+        return <SidePanelDealSection deals={data?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
-            tasks={contact?.tasks ?? []}
+            tasks={data?.tasks ?? []}
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
@@ -207,7 +207,7 @@ const ContactSidePanel: FC = () => {
               />
               <hr className="border-secondary-accent" />
             </div>
-            {renderTabContent()}
+            {data && renderTabContent()}
           </>
         )}
       </div>
