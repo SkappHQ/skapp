@@ -81,7 +81,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
   const displayValue = editedValue || resolvedPlaceholder;
 
   return (
-    <div className="self-stretch min-h-9 flex justify-start items-center">
+    <div className="self-stretch h-9 flex justify-start items-center">
       <div className="w-28 flex justify-start items-center gap-2 flex-shrink-0">
         <div className="text-black subtitle3">{label}</div>
       </div>

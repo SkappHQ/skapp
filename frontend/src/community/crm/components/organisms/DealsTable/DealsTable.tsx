@@ -163,7 +163,9 @@ const DealsTable: FC<Props> = ({
               role="button"
               tabIndex={0}
               className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
-              aria-label={translateText(["openDealDetails"], { name: deal.name })}
+              aria-label={translateText(["openDealDetails"], {
+                name: deal.name
+              })}
               onClick={() => onDealClick?.(deal)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -201,9 +203,7 @@ const DealsTable: FC<Props> = ({
                   backgroundColor: STAGE_COLOR_MAP[deal.stage.color]
                 }}
               />
-              <span className="body2">
-                {getStageByName(deal.stage.name)}
-              </span>
+              <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
           companyName: (
@@ -215,11 +215,8 @@ const DealsTable: FC<Props> = ({
             </span>
           ),
           contactName: (
-            <span
-              className="body2 block w-full truncate"
-              title={deal.contactName ?? undefined}
-            >
-              {deal.contactName ?? "-"}
+            <span className="body2 block w-full truncate">
+              {deal.contactName}
             </span>
           ),
           dealOwner: <OwnerCell owner={deal.owner} />
