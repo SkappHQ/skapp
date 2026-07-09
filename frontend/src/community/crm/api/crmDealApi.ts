@@ -136,8 +136,10 @@ export const useGetDealById = (
   });
 };
 
-const editDeal = async (
-  payload: CrmDealEditPayload): Promise<CrmDealResponseType> => {
+const editDeal = async ({
+  id,
+  fields
+}: CrmDealEditPayload): Promise<CrmDealResponseType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.EDIT_DEAL(id),
     fields
