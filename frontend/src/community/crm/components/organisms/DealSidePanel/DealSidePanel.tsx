@@ -11,8 +11,12 @@ import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmDealEditPayload } from "~community/crm/types/CommonTypes";
+import {
+  CrmDealEditPayload,
+  CrmDealResponseType
+} from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -29,7 +33,8 @@ const DealSidePanel: FC = () => {
     setSelectedDealId,
     closeCrmSidePanel,
     getDealById,
-    updateDeal: updateDealInStore
+    updateDeal: updateDealInStore,
+    updateDealInStage
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
@@ -37,7 +42,8 @@ const DealSidePanel: FC = () => {
     setSelectedDealId: store.setSelectedDealId,
     closeCrmSidePanel: store.closeCrmSidePanel,
     getDealById: store.getDealById,
-    updateDeal: store.updateDeal
+    updateDeal: store.updateDeal,
+    updateDealInStage: store.updateDealInStage
   }));
 
   const isOpen =
@@ -64,14 +70,21 @@ const DealSidePanel: FC = () => {
 
   const selectedDeal = getDealById(selectedDealId!);
 
-  const { mutate: editDeal } = useEditDeal(undefined, () => {
+  const handleSuccess = (updatedDeal: CrmDealResponseType): void => {
+    updateDealInStore(updatedDeal);
+    updateDealInStage(mapCreatedDealToSlice(updatedDeal));
+  };
+
+  const handleError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
       title: translateText(["toastMessages", "editErrorTitle"]),
       description: translateText(["toastMessages", "editErrorDescription"])
     });
-  });
+  };
+
+  const { mutate: editDeal } = useEditDeal(handleSuccess, handleError);
 
   const updateDeal = (fields: Partial<CrmDealEditPayload>): void => {
     editDeal({ id: selectedDealId!, ...fields });

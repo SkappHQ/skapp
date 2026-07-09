@@ -9,7 +9,6 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCreateDealPayload,
   CrmDealEditPayload,
@@ -21,7 +20,6 @@ import {
   CrmDealStageType,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
-import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -146,18 +144,13 @@ const editDeal = async ({
   return response?.data?.results?.[0];
 };
 
-export const useEditDeal = (onSuccess?: () => void, onError?: () => void) => {
-  const { updateDeal, updateDealInStage } = useCrmStore((store) => ({
-    updateDeal: store.updateDeal,
-    updateDealInStage: store.updateDealInStage
-  }));
+export const useEditDeal = (
+  onSuccess?: (updatedDeal: CrmDealResponseType) => void,
+  onError?: (error: AxiosError) => void
+) => {
   return useMutation({
     mutationFn: editDeal,
-    onSuccess: (updatedDeal) => {
-      updateDeal(updatedDeal);
-      updateDealInStage(mapCreatedDealToSlice(updatedDeal));
-      onSuccess?.();
-    },
+    onSuccess,
     onError
   });
 };
