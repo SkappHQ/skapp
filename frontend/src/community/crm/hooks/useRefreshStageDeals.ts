@@ -16,11 +16,8 @@ interface UseRefreshStageDealsReturn {
 }
 
 export const useRefreshStageDeals = (): UseRefreshStageDealsReturn => {
-  const { boardSearchKeyword, replaceBoardStageDeals } = useCrmStore(
-    (store) => ({
-      boardSearchKeyword: store.boardSearchKeyword,
-      replaceBoardStageDeals: store.replaceBoardStageDeals
-    })
+  const replaceBoardStageDeals = useCrmStore(
+    (store) => store.replaceBoardStageDeals
   );
 
   const { data: initData } = useGetBoardInitData();
@@ -45,12 +42,11 @@ export const useRefreshStageDeals = (): UseRefreshStageDealsReturn => {
     (stageIds: number[]) => {
       mutate({
         stageIds,
-        searchKeyword: boardSearchKeyword,
         page: INITIAL_BOARD_PAGE,
         limit: DEFAULT_BOARD_PAGE_SIZE
       });
     },
-    [mutate, boardSearchKeyword]
+    [mutate]
   );
 
   return { refreshStages };

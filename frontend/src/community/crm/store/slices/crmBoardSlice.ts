@@ -36,10 +36,7 @@ const CrmBoardSlice = (set: SetType<CrmBoardSliceTypes>) => ({
     })),
   preselectedStageId: null,
   setPreselectedStageId: (stageId: number | null) =>
-    set({ preselectedStageId: stageId }),
-  boardSearchKeyword: "",
-  setBoardSearchKeyword: (boardSearchKeyword: string) =>
-    set({ boardSearchKeyword })
+    set({ preselectedStageId: stageId })
 });
 
 export default CrmBoardSlice;

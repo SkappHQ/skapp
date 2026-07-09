@@ -24,16 +24,7 @@ interface UseBoardDataReturn {
 export const useBoardData = ({
   searchKeyword = ""
 }: UseBoardDataParams): UseBoardDataReturn => {
-  const { setBoardStageDeals, setBoardSearchKeyword } = useCrmStore(
-    (store) => ({
-      setBoardStageDeals: store.setBoardStageDeals,
-      setBoardSearchKeyword: store.setBoardSearchKeyword
-    })
-  );
-
-  useEffect(() => {
-    setBoardSearchKeyword(searchKeyword);
-  }, [searchKeyword, setBoardSearchKeyword]);
+  const setBoardStageDeals = useCrmStore((store) => store.setBoardStageDeals);
 
   const { data: initData, isLoading: isInitDataLoading } =
     useGetBoardInitData();
