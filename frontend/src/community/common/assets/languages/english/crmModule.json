@@ -457,6 +457,36 @@
         "dealNameMaxLength": "Deal name must be 255 characters or less",
         "descriptionMaxLength": "Description must be 2000 characters or less",
         "amountInvalid": "Please enter a valid positive amount"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
+      },
+      "inlineAddDeal": {
+        "dealNamePlaceholder": "Enter deal name",
+        "contactPlaceholder": "Search contact",
+        "noResults": "No results",
+        "ariaLabels": {
+          "group": "Add new deal",
+          "saveDeal": "Save deal",
+          "cancelAddDeal": "Cancel adding deal",
+          "contact": "Contact",
+          "clearContact": "Clear selected contact",
+          "saving": "Saving deal",
+          "loading": "Loading"
+        },
+        "validations": {
+          "dealNameRequired": "Deal name is required",
+          "dealNameInvalidChars": "Deal name can not contain special characters.",
+          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name.",
+          "contactRequired": "Contact is required"
+        },
+        "toastMessages": {
+          "successTitle": "Deal added successfully",
+          "successDescription": "The new deal has been created",
+          "errorTitle": "Failed to add deal",
+          "errorDescription": "Please try again or contact support"
+        }
       }
     },
     "dealsTable": {

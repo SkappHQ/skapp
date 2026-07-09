@@ -6,12 +6,14 @@ import {
   PlusIcon,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCrmStore } from "~community/crm/store/store";
-import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import SidePanelAddDeal from "~community/crm/components/molecules/SidePanelAddDeal/SidePanelAddDeal";
+import {
+  CrmContactLookup,
+  DetailPanelDealResponseType
+} from "~community/crm/types/CommonTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -21,74 +23,104 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
+  defaultContact?: CrmContactLookup;
 }
 
-const SidePanelDealSection: FC<Props> = ({ deals }) => {
+const SidePanelDealSection: FC<Props> = ({ deals, defaultContact }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { pushCrmSidePanel } = useCrmStore((store) => ({
-    pushCrmSidePanel: store.pushCrmSidePanel
-  }));
+  const [isAddingDeal, setIsAddingDeal] = useState(false);
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () => {
-      pushCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+      setIsAddingDeal(true);
     });
   };
 
-  const accordionItems: AdvancedAccordionItem[] = deals?.map((deal) => ({
+  const handleCloseAddDeal = () => {
+    setIsAddingDeal(false);
+  };
+
+  const accordionItems: AdvancedAccordionItem[] = deals.map((deal) => ({
     id: String(deal.id),
     header: <DealAccordionItemHeader deal={deal} />,
     badge: <DealAccordionItemBadge deal={deal} />,
     content: <DealAccordionItemContent deal={deal} />
   }));
 
-  return (
-    <div className="flex flex-col gap-4">
-      {deals?.length > 0 ? (
+  const renderAddDealAction = () => {
+    if (isAddingDeal) {
+      return (
+        <SidePanelAddDeal
+          onClose={handleCloseAddDeal}
+          defaultContact={defaultContact}
+        />
+      );
+    }
+
+    return (
+      <ButtonV2
+        variant="line"
+        size="sm"
+        onClick={handleAddDeal}
+        disabled={isCheckingCrmLimit}
+        isLoading={isCheckingCrmLimit}
+        aria-label={translateText(["ariaLabels", "addDealBtn"])}
+        icon={<PlusIcon />}
+        iconPosition="end"
+      >
+        {translateText(["addDealBtn"])}
+      </ButtonV2>
+    );
+  };
+
+  const renderDealsContent = () => {
+    if (hasDeals) {
+      return (
         <div className="flex flex-col w-full">
           <AdvancedAccordion
             items={accordionItems}
             allowMultiple={true}
             className="gap-4"
           />
-          <div className="mt-2">
-            <ButtonV2
-              variant="line"
-              size="sm"
-              onClick={handleAddDeal}
-              disabled={isCheckingCrmLimit}
-              isLoading={isCheckingCrmLimit}
-              aria-label={translateText(["ariaLabels", "addDealBtn"])}
-              icon={<PlusIcon />}
-              iconPosition="end"
-            >
-              {translateText(["addDealBtn"])}
-            </ButtonV2>
-          </div>
+          <div className="mt-2">{renderAddDealAction()}</div>
         </div>
-      ) : (
-        <EmptyDataView
-          icon={<SearchIcon />}
-          title={translateText(["emptyTitle"])}
-          description={translateText(["emptyDescription"])}
-          button={{
-            children: translateText(["addDealBtn"]),
-            variant: "tertiary",
-            onClick: handleAddDeal,
-            disabled: isCheckingCrmLimit,
-            isLoading: isCheckingCrmLimit,
-            icon: <PlusIcon />,
-            "aria-label": translateText(["ariaLabels", "addDealBtn"])
-          }}
-          className={{
-            wrapper: "h-[228px] bg-secondary-background rounded-lg"
-          }}
+      );
+    }
+
+    if (isAddingDeal) {
+      return (
+        <SidePanelAddDeal
+          onClose={handleCloseAddDeal}
+          defaultContact={defaultContact}
         />
-      )}
-    </div>
-  );
+      );
+    }
+
+    return (
+      <EmptyDataView
+        icon={<SearchIcon />}
+        title={translateText(["emptyTitle"])}
+        description={translateText(["emptyDescription"])}
+        button={{
+          children: translateText(["addDealBtn"]),
+          variant: "tertiary",
+          onClick: handleAddDeal,
+          disabled: isCheckingCrmLimit,
+          isLoading: isCheckingCrmLimit,
+          icon: <PlusIcon />,
+          "aria-label": translateText(["ariaLabels", "addDealBtn"])
+        }}
+        className={{
+          wrapper: "h-[228px] bg-secondary-background rounded-lg"
+        }}
+      />
+    );
+  };
+
+  return <div className="flex flex-col gap-4">{renderDealsContent()}</div>;
 };
 
 export default SidePanelDealSection;

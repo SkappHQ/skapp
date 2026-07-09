@@ -26,8 +26,6 @@ interface ActionTypes {
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   updateTask: (task: CrmTaskDetailType) => void;
   openCrmSidePanel: (type: CrmSidePanelTypes) => void;
-  pushCrmSidePanel: (type: CrmSidePanelTypes) => void;
-  popCrmSidePanel: () => void;
   closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
   setContacts: (contacts: CrmContact[]) => void;
@@ -58,7 +56,6 @@ export interface CrmStore extends ActionTypes {
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
   crmSidePanelType: CrmSidePanelTypes | null;
-  previousCrmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
   contacts: CrmContact[];
   selectedDealId: number | null;

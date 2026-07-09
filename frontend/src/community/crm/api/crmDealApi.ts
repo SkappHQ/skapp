@@ -23,7 +23,7 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import { contactQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -77,8 +77,14 @@ export const useCreateDeal = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
-    onSuccess: (createdDeal) => {
+    onSuccess: (createdDeal, payload) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(payload.contactId)
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
@@ -110,7 +116,7 @@ export const useGetDealLookup = (
   contactId?: number | null
 ): UseQueryResult<CrmDealPaginatedResponse> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId),
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId, size),
     queryFn: () => fetchDealLookup(searchKeyword, size, contactId),
     enabled
   });
