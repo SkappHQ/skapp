@@ -119,11 +119,7 @@ const CrmConfigurations = () => {
 
   const handleSaveReorder = () => {
     const payload = stages
-      .filter(
-        (s) =>
-          s.stageType !== CrmDealStageEnum.WON &&
-          s.stageType !== CrmDealStageEnum.LOST
-      )
+      .filter((s) => s.stageType === CrmDealStageEnum.OPEN)
       .map((s, index) => ({ id: s.id, orderIndex: index + 1 }));
     reorderStages(payload);
   };
