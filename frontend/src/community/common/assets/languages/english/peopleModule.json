@@ -1152,6 +1152,10 @@
     "esignDocumentsFolder": "eSign documents",
     "renameFolder": "Rename folder",
     "deleteFolder": "Delete folder",
+    "noFolders": {
+      "title": "No folders yet",
+      "description": "Create a folder to start organising documents."
+    },
     "allDocuments": "All documents",
     "unknownSender": "Unknown sender",
     "sentBy": "Sent by",
