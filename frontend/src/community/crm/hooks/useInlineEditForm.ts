@@ -4,14 +4,12 @@ import { useState } from "react";
 interface UseInlineEditFormParams {
   value: string;
   validate?: (value: string) => string;
-  onChange?: (value: string) => void;
   onSave: (value: string) => void;
 }
 
 const useInlineEditForm = ({
   value,
   validate,
-  onChange,
   onSave
 }: UseInlineEditFormParams) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -43,7 +41,6 @@ const useInlineEditForm = ({
 
   const changeValue = (nextValue: string) => {
     setFieldValue("value", nextValue, true);
-    onChange?.(nextValue);
   };
 
   const save = async (): Promise<boolean> => {

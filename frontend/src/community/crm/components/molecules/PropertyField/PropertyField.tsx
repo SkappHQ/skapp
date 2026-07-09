@@ -14,7 +14,6 @@ interface PropertyFieldProps {
   min?: number;
   max?: number;
   validate?: (value: string) => string;
-  onChange?: (value: string) => void;
   onSave: (value: string) => void;
 }
 
@@ -26,7 +25,6 @@ const PropertyField: FC<PropertyFieldProps> = ({
   min,
   max,
   validate,
-  onChange,
   onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
@@ -42,7 +40,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
     changeValue,
     save,
     discard
-  } = useInlineEditForm({ value, validate, onSave, onChange });
+  } = useInlineEditForm({ value, validate, onSave });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

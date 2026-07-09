@@ -62,19 +62,6 @@ export const mapCreatedDealToSlice = (
   stageId: deal.stage.id
 });
 
-export const mapEditedDealToSlice = (
-  deal: CrmDealResponseType
-): Omit<CrmBoardDealSliceType, "taskCount"> => ({
-  id: deal.id,
-  name: deal.name,
-  contactName: deal.contactName ?? "",
-  companyName: deal.companyName,
-  owner: deal.owner,
-  amount: deal.amount,
-  priority: deal.priority,
-  stageId: deal.stage.id
-});
-
 export const findDealById = (
   stageMap: CrmBoardStageDealsType[],
   dealId: number

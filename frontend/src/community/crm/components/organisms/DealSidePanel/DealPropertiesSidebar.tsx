@@ -17,15 +17,14 @@ import {
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
-  CrmDealResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
-  deal: CrmDealResponseType;
   isOpen?: boolean;
   onStageChange: (stageId: number) => void;
   onAmountChange: (amount: string) => void;
@@ -35,7 +34,6 @@ interface DealPropertiesSidebarProps {
 }
 
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
-  deal,
   isOpen,
   onStageChange,
   onAmountChange,
@@ -45,18 +43,18 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [amount, setAmount] = useState<string>(deal.amount ?? "");
-  const [priority, setPriority] = useState<CrmPriorityEnum>(deal.priority);
-  const [selectedStageId, setSelectedStageId] = useState<string>(
-    String(deal.stage.id)
-  );
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner>(deal.owner);
-  const [selectedContact, setSelectedContact] =
-    useState<CrmContactLookup | null>(
-      deal.contactId
-        ? { id: deal.contactId, name: deal.contactName ?? "" }
-        : null
-    );
+  const { selectedDealId, getDealById } = useCrmStore((store) => ({
+    selectedDealId: store.selectedDealId,
+    getDealById: store.getDealById
+  }));
+  const deal = getDealById(selectedDealId!)!;
+
+  const selectedStageId = String(deal.stage.id);
+  const selectedOwner = deal.owner;
+  const selectedContact: CrmContactLookup | null = deal.contactId
+    ? { id: deal.contactId, name: deal.contactName ?? "" }
+    : null;
+
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
 
   const debouncedContactSearchTerm = useDebounce(
@@ -101,7 +99,6 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           value={selectedStageId}
           onChange={(value) => {
             if (value !== selectedStageId) {
-              setSelectedStageId(value);
               onStageChange(Number(value));
             }
           }}
@@ -121,7 +118,6 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               selectedContact={selectedContact}
               onChange={(contact) => {
                 if (contact && contact.id !== selectedContact?.id) {
-                  setSelectedContact(contact);
                   onContactChange(contact);
                 }
               }}
@@ -138,21 +134,17 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
         <PropertyField
           label={translateText(["value"])}
-          value={amount}
+          value={deal.amount ?? ""}
           placeholder={translateText(["placeholders", "none"])}
           validate={(value) => validateDealAmount(value, translateText)}
-          onSave={(value) => {
-            setAmount(value);
-            onAmountChange(value);
-          }}
+          onSave={onAmountChange}
         />
 
         <PropertyRow label={translateText(["priority"])}>
           <PriorityDropdown
-            value={priority}
+            value={deal.priority}
             onChange={(value) => {
-              if (value !== priority) {
-                setPriority(value);
+              if (value !== deal.priority) {
                 onPriorityChange(value);
               }
             }}

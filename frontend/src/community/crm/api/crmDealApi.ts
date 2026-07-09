@@ -21,7 +21,7 @@ import {
   CrmDealStageType,
   CrmDealStageUpdatePayload
 } from "~community/crm/types/CommonTypes";
-import { mapEditedDealToSlice } from "~community/crm/utils/kanbanUtil";
+import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -125,7 +125,7 @@ const fetchDealById = async (id: number): Promise<CrmDealResponseType> => {
 
 export const useGetDealById = (
   id: number,
-  enabled: boolean = true
+  enabled: boolean
 ): UseQueryResult<CrmDealResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
@@ -155,7 +155,7 @@ export const useEditDeal = (onSuccess?: () => void, onError?: () => void) => {
     mutationFn: editDeal,
     onSuccess: (updatedDeal) => {
       updateDeal(updatedDeal);
-      updateDealInStage(mapEditedDealToSlice(updatedDeal));
+      updateDealInStage(mapCreatedDealToSlice(updatedDeal));
       onSuccess?.();
     },
     onError

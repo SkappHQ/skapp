@@ -22,7 +22,8 @@ import {
   getNeighbourDealIds,
   mapCreatedDealToSlice,
   normalizeStageDeals,
-  resolveBoardDeal
+  resolveBoardDeal,
+  updateDealInStageMap
 } from "./kanbanUtil";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -379,5 +380,93 @@ describe("mapCreatedDealToSlice", () => {
     const result = mapCreatedDealToSlice({ ...response, companyName: null });
 
     expect(result.companyName).toBeNull();
+  });
+});
+
+// ─── updateDealInStageMap ────────────────────────────────────────────────────
+
+describe("updateDealInStageMap", () => {
+  it("should return the same stage map when the deal is not found", () => {
+    const stageMap = [mkStageEntry(10, [mkSliceDeal(1)])];
+    const result = updateDealInStageMap(stageMap, mkSliceDeal(99));
+
+    expect(result).toBe(stageMap);
+  });
+
+  it("should update the deal in place when the stage is unchanged", () => {
+    const stageMap = [mkStageEntry(10, [mkSliceDeal(1), mkSliceDeal(2)])];
+    const result = updateDealInStageMap(stageMap, {
+      ...mkSliceDeal(1),
+      name: "Renamed Deal",
+      amount: "999"
+    });
+
+    expect(result[0].deals).toHaveLength(2);
+    expect(result[0].deals[0]).toMatchObject({
+      id: 1,
+      name: "Renamed Deal",
+      amount: "999",
+      stageId: 10
+    });
+    expect(result[0].totalCount).toBe(2);
+  });
+
+  it("should preserve the existing taskCount when updating in place", () => {
+    const existing = { ...mkSliceDeal(1), taskCount: 7 };
+    const stageMap = [mkStageEntry(10, [existing])];
+
+    // incoming deal has no taskCount (Omit type); it must not overwrite the stored value
+    const result = updateDealInStageMap(stageMap, mkSliceDeal(1));
+
+    expect(result[0].deals[0].taskCount).toBe(7);
+  });
+
+  it("should move the deal to the target stage and adjust totalCounts", () => {
+    const stageMap = [
+      mkStageEntry(10, [mkSliceDeal(1), mkSliceDeal(2)]),
+      mkStageEntry(20, [mkSliceDeal(3, 20)])
+    ];
+
+    const result = updateDealInStageMap(stageMap, {
+      ...mkSliceDeal(1),
+      stageId: 20
+    });
+
+    const source = result.find((s) => s.stageId === 10)!;
+    const target = result.find((s) => s.stageId === 20)!;
+
+    expect(source.deals.map((d) => d.id)).toEqual([2]);
+    expect(source.totalCount).toBe(1);
+
+    expect(target.deals.map((d) => d.id)).toEqual([3, 1]);
+    expect(target.totalCount).toBe(2);
+    expect(target.deals.find((d) => d.id === 1)?.stageId).toBe(20);
+  });
+
+  it("should preserve the existing taskCount when moving across stages", () => {
+    const stageMap = [
+      mkStageEntry(10, [{ ...mkSliceDeal(1), taskCount: 4 }]),
+      mkStageEntry(20, [])
+    ];
+
+    const result = updateDealInStageMap(stageMap, {
+      ...mkSliceDeal(1),
+      stageId: 20
+    });
+
+    const moved = result
+      .find((s) => s.stageId === 20)!
+      .deals.find((d) => d.id === 1);
+
+    expect(moved?.taskCount).toBe(4);
+  });
+
+  it("should not mutate the original stage map", () => {
+    const stageMap = [mkStageEntry(10, [mkSliceDeal(1)])];
+    const snapshot = JSON.stringify(stageMap);
+
+    updateDealInStageMap(stageMap, { ...mkSliceDeal(1), name: "Changed" });
+
+    expect(JSON.stringify(stageMap)).toBe(snapshot);
   });
 });

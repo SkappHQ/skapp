@@ -1,8 +1,4 @@
-import {
-  DeleteButtonIcon,
-  KebabMenu,
-  SidePanel
-} from "@rootcodelabs/skapp-ui";
+import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
@@ -55,13 +51,16 @@ const DealSidePanel: FC = () => {
 
   const { setToastMessage } = useToast();
 
-  const { data: dealDetail } = useGetDealById(selectedDealId!);
+  const { data: dealDetail } = useGetDealById(
+    selectedDealId!,
+    selectedDealId != null
+  );
 
   useEffect(() => {
     if (dealDetail) {
       updateDealInStore(dealDetail);
     }
-  }, [dealDetail]);
+  }, [dealDetail, updateDealInStore]);
 
   const selectedDeal = getDealById(selectedDealId!);
 
@@ -170,7 +169,6 @@ const DealSidePanel: FC = () => {
                 </div>
               </div>
               <DealPropertiesSidebar
-                deal={selectedDeal}
                 isOpen={isOpen}
                 onStageChange={(stageId) => updateDeal({ stageId })}
                 onAmountChange={(amount) => updateDeal({ amount })}
