@@ -409,27 +409,31 @@ class CrmDealStageControllerIntegrationTest {
 	// POST /v1/crm/deal/stage/reorder
 
 	@Test
-	@DisplayName("Reorder OPEN stages - Returns OK, INITIAL stage left untouched")
-	void reorderDealStages_ValidOpenStages_ReturnsOkAndLeavesInitialUntouched() throws Exception {
+	@DisplayName("Reorder OPEN stages - Returns OK, anchors after INITIAL and leaves it untouched")
+	void reorderDealStages_ValidOpenStages_ReturnsOkAndAnchorsAfterInitial() throws Exception {
 		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
 		Integer initialOrderIndex = crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex();
 		List<Long> ids = openStageIds();
 
-		// Only OPEN stages are sent, offset after the INITIAL stage
-		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(0), 5), reorderEntry(ids.get(1), 2),
-				reorderEntry(ids.get(2), 3), reorderEntry(ids.get(3), 4));
+		// Client sends only the relative order of OPEN stages (1..N); the backend
+		// derives the final orderIndex values, anchoring them after INITIAL (=> 2..N+1).
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(ids.get(3), 1), reorderEntry(ids.get(0), 2),
+				reorderEntry(ids.get(1), 3), reorderEntry(ids.get(2), 4));
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 
+		// INITIAL stays fixed
 		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
 		assertEquals(initialOrderIndex, crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex());
-		assertEquals(5, crmDealStageDao.findById(ids.get(0)).orElseThrow().getOrderIndex());
-		assertEquals(2, crmDealStageDao.findById(ids.get(1)).orElseThrow().getOrderIndex());
-		assertEquals(3, crmDealStageDao.findById(ids.get(2)).orElseThrow().getOrderIndex());
-		assertEquals(4, crmDealStageDao.findById(ids.get(3)).orElseThrow().getOrderIndex());
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
+
+		// OPEN stages take contiguous indexes after INITIAL, in the requested order
+		assertEquals(2, crmDealStageDao.findById(ids.get(3)).orElseThrow().getOrderIndex());
+		assertEquals(3, crmDealStageDao.findById(ids.get(0)).orElseThrow().getOrderIndex());
+		assertEquals(4, crmDealStageDao.findById(ids.get(1)).orElseThrow().getOrderIndex());
+		assertEquals(5, crmDealStageDao.findById(ids.get(2)).orElseThrow().getOrderIndex());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
 	}
 
 	@Test
