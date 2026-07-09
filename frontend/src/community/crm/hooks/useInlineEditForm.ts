@@ -34,7 +34,7 @@ const useInlineEditForm = ({
   const { values, errors, setFieldValue, setErrors, validateForm, submitForm } =
     formik;
 
-  const activateEditing = () => {
+  const startEditing = () => {
     setIsEditing(true);
     setFieldValue("value", value);
     setErrors({});
@@ -69,7 +69,7 @@ const useInlineEditForm = ({
     isEditing,
     value: values.value,
     error: errors.value,
-    activateEditing,
+    startEditing,
     changeValue,
     save,
     discard

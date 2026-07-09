@@ -38,7 +38,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
     isEditing,
     value: editedValue,
     error,
-    activateEditing,
+    startEditing,
     changeValue,
     save,
     discard
@@ -77,7 +77,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
   };
 
   const handleDisplayKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") activateEditing();
+    if (e.key === "Enter" || e.key === " ") startEditing();
   };
 
   const displayValue = editedValue || resolvedPlaceholder;
@@ -111,7 +111,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
             role="button"
             tabIndex={0}
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
-            onClick={activateEditing}
+            onClick={startEditing}
             onKeyDown={handleDisplayKeyDown}
           >
             <div

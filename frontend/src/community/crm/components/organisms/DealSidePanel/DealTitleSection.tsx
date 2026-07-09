@@ -22,7 +22,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
     isEditing,
     value: editedTitle,
     error,
-    activateEditing,
+    startEditing,
     changeValue,
     save,
     discard
@@ -42,7 +42,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      activateEditing();
+      startEditing();
     }
   };
 
@@ -89,7 +89,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
           tabIndex={0}
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editTitle"])}
-          onClick={activateEditing}
+          onClick={startEditing}
           onKeyDown={handleTitleKeyDown}
         >
           {name}

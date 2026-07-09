@@ -22,7 +22,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
     isEditing,
     value: editedDescription,
     error,
-    activateEditing,
+    startEditing,
     changeValue,
     save,
     discard
@@ -35,7 +35,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
   const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      activateEditing();
+      startEditing();
     }
   };
 
@@ -78,7 +78,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           tabIndex={0}
           className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
-          onClick={activateEditing}
+          onClick={startEditing}
           onKeyDown={handlekeyDown}
         >
           {isDescriptionEmpty ? (
