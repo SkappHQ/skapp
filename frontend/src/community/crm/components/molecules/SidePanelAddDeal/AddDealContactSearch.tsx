@@ -47,7 +47,7 @@ const AddDealContactSearch: FC<Props> = ({
         {contact?.name ?? placeholder}
       </span>
       <span className="shrink-0 text-secondary-text" aria-hidden="true">
-        <SearchIcon width="16" height="16" />
+        <SearchIcon width="20" height="20" />
       </span>
     </button>
   );
