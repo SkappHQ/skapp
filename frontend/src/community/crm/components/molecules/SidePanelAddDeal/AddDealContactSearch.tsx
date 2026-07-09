@@ -1,8 +1,12 @@
-import { SearchIcon, TriggerProps } from "@rootcodelabs/skapp-ui";
-import { FC, RefObject } from "react";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import { ChangeEvent, FC, useState } from "react";
 
-import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
+import SearchableDropdown, {
+  SearchableDropdownItem
+} from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import { findById } from "~community/crm/utils/crmUtil";
 
 interface Props {
   contacts: CrmContactLookup[];
@@ -10,9 +14,9 @@ interface Props {
   onChange: (contact: CrmContactLookup | null) => void;
   onSearch: (term: string) => void;
   placeholder: string;
-  searchPlaceholder: string;
   noResultsText: string;
   ariaLabel?: string;
+  clearAriaLabel?: string;
   isInvalid?: boolean;
 }
 
@@ -22,50 +26,80 @@ const AddDealContactSearch: FC<Props> = ({
   onChange,
   onSearch,
   placeholder,
-  searchPlaceholder,
   noResultsText,
   ariaLabel,
+  clearAriaLabel,
   isInvalid = false
 }) => {
-  const renderPillTrigger = (
-    contact: CrmContactLookup | null,
-    triggerProps: TriggerProps
-  ) => (
-    <button
-      type="button"
-      className={`flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2.5 cursor-pointer ${
-        isInvalid
-          ? "border-semantic-red-accent bg-semantic-red-background"
-          : "border-transparent bg-secondary-background"
-      }`}
-      {...triggerProps}
-      ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
-    >
-      <span
-        className={`body2 leading-normal truncate ${contact?.name ? "" : "text-secondary-text"}`}
-      >
-        {contact?.name ?? placeholder}
-      </span>
-      <span className="shrink-0 text-secondary-text" aria-hidden="true">
-        <SearchIcon width="20" height="20" />
-      </span>
-    </button>
-  );
+  const [searchText, setSearchText] = useState("");
+
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+
+  const resetSearch = () => {
+    setSearchText("");
+    onSearch("");
+  };
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchText(e.target.value);
+    onSearch(e.target.value);
+  };
+
+  const handleSelect = (item: SearchableDropdownItem) => {
+    const contact = findById(contacts, Number(item.id), (c) => c.id);
+    onChange(contact);
+    resetSearch();
+  };
+
+  const handleClear = () => {
+    onChange(null);
+    resetSearch();
+  };
+
+  if (selectedContact) {
+    return (
+      <InputField
+        variant="sm"
+        value={selectedContact.name}
+        readOnly
+        fullWidth
+        aria-label={ariaLabel}
+        rightIcon={
+          <ButtonV2
+            variant="tertiary"
+            type="button"
+            onClick={handleClear}
+            aria-label={clearAriaLabel}
+            icon={<CloseIcon />}
+          />
+        }
+      />
+    );
+  }
+
+  const contactItems: SearchableDropdownItem[] = contacts.map((contact) => ({
+    id: String(contact.id),
+    content: contact.name
+  }));
 
   return (
-    <ContactPopupSearch
-      contacts={contacts}
-      selectedContact={selectedContact}
-      onChange={onChange}
-      onSearch={onSearch}
+    <SearchableDropdown
+      id="add-deal-contact-search"
+      variant="sm"
       placeholder={placeholder}
-      searchPlaceholder={searchPlaceholder}
-      noResultsText={noResultsText}
-      ariaLabel={ariaLabel}
-      ariaInvalid={isInvalid}
-      ariaRequired
-      width="w-full"
-      renderTrigger={renderPillTrigger}
+      value={searchText}
+      onChange={handleSearchChange}
+      items={contactItems}
+      onSelect={handleSelect}
+      emptyMessage={noResultsText}
+      state={isInvalid ? "error" : "default"}
+      required
+      isOpenOnFocus={true}
+      errorMessage={translateText([
+        "inlineAddDeal",
+        "validations",
+        "contactRequired"
+      ])}
     />
   );
 };

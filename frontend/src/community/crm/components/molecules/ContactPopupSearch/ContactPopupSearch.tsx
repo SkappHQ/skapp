@@ -4,7 +4,7 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useMemo } from "react";
+import { FC, useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
@@ -23,12 +23,6 @@ interface Props {
   noResultsText: string;
   ariaInvalid?: boolean;
   ariaRequired?: boolean;
-  ariaLabel?: string;
-  width?: string;
-  renderTrigger?: (
-    contact: CrmContactLookup | null,
-    triggerProps: TriggerProps
-  ) => ReactNode;
 }
 
 const ContactPopupSearch: FC<Props> = ({
@@ -40,10 +34,7 @@ const ContactPopupSearch: FC<Props> = ({
   searchPlaceholder,
   noResultsText,
   ariaInvalid,
-  ariaRequired,
-  ariaLabel,
-  width = "w-full",
-  renderTrigger
+  ariaRequired
 }) => {
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
@@ -74,10 +65,6 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    if (renderTrigger) {
-      return renderTrigger(selectedContact, triggerProps);
-    }
-
     const contact = findById(contacts, Number(option?.id), getContactId);
 
     if (contact && option) {
@@ -126,8 +113,7 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       ariaRequired={ariaRequired}
-      ariaLabel={ariaLabel}
-      width={width}
+      width="w-full"
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption | null, triggerProps)
       }

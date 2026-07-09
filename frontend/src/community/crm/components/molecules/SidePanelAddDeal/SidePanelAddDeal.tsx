@@ -13,11 +13,11 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import {
-  CRM_ERROR_DEAL_EXISTS,
-  DEAL_NAME_MAX_LENGTH
-} from "~community/crm/constants/dealConstants";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+  CrmErrorMessageKeyEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
   CrmContactLookup,
@@ -48,7 +48,8 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   );
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE
+    DEFAULT_LOOKUP_PAGE_SIZE,
+    true
   );
   const contacts = contactLookupData?.items ?? [];
 
@@ -56,6 +57,11 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
     useGetMappedDealStages();
   const { data: currentUser, isLoading: isUserLoading } =
     useGetUserPersonalDetails();
+
+  const initialValues: CrmInlineDealAddFormTypes = {
+    name: "",
+    contactId: defaultContact ? String(defaultContact.id) : ""
+  };
 
   const handleCreateDealSuccess = () => {
     setToastMessage({
@@ -74,7 +80,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   const handleCreateDealError = (error: ErrorResponse) => {
     const messageKey = error?.response?.data?.results?.[0]?.messageKey;
 
-    if (messageKey === CRM_ERROR_DEAL_EXISTS) {
+    if (messageKey === CrmErrorMessageKeyEnum.DEAL_EXISTS) {
       formik.setFieldError(
         "name",
         translateText(["inlineAddDeal", "validations", "dealNameExists"])
@@ -102,15 +108,11 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   const isFormDisabled = isPending || isStagesLoading || isUserLoading;
 
   const handleSubmit = (values: CrmInlineDealAddFormTypes) => {
-    if (initialStageId === undefined || !currentUser?.employeeId) {
-      return;
-    }
-
     const payload: CrmCreateDealPayload = {
       name: values.name.trim(),
-      stageId: initialStageId,
+      stageId: initialStageId!,
       contactId: Number(values.contactId),
-      ownerId: Number(currentUser.employeeId),
+      ownerId: Number(currentUser?.employeeId),
       priority: CrmPriorityEnum.MEDIUM
     };
 
@@ -118,10 +120,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   };
 
   const formik = useFormik<CrmInlineDealAddFormTypes>({
-    initialValues: {
-      name: "",
-      contactId: defaultContact ? String(defaultContact.id) : ""
-    },
+    initialValues,
     validationSchema: inlineAddDealValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
@@ -163,15 +162,16 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
                 "inlineAddDeal",
                 "contactPlaceholder"
               ])}
-              searchPlaceholder={translateText([
-                "inlineAddDeal",
-                "contactSearchPlaceholder"
-              ])}
               noResultsText={translateText(["inlineAddDeal", "noResults"])}
               ariaLabel={translateText([
                 "inlineAddDeal",
                 "ariaLabels",
                 "contact"
+              ])}
+              clearAriaLabel={translateText([
+                "inlineAddDeal",
+                "ariaLabels",
+                "clearContact"
               ])}
             />
           </div>
@@ -197,20 +197,6 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
           ])
         }}
       />
-      {isFormDisabled && (
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          role="status"
-          aria-live="polite"
-          aria-label={
-            isPending
-              ? translateText(["inlineAddDeal", "ariaLabels", "saving"])
-              : translateText(["inlineAddDeal", "ariaLabels", "loading"])
-          }
-        >
-          <Spinner size={24} />
-        </div>
-      )}
     </div>
   );
 };

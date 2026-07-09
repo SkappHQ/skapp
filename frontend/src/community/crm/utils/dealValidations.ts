@@ -12,7 +12,9 @@ export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .required()
+      .required(
+        translator(["inlineAddDeal", "validations", "dealNameRequired"])
+      )
       .max(DEAL_NAME_MAX_LENGTH)
       .matches(
         isDealNameValid(),

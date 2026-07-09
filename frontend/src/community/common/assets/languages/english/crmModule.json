@@ -454,19 +454,21 @@
       "inlineAddDeal": {
         "dealNamePlaceholder": "Enter deal name",
         "contactPlaceholder": "Search contact",
-        "contactSearchPlaceholder": "Search contacts",
         "noResults": "No results",
         "ariaLabels": {
           "group": "Add new deal",
           "saveDeal": "Save deal",
           "cancelAddDeal": "Cancel adding deal",
           "contact": "Contact",
+          "clearContact": "Clear selected contact",
           "saving": "Saving deal",
           "loading": "Loading"
         },
         "validations": {
-          "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
-          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name."
+          "dealNameRequired": "Deal name is required",
+          "dealNameInvalidChars": "Deal name can not contain special characters.",
+          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name.",
+          "contactRequired": "Contact is required"
         },
         "toastMessages": {
           "successTitle": "Deal added successfully",
