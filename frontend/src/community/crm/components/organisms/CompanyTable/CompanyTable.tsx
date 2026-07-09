@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -37,22 +37,24 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching
-  } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, openCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedCompany: store.setSelectedCompany,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } = useCrmStore(
+    (store) => ({
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      setCompanies: store.setCompanies,
+      openCrmSidePanel: store.openCrmSidePanel
+    })
+  );
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
+
+  useEffect(() => {
+    if (companies) setCompanies(companies);
+  }, [companies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -81,7 +83,7 @@ export const CompanyTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "tasks",
+      key: "openTaskCount",
       render(value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
@@ -201,7 +203,7 @@ export const CompanyTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          setSelectedCompany(row);
+          setSelectedCompanyId(row.id);
           openCrmSidePanel(CrmSidePanelTypes.COMPANY_SIDE_PANEL);
         }}
       />
