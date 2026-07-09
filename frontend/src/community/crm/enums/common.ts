@@ -89,3 +89,7 @@ export enum DefaultStageNameEnum {
   WON = "WON",
   LOST = "LOST"
 }
+
+export enum CrmErrorMessageKeyEnum {
+  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS"
+}
