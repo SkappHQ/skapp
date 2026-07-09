@@ -65,7 +65,9 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const contact = findById(contacts, Number(option?.id), getContactId);
+    const contact =
+      findById(contacts, Number(option?.id), getContactId) ??
+      (Number(option?.id) === selectedContact?.id ? selectedContact : null);
 
     if (contact && option) {
       return (

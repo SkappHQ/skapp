@@ -1,4 +1,4 @@
-import { buildContactOptions, buildOwnerOptions } from "./dealUtil";
+import { buildContactOptions, buildOwnerOptions } from "../dealUtil";
 
 interface TestOwner {
   employeeId: number;
