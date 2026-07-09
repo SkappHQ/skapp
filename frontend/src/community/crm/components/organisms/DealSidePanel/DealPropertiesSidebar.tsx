@@ -14,7 +14,6 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
@@ -22,6 +21,7 @@ import {
   CrmDealDetailResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealPropertiesSidebarProps {
   deal: CrmDealDetailResponseType;
@@ -61,8 +61,8 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const stageOptions = useMemo(
     () =>
       dealStages.map((stage) => ({
-        id: stage.id,
-        value: stage.id,
+        id: String(stage.id),
+        value: String(stage.id),
         label: (
           <div className="inline-flex items-center gap-2.5">
             <div

@@ -4,10 +4,10 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;

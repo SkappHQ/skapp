@@ -50,6 +50,12 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
   };
 
+  const handleDealClick = (dealId: number) => {
+    const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();
+    setSelectedDealId(dealId);
+    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <DndContext
@@ -75,7 +81,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 totalCount={stageDeals?.totalCount ?? 0}
                 isOver={overStageId === stage.id}
                 searchKeyword={searchKeyword}
-                onDealClick={() => {}}
+                onDealClick={handleDealClick}
                 onAddDeal={handleAddDeal}
               />
             );
