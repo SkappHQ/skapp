@@ -7,8 +7,10 @@ import {
 import { useFormik } from "formik";
 import { FC, KeyboardEventHandler, useState } from "react";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useDealNameDuplicateCheck from "~community/crm/hooks/useDealNameDuplicateCheck";
+import { useCheckDealNameExists } from "~community/crm/api/crmDealApi";
+import { DEAL_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/dealConstants";
 import { dealTitleValidations } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
@@ -37,10 +39,21 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
     }
   });
 
-  const isDuplicateName = useDealNameDuplicateCheck(
-    isEditing ? formik.values.name : "",
-    name
+  const debouncedDealName = useDebounce(
+    formik.values.name.trim(),
+    DEAL_NAME_DEBOUNCE_DELAY
   );
+
+  const { data: dealNameData } = useCheckDealNameExists(
+    debouncedDealName,
+    isEditing &&
+      debouncedDealName.length > 0 &&
+      debouncedDealName !== name.trim()
+  );
+
+  const isNameUnchanged = formik.values.name.trim() === name.trim();
+
+  const isDuplicateName = !isNameUnchanged && dealNameData?.isExists === true;
 
   const titleErrorMessage = isDuplicateName
     ? translateValidationText(["validations", "dealNameExists"])

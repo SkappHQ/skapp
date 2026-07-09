@@ -8,13 +8,16 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
-import { useCreateDeal } from "~community/crm/api/crmDealApi";
+import {
+  useCheckDealNameExists,
+  useCreateDeal
+} from "~community/crm/api/crmDealApi";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import { DEAL_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
-import useDealNameDuplicateCheck from "~community/crm/hooks/useDealNameDuplicateCheck";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
@@ -140,7 +143,15 @@ const AddDealSidePanel: FC = () => {
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
-  const isDuplicateName = useDealNameDuplicateCheck(values.name);
+  const debouncedDealName = useDebounce(
+    values.name.trim(),
+    DEAL_NAME_DEBOUNCE_DELAY
+  );
+  const { data: dealNameData } = useCheckDealNameExists(
+    debouncedDealName,
+    debouncedDealName.length > 0
+  );
+  const isDuplicateName = dealNameData?.isExists === true;
 
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);
