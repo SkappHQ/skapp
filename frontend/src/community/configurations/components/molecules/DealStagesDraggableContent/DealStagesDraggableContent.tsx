@@ -49,6 +49,7 @@ const DealStagesDraggableContent = ({
   const terminalStages = stagesData.filter((stage) =>
     isTerminalStage(stage.stageType)
   );
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
