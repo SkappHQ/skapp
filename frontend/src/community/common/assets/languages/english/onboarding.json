@@ -1,10 +1,11 @@
 {
   "organizationCreate": {
+    "pageHead": "Sign Up | Skapp",
     "pageHeading": "Setup super admin account",
     "pageSubHeading": "Start your journey with us. Sign up effortlessly for a streamlined experience.",
     "firstNameLabel": "First Name",
     "lastNameLabel": "Last Name",
-    "emailLabel": "Work Email",
+    "emailLabel": "Work email",
     "passwordLabel": "Password",
     "firstNameRequiredError": "Please enter the first name",
     "firstNameCharacterError": "Special characters are not allowed in the first name",
@@ -81,6 +82,7 @@
     "microsoftAuthErrorDescription": "Failed to authenticate with Microsoft. Please try again."
   },
   "signIn": {
+    "pageHead": "Sign In | Skapp",
     "pageHeading": "Log in",
     "pageSubHeading": "Enter your username and password to login to the system",
     "emailLabel": "Username",
@@ -115,6 +117,7 @@
     "domain": "Company domain"
   },
   "resetPassword": {
+    "pageHead": "Reset Password | Skapp",
     "pageHeading": "Reset Password",
     "pageSubHeading": "Please create a new password for your account and confirm it below.",
     "resetBtnText": "Reset Password",

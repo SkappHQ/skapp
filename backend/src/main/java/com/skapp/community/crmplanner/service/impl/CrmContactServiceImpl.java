@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +81,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("createContact: execution started");
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
-				requestDto.getOwnerId(), requestDto.getCompanyId());
+				requestDto.getOwnerId());
 		validateContactCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
@@ -92,7 +91,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
-		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+		CrmCompany company = requestDto.getCompanyId() != null
+				? crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND))
+				: null;
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
@@ -147,8 +149,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		if (requestDto.getCompanyId() != null) {
-			CrmValidations.validateCompanyId(requestDto.getCompanyId());
-			CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			contact.setCompany(company);
 		}
 
@@ -323,24 +325,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.toList();
 		dto.setDeals(dealDtos);
 
-		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream().map(task -> {
-			CrmTaskDetailResponseDto taskDto = crmMapper.crmTaskToCrmTaskDetailResponseDto(task);
-			taskDto.setIsOverdue(!Boolean.TRUE.equals(task.getIsCompleted()) && task.getDueAt() != null
-					&& task.getDueAt().isBefore(LocalDate.now().atStartOfDay()));
-			return taskDto;
-		}).toList();
+		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
 		dto.setTasks(taskDtos);
 
 		log.info("getContactById: execution ended");
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
+	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId) {
 		CrmValidations.validateContactName(name);
 		CrmValidations.validateContactEmail(email);
 		CrmValidations.validateContactNumber(contactNumber);
 		CrmValidations.validateOwnerId(ownerId);
-		CrmValidations.validateCompanyId(companyId);
 	}
 
 	private String normalizeNullableText(String value) {

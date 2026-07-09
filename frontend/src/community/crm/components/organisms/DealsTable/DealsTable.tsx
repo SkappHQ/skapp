@@ -19,7 +19,6 @@ import { CrmDealListItem } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
-import { DefaultStageNameEnum } from "~community/crm/enums/common";
 
 interface OwnerCellProps {
   owner: CrmDealListItem["owner"];
@@ -60,6 +59,7 @@ interface Props {
   allDeals: CrmDealListItem[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
+  onDealClick?: (deal: CrmDealListItem) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -67,7 +67,8 @@ const DealsTable: FC<Props> = ({
   isLoading,
   allDeals,
   hasNextPage,
-  onLoadMore
+  onLoadMore,
+  onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { getStageByName } = useStageNameMapper();
@@ -158,7 +159,19 @@ const DealsTable: FC<Props> = ({
         return {
           id: String(deal.id),
           dealName: (
-            <div className="flex items-center gap-2">
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
+              aria-label={translateText(["openDealDetails"], { name: deal.name })}
+              onClick={() => onDealClick?.(deal)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onDealClick?.(deal);
+                }
+              }}
+            >
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
                 <HandshakeIcon
                   width="14"
@@ -166,8 +179,13 @@ const DealsTable: FC<Props> = ({
                   fill="var(--color-white)"
                 />
               </div>
-              <span className="body2">#{deal.id}</span>
-              <span className="body2">{deal.name}</span>
+              <span className="body2 group-hover:underline">#{deal.id}</span>
+              <span
+                className="body2 group-hover:underline block w-full truncate"
+                title={deal.name}
+              >
+                {deal.name}
+              </span>
             </div>
           ),
           value: (
@@ -179,13 +197,27 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
+                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stage.color] }}
               />
-              <span className="body2">{getStageByName(deal.stageName as DefaultStageNameEnum)}</span>
+              <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
-          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
+          companyName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal?.companyName ?? undefined}
+            >
+              {deal?.companyName ?? "-"}
+            </span>
+          ),
+          contactName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal.contactName}
+            >
+              {deal.contactName}
+            </span>
+          ),
           dealOwner: <OwnerCell owner={deal.owner} />
         };
       }),
@@ -199,14 +231,14 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="h-150 rounded-lg shadow-lg">
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}

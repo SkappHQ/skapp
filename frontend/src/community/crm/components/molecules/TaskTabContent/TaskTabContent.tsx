@@ -1,9 +1,4 @@
-import {
-  EmptyDataView,
-  InputField,
-  ProjectTableSkeletonLoader,
-  SearchIcon
-} from "@rootcodelabs/skapp-ui";
+import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
@@ -17,7 +12,8 @@ import {
 } from "~community/crm/api/TaskApi";
 import {
   TASK_PAGE_SIZE,
-  TASK_SEARCH_DEBOUNCE_DELAY
+  TASK_SEARCH_DEBOUNCE_DELAY,
+  TASK_SKELETON_CONFIG
 } from "~community/crm/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
@@ -25,12 +21,13 @@ import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
+import TaskTabSkeleton from "./TaskTabSkeleton";
 
-interface TasksTabContentProps {
+interface TaskTabContentProps {
   tab: CrmTaskTabEnum;
 }
 
-const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
+const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const { setTasks } = useCrmStore();
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,7 +57,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
     isError: isOpenTasksError
   } = useGetOpenTasks(
     debouncedSearch,
-    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.TEAM_TASKS
+    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.ALL_TASKS
   );
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
@@ -87,7 +84,12 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
 
   const renderContent = () => {
     if (isCompletedTasksLoading || isOpenTasksLoading) {
-      return <ProjectTableSkeletonLoader rowCount={10} />;
+      const skeletonProps =
+        tab === CrmTaskTabEnum.COMPLETED_TASKS
+          ? TASK_SKELETON_CONFIG.COMPLETED
+          : TASK_SKELETON_CONFIG.OPEN;
+
+      return <TaskTabSkeleton {...skeletonProps} />;
     }
 
     if (isCompletedTasksError || isOpenTasksError) {
@@ -100,7 +102,12 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
       );
     }
 
-    if (isOpenTasksEmpty && completedTasks.length === 0) {
+    const isEmpty =
+      tab === CrmTaskTabEnum.COMPLETED_TASKS
+        ? completedTasks.length === 0
+        : isOpenTasksEmpty;
+
+    if (isEmpty) {
       return (
         <EmptyDataView
           title={
@@ -120,7 +127,7 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
 
     switch (tab) {
       case CrmTaskTabEnum.MY_TASKS:
-      case CrmTaskTabEnum.TEAM_TASKS:
+      case CrmTaskTabEnum.ALL_TASKS:
         return renderOpenTasksContent();
       case CrmTaskTabEnum.COMPLETED_TASKS:
         return renderCompletedTasksContent();
@@ -194,4 +201,4 @@ const TasksTabContent: FC<TasksTabContentProps> = ({ tab }) => {
   );
 };
 
-export default TasksTabContent;
+export default TaskTabContent;

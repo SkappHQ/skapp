@@ -22,6 +22,7 @@ interface Props {
   searchPlaceholder: string;
   noResultsText: string;
   ariaInvalid?: boolean;
+  ariaRequired?: boolean;
 }
 
 const ContactPopupSearch: FC<Props> = ({
@@ -32,7 +33,8 @@ const ContactPopupSearch: FC<Props> = ({
   placeholder,
   searchPlaceholder,
   noResultsText,
-  ariaInvalid
+  ariaInvalid,
+  ariaRequired
 }) => {
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
@@ -63,14 +65,16 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption | null,
     triggerProps: TriggerProps
   ) => {
-    const contact = findById(contacts, Number(option?.id), getContactId);
+    const contact =
+      findById(contacts, Number(option?.id), getContactId) ??
+      (Number(option?.id) === selectedContact?.id ? selectedContact : null);
 
     if (contact && option) {
       return (
         <ContactTriggerContent
           key={option.id}
           contact={contact}
-          onSelect={triggerProps.onClick}
+          triggerProps={triggerProps}
         />
       );
     }
@@ -78,7 +82,7 @@ const ContactPopupSearch: FC<Props> = ({
     return (
       <ContactTriggerContent
         placeholder={placeholder}
-        onSelect={triggerProps.onClick}
+        triggerProps={triggerProps}
       />
     );
   };
@@ -110,6 +114,7 @@ const ContactPopupSearch: FC<Props> = ({
       searchable
       clearable
       ariaInvalid={ariaInvalid}
+      ariaRequired={ariaRequired}
       width="100%"
       renderTrigger={(option, _a, _b, triggerProps) =>
         handleRenderTrigger(option as DropdownOption | null, triggerProps)

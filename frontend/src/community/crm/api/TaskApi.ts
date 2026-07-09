@@ -11,12 +11,37 @@ import {
   CrmCompletedTaskResponseType,
   CrmTaskCategoryResponseType,
   CrmTaskCreatePayload,
+  CrmTaskDetailType,
   CrmTaskResponseType,
   CrmTaskUpdatePayload,
-  UpdateTaskStatusPayload
+  RelatedTasksPage,
+  RelatedTasksParams
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
+
+const fetchRelatedTasks = async (
+  params: RelatedTasksParams
+): Promise<RelatedTasksPage> => {
+  const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
+    params
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetRelatedTasks = (params: RelatedTasksParams) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: taskQueryKeys.RELATED_TASKS,
+    queryFn: () => fetchRelatedTasks(params),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false
+  });
+};
 
 const createTask = async (taskDetails: CrmTaskCreatePayload) => {
   const response = await authFetch.post(taskEndpoints.CREATE_TASK, taskDetails);
@@ -26,7 +51,7 @@ const createTask = async (taskDetails: CrmTaskCreatePayload) => {
 export const useCreateTask = (
   onSuccess: () => void,
   onError: () => void,
-  contactId?: number
+  contactId?: number | null
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -38,6 +63,13 @@ export const useCreateTask = (
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+
       if (contactId) {
         queryClient.invalidateQueries({
           queryKey: contactQueryKeys.CONTACT_BY_ID(contactId)
@@ -49,44 +81,33 @@ export const useCreateTask = (
   });
 };
 
-const fetchOpenTasks = async (
-  searchKeyword?: string
-): Promise<CrmTaskResponseType> => {
+interface OpenTasksParams {
+  searchKeyword?: string;
+  companyId?: number | null;
+}
+
+const fetchOpenTasks = async ({
+  searchKeyword,
+  companyId
+}: OpenTasksParams): Promise<CrmTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_OPEN_TASKS, {
-    params: { searchKeyword }
+    params: {
+      searchKeyword,
+      ...(companyId != null && { companyId })
+    }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetOpenTasks = (searchKeyword: string, enabled: boolean) => {
+export const useGetOpenTasks = (
+  searchKeyword: string,
+  enabled: boolean,
+  companyId?: number | null
+) => {
   return useQuery({
-    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword),
-    queryFn: () => fetchOpenTasks(searchKeyword),
+    queryKey: taskQueryKeys.GET_OPEN_TASKS_BY_SEARCH(searchKeyword, companyId),
+    queryFn: () => fetchOpenTasks({ searchKeyword, companyId }),
     enabled
-  });
-};
-
-const updateTaskStatus = async ({
-  id,
-  isCompleted
-}: UpdateTaskStatusPayload) => {
-  await authFetch.patch(taskEndpoints.UPDATE_TASK(id), {
-    isCompleted
-  });
-};
-
-export const useUpdateTaskCompletion = (onError: (error: Error) => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: updateTaskStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_TASK_DATA });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
-    },
-    onError
   });
 };
 
@@ -94,15 +115,22 @@ interface TaskSearchParams {
   page: number;
   size: number;
   searchKeyword: string;
+  companyId?: number | null;
 }
 
 const fetchCompletedTasks = async ({
   page,
   size,
-  searchKeyword
+  searchKeyword,
+  companyId
 }: TaskSearchParams): Promise<CrmCompletedTaskResponseType> => {
   const response = await authFetch.get(taskEndpoints.GET_COMPLETED_TASKS, {
-    params: { page, size, searchKeyword }
+    params: {
+      page,
+      size,
+      searchKeyword,
+      ...(companyId != null && { companyId })
+    }
   });
   return response?.data?.results?.[0];
 };
@@ -110,16 +138,21 @@ const fetchCompletedTasks = async ({
 export const useGetCompletedTasks = (
   searchKeyword: string,
   size: number,
-  enabled: boolean
+  enabled: boolean,
+  companyId?: number | null
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(searchKeyword),
+    queryKey: taskQueryKeys.GET_COMPLETED_TASKS_BY_SEARCH(
+      searchKeyword,
+      companyId
+    ),
     queryFn: ({ pageParam }) =>
       fetchCompletedTasks({
         page: pageParam,
         size,
-        searchKeyword
+        searchKeyword,
+        companyId
       }),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
@@ -144,6 +177,12 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
       onSuccess();
     },
     onError
@@ -158,11 +197,11 @@ const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
+export const useUpdateTask = (onSuccess?: () => void, onError?: () => void) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
-    onSuccess: async () => {
+    onSuccess: async ({ id }) => {
       await queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
       });
@@ -172,7 +211,13 @@ export const useUpdateTask = (onSuccess: () => void, onError: () => void) => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_TASK_DATA
       });
-      onSuccess();
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
+      });
+      queryClient.invalidateQueries({
+        queryKey: taskQueryKeys.RELATED_TASKS
+      });
+      if (onSuccess) onSuccess();
     },
     onError
   });
@@ -185,5 +230,17 @@ export const useGetTaskTypes = () => {
       const response = await authFetch.get(taskEndpoints.GET_TASK_TYPES);
       return response?.data?.results?.[0];
     }
+  });
+};
+
+const fetchTaskById = async (id: number): Promise<CrmTaskDetailType> => {
+  const response = await authFetch.get(taskEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetTaskById = (id: number) => {
+  return useQuery({
+    queryKey: taskQueryKeys.GET_TASK_BY_ID(id),
+    queryFn: () => fetchTaskById(id)
   });
 };

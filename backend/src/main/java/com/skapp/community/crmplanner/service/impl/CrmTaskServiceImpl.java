@@ -18,9 +18,10 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
-import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
@@ -50,8 +51,6 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final CrmContactDao crmContactDao;
-
-	private final CrmCompanyDao crmCompanyDao;
 
 	private final CrmDealDao crmDealDao;
 
@@ -94,8 +93,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
-		log.info("getTaskById: execution");
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(task));
+		log.info("getTaskById: execution ended");
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskViewResponseDto(task));
 	}
 
 	@Override
@@ -122,14 +121,41 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
+		log.info("getRelatedTasks: execution started");
+
+		CrmValidations.validateRelatedTaskContextFilter(filterDto.getContactId(), filterDto.getDealId());
+
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, ownerId, pageable);
+
+		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent()
+			.stream()
+			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
+			.toList();
+
+		PageDto response = new PageDto();
+		response.setItems(tasks);
+		response.setCurrentPage(taskPage.getNumber());
+		response.setTotalItems(taskPage.getTotalElements());
+		response.setTotalPages(taskPage.getTotalPages());
+
+		log.info("getRelatedTasks: execution ended");
+
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
 	@Transactional
 	public ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto) {
 		log.info("createTask: execution started");
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
-		CrmValidations.validateTaskTargets(requestDto.getContactId(), requestDto.getCompanyId(),
-				requestDto.getDealId());
 		CrmValidations.validateTaskDueAt(requestDto.getDueAt());
 		CrmValidations.validateTaskNotes(requestDto.getNotes());
 		validateTaskCreationLimit();
@@ -156,11 +182,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
-		}
-
-		if (requestDto.getCompanyId() != null) {
-			company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+			company = contact.getCompany();
 			task.setCompany(company);
 		}
 
@@ -168,11 +190,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 			task.setDeal(deal);
+			CrmValidations.validateDealBelongsToContact(deal, contact);
+			CrmValidations.validateDealBelongsToCompany(deal, company);
 		}
-
-		CrmValidations.validateContactBelongsToCompany(contact, company);
-		CrmValidations.validateDealBelongsToContact(deal, contact);
-		CrmValidations.validateDealBelongsToCompany(deal, company);
 
 		CrmTask savedTask = crmTaskDao.save(task);
 
@@ -235,12 +255,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 			task.setContact(contact);
-		}
-
-		if (requestDto.getCompanyId() != null) {
-			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-			task.setCompany(company);
+			task.setCompany(contact.getCompany());
 		}
 
 		if (requestDto.getDealId() != null) {
@@ -249,9 +264,9 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setDeal(deal);
 		}
 
-		CrmValidations.validateContactBelongsToCompany(task.getContact(), task.getCompany());
-		CrmValidations.validateDealBelongsToContact(task.getDeal(), task.getContact());
-		CrmValidations.validateDealBelongsToCompany(task.getDeal(), task.getCompany());
+		if (task.getDeal() != null && task.getContact() != null) {
+			CrmValidations.validateDealBelongsToContact(task.getDeal(), task.getContact());
+		}
 
 		CrmTask updatedTask = crmTaskDao.save(task);
 

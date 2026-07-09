@@ -183,7 +183,9 @@ const UserBulkCsvUpload: FC<Props> = ({
           isLoading={isPending}
           disabled={bulkUserAttachment?.length === 0}
           aria-label={translateAria(["uploadPeople"])}
-          className={getBlinkClass(bulkUserAttachment?.length > 0)}
+          className={getBlinkClass(
+            ongoingQuickSetup.INVITE_EMPLOYEES && bulkUserAttachment?.length > 0
+          )}
           icon={<ArrowRightIcon />}
           iconPosition="end"
         >

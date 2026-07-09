@@ -1,5 +1,4 @@
 import {
-  InfiniteData,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -20,20 +19,21 @@ import {
 } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmCompaniesResponseType,
+  CrmContact,
   CrmContactCreatePayload,
-  CrmContactDetailResponseType,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
 } from "~community/crm/types/CommonTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 interface ContactMetricsSearchParams {
   page: number;
   size: number;
   searchKeyword?: string;
-  companyId?: number;
+  companyId?: number | null;
 }
 
 const fetchContactMetrics = async ({
@@ -43,7 +43,12 @@ const fetchContactMetrics = async ({
   companyId
 }: ContactMetricsSearchParams): Promise<CrmContactMetricsResponseType> => {
   const response = await authFetch.get(contactEndpoints.GET_CONTACT_METRICS, {
-    params: { page, size, searchKeyword, companyId }
+    params: {
+      page,
+      size,
+      searchKeyword,
+      ...(companyId != null && { companyId })
+    }
   });
   return response?.data?.results?.[0];
 };
@@ -51,7 +56,8 @@ const fetchContactMetrics = async ({
 export const useGetContactMetrics = (
   searchKeyword: string,
   size: number,
-  companyId?: number
+  companyId?: number | null,
+  enabled?: boolean
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
@@ -69,20 +75,9 @@ export const useGetContactMetrics = (
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
-    }
+    },
+    enabled
   });
-};
-
-export const useGetSelectedContactById = (selectedContactId: number) => {
-  const queryClient = useQueryClient();
-
-  const contacts = queryClient
-    .getQueriesData<InfiniteData<CrmContactMetricsResponseType>>({
-      queryKey: contactQueryKeys.ALL
-    })
-    .flatMap(([, data]) => data?.pages.flatMap((page) => page.items) ?? []);
-
-  return contacts.find((contact) => contact.id === selectedContactId);
 };
 
 export const useGetCrmCompanies = (size: number) => {
@@ -115,6 +110,9 @@ export const useCreateNewContact = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },
@@ -189,13 +187,18 @@ export const useGetOwnerLookup = (
 export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
-  enabled: boolean = true
+  enabled: boolean,
+  dealId?: number | null
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
-    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
+    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size, dealId),
     queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-        params: { searchKeyword, size }
+        params: {
+          searchKeyword,
+          size,
+          ...(dealId != null && { dealId })
+        }
       });
       return response?.data?.results?.[0];
     },
@@ -220,9 +223,7 @@ export const useGetCrmOwners = (
   });
 };
 
-const fetchContactById = async (
-  id: number
-): Promise<CrmContactDetailResponseType> => {
+const fetchContactById = async (id: number): Promise<CrmContact> => {
   const response = await authFetch.get(contactEndpoints.CONTACT_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -230,7 +231,7 @@ const fetchContactById = async (
 export const useGetContactById = (
   id: number,
   enabled = true
-): UseQueryResult<CrmContactDetailResponseType> => {
+): UseQueryResult<CrmContact> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_BY_ID(id),
     queryFn: () => fetchContactById(id),
@@ -262,6 +263,9 @@ export const useDeleteContact = (
       });
       queryClient.invalidateQueries({
         queryKey: crmDealQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess();
     },
