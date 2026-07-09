@@ -55,7 +55,7 @@ const DealSidePanel: FC = () => {
 
   const { setToastMessage } = useToast();
 
-  const { data: dealDetail, isLoading } = useGetDealById(selectedDealId!);
+  const { data: dealDetail } = useGetDealById(selectedDealId!);
 
   useEffect(() => {
     if (dealDetail) {
@@ -144,18 +144,18 @@ const DealSidePanel: FC = () => {
           />
         }
       >
-        {isLoading ? (
+        {!selectedDeal ? (
           <DealSidePanelSkeleton />
         ) : (
           <div className="flex flex-col gap-6">
             <DealTitleSection
-              name={selectedDeal?.name ?? ""}
+              name={selectedDeal.name}
               onSave={(name) => updateDeal({ name })}
             />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
                 <DealDescriptionSection
-                  description={selectedDeal?.description ?? ""}
+                  description={selectedDeal.description ?? ""}
                   onSave={(description) => updateDeal({ description })}
                 />
                 <div className="flex flex-col gap-3">
@@ -170,7 +170,7 @@ const DealSidePanel: FC = () => {
                 </div>
               </div>
               <DealPropertiesSidebar
-                deal={selectedDeal!}
+                deal={selectedDeal}
                 isOpen={isOpen}
                 onStageChange={(stageId) => updateDeal({ stageId })}
                 onAmountChange={(amount) => updateDeal({ amount })}

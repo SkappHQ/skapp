@@ -19,25 +19,12 @@ export const formatValue = (value: NumericValue): string => {
   return `$${parsed.toFixed(2)}`;
 };
 
-export const mergeDealsList = (
-  existingDeals: CrmDealResponseType[],
-  incomingDeals: CrmDealResponseType[]
-): CrmDealResponseType[] =>
-  incomingDeals.map((deal) => {
-    const existingDeal = existingDeals.find(
-      (existing) => existing.id === deal.id
-    );
-    return existingDeal ? { ...existingDeal, ...deal } : deal;
-  });
-
 export const mergeDealUpdate = (
   deals: CrmDealResponseType[],
   update: CrmDealResponseType
 ): CrmDealResponseType[] =>
   deals.some((deal) => deal.id === update.id)
-    ? deals.map((deal) =>
-        deal.id === update.id ? { ...deal, ...update } : deal
-      )
+    ? deals.map((deal) => (deal.id === update.id ? update : deal))
     : [...deals, update];
 
 export const getChangedContactFields = (

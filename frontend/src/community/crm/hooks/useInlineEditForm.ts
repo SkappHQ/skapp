@@ -4,15 +4,13 @@ import { useState } from "react";
 interface UseInlineEditFormParams {
   value: string;
   validate?: (value: string) => string;
-  onSave?: (value: string) => void;
-  onChange?: (value: string) => void;
+  onSave: (value: string) => void;
 }
 
 const useInlineEditForm = ({
   value,
   validate,
-  onSave,
-  onChange
+  onSave
 }: UseInlineEditFormParams) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
@@ -28,7 +26,7 @@ const useInlineEditForm = ({
     onSubmit: (formValues) => {
       const nextValue = formValues.value.trim();
       if (nextValue !== value.trim()) {
-        (onSave ?? onChange)?.(nextValue);
+        onSave(nextValue);
       }
     }
   });
@@ -48,7 +46,6 @@ const useInlineEditForm = ({
       const error = validate(nextValue);
       setErrors(error ? { value: error } : {});
     }
-    onChange?.(nextValue);
   };
 
   const save = async (): Promise<boolean> => {
