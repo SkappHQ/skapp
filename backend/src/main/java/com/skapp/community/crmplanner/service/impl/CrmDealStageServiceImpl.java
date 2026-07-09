@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -165,19 +167,22 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 			}
 
-			if (stage.getStageType() == CrmDealStageType.INITIAL
-					&& !stage.getOrderIndex().equals(newStage.getOrderIndex())) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_REORDER_INITIAL_STAGE);
-			}
-
 			stage.setOrderIndex(newStage.getOrderIndex());
 		});
 
+		updateStageTypesAfterReorder(existingStages);
 		crmDealStageDao.saveAll(existingStages);
 
 		log.info("reorderDealStages: execution ended");
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
+	}
+
+	private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {
+		CrmDealStage firstStage = Collections.min(reorderedStages, Comparator.comparing(CrmDealStage::getOrderIndex));
+
+		reorderedStages.forEach(stage -> stage
+			.setStageType(stage.getId().equals(firstStage.getId()) ? CrmDealStageType.INITIAL : CrmDealStageType.OPEN));
 	}
 
 	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
