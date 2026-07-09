@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
+import {
+  extractClaimsFromToken,
+  isTokenExpired
+} from "~community/auth/utils/authUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
@@ -16,9 +19,16 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import {
+  checkRestrictedRoutesAndRedirect,
+  isEnterpriseMode
+} from "~community/common/utils/commonUtil";
+import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
-import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
+import {
+  getSubdomain,
+  isCoreOrProTier
+} from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -192,11 +202,39 @@ const allowedRoutes: Record<
   ...commonRoutes
 };
 
-export function middleware(request: NextRequest) {
-  // Get accessToken from cookies
-  const token = request.cookies.get("accessToken")?.value;
+const requestAccessTokenFromRefresh = async (
+  refreshTokenCookieName: string,
+  refreshToken: string,
+  tenantId: string | undefined
+): Promise<string | null> => {
+  if (!refreshTokenCookieName || !refreshToken) return null;
 
-  const claims = extractClaimsFromToken(token || "");
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}${authenticationEndpoints.REFRESH_TOKEN}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          cookie: `${refreshTokenCookieName}=${refreshToken}`,
+          ...(tenantId ? { "X-Tenant-ID": tenantId } : {})
+        },
+        body: "{}"
+      }
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data?.results?.[0]?.accessToken ?? null;
+  } catch (error) {
+    console.error("[middleware] refresh-token request failed:", error);
+    return null;
+  }
+};
+
+export async function middleware(request: NextRequest) {
+  let token = request.cookies.get("accessToken")?.value;
 
   const currentPath = request.nextUrl.pathname;
 
@@ -207,6 +245,44 @@ export function middleware(request: NextRequest) {
   ) {
     return NextResponse.next();
   }
+
+  if (!token || isTokenExpired(token)) {
+    let refreshTokenCookieName: string | null;
+    let tenantId: string | undefined;
+
+    if (isEnterpriseMode()) {
+      const subdomain = getSubdomain(request.nextUrl.hostname);
+      tenantId = Array.isArray(subdomain) ? subdomain[0] : subdomain;
+      refreshTokenCookieName = tenantId ? `${tenantId}_refreshToken` : null;
+    } else {
+      refreshTokenCookieName = "refreshToken";
+    }
+
+    const refreshToken = refreshTokenCookieName
+      ? request.cookies.get(refreshTokenCookieName)?.value
+      : undefined;
+
+    let minted: string | null = null;
+    if (
+      refreshTokenCookieName &&
+      refreshToken &&
+      !isTokenExpired(refreshToken)
+    ) {
+      minted = await requestAccessTokenFromRefresh(
+        refreshTokenCookieName,
+        refreshToken,
+        tenantId
+      );
+    }
+
+    if (!minted) {
+      return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
+    }
+
+    token = minted;
+  }
+
+  const claims = extractClaimsFromToken(token);
 
   const roles: (
     | AdminTypes
@@ -330,14 +406,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect to /unauthorized if no access
-  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
+  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
     );
-  } else {
-    return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
   }
+
+  return NextResponse.next();
 }
 
 // Configure which routes middleware should run on

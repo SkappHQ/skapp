@@ -127,11 +127,13 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 
 export const setAccessToken = (token: string) => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(
-      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
-    );
+    const claims = extractClaimsFromToken(token);
+    const expirySeconds = typeof claims.exp === "number" ? claims.exp : undefined;
+    const expiryAttribute = expirySeconds
+      ? `; expires=${new Date(expirySeconds * unitConversion.MILLISECONDS_PER_SECOND).toUTCString()}`
+      : "";
 
-    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    document.cookie = `accessToken=${token}; path=/${expiryAttribute}; Secure; SameSite=Lax`;
   }
 };
 
@@ -169,16 +171,18 @@ export const getAccessToken = async (): Promise<string | null> => {
 
   const currentAccessToken = getCookieValue("accessToken");
 
-  if (!currentAccessToken) {
+  if (currentAccessToken && !isTokenExpired(currentAccessToken)) {
+    return currentAccessToken;
+  }
+
+  const newAccessToken = await getNewAccessToken();
+
+  if (!newAccessToken) {
+    await signOut();
     return null;
   }
 
-  if (isTokenExpired(currentAccessToken)) {
-    const newToken = await getNewAccessToken();
-    return newToken;
-  }
-
-  return currentAccessToken;
+  return newAccessToken;
 };
 
 export const isTokenExpired = (token: string): boolean => {
@@ -331,17 +335,33 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   return userData;
 };
 
+// A route is protected iff the middleware matcher covers it — the matcher is
+// the single source of truth. Anything it does not match is public and must
+// stay reachable without a session (incognito / no cookies), so signOut clears
+// cookies there but does not redirect to sign-in. Matching mirrors Next.js:
+// "/foo/:path*" is a prefix match, every other entry is an exact match (so the
+// protected "/verify/email" does not swallow the public "/verify/guest-otp").
+const isProtectedRoute = (pathname: string): boolean =>
+  config.matcher.some((pattern) => {
+    if (pattern.endsWith("/:path*")) {
+      const base = pattern.slice(0, -"/:path*".length);
+      return pathname === base || pathname.startsWith(`${base}/`);
+    }
+    return pathname === pattern;
+  });
+
 export const signOut = async (redirect: boolean = true): Promise<void> => {
   await clearCookies();
 
-  if (redirect === false) return;
+  if (redirect === false || typeof globalThis.window === "undefined") return;
 
-  if (typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
-    const urlParams = new URLSearchParams(window.location.search);
-    const existingCallback = urlParams.get("callback");
+  const currentPath = globalThis.window.location.pathname;
 
-    const callbackPath = existingCallback || currentPath;
-    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
-  }
+  if (!isProtectedRoute(currentPath)) return;
+
+  const existingCallback = new URLSearchParams(
+    globalThis.window.location.search
+  ).get("callback");
+
+  globalThis.window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${existingCallback || currentPath}`;
 };
