@@ -12,7 +12,7 @@ import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCreateDealPayload,
   CrmDealResponseType,
-  CrmDealEditFields,
+  CrmDealEditPayload,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
   CrmDealStageCreatePayload,
@@ -136,10 +136,7 @@ export const useGetDealById = (
 const editDeal = async ({
   id,
   fields
-}: {
-  id: number;
-  fields: CrmDealEditFields;
-}): Promise<CrmDealResponseType> => {
+}: CrmDealEditPayload): Promise<CrmDealResponseType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.EDIT_DEAL(id),
     fields

@@ -281,6 +281,11 @@ export interface CrmDealEditFields {
   ownerId?: number;
 }
 
+export interface CrmDealEditPayload {
+  id: number;
+  fields: CrmDealEditFields;
+}
+
 export interface CrmDealPaginatedResponse {
   items: CrmDealResponseType[];
   currentPage: number;
