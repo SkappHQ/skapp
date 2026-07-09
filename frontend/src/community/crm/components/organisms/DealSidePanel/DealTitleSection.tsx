@@ -51,9 +51,9 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
       debouncedDealName !== name.trim()
   );
 
-  const isNameUnchanged = formik.values.name.trim() === name.trim();
-
-  const isDuplicateName = !isNameUnchanged && dealNameData?.isExists === true;
+  const isDuplicateName =
+    formik.values.name.trim() !== name.trim() &&
+    dealNameData?.isExists === true;
 
   const titleErrorMessage = isDuplicateName
     ? translateValidationText(["validations", "dealNameExists"])
