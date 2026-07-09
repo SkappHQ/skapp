@@ -132,7 +132,7 @@ export const addDealToStageMap = (
 
 export const updateDealInStageMap = (
   stageMap: CrmBoardStageDealsType[],
-  deal: Omit<CrmBoardDealSliceType, "taskCount">
+  deal: CrmBoardDealSliceType
 ): CrmBoardStageDealsType[] => {
   const currentStageId = findStageIdByDealId(stageMap, deal.id);
   if (currentStageId === null) return stageMap;

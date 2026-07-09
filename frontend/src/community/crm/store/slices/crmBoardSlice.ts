@@ -22,7 +22,7 @@ const CrmBoardSlice = (set: SetType<CrmBoardSliceTypes>) => ({
     set((state) => ({
       boardStageDeals: addDealToStageMap(state.boardStageDeals, deal)
     })),
-  updateDealInStage: (deal: Omit<CrmBoardDealSliceType, "taskCount">) =>
+  updateDealInStage: (deal: CrmBoardDealSliceType) =>
     set((state) => ({
       boardStageDeals: updateDealInStageMap(state.boardStageDeals, deal)
     })),

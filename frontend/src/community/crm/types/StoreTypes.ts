@@ -40,7 +40,7 @@ interface ActionTypes {
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
-  updateDealInStage: (deal: Omit<CrmBoardDealSliceType, "taskCount">) => void;
+  updateDealInStage: (deal: CrmBoardDealSliceType) => void;
   setPreselectedStageId: (stageId: number | null) => void;
 }
 

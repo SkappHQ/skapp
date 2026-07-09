@@ -415,7 +415,7 @@ describe("updateDealInStageMap", () => {
     const existing = { ...mkSliceDeal(1), taskCount: 7 };
     const stageMap = [mkStageEntry(10, [existing])];
 
-    // incoming deal has no taskCount (Omit type); it must not overwrite the stored value
+    // incoming deal's taskCount must not overwrite the stored value
     const result = updateDealInStageMap(stageMap, mkSliceDeal(1));
 
     expect(result[0].deals[0].taskCount).toBe(7);

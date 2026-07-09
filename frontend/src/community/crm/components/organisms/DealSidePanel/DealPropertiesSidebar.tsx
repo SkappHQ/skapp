@@ -89,6 +89,30 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     [dealStages]
   );
 
+  const handleStageChange = (value: string): void => {
+    if (value !== selectedStageId) {
+      onStageChange(Number(value));
+    }
+  };
+
+  const handleContactChange = (contact: CrmContactLookup | null): void => {
+    if (contact && contact.id !== selectedContact?.id) {
+      onContactChange(contact);
+    }
+  };
+
+  const handlePriorityChange = (value: CrmPriorityEnum): void => {
+    if (value !== deal.priority) {
+      onPriorityChange(value);
+    }
+  };
+
+  const handleOwnerChange = (owner: CrmOwner | null): void => {
+    if (owner && owner.employeeId !== selectedOwner.employeeId) {
+      onOwnerChange(owner);
+    }
+  };
+
   return (
     <div className="w-1/3 flex flex-col gap-4 shrink-0">
       {isStagesLoading ? (
@@ -97,11 +121,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <Dropdown
           options={stageOptions}
           value={selectedStageId}
-          onChange={(value) => {
-            if (value !== selectedStageId) {
-              onStageChange(Number(value));
-            }
-          }}
+          onChange={handleStageChange}
           variant="primary"
           className="rounded-lg"
           width="55%"
@@ -116,11 +136,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <ContactPopupSearch
               contacts={contacts}
               selectedContact={selectedContact}
-              onChange={(contact) => {
-                if (contact && contact.id !== selectedContact?.id) {
-                  onContactChange(contact);
-                }
-              }}
+              onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText([
@@ -143,11 +159,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         <PropertyRow label={translateText(["priority"])}>
           <PriorityDropdown
             value={deal.priority}
-            onChange={(value) => {
-              if (value !== deal.priority) {
-                onPriorityChange(value);
-              }
-            }}
+            onChange={handlePriorityChange}
           />
         </PropertyRow>
 
@@ -155,12 +167,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           <div className="flex flex-col w-full">
             <OwnerPopupSearch
               selectedUser={selectedOwner}
-              onChange={(owner) => {
-                if (owner && owner.employeeId !== selectedOwner.employeeId) {
-                  setSelectedOwner(owner);
-                  onOwnerChange(owner);
-                }
-              }}
+              onChange={handleOwnerChange}
               placeholder={translateText(["placeholders", "none"])}
               searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
               noResultsText={translateText(["placeholders", "noResults"])}
