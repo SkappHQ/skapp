@@ -81,8 +81,10 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
-  const { data: companyLookupData, isFetching: isCompanyFetching } =
-    useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
+  const { data: companyLookupData } = useGetCompanyLookup(
+    debouncedCompanySearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
 
   const companyDropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
@@ -150,13 +152,6 @@ const ContactModalForm = ({
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
           isOpenOnFocus={true}
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
         />
       ) : (
         <InputField

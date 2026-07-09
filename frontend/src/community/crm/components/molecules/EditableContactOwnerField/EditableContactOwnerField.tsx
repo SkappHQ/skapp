@@ -42,7 +42,7 @@ const EditableContactOwnerField = ({
   }, [initialOwner]);
 
   const { data: ownerLookupData, isFetching: isOwnerFetching } =
-    useGetOwnerLookup(debouncedOwnerSearch, DEFAULT_LOOKUP_PAGE_SIZE);
+    useGetOwnerLookup(debouncedOwnerSearch, DEFAULT_LOOKUP_PAGE_SIZE, true);
 
   const ownerDropdownItems: SearchableDropdownItem[] =
     ownerLookupData?.items?.map((owner) => ({
@@ -98,13 +98,11 @@ const EditableContactOwnerField = ({
       onChange={(event) => setOwnerSearchText(event.target.value)}
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
-      isOpenOnFocus={!!ownerLookupData?.items?.length}
+      isOpenOnFocus
       emptyMessage={
-        isOwnerFetching ? undefined : (
-          <p className="px-4 py-2 body2">
-            {translateContactText(["emptyStates", "noOwners"])}
-          </p>
-        )
+        isOwnerFetching
+          ? undefined
+          : translateContactText(["emptyStates", "noOwners"])
       }
     />
   );

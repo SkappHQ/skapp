@@ -29,7 +29,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -99,7 +98,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
