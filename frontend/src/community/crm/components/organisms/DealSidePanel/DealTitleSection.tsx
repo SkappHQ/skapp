@@ -19,17 +19,12 @@ interface DealTitleSectionProps {
 
 const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
-  const translateValidationText = useTranslator(
-    "crmModule",
-    "deals",
-    "addDealSidePanel"
-  );
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const formik = useFormik({
     initialValues: { name },
-    validationSchema: dealTitleValidations(translateValidationText),
+    validationSchema: dealTitleValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
     enableReinitialize: true,
@@ -56,7 +51,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
     dealNameData?.isExists === true;
 
   const titleErrorMessage = isDuplicateName
-    ? translateValidationText(["validations", "dealNameExists"])
+    ? translateText(["validations", "dealNameExists"])
     : formik.errors.name;
 
   const handleClick = () => {
@@ -111,6 +106,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
               icon={<TickIcon fill="var(--color-primary-accent)" />}
               onClick={handleSave}
               variant="outlined"
+              disabled={isDuplicateName}
             />
             <IconButton
               aria-label={translateText(["ariaLabels", "discardTitle"])}
