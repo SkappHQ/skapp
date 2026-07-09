@@ -49,7 +49,6 @@ const DealStagesDraggableContent = ({
   const terminalStages = stagesData.filter((stage) =>
     isTerminalStage(stage.stageType)
   );
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -84,6 +83,7 @@ const DealStagesDraggableContent = ({
                 onDelete={onDelete}
                 isTerminalStage={isTerminalStage(stage.stageType)}
                 isDeletable={stage.stageType === CrmDealStageEnum.OPEN}
+                isDraggable={stage.stageType === CrmDealStageEnum.OPEN}
               />
             ))}
           </ul>
