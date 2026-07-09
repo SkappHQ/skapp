@@ -67,7 +67,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchTerm,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    isOpen && debouncedContactSearchTerm.length > 0
+    debouncedContactSearchTerm.length > 0
   );
   const contacts = contactLookupData?.items ?? [];
 

@@ -15,7 +15,7 @@ import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmDealEditFields } from "~community/crm/types/CommonTypes";
+import { CrmDealEditPayload } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealDescriptionSection from "./DealDescriptionSection";
@@ -65,7 +65,7 @@ const DealSidePanel: FC = () => {
 
   const selectedDeal = getDealById(selectedDealId!);
 
-  const { mutate: editDeal } = useEditDeal(() => {
+  const { mutate: editDeal } = useEditDeal(undefined, () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -74,8 +74,8 @@ const DealSidePanel: FC = () => {
     });
   });
 
-  const updateDeal = (fields: CrmDealEditFields): void => {
-    editDeal({ id: selectedDealId!, fields });
+  const updateDeal = (fields: Partial<CrmDealEditPayload>): void => {
+    editDeal({ id: selectedDealId!, ...fields });
   };
 
   const {

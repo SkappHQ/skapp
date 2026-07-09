@@ -283,16 +283,6 @@ export interface CrmTaskCategoryResponseType {
   taskTypes: CrmTaskCategory[];
 }
 
-export interface CrmDealEditFields {
-  name?: string;
-  description?: string | null;
-  stageId?: number;
-  priority?: CrmPriorityEnum;
-  amount?: string | null;
-  contactId?: number;
-  ownerId?: number;
-}
-
 export interface CrmDealListItem {
   id: number;
   name: string;
@@ -306,7 +296,13 @@ export interface CrmDealListItem {
 
 export interface CrmDealEditPayload {
   id: number;
-  fields: CrmDealEditFields;
+  name?: string;
+  description?: string | null;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
+  amount?: string | null;
+  contactId?: number;
+  ownerId?: number;
 }
 
 export interface CrmDealPaginatedResponse {

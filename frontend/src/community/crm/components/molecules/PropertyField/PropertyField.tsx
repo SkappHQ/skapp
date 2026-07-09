@@ -15,7 +15,7 @@ interface PropertyFieldProps {
   max?: number;
   validate?: (value: string) => string;
   onChange?: (value: string) => void;
-  onSave?: (value: string) => void;
+  onSave: (value: string) => void;
 }
 
 const PropertyField: FC<PropertyFieldProps> = ({

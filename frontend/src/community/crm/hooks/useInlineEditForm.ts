@@ -4,12 +4,14 @@ import { useState } from "react";
 interface UseInlineEditFormParams {
   value: string;
   validate?: (value: string) => string;
+  onChange?: (value: string) => void;
   onSave: (value: string) => void;
 }
 
 const useInlineEditForm = ({
   value,
   validate,
+  onChange,
   onSave
 }: UseInlineEditFormParams) => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -31,27 +33,22 @@ const useInlineEditForm = ({
     }
   });
 
-  const { values, errors, setFieldValue, setErrors, validateForm, submitForm } =
+  const { values, errors, setFieldValue, validateForm, submitForm, resetForm } =
     formik;
 
   const startEditing = () => {
+    resetForm();
     setIsEditing(true);
-    setFieldValue("value", value);
-    setErrors({});
   };
 
   const changeValue = (nextValue: string) => {
-    setFieldValue("value", nextValue);
-    if (validate) {
-      const error = validate(nextValue);
-      setErrors(error ? { value: error } : {});
-    }
+    setFieldValue("value", nextValue, true);
+    onChange?.(nextValue);
   };
 
   const save = async (): Promise<boolean> => {
     const validationErrors = await validateForm();
     if (validationErrors.value) {
-      setErrors(validationErrors);
       return false;
     }
     await submitForm();
@@ -60,8 +57,7 @@ const useInlineEditForm = ({
   };
 
   const discard = () => {
-    setFieldValue("value", value);
-    setErrors({});
+    resetForm();
     setIsEditing(false);
   };
 

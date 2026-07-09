@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -20,12 +21,9 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -47,12 +45,6 @@ import java.util.Map;
 public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 	private final EntityManager entityManager;
-
-	private Expression<BigDecimal> safeAmountAsDecimal(CriteriaBuilder cb, Path<String> amount) {
-		return cb.<BigDecimal>selectCase()
-			.when(cb.or(cb.isNull(amount), cb.equal(amount, "")), cb.nullLiteral(BigDecimal.class))
-			.otherwise(amount.cast(BigDecimal.class));
-	}
 
 	@Override
 	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable) {
@@ -109,6 +101,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
 			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
@@ -130,7 +124,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		}
 
 		if (filterDto.getCompanyId() != null) {
-			predicates.add(cb.equal(deal.get(CrmDeal_.company).get(CrmCompany_.id), filterDto.getCompanyId()));
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), filterDto.getCompanyId()));
 		}
 
 		if (filterDto.getContactId() != null) {
@@ -268,7 +262,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
 
 		query.select(cb.construct(CrmDealSummary.class, deal.get(CrmDeal_.contact).get(CrmContact_.id),
-				cb.coalesce(cb.sum(safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount))), BigDecimal.ZERO),
+				cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO),
 				cb.count(deal.get(CrmDeal_.id))));
 
 		query.where(deal.get(CrmDeal_.contact).get(CrmContact_.id).in(contactIds),
@@ -302,13 +296,13 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		Expression<BigDecimal> totalRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
 			.when(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.WON),
-					safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount)))
+					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
 			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
 
 		Expression<BigDecimal> pipelineRevenue = cb.coalesce(cb.sum(cb.<BigDecimal>selectCase()
 			.when(cb.or(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.OPEN),
 					cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.INITIAL)),
-					safeAmountAsDecimal(cb, deal.get(CrmDeal_.amount)))
+					deal.get(CrmDeal_.amount).cast(BigDecimal.class))
 			.otherwise(BigDecimal.ZERO)), BigDecimal.ZERO);
 
 		Expression<Long> activeDealsCount = cb.coalesce(cb.sum(cb.<Long>selectCase()

@@ -1,4 +1,5 @@
 import {
+  UseInfiniteQueryResult,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -11,10 +12,10 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCreateDealPayload,
-  CrmDealResponseType,
   CrmDealEditPayload,
   CrmDealFilterParams,
   CrmDealPaginatedResponse,
+  CrmDealResponseType,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
   CrmDealStageType,
@@ -30,7 +31,7 @@ import { crmDealQueryKeys } from "./utils/QueryKeys";
 export const useGetDealsInfinite = (
   params: CrmDealFilterParams,
   enabled: boolean = true
-): UseQueryResult<CrmDealPaginatedResponse> => {
+): UseInfiniteQueryResult<CrmDealPaginatedResponse> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS(params),
@@ -117,9 +118,7 @@ export const useGetDealLookup = (
   });
 };
 
-const fetchDealById = async (
-  id: number
-): Promise<CrmDealResponseType> => {
+const fetchDealById = async (id: number): Promise<CrmDealResponseType> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
@@ -138,7 +137,7 @@ export const useGetDealById = (
 
 const editDeal = async ({
   id,
-  fields
+  ...fields
 }: CrmDealEditPayload): Promise<CrmDealResponseType> => {
   const response = await authFetch.patch(
     crmDealEndpoints.EDIT_DEAL(id),
@@ -147,7 +146,7 @@ const editDeal = async ({
   return response?.data?.results?.[0];
 };
 
-export const useEditDeal = (onError: (error: AxiosError) => void) => {
+export const useEditDeal = (onSuccess?: () => void, onError?: () => void) => {
   const { updateDeal, updateDealInStage } = useCrmStore((store) => ({
     updateDeal: store.updateDeal,
     updateDealInStage: store.updateDealInStage
@@ -157,6 +156,7 @@ export const useEditDeal = (onError: (error: AxiosError) => void) => {
     onSuccess: (updatedDeal) => {
       updateDeal(updatedDeal);
       updateDealInStage(mapEditedDealToSlice(updatedDeal));
+      onSuccess?.();
     },
     onError
   });
