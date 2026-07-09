@@ -4,6 +4,7 @@ import {
   CrmCompanyMetricsType,
   CrmCompanyRelationsUpdate,
   CrmContact,
+  CrmDealResponseType,
   CrmTaskDetailType
 } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
@@ -31,9 +32,14 @@ interface ActionTypes {
   updateContact: (contact: CrmContact) => void;
   getContactById: (id: number) => CrmContact | undefined;
   setSelectedDealId: (dealId: number | null) => void;
+  setDeals: (deals: CrmDealResponseType[]) => void;
+  getDealById: (id: number) => CrmDealResponseType | undefined;
+  updateDeal: (deal: CrmDealResponseType) => void;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
+  replaceBoardStageDeals: (stageDeals: CrmBoardStageDealsType[]) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
+  updateDealInStage: (deal: CrmBoardDealSliceType) => void;
   setPreselectedStageId: (stageId: number | null) => void;
 }
 
@@ -53,6 +59,7 @@ export interface CrmStore extends ActionTypes {
   selectedContactId: number | null;
   contacts: CrmContact[];
   selectedDealId: number | null;
+  deals: CrmDealResponseType[];
   boardStageDeals: CrmBoardStageDealsType[];
   preselectedStageId: number | null;
 }
