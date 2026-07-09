@@ -42,17 +42,9 @@ const DealStagesDraggableContent = ({
   const isTerminalStage = (stageType: CrmDealStageEnum) =>
     [CrmDealStageEnum.WON, CrmDealStageEnum.LOST].includes(stageType);
 
-  const initialStages = stagesData.filter(
-    (stage) => stage.stageType === CrmDealStageEnum.INITIAL
+  const activeStages = stagesData.filter(
+    (stage) => !isTerminalStage(stage.stageType)
   );
-
-  const draggableStages = stagesData.filter(
-    (stage) =>
-      !isTerminalStage(stage.stageType) &&
-      stage.stageType !== CrmDealStageEnum.INITIAL
-  );
-
-  const activeStages = [...initialStages, ...draggableStages];
 
   const terminalStages = stagesData.filter((stage) =>
     isTerminalStage(stage.stageType)
@@ -62,16 +54,14 @@ const DealStagesDraggableContent = ({
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = draggableStages.findIndex(
-      (stage) => stage.id === active.id
+    const oldIndex = activeStages.findIndex((stage) => stage.id === active.id);
+    const newIndex = activeStages.findIndex((stage) => stage.id === over.id);
+
+    const reordered = arrayMove(activeStages, oldIndex, newIndex).map(
+      (stage, index) => ({ ...stage, orderIndex: index + 1 })
     );
-    const newIndex = draggableStages.findIndex((stage) => stage.id === over.id);
 
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const reordered = arrayMove(draggableStages, oldIndex, newIndex);
-
-    onStagesReorder([...initialStages, ...reordered, ...terminalStages]);
+    onStagesReorder([...reordered, ...terminalStages]);
   };
 
   return (
@@ -82,7 +72,7 @@ const DealStagesDraggableContent = ({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={draggableStages.map((s) => s.id)}
+          items={activeStages.map((s) => s.id)}
           strategy={verticalListSortingStrategy}
         >
           <ul className="flex flex-col gap-4">
@@ -94,7 +84,6 @@ const DealStagesDraggableContent = ({
                 onDelete={onDelete}
                 isTerminalStage={isTerminalStage(stage.stageType)}
                 isDeletable={stage.stageType === CrmDealStageEnum.OPEN}
-                isDraggable={stage.stageType !== CrmDealStageEnum.INITIAL}
               />
             ))}
           </ul>
@@ -112,7 +101,6 @@ const DealStagesDraggableContent = ({
               stage={stage}
               onEdit={onEdit}
               isTerminalStage={isTerminalStage(stage.stageType)}
-              isDraggable={false}
             />
           ))}
         </ul>
