@@ -225,6 +225,55 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for company"));
 	}
 
+	@Test
+	@DisplayName("Get deals filtered by contactId - Returns only deals linked to that contact")
+	void getDeals_FilterByContactId_ReturnsMatchingDeals() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Contact Filter Deal Company");
+
+		CrmContact contactA = new CrmContact();
+		contactA.setName("Contact A");
+		contactA.setEmail("deal.filter.contact.a@example.com");
+		contactA.setCompany(company);
+		contactA.setOwner(employeeDao.getReferenceById(1L));
+		contactA = crmContactDao.save(contactA);
+
+		CrmContact contactB = new CrmContact();
+		contactB.setName("Contact B");
+		contactB.setEmail("deal.filter.contact.b@example.com");
+		contactB.setCompany(company);
+		contactB.setOwner(employeeDao.getReferenceById(1L));
+		contactB = crmContactDao.save(contactB);
+
+		CrmDeal dealA = new CrmDeal();
+		dealA.setName("Deal for Contact A");
+		dealA.setStage(stage);
+		dealA.setContact(contactA);
+		dealA.setCompany(company);
+		dealA.setOwner(employeeDao.getReferenceById(1L));
+		dealA.setPriority(CrmDealPriority.MEDIUM);
+		dealA.setOrderIndex("a0");
+		crmDealDao.save(dealA);
+
+		CrmDeal dealB = new CrmDeal();
+		dealB.setName("Deal for Contact B");
+		dealB.setStage(stage);
+		dealB.setContact(contactB);
+		dealB.setCompany(company);
+		dealB.setOwner(employeeDao.getReferenceById(1L));
+		dealB.setPriority(CrmDealPriority.MEDIUM);
+		dealB.setOrderIndex("b0");
+		crmDealDao.save(dealB);
+
+		performRequest(
+				get(BASE_PATH).param("contactId", contactA.getId().toString()).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for Contact A"));
+	}
+
 	// --- Check deal name exists tests ---
 
 	@Test
