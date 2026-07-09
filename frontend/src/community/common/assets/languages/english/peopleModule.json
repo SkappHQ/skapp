@@ -1147,6 +1147,11 @@
   },
   "inbox": {
     "pageHead": "Documents | Skapp",
+    "folders": "Folders",
+    "createFolder": "Create folder",
+    "esignDocumentsFolder": "eSign documents",
+    "renameFolder": "Rename folder",
+    "deleteFolder": "Delete folder",
     "allDocuments": "All documents",
     "unknownSender": "Unknown sender",
     "sentBy": "Sent by",
