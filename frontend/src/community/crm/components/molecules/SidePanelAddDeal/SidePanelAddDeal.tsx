@@ -1,4 +1,4 @@
-import { Spinner, SubTaskInput } from "@rootcodelabs/skapp-ui";
+import { SubTaskInput } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
 
@@ -182,7 +182,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
         placeholder={translateText(["inlineAddDeal", "dealNamePlaceholder"])}
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
-        errorMessage={formik.touched.name ? formik.errors.name : undefined}
+        errorMessage={formik.errors.name}
         ariaLabels={{
           group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
           saveButton: translateText([
