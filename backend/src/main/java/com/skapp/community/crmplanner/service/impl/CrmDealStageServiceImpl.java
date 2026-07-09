@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -31,169 +32,166 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CrmDealStageServiceImpl implements CrmDealStageService {
 
-	private final CrmDealStageDao crmDealStageDao;
+    private final CrmDealStageDao crmDealStageDao;
 
-	private final CrmDealDao crmDealDao;
+    private final CrmDealDao crmDealDao;
 
-	private final CrmMapper crmMapper;
+    private final CrmMapper crmMapper;
 
-	private final MessageUtil messageUtil;
+    private final MessageUtil messageUtil;
 
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getDealStages() {
-		log.info("getDealStages: execution started");
+    @Override
+    @Transactional(readOnly = true)
+    public ResponseEntityDto getDealStages() {
+        log.info("getDealStages: execution started");
 
-		List<CrmDealStage> stages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+        List<CrmDealStage> stages = filterVisibleDealStages(
+                crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
-		log.info("getDealStages: execution ended with {} result(s)", stages.size());
+        log.info("getDealStages: execution ended with {} result(s)", stages.size());
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(stages));
-	}
+        return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(stages));
+    }
 
-	@Override
-	@Transactional
-	public ResponseEntityDto createDealStage(CrmDealStageCreateRequestDto requestDto) {
-		log.info("createDealStage: execution started");
+    @Override
+    @Transactional
+    public ResponseEntityDto createDealStage(CrmDealStageCreateRequestDto requestDto) {
+        log.info("createDealStage: execution started");
 
-		CrmValidations.validateDealStageName(requestDto.getName());
-		CrmValidations.validateDealStageDescription(requestDto.getDescription());
-		CrmValidations.validateDealStageColor(requestDto.getColor());
+        CrmValidations.validateDealStageName(requestDto.getName());
+        CrmValidations.validateDealStageDescription(requestDto.getDescription());
+        CrmValidations.validateDealStageColor(requestDto.getColor());
 
-		if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
-		}
+        if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+            throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
+        }
 
-		validateDealStageCreationLimit();
+        validateDealStageCreationLimit();
 
-		CrmDealStage stage = new CrmDealStage();
-		stage.setName(requestDto.getName());
-		stage.setDescription(requestDto.getDescription());
-		stage.setColor(requestDto.getColor().name());
-		stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
-		stage.setOrderIndex(crmDealStageDao.findNextOrderIndex());
+        CrmDealStage stage = new CrmDealStage();
+        stage.setName(requestDto.getName());
+        stage.setDescription(requestDto.getDescription());
+        stage.setColor(requestDto.getColor().name());
+        stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
+        stage.setOrderIndex(crmDealStageDao.findNextOrderIndex());
 
-		CrmDealStage saved = crmDealStageDao.save(stage);
+        CrmDealStage saved = crmDealStageDao.save(stage);
 
-		log.info("createDealStage: execution ended, created stage id={}", saved.getId());
+        log.info("createDealStage: execution ended, created stage id={}", saved.getId());
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
-	}
+        return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+    }
 
-	@Override
-	@Transactional
-	public ResponseEntityDto editDealStage(Long id, CrmDealStageEditRequestDto requestDto) {
-		log.info("editDealStage: execution started");
+    @Override
+    @Transactional
+    public ResponseEntityDto editDealStage(Long id, CrmDealStageEditRequestDto requestDto) {
+        log.info("editDealStage: execution started");
 
-		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+        CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
-		if (requestDto.getName() != null && !requestDto.getName().equals(stage.getName())) {
-			CrmValidations.validateDealStageName(requestDto.getName());
-			if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(requestDto.getName(), id)) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
-			}
-			stage.setName(requestDto.getName());
-		}
+        if (requestDto.getName() != null && !requestDto.getName().equals(stage.getName())) {
+            CrmValidations.validateDealStageName(requestDto.getName());
+            if (crmDealStageDao.existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(requestDto.getName(), id)) {
+                throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NAME_DUPLICATE);
+            }
+            stage.setName(requestDto.getName());
+        }
 
-		if (requestDto.getDescription() != null) {
-			CrmValidations.validateDealStageDescription(requestDto.getDescription());
-			stage.setDescription(requestDto.getDescription());
-		}
+        if (requestDto.getDescription() != null) {
+            CrmValidations.validateDealStageDescription(requestDto.getDescription());
+            stage.setDescription(requestDto.getDescription());
+        }
 
-		if (requestDto.getColor() != null) {
-			CrmValidations.validateDealStageColor(requestDto.getColor());
-			stage.setColor(requestDto.getColor().name());
-		}
+        if (requestDto.getColor() != null) {
+            CrmValidations.validateDealStageColor(requestDto.getColor());
+            stage.setColor(requestDto.getColor().name());
+        }
 
-		CrmDealStage saved = crmDealStageDao.save(stage);
+        CrmDealStage saved = crmDealStageDao.save(stage);
 
-		log.info("editDealStage: execution ended, updated stage");
+        log.info("editDealStage: execution ended, updated stage");
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
-	}
+        return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+    }
 
-	@Override
-	@Transactional
-	public ResponseEntityDto deleteDealStage(Long id) {
-		log.info("deleteDealStage: execution started");
+    @Override
+    @Transactional
+    public ResponseEntityDto deleteDealStage(Long id) {
+        log.info("deleteDealStage: execution started");
 
-		CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+        CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
 
-		if (CrmConstants.NON_DELETABLE_STAGES.contains(stage.getStageType())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE);
-		}
+        if (CrmConstants.NON_DELETABLE_STAGES.contains(stage.getStageType())) {
+            throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_TERMINAL_STAGE);
+        }
 
-		if (crmDealDao.existsByStageIdAndIsDeletedFalse(id)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_STAGE_WITH_DEALS);
-		}
+        if (crmDealDao.existsByStageIdAndIsDeletedFalse(id)) {
+            throw new ModuleException(CrmMessageConstant.CRM_ERROR_CANNOT_DELETE_STAGE_WITH_DEALS);
+        }
 
-		stage.setIsDeleted(true);
-		crmDealStageDao.save(stage);
+        stage.setIsDeleted(true);
+        crmDealStageDao.save(stage);
 
-		log.info("deleteDealStage: execution ended, deleted stage");
+        log.info("deleteDealStage: execution ended, deleted stage");
 
-		return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_STAGE_DELETED), false);
-	}
+        return new ResponseEntityDto(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_DEAL_STAGE_DELETED), false);
+    }
 
-	@Override
-	@Transactional
-	public ResponseEntityDto reorderDealStages(List<CrmDealStageReorderRequestDto> changedStages) {
-		log.info("reorderDealStages: execution started");
+    @Override
+    @Transactional
+    public ResponseEntityDto reorderDealStages(List<CrmDealStageReorderRequestDto> changedStages) {
+        log.info("reorderDealStages: execution started");
 
-		CrmValidations.validateDealStageReorderRequest(changedStages);
+        CrmValidations.validateDealStageReorderRequest(changedStages);
 
-		List<CrmDealStage> allStages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+        List<CrmDealStage> existingStages = filterVisibleDealStages(
+                crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
-		List<CrmDealStage> openStages = allStages.stream()
-			.filter(stage -> stage.getStageType() == CrmDealStageType.OPEN)
-			.toList();
+        existingStages = existingStages.stream()
+                .filter(stage -> !CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
+                .toList();
 
-		if (openStages.size() != changedStages.size()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
-		}
+        if (existingStages.size() != changedStages.size()) {
+            throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
+        }
 
-		Map<Long, CrmDealStage> openStagesMap = openStages.stream()
-			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
+        Map<Long, CrmDealStage> existingStagesMap = existingStages.stream()
+                .collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
-		int anchorOrderIndex = allStages.stream()
-			.filter(stage -> stage.getStageType() == CrmDealStageType.INITIAL)
-			.map(CrmDealStage::getOrderIndex)
-			.findFirst()
-			.orElse(0);
+        changedStages.forEach(newStage -> {
+            CrmDealStage stage = existingStagesMap.get(newStage.getId());
 
-		List<CrmDealStageReorderRequestDto> orderedRequest = changedStages.stream()
-			.sorted(Comparator.comparing(CrmDealStageReorderRequestDto::getOrderIndex))
-			.toList();
+            if (stage == null) {
+                throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
+            }
 
-		int nextOrderIndex = anchorOrderIndex + 1;
-		for (CrmDealStageReorderRequestDto newStage : orderedRequest) {
-			CrmDealStage stage = openStagesMap.get(newStage.getId());
+            stage.setOrderIndex(newStage.getOrderIndex());
+        });
 
-			if (stage == null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
-			}
+        updateStageTypesAfterReorder(existingStages);
+        crmDealStageDao.saveAll(existingStages);
 
-			stage.setOrderIndex(nextOrderIndex++);
-		}
+        log.info("reorderDealStages: execution ended");
 
-		crmDealStageDao.saveAll(openStages);
+        return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
+    }
 
-		log.info("reorderDealStages: execution ended");
+    private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {
+        CrmDealStage firstStage = Collections.min(reorderedStages, Comparator.comparing(CrmDealStage::getOrderIndex));
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(openStages));
-	}
+        reorderedStages.forEach(stage -> stage
+                .setStageType(stage.getId().equals(firstStage.getId()) ? CrmDealStageType.INITIAL : CrmDealStageType.OPEN));
+    }
 
-	protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
-		return stages;
-	}
+    protected List<CrmDealStage> filterVisibleDealStages(List<CrmDealStage> stages) {
+        return stages;
+    }
 
-	protected void validateDealStageCreationLimit() {
-		// This method is a placeholder for enterprise deal stage creation limit
-		// validation
-	}
+    protected void validateDealStageCreationLimit() {
+        // This method is a placeholder for enterprise deal stage creation limit
+        // validation
+    }
 
 }
