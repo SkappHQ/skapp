@@ -158,10 +158,10 @@ const AddDealSidePanel: FC = () => {
   };
 
   const handleClose = () => {
+    closeCrmSidePanel();
     resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    closeCrmSidePanel();
   };
 
   return (
@@ -208,7 +208,7 @@ const AddDealSidePanel: FC = () => {
                 value={values.description}
                 onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
-                className="w-full min-h-[10vh]"
+                className="w-full min-h-[23.6vh]"
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"

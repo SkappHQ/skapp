@@ -27,9 +27,10 @@ const PriorityDropdown: FC<PriorityDropdownProps> = ({ value, onChange }) => {
       variant="jsx-content"
       menuWidth="content"
       height="min-h-8"
+      width="100%"
       hideArrowIcon={true}
       padding="py-2 px-1"
-      className="bg-transparent border-0 rounded-lg hover:bg-tertiary-background"
+      className="w-full bg-transparent border-0 rounded-lg hover:bg-tertiary-background focus:ring-0! focus:border-transparent!"
     />
   );
 };
