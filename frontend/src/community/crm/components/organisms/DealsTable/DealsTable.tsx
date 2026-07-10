@@ -15,13 +15,13 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
+import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface OwnerCellProps {
-  owner: CrmDealListItem["owner"];
+  owner: CrmDealResponseType["owner"];
 }
 
 const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
@@ -56,9 +56,10 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  allDeals: CrmDealListItem[];
+  allDeals: CrmDealResponseType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
+  onDealClick?: (deal: CrmDealResponseType) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -66,7 +67,8 @@ const DealsTable: FC<Props> = ({
   isLoading,
   allDeals,
   hasNextPage,
-  onLoadMore
+  onLoadMore,
+  onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { getStageByName } = useStageNameMapper();
@@ -151,13 +153,27 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      allDeals.map((deal: CrmDealListItem) => {
+      allDeals.map((deal: CrmDealResponseType) => {
         const formattedAmount = formatValue(deal.amount);
 
         return {
           id: String(deal.id),
           dealName: (
-            <div className="flex items-center gap-2">
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
+              aria-label={translateText(["openDealDetails"], {
+                name: deal.name
+              })}
+              onClick={() => onDealClick?.(deal)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onDealClick?.(deal);
+                }
+              }}
+            >
               <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
                 <HandshakeIcon
                   width="14"
@@ -165,8 +181,11 @@ const DealsTable: FC<Props> = ({
                   fill="var(--color-white)"
                 />
               </div>
-              <span className="body2">#{deal.id}</span>
-              <span className="body2 block w-full truncate" title={deal.name}>
+              <span className="body2 group-hover:underline">#{deal.id}</span>
+              <span
+                className="body2 group-hover:underline block w-full truncate"
+                title={deal.name}
+              >
                 {deal.name}
               </span>
             </div>
@@ -180,9 +199,11 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
+                style={{
+                  backgroundColor: STAGE_COLOR_MAP[deal.stage.color]
+                }}
               />
-              <span className="body2">{getStageByName(deal.stageName)}</span>
+              <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
           companyName: (
@@ -194,10 +215,7 @@ const DealsTable: FC<Props> = ({
             </span>
           ),
           contactName: (
-            <span
-              className="body2 block w-full truncate"
-              title={deal.contactName}
-            >
+            <span className="body2 block w-full truncate">
               {deal.contactName}
             </span>
           ),

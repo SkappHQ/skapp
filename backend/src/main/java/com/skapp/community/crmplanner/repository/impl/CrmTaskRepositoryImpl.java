@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -128,8 +129,11 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay()))), 1L)
 					.otherwise(0L))));
 
+		Join<CrmTask, CrmCompany> companyJoin = task.join(CrmTask_.company, JoinType.LEFT);
+
 		query.where(task.get(CrmTask_.contact).get(CrmContact_.id).in(contactIds),
-				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted)));
+				cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
 
 		query.groupBy(task.get(CrmTask_.contact).get(CrmContact_.id));
 
@@ -147,12 +151,14 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
 		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
 		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmCompany> companyJoin = task.join(CrmTask_.company, JoinType.LEFT);
 
 		query.distinct(true);
 		query.where(cb.and(
 				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
 						cb.equal(dealContact.get(CrmContact_.id), contactId)),
-				cb.isFalse(task.get(CrmTask_.isDeleted))));
+				cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted)))));
 
 		return entityManager.createQuery(query).getResultList();
 	}
@@ -184,6 +190,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
 		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
 		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmCompany> companyJoin = task.join(CrmTask_.company, JoinType.LEFT);
 
 		Expression<Long> openCount = cb.coalesce(
 				cb.sum(cb.<Long>selectCase().when(cb.isFalse(task.get(CrmTask_.isCompleted)), 1L).otherwise(0L)), 0L);
@@ -198,7 +205,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		query.where(cb.and(
 				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
 						cb.equal(dealContact.get(CrmContact_.id), contactId)),
-				cb.isFalse(task.get(CrmTask_.isDeleted))));
+				cb.isFalse(task.get(CrmTask_.isDeleted)),
+				cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted)))));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
@@ -207,6 +215,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
+
+		Join<CrmTask, CrmCompany> companyJoin = root.join(CrmTask_.company, JoinType.LEFT);
+		predicates.add(cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
 
 		if (params.getCompleted() != null) {
 			predicates.add(Boolean.TRUE.equals(params.getCompleted()) ? cb.isTrue(root.get(CrmTask_.isCompleted))
@@ -237,7 +248,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getCompanyId() != null) {
-			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;
@@ -314,9 +325,12 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmTask> task = query.from(CrmTask.class);
 
+		Join<CrmTask, CrmCompany> companyJoin = task.join(CrmTask_.company, JoinType.LEFT);
+
 		query.select(cb.tuple(task.get(CrmTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmTask_.id))));
 		query.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)),
-				cb.isFalse(task.get(CrmTask_.isCompleted)));
+				cb.isFalse(task.get(CrmTask_.isCompleted)),
+				cb.or(cb.isNull(companyJoin), cb.isFalse(companyJoin.get(CrmCompany_.isDeleted))));
 		query.groupBy(task.get(CrmTask_.deal).get(CrmDeal_.id));
 
 		Map<Long, Long> counts = new HashMap<>();

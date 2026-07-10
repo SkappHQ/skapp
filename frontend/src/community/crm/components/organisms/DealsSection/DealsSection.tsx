@@ -10,14 +10,26 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 
 const DealsSection: FC = () => {
   const [inputValue, setInputValue] = useState("");
-  const [activeView, setActiveView] = useState(DealViewEnum.LIST);
+  const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { deals, setDeals, setSelectedDealId, openCrmSidePanel } = useCrmStore(
+    (store) => ({
+      deals: store.deals,
+      setDeals: store.setDeals,
+      setSelectedDealId: store.setSelectedDealId,
+      openCrmSidePanel: store.openCrmSidePanel
+    })
+  );
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -35,10 +47,21 @@ const DealsSection: FC = () => {
     [data]
   );
 
+  useEffect(() => {
+    if (allDeals) {
+      setDeals(allDeals);
+    }
+  }, [allDeals]);
+
   const loadMore = async () => {
     if (hasNextPage && !isFetchingNextPage) {
       await fetchNextPage();
     }
+  };
+
+  const handleDealOnClick = (deal: CrmDealResponseType) => {
+    setSelectedDealId(deal.id);
+    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };
 
   useEffect(() => {
@@ -75,9 +98,10 @@ const DealsSection: FC = () => {
           <DealsTable
             searchKeyword={debouncedSearch}
             isLoading={isLoading}
-            allDeals={allDeals ?? []}
+            allDeals={deals}
             hasNextPage={hasNextPage}
             onLoadMore={loadMore}
+            onDealClick={handleDealOnClick}
           />
         </div>
       ) : (

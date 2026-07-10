@@ -34,6 +34,7 @@ import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +82,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("createContact: execution started");
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
-				requestDto.getOwnerId(), requestDto.getCompanyId());
+				requestDto.getOwnerId());
 		validateContactCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
@@ -91,7 +92,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
-		CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+		CrmCompany company = requestDto.getCompanyId() != null
+				? crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND))
+				: null;
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
@@ -146,8 +150,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		}
 
 		if (requestDto.getCompanyId() != null) {
-			CrmValidations.validateCompanyId(requestDto.getCompanyId());
-			CrmCompany company = crmCompanyDao.getReferenceById(requestDto.getCompanyId());
+			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			contact.setCompany(company);
 		}
 
@@ -264,7 +268,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		List<CrmContactLookupResponseDto> contactDtos = contactPage.getContent()
 			.stream()
-			.map(crmMapper::crmContactToCrmContactLookupResponseDto)
+			.map(this::toLookupDto)
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -277,9 +281,13 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
+	private CrmContactLookupResponseDto toLookupDto(CrmContact contact) {
+		return CrmUtil.toContactLookupDto(crmMapper, contact);
+	}
+
 	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
 			Map<Long, CrmTaskSummary> taskSummaryMap) {
-		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
+		CrmContactListItemDto dto = CrmUtil.toContactListItemDto(crmMapper, contact);
 
 		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
 		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
@@ -306,7 +314,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
 		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
 
-		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
+		CrmContactDetailResponseDto dto = CrmUtil.toContactDetailDto(crmMapper, contact);
 
 		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
 		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
@@ -331,12 +339,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId, Long companyId) {
+	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId) {
 		CrmValidations.validateContactName(name);
 		CrmValidations.validateContactEmail(email);
 		CrmValidations.validateContactNumber(contactNumber);
 		CrmValidations.validateOwnerId(ownerId);
-		CrmValidations.validateCompanyId(companyId);
 	}
 
 	private String normalizeNullableText(String value) {

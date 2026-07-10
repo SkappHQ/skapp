@@ -5,7 +5,18 @@ export const crmDealQueryKeys = {
   ALL: ["crm-deals"],
   GET_DEALS: (params: CrmDealFilterParams) => ["crm-deals", params],
   DEAL_STAGES: ["crm-deal-stages"],
-  DEAL_LOOKUP: (searchKeyword: string) => ["crm-deal-lookup", searchKeyword]
+
+  DEAL_LOOKUP: (
+    searchKeyword: string,
+    contactId?: number | null,
+    size?: number
+  ) => ["crm-deal-lookup", searchKeyword, contactId, size],
+  GET_DEALS_BY_COMPANY: (companyId: number) => [
+    "crm-deals",
+    "company",
+    companyId
+  ],
+  DEAL_BY_ID: (id: number) => ["crm-deal", id]
 };
 
 export const crmBoardQueryKeys = {
@@ -20,11 +31,10 @@ export const crmBoardQueryKeys = {
 export const contactQueryKeys = {
   GET_CONTACT_DATA: ["crm-contacts"],
   ALL: ["crm-contacts"],
-  GET_CONTACT_DATA_BY_SEARCH: (searchKeyword: string, companyId?: number) => [
-    "crm-contacts",
-    searchKeyword,
-    companyId
-  ],
+  GET_CONTACT_DATA_BY_SEARCH: (
+    searchKeyword: string,
+    companyId?: number | null
+  ) => ["crm-contacts", searchKeyword, companyId],
   CRM_COMPANIES: ["crm-companies"],
   COMPANY_LOOKUP: (searchKeyword: string) => [
     "crm-company-lookup",
@@ -34,11 +44,11 @@ export const contactQueryKeys = {
     "crm-owners-lookup",
     searchKeyword
   ],
-  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
-    "crm-contacts-lookup",
-    searchKeyword,
-    size
-  ],
+  CONTACT_LOOKUP: (
+    searchKeyword: string,
+    size: number,
+    dealId?: number | null
+  ) => ["crm-contacts-lookup", searchKeyword, size, dealId],
   OWNER_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-owners-lookup",
     searchKeyword,
@@ -66,14 +76,16 @@ export const taskQueryKeys = {
   GET_TASK_DATA: ["get-task-data"],
   GET_TASK_DATA_BY_ID: (id: number) => ["get-task-data", id],
   GET_OPEN_TASKS: ["get-open-tasks"],
-  GET_OPEN_TASKS_BY_SEARCH: (searchKeyword?: string) => [
-    "get-open-tasks",
-    searchKeyword
-  ],
+  GET_OPEN_TASKS_BY_SEARCH: (
+    searchKeyword?: string,
+    companyId?: number | null
+  ) => ["get-open-tasks", searchKeyword, companyId],
   GET_COMPLETED_TASKS: ["get-completed-tasks"],
-  GET_COMPLETED_TASKS_BY_SEARCH: (searchKeyword: string) => [
-    "get-completed-tasks",
-    searchKeyword
-  ],
-  GET_TASK_TYPES: ["get-task-types"]
+  GET_COMPLETED_TASKS_BY_SEARCH: (
+    searchKeyword: string,
+    companyId?: number | null
+  ) => ["get-completed-tasks", searchKeyword, companyId],
+  GET_TASK_TYPES: ["get-task-types"],
+  RELATED_TASKS: ["crm-related-tasks"],
+  GET_TASK_BY_ID: (id: number) => ["get-task-by-id", id]
 };

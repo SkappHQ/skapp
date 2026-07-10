@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -19,7 +19,7 @@ import {
   CrmContactLookup,
   CrmCreateDealPayload,
   CrmDealAddFormTypes,
-  CrmDealCreateResponseType
+  CrmDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
@@ -27,6 +27,16 @@ import { mapCreatedDealToSlice } from "~community/crm/utils/kanbanUtil";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
+
+const initialValues: CrmDealAddFormTypes = {
+  name: "",
+  stageId: "",
+  contactId: "",
+  ownerId: "",
+  priority: CrmPriorityEnum.MEDIUM,
+  amount: "",
+  description: ""
+};
 
 const AddDealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
@@ -38,26 +48,20 @@ const AddDealSidePanel: FC = () => {
   const {
     isCrmSidePanelOpen,
     crmSidePanelType,
-    selectedContactId,
-    getContactById,
-    popCrmSidePanel,
-    addDealToStage
+    closeCrmSidePanel,
+    addDealToStage,
+    setPreselectedStageId
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
-    selectedContactId: store.selectedContactId,
-    getContactById: store.getContactById,
-    popCrmSidePanel: store.popCrmSidePanel,
-    addDealToStage: store.addDealToStage
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    addDealToStage: store.addDealToStage,
+    setPreselectedStageId: store.setPreselectedStageId
   }));
 
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL;
-
-  useEffect(() => {
-    setSelectedContact(getContactById(selectedContactId!) ?? null);
-  }, [selectedContactId]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearch = useDebounce(
@@ -71,7 +75,7 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealResponseType) => {
     addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
@@ -81,7 +85,8 @@ const AddDealSidePanel: FC = () => {
     });
     formik.resetForm();
     setSelectedContact(null);
-    popCrmSidePanel();
+    setPreselectedStageId(null);
+    closeCrmSidePanel();
   };
 
   const handleCreateDealError = () => {
@@ -112,34 +117,27 @@ const AddDealSidePanel: FC = () => {
     createDeal(payload);
   };
 
-  const initialValues: CrmDealAddFormTypes = useMemo(
-    () => ({
-      name: "",
-      stageId: "",
-      contactId: selectedContactId ? String(selectedContactId) : "",
-      ownerId: "",
-      priority: CrmPriorityEnum.LOW,
-      amount: "",
-      description: ""
-    }),
-    [selectedContactId]
-  );
-
   const formik = useFormik<CrmDealAddFormTypes>({
     initialValues,
     validationSchema: addDealValidations(translateText),
     validateOnChange: true,
     validateOnBlur: false,
-    enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
+  const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setFieldValue("description", e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   const handleClose = () => {
     resetForm();
     setSelectedContact(null);
-    popCrmSidePanel();
+    setPreselectedStageId(null);
+    closeCrmSidePanel();
   };
 
   return (
@@ -181,9 +179,9 @@ const AddDealSidePanel: FC = () => {
                 label={translateText(["labels", "description"])}
                 placeholder={translateText(["placeholders", "description"])}
                 value={values.description}
-                onChange={(e) => setFieldValue("description", e.target.value)}
+                onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
-                className="w-full h-30.25"
+                className="w-full min-h-[10vh]"
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"
@@ -198,7 +196,7 @@ const AddDealSidePanel: FC = () => {
               />
             </div>
 
-            <div className="w-1/3 flex flex-col gap-4">
+            <div className="w-1/3 min-w-0 flex flex-col gap-4">
               <DealPropertiesSection
                 translateText={translateText}
                 formik={formik}
