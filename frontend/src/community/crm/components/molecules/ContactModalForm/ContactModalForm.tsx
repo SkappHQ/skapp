@@ -66,13 +66,21 @@ const ContactModalForm = ({
     initialValues,
     onSubmit,
     validationSchema: addContactValidations(translateContactText),
-    validateOnChange: false,
+    validateOnChange: true,
     validateOnBlur: false,
     enableReinitialize: true
   });
 
-  const { values, errors, handleChange, setFieldValue, submitForm, dirty } =
-    formik;
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    setFieldValue,
+    submitForm,
+    dirty
+  } = formik;
 
   const debouncedEmail = useDebounce(
     values.email.trim(),
@@ -143,11 +151,12 @@ const ContactModalForm = ({
       <InputField
         name="name"
         value={values.name}
-        errorMessage={errors.name}
-        state={errors.name ? "error" : "default"}
+        errorMessage={touched.name ? errors.name : undefined}
+        state={touched.name && errors.name ? "error" : "default"}
         label={translateContactText(["labels", "name"])}
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateContactText(["ariaLabels", "name"])}
         maxLength={CONTACT_NAME_MAX_LENGTH}
         required
@@ -157,11 +166,12 @@ const ContactModalForm = ({
       <InputField
         name="email"
         value={values.email}
-        errorMessage={errors.email}
-        state={errors.email ? "error" : "default"}
+        errorMessage={touched.email ? errors.email : undefined}
+        state={touched.email && errors.email ? "error" : "default"}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateContactText(["ariaLabels", "email"])}
         maxLength={CONTACT_EMAIL_MAX_LENGTH}
         required
@@ -209,11 +219,12 @@ const ContactModalForm = ({
       <InputField
         name="contactNumber"
         value={values.contactNumber}
-        errorMessage={errors.contactNumber}
-        state={errors.contactNumber ? "error" : "default"}
+        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
+        state={touched.contactNumber && errors.contactNumber ? "error" : "default"}
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateContactText(["ariaLabels", "contactNumber"])}
         maxLength={CONTACT_NUMBER_MAX_LENGTH}
         fullWidth
@@ -222,7 +233,7 @@ const ContactModalForm = ({
       {canEditOwner ? (
         <EditableContactOwnerField
           initialOwner={initialOwner}
-          errorMessage={errors.ownerId}
+          errorMessage={touched.ownerId ? errors.ownerId : undefined}
           translateContactText={translateContactText}
           onChange={(owner) =>
             setFieldValue("ownerId", owner?.employeeId ?? null)
