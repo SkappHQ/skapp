@@ -1,5 +1,5 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
@@ -106,7 +106,16 @@ const AddDealSidePanel: FC = () => {
     handleCreateDealError
   );
 
-  const handleSubmit = (values: CrmDealAddFormTypes) => {
+  const handleSubmit = (
+    values: CrmDealAddFormTypes,
+    { setSubmitting }: FormikHelpers<CrmDealAddFormTypes>
+  ) => {
+    setSubmitting(false);
+
+    if (dealNameData?.isExists ?? false) {
+      return;
+    }
+
     const payload: CrmCreateDealPayload = {
       name: values.name.trim(),
       stageId: Number(values.stageId),
@@ -170,9 +179,7 @@ const AddDealSidePanel: FC = () => {
               variant="primary"
               size="md"
               onClick={() => submitForm()}
-              disabled={
-                isSubmitting || isPending || dealNameData?.isExists === true
-              }
+              disabled={isSubmitting || isPending}
               isLoading={isPending}
               icon={<PlusIcon fill="black" />}
               iconPosition="end"
@@ -186,7 +193,7 @@ const AddDealSidePanel: FC = () => {
         <div className="flex flex-col gap-6 h-full">
           <DealNameStageSection
             formik={formik}
-            isDuplicateName={dealNameData?.isExists === true}
+            isDuplicateName={dealNameData?.isExists ?? false}
           />
 
           <div className="flex gap-6 items-start flex-1">
