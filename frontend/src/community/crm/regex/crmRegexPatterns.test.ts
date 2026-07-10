@@ -1,4 +1,8 @@
-import { isContactNameValid, isDealNameValid } from "./crmRegexPatterns";
+import {
+  isContactNameValid,
+  isDealNameValid,
+  isValidCompanyWebsiteUrl
+} from "./crmRegexPatterns";
 
 describe("isContactNameValid", () => {
   it("should accept letters, spaces, hyphens, periods, commas and apostrophes", () => {
@@ -28,5 +32,23 @@ describe("isDealNameValid", () => {
   it("should reject disallowed special characters", () => {
     expect(isDealNameValid().test("Deal <script>")).toBe(false);
     expect(isDealNameValid().test("Deal!")).toBe(false);
+  });
+});
+
+describe("isValidCompanyWebsiteUrl", () => {
+  it("should accept a domain, an https URL, and an https URL with a path", () => {
+    expect(isValidCompanyWebsiteUrl().test("acme.com")).toBe(true);
+    expect(isValidCompanyWebsiteUrl().test("https://acme.com")).toBe(true);
+    expect(isValidCompanyWebsiteUrl().test("https://acme.com/about-us")).toBe(
+      true
+    );
+  });
+
+  it("should reject insecure schemes, ports, query strings and fragments", () => {
+    expect(isValidCompanyWebsiteUrl().test("http://acme.com")).toBe(false);
+    expect(isValidCompanyWebsiteUrl().test("acme.com:8080")).toBe(false);
+    expect(isValidCompanyWebsiteUrl().test("https://acme.com?ref=1")).toBe(
+      false
+    );
   });
 });
