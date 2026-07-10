@@ -91,7 +91,8 @@ const EditContactModalContent = () => {
 
     editContact({
       id: selectedContact?.id,
-      ...changedFields
+      ...changedFields,
+      companyId: normalizedValues.companyId
     });
   };
 

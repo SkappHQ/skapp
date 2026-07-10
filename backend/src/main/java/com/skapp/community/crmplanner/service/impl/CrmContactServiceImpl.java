@@ -154,6 +154,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
 			contact.setCompany(company);
 		}
+		else {
+			contact.setCompany(null);
+		}
 
 		if (requestDto.getOwnerId() != null) {
 			CrmValidations.validateOwnerId(requestDto.getOwnerId());

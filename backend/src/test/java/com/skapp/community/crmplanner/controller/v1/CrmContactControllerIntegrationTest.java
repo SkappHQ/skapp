@@ -129,6 +129,12 @@ class CrmContactControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions performPatchRawRequest(Long id, String content) throws Exception {
+		return performRequest(patch(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
+			.content(content)
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
@@ -454,16 +460,28 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
-		dto.setName("Updated Name Only");
-		// email, contactNumber, companyId, ownerId are null
-
-		performPatchRequest(contactId, dto).andDo(print())
+		// email, contactNumber, ownerId are omitted and stay untouched; companyId is
+		// always carried by the edit payload since null means "remove the company"
+		performPatchRawRequest(contactId, "{\"name\": \"Updated Name Only\", \"companyId\": " + companyId + "}")
+			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact with null companyId - Company unlinked")
+	void editContact_NullCompanyId_CompanyUnlinked() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
 	}
 
 	@Test
