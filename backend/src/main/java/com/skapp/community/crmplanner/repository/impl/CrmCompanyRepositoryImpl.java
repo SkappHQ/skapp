@@ -21,6 +21,7 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.common.util.StringUtils;
 
 import jakarta.persistence.EntityManager;
@@ -42,7 +43,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 	@Override
 	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword) {
-		Long wonStageId = getWonStageId();
+		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmCompanyMetricsResponseDto> query = cb.createQuery(CrmCompanyMetricsResponseDto.class);
@@ -68,28 +69,28 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		openValueSubquery
 			.select(cb.coalesce(cb.sum(openDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
 			.where(cb.equal(openDeal.get(CrmDeal_.company), company), cb.isFalse(openDeal.get(CrmDeal_.isDeleted)),
-					cb.notEqual(openDeal.get(CrmDeal_.stage).get(CrmDealStage_.id), wonStageId));
+					cb.not(openDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
 		Subquery<BigDecimal> accountValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> closedDeal = accountValueSubquery.from(CrmDeal.class);
 		accountValueSubquery
 			.select(cb.coalesce(cb.sum(closedDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
 			.where(cb.equal(closedDeal.get(CrmDeal_.company), company), cb.isFalse(closedDeal.get(CrmDeal_.isDeleted)),
-					cb.equal(closedDeal.get(CrmDeal_.stage).get(CrmDealStage_.id), wonStageId));
+					cb.equal(closedDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON));
 
 		Subquery<Long> closedCountSubquery = query.subquery(Long.class);
 		Root<CrmDeal> closedCountDeal = closedCountSubquery.from(CrmDeal.class);
 		closedCountSubquery.select(cb.count(closedCountDeal.get(CrmDeal_.id)))
 			.where(cb.equal(closedCountDeal.get(CrmDeal_.company), company),
 					cb.isFalse(closedCountDeal.get(CrmDeal_.isDeleted)),
-					cb.equal(closedCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id), wonStageId));
+					closedCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds));
 
 		Subquery<Long> openCountSubquery = query.subquery(Long.class);
 		Root<CrmDeal> openCountDeal = openCountSubquery.from(CrmDeal.class);
 		openCountSubquery.select(cb.count(openCountDeal.get(CrmDeal_.id)))
 			.where(cb.equal(openCountDeal.get(CrmDeal_.company), company),
 					cb.isFalse(openCountDeal.get(CrmDeal_.isDeleted)),
-					cb.notEqual(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id), wonStageId));
+					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
 		query.select(cb.construct(CrmCompanyMetricsResponseDto.class, company.get(CrmCompany_.id),
 				company.get(CrmCompany_.name), company.get(CrmCompany_.contactNumber),
@@ -130,16 +131,16 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		return predicates.toArray(new Predicate[0]);
 	}
 
-	private Long getWonStageId() {
+	private List<Long> getClosedStageIds() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Long> query = cb.createQuery(Long.class);
 		Root<CrmDealStage> stage = query.from(CrmDealStage.class);
 
 		query.select(stage.get(CrmDealStage_.id))
-			.where(cb.equal(stage.get(CrmDealStage_.stageType), CrmDealStageType.WON),
+			.where(stage.get(CrmDealStage_.stageType).in(CrmConstants.TERMINAL_STAGES),
 					cb.isFalse(stage.get(CrmDealStage_.isDeleted)));
 
-		return entityManager.createQuery(query).getSingleResult();
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	@Override
