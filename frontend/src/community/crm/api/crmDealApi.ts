@@ -23,7 +23,11 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { contactQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import {
+  contactQueryKeys,
+  crmBoardQueryKeys,
+  crmDealQueryKeys
+} from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -79,6 +83,9 @@ export const useCreateDeal = (
     mutationFn: createDeal,
     onSuccess: (createdDeal, payload) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
+      });
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.CONTACT_BY_ID(payload.contactId)
       });
@@ -253,6 +260,28 @@ export const useDeleteDealStage = (
     mutationFn: deleteDealStage,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.DEAL_STAGES });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const deleteDeal = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));
+};
+
+export const useDeleteDeal = (onSuccess: () => void, onError: () => void) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES
+      });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
