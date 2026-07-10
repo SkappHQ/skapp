@@ -19,7 +19,8 @@ export const crmDealQueryKeys = {
     "company",
     companyId
   ],
-  DEAL_BY_ID: (id: number) => ["crm-deal", id]
+  DEAL_BY_ID: (id: number) => ["crm-deal", id],
+  CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists", name]
 };
 
 export const crmBoardQueryKeys = {
