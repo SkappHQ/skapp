@@ -74,8 +74,8 @@ public interface CrmMapper {
 
 	@Mapping(target = "closedDealValue", ignore = true)
 	@Mapping(target = "closedDealCount", ignore = true)
-	@Mapping(target = "openTaskCount", ignore = true)
-	@Mapping(target = "overdueTaskCount", ignore = true)
+	@Mapping(target = "openTasksCount", ignore = true)
+	@Mapping(target = "overdueTasksCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	@Mapping(target = "typeId", source = "type.id")

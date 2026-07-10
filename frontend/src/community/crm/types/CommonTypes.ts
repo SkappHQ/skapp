@@ -28,39 +28,29 @@ export interface CrmCompanyType {
   isDeleted: boolean;
 }
 
-export interface CrmCompanyMetricsType {
+export interface CrmCompany {
   id: number;
   name: string;
-  contactNumber: string;
   industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
-  openTaskCount: number;
-  overdue: number;
-  openValue: string;
-  accountValue: string;
-  closedDeals: number;
-  openDeals: number;
+  contactNumber: string | null;
+  openTasksCount: number | null;
+  overdue: number | null;
+  openValue: string | null;
+  accountValue: string | null;
+  closedDeals: number | null;
+  openDeals: number | null;
+  tasks: CrmTaskDetailType[] | null;
+  deals: CrmDealListItem[] | null;
+  contacts: CrmContact[] | null;
 }
 
 export interface CrmCompanyMetricsResponseType {
-  items: CrmCompanyMetricsType[];
+  items: CrmCompany[];
   totalItems: number;
   currentPage: number;
   totalPages: number;
-}
-
-export interface CrmCompanyDetailType extends CrmCompanyMetricsType {
-  tasks?: CrmTaskDetailType[];
-  deals?: CrmDealListItem[];
-  contacts?: CrmContact[];
-}
-
-export interface CrmCompanyRelationsUpdate {
-  id: number;
-  tasks?: CrmTaskDetailType[];
-  deals?: CrmDealListItem[];
-  contacts?: CrmContact[];
 }
 
 export interface MetricChip {
@@ -141,12 +131,6 @@ export interface CrmOwnersResponseType {
   totalPages: number;
 }
 
-export interface CrmContactLookupResponseType {
-  items: CrmContactLookup[];
-  totalItems: number;
-  currentPage: number;
-  totalPages: number;
-}
 export interface CrmCompanyDomainSearchResponseType {
   companies: CrmCompanyType[];
 }
@@ -422,19 +406,17 @@ export interface CrmContact {
   contactNumber: string | null;
   company: CompanyLookup | null;
   owner: CrmOwner;
-  lastContactAt?: string | null;
-  closedDealValue?: number;
-  closedDealCount?: number;
-  openTaskCount?: number;
-  overdueTaskCount?: number;
-  lastModifiedDate?: string;
-  openTasksCount?: number;
-  overdueTasksCount?: number;
-  activeDealsCount?: number;
-  totalRevenue?: string;
-  pipelineRevenue?: string;
-  tasks?: TaskRowResponseType[];
-  deals?: DetailPanelDealResponseType[];
+  lastContactAt: string | null;
+  lastModifiedDate: string | null;
+  closedDealValue: number | null;
+  closedDealCount: number | null;
+  openTasksCount: number | null;
+  overdueTasksCount: number | null;
+  totalRevenue: string | null;
+  pipelineRevenue: string | null;
+  activeDealsCount: number | null;
+  tasks: TaskRowResponseType[] | null;
+  deals: DetailPanelDealResponseType[] | null;
 }
 
 export interface RelatedTasksPage {
