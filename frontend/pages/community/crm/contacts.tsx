@@ -18,26 +18,12 @@ const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule", "contacts");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const {
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen,
-    setSelectedContactId,
-    setIsContactModalOpen,
-    setContactModalType,
-    selectedContactId
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContactId: store.setSelectedContactId,
-    setIsContactModalOpen: store.setIsContactModalOpen,
-    setContactModalType: store.setContactModalType,
-    selectedContactId: store.selectedContactId
-  }));
-
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedContactId(null);
-  };
+  const { setIsContactModalOpen, setContactModalType, selectedContactId } =
+    useCrmStore((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      setContactModalType: store.setContactModalType,
+      selectedContactId: store.selectedContactId
+    }));
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
@@ -59,10 +45,7 @@ const Contacts: NextPage = () => {
       <>
         {selectedContactId && (
           <SidePanelWrapper>
-            <ContactSidePanel
-              isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
-            />
+            <ContactSidePanel />
           </SidePanelWrapper>
         )}
 

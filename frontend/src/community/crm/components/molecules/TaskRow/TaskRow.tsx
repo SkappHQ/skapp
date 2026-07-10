@@ -3,7 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useUpdateTaskCompletion } from "~community/crm/api/TaskApi";
+import { useUpdateTask } from "~community/crm/api/TaskApi";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
@@ -44,13 +44,14 @@ const TaskRow: FC<Props> = ({
     });
   };
 
-  const { mutate: updateCompletion } = useUpdateTaskCompletion(
-    handleUpdateCompletionError
-  );
+  const { mutate: updateCompletion } = useUpdateTask();
 
   const handleToggleChange = (checked: boolean) => {
     setTaskCompleted(checked);
-    updateCompletion({ id: task.id, isCompleted: checked });
+    updateCompletion(
+      { id: task.id, isCompleted: checked },
+      { onError: handleUpdateCompletionError }
+    );
   };
 
   const applyCompletedStyle = taskCompleted && isCheckTaskVisible;

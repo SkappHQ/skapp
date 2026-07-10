@@ -14,8 +14,8 @@ export const useGetTasksTabs = (): CrmTaskTab[] => {
       label: translateText(["myTasks"])
     },
     {
-      id: CrmTaskTabEnum.TEAM_TASKS,
-      label: translateText(["teamTasks"])
+      id: CrmTaskTabEnum.ALL_TASKS,
+      label: translateText(["allTasks"])
     },
     {
       id: CrmTaskTabEnum.COMPLETED_TASKS,

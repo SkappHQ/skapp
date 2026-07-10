@@ -4,9 +4,10 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
+import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;
@@ -22,6 +23,8 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
     initialStageId
   } = useGetMappedDealStages();
 
+  const preselectedStageId = useCrmStore((store) => store.preselectedStageId);
+
   let stageErrorMessage: string | undefined;
   if (isStagesError) {
     stageErrorMessage = translateText(["validations", "stageLoadError"]);
@@ -35,10 +38,15 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
       : "primary";
 
   useEffect(() => {
-    if (initialStageId !== undefined && !formik.values.stageId) {
+    if (preselectedStageId !== null) {
+      formik.setFieldValue("stageId", String(preselectedStageId));
+      return;
+    }
+
+    if (!formik.values.stageId && initialStageId !== undefined) {
       formik.setFieldValue("stageId", String(initialStageId));
     }
-  }, [initialStageId, formik.values.stageId]);
+  }, [preselectedStageId, initialStageId]);
 
   const stageOptions = useMemo(
     () =>

@@ -8,6 +8,21 @@ import {
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
 
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .required(
+        translator(["inlineAddDeal", "validations", "dealNameRequired"])
+      )
+      .max(DEAL_NAME_MAX_LENGTH)
+      .matches(
+        isDealNameValid(),
+        translator(["inlineAddDeal", "validations", "dealNameInvalidChars"])
+      ),
+    contactId: Yup.string().required()
+  });
+
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
@@ -43,3 +58,36 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       translator(["validations", "descriptionMaxLength"])
     )
   });
+
+const validateField = (
+  fieldName: string,
+  value: unknown,
+  translator: TranslatorFunctionType
+): string => {
+  try {
+    (
+      Yup.reach(addDealValidations(translator), fieldName) as Yup.AnySchema
+    ).validateSync(value);
+    return "";
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      return error.message;
+    }
+    throw error;
+  }
+};
+
+export const validateDealName = (
+  name: string,
+  translator: TranslatorFunctionType
+): string => validateField("name", name, translator);
+
+export const validateDealDescription = (
+  description: string,
+  translator: TranslatorFunctionType
+): string => validateField("description", description, translator);
+
+export const validateDealAmount = (
+  amount: string,
+  translator: TranslatorFunctionType
+): string => validateField("amount", amount, translator);

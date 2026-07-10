@@ -11,15 +11,22 @@ export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
 
 export const TASK_PAGE_SIZE = 12;
 
-export const SALES_REP_RESTRICTED_TASK_TABS = [CrmTaskTabEnum.TEAM_TASKS];
+export const TASK_DETAIL_ICON_SIZE = 24;
+
+export const TASK_SKELETON_CONFIG = {
+  COMPLETED: { rowCount: 20, groupCount: 1 },
+  OPEN: { rowCount: 4, groupCount: 4 }
+};
+
+export const SALES_REP_RESTRICTED_TASK_TABS = [CrmTaskTabEnum.ALL_TASKS];
 
 export const PRIORITY_OPTIONS = [
   {
-    key: "low",
-    value: CrmPriorityEnum.LOW,
-    backgroundColor: "bg-semantic-green-background",
-    textColor: "text-semantic-green-text",
-    IconComponent: LowPriorityIcon as FC
+    key: "high",
+    value: CrmPriorityEnum.HIGH,
+    backgroundColor: "bg-semantic-red-background",
+    textColor: "text-semantic-red-text",
+    IconComponent: HighPriorityIcon as FC
   },
   {
     key: "medium",
@@ -29,10 +36,10 @@ export const PRIORITY_OPTIONS = [
     IconComponent: MediumPriorityIcon as FC
   },
   {
-    key: "high",
-    value: CrmPriorityEnum.HIGH,
-    backgroundColor: "bg-semantic-red-background",
-    textColor: "text-semantic-red-text",
-    IconComponent: HighPriorityIcon as FC
+    key: "low",
+    value: CrmPriorityEnum.LOW,
+    backgroundColor: "bg-semantic-green-background",
+    textColor: "text-semantic-green-text",
+    IconComponent: LowPriorityIcon as FC
   }
 ];

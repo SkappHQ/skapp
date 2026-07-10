@@ -14,6 +14,7 @@ interface DraggableDealStageCardProps {
   onDelete?: (stage: CrmDealStageType) => void;
   isTerminalStage: boolean;
   isDeletable?: boolean;
+  isDraggable?: boolean;
 }
 
 const DraggableDealStageCard = ({
@@ -21,7 +22,8 @@ const DraggableDealStageCard = ({
   onEdit,
   onDelete,
   isTerminalStage,
-  isDeletable = false
+  isDeletable = false,
+  isDraggable = true
 }: DraggableDealStageCardProps) => {
   const {
     attributes,
@@ -30,7 +32,7 @@ const DraggableDealStageCard = ({
     transform,
     transition,
     isDragging
-  } = useSortable({ id: stage.id, disabled: isTerminalStage });
+  } = useSortable({ id: stage.id, disabled: !isDraggable });
   const translateText = useTranslator("configurations", "crm");
 
   const style = {
@@ -45,7 +47,7 @@ const DraggableDealStageCard = ({
       style={style}
       className="w-full flex flex-row justify-between"
     >
-      {isTerminalStage ? (
+      {!isDraggable ? (
         <div className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
       ) : (
         <button

@@ -19,7 +19,8 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner"
+        "owner": "Contact owner",
+        "suggested": "Suggested"
       },
       "placeholders": {
         "name": "Enter name",
@@ -29,7 +30,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -48,14 +48,14 @@
         "cancel": "Cancel Add Contact"
       },
       "validations": {
-        "name": "Name is required",
-        "nameLength": "Name must be less than 50 characters",
+        "name": "Contact name is required",
+        "nameLength": "Contact name is too long",
+        "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
-        "invalidEmail": "Please enter a valid email address",
-        "contactNumber": "Contact number is invalid",
-        "contactNumberLength": "Contact number is too long",
-        "characterLength": "Entry must be less than 50 characters",
-        "owner": "Contact owner is required"
+        "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
+        "contactNumber": "Invalid contact number",
+        "owner": "Owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact added successfully",
@@ -89,7 +89,8 @@
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
-        "owner": "Contact owner"
+        "owner": "Contact owner",
+        "suggested": "Suggested"
       },
       "placeholders": {
         "name": "Enter name",
@@ -99,7 +100,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -118,14 +118,14 @@
         "cancel": "Cancel Edit Contact"
       },
       "validations": {
-        "name": "Name is required",
-        "nameLength": "Name must be less than 50 characters",
+        "name": "Contact name is required",
+        "nameLength": "Contact name is too long",
+        "nameInvalidCharacters": "Contact name contains invalid characters",
         "email": "Email is required",
-        "invalidEmail": "Please enter a valid email address",
-        "contactNumber": "Contact number is invalid",
-        "contactNumberLength": "Contact number is too long",
-        "characterLength": "Entry must be less than 50 characters",
-        "owner": "Contact owner is required"
+        "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
+        "contactNumber": "Invalid contact number",
+        "owner": "Owner is required"
       },
       "contactToastMessages": {
         "successTitle": "Contact updated successfully",
@@ -150,7 +150,8 @@
         "addTaskButtonEmptyView": "Add task",
         "emptyTitle": "No tasks",
         "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
-        "dueDateOverdue": "Overdue",
+        "dueDateOverdue_one": "Overdue by {{count}} day",
+        "dueDateOverdue_other": "Overdue by {{count}} days",
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
       },
@@ -300,7 +301,6 @@
     },
     "companyDetailsSidePanel": {
       "sidePanelCompanyContacts": {
-        "title": "Contacts",
         "columns": {
           "contact": "CONTACT",
           "email": "EMAIL",
@@ -387,6 +387,11 @@
         "tasks": "Tasks",
         "deals": "Deals",
         "contacts": "Contacts"
+      },
+      "metrics": {
+        "accountValue": "Account value",
+        "openDeals": "Open deals",
+        "closedDeals": "Closed deals"
       }
     }
   },
@@ -410,8 +415,76 @@
       "emptyTitle": "No deals",
       "emptyDescription": "No deals associated with this company",
       "descriptionLabel": "Description",
+      "deleteDeal": "Delete Deal",
+      "kebabMenuAriaLabel": "Deal actions",
+      "description": "Description",
+      "tasks": "Tasks",
+      "addTask": "Add task",
+      "value": "Value",
+      "priority": "Priority",
+      "ownedBy": "Owned by",
+      "contact": "Contact",
+      "placeholders": {
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results",
+        "description": "Add description"
+      },
       "ariaLabels": {
-        "addDealBtn": "Add Deal"
+        "addDealBtn": "Add Deal",
+        "stage": "Stage",
+        "amount": "Amount",
+        "saveTitle": "Save title",
+        "discardTitle": "Discard title",
+        "editTitle": "Edit title",
+        "editDescription": "Edit description"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "toastMessages": {
+        "editErrorTitle": "Failed to update deal",
+        "editErrorDescription": "Something went wrong. Please try again"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
+      "errors": {
+        "dealNotFoundTitle": "Deal not found",
+        "dealNotFoundDescription": "This deal is no longer available."
+      },
+      "inlineAddDeal": {
+        "dealNamePlaceholder": "Enter deal name",
+        "contactPlaceholder": "Search contact",
+        "noResults": "No results",
+        "ariaLabels": {
+          "group": "Add new deal",
+          "saveDeal": "Save deal",
+          "cancelAddDeal": "Cancel adding deal",
+          "contact": "Contact",
+          "clearContact": "Clear selected contact",
+          "saving": "Saving deal",
+          "loading": "Loading"
+        },
+        "validations": {
+          "dealNameRequired": "Deal name is required",
+          "dealNameInvalidChars": "Deal name can not contain special characters.",
+          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name.",
+          "contactRequired": "Contact is required"
+        },
+        "toastMessages": {
+          "successTitle": "Deal added successfully",
+          "successDescription": "The new deal has been created",
+          "errorTitle": "Failed to add deal",
+          "errorDescription": "Please try again or contact support"
+        }
       }
     },
     "dealsTable": {
@@ -428,6 +501,7 @@
       "noSearchResultsTitle": "No deals found for {{searchKeyword}}",
       "noSearchResultsDescription": "Try adjusting your search or filters",
       "infiniteScrollLoadingMessage": "Loading more deals...",
+      "openDealDetails": "Open deal details for {{name}}",
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
       "switchDealViewAriaLabel": "Switch deal view"
@@ -447,14 +521,10 @@
         "confirm": "Confirm delete deal"
       }
     },
-    "sidePanel": {
-      "deleteDeal": "Delete Deal",
-      "kebabMenuAriaLabel": "Deal actions"
-    },
     "addDealSidePanel": {
-      "title": "Add Deal",
+      "title": "Add deal",
       "labels": {
-        "dealName": "Deal Name",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "value": "Value",
@@ -473,7 +543,7 @@
         "noResults": "No results"
       },
       "buttons": {
-        "addDeal": "Add Deal"
+        "addDeal": "Add deal"
       },
       "priorityOptions": {
         "high": "High",
@@ -482,13 +552,13 @@
       },
       "ariaLabels": {
         "closePanel": "Close add deal panel",
-        "addDeal": "Add Deal",
-        "dealName": "Deal Name",
+        "addDeal": "Add deal",
+        "dealName": "Deal name",
         "stage": "Stage",
         "description": "Description",
         "amount": "Amount",
         "priority": "Priority",
-        "owner": "Deal Owner",
+        "owner": "Deal owner",
         "contact": "Contact"
       },
       "validations": {
@@ -523,7 +593,24 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
-      "kebabMenuAriaLabel": "Task actions"
+      "kebabMenuAriaLabel": "Task actions",
+      "notes": "Notes",
+      "noNotes": "No notes added",
+      "dealsTitle": "Deals",
+      "relatedTasksTitle": "Related Tasks",
+      "markAsDone": "Mark as Done",
+      "statusDone": "Done",
+      "assignedTo": "Assigned To",
+      "priority": "Priority",
+      "closingDate": "Closing Date",
+      "noClosingDate": "No closing date",
+      "contactName": "Contact",
+      "noContact": "No contact linked",
+      "priorityOptions": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      }
     },
     "deleteTaskModal": {
       "title": "Delete Task",
@@ -687,7 +774,7 @@
     },
     "tabs": {
       "myTasks": "My Tasks",
-      "teamTasks": "Team Tasks",
+      "allTasks": "All Tasks",
       "completedTasks": "Completed"
     },
     "table": {

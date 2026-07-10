@@ -4,7 +4,6 @@ import {
   KebabMenu,
   MenuItemProps,
   SidePanel,
-  SidePanelProps,
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
@@ -23,11 +22,12 @@ import SidePanelTasksSection from "~community/crm/components/molecules/SidePanel
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
-const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
+const ContactSidePanel: FC = () => {
   const translateText = useTranslator(
     "crmModule",
     "contacts",
@@ -40,18 +40,35 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
   );
 
   const {
-    setIsCrmSidePanelOpen,
-    setSelectedContactId,
+    isCrmSidePanelOpen,
+    crmSidePanelType,
     selectedContactId,
+    setSelectedContactId,
     setContactModalType,
-    setIsContactModalOpen
+    setIsContactModalOpen,
+    updateContact,
+    closeCrmSidePanel,
+    getContactById
   } = useCrmStore((store) => ({
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen,
-    setSelectedContactId: store.setSelectedContactId,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
     selectedContactId: store.selectedContactId,
+    setSelectedContactId: store.setSelectedContactId,
     setContactModalType: store.setContactModalType,
-    setIsContactModalOpen: store.setIsContactModalOpen
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    updateContact: store.updateContact,
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    getContactById: store.getContactById
   }));
+
+  const isOpen =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.CONTACT_SIDE_PANEL;
+
+  const handleClose = (): void => {
+    setSelectedContactId(null);
+    closeCrmSidePanel();
+  };
 
   const menuItems: MenuItemProps[] = useMemo(
     () => [
@@ -94,36 +111,37 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       title: translateText(["errors", "contactNotFoundTitle"]),
       description: translateText(["errors", "contactNotFoundDescription"])
     });
-    setIsCrmSidePanelOpen(false);
-    setSelectedContactId(null);
+    handleClose();
   };
 
-  const {
-    data: contact,
-    isError,
-    isLoading
-  } = useGetContactById(selectedContactId ?? 0, isOpen && !!selectedContactId);
+  const { data, isError, isLoading } = useGetContactById(
+    selectedContactId ?? 0,
+    isOpen && !!selectedContactId
+  );
 
   useEffect(() => {
-    if (isError) handleContactLoadError();
-  }, [isError]);
+    if (isError && !data) {
+      handleContactLoadError();
+    } else if (data) {
+      updateContact(data);
+    }
+  }, [data, isError]);
 
-  const handleClose = (): void => {
-    setSelectedContactId(null);
-    setIsCrmSidePanelOpen(false);
-  };
+  const contact = getContactById(selectedContactId!);
 
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={contact?.deals ?? []} />;
+        return (
+          <SidePanelDealSection
+            deals={contact?.deals ?? []}
+            defaultContact={contact}
+          />
+        );
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
             tasks={contact?.tasks ?? []}
-            preselectedContact={
-              contact ? { id: contact.id, name: contact.name } : null
-            }
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
@@ -177,7 +195,7 @@ const ContactSidePanel: FC<SidePanelProps> = ({ isOpen, onClose }) => {
       }
     >
       <div className="flex flex-col pb-4 gap-4">
-        {isLoading && !contact ? (
+        {isLoading ? (
           <ContactSidePanelSkeleton />
         ) : (
           <>

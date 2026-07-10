@@ -8,7 +8,7 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -20,6 +20,7 @@ import {
 } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
   formatPhoneNumber,
@@ -36,24 +37,24 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching
-  } = useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompany, setIsCrmSidePanelOpen } = useCrmStore(
+  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } = useCrmStore(
     (store) => ({
-      setSelectedCompany: store.setSelectedCompany,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      setCompanies: store.setCompanies,
+      openCrmSidePanel: store.openCrmSidePanel
     })
   );
 
   const companies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
+
+  useEffect(() => {
+    if (companies) setCompanies(companies);
+  }, [companies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -65,6 +66,7 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
+      className: "truncate",
       width: "25%"
     },
     {
@@ -81,7 +83,7 @@ export const CompanyTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "tasks",
+      key: "openTaskCount",
       render(value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
@@ -201,8 +203,8 @@ export const CompanyTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          setSelectedCompany(row);
-          setIsCrmSidePanelOpen(true);
+          setSelectedCompanyId(row.id);
+          openCrmSidePanel(CrmSidePanelTypes.COMPANY_SIDE_PANEL);
         }}
       />
     </div>

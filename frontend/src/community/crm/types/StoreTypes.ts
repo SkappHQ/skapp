@@ -1,24 +1,46 @@
+import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
+  CrmCompanyDetailType,
   CrmCompanyMetricsType,
-  CrmTaskDetailType,
-  PreselectedContact
+  CrmCompanyRelationsUpdate,
+  CrmContact,
+  CrmDealResponseType,
+  CrmTaskDetailType
 } from "./CommonTypes";
 import { CrmModalTypes } from "./ModalTypes";
+import { CrmSidePanelTypes } from "./SidePanelTypes";
 
 interface ActionTypes {
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
   setIsContactModalOpen: (isContactModalOpen: boolean) => void;
   setContactModalType: (contactModalType: CrmModalTypes) => void;
-  setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) => void;
+  setSelectedCompanyId: (selectedCompanyId: number | null) => void;
+  setCompanies: (companies: CrmCompanyMetricsType[]) => void;
+  updateCompany: (company: CrmCompanyRelationsUpdate) => void;
+  getCompanyById: (id: number) => CrmCompanyDetailType | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
-  setPreselectedContact: (contact: PreselectedContact | null) => void;
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[]) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) => void;
+  updateTask: (task: CrmTaskDetailType) => void;
+  openCrmSidePanel: (type: CrmSidePanelTypes) => void;
+  closeCrmSidePanel: () => void;
   setSelectedContactId: (contactId: number | null) => void;
+  setContacts: (contacts: CrmContact[]) => void;
+  updateContact: (contact: CrmContact) => void;
+  getContactById: (id: number) => CrmContact | undefined;
+  setSelectedDealId: (dealId: number | null) => void;
+  setDeals: (deals: CrmDealResponseType[]) => void;
+  getDealById: (id: number) => CrmDealResponseType | undefined;
+  updateDeal: (deal: CrmDealResponseType) => void;
+  setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
+  appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
+  replaceBoardStageDeals: (stageDeals: CrmBoardStageDealsType[]) => void;
+  addDealToStage: (deal: CrmBoardDealSliceType) => void;
+  updateDealInStage: (deal: CrmBoardDealSliceType) => void;
+  setPreselectedStageId: (stageId: number | null) => void;
 }
 
 export interface CrmStore extends ActionTypes {
@@ -26,12 +48,18 @@ export interface CrmStore extends ActionTypes {
   companyModalType: CrmModalTypes;
   isContactModalOpen: boolean;
   contactModalType: CrmModalTypes;
-  selectedCompany: CrmCompanyMetricsType | null;
+  selectedCompanyId: number | null;
+  companies: CrmCompanyDetailType[];
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
-  preselectedContact: PreselectedContact | null;
   selectedTaskId: number | null;
   tasks: CrmTaskDetailType[];
   isCrmSidePanelOpen: boolean;
+  crmSidePanelType: CrmSidePanelTypes | null;
   selectedContactId: number | null;
+  contacts: CrmContact[];
+  selectedDealId: number | null;
+  deals: CrmDealResponseType[];
+  boardStageDeals: CrmBoardStageDealsType[];
+  preselectedStageId: number | null;
 }

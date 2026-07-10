@@ -22,7 +22,7 @@ public class CrmCompanyMetricsResponseDto {
 
 	private String address;
 
-	private Long tasks;
+	private Long openTaskCount;
 
 	private Long overdue;
 

@@ -74,7 +74,8 @@ export const styles = ({ theme }: stylesProps) => ({
     overflowX: "hidden",
     scrollbarWidth: "thin",
     gap: "1rem",
-    paddingTop: isDrawerExpanded ? "1.25rem" : "5.25rem"
+    paddingTop: "1.25rem",
+    marginTop: isDrawerExpanded ? "0rem" : "4rem"
   }),
   listItem: (isDrawerExpanded: boolean) => ({
     display: "flex",

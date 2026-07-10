@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -20,11 +21,9 @@ import com.skapp.community.crmplanner.model.CrmDealStage;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +101,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
 
+		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
+
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().isBlank()) {
 			String keyword = "%" + filterDto.getSearchKeyword().toLowerCase() + "%";
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
@@ -123,7 +124,11 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		}
 
 		if (filterDto.getCompanyId() != null) {
-			predicates.add(cb.equal(deal.get(CrmDeal_.company).get(CrmCompany_.id), filterDto.getCompanyId()));
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), filterDto.getCompanyId()));
+		}
+
+		if (filterDto.getContactId() != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.contact).get(CrmContact_.id), filterDto.getContactId()));
 		}
 
 		return predicates;

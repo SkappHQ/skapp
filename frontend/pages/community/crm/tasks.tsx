@@ -23,22 +23,13 @@ const Tasks: NextPage = () => {
     setIsTaskModalOpen,
     setTaskModalType,
     selectedTaskId,
-    setSelectedTaskId,
-    isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen
+    setSelectedTaskId
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     setTaskModalType: store.setTaskModalType,
     selectedTaskId: store.selectedTaskId,
-    setSelectedTaskId: store.setSelectedTaskId,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
+    setSelectedTaskId: store.setSelectedTaskId
   }));
-
-  const handleCloseSidePanel = () => {
-    setIsCrmSidePanelOpen(false);
-    setSelectedTaskId(null);
-  };
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.TASKS, () => {
@@ -77,10 +68,7 @@ const Tasks: NextPage = () => {
       <>
         {selectedTaskId && (
           <SidePanelWrapper>
-            <TaskSidePanel
-              isOpen={isCrmSidePanelOpen}
-              onClose={handleCloseSidePanel}
-            />
+            <TaskSidePanel />
           </SidePanelWrapper>
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
