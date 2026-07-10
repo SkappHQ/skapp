@@ -108,9 +108,7 @@ const ContactModalForm = ({
       mergeAndPrioritizeCompanyDropdownItems(
         companyLookupData?.items,
         domainSearchData?.companies
-      ).map((item) =>
-        item.isPrioritized ? addSuggestedLabel(item) : item
-      ),
+      ).map((item) => (item.isPrioritized ? addSuggestedLabel(item) : item)),
     [
       companyLookupData?.items,
       domainSearchData?.companies,
@@ -242,7 +240,7 @@ const ContactModalForm = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isPending || !dirty}
+          disabled={isPending}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"

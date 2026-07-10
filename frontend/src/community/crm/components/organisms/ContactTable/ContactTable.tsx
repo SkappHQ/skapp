@@ -1,5 +1,4 @@
 import {
-  AvatarChip,
   Dropdown,
   InputField,
   Label,
@@ -13,11 +12,11 @@ import { FC, useEffect, useMemo, useState } from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useGetContactMetrics,
   useGetCrmCompanies
 } from "~community/crm/api/ContactApi";
+import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import {
   ALL_COMPANIES,
   CONTACT_SEARCH_DEBOUNCE_DELAY,
@@ -65,7 +64,7 @@ export const ContactTable: FC = () => {
 
   useEffect(() => {
     if (fetchedContacts) setContacts(fetchedContacts);
-  }, [fetchedContacts, setContacts]);
+  }, [fetchedContacts]);
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -188,16 +187,10 @@ export const ContactTable: FC = () => {
       header: translateText(["table", "columns", "contactOwnerHeader"]),
       key: "owner",
       render(_, row) {
-        const { owner } = row;
         return (
-          <AvatarChip
-            avatarProps={{
-              id: `contact-${row.id}-owner-${owner?.employeeId}`,
-              src: owner?.authPic ?? undefined,
-              firstName: owner?.firstName,
-              lastName: owner?.lastName ?? ""
-            }}
-            label={concatStrings([owner?.firstName, owner?.lastName ?? ""])}
+          <OwnerAvatarChip
+            id={`contact-${row.id}-owner-${row.owner.employeeId}`}
+            owner={row.owner}
             backgroundColor="bg-tertiary-background"
           />
         );
