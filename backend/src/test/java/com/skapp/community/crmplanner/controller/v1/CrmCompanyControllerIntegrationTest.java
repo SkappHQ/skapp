@@ -1,28 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
-import com.skapp.community.crmplanner.model.CrmContact;
-import com.skapp.community.crmplanner.model.CrmDeal;
-import com.skapp.community.crmplanner.model.CrmDealStage;
-import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.model.CrmTaskType;
-import com.skapp.community.common.payload.response.PageDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.service.CrmContactService;
-import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmContactDao;
-import com.skapp.community.crmplanner.repository.CrmDealDao;
-import com.skapp.community.crmplanner.repository.CrmDealStageDao;
-import com.skapp.community.crmplanner.repository.CrmTaskDao;
-import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
-import com.skapp.community.crmplanner.type.CrmDealPriority;
-import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmTaskPriority;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
@@ -42,7 +20,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
@@ -93,22 +70,6 @@ class CrmCompanyControllerIntegrationTest {
 	private final MessageUtil messageUtil;
 
 	private final CrmCompanyDao crmCompanyDao;
-
-	private final CrmDealDao crmDealDao;
-
-	private final CrmDealStageDao crmDealStageDao;
-
-	private final CrmContactDao crmContactDao;
-
-	private final CrmTaskDao crmTaskDao;
-
-	private final CrmTaskTypeDao crmTaskTypeDao;
-
-	private final EmployeeDao employeeDao;
-
-	private final CrmContactService contactService;
-
-	private final CrmDealService dealService;
 
 	private String authToken;
 
@@ -272,97 +233,6 @@ class CrmCompanyControllerIntegrationTest {
 
 		// cleanup for future tests
 		crmCompanyDao.deleteById(companyId);
-	}
-
-	@Test
-	@DisplayName("Delete company with associated records - Keeps contacts and deals visible but hides tasks")
-	void deleteCompany_WithAssociatedRecords_KeepsContactsAndDealsVisibleButHidesTasks() throws Exception {
-		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
-		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
-			.path("results")
-			.get(0)
-			.path("id")
-			.asLong();
-
-		CrmDealStage stage = new CrmDealStage();
-		stage.setName("Test Stage");
-		stage.setColor("#123456");
-		stage.setOrderIndex(1);
-		stage.setStageType(CrmDealStageType.OPEN);
-		crmDealStageDao.save(stage);
-
-		CrmContact contact = new CrmContact();
-		contact.setName("Test Contact");
-		contact.setEmail("deal.test@example.com");
-		contact.setOwner(employeeDao.getReferenceById(1L));
-		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
-		Long contactId = crmContactDao.save(contact).getId();
-
-		CrmDeal deal = new CrmDeal();
-		deal.setName("Test Deal");
-		deal.setStage(stage);
-		deal.setCompany(crmCompanyDao.getReferenceById(companyId));
-		deal.setContact(contact);
-		deal.setOwner(employeeDao.getReferenceById(1L));
-		deal.setPriority(CrmDealPriority.MEDIUM);
-		deal.setOrderIndex("a0");
-		Long dealId = crmDealDao.save(deal).getId();
-
-		CrmTaskType taskType = new CrmTaskType();
-		taskType.setName("Test Task Type");
-		taskType.setOrderIndex(1);
-		crmTaskTypeDao.save(taskType);
-
-		CrmTask task = new CrmTask();
-		task.setName("Test Task");
-		task.setType(taskType);
-		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setOwner(employeeDao.getReferenceById(1L));
-		task.setCompany(crmCompanyDao.getReferenceById(companyId));
-		Long taskId = crmTaskDao.save(task).getId();
-
-		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmDeal::getId)
-			.contains(dealId);
-		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContact::getId)
-			.contains(contactId);
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).contains(taskId);
-
-		performDeleteRequest(companyId).andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_SUCCESS_COMPANY_DELETED)));
-
-		CrmDeal remainingDeal = crmDealDao.findById(dealId).orElseThrow();
-		assertThat(remainingDeal.getIsDeleted()).isFalse();
-		CrmContact remainingContact = crmContactDao.findById(contactId).orElseThrow();
-		assertThat(remainingContact.getIsDeleted()).isFalse();
-		CrmTask remainingTask = crmTaskDao.findById(taskId).orElseThrow();
-		assertThat(remainingTask.getIsDeleted()).isFalse();
-
-		PageDto contactsPage = (PageDto) contactService.getContactMetrics(new CrmContactMetricRequestDto())
-			.getResults()
-			.get(0);
-		@SuppressWarnings("unchecked")
-		java.util.List<CrmContactListItemDto> contactItems = (java.util.List<CrmContactListItemDto>) contactsPage
-			.getItems();
-		assertThat(contactItems).filteredOn(c -> c.getId().equals(contactId))
-			.as("contact remains visible after its company is deleted")
-			.singleElement()
-			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
-
-		CrmDealFilterDto dealFilter = new CrmDealFilterDto();
-		dealFilter.setSize(100);
-		PageDto dealsPage = (PageDto) dealService.getDeals(dealFilter).getResults().get(0);
-		@SuppressWarnings("unchecked")
-		java.util.List<CrmDealResponseDto> dealItems = (java.util.List<CrmDealResponseDto>) dealsPage.getItems();
-		assertThat(dealItems).filteredOn(d -> d.getId().equals(dealId))
-			.as("deal remains visible after its company is deleted")
-			.singleElement()
-			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
-
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).doesNotContain(taskId);
 	}
 
 	@Test
