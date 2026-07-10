@@ -18,10 +18,7 @@ import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmContactLookup,
-  CrmOwner
-} from "~community/crm/types/CommonTypes";
+import { CrmContactLookup, CrmOwner } from "~community/crm/types/CommonTypes";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
@@ -136,6 +133,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <ContactPopupSearch
               contacts={contacts}
               selectedContact={selectedContact}
+              selectedCompanyName={deal.companyName ?? undefined}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}

@@ -21,6 +21,7 @@ interface Props {
   placeholder: string;
   searchPlaceholder: string;
   noResultsText: string;
+  selectedCompanyName?: string;
   ariaInvalid?: boolean;
   ariaRequired?: boolean;
 }
@@ -33,15 +34,20 @@ const ContactPopupSearch: FC<Props> = ({
   placeholder,
   searchPlaceholder,
   noResultsText,
+  selectedCompanyName,
   ariaInvalid,
   ariaRequired
 }) => {
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
   const options: DropdownOption[] = useMemo(
-    () => buildContactOptions(contacts),
-    [contacts]
+    () => buildContactOptions(contacts, selectedContact),
+    [contacts, selectedContact]
   );
+
+  const resolveContact = (id: number): CrmContactLookup | null =>
+    findById(contacts, id, getContactId) ??
+    (selectedContact?.id === id ? selectedContact : null);
 
   const selectedValue: DropdownOption | null = selectedContact
     ? {
@@ -57,39 +63,23 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    const contact = findById(contacts, Number(id), getContactId);
-    onChange(contact);
+    onChange(resolveContact(Number(id)));
   };
 
-  const handleRenderTrigger = (
-    option: DropdownOption | null,
-    triggerProps: TriggerProps
-  ) => {
-    const contact = findById(contacts, Number(option?.id), getContactId);
-
-    if (contact && option) {
-      return (
-        <ContactTriggerContent
-          key={option.id}
-          contact={contact}
-          triggerProps={triggerProps}
-        />
-      );
-    }
-
-    return (
-      <ContactTriggerContent
-        placeholder={placeholder}
-        triggerProps={triggerProps}
-      />
-    );
-  };
+  const handleRenderTrigger = (triggerProps: TriggerProps) => (
+    <ContactTriggerContent
+      name={selectedContact?.name}
+      companyName={selectedCompanyName ?? selectedContact?.company?.name}
+      placeholder={placeholder}
+      triggerProps={triggerProps}
+    />
+  );
 
   const handleRenderOption = (
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = findById(contacts, Number(option.id), getContactId);
+    const contact = resolveContact(Number(option.id));
 
     return contact ? (
       <ContactOptionItem
@@ -114,8 +104,8 @@ const ContactPopupSearch: FC<Props> = ({
       ariaInvalid={ariaInvalid}
       ariaRequired={ariaRequired}
       width="w-full"
-      renderTrigger={(option, _a, _b, triggerProps) =>
-        handleRenderTrigger(option as DropdownOption | null, triggerProps)
+      renderTrigger={(_option, _isOpen, _disabled, triggerProps) =>
+        handleRenderTrigger(triggerProps)
       }
       renderOption={(option, _index, onSelect) =>
         handleRenderOption(option as DropdownOption, onSelect)
