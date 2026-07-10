@@ -275,8 +275,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Delete company with associated records - Keeps contacts and deals visible but hides tasks")
-	void deleteCompany_WithAssociatedRecords_KeepsContactsAndDealsVisibleButHidesTasks() throws Exception {
+	@DisplayName("Delete company with associated records - Keeps contacts, deals and tasks visible")
+	void deleteCompany_WithAssociatedRecords_KeepsAllAssociatedRecordsVisible() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -318,6 +318,8 @@ class CrmCompanyControllerIntegrationTest {
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setContact(contact);
+		task.setDeal(deal);
 		task.setCompany(crmCompanyDao.getReferenceById(companyId));
 		Long taskId = crmTaskDao.save(task).getId();
 
@@ -362,7 +364,21 @@ class CrmCompanyControllerIntegrationTest {
 			.singleElement()
 			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
 
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).doesNotContain(taskId);
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto()))
+			.as("task remains visible after its company is deleted")
+			.extracting(CrmTask::getId)
+			.contains(taskId);
+
+		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
+			.as("contact task metrics still count tasks of a deleted company")
+			.isEqualTo(1L);
+		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId)))
+			.as("open task summary still counts tasks of a deleted company")
+			.extracting(s -> s.getContactId())
+			.contains(contactId);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId)))
+			.as("deal task count still counts tasks of a deleted company")
+			.containsEntry(dealId, 1L);
 	}
 
 	@Test
