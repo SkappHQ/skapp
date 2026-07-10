@@ -360,7 +360,8 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(dealItems).filteredOn(d -> d.getId().equals(dealId))
 			.as("deal remains visible after its company is deleted")
 			.singleElement()
-			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
+			.satisfies(
+					d -> assertThat(d.getContact().getCompany()).as("deleted company is presented as blank").isNull());
 
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).doesNotContain(taskId);
 	}
