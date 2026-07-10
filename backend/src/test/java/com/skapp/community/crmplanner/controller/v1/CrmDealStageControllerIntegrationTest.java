@@ -440,7 +440,14 @@ class CrmDealStageControllerIntegrationTest {
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(5))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value(CrmDealStageName.LEAD.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(1))
+			.andExpect(jsonPath("['results'][1]['name']").value(CrmDealStageName.NEGOTIATION.name()))
+			.andExpect(jsonPath("['results'][1]['orderIndex']").value(2))
+			.andExpect(jsonPath("['results'][2]['name']").value(CrmDealStageName.QUALIFIED.name()))
+			.andExpect(jsonPath("['results'][2]['orderIndex']").value(3));
 
 		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
 		assertEquals(1, crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex());
@@ -449,6 +456,24 @@ class CrmDealStageControllerIntegrationTest {
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
+	}
+
+	@Test
+	@DisplayName("Reorder with non-contiguous order indexes - Normalizes indexes below terminal stages")
+	void reorderDealStages_NonContiguousOrderIndexes_NormalizesBelowTerminalStages() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		List<Long> ids = openStageIds();
+
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 1), reorderEntry(ids.get(0), 2),
+				reorderEntry(ids.get(1), 3), reorderEntry(ids.get(2), 4), reorderEntry(ids.get(3), 99));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(5, crmDealStageDao.findById(ids.get(3)).orElseThrow().getOrderIndex());
+		assertEquals(6, crmDealStageDao.findById(stageIdByType(CrmDealStageType.WON)).orElseThrow().getOrderIndex());
+		assertEquals(7, crmDealStageDao.findById(stageIdByType(CrmDealStageType.LOST)).orElseThrow().getOrderIndex());
 	}
 
 	@Test
