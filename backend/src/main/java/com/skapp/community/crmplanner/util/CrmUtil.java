@@ -6,6 +6,7 @@ import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
@@ -15,8 +16,19 @@ import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemR
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Comparator;
+import java.util.List;
+
 @UtilityClass
 public class CrmUtil {
+
+	private static final Comparator<CrmDealStage> STAGE_DISPLAY_ORDER = Comparator
+		.comparingInt((CrmDealStage stage) -> stage.getStageType().getDisplayOrder())
+		.thenComparing(CrmDealStage::getOrderIndex);
+
+	public List<CrmDealStage> sortStagesForDisplay(List<CrmDealStage> stages) {
+		return stages.stream().sorted(STAGE_DISPLAY_ORDER).toList();
+	}
 
 	public boolean isCrmSalesRepresentative(User user) {
 		return user.getEmployee().getEmployeeRole().getCrmRole() == Role.CRM_SALES_REPRESENTATIVE;

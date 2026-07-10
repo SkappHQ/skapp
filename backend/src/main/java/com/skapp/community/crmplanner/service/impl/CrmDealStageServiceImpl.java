@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	public ResponseEntityDto getDealStages() {
 		log.info("getDealStages: execution started");
 
-		List<CrmDealStage> stages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> stages = CrmUtil.sortStagesForDisplay(
+				filterVisibleDealStages(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()));
 
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
 
@@ -184,7 +185,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 
 		log.info("reorderDealStages: execution ended");
 
-		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(existingStages));
+		return new ResponseEntityDto(false,
+				crmMapper.crmDealStagesToCrmDealStageResponseDtos(CrmUtil.sortStagesForDisplay(existingStages)));
 	}
 
 	private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {

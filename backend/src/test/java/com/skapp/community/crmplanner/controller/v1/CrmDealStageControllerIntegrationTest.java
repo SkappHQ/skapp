@@ -112,6 +112,22 @@ class CrmDealStageControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal stages after creating a stage - Returns new OPEN stage before WON and LOST")
+	void getDealStages_NewOpenStageWithHighestOrderIndex_ReturnsItBeforeTerminalStages() throws Exception {
+		performPostRequest(validPayload()).andExpect(status().isCreated());
+
+		performGetRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(8))
+			.andExpect(jsonPath("['results'][5]['name']").value("Proposal"))
+			.andExpect(jsonPath("['results'][5]['stageType']").value(CrmDealStageType.OPEN.name()))
+			.andExpect(jsonPath("['results'][5]['orderIndex']").value(8))
+			.andExpect(jsonPath("['results'][6]['name']").value(CrmDealStageName.WON.name()))
+			.andExpect(jsonPath("['results'][7]['name']").value(CrmDealStageName.LOST.name()));
+	}
+
+	@Test
 	@DisplayName("Get deal stages without CRM role - Returns Forbidden")
 	void getDealStages_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
