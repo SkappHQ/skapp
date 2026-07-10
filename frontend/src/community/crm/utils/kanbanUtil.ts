@@ -11,7 +11,7 @@ import type {
 } from "~community/crm/types/BoardTypes";
 import type {
   CrmContactLookup,
-  CrmDealCreateResponseType,
+  CrmDealResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 
@@ -49,7 +49,7 @@ export const mapStageDealsToSlice = (
 });
 
 export const mapCreatedDealToSlice = (
-  deal: CrmDealCreateResponseType
+  deal: CrmDealResponseType
 ): CrmBoardDealSliceType => ({
   id: deal.id,
   name: deal.name,
@@ -116,6 +116,17 @@ export const appendDealsToStageMap = (
       : stage
   );
 
+export const replaceStagesInStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  refreshedStages: CrmBoardStageDealsType[]
+): CrmBoardStageDealsType[] =>
+  stageMap.map(
+    (stage) =>
+      refreshedStages.find(
+        (refreshed) => refreshed.stageId === stage.stageId
+      ) ?? stage
+  );
+
 export const addDealToStageMap = (
   stageMap: CrmBoardStageDealsType[],
   deal: CrmBoardDealSliceType
@@ -129,6 +140,49 @@ export const addDealToStageMap = (
         }
       : stage
   );
+
+export const updateDealInStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  deal: CrmBoardDealSliceType
+): CrmBoardStageDealsType[] => {
+  const currentStageId = findStageIdByDealId(stageMap, deal.id);
+  if (currentStageId === null) return stageMap;
+
+  const existingDeal = stageMap
+    .find((stage) => stage.stageId === currentStageId)
+    ?.deals.find((d) => d.id === deal.id);
+
+  const updatedDeal: CrmBoardDealSliceType = {
+    ...deal,
+    taskCount: existingDeal?.taskCount ?? 0
+  };
+
+  if (currentStageId === deal.stageId)
+    return stageMap.map((stage) =>
+      stage.stageId === currentStageId
+        ? {
+            ...stage,
+            deals: stage.deals.map((d) => (d.id === deal.id ? updatedDeal : d))
+          }
+        : stage
+    );
+
+  return stageMap.map((stage) => {
+    if (stage.stageId === currentStageId)
+      return {
+        ...stage,
+        deals: stage.deals.filter((d) => d.id !== deal.id),
+        totalCount: stage.totalCount - 1
+      };
+    if (stage.stageId === deal.stageId)
+      return {
+        ...stage,
+        deals: [...stage.deals, updatedDeal],
+        totalCount: stage.totalCount + 1
+      };
+    return stage;
+  });
+};
 
 export const computeReorderWithinStage = (
   sourceDeals: CrmBoardDealSliceType[],

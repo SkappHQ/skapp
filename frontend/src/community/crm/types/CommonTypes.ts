@@ -35,7 +35,7 @@ export interface CrmCompanyMetricsType {
   industry: CrmIndustryEnum;
   website: string | null;
   address: string | null;
-  tasks: number;
+  openTaskCount: number;
   overdue: number;
   openValue: string;
   accountValue: string;
@@ -48,6 +48,19 @@ export interface CrmCompanyMetricsResponseType {
   totalItems: number;
   currentPage: number;
   totalPages: number;
+}
+
+export interface CrmCompanyDetailType extends CrmCompanyMetricsType {
+  tasks?: CrmTaskDetailType[];
+  deals?: CrmDealListItem[];
+  contacts?: CrmContact[];
+}
+
+export interface CrmCompanyRelationsUpdate {
+  id: number;
+  tasks?: CrmTaskDetailType[];
+  deals?: CrmDealListItem[];
+  contacts?: CrmContact[];
 }
 
 export interface MetricChip {
@@ -185,7 +198,7 @@ export interface CrmDealType {
   isDeleted: boolean;
 }
 
-export interface CrmDealCreateResponseType {
+export interface CrmDealResponseType {
   id: number;
   name: string;
   description: string | null;
@@ -194,6 +207,7 @@ export interface CrmDealCreateResponseType {
   orderIndex: string;
   amount: string | null;
   companyName: string | null;
+  contactId: number | null;
   contactName: string | null;
   owner: CrmOwner;
 }
@@ -272,27 +286,27 @@ export interface CrmTaskCategoryResponseType {
 export interface CrmDealListItem {
   id: number;
   name: string;
-  stageName: string;
-  stageColor: string;
+  stage: CrmDealStageType;
   amount: string;
   companyName: string | null;
   contactName: string;
   owner: CrmOwner;
+  description: string | null;
 }
 
-export interface CrmDealDetailResponseType {
+export interface CrmDealEditPayload {
   id: number;
-  name: string;
-  description: string | null;
-  amount: string | null;
-  owner: CrmOwner;
-  stageId: number;
-  priority: CrmPriorityEnum;
-  contact: CrmContactLookup;
+  name?: string;
+  description?: string | null;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
+  amount?: string | null;
+  contactId?: number;
+  ownerId?: number;
 }
 
 export interface CrmDealPaginatedResponse {
-  items: CrmDealListItem[];
+  items: CrmDealResponseType[];
   currentPage: number;
   totalItems: number;
   totalPages: number;
@@ -321,6 +335,11 @@ export interface CrmDealAddFormTypes {
   priority: CrmPriorityEnum;
   amount: string;
   description: string;
+}
+
+export interface CrmInlineDealAddFormTypes {
+  name: string;
+  contactId: string;
 }
 
 export interface CrmCreateDealPayload {

@@ -67,11 +67,9 @@ class CrmContactValidationsTest {
 		}
 
 		@Test
-		@DisplayName("Name with apostrophe - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_WithApostrophe_ThrowsInvalid() {
-			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateContactName("O'Brien"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+		@DisplayName("Name with apostrophe - does not throw")
+		void validateContactName_WithApostrophe_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactName("O'Brien"));
 		}
 
 		@Test

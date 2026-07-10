@@ -1,9 +1,9 @@
 import { useDroppable } from "@dnd-kit/core";
 import { FC, ReactNode } from "react";
 
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
@@ -39,9 +39,7 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
     >
       <div
         className="h-1.75 rounded-lg m-2"
-        style={{
-          backgroundColor: STAGE_COLOR_MAP[stage.color]
-        }}
+        style={{ backgroundColor: STAGE_COLOR_MAP[stage.color] }}
       />
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">

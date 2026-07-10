@@ -1,25 +1,30 @@
-import {
-  DeleteButtonIcon,
-  KebabMenu,
-  SidePanel
-} from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
+import { FC, useEffect, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import { useGetDealById } from "~community/crm/api/crmDealApi";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import { useEditDeal, useGetDealById } from "~community/crm/api/crmDealApi";
 import DeleteDealModal from "~community/crm/components/molecules/DeleteDealModal/DeleteDealModal";
-import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
-import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
-import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
+import { useRefreshStageDeals } from "~community/crm/hooks/useRefreshStageDeals";
 import { useCrmStore } from "~community/crm/store/store";
+import {
+  CrmDealEditPayload,
+  CrmDealResponseType
+} from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import {
+  findStageIdByDealId,
+  mapCreatedDealToSlice
+} from "~community/crm/utils/kanbanUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import DealTitleSection from "./DealTitleSection";
 
 const DealSidePanel: FC = () => {
@@ -30,25 +35,80 @@ const DealSidePanel: FC = () => {
     crmSidePanelType,
     selectedDealId,
     setSelectedDealId,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    getDealById,
+    updateDeal: updateDealInStore,
+    updateDealInStage,
+    boardStageDeals
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
     selectedDealId: store.selectedDealId,
     setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel
+    closeCrmSidePanel: store.closeCrmSidePanel,
+    getDealById: store.getDealById,
+    boardStageDeals: store.boardStageDeals,
+    updateDeal: store.updateDeal,
+    updateDealInStage: store.updateDealInStage
   }));
 
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL;
 
-  const handleClose = (): void => {
+  const handleClose = () => {
     setSelectedDealId(null);
     closeCrmSidePanel();
   };
 
-  const { data: deal, isLoading } = useGetDealById(selectedDealId!);
+  const { setToastMessage } = useToast();
+
+  const { data: dealDetail } = useGetDealById(
+    selectedDealId!,
+    selectedDealId != null
+  );
+
+  useEffect(() => {
+    if (dealDetail) {
+      updateDealInStore(dealDetail);
+    }
+  }, [dealDetail, updateDealInStore]);
+
+  const selectedDeal = getDealById(selectedDealId!);
+
+  const { refreshStages } = useRefreshStageDeals();
+
+  const handleSuccess = (updatedDeal: CrmDealResponseType): void => {
+    updateDealInStore(updatedDeal);
+
+    const previousStageId = findStageIdByDealId(
+      boardStageDeals,
+      updatedDeal.id
+    );
+    const hasStageChanged =
+      previousStageId !== null && previousStageId !== updatedDeal.stage.id;
+
+    if (hasStageChanged) {
+      refreshStages([previousStageId, updatedDeal.stage.id]);
+    } else {
+      updateDealInStage(mapCreatedDealToSlice(updatedDeal));
+    }
+  };
+
+  const handleError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "editErrorTitle"]),
+      description: translateText(["toastMessages", "editErrorDescription"])
+    });
+  };
+
+  const { mutate: editDeal } = useEditDeal(handleSuccess, handleError);
+
+  const updateDeal = (fields: Partial<CrmDealEditPayload>): void => {
+    editDeal({ id: selectedDealId!, ...fields });
+  };
 
   const {
     data: relatedTasksData,
@@ -87,51 +147,45 @@ const DealSidePanel: FC = () => {
         onClose={handleClose}
         closeOnBackdropClick
         header={
-          isLoading ? (
-            <SidePanelHeaderSkeleton isShowLastUpdate={false} />
-          ) : (
-            <div className="flex flex-col gap-3 pl-2">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
-                  <HandshakeIcon
-                    width="14"
-                    height="14"
-                    fill="var(--color-white)"
-                  />
-                </div>
-                <span className="body1 text-secondary-icon">
-                  #{selectedDealId}
-                </span>
+          <div className="flex flex-col gap-3 pl-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
               </div>
+              <span className="body1 text-secondary-icon">
+                #{selectedDealId}
+              </span>
             </div>
-          )
+          </div>
         }
         headerActions={
-          isLoading ? (
-            <SidePanelHeaderActionsSkeleton />
-          ) : (
-            <KebabMenu
-              id="deal-actions"
-              menuItems={menuItems}
-              anchorButton={{
-                "aria-label": translateText(["kebabMenuAriaLabel"])
-              }}
-              className={{
-                anchorElement:
-                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-              }}
-            />
-          )
+          <KebabMenu
+            id="deal-actions"
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
         }
       >
-        {isLoading ? (
+        {!selectedDeal ? (
           <DealSidePanelSkeleton />
         ) : (
           <div className="flex flex-col gap-6">
-            <DealTitleSection name={deal?.name ?? ""} />
+            <DealTitleSection
+              name={selectedDeal.name}
+              onSave={(name) => updateDeal({ name })}
+            />
             <div className="flex gap-6 items-start">
               <div className="flex-1 flex flex-col gap-6 min-w-0">
-                <DealDescriptionSection description={deal?.description ?? ""} />
+                <DealDescriptionSection
+                  description={selectedDeal.description ?? ""}
+                  onSave={(description) => updateDeal({ description })}
+                />
                 <div className="flex flex-col gap-3">
                   <h2 className="h2">{translateText(["tasks"])}</h2>
                   <hr className="border-secondary-accent" />
@@ -143,7 +197,18 @@ const DealSidePanel: FC = () => {
                   />
                 </div>
               </div>
-              <DealPropertiesSidebar deal={deal!} isOpen={isOpen} />
+              <DealPropertiesSidebar
+                isOpen={isOpen}
+                onStageChange={(stageId) => updateDeal({ stageId })}
+                onAmountChange={(amount) => updateDeal({ amount })}
+                onPriorityChange={(priority) => updateDeal({ priority })}
+                onOwnerChange={(owner) =>
+                  updateDeal({ ownerId: owner.employeeId })
+                }
+                onContactChange={(contact) =>
+                  updateDeal({ contactId: contact.id })
+                }
+              />
             </div>
           </div>
         )}
@@ -152,7 +217,7 @@ const DealSidePanel: FC = () => {
       <DeleteDealModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealName={deal?.name ?? ""}
+        dealName={selectedDeal?.name ?? ""}
       />
     </>
   );

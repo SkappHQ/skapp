@@ -160,6 +160,15 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		Map<Long, CrmDealStage> existingStagesMap = existingStages.stream()
 			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
+		CrmDealStageReorderRequestDto firstRequestedStage = changedStages.stream()
+			.min(Comparator.comparing(CrmDealStageReorderRequestDto::getOrderIndex))
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST));
+
+		CrmDealStage firstExistingStage = existingStagesMap.get(firstRequestedStage.getId());
+		if (firstExistingStage == null || firstExistingStage.getStageType() != CrmDealStageType.INITIAL) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
+		}
+
 		changedStages.forEach(newStage -> {
 			CrmDealStage stage = existingStagesMap.get(newStage.getId());
 

@@ -4,7 +4,7 @@ import {
   groupItemsByPriority,
   toDropdownOptions,
   toSelectedDropdownOption
-} from "./crmUtil";
+} from "../crmUtil";
 
 interface TestItem {
   id: number;
@@ -17,15 +17,20 @@ interface TestUser {
   lastName: string;
 }
 
+const getId = (item: TestItem) => item.id;
+const getUserId = (user: TestUser) => user.employeeId;
+
 describe("formatValue", () => {
   it("should format numeric strings as currency", () => {
     expect(formatValue("1200")).toBe("$1200.00");
     expect(formatValue("99.9")).toBe("$99.90");
   });
 
-  it("should return a placeholder for null and empty values", () => {
+  it("should return a placeholder for null, empty and zero values", () => {
     expect(formatValue(null)).toBe("-");
     expect(formatValue("")).toBe("-");
+    expect(formatValue("0")).toBe("-");
+    expect(formatValue("0.00")).toBe("-");
   });
 });
 
@@ -37,7 +42,9 @@ describe("toDropdownOptions", () => {
       { id: 3, name: "Item 3" }
     ];
 
-    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
+    const result = toDropdownOptions(
+      items.map((i) => ({ id: i.id, label: i.name }))
+    );
 
     expect(result).toEqual([
       { id: 1, value: 1, label: "Item 1" },
@@ -58,7 +65,10 @@ describe("toDropdownOptions", () => {
     ];
 
     const result = toDropdownOptions(
-      users.map((u) => ({ id: u.employeeId, label: `${u.firstName} ${u.lastName}` }))
+      users.map((u) => ({
+        id: u.employeeId,
+        label: `${u.firstName} ${u.lastName}`
+      }))
     );
 
     expect(result).toEqual([
@@ -73,7 +83,9 @@ describe("toDropdownOptions", () => {
   it("should handle string ids", () => {
     const items = [{ id: "abc-123", name: "String ID Item" }];
 
-    const result = toDropdownOptions(items.map((i) => ({ id: i.id, label: i.name })));
+    const result = toDropdownOptions(
+      items.map((i) => ({ id: i.id, label: i.name }))
+    );
 
     expect(result).toEqual([
       {

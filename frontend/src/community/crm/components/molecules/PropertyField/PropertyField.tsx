@@ -1,16 +1,8 @@
-"use client";
-
 import { InputField } from "@rootcodelabs/skapp-ui";
-import {
-  ChangeEvent,
-  FC,
-  KeyboardEvent,
-  useEffect,
-  useRef,
-  useState
-} from "react";
+import { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 
 type PropertyFieldInputType = "text" | "number";
 
@@ -21,9 +13,8 @@ interface PropertyFieldProps {
   inputType?: PropertyFieldInputType;
   min?: number;
   max?: number;
-  errorMessage?: string;
-  onChange?: (value: string) => void;
-  onSave?: (value: string) => void;
+  validate?: (value: string) => string;
+  onSave: (value: string) => void;
 }
 
 const PropertyField: FC<PropertyFieldProps> = ({
@@ -33,20 +24,23 @@ const PropertyField: FC<PropertyFieldProps> = ({
   inputType = "text",
   min,
   max,
-  errorMessage,
-  onChange,
+  validate,
   onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const resolvedPlaceholder =
     placeholder ?? translateText(["placeholders", "none"]);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>(value);
   const inputRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setInputValue(value);
-  }, [value]);
+  const {
+    isEditing,
+    value: editedValue,
+    error,
+    startEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({ value, validate, onSave });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,13 +49,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
         !inputRef.current.contains(event.target as Node) &&
         isEditing
       ) {
-        if (onSave) {
-          onSave(inputValue);
-          setInputValue(value);
-        } else if (onChange) {
-          onChange(inputValue);
-        }
-        setIsEditing(false);
+        save();
       }
     };
 
@@ -72,46 +60,25 @@ const PropertyField: FC<PropertyFieldProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isEditing, inputValue, value]);
-
-  const handleClick = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-      setInputValue(value);
-    }
-  };
+  }, [isEditing, save]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    if (onChange) {
-      onChange(e.target.value);
-    }
-  };
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave(inputValue);
-      setInputValue(value);
-    } else if (onChange) {
-      onChange(inputValue);
-    }
-    setIsEditing(false);
+    changeValue(e.target.value);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSave();
+      save();
     } else if (e.key === "Escape") {
-      setIsEditing(false);
-      setInputValue(value);
+      discard();
     }
   };
 
   const handleDisplayKeyDown = (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") handleClick();
+    if (e.key === "Enter" || e.key === " ") startEditing();
   };
 
-  const displayValue = inputValue || resolvedPlaceholder;
+  const displayValue = editedValue || resolvedPlaceholder;
 
   return (
     <div className="self-stretch h-9 flex justify-start items-center">
@@ -123,7 +90,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
         {isEditing ? (
           <div ref={inputRef} className="w-full">
             <InputField
-              value={inputValue}
+              value={editedValue}
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder={resolvedPlaceholder}
@@ -132,6 +99,8 @@ const PropertyField: FC<PropertyFieldProps> = ({
               type={inputType}
               min={min}
               max={max}
+              state={error ? "error" : "default"}
+              errorMessage={error}
               autoFocus
             />
           </div>
@@ -140,12 +109,12 @@ const PropertyField: FC<PropertyFieldProps> = ({
             role="button"
             tabIndex={0}
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
-            onClick={handleClick}
+            onClick={startEditing}
             onKeyDown={handleDisplayKeyDown}
           >
             <div
               className={`body2 tracking-wide truncate ${
-                inputValue ? "text-black" : "text-secondary-icon"
+                editedValue ? "text-black" : "text-secondary-icon"
               }`}
               title={displayValue}
             >

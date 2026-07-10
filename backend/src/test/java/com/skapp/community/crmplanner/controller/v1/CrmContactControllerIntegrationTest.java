@@ -68,6 +68,8 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String OWNERS_PATH = BASE_PATH + "/owners";
 
+	private static final String LOOKUP_PATH = BASE_PATH + "/lookup";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
@@ -182,9 +184,24 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	private CrmCompany savedCompany() {
+		return savedCompany("Integration Test Corp");
+	}
+
+	private CrmCompany savedCompany(String name) {
 		CrmCompany company = new CrmCompany();
-		company.setName("Integration Test Corp");
+		company.setName(name);
 		return crmCompanyDao.save(company);
+	}
+
+	private CrmContact savedNamedContact(String name, Long companyId, String email) {
+		CrmContact contact = new CrmContact();
+		contact.setName(name);
+		contact.setEmail(email);
+		if (companyId != null) {
+			contact.setCompany(crmCompanyDao.getReferenceById(companyId));
+		}
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		return crmContactDao.save(contact);
 	}
 
 	private CrmContact savedContact(Long companyId, String email) {
@@ -230,6 +247,27 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create contact without companyId - Returns Created with no company")
+	void createContact_WithoutCompanyId_ReturnsCreated() throws Exception {
+		performPostRequest(createValidPayload(null)).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Create contact with non-existent companyId - Returns Bad Request with company-not-found error")
+	void createContact_NonExistentCompanyId_ReturnsBadRequest() throws Exception {
+		performPostRequest(createValidPayload(999999L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
 	@DisplayName("Create contact with leading/trailing spaces - Spaces trimmed")
 	void createContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
 		Long companyId = savedCompany().getId();
@@ -266,6 +304,29 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		CrmContactCreateRequestDto dto = createValidPayload(companyId);
 		dto.setEmail("not-an-email");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create contact with apostrophe and comma in name - Returns Created")
+	void createContact_NameWithApostropheAndComma_ReturnsCreated() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setName("O'Brien, Jane");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("O'Brien, Jane"));
+	}
+
+	@Test
+	@DisplayName("Create contact with numbers in name - Returns Bad Request")
+	void createContact_NameWithNumbers_ReturnsBadRequest() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setName("Jane Smith 123");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -372,6 +433,19 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS)));
+	}
+
+	@Test
+	@DisplayName("Edit contact with non-existent companyId - Returns Bad Request with company-not-found error")
+	void editContact_NonExistentCompanyId_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		performPatchRequest(contactId, editValidPayload(999999L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
@@ -768,6 +842,94 @@ class CrmContactControllerIntegrationTest {
 		Long contactId = savedContact(companyId, "forbidden.detail@example.com").getId();
 
 		performRequest(get(BY_ID_PATH, contactId).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	// --- getContactsLookup ---
+
+	@Test
+	@DisplayName("Get contacts lookup filtered by dealId - Returns only the contact linked to that deal")
+	void getContactsLookup_FilterByDealId_ReturnsOnlyLinkedContact() throws Exception {
+		CrmCompany company = savedCompany();
+
+		CrmContact contactA = new CrmContact();
+		contactA.setName("Lookup Contact A");
+		contactA.setEmail("lookup.contact.a@example.com");
+		contactA.setCompany(company);
+		contactA.setOwner(employeeDao.getReferenceById(1L));
+		contactA = crmContactDao.save(contactA);
+
+		CrmContact contactB = new CrmContact();
+		contactB.setName("Lookup Contact B");
+		contactB.setEmail("lookup.contact.b@example.com");
+		contactB.setCompany(company);
+		contactB.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contactB);
+
+		CrmDealStage stage = savedStage(CrmDealStageType.OPEN);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Deal for Lookup Contact A");
+		deal.setStage(stage);
+		deal.setContact(contactA);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal = crmDealDao.save(deal);
+
+		performRequest(get(LOOKUP_PATH).param("dealId", deal.getId().toString()).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Lookup Contact A"));
+	}
+
+	@Test
+	@DisplayName("Lookup contacts with keyword matching contact name only - Returns the contact")
+	void getContactsLookup_KeywordMatchesContactNameOnly_ReturnsContact() throws Exception {
+		Long companyId = savedCompany("Globex Corporation").getId();
+		savedNamedContact("John Doe", companyId, "john.doe@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "john").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("John Doe"));
+	}
+
+	@Test
+	@DisplayName("Lookup contact without a company matching by name - Not dropped by the company join")
+	void getContactsLookup_ContactWithoutCompany_MatchedByName() throws Exception {
+		savedNamedContact("Solo Contact", null, "solo@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "solo").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("Solo Contact"));
+	}
+
+	@Test
+	@DisplayName("Lookup without keyword - Contacts with and without company are returned and counted consistently")
+	void getContactsLookup_NoKeyword_CountsIncludeCompanylessContacts() throws Exception {
+		Long companyId = savedCompany("Globex Corporation").getId();
+		savedNamedContact("John Doe", companyId, "john.doe@lookup.com");
+		savedNamedContact("Solo Contact", null, "solo@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'].length()").value(2));
+	}
+
+	@Test
+	@DisplayName("Lookup contacts without CRM role - Returns Forbidden")
+	void getContactsLookup_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
 			.andExpect(status().isForbidden());
 	}
 
