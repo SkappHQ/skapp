@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
@@ -29,6 +30,7 @@ import DealTitleSection from "./DealTitleSection";
 
 const DealSidePanel: FC = () => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const { isCrmSalesManager } = useSessionData();
 
   const {
     isCrmSidePanelOpen,
@@ -163,17 +165,19 @@ const DealSidePanel: FC = () => {
           </div>
         }
         headerActions={
-          <KebabMenu
-            id="deal-actions"
-            menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          isCrmSalesManager && (
+            <KebabMenu
+              id="deal-actions"
+              menuItems={menuItems}
+              anchorButton={{
+                "aria-label": translateText(["kebabMenuAriaLabel"])
+              }}
+              className={{
+                anchorElement:
+                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              }}
+            />
+          ) 
         }
       >
         {!selectedDeal ? (

@@ -35,11 +35,13 @@ interface ActionTypes {
   setDeals: (deals: CrmDealResponseType[]) => void;
   getDealById: (id: number) => CrmDealResponseType | undefined;
   updateDeal: (deal: CrmDealResponseType) => void;
+  removeDeal: (dealId: number) => void;
   setBoardStageDeals: (boardStageDeals: CrmBoardStageDealsType[]) => void;
   appendBoardStageDeals: (stageDeals: CrmBoardStageDealsType) => void;
   replaceBoardStageDeals: (stageDeals: CrmBoardStageDealsType[]) => void;
   addDealToStage: (deal: CrmBoardDealSliceType) => void;
   updateDealInStage: (deal: CrmBoardDealSliceType) => void;
+  removeDealFromStage: (dealId: number) => void;
   setPreselectedStageId: (stageId: number | null) => void;
 }
 

@@ -52,6 +52,7 @@ export interface CrmDealSliceTypes extends Pick<
   | "setDeals"
   | "getDealById"
   | "updateDeal"
+  | "removeDeal"
 > {}
 
 export interface CrmBoardSliceTypes extends Pick<
@@ -62,6 +63,7 @@ export interface CrmBoardSliceTypes extends Pick<
   | "replaceBoardStageDeals"
   | "addDealToStage"
   | "updateDealInStage"
+  | "removeDealFromStage"
   | "preselectedStageId"
   | "setPreselectedStageId"
 > {}

@@ -511,7 +511,7 @@
       "addDealBtn": "Add deal"
     },
     "deleteDealModal": {
-      "areYouSureModalTitle": "Are you sure?",
+      "title": "Delete Deal",
       "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",
@@ -520,6 +520,12 @@
       "ariaLabels": {
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
+      },
+      "toastMessages": {
+        "successTitle": "Deal deleted",
+        "successDescription": "The deal has been deleted and all linked tasks have been removed.",
+        "errorTitle": "Failed to delete deal",
+        "errorDescription": "Something went wrong. Please try again."
       }
     },
     "addDealSidePanel": {
