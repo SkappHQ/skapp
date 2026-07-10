@@ -118,7 +118,7 @@ const DealSidePanel: FC = () => {
   } = useGetRelatedTasks({ dealId: selectedDealId, size: TASK_PAGE_SIZE });
 
   const relatedTasks =
-    relatedTasksData?.pages.flatMap((page) => page.items ?? []) ?? [];
+    relatedTasksData?.pages.flatMap((page) => page.items) ?? [];
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
