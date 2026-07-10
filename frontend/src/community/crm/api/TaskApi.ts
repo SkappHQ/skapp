@@ -1,4 +1,5 @@
 import {
+  UseInfiniteQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -24,7 +25,7 @@ import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 export const useGetRelatedTasks = (
   params: RelatedTasksParams,
   enabled?: boolean
-) => {
+): UseInfiniteQueryResult<RelatedTasksPage> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: taskQueryKeys.RELATED_TASKS_BY_PARAMS(params),
