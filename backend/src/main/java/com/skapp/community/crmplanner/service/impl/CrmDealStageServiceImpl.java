@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -198,8 +198,7 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 		}
 
-		List<CrmDealStage> reorderedStages = new ArrayList<>();
-		for (int i = 0; i < orderedRequest.size(); i++) {
+		List<CrmDealStage> reorderedStages = IntStream.range(0, orderedRequest.size()).mapToObj(i -> {
 			CrmDealStage stage = existingStagesMap.get(orderedRequest.get(i).getId());
 
 			if (stage == null) {
@@ -207,8 +206,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			}
 
 			stage.setOrderIndex(availableOrderIndexes.get(i));
-			reorderedStages.add(stage);
-		}
+			return stage;
+		}).toList();
 
 		updateStageTypesAfterReorder(reorderedStages);
 		crmDealStageDao.saveAll(reorderedStages);
