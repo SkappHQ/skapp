@@ -384,6 +384,12 @@ export interface CrmTaskUpdatePayload {
   isCompleted?: boolean;
 }
 
+export interface ContactTaskCompletionUpdate {
+  contactId: number;
+  taskId: number;
+  isCompleted: boolean;
+}
+
 export interface TaskRowResponseType {
   id: number;
   name: string;

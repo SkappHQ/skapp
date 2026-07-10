@@ -2,6 +2,7 @@ import { SearchableDropdownItem } from "~community/common/components/molecules/S
 import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
 import {
   CompanyLookup,
+  ContactTaskCompletionUpdate,
   CrmContact,
   MetricItem
 } from "~community/crm/types/CommonTypes";
@@ -13,6 +14,22 @@ export const mergeContactUpdate = (
 ): CrmContact[] =>
   contacts.map((contact) =>
     contact.id === update.id ? { ...contact, ...update } : contact
+  );
+
+export const updateContactTaskCompletion = (
+  contacts: CrmContact[],
+  { contactId, taskId, isCompleted }: ContactTaskCompletionUpdate
+): CrmContact[] =>
+  contacts.map((contact) =>
+    contact.id === contactId
+      ? {
+          ...contact,
+          tasks:
+            contact.tasks?.map((task) =>
+              task.id === taskId ? { ...task, isCompleted } : task
+            ) ?? contact.tasks
+        }
+      : contact
   );
 
 export const reconcileContacts = (

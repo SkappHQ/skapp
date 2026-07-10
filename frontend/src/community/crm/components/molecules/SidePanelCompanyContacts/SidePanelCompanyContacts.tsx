@@ -1,10 +1,4 @@
-import {
-  Label,
-  PlusIcon,
-  SearchIcon,
-  Table,
-  TableColumn
-} from "@rootcodelabs/skapp-ui";
+import { Label, SearchIcon, Table, TableColumn } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
@@ -102,17 +96,10 @@ const SidePanelCompanyContacts: React.FC<{
       columns={columns as TableColumn<any>[]}
       data={contacts ?? []}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
-      height="17.25rem"
       noDataState={{
         icon: <SearchIcon />,
         title: translateText(["noContacts"]),
-        description: translateText(["noContactsDescription"]),
-        buttonText: translateText(["addContact"]),
-        buttonIcon: <PlusIcon />,
-        buttonVariant: "tertiary",
-        onButtonClick: () => {
-          // Add contact action
-        }
+        description: translateText(["noContactsDescription"])
       }}
     />
   );

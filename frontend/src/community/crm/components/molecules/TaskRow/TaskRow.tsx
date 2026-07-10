@@ -4,6 +4,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/api/TaskApi";
+import { useCrmStore } from "~community/crm/store/store";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
@@ -28,6 +29,10 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
+  const { updateContactTaskCompletion } = useCrmStore((store) => ({
+    updateContactTaskCompletion: store.updateContactTaskCompletion
+  }));
+
   const [taskCompleted, setTaskCompleted] = useState(task.isCompleted);
 
   useEffect(() => {
@@ -46,11 +51,24 @@ const TaskRow: FC<Props> = ({
 
   const { mutate: updateCompletion } = useUpdateTask();
 
+  const handleUpdateCompletionSuccess = (checked: boolean) => {
+    if (task.contact) {
+      updateContactTaskCompletion({
+        contactId: task.contact.id,
+        taskId: task.id,
+        isCompleted: checked
+      });
+    }
+  };
+
   const handleToggleChange = (checked: boolean) => {
     setTaskCompleted(checked);
     updateCompletion(
       { id: task.id, isCompleted: checked },
-      { onError: handleUpdateCompletionError }
+      {
+        onSuccess: () => handleUpdateCompletionSuccess(checked),
+        onError: handleUpdateCompletionError
+      }
     );
   };
 
