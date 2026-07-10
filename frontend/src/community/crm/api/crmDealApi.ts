@@ -114,8 +114,7 @@ export const useCheckDealNameExists = (
   return useQuery({
     queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
     queryFn: () => checkDealNameExists(name),
-    enabled,
-    staleTime: 0
+    enabled
   });
 };
 

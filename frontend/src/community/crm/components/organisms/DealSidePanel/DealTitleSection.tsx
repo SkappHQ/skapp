@@ -37,11 +37,15 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
 
   const trimmedTitle = editedTitle.trim();
   const debouncedDealName = useDebounce(trimmedTitle, SEARCH_DEBOUNCE_DELAY);
+
+  const isDealNameCheckEnabled =
+    isEditing &&
+    debouncedDealName.length > 0 &&
+    debouncedDealName !== name.trim();
+
   const { data: dealNameData } = useCheckDealNameExists(
     debouncedDealName,
-    isEditing &&
-      debouncedDealName.length > 0 &&
-      debouncedDealName !== name.trim()
+    isDealNameCheckEnabled
   );
   const isDuplicateName =
     trimmedTitle !== name.trim() && (dealNameData?.isExists ?? false);

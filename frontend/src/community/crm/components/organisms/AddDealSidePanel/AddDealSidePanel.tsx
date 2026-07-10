@@ -112,7 +112,7 @@ const AddDealSidePanel: FC = () => {
   ) => {
     setSubmitting(false);
 
-    if (dealNameData?.isExists ?? false) {
+    if (isDealNameCheckUnresolved || dealNameData?.isExists) {
       return;
     }
 
@@ -143,10 +143,13 @@ const AddDealSidePanel: FC = () => {
     values.name.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: dealNameData } = useCheckDealNameExists(
-    debouncedDealName,
-    debouncedDealName.length > 0
-  );
+
+  const { data: dealNameData, isFetching: isDealNameCheckFetching } =
+    useCheckDealNameExists(debouncedDealName, debouncedDealName.length > 0);
+
+  const isDealNameCheckUnresolved =
+    values.name.trim().length > 0 &&
+    (values.name.trim() !== debouncedDealName || isDealNameCheckFetching);
 
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);
