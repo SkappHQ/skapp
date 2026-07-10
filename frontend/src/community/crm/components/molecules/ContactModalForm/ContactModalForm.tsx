@@ -86,8 +86,10 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
-  const { data: companyLookupData, isFetching: isCompanyFetching } =
-    useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
+  const { data: companyLookupData } = useGetCompanyLookup(
+    debouncedCompanySearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
 
   const addSuggestedLabel = (
     item: SearchableDropdownItem
@@ -176,16 +178,7 @@ const ContactModalForm = ({
           onChange={(event) => setCompanySearchText(event.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
-          isOpenOnFocus={
-            isDomainSearchEnabled && !!domainSearchData?.companies?.length
-          }
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
+          isOpenOnFocus={true}
         />
       ) : (
         <InputField

@@ -22,7 +22,7 @@ import {
   CrmContactLookup,
   CrmCreateDealPayload,
   CrmDealAddFormTypes,
-  CrmDealCreateResponseType
+  CrmDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
@@ -78,7 +78,7 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealResponseType) => {
     addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,

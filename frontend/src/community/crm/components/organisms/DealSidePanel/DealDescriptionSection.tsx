@@ -1,43 +1,41 @@
 import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEventHandler, useState } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
+import { validateDealDescription } from "~community/crm/utils/dealValidations";
 
 interface DealDescriptionSectionProps {
   description: string | null;
+  onSave: (description: string) => void;
 }
 
 const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
-  description
+  description,
+  onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const isDescriptionEmpty = !description?.trim();
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedDescription, setEditedDescription] = useState<string>("");
+  const {
+    isEditing,
+    value: editedDescription,
+    error,
+    startEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({
+    value: description ?? "",
+    validate: (value) => validateDealDescription(value, translateText),
+    onSave
+  });
 
-  const handleClick = () => {
-    setIsEditing(true);
-    setEditedDescription(description ?? "");
-  };
-
-  const handleSave = () => {
-    // Edit API call
-    setIsEditing(false);
-  };
-
-  const handleDiscard = () => {
-    setEditedDescription(description ?? "");
-    setIsEditing(false);
-  };
-
-  const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (
-    e
-  ) => {
+  const handlekeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleClick();
+      startEditing();
     }
   };
 
@@ -48,14 +46,16 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
         <div className="flex flex-col gap-3">
           <TextArea
             value={editedDescription}
-            onChange={(e) => setEditedDescription(e.target.value)}
+            onChange={(e) => changeValue(e.target.value)}
             className="w-full body2"
             rows={4}
+            state={error ? "error" : "default"}
+            errorMessage={error}
             autoFocus
           />
           <div className="flex gap-2 justify-end">
             <ButtonV2
-              onClick={handleDiscard}
+              onClick={discard}
               size="md"
               type="button"
               variant="tertiary"
@@ -63,7 +63,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
               {translateText(["buttons", "discard"])}
             </ButtonV2>
             <ButtonV2
-              onClick={handleSave}
+              onClick={save}
               size="md"
               type="button"
               variant="primary"
@@ -78,7 +78,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           tabIndex={0}
           className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editDescription"])}
-          onClick={handleClick}
+          onClick={startEditing}
           onKeyDown={handlekeyDown}
         >
           {isDescriptionEmpty ? (

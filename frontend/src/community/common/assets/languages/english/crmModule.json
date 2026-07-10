@@ -30,7 +30,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -101,7 +100,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -447,11 +445,17 @@
         "save": "Save",
         "discard": "Discard"
       },
+      "toastMessages": {
+        "editErrorTitle": "Failed to update deal",
+        "editErrorDescription": "Something went wrong. Please try again"
+      },
       "validations": {
         "dealNameRequired": "Deal name is required",
         "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
         "dealNameMaxLength": "Deal name must be 255 characters or less",
-        "dealNameExists": "A deal with this name already exists"
+        "dealNameExists": "A deal with this name already exists",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "amountInvalid": "Please enter a valid positive amount"
       },
       "errors": {
         "dealNotFoundTitle": "Deal not found",

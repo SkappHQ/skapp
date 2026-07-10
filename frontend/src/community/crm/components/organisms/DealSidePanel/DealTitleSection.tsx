@@ -4,85 +4,45 @@ import {
   InputField,
   TickIcon
 } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
-import { FC, KeyboardEventHandler, useState } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
-import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCheckDealNameExists } from "~community/crm/api/crmDealApi";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
-import { dealTitleValidations } from "~community/crm/utils/dealValidations";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
+import { validateDealName } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
   name: string;
+  onSave: (name: string) => void;
 }
 
-const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
+const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-
-  const formik = useFormik({
-    initialValues: { name },
-    validationSchema: dealTitleValidations(translateText),
-    validateOnChange: true,
-    validateOnBlur: false,
-    enableReinitialize: true,
-    onSubmit: () => {
-      // Edit API call
-      setIsEditing(false);
-    }
+  const {
+    isEditing,
+    value: editedTitle,
+    error,
+    startEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({
+    value: name,
+    validate: (value) => validateDealName(value, translateText),
+    onSave
   });
-
-  const debouncedDealName = useDebounce(
-    formik.values.name.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
-
-  const shouldCheckDealName =
-    isEditing &&
-    debouncedDealName.length > 0 &&
-    debouncedDealName !== name.trim();
-
-  const { data: dealNameData } = useCheckDealNameExists(
-    debouncedDealName,
-    shouldCheckDealName
-  );
-
-  const isDuplicateName =
-    formik.values.name.trim() !== name.trim() &&
-    dealNameData?.isExists === true;
-
-  const titleErrorMessage = isDuplicateName
-    ? translateText(["validations", "dealNameExists"])
-    : formik.errors.name;
-
-  const handleClick = () => {
-    formik.resetForm({ values: { name } });
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    if (isDuplicateName) return;
-    formik.submitForm();
-  };
-
-  const handleDiscard = () => {
-    formik.resetForm({ values: { name } });
-    setIsEditing(false);
-  };
 
   const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleSave();
+      save();
     }
   };
 
   const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleClick();
+      startEditing();
     }
   };
 
@@ -91,13 +51,12 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
       <div className="flex gap-6 items-center min-w-0">
         <div className="flex-1 min-w-0 p-1">
           <InputField
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
+            value={editedTitle}
+            onChange={(e) => changeValue(e.target.value)}
             onKeyDown={handleInputKeyDown}
             className="w-full"
-            state={titleErrorMessage ? "error" : "default"}
-            errorMessage={titleErrorMessage}
+            state={error ? "error" : "default"}
+            errorMessage={error}
             autoFocus
           />
         </div>
@@ -107,15 +66,14 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
               aria-label={translateText(["ariaLabels", "saveTitle"])}
               isRounded={true}
               icon={<TickIcon fill="var(--color-primary-accent)" />}
-              onClick={handleSave}
+              onClick={save}
               variant="outlined"
-              disabled={isDuplicateName}
             />
             <IconButton
               aria-label={translateText(["ariaLabels", "discardTitle"])}
               isRounded={true}
               icon={<CloseIcon />}
-              onClick={handleDiscard}
+              onClick={discard}
             />
           </div>
         </div>
@@ -131,7 +89,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
           tabIndex={0}
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editTitle"])}
-          onClick={handleClick}
+          onClick={startEditing}
           onKeyDown={handleTitleKeyDown}
         >
           {name}

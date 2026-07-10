@@ -63,3 +63,36 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       translator(["validations", "descriptionMaxLength"])
     )
   });
+
+const validateField = (
+  fieldName: string,
+  value: unknown,
+  translator: TranslatorFunctionType
+): string => {
+  try {
+    (
+      Yup.reach(addDealValidations(translator), fieldName) as Yup.AnySchema
+    ).validateSync(value);
+    return "";
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      return error.message;
+    }
+    throw error;
+  }
+};
+
+export const validateDealName = (
+  name: string,
+  translator: TranslatorFunctionType
+): string => validateField("name", name, translator);
+
+export const validateDealDescription = (
+  description: string,
+  translator: TranslatorFunctionType
+): string => validateField("description", description, translator);
+
+export const validateDealAmount = (
+  amount: string,
+  translator: TranslatorFunctionType
+): string => validateField("amount", amount, translator);
