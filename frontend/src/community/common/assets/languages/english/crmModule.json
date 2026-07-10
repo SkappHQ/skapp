@@ -522,7 +522,7 @@
       },
       "toastMessages": {
         "successTitle": "Deal deleted",
-        "successDescription": "'{{dealName}}' has been deleted and all linked tasks have been removed.",
+        "successDescription": "The deal has been deleted and all linked tasks have been removed.",
         "errorTitle": "Failed to delete deal",
         "errorDescription": "Something went wrong. Please try again."
       }

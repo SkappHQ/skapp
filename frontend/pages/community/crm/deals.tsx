@@ -41,11 +41,10 @@ const Deals: NextPage = () => {
     >
       <>
         <SidePanelWrapper>
-          
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
-        <TaskModalController/>
+        <TaskModalController />
         <DealsSection />
       </>
     </ContentLayout>
