@@ -165,7 +165,7 @@ const DealSidePanel: FC = () => {
           </div>
         }
         headerActions={
-          isCrmSalesManager ?? (
+          isCrmSalesManager && (
             <KebabMenu
               id="deal-actions"
               menuItems={menuItems}

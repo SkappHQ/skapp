@@ -33,22 +33,21 @@ const DeleteDealModal: FC<Props> = ({ isOpen, onClose, dealName }) => {
     removeDealFromStage: store.removeDealFromStage
   }));
 
-  const handleSuccess = (): void => {
-    if (selectedDealId === null) return;
-
+  const handleSuccess = (deletedDealId: number): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"], {
-        dealName
-      })
+      description: translateText(["toastMessages", "successDescription"])
     });
 
-    removeDeal(selectedDealId);
-    removeDealFromStage(selectedDealId);
-    closeCrmSidePanel();
-    setSelectedDealId(null);
+    removeDeal(deletedDealId);
+    removeDealFromStage(deletedDealId);
+
+    if (selectedDealId === deletedDealId) {
+      closeCrmSidePanel();
+      setSelectedDealId(null);
+    }
   };
 
   const handleError = (): void => {
