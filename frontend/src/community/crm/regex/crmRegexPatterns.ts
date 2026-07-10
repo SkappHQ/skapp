@@ -3,5 +3,5 @@ export function isDealNameValid(): RegExp {
 }
 
 export function isContactNameValid(): RegExp {
-  return /^[\p{L}\p{N} \-.,']+$/u;
+   return /^[\p{L} \-.,']+$/u;
 }

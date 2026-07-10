@@ -21,15 +21,6 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
-const fetchRelatedTasks = async (
-  params: RelatedTasksParams
-): Promise<RelatedTasksPage> => {
-  const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
-    params
-  });
-  return response?.data?.results?.[0];
-};
-
 export const useGetRelatedTasks = (
   params: RelatedTasksParams,
   enabled?: boolean
@@ -37,8 +28,15 @@ export const useGetRelatedTasks = (
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: taskQueryKeys.RELATED_TASKS_BY_PARAMS(params),
-    queryFn: ({ pageParam }) =>
-      fetchRelatedTasks({ ...params, page: pageParam }),
+    queryFn: async ({ pageParam = 0 }): Promise<RelatedTasksPage> => {
+      const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
+        params: {
+          page: pageParam,
+          ...params
+        }
+      });
+      return response?.data?.results?.[0];
+    },
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;

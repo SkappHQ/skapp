@@ -90,8 +90,10 @@ const TaskSidePanel: FC = () => {
 
   const selectedTask = getTaskById(selectedTaskId!);
 
-  const dealId = selectedTask?.deal?.id ?? null;
-  const contactId = selectedTask?.contactId ?? null;
+  const dealId = selectedTask?.deal?.id
+  const contactId = selectedTask?.contactId
+
+  const isEnabled = dealId != null || contactId  != null 
 
   const {
     data: relatedTasksData,
@@ -100,7 +102,7 @@ const TaskSidePanel: FC = () => {
     isFetchingNextPage
   } = useGetRelatedTasks(
     { dealId, contactId, size: TASK_PAGE_SIZE },
-    isOpen && !!(dealId || contactId)
+    isEnabled
   );
 
   const relatedTasks = (
