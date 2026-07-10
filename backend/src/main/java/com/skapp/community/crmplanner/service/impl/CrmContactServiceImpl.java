@@ -294,8 +294,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
 
 		CrmTaskSummary tasks = taskSummaryMap.get(contact.getId());
-		dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
-		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
+		dto.setOpenTasksCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
+		dto.setOverdueTasksCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
 	}
