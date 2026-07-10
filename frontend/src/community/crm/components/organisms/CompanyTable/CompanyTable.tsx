@@ -183,7 +183,7 @@ export const CompanyTable: FC = () => {
           isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
         }
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="34.5rem"
+        height="52vh"
         hasMore={hasNextPage}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([
