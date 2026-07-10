@@ -323,7 +323,6 @@ export interface CrmDealFilterParams {
 export interface RelatedTasksParams {
   contactId?: number | null;
   dealId?: number | null;
-  page?: number;
   size: number;
 }
 
