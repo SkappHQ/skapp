@@ -48,9 +48,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = String(deal.stage.id);
   const selectedOwner = deal.owner;
-  const selectedContact: CrmContactLookup | null = deal.contactId
-    ? { id: deal.contactId, name: deal.contactName ?? "" }
-    : null;
+  const selectedContact: CrmContactLookup | null = deal.contact ?? null;
 
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
 
@@ -133,7 +131,6 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
             <ContactPopupSearch
               contacts={contacts}
               selectedContact={selectedContact}
-              selectedCompanyName={deal.companyName ?? undefined}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               placeholder={translateText(["placeholders", "none"])}

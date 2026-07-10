@@ -68,8 +68,8 @@ public class CrmUtil {
 
 	public CrmDealResponseDto toDealResponseDto(CrmMapper crmMapper, CrmDeal deal) {
 		CrmDealResponseDto dto = crmMapper.crmDealToCrmDealResponseDto(deal);
-		if (hasDeletedCompany(deal)) {
-			dto.setCompanyName(null);
+		if (hasDeletedCompany(deal) && dto.getContact() != null) {
+			dto.getContact().setCompany(null);
 		}
 		return dto;
 	}

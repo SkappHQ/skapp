@@ -37,9 +37,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "companyName", source = "company.name")
-	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "contactName", source = "contact.name")
 	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 

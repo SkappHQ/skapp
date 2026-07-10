@@ -4,7 +4,7 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
@@ -21,7 +21,6 @@ interface Props {
   placeholder: string;
   searchPlaceholder: string;
   noResultsText: string;
-  selectedCompanyName?: string;
   ariaInvalid?: boolean;
   ariaRequired?: boolean;
 }
@@ -34,7 +33,6 @@ const ContactPopupSearch: FC<Props> = ({
   placeholder,
   searchPlaceholder,
   noResultsText,
-  selectedCompanyName,
   ariaInvalid,
   ariaRequired
 }) => {
@@ -69,7 +67,7 @@ const ContactPopupSearch: FC<Props> = ({
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
       name={selectedContact?.name}
-      companyName={selectedCompanyName ?? selectedContact?.company?.name}
+      companyName={selectedContact?.company?.name}
       placeholder={placeholder}
       triggerProps={triggerProps}
     />

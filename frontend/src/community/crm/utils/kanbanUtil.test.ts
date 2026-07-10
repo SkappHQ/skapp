@@ -343,9 +343,7 @@ describe("mapCreatedDealToSlice", () => {
     priority: CrmPriorityEnum.HIGH,
     orderIndex: "a0",
     amount: "1500",
-    companyName: "Acme Corp",
-    contactId: 21,
-    contactName: "Acme Lead",
+    contact: CONTACT_WITH_COMPANY,
     owner: OWNER
   };
 
@@ -366,19 +364,25 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should read stageId from the nested stage", () => {
-    const result = mapCreatedDealToSlice({ ...response, stage: mkStageType(3) });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      stage: mkStageType(3)
+    });
 
     expect(result.stageId).toBe(3);
   });
 
   it("should default contactName to an empty string when absent", () => {
-    const result = mapCreatedDealToSlice({ ...response, contactName: null });
+    const result = mapCreatedDealToSlice({ ...response, contact: null });
 
     expect(result.contactName).toBe("");
   });
 
   it("should keep companyName null when absent", () => {
-    const result = mapCreatedDealToSlice({ ...response, companyName: null });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      contact: CONTACT_NO_COMPANY
+    });
 
     expect(result.companyName).toBeNull();
   });
