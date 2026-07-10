@@ -8,6 +8,7 @@ import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/S
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
@@ -40,9 +41,11 @@ const Deals: NextPage = () => {
     >
       <>
         <SidePanelWrapper>
+          
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
+        <TaskModalController/>
         <DealsSection />
       </>
     </ContentLayout>

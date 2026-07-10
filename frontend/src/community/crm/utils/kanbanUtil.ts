@@ -184,6 +184,23 @@ export const updateDealInStageMap = (
   });
 };
 
+export const removeDealFromStageMap = (
+  stageMap: CrmBoardStageDealsType[],
+  dealId: number
+): CrmBoardStageDealsType[] => {
+  const stageId = findStageIdByDealId(stageMap, dealId);
+
+  return stageMap.map((stage) =>
+    stage.stageId === stageId
+      ? {
+          ...stage,
+          deals: stage.deals.filter((deal) => deal?.id !== dealId),
+          totalCount: stage.totalCount - 1
+        }
+      : stage
+  );
+};
+
 export const computeReorderWithinStage = (
   sourceDeals: CrmBoardDealSliceType[],
   activeDealId: number,

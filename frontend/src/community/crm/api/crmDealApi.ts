@@ -23,7 +23,11 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { contactQueryKeys, crmDealQueryKeys } from "./utils/QueryKeys";
+import {
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
+} from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -157,6 +161,28 @@ export const useEditDeal = (
   return useMutation({
     mutationFn: editDeal,
     onSuccess,
+    onError
+  });
+};
+
+const deleteDeal = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));
+};
+
+export const useDeleteDeal = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.RELATED_TASKS });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
     onError
   });
 };
