@@ -4,12 +4,14 @@ import { FC, useEffect, useMemo, useState } from "react";
 import ContactPopupSearch from "~community/crm/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/components/molecules/PriorityDropdown/PriorityDropdown";
+import PropertyField from "~community/crm/components/molecules/PropertyField/PropertyField";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import {
   CrmContactLookup,
   CrmDealAddFormTypes,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { validateDealAmount } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface DealPropertiesSectionProps {
@@ -29,7 +31,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   setSelectedContact,
   setContactSearchTerm
 }) => {
-  const { values, errors, touched, handleChange, setFieldValue } = formik;
+  const { values, errors, touched, setFieldValue } = formik;
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
@@ -89,23 +91,13 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         </div>
       </PropertyRow>
 
-      <PropertyRow label={translateText(["labels", "value"])}>
-        <div className="flex flex-col w-full px-1">
-          <input
-            name="amount"
-            value={values.amount}
-            onChange={handleChange}
-            placeholder={translateText(["placeholders", "none"])}
-            type="text"
-            className="w-full bg-transparent outline-none body2 placeholder:text-secondary-text"
-            aria-label={translateText(["ariaLabels", "amount"])}
-            aria-invalid={!!errors.amount}
-          />
-          {errors.amount && (
-            <p className="text-semantic-red-accent body3 mt-1">{errors.amount}</p>
-          )}
-        </div>
-      </PropertyRow>
+      <PropertyField
+        label={translateText(["labels", "value"])}
+        value={values.amount}
+        placeholder={translateText(["placeholders", "none"])}
+        validate={(value) => validateDealAmount(value, translateText)}
+        onSave={(value) => setFieldValue("amount", value)}
+      />
 
       <PropertyRow label={translateText(["labels", "priority"])}>
         <PriorityDropdown
