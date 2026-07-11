@@ -6,7 +6,7 @@ export enum CrmPriorityEnum {
 
 export enum CrmTaskTabEnum {
   MY_TASKS = "my-tasks",
-  TEAM_TASKS = "team-tasks",
+  ALL_TASKS = "all-tasks",
   COMPLETED_TASKS = "completed-tasks"
 }
 
@@ -88,4 +88,8 @@ export enum DefaultStageNameEnum {
   NEGOTIATION = "NEGOTIATION",
   WON = "WON",
   LOST = "LOST"
+}
+
+export enum CrmErrorMessageKeyEnum {
+  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS"
 }

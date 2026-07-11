@@ -7,6 +7,27 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
+export const mergeContactUpdate = (
+  contacts: CrmContact[],
+  update: CrmContact
+): CrmContact[] =>
+  contacts.map((contact) =>
+    contact.id === update.id ? { ...contact, ...update } : contact
+  );
+
+export const reconcileContacts = (
+  existing: CrmContact[],
+  incoming: CrmContact[]
+): CrmContact[] =>
+  incoming.map((item) => {
+    const enriched = existing.find((contact) => contact.id === item.id);
+    return enriched ? { ...item, ...enriched } : item;
+  });
+
+export interface CompanyDropdownItem extends SearchableDropdownItem {
+  isPrioritized?: boolean;
+}
+
 export const toDropdownItem = (
   company: CompanyLookup
 ): SearchableDropdownItem => ({
@@ -17,7 +38,7 @@ export const toDropdownItem = (
 export const mergeAndPrioritizeCompanyDropdownItems = (
   lookupCompanies: CompanyLookup[] | undefined,
   domainCompanies: CompanyLookup[] | undefined
-): SearchableDropdownItem[] => {
+): CompanyDropdownItem[] => {
   const lookupItems = lookupCompanies?.map(toDropdownItem) ?? [];
   const domainItems = domainCompanies?.map(toDropdownItem) ?? [];
 
@@ -34,7 +55,12 @@ export const mergeAndPrioritizeCompanyDropdownItems = (
     domainCompanyIds
   );
 
-  return [...prioritized, ...deprioritized];
+  const priorityMarkedItems = prioritized.map((item) => ({
+    ...item,
+    isPrioritized: true
+  }));
+
+  return [...priorityMarkedItems, ...deprioritized];
 };
 
 export const mapContactToMetricItems = (
@@ -45,7 +71,7 @@ export const mapContactToMetricItems = (
   ) => string
 ): MetricItem[] => {
   const overdueChip =
-    contact.overdueTasksCount > 0
+    (contact.overdueTasksCount ?? 0) > 0
       ? {
           label: translateText(["metrics", "overdueChipLabel"], {
             count: contact.overdueTasksCount
@@ -58,24 +84,24 @@ export const mapContactToMetricItems = (
     {
       id: "openTasksCount",
       title: translateText(["metrics", "openTasks"]),
-      amount: String(contact.openTasksCount),
+      amount: String(contact.openTasksCount ?? 0),
       chip: overdueChip
     },
     {
       id: "activeDealsCount",
       title: translateText(["metrics", "activeDeals"]),
-      amount: String(contact.activeDealsCount)
+      amount: String(contact.activeDealsCount ?? 0)
     },
     {
       id: "totalRevenue",
       title: translateText(["metrics", "totalRevenue"]),
-      amount: contact.totalRevenue,
+      amount: contact.totalRevenue ?? "",
       isCurrency: true
     },
     {
       id: "pipelineRevenue",
       title: translateText(["metrics", "pipelineRevenue"]),
-      amount: contact.pipelineRevenue,
+      amount: contact.pipelineRevenue ?? "",
       isCurrency: true
     }
   ];

@@ -17,18 +17,19 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmDealsByStageResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -36,9 +37,10 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
+import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -65,8 +67,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final CrmContactDao crmContactDao;
 
-	private final EmployeeDao employeeDao;
-
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final CrmMapper crmMapper;
@@ -74,6 +74,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final PageTransformer pageTransformer;
 
 	private final UserService userService;
+
+	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmTaskDao crmTaskDao;
 
@@ -84,7 +86,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto checkDealNameExists(String name) {
 		log.info("checkDealNameExists: execution started");
 		CrmValidations.validateDealName(name);
-		boolean exists = crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+		boolean exists = crmDealDao.existsByNameAndIsDeletedFalse(name);
 
 		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);
@@ -107,7 +109,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealOwnerId(requestDto.getOwnerId());
 		validateDealCreationLimit();
 
-		if (crmDealDao.existsByNameIgnoreCaseAndIsDeletedFalse(requestDto.getName())) {
+		User currentUser = userService.getCurrentUser();
+
+		if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalse(requestDto.getName(), requestDto.getContactId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
 		}
 
@@ -123,15 +127,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			company = crmCompanyDao.findByIdAndIsDeletedFalse(contact.getCompany().getId()).orElse(null);
 		}
 
-		Employee owner = employeeDao.findEmployeeByEmployeeIdAndUserIsActiveTrue(requestDto.getOwnerId());
-		if (owner == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
-		}
-
-		if (owner.getEmployeeRole() == null || owner.getEmployeeRole().getCrmRole() == null
-				|| !CrmConstants.ASSIGNABLE_CRM_ROLES.contains(owner.getEmployeeRole().getCrmRole())) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_INVALID_ROLE);
-		}
+		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmDeal deal = new CrmDeal();
 		deal.setName(requestDto.getName());
@@ -165,7 +161,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
-		List<CrmDealResponseDto> deals = crmMapper.crmDealsToCrmDealResponseDtos(dealsPage.getContent());
+		List<CrmDealResponseDto> deals = dealsPage.getContent().stream().map(this::toDealResponseDto).toList();
 
 		PageDto pageDto = pageTransformer.transform(dealsPage);
 		pageDto.setItems(deals);
@@ -215,9 +211,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
 			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);
 
-			List<CrmDealByStageItemResponseDto> deals = crmMapper
-				.crmDealsToCrmDealByStageItemResponseDtos(dealsPage.getContent());
-			deals.forEach(deal -> deal.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L)));
+			List<CrmDealByStageItemResponseDto> deals = dealsPage.getContent()
+				.stream()
+				.map(deal -> toStageItemDto(deal, taskCountMap))
+				.toList();
 
 			CrmDealsByStageResponseDto stageResult = new CrmDealsByStageResponseDto();
 			stageResult.setStageId(stageId);
@@ -239,12 +236,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmDealStage> visibleStages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
+		List<CrmDealStage> visibleStages = CrmUtil.sortStagesForDisplay(
+				filterVisibleDealStages(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()));
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDto> contacts = crmMapper
-			.crmContactsToCrmBoardContactResponseDtos(crmContactDao.findAllContactsForBoardInit());
+		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
+			.stream()
+			.map(this::toBoardContactDto)
+			.toList();
 
 		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
 			.stream()
@@ -260,6 +259,20 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	private CrmBoardContactResponseDto toBoardContactDto(CrmContact contact) {
+		return CrmUtil.toBoardContactDto(crmMapper, contact);
+	}
+
+	private CrmDealResponseDto toDealResponseDto(CrmDeal deal) {
+		return CrmUtil.toDealResponseDto(crmMapper, deal);
+	}
+
+	private CrmDealByStageItemResponseDto toStageItemDto(CrmDeal deal, Map<Long, Long> taskCountMap) {
+		CrmDealByStageItemResponseDto dto = CrmUtil.toDealByStageItemDto(crmMapper, deal);
+		dto.setTaskCount(taskCountMap.getOrDefault(deal.getId(), 0L));
+		return dto;
 	}
 
 	@Override
@@ -345,7 +358,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
@@ -394,11 +407,98 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	@Override
 	@Transactional
+	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
+		log.info("editDeal: execution started");
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		if (requestDto.getName() != null && !requestDto.getName().equals(deal.getName())) {
+			CrmValidations.validateDealName(requestDto.getName());
+			Long effectiveContactId = (requestDto.getContactId() != null) ? requestDto.getContactId()
+					: deal.getContact().getId();
+			if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalseAndIdNot(requestDto.getName(), effectiveContactId,
+					deal.getId())) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+			}
+			deal.setName(requestDto.getName());
+		}
+
+		if (requestDto.getAmount() != null) {
+			CrmValidations.validateDealAmount(requestDto.getAmount());
+			deal.setAmount(requestDto.getAmount());
+		}
+
+		if (requestDto.getPriority() != null) {
+			CrmValidations.validateDealPriority(requestDto.getPriority());
+			deal.setPriority(requestDto.getPriority());
+		}
+
+		if (requestDto.getDescription() != null) {
+			CrmValidations.validateDealDescription(requestDto.getDescription());
+			deal.setDescription(requestDto.getDescription());
+		}
+
+		if (requestDto.getStageId() != null) {
+			CrmValidations.validateDealStageId(requestDto.getStageId());
+			CrmDealStage stage = crmDealStageDao.findByIdAndIsDeletedFalse(requestDto.getStageId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND));
+			deal.setStage(stage);
+
+			String lastOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stage.getId());
+			deal.setOrderIndex(FractionalIndexUtil.generateKeyBetween(lastOrderIndex, null));
+		}
+
+		if (requestDto.getContactId() != null) {
+			CrmValidations.validateDealContactId(requestDto.getContactId());
+			CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_CONTACT_NOT_FOUND));
+
+			if (!requestDto.getContactId().equals(deal.getContact().getId())) {
+				if (crmDealDao.existsByNameAndContact_IdAndIsDeletedFalse(deal.getName(), requestDto.getContactId())) {
+					throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EXISTS);
+				}
+			}
+
+			deal.setContact(contact);
+
+			CrmCompany company = null;
+			if (contact.getCompany() != null) {
+				company = crmCompanyDao.findByIdAndIsDeletedFalse(contact.getCompany().getId()).orElse(null);
+			}
+			deal.setCompany(company);
+		}
+
+		if (requestDto.getOwnerId() != null && !requestDto.getOwnerId().equals(deal.getOwner().getEmployeeId())) {
+			Employee newOwner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
+			deal.setOwner(newOwner);
+		}
+
+		CrmDeal savedDeal = crmDealDao.save(deal);
+
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
+		log.info("editDeal: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
 	public ResponseEntityDto deleteDeal(Long id) {
 		log.info("deleteDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
 
 		List<CrmTask> linkedTasks = crmTaskDao.findByDeal_IdAndIsDeletedFalse(id);
 		linkedTasks.forEach(task -> task.setIsDeleted(true));

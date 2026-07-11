@@ -2,6 +2,10 @@ import { SetType } from "~community/common/types/CommonTypes";
 import { CrmContact } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactSliceTypes } from "~community/crm/types/SliceTypes";
+import {
+  mergeContactUpdate,
+  reconcileContacts
+} from "~community/crm/utils/contactUtil";
 
 const CrmContactSlice = (
   set: SetType<CrmContactSliceTypes>,
@@ -10,7 +14,7 @@ const CrmContactSlice = (
   isContactModalOpen: false,
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   selectedContactId: null,
-  contacts: {},
+  contacts: [],
   setIsContactModalOpen: (isContactModalOpen: boolean) =>
     set({ isContactModalOpen: isContactModalOpen }),
   setContactModalType: (contactModalType: CrmModalTypes) =>
@@ -18,15 +22,13 @@ const CrmContactSlice = (
   setSelectedContactId: (selectedContactId: number | null) =>
     set({ selectedContactId: selectedContactId }),
   setContacts: (contacts: CrmContact[]) =>
-    set({ contacts: Object.fromEntries(contacts.map((c) => [c.id, c])) }),
+    set({ contacts: reconcileContacts(get().contacts, contacts) }),
   updateContact: (contact: CrmContact) =>
-    set((state) => ({
-      contacts: {
-        ...state.contacts,
-        [contact.id]: { ...state.contacts[contact.id], ...contact }
-      }
-    })),
-  getContactById: (id: number) => get().contacts[id]
+    set({ contacts: mergeContactUpdate(get().contacts, contact) }),
+  removeContact: (id: number) =>
+    set({ contacts: get().contacts.filter((contact) => contact.id !== id) }),
+  getContactById: (id: number) =>
+    get().contacts.find((contact) => contact.id === id)
 });
 
 export default CrmContactSlice;

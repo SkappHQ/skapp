@@ -5,19 +5,24 @@ import { useMemo, useState } from "react";
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
 import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import SuggestedBadge from "~community/crm/components/atoms/SuggestedBadge/SuggestedBadge";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import {
+  CONTACT_EMAIL_MAX_LENGTH,
+  CONTACT_NAME_MAX_LENGTH,
+  CONTACT_NUMBER_MAX_LENGTH
+} from "~community/crm/constants/contactConstants";
 import {
   CrmContactFormValues,
   CrmOwner
@@ -66,7 +71,8 @@ const ContactModalForm = ({
     enableReinitialize: true
   });
 
-  const { values, errors, handleChange, setFieldValue, submitForm } = formik;
+  const { values, errors, handleChange, setFieldValue, submitForm, dirty } =
+    formik;
 
   const debouncedEmail = useDebounce(
     values.email.trim(),
@@ -81,25 +87,48 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
-  const { data: companyLookupData, isFetching: isCompanyFetching } =
-    useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
+  const { data: companyLookupData } = useGetCompanyLookup(
+    debouncedCompanySearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
+
+  const addSuggestedLabel = (
+    item: SearchableDropdownItem
+  ): SearchableDropdownItem => ({
+    ...item,
+    content: (
+      <SuggestedBadge label={translateContactText(["labels", "suggested"])}>
+        {item.content}
+      </SuggestedBadge>
+    )
+  });
 
   const companyDropdownItems: SearchableDropdownItem[] = useMemo(
     () =>
       mergeAndPrioritizeCompanyDropdownItems(
         companyLookupData?.items,
         domainSearchData?.companies
+      ).map((item) =>
+        item.isPrioritized ? addSuggestedLabel(item) : item
       ),
-    [companyLookupData?.items, domainSearchData?.companies]
+    [
+      companyLookupData?.items,
+      domainSearchData?.companies,
+      translateContactText
+    ]
   );
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
-    const company = companyLookupData?.items?.find(
-      (lookupCompany) => String(lookupCompany.id) === item.id
-    );
+    const company =
+      companyLookupData?.items?.find(
+        (lookupCompany) => String(lookupCompany.id) === item.id
+      ) ??
+      domainSearchData?.companies?.find(
+        (domainCompany) => String(domainCompany.id) === item.id
+      );
 
     setFieldValue("companyId", Number(item.id));
-    setSelectedCompanyName(company?.name ?? String(item.content));
+    setSelectedCompanyName(company?.name ?? "");
     setCompanySearchText("");
   };
 
@@ -120,7 +149,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "name"])}
-        maxLength={characterLengths.NAME_LENGTH}
+        maxLength={CONTACT_NAME_MAX_LENGTH}
         required
         fullWidth
       />
@@ -134,6 +163,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "email"])}
+        maxLength={CONTACT_EMAIL_MAX_LENGTH}
         required
         fullWidth
       />
@@ -149,16 +179,7 @@ const ContactModalForm = ({
           onChange={(event) => setCompanySearchText(event.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
-          isOpenOnFocus={
-            isDomainSearchEnabled && !!domainSearchData?.companies?.length
-          }
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
+          isOpenOnFocus={true}
         />
       ) : (
         <InputField
@@ -194,7 +215,7 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "contactNumber"])}
-        maxLength={characterLengths.PHONE_NUMBER_LENGTH_MAX}
+        maxLength={CONTACT_NUMBER_MAX_LENGTH}
         fullWidth
       />
 
@@ -221,7 +242,7 @@ const ContactModalForm = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isPending}
+          disabled={isPending || !dirty}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -233,7 +254,7 @@ const ContactModalForm = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isPending}
+          disabled={isPending || !dirty}
           isLoading={isPending}
           aria-label={translateContactText(["ariaLabels", "save"])}
         >

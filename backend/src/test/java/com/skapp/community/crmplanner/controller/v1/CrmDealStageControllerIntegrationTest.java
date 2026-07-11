@@ -112,6 +112,22 @@ class CrmDealStageControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal stages after creating a stage - Returns new OPEN stage before WON and LOST")
+	void getDealStages_NewOpenStageWithHighestOrderIndex_ReturnsItBeforeTerminalStages() throws Exception {
+		performPostRequest(validPayload()).andExpect(status().isCreated());
+
+		performGetRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(8))
+			.andExpect(jsonPath("['results'][5]['name']").value("Proposal"))
+			.andExpect(jsonPath("['results'][5]['stageType']").value(CrmDealStageType.OPEN.name()))
+			.andExpect(jsonPath("['results'][5]['orderIndex']").value(8))
+			.andExpect(jsonPath("['results'][6]['name']").value(CrmDealStageName.WON.name()))
+			.andExpect(jsonPath("['results'][7]['name']").value(CrmDealStageName.LOST.name()));
+	}
+
+	@Test
 	@DisplayName("Get deal stages without CRM role - Returns Forbidden")
 	void getDealStages_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
@@ -409,8 +425,30 @@ class CrmDealStageControllerIntegrationTest {
 	// POST /v1/crm/deal/stage/reorder
 
 	@Test
-	@DisplayName("Reorder OPEN stages - Returns OK, minimum orderIndex stage becomes INITIAL")
-	void reorderDealStages_ValidOpenStages_ReturnsOkAndUpdatesInitial() throws Exception {
+	@DisplayName("Reorder with INITIAL sent first - Returns OK and keeps INITIAL fixed")
+	void reorderDealStages_InitialSentFirst_ReturnsOk() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		List<Long> ids = openStageIds();
+
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 1), reorderEntry(ids.get(3), 2),
+				reorderEntry(ids.get(0), 3), reorderEntry(ids.get(1), 4), reorderEntry(ids.get(2), 5));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
+		assertEquals(1, crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
+		assertEquals(2, crmDealStageDao.findById(ids.get(3)).orElseThrow().getOrderIndex());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
+		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
+	}
+
+	@Test
+	@DisplayName("Reorder with a non-INITIAL stage sent first - Returns Bad Request")
+	void reorderDealStages_FirstStageNotInitial_ReturnsBadRequest() throws Exception {
 		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
 		List<Long> ids = openStageIds();
 
@@ -418,14 +456,10 @@ class CrmDealStageControllerIntegrationTest {
 				reorderEntry(ids.get(1), 1), reorderEntry(ids.get(2), 2), reorderEntry(ids.get(3), 4));
 
 		performReorderRequest(payload).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
-
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
-		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
-		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(3)).orElseThrow().getStageType());
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST)));
 	}
 
 	@Test

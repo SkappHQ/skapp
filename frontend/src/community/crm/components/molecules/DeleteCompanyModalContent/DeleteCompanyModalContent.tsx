@@ -11,16 +11,22 @@ const DeleteCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const {
-    selectedCompany,
-    setSelectedCompany,
+    selectedCompanyId,
+    getCompanyById,
+    setSelectedCompanyId,
     closeCrmSidePanel,
-    setIsCompanyModalOpen
+    setIsCompanyModalOpen,
+    removeCompany
   } = useCrmStore((store) => ({
-    selectedCompany: store.selectedCompany,
-    setSelectedCompany: store.setSelectedCompany,
+    selectedCompanyId: store.selectedCompanyId,
+    getCompanyById: store.getCompanyById,
+    setSelectedCompanyId: store.setSelectedCompanyId,
     closeCrmSidePanel: store.closeCrmSidePanel,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen
+    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+    removeCompany: store.removeCompany
   }));
+
+  const selectedCompany = getCompanyById(selectedCompanyId!);
 
   const translateText = useTranslator(
     "crmModule",
@@ -33,6 +39,8 @@ const DeleteCompanyModalContent: FC = () => {
   };
 
   const handleSuccess = () => {
+    if (selectedCompanyId) removeCompany(selectedCompanyId);
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -44,7 +52,7 @@ const DeleteCompanyModalContent: FC = () => {
 
     handleCloseModal();
     closeCrmSidePanel();
-    setSelectedCompany(null);
+    setSelectedCompanyId(null);
   };
 
   const handleError = () => {

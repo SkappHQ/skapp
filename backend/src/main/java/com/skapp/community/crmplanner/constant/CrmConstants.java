@@ -38,7 +38,7 @@ public class CrmConstants {
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 
-	public static final String CONTACT_NAME_REGEX = "^[\\p{L} \\-.,]+$";
+	public static final String CONTACT_NAME_REGEX = "^[\\p{L} \\-.,']+$";
 
 	public static final int COMPANY_NAME_MAX_LENGTH = 30;
 
@@ -57,6 +57,8 @@ public class CrmConstants {
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
 
 	public static final int DOMAIN_MAX_LENGTH = 255;
+
+	public static final String HTTPS_SCHEME = "https";
 
 	public static final Set<CrmDealStageType> TERMINAL_STAGES = EnumSet.of(CrmDealStageType.WON, CrmDealStageType.LOST);
 

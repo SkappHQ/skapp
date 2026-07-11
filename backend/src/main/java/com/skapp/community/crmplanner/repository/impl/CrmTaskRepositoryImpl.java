@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.repository.impl;
 
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
@@ -237,7 +238,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getCompanyId() != null) {
-			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
+			Join<CrmTask, CrmCompany> companyJoin = root.join(CrmTask_.company, JoinType.LEFT);
+			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;

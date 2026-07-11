@@ -1,15 +1,24 @@
 import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
-import { CrmContact } from "~community/crm/types/CommonTypes";
+import { CompanyLookup, CrmContact } from "~community/crm/types/CommonTypes";
 
-import { mapContactToMetricItems } from "../contactUtil";
+import {
+  mapContactToMetricItems,
+  mergeAndPrioritizeCompanyDropdownItems
+} from "../contactUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
+
+const toCompanyLookup = (id: number, name: string): CompanyLookup => ({
+  id,
+  name
+});
 
 const baseContact: CrmContact = {
   id: 1,
   name: "Test Contact",
   email: "test@example.com",
   contactNumber: "0711234567",
+  lastContactAt: null,
   lastModifiedDate: "2026-06-01T00:00:00",
   company: null,
   owner: {
@@ -18,6 +27,8 @@ const baseContact: CrmContact = {
     lastName: "User",
     authPic: null
   },
+  closedDealValue: null,
+  closedDealCount: null,
   openTasksCount: 5,
   overdueTasksCount: 0,
   activeDealsCount: 3,
@@ -84,5 +95,56 @@ describe("mapContactToMetricItems", () => {
 
     expect(result[2].amount).toBe("45000.00");
     expect(result[3].amount).toBe("20000.00");
+  });
+});
+
+describe("mergeAndPrioritizeCompanyDropdownItems", () => {
+  it("should return domain-matched companies first and flag them as prioritized", () => {
+    const lookupCompanies = [
+      toCompanyLookup(1, "Lookup Only Co"),
+      toCompanyLookup(2, "Domain Match Co")
+    ];
+    const domainCompanies = [toCompanyLookup(2, "Domain Match Co")];
+
+    const result = mergeAndPrioritizeCompanyDropdownItems(
+      lookupCompanies,
+      domainCompanies
+    );
+
+    expect(result[0].id).toBe("2");
+    expect(result[0].isPrioritized).toBe(true);
+    expect(result[1].id).toBe("1");
+  });
+
+  it("should not flag lookup-only companies as prioritized", () => {
+    const lookupCompanies = [toCompanyLookup(1, "Lookup Only Co")];
+
+    const result = mergeAndPrioritizeCompanyDropdownItems(
+      lookupCompanies,
+      undefined
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0].isPrioritized).toBeUndefined();
+  });
+
+  it("should de-duplicate a company present in both lists while keeping it prioritized", () => {
+    const lookupCompanies = [toCompanyLookup(1, "Shared Co")];
+    const domainCompanies = [toCompanyLookup(1, "Shared Co")];
+
+    const result = mergeAndPrioritizeCompanyDropdownItems(
+      lookupCompanies,
+      domainCompanies
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("1");
+    expect(result[0].isPrioritized).toBe(true);
+  });
+
+  it("should return an empty array when both sources are undefined", () => {
+    const result = mergeAndPrioritizeCompanyDropdownItems(undefined, undefined);
+
+    expect(result).toEqual([]);
   });
 });
