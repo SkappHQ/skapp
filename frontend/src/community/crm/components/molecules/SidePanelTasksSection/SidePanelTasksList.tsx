@@ -12,6 +12,7 @@ interface Props {
   isShowContact?: boolean;
   onTaskRowClick?: () => void;
   onAddTask: () => void;
+  showAddTaskAction?: boolean;
 }
 
 const SidePanelTasksList: FC<Props> = ({
@@ -19,7 +20,8 @@ const SidePanelTasksList: FC<Props> = ({
   isCheckTaskVisible,
   isShowContact,
   onTaskRowClick,
-  onAddTask
+  onAddTask,
+  showAddTaskAction = true
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -41,18 +43,20 @@ const SidePanelTasksList: FC<Props> = ({
           />
         ))}
       </div>
-      <div className=" flex">
-        <ButtonV2
-          type="button"
-          variant="line"
-          size="sm"
-          icon={<PlusIcon />}
-          iconPosition="end"
-          onClick={onAddTask}
-        >
-          {translateText(["addTaskButtonEmptyView"])}
-        </ButtonV2>
-      </div>
+      {showAddTaskAction && (
+        <div className=" flex">
+          <ButtonV2
+            type="button"
+            variant="line"
+            size="sm"
+            icon={<PlusIcon />}
+            iconPosition="end"
+            onClick={onAddTask}
+          >
+            {translateText(["addTaskButtonEmptyView"])}
+          </ButtonV2>
+        </div>
+      )}
     </>
   );
 };
