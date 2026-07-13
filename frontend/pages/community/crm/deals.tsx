@@ -44,7 +44,7 @@ const Deals: NextPage = () => {
     >
       <>
         <SidePanelWrapper
-          isOpen={selectedDealId !== null || isCrmSidePanelOpen}
+          isOpen={isCrmSidePanelOpen}
         >
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
