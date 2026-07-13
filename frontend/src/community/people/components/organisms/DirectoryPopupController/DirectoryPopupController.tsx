@@ -57,8 +57,6 @@ const DirectoryPopupController = () => {
         return "Add people";
       case DirectoryModalTypes.UPLOAD_TYPE_SELECT:
         return translateGoogleWorkspace(["chooserTitle"]);
-      case DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE:
-        return translateGoogleWorkspace(["connectTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
@@ -133,11 +131,17 @@ const DirectoryPopupController = () => {
       {directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT && (
         <UploadTypeSelectModal />
       )}
-      {directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE && (
-        <ConnectGoogleWorkspaceModal />
-      )}
     </>
   );
+
+  if (directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE) {
+    return (
+      <ConnectGoogleWorkspaceModal
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+      />
+    );
+  }
 
   if (directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT) {
     return (
