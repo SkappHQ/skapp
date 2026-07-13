@@ -196,6 +196,15 @@ export interface CrmDealResponseType {
   owner: CrmOwner;
 }
 
+// The deal only ever gives us its contact's company as a flat name, never a
+// real company id — unlike CrmContactLookup.company, there's no CompanyLookup
+// id available here, so this stays a plain string rather than faking one.
+export interface CrmDealContactType {
+  id: number;
+  name: string;
+  companyName: string | null;
+}
+
 export interface CrmDealStageType {
   id: number;
   name: string;

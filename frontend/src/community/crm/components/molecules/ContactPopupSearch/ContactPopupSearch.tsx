@@ -6,7 +6,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
-import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookup,
+  CrmDealContactType
+} from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
 import { buildContactOptions } from "~community/crm/utils/dealUtil";
 
@@ -15,7 +18,7 @@ import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
   contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | null;
+  selectedContact: CrmDealContactType | null;
   onChange: (contact: CrmContactLookup | null) => void;
   onSearch: (term: string) => void;
   placeholder: string;
@@ -39,13 +42,9 @@ const ContactPopupSearch: FC<Props> = ({
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
   const options: DropdownOption[] = useMemo(
-    () => buildContactOptions(contacts, selectedContact),
-    [contacts, selectedContact]
+    () => buildContactOptions(contacts),
+    [contacts]
   );
-
-  const resolveContact = (id: number): CrmContactLookup | null =>
-    findById(contacts, id, getContactId) ??
-    (selectedContact?.id === id ? selectedContact : null);
 
   const selectedValue: DropdownOption | null = selectedContact
     ? {
@@ -61,13 +60,13 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    onChange(resolveContact(Number(id)));
+    onChange(findById(contacts, Number(id), getContactId));
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
       name={selectedContact?.name}
-      companyName={selectedContact?.company?.name}
+      companyName={selectedContact?.companyName ?? undefined}
       placeholder={placeholder}
       triggerProps={triggerProps}
     />
@@ -77,7 +76,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = resolveContact(Number(option.id));
+    const contact = findById(contacts, Number(option.id), getContactId);
 
     return contact ? (
       <ContactOptionItem

@@ -18,7 +18,11 @@ import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContactLookup, CrmOwner } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookup,
+  CrmDealContactType,
+  CrmOwner
+} from "~community/crm/types/CommonTypes";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
@@ -48,13 +52,11 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = String(deal.stage.id);
   const selectedOwner = deal.owner;
-  // deal.companyName is a flat field; company.id is a placeholder here since
-  // ContactPopupSearch/ContactTriggerContent only ever read company.name.
-  const selectedContact: CrmContactLookup | null = deal.contactId
+  const selectedContact: CrmDealContactType | null = deal.contactId
     ? {
         id: deal.contactId,
         name: deal.contactName ?? "",
-        company: deal.companyName ? { id: 0, name: deal.companyName } : null
+        companyName: deal.companyName ?? null
       }
     : null;
 

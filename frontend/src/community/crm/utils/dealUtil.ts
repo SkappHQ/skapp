@@ -27,8 +27,7 @@ export const buildOwnerOptions = <T extends OptionSource>(
 };
 
 export const buildContactOptions = (
-  items: CrmContactLookup[],
-  selectedContact?: CrmContactLookup | null
+  items: CrmContactLookup[]
 ): DropdownOption[] => {
   const toOption = (item: CrmContactLookup): DropdownOption => ({
     id: item.id,
@@ -36,10 +35,5 @@ export const buildContactOptions = (
     label: item.company?.name ? `${item.name} ${item.company.name}` : item.name
   });
 
-  const base = items.map(toOption);
-
-  const isSelectedMissing =
-    selectedContact && !items.some((item) => item.id === selectedContact.id);
-
-  return isSelectedMissing ? [toOption(selectedContact), ...base] : base;
+  return items.map(toOption);
 };
