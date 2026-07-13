@@ -26,6 +26,4 @@ public class CrmTaskDetailResponseDto {
 
 	private CrmContactLookupResponseDto contact;
 
-	private CrmDealLookupResponseDto deal;
-
 }

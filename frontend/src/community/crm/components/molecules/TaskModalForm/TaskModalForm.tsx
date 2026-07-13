@@ -216,9 +216,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     formik.setFieldValue("contactId", null);
     setSelectedContactName("");
     setContactSearchText("");
-    formik.setFieldValue("dealId", null);
-    setSelectedDealName("");
-    setDealSearchText("");
   };
 
   const handleClearDeal = () => {

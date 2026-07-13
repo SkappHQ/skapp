@@ -140,12 +140,7 @@ const TaskSidePanel: FC = () => {
 
   const handleMarkAsDone = () => {
     updateTaskCompletion(
-      {
-        id: selectedTaskId!,
-        isCompleted: true,
-        contactId: selectedTask?.contactId ?? null,
-        dealId: selectedTask?.deal?.id ?? null
-      },
+      { id: selectedTaskId!, isCompleted: true },
       { onSuccess: handleClose, onError: handleUpdateTaskCompletionError }
     );
   };

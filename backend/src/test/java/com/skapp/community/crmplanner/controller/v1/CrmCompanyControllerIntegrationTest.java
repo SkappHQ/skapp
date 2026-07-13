@@ -36,6 +36,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.openapitools.jackson.nullable.JsonNullable;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -161,9 +162,9 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
 		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
-		dto.setWebsite("https://acme.com");
-		dto.setAddress("123 Main St");
-		dto.setContactNumber("94771234567");
+		dto.setWebsite(JsonNullable.of("https://acme.com"));
+		dto.setAddress(JsonNullable.of("123 Main St"));
+		dto.setContactNumber(JsonNullable.of("94771234567"));
 		return dto;
 	}
 
@@ -404,9 +405,9 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
 		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
-		editDto.setWebsite("https://acme-updated.com");
-		editDto.setAddress("456 New St");
-		editDto.setContactNumber("94779876543");
+		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
+		editDto.setAddress(JsonNullable.of("456 New St"));
+		editDto.setContactNumber(JsonNullable.of("94779876543"));
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
@@ -426,8 +427,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit company clearing text fields with empty string - Persists null values")
-	void editCompany_ClearTextFieldsWithEmptyString_PersistsNull() throws Exception {
+	@DisplayName("Edit company with explicit null text fields - Clears them")
+	void editCompany_NullTextFields_PersistsNull() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -436,9 +437,9 @@ class CrmCompanyControllerIntegrationTest {
 			.asLong();
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
-		editDto.setWebsite("");
-		editDto.setAddress("");
-		editDto.setContactNumber("");
+		editDto.setWebsite(JsonNullable.of(null));
+		editDto.setAddress(JsonNullable.of(null));
+		editDto.setContactNumber(JsonNullable.of(null));
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())

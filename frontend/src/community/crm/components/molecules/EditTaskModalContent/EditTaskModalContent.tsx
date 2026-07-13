@@ -42,9 +42,7 @@ const EditTaskModalContent: FC = () => {
 
     const payload: CrmTaskUpdatePayload = {
       id: selectedTaskId,
-      ...changedFields,
-      contactId: formValues.contactId,
-      dealId: formValues.dealId
+      ...changedFields
     };
 
     editTask(payload);

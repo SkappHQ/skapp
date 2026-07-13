@@ -393,7 +393,6 @@ export interface TaskRowResponseType {
   dueAt: string | null;
   owner: CrmOwner;
   contact: CrmContactLookup | null;
-  deal: CrmDealLookup | null;
 }
 
 export interface DetailPanelDealResponseType {

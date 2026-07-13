@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @Slf4j
@@ -242,9 +241,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setDueAt(requestDto.getDueAt());
 		}
 
-		if (requestDto.getNotes() != null) {
-			CrmValidations.validateTaskNotes(requestDto.getNotes());
-			task.setNotes(requestDto.getNotes());
+		if (requestDto.getNotes().isPresent()) {
+			String notes = requestDto.getNotes().get();
+			CrmValidations.validateTaskNotes(notes);
+			task.setNotes(notes);
 		}
 
 		if (requestDto.getOwnerId() != null) {
@@ -252,10 +252,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			task.setOwner(owner);
 		}
 
-		Long currentContactId = task.getContact() != null ? task.getContact().getId() : null;
-		if (!Objects.equals(currentContactId, requestDto.getContactId())) {
-			if (requestDto.getContactId() != null) {
-				CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(requestDto.getContactId())
+		if (requestDto.getContactId().isPresent()) {
+			Long contactId = requestDto.getContactId().get();
+			if (contactId != null) {
+				CrmContact contact = crmContactDao.findByIdAndIsDeletedFalse(contactId)
 					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 				task.setContact(contact);
 				task.setCompany(contact.getCompany());
@@ -266,10 +266,10 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 			}
 		}
 
-		Long currentDealId = task.getDeal() != null ? task.getDeal().getId() : null;
-		if (!Objects.equals(currentDealId, requestDto.getDealId())) {
-			if (requestDto.getDealId() != null) {
-				CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+		if (requestDto.getDealId().isPresent()) {
+			Long dealId = requestDto.getDealId().get();
+			if (dealId != null) {
+				CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(dealId)
 					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 				task.setDeal(deal);
 			}
