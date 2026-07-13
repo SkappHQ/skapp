@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -8,12 +9,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long> {
+public interface CrmDealStageDao extends JpaRepository<CrmDealStage, Long>, CrmDealStageRepository {
 
 	List<CrmDealStage> findAllByIsDeletedFalseOrderByOrderIndexAsc();
 
 	Optional<CrmDealStage> findByIdAndIsDeletedFalse(Long id);
 
 	List<CrmDealStage> findAllByIdInAndIsDeletedFalse(List<Long> ids);
+
+	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
+
+	boolean existsByNameIgnoreCaseAndIsDeletedFalseAndIdNot(String name, Long id);
+
+	long countByIsDeletedFalseAndStageTypeAndNameNotIn(CrmDealStageType stageType, List<String> names);
+
+	long countByIsDeletedFalseAndStageType(CrmDealStageType stageType);
 
 }

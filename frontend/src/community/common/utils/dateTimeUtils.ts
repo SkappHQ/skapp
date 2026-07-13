@@ -189,6 +189,14 @@ export const convertDateToUTC = (date: string) => {
   return DateTime.fromISO(date, { zone: "UTC" }).toISO();
 };
 
+// Treats the ISO string as UTC (even without Z) and converts it to the browser's local timezone.
+// Use this when the backend stores UTC datetimes but strips the Z suffix.
+export const convertUTCStringToLocalDateTime = (
+  isoString: string
+): DateTime => {
+  return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
+};
+
 export const getStartAndEndOfYear = (
   format?: string
 ): {
@@ -356,6 +364,10 @@ export const getMonthStartAndEndDates = (month: number) => {
 
 export const getCurrentDateAtMidnight = () => {
   return DateTime.now().startOf("day");
+};
+
+export const getDayDifference = (from: DateTime, to: DateTime): number => {
+  return to.startOf("day").diff(from.startOf("day"), "days").days;
 };
 
 /**

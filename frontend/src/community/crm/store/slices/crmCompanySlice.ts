@@ -1,18 +1,32 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmCompany } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
+import { mergeCompanyUpdate } from "~community/crm/utils/companyUtil";
+import { mergeWithExisting } from "~community/crm/utils/crmUtil";
 
-const CrmCompanySlice = (set: SetType<CrmCompanySliceTypes>) => ({
+const CrmCompanySlice = (
+  set: SetType<CrmCompanySliceTypes>,
+  get: () => CrmCompanySliceTypes
+) => ({
   isCompanyModalOpen: false,
   companyModalType: CrmModalTypes.ADD_COMPANY_MODAL,
-  selectedCompany: null,
+  selectedCompanyId: null,
+  companies: [],
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) =>
     set({ isCompanyModalOpen: isCompanyModalOpen }),
   setCompanyModalType: (companyModalType: CrmModalTypes) =>
     set({ companyModalType: companyModalType }),
-  setSelectedCompany: (selectedCompany: CrmCompanyMetricsType | null) =>
-    set({ selectedCompany })
+  setSelectedCompanyId: (selectedCompanyId: number | null) =>
+    set({ selectedCompanyId }),
+  setCompanies: (companies: CrmCompany[]) =>
+    set({ companies: mergeWithExisting(get().companies, companies) }),
+  updateCompany: (company: CrmCompany) =>
+    set({ companies: mergeCompanyUpdate(get().companies, company) }),
+  removeCompany: (id: number) =>
+    set({ companies: get().companies.filter((company) => company.id !== id) }),
+  getCompanyById: (id: number) =>
+    get().companies.find((company) => company.id === id)
 });
 
 export default CrmCompanySlice;

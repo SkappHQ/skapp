@@ -62,7 +62,8 @@ export const peopleQueryKeys = {
   SUPERVISED_BY_ME: ["supervised-by-me"],
   HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"],
   EXPORT_PEOPLE_DIRECTORY: ["export-people-directory"],
-  SUPERVISOR_ROLES: (userId: number) => ["supervised-employees-teams", userId]
+  SUPERVISOR_ROLES: (userId: number) => ["supervised-employees-teams", userId],
+  GET_SKILLS: ["get-skills"]
 };
 
 export const teamQueryKeys = {
@@ -70,6 +71,7 @@ export const teamQueryKeys = {
   MY_TEAMS: ["my-teams"],
   GET_ALL_TEAMS: ["get-all-teams"],
   GET_TEAM_BY_ID: ["get-team-by-id"],
+  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => ["get-employee-transferable-teams", teamId],
   teams: function () {
     return [...(this?.ALL_TEAMS || []), "get-teams"];
   },

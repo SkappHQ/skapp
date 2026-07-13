@@ -27,6 +27,7 @@ import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResp
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskViewResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,9 +37,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "stageName", source = "stage.name")
-	@Mapping(target = "stageColor", source = "stage.color")
 	@Mapping(target = "companyName", source = "company.name")
+	@Mapping(target = "contactId", source = "contact.id")
 	@Mapping(target = "contactName", source = "contact.name")
 	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
@@ -48,6 +48,7 @@ public interface CrmMapper {
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "companyId", source = "company.id")
 	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "taskCount", ignore = true)
 	CrmDealByStageItemResponseDto crmDealToCrmDealByStageItemResponseDto(CrmDeal crmDeal);
 
 	List<CrmDealByStageItemResponseDto> crmDealsToCrmDealByStageItemResponseDtos(List<CrmDeal> crmDeals);
@@ -73,8 +74,8 @@ public interface CrmMapper {
 
 	@Mapping(target = "closedDealValue", ignore = true)
 	@Mapping(target = "closedDealCount", ignore = true)
-	@Mapping(target = "openTaskCount", ignore = true)
-	@Mapping(target = "overdueTaskCount", ignore = true)
+	@Mapping(target = "openTasksCount", ignore = true)
+	@Mapping(target = "overdueTasksCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	@Mapping(target = "typeId", source = "type.id")
@@ -82,6 +83,8 @@ public interface CrmMapper {
 	@Mapping(target = "contactId", source = "contact.id")
 	@Mapping(target = "ownerName", source = "owner.fullName")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
+
+	CrmTaskViewResponseDto crmTaskToCrmTaskViewResponseDto(CrmTask crmTask);
 
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
 
@@ -105,8 +108,7 @@ public interface CrmMapper {
 
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
 
-	@Mapping(target = "type", source = "type.name")
-	@Mapping(target = "isOverdue", ignore = true)
+	@Mapping(target = "typeName", source = "type.name")
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);
 
 }

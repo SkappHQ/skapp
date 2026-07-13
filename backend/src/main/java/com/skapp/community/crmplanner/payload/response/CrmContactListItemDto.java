@@ -28,8 +28,8 @@ public class CrmContactListItemDto {
 
 	private Long closedDealCount;
 
-	private Long openTaskCount;
+	private Long openTasksCount;
 
-	private Long overdueTaskCount;
+	private Long overdueTasksCount;
 
 }

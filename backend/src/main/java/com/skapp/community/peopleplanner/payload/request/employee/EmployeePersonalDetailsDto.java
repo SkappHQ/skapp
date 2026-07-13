@@ -1,5 +1,7 @@
 package com.skapp.community.peopleplanner.payload.request.employee;
 
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
+import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalEducationalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalFamilyDetailsDto;
@@ -26,5 +28,9 @@ public class EmployeePersonalDetailsDto {
 	private EmployeePersonalSocialMediaDetailsDto socialMedia;
 
 	private EmployeePersonalHealthAndOtherDetailsDto healthAndOther;
+
+	private List<EmployeeSkillDto> skills;
+
+	private EmployeeSkillUpdateDto skillUpdates;
 
 }

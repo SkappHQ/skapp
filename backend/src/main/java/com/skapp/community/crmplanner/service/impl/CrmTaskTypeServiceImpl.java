@@ -2,6 +2,7 @@ package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
+import com.skapp.community.crmplanner.payload.response.CrmGetTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmTaskTypeService;
@@ -29,9 +30,12 @@ public class CrmTaskTypeServiceImpl implements CrmTaskTypeService {
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
-		log.info("getTaskTypes: execution ended with {} result(s)", taskTypes.size());
+		CrmGetTaskTypeResponseDto response = new CrmGetTaskTypeResponseDto();
+		response.setTaskTypes(taskTypes);
 
-		return new ResponseEntityDto(false, taskTypes);
+		log.info("getTaskTypes: execution ended");
+
+		return new ResponseEntityDto(false, response);
 	}
 
 }

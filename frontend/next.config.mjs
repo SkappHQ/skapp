@@ -204,6 +204,10 @@ const nextConfig = {
         destination: "/community/configurations/user-roles/projectmanagement"
       },
       {
+        source: "/configurations/user-roles/crm",
+        destination: "/community/configurations/user-roles/crm"
+      },
+      {
         source: "/configurations/work-location/create",
         destination: "/community/configurations/work-location/create"
       },

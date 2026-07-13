@@ -13,15 +13,15 @@ import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyDomainSearchResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
-import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
@@ -37,8 +37,6 @@ import java.util.List;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
-
-	private final CrmDealDao crmDealDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -74,7 +72,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateCompanyName(name);
 		boolean exists = checkCompanyExists(name);
 
-		CrmCompanyNameExistsResponseDto responseDto = new CrmCompanyNameExistsResponseDto();
+		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkCompanyNameExists: execution ended");
@@ -91,6 +89,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateWebsite(crmCompany.getWebsite());
 		CrmValidations.validateAddress(crmCompany.getAddress());
 		CrmValidations.validateIndustry(crmCompany.getIndustry());
+		validateCompanyCreationLimit();
 
 		if (checkCompanyExists(crmCompany.getName())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_EXISTS);
@@ -102,6 +101,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		log.info("createCompany: execution ended successfully");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	protected void validateCompanyCreationLimit() {
+		// This method is a placeholder for enterprise company creation limit validation
 	}
 
 	private boolean checkCompanyExists(String name) {
@@ -124,6 +127,27 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
+		log.info("searchCompaniesByDomain: execution started");
+
+		CrmValidations.validateDomain(requestDto.getDomain());
+
+		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(requestDto.getDomain(),
+				requestDto.getLimit());
+
+		List<CrmCompanyResponseDto> companyDtos = companies.stream()
+			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
+			.toList();
+
+		CrmCompanyDomainSearchResponseDto responseDto = new CrmCompanyDomainSearchResponseDto();
+		responseDto.setCompanies(companyDtos);
+
+		log.info("searchCompaniesByDomain: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
 	@Transactional
 	public ResponseEntityDto deleteCompany(Long id) {
 		log.info("deleteCompany: execution started");
@@ -132,10 +156,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-
-		List<CrmDeal> deals = crmDealDao.findAllByCompanyIdAndIsDeletedFalse(id);
-		deals.forEach(deal -> deal.setIsDeleted(true));
-		crmDealDao.saveAll(deals);
 
 		company.setIsDeleted(true);
 		crmCompanyDao.save(company);

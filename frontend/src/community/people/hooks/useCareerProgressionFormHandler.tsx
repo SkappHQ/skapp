@@ -2,7 +2,7 @@ import { Box, SelectChangeEvent, Stack } from "@mui/material";
 import { rejects } from "assert";
 import { FormikProps } from "formik";
 import { DateTime } from "luxon";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import {
@@ -236,11 +236,11 @@ const useCareerProgressionFormHandler = ({
     setFieldError(e.target.name, "");
   };
 
-  const handleCheckboxChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    await setFieldValue(e.target.name, e.target.checked);
+  const handleCheckboxChange = async (name: string, checked: boolean) => {
+    await setFieldValue(name, checked);
     await setFieldValue("endDate", "");
-    setFieldError(e.target.name, "");
-    if (e.target.checked) {
+    setFieldError(name, "");
+    if (checked) {
       setFieldError("endDate", "");
     }
   };

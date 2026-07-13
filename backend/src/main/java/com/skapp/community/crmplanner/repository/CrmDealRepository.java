@@ -17,8 +17,6 @@ public interface CrmDealRepository {
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
-	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable);
-
 	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable,
 			long preComputedTotal);
 
@@ -27,6 +25,8 @@ public interface CrmDealRepository {
 	String findMaxOrderIndexByStageId(Long stageId);
 
 	List<CrmDeal> findByContactIdWithAssociations(Long contactId);
+
+	CrmDeal findByIdWithAssociations(Long id);
 
 	CrmContactDealMetrics findDealMetricsByContactId(Long contactId);
 

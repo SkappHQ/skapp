@@ -6,18 +6,28 @@ export interface CrmCompanySliceTypes extends Pick<
   | "setIsCompanyModalOpen"
   | "companyModalType"
   | "setCompanyModalType"
-  | "selectedCompany"
-  | "setSelectedCompany"
+  | "selectedCompanyId"
+  | "setSelectedCompanyId"
+  | "companies"
+  | "setCompanies"
+  | "updateCompany"
+  | "removeCompany"
+  | "getCompanyById"
 > {}
 
 export interface CrmContactSliceTypes extends Pick<
   CrmStore,
-  | "isAddContactModalOpen"
-  | "setIsAddContactModalOpen"
+  | "isContactModalOpen"
+  | "setIsContactModalOpen"
   | "contactModalType"
   | "setContactModalType"
-  | "selectedContact"
-  | "setSelectedContact"
+  | "selectedContactId"
+  | "setSelectedContactId"
+  | "contacts"
+  | "setContacts"
+  | "updateContact"
+  | "removeContact"
+  | "getContactById"
 > {}
 
 export interface CrmTaskSliceTypes extends Pick<
@@ -26,9 +36,34 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setIsTaskModalOpen"
   | "taskModalType"
   | "setTaskModalType"
+  | "selectedTaskId"
+  | "setSelectedTaskId"
+  | "tasks"
+  | "setTasks"
+  | "getTaskById"
+  | "updateTask"
 > {}
 
-export interface CrmSidePanelSliceTypes extends Pick<
+export interface CrmDealSliceTypes extends Pick<
   CrmStore,
-  "isCrmSidePanelOpen" | "setIsCrmSidePanelOpen"
+  | "selectedDealId"
+  | "setSelectedDealId"
+  | "deals"
+  | "setDeals"
+  | "getDealById"
+  | "updateDeal"
+  | "removeDeal"
+> {}
+
+export interface CrmBoardSliceTypes extends Pick<
+  CrmStore,
+  | "boardStageDeals"
+  | "setBoardStageDeals"
+  | "appendBoardStageDeals"
+  | "replaceBoardStageDeals"
+  | "addDealToStage"
+  | "updateDealInStage"
+  | "removeDealFromStage"
+  | "preselectedStageId"
+  | "setPreselectedStageId"
 > {}

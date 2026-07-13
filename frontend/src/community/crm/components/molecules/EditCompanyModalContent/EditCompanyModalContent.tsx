@@ -21,6 +21,7 @@ import { CrmIndustryEnum } from "~community/crm/enums/common";
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmCompany,
   CrmCompanyEditFormTypes,
   EditCompanyPayload
 } from "~community/crm/types/CommonTypes";
@@ -37,10 +38,19 @@ const EditCompanyModalContent: React.FC = () => {
 
   const industryOptions = useGetIndustryOptions();
 
-  const { setIsCompanyModalOpen, selectedCompany } = useCrmStore((store) => ({
+  const {
+    setIsCompanyModalOpen,
+    selectedCompanyId,
+    getCompanyById,
+    updateCompany
+  } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    selectedCompany: store.selectedCompany
+    selectedCompanyId: store.selectedCompanyId,
+    getCompanyById: store.getCompanyById,
+    updateCompany: store.updateCompany
   }));
+
+  const selectedCompany = getCompanyById(selectedCompanyId!);
 
   const initialValues: CrmCompanyEditFormTypes = {
     name: selectedCompany?.name || "",
@@ -50,7 +60,8 @@ const EditCompanyModalContent: React.FC = () => {
     contactNumber: selectedCompany?.contactNumber || null
   };
 
-  const handleSuccess = () => {
+  const handleSuccess = (data: CrmCompany) => {
+    updateCompany(data);
     setSubmitting(false);
     handleCloseModal();
     setToastMessage({
@@ -109,6 +120,7 @@ const EditCompanyModalContent: React.FC = () => {
     errors,
     handleChange,
     isSubmitting,
+    dirty,
     setSubmitting,
     submitForm
   } = formik;
@@ -134,7 +146,7 @@ const EditCompanyModalContent: React.FC = () => {
     : errors.name;
 
   const isSubmitDisabled =
-    !selectedCompany || isSubmitting || isPending || hasNameConflict;
+    !selectedCompany || isSubmitting || isPending || hasNameConflict || !dirty;
 
   const handleIndustryChange = (value: string) => {
     formik.setFieldValue("industry", value);

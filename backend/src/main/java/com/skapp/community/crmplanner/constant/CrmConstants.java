@@ -1,9 +1,11 @@
 package com.skapp.community.crmplanner.constant;
 
 import com.skapp.community.common.type.Role;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.experimental.UtilityClass;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 @UtilityClass
@@ -19,12 +21,24 @@ public class CrmConstants {
 
 	public static final String DEAL_AMOUNT_REGEX = "^\\d+(\\.\\d{1,2})?$";
 
+	public static final int DEAL_STAGE_NAME_MIN_LENGTH = 2;
+
+	public static final int DEAL_STAGE_NAME_MAX_LENGTH = 50;
+
+	public static final String DEAL_STAGE_NAME_REGEX = "^(?=.*\\p{L})[\\p{L}\\p{N} \\-.']+$";
+
+	public static final int DEAL_STAGE_DESCRIPTION_MAX_LENGTH = 255;
+
+	public static final String DEAL_STAGE_DESCRIPTION_REGEX = "^[\\p{L}\\p{N} \\-.,']+$";
+
+	public static final CrmDealStageType DEFAULT_DEAL_STAGE_TYPE = CrmDealStageType.OPEN;
+
 	public static final int DEALS_PER_STAGE_LIMIT = 20;
 
 	public static final Set<Role> ASSIGNABLE_CRM_ROLES = Set.of(Role.CRM_ADMIN, Role.CRM_SALES_MANAGER,
 			Role.CRM_SALES_REPRESENTATIVE);
 
-	public static final String CONTACT_NAME_REGEX = "^[\\p{L} \\-.,]+$";
+	public static final String CONTACT_NAME_REGEX = "^[\\p{L} \\-.,']+$";
 
 	public static final int COMPANY_NAME_MAX_LENGTH = 30;
 
@@ -41,5 +55,14 @@ public class CrmConstants {
 	public static final int TASK_NOTES_MAX_LENGTH = 1000;
 
 	public static final CrmTaskPriority DEFAULT_TASK_PRIORITY = CrmTaskPriority.MEDIUM;
+
+	public static final int DOMAIN_MAX_LENGTH = 255;
+
+	public static final String HTTPS_SCHEME = "https";
+
+	public static final Set<CrmDealStageType> TERMINAL_STAGES = EnumSet.of(CrmDealStageType.WON, CrmDealStageType.LOST);
+
+	public static final Set<CrmDealStageType> NON_DELETABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
+			CrmDealStageType.WON, CrmDealStageType.LOST);
 
 }

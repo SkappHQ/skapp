@@ -117,6 +117,7 @@ const SignUp: NextPage = () => {
           onSubmit(values);
         }}
         isLoading={isLoading}
+        pageHead={translateText(["pageHead"])}
       >
         <SetupSuperAdminForm
           handleChange={handleChange}

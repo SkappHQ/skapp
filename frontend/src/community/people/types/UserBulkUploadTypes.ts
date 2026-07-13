@@ -20,7 +20,7 @@ export interface BulkUploadUser {
   personalEmail: string | null;
   phoneDialCode: string | null;
   phone: string | null;
-  address: string | null;
+  addressLine1: string | null;
   addressLine2: string | null;
   city: string | null;
   country: string | null;
@@ -44,13 +44,14 @@ export interface BulkUploadUser {
   joinedDate: string | null;
   teams: string | number[];
   primaryManager: string | null;
-  startDate: string | null;
-  endDate: string | null;
+  probationStartDate: string | null;
+  probationEndDate: string | null;
   timeZone: string | null;
   workLocation: string | null;
   employeeType: string | null;
-  jobFamilyId: number | string | null;
-  jobTitleId: number | string | null;
+  jobFamily: string | null;
+  jobTitle: string | null;
+  careerProgressionStartDate: string | null;
   ssn: string | null;
   ethnicity: string | null;
   eeo: string | null;

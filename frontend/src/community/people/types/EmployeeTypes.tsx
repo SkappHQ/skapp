@@ -157,14 +157,15 @@ export interface BulkEmployeeDetails {
   employmentAllocation: string | null;
   accountStatus: AccountStatus;
   eeo: string | null;
-  address: string | null;
+  addressLine1: string | null;
   addressLine2: string | null;
   workEmail: string | null;
+  employeeType: string | null;
+  jobFamily: string | null;
+  jobTitle: string | null;
   employeePersonalInfo: EmployeePersonalInfoResponseType;
   employeeProgression: {
     employmentType: EmploymentTypes | null;
-    jobFamilyId: string | number | null;
-    jobTitleId: string | number | null;
     startDate: string | null;
     endDate: string | null;
     isCurrent: boolean;
@@ -445,7 +446,6 @@ export interface EmployeeDataExists {
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
   isGuestUser: boolean;
-  isTerminatedUser: boolean;
 }
 
 export interface QuickAddEmployeePayload {

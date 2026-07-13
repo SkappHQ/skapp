@@ -1,5 +1,6 @@
 package com.skapp.community.timeplanner.repository;
 
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.payload.projection.EmployeeWorkHours;
 import com.skapp.community.timeplanner.payload.projection.TimeRecordTrendDto;
@@ -17,7 +18,7 @@ public interface TimeRecordRepository {
 
 	AttendanceSummaryDto getEmployeeAttendanceSummary(List<Long> employeeIds, LocalDate startDate, LocalDate endDate);
 
-	Optional<TimeRecord> findIncompleteClockoutTimeRecords(LocalDate lastClockInDate, Long employeeId);
+	Optional<TimeRecord> findIncompleteClockOutTimeRecords(LocalDate lastClockInDate, Long employeeId);
 
 	AttendanceSummaryDto findManagerAssignUsersAttendanceSummary(Long managerId, List<Long> teamIds,
 			LocalDate startDate, LocalDate endDate, List<Long> employeeIds);
@@ -48,5 +49,9 @@ public interface TimeRecordRepository {
 	List<TimeRecordTrendDto> getEmployeeClockInTrend(List<Long> teams, String timeZone, LocalDate date);
 
 	List<TimeRecordTrendDto> getEmployeeClockOutTrend(List<Long> teams, String timeZone, LocalDate date);
+
+	Optional<TimeRecord> findByEmployeeAndDate(Employee employee, LocalDate currentDate);
+
+	TimeRecord findByDateAndEmployee(LocalDate date, Employee employee);
 
 }

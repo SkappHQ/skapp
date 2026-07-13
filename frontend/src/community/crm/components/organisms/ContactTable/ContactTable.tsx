@@ -1,5 +1,4 @@
 import {
-  AvatarChip,
   Dropdown,
   InputField,
   Label,
@@ -8,16 +7,16 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useGetContactMetrics,
   useGetCrmCompanies
 } from "~community/crm/api/ContactApi";
+import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import {
   ALL_COMPANIES,
   CONTACT_SEARCH_DEBOUNCE_DELAY,
@@ -25,8 +24,9 @@ import {
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContactMetricsType } from "~community/crm/types/CommonTypes";
-import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
+import { CrmContact } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
 import {
   formatPhoneNumber,
   formatTasks
@@ -49,14 +49,22 @@ export const ContactTable: FC = () => {
 
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
-  const contacts = data?.pages.flatMap((page) => page.items);
-
-  const { setSelectedContact, setIsCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
-      setSelectedContact: store.setSelectedContact,
-      setIsCrmSidePanelOpen: store.setIsCrmSidePanelOpen
-    })
+  const fetchedContacts = useMemo(
+    () => data?.pages.flatMap((page) => page.items),
+    [data]
   );
+
+  const { contacts, setSelectedContactId, openCrmSidePanel, setContacts } =
+    useCrmStore((store) => ({
+      contacts: store.contacts,
+      setSelectedContactId: store.setSelectedContactId,
+      openCrmSidePanel: store.openCrmSidePanel,
+      setContacts: store.setContacts
+    }));
+
+  useEffect(() => {
+    if (fetchedContacts) setContacts(fetchedContacts);
+  }, [fetchedContacts]);
 
   const hasActiveFilters =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
@@ -77,16 +85,21 @@ export const ContactTable: FC = () => {
     }))
   ];
 
-  const columns: TableColumn<CrmContactMetricsType>[] = [
+  const columns: TableColumn<CrmContact>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
       render(value, row) {
         return (
-          <div className="flex flex-col gap-1">
-            <div>{value}</div>
-            <div className="subtitle4 text-secondary-text">
+          <div className="flex flex-col gap-1 min-w-0">
+            <div className="w-full truncate" title={value}>
+              {value}
+            </div>
+            <div
+              className="subtitle4 text-secondary-text w-full truncate"
+              title={row.company?.name ?? undefined}
+            >
               {row.company?.name ?? "-"}
             </div>
           </div>
@@ -98,6 +111,13 @@ export const ContactTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
       header: translateText(["table", "columns", "emailHeader"]),
       key: "email",
+      render(value) {
+        return (
+          <div className="block w-full truncate" title={value}>
+            {value}
+          </div>
+        );
+      },
       width: "21%"
     },
     {
@@ -121,12 +141,12 @@ export const ContactTable: FC = () => {
       ]),
       header: translateText(["table", "columns", "closedValueHeader"]),
       key: "closedDealValue",
-      render(value, row) {
+      render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatMonetaryValue(value)}</div>
+            <div>{formatValue(row.closedDealValue?.toString() ?? null)}</div>
             <div className="subtitle4 text-secondary-text">
-              {row.closedDealCount > 0
+              {(row.closedDealCount ?? 0) > 0
                 ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: row.closedDealCount })}`
                 : ""}
             </div>
@@ -139,17 +159,17 @@ export const ContactTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "openTaskCount",
-      render(value, row) {
+      key: "openTasksCount",
+      render(_value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
-            {formatTasks(value)}
-            {row.overdueTaskCount > 0 && (
+            {formatTasks(row.openTasksCount)}
+            {(row.overdueTasksCount ?? 0) > 0 && (
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
               >
-                {`${row.overdueTaskCount} ${translateText(["table", "overdueLabel"])}`}
+                {`${row.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
               </Label>
             )}
           </div>
@@ -167,16 +187,10 @@ export const ContactTable: FC = () => {
       header: translateText(["table", "columns", "contactOwnerHeader"]),
       key: "owner",
       render(_, row) {
-        const { owner } = row;
         return (
-          <AvatarChip
-            avatarProps={{
-              id: `contact-${row.id}-owner-${owner?.employeeId}`,
-              src: owner?.authPic ?? undefined,
-              firstName: owner?.firstName,
-              lastName: owner?.lastName ?? ""
-            }}
-            label={concatStrings([owner?.firstName, owner?.lastName ?? ""])}
+          <OwnerAvatarChip
+            id={`contact-${row.id}-owner-${row.owner.employeeId}`}
+            owner={row.owner}
             backgroundColor="bg-tertiary-background"
           />
         );
@@ -247,8 +261,8 @@ export const ContactTable: FC = () => {
           ])
         }}
         onRowClick={(row) => {
-          setSelectedContact(row);
-          setIsCrmSidePanelOpen(true);
+          setSelectedContactId(row.id);
+          openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
         }}
       />
     </div>

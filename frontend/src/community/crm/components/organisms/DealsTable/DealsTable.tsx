@@ -1,5 +1,4 @@
 import {
-  AvatarChip,
   BaseRowData,
   Column,
   GroupData,
@@ -9,13 +8,14 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmDealListItem } from "~community/crm/types/CommonTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
-import { formatValue } from "~community/crm/utils/crmUtil";
+import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
+import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
+import { formatValue } from "~community/crm/utils/crmUtil";
+
 import { useContainerWidth } from "./utils/dealsTableUtils";
 
 interface DealRow extends BaseRowData {
@@ -31,9 +31,10 @@ interface DealRow extends BaseRowData {
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
-  allDeals: CrmDealListItem[];
+  allDeals: CrmDealResponseType[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
+  onDealClick?: (deal: CrmDealResponseType) => void;
 }
 
 const DealsTable: FC<Props> = ({
@@ -41,9 +42,11 @@ const DealsTable: FC<Props> = ({
   isLoading,
   allDeals,
   hasNextPage,
-  onLoadMore
+  onLoadMore,
+  onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
@@ -125,21 +128,41 @@ const DealsTable: FC<Props> = ({
 
   const tableRows = useMemo(
     (): DealRow[] =>
-      allDeals.map((deal: CrmDealListItem) => {
+      allDeals.map((deal: CrmDealResponseType) => {
         const formattedAmount = formatValue(deal.amount);
-        const ownerFullName = concatStrings([deal.owner?.firstName, deal.owner?.lastName ?? ""]);
 
         return {
           id: String(deal.id),
           dealName: (
-            <div className="flex items-center gap-2">
-              <div
-                className="flex items-center justify-center size-6 rounded-full shrink-0 bg-teal-500"
-              >
-                <HandshakeIcon width="14" height="14" fill="var(--color-white)" />
+            <div
+              role="button"
+              tabIndex={0}
+              className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
+              aria-label={translateText(["openDealDetails"], {
+                name: deal.name
+              })}
+              onClick={() => onDealClick?.(deal)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onDealClick?.(deal);
+                }
+              }}
+            >
+              <div className="flex items-center justify-center size-6 rounded-full shrink-0 bg-status-pink">
+                <HandshakeIcon
+                  width="14"
+                  height="14"
+                  fill="var(--color-white)"
+                />
               </div>
-              <span className="body2">#{deal.id}</span>
-              <span className="body2">{deal.name}</span>
+              <span className="body2 group-hover:underline">#{deal.id}</span>
+              <span
+                className="body2 group-hover:underline block w-full truncate"
+                title={deal.name}
+              >
+                {deal.name}
+              </span>
             </div>
           ),
           value: (
@@ -151,29 +174,36 @@ const DealsTable: FC<Props> = ({
             <div className="inline-flex items-center gap-2">
               <div
                 className="size-2 rounded-full shrink-0"
-                style={{ backgroundColor: STAGE_COLOR_MAP[deal.stageColor] }}
+                style={{
+                  backgroundColor: STAGE_COLOR_MAP[deal.stage.color]
+                }}
               />
-              <span className="body2">{deal.stageName}</span>
+              <span className="body2">{getStageByName(deal.stage.name)}</span>
             </div>
           ),
-          companyName: <span className="body2">{deal.companyName ?? "-"}</span>,
-          contactName: <span className="body2">{deal.contactName ?? "-"}</span>,
+          companyName: (
+            <span
+              className="body2 block w-full truncate"
+              title={deal?.companyName ?? undefined}
+            >
+              {deal?.companyName ?? "-"}
+            </span>
+          ),
+          contactName: (
+            <span className="body2 block w-full truncate">
+              {deal.contactName}
+            </span>
+          ),
           dealOwner: (
-            <AvatarChip
-              avatarProps={{
-                id: String(deal.owner.employeeId),
-                firstName: deal.owner.firstName,
-                lastName: deal.owner.lastName ?? "",
-                src: deal?.owner?.authPic ?? "",
-                size: "sm"
-              }}
-              label={ownerFullName}
+            <OwnerAvatarChip
+              id={`deal-${deal.id}-owner-${deal.owner.employeeId}`}
+              owner={deal.owner}
               backgroundColor="bg-secondary-background"
             />
           )
         };
       }),
-    [allDeals]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(
@@ -183,24 +213,23 @@ const DealsTable: FC<Props> = ({
 
   if (isLoading) {
     return (
-      <div className="w-fit h-150 rounded-lg shadow-lg overflow-hidden">
+      <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
       </div>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-150 rounded-lg shadow-lg"
-    >
+    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
         emptyStateTitle={
-          searchKeyword.trim() ? noSearchResultsTitle : translateText(["noDealsTitle"])
+          searchKeyword.trim()
+            ? noSearchResultsTitle
+            : translateText(["noDealsTitle"])
         }
         emptyStateDescription={
           searchKeyword.trim()

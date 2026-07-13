@@ -121,6 +121,14 @@ class CrmValidationsTest {
 			assertDoesNotThrow(() -> CrmValidations.validateWebsite("https://acme.com"));
 		}
 
+		@Test
+		@DisplayName("Insecure http URL - throws CRM_ERROR_WEBSITE_INVALID")
+		void validateWebsite_HttpUrl_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateWebsite("http://acme.com"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_WEBSITE_INVALID, ex.getMessageKey());
+		}
+
 	}
 
 	// --- validateAddress ---
@@ -153,6 +161,27 @@ class CrmValidationsTest {
 		@DisplayName("Valid address - does not throw")
 		void validateAddress_Valid_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateAddress("123 Main St"));
+		}
+
+	}
+
+	// --- validateDomain ---
+
+	@Nested
+	@DisplayName("validateDomain")
+	class ValidateDomain {
+
+		@Test
+		@DisplayName("Blank domain - throws CRM_ERROR_DOMAIN_REQUIRED")
+		void validateDomain_Blank_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateDomain("   "));
+			assertEquals(CrmMessageConstant.CRM_ERROR_DOMAIN_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Valid domain - does not throw")
+		void validateDomain_Valid_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateDomain("acme.com"));
 		}
 
 	}

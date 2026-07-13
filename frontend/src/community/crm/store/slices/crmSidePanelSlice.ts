@@ -1,10 +1,20 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmSidePanelSliceTypes } from "~community/crm/types/SliceTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { CrmStore } from "~community/crm/types/StoreTypes";
 
-const CrmSidePanelSlice = (set: SetType<CrmSidePanelSliceTypes>) => ({
+const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
   isCrmSidePanelOpen: false,
-  setIsCrmSidePanelOpen: (isCrmSidePanelOpen: boolean) =>
-    set({ isCrmSidePanelOpen })
+  crmSidePanelType: null,
+  openCrmSidePanel: (type: CrmSidePanelTypes) =>
+    set({
+      isCrmSidePanelOpen: true,
+      crmSidePanelType: type
+    }),
+  closeCrmSidePanel: () =>
+    set({
+      isCrmSidePanelOpen: false,
+      crmSidePanelType: null
+    })
 });
 
 export default CrmSidePanelSlice;
