@@ -74,7 +74,15 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         <div className="flex flex-col w-full">
           <ContactPopupSearch
             contacts={contacts}
-            selectedContact={selectedContact}
+            selectedContact={
+              selectedContact
+                ? {
+                    id: selectedContact.id,
+                    name: selectedContact.name,
+                    companyName: selectedContact.company?.name ?? null
+                  }
+                : null
+            }
             onChange={handleContactChange}
             onSearch={setContactSearchTerm}
             placeholder={translateText(["placeholders", "none"])}

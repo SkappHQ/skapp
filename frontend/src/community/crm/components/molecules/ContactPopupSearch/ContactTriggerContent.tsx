@@ -1,16 +1,16 @@
 import { TriggerProps } from "@rootcodelabs/skapp-ui";
 import { FC, RefObject } from "react";
 
-import { CrmContactLookup } from "~community/crm/types/CommonTypes";
-
 export interface ContactTriggerContentProps {
-  contact?: CrmContactLookup;
+  name?: string;
+  companyName?: string | null;
   placeholder?: string;
   triggerProps?: TriggerProps;
 }
 
 const ContactTriggerContent: FC<ContactTriggerContentProps> = ({
-  contact,
+  name,
+  companyName,
   placeholder,
   triggerProps
 }) => {
@@ -22,17 +22,17 @@ const ContactTriggerContent: FC<ContactTriggerContentProps> = ({
       ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
     >
       <span
-        className={`body2 max-w-full truncate ${contact?.name ? "" : "text-secondary-text"}`}
-        title={contact?.name ?? placeholder}
+        className={`body2 max-w-full truncate ${name ? "" : "text-secondary-text"}`}
+        title={name ?? placeholder}
       >
-        {contact?.name ?? placeholder}
+        {name ?? placeholder}
       </span>
-      {contact?.company?.name && (
+      {companyName && (
         <span
           className="subtitle4 max-w-full truncate text-secondary-text"
-          title={contact.company.name}
+          title={companyName}
         >
-          {contact.company.name}
+          {companyName}
         </span>
       )}
     </button>
