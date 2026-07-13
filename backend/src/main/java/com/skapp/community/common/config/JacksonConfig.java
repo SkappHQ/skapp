@@ -1,6 +1,5 @@
 package com.skapp.community.common.config;
 
-import org.openapitools.jackson.nullable.JsonNullableJackson3Module;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +19,6 @@ public class JacksonConfig {
 			module.addDeserializer(String.class, new StringTrimmingDeserializer());
 			builder.addModule(module);
 		};
-	}
-
-	@Bean
-	public JsonMapperBuilderCustomizer jsonNullableCustomizer() {
-		return builder -> builder.addModule(new JsonNullableJackson3Module());
 	}
 
 	private static class StringTrimmingDeserializer extends ValueDeserializer<String> {
