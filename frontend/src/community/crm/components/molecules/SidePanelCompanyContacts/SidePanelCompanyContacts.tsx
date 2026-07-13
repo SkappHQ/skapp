@@ -1,15 +1,10 @@
-import {
-  Label,
-  PlusIcon,
-  SearchIcon,
-  Table,
-  TableColumn
-} from "@rootcodelabs/skapp-ui";
+import { Label, SearchIcon, Table, TableColumn } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContact } from "~community/crm/types/CommonTypes";
+import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
 
 const SidePanelCompanyContacts: React.FC<{
   contacts?: CrmContact[] | null;
@@ -60,7 +55,7 @@ const SidePanelCompanyContacts: React.FC<{
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{row.closedDealValue}</div>
+            <div>{formatCurrencyValue(row.closedDealValue)}</div>
             <div className="subtitle4 text-secondary-text">
               {(row.closedDealCount ?? 0) > 0
                 ? `${row.closedDealCount} ${translateText(["dealsClosed"])}`
@@ -102,17 +97,10 @@ const SidePanelCompanyContacts: React.FC<{
       columns={columns as TableColumn<any>[]}
       data={contacts ?? []}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
-      height="17.25rem"
       noDataState={{
         icon: <SearchIcon />,
         title: translateText(["noContacts"]),
-        description: translateText(["noContactsDescription"]),
-        buttonText: translateText(["addContact"]),
-        buttonIcon: <PlusIcon />,
-        buttonVariant: "tertiary",
-        onButtonClick: () => {
-          // Add contact action
-        }
+        description: translateText(["noContactsDescription"])
       }}
     />
   );
