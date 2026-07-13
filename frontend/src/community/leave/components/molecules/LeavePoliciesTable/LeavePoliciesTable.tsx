@@ -1,16 +1,29 @@
 import {
   ButtonV2,
-  FilterIcon,
+  Dropdown,
   InputField,
   KebabMenu,
   SearchIcon,
   StatusComponent,
   Table
 } from "@rootcodelabs/skapp-ui";
-import { JSX, useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { ChangeEvent, JSX, useMemo, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import ROUTES from "~community/common/constants/routes";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { leavePolicyMockData } from "~community/leave/constants/leavePolicyConstants";
+import { AdminTypes } from "~community/common/types/AuthTypes";
+import { getEmoji } from "~community/common/utils/commonUtil";
+import {
+  useGetLeavePoliciesInfinite,
+  useGetPolicyLeaveTypes
+} from "~community/leave/api/LeavePolicyApi";
+import {
+  LEAVE_POLICY_PAGE_SIZE,
+  LEAVE_POLICY_SEARCH_DEBOUNCE_MS
+} from "~community/leave/constants/leavePolicyConstants";
 import {
   PolicyType,
   LeavePolicyStatus,
@@ -19,18 +32,56 @@ import {
 
 const LeavePoliciesTable = (): JSX.Element => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
+  const router = useRouter();
+  const { user } = useAuth();
+  const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
 
-  const filteredPolicies = useMemo(
-    () =>
-      leavePolicyMockData.filter((policy: LeavePolicyType) =>
-        policy.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [searchTerm]
+  const debouncedSearch = useDebounce(
+    searchTerm,
+    LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const tableData = filteredPolicies.map((policy: LeavePolicyType) => ({
+  const { data: policyLeaveTypes = [] } = useGetPolicyLeaveTypes();
+
+  const leaveTypeFilterOptions = useMemo(
+    () => [
+      {
+        id: "all",
+        label: translateText(["leaveTypeFilterAllOption"]),
+        value: ""
+      },
+      ...policyLeaveTypes.map((leaveType) => ({
+        id: String(leaveType.typeId),
+        label: leaveType.name,
+        value: String(leaveType.typeId)
+      }))
+    ],
+    [policyLeaveTypes, translateText]
+  );
+
+  const {
+    data: policyPages,
+    isLoading,
+    isError,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetLeavePoliciesInfinite(
+    debouncedSearch,
+    leaveTypeFilter,
+    LEAVE_POLICY_PAGE_SIZE
+  );
+
+  const policies: LeavePolicyType[] = useMemo(
+    () => policyPages?.pages?.flatMap((page) => page?.items ?? []) ?? [],
+    [policyPages]
+  );
+
+  const tableData = policies.map((policy: LeavePolicyType) => ({
     id: policy.policyId,
     policyName: policy.name,
     leaveType: policy,
@@ -39,18 +90,18 @@ const LeavePoliciesTable = (): JSX.Element => {
         ? translateText(["accrual"])
         : translateText(["fixed"]),
     status: policy.status,
-    assignedEmployees: policy.assignedEmployees,
+    assignedEmployees: policy.assignedEmployeesCount,
     actions: policy
   }));
 
   type TableRow = (typeof tableData)[number];
 
-  const columns = [
+  const baseColumns = [
     {
       key: "policyName",
       header: translateText(["policyNameHeader"]),
       render: (value: unknown) => (
-        <span className="subtitle3 text-black">{value as string}</span>
+        <span className="body1 text-black">{value as string}</span>
       )
     },
     {
@@ -59,10 +110,12 @@ const LeavePoliciesTable = (): JSX.Element => {
       render: (value: unknown) => {
         const policy = value as LeavePolicyType;
         return (
-          <span className="body2 inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2 text-black">
-            <span role="img" aria-hidden="true">
-              {policy.leaveTypeEmoji}
-            </span>
+          <span className="body2 inline-flex w-fit items-center gap-2 rounded-full bg-secondary-background px-5 py-3 text-secondary-text">
+            {policy.leaveTypeEmoji && (
+              <span role="img" aria-hidden="true">
+                {getEmoji(policy.leaveTypeEmoji)}
+              </span>
+            )}
             {policy.leaveTypeName}
           </span>
         );
@@ -72,15 +125,15 @@ const LeavePoliciesTable = (): JSX.Element => {
       key: "policyType",
       header: translateText(["policyTypeHeader"]),
       render: (value: unknown) => (
-        <span className="body2 text-black">{value as string}</span>
+        <span className="body1 text-black">{value as string}</span>
       )
     },
     {
       key: "status",
       header: translateText(["statusHeader"]),
       render: (value: unknown) => {
-        const isActive = (value as LeavePolicyStatus) ===
-          LeavePolicyStatus.ACTIVE;
+        const isActive =
+          (value as LeavePolicyStatus) === LeavePolicyStatus.ACTIVE;
         return (
           <StatusComponent
             text={
@@ -93,6 +146,7 @@ const LeavePoliciesTable = (): JSX.Element => {
                 ? "var(--color-semantic-green-accent)"
                 : "var(--color-semantic-red-accent)"
             }
+            textColor="text-secondary-text"
           />
         );
       }
@@ -101,35 +155,56 @@ const LeavePoliciesTable = (): JSX.Element => {
       key: "assignedEmployees",
       header: translateText(["assignedEmployeesHeader"]),
       render: (value: unknown) => (
-        <span className="body2 text-black">{value as number}</span>
+        <span className="body1 text-black">{value as number}</span>
       )
-    },
-    {
-      key: "actions",
-      header: "",
-      width: "3.5rem",
-      render: (value: unknown) => {
-        const policy = value as LeavePolicyType;
-        return (
-          <KebabMenu
-            id={`leave-policy-kebab-menu-${policy.policyId}`}
-            menuItems={[
-              {
-                id: `leave-policy-edit-${policy.policyId}`,
-                label: translateText(["menuEdit"]),
-                onClick: () => {}
-              },
-              {
-                id: `leave-policy-delete-${policy.policyId}`,
-                label: translateText(["menuDelete"]),
-                onClick: () => {}
-              }
-            ]}
-          />
-        );
-      }
     }
   ];
+
+  const actionsColumn = {
+    key: "actions",
+    header: "",
+    width: "3.5rem",
+    render: (value: unknown) => {
+      const policy = value as LeavePolicyType;
+      return (
+        <KebabMenu
+          id={`leave-policy-kebab-menu-${policy.policyId}`}
+          menuItems={[
+            {
+              id: `leave-policy-edit-${policy.policyId}`,
+              label: translateText(["menuEdit"]),
+              onClick: () => {}
+            },
+            {
+              id: `leave-policy-delete-${policy.policyId}`,
+              label: translateText(["menuDelete"]),
+              onClick: () => {}
+            }
+          ]}
+        />
+      );
+    }
+  };
+
+  const columns = isPeopleAdmin ? [...baseColumns, actionsColumn] : baseColumns;
+
+  const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);
+
+  if (isError && policies.length === 0) {
+    return (
+      <div className="mt-4 flex flex-col items-center gap-4 rounded-lg border border-secondary-accent px-6 py-16 text-center">
+        <p className="subtitle2 text-black">
+          {translateText(["errorStateTitle"])}
+        </p>
+        <p className="body2 text-secondary-text">
+          {translateText(["errorStateDescription"])}
+        </p>
+        <ButtonV2 variant="tertiary" size="md" onClick={() => refetch()}>
+          {translateText(["retryBtnTxt"])}
+        </ButtonV2>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 flex flex-col gap-4">
@@ -137,27 +212,52 @@ const LeavePoliciesTable = (): JSX.Element => {
         <div className="w-full max-w-lg">
           <InputField
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(event.target.value)
+            }
             placeholder={translateText(["searchPlaceholder"])}
             leftIcon={<SearchIcon className="size-4 text-secondary-icon" />}
             fullWidth
             aria-label={translateText(["searchPlaceholder"])}
           />
         </div>
-        <ButtonV2
-          variant="tertiary"
-          size="md"
-          icon={<FilterIcon />}
-          aria-label="Filter"
-        />
+        <div className="w-full max-w-[220px]">
+          <Dropdown
+            id="leave-policy-leave-type-filter"
+            ariaLabel={translateText(["leaveTypeFilterLabel"])}
+            value={leaveTypeFilter}
+            options={leaveTypeFilterOptions}
+            onChange={(value: string) => setLeaveTypeFilter(value)}
+            width="100%"
+          />
+        </div>
       </div>
       <Table<TableRow>
         columns={columns}
         data={tableData}
         tableAriaLabel={translateText(["title"])}
-        emptyStateType="no-search-results"
+        isLoading={isLoading}
+        emptyStateType={isFiltering ? "no-search-results" : "no-data"}
+        onLoadMore={
+          hasNextPage
+            ? async () => {
+                if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
+              }
+            : undefined
+        }
+        hasMore={hasNextPage ?? false}
+        noDataState={{
+          title: translateText(["noPoliciesYetTitle"]),
+          ...(isPeopleAdmin
+            ? {
+                buttonText: translateText(["createPolicyBtnTxt"]),
+                onButtonClick: () =>
+                  router.push(ROUTES.LEAVE.CREATE_LEAVE_POLICY)
+              }
+            : {})
+        }}
         noSearchResultsState={{
-          title: translateText(["searchPlaceholder"])
+          title: translateText(["noSearchResultsTitle"])
         }}
       />
     </div>

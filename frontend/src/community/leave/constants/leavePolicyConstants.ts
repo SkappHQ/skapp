@@ -2,79 +2,14 @@ import {
   AccrualFrequency,
   AccrualTiming,
   FirstAccrualType,
-  PolicyType,
-  LeavePolicyFormData,
-  LeavePolicyStatus,
-  LeavePolicyType
+  LeavePolicyFormData
 } from "~community/leave/types/LeavePolicyTypes";
 
-export const leavePolicyMockData: LeavePolicyType[] = [
-  {
-    policyId: 1,
-    name: "Annual Leave Policy",
-    leaveTypeName: "Annual",
-    leaveTypeEmoji: "🌴",
-    policyType: PolicyType.ACCRUAL,
-    status: LeavePolicyStatus.ACTIVE,
-    assignedEmployees: 42
-  },
-  {
-    policyId: 2,
-    name: "Sick Leave Policy",
-    leaveTypeName: "Sick",
-    leaveTypeEmoji: "🌡️",
-    policyType: PolicyType.FIXED,
-    status: LeavePolicyStatus.ACTIVE,
-    assignedEmployees: 38
-  },
-  {
-    policyId: 3,
-    name: "Casual Leave Policy",
-    leaveTypeName: "Casual",
-    leaveTypeEmoji: "👋",
-    policyType: PolicyType.ACCRUAL,
-    status: LeavePolicyStatus.ACTIVE,
-    assignedEmployees: 27
-  },
-  {
-    policyId: 4,
-    name: "Senior Annual Leave",
-    leaveTypeName: "Annual",
-    leaveTypeEmoji: "🌴",
-    policyType: PolicyType.FIXED,
-    status: LeavePolicyStatus.ACTIVE,
-    assignedEmployees: 15
-  },
-  {
-    policyId: 5,
-    name: "Junior Sick Leave",
-    leaveTypeName: "Sick",
-    leaveTypeEmoji: "🌡️",
-    policyType: PolicyType.FIXED,
-    status: LeavePolicyStatus.INACTIVE,
-    assignedEmployees: 6
-  },
-  {
-    policyId: 6,
-    name: "Trial Casual Leave",
-    leaveTypeName: "Casual",
-    leaveTypeEmoji: "👋",
-    policyType: PolicyType.FIXED,
-    status: LeavePolicyStatus.ACTIVE,
-    assignedEmployees: 11
-  },
-  {
-    policyId: 7,
-    name: "Unpaid Leave Policy",
-    leaveTypeName: "Unpaid",
-    leaveTypeEmoji: "🚫",
-    policyType: PolicyType.FIXED,
-    status: LeavePolicyStatus.INACTIVE,
-    assignedEmployees: 0
-  }
-];
-
 export const MAX_POLICY_NAME_LENGTH = 100;
+
+export const LEAVE_POLICY_PAGE_SIZE = 20;
+
+export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
 export const MAX_POLICY_DAYS = 365;
 

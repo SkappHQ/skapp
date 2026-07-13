@@ -36,7 +36,20 @@ export const leaveTypeEndPoints = {
 
 export const leavePolicyEndPoints = {
   ADD_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policies`,
-  GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policies/leave-types`
+  GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policies/leave-types`,
+  GET_LEAVE_POLICIES: (
+    searchKeyword: string,
+    leaveTypeId: string,
+    page: number,
+    size: number
+  ): string => {
+    const params = new URLSearchParams();
+    if (searchKeyword) params.append("searchKeyword", searchKeyword);
+    if (leaveTypeId) params.append("leaveTypeId", leaveTypeId);
+    params.append("page", String(page));
+    params.append("size", String(size));
+    return `${moduleAPIPath.LEAVE}/policies?${params.toString()}`;
+  }
 };
 
 export const leaveEntitlementEndPoints = {

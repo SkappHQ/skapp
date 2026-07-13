@@ -137,7 +137,11 @@ const routes = [
         name: "Leave Policies",
         url: ROUTES.LEAVE.LEAVE_POLICIES,
         hasSubTree: false,
-        requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN]
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.LEAVE_ADMIN,
+          AdminTypes.PEOPLE_ADMIN
+        ]
       }
     ]
   },
