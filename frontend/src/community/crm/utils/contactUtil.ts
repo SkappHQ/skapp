@@ -20,17 +20,19 @@ export const updateContactTaskCompletion = (
   contacts: CrmContact[],
   { contactId, taskId, isCompleted }: ContactTaskCompletionUpdate
 ): CrmContact[] =>
-  contacts.map((contact) =>
-    contact.id === contactId
-      ? {
-          ...contact,
-          tasks:
-            contact.tasks?.map((task) =>
-              task.id === taskId ? { ...task, isCompleted } : task
-            ) ?? contact.tasks
-        }
-      : contact
-  );
+  contacts.map((contact) => {
+    if (contact.id !== contactId || !contact.tasks) return contact;
+
+    const updatedTasks = contact.tasks.map((task) =>
+      task.id === taskId ? { ...task, isCompleted } : task
+    );
+
+    return {
+      ...contact,
+      tasks: updatedTasks,
+      openTasksCount: updatedTasks.filter((task) => !task.isCompleted).length
+    };
+  });
 
 export const reconcileContacts = (
   existing: CrmContact[],
