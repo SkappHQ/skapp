@@ -21,11 +21,19 @@ const ContactTriggerContent: FC<ContactTriggerContentProps> = ({
       {...triggerProps}
       ref={triggerProps?.ref as RefObject<HTMLButtonElement> | undefined}
     >
-      <span className={`body2 ${name ? "" : "text-secondary-text"}`}>
+      <span
+        className={`body2 max-w-full truncate ${name ? "" : "text-secondary-text"}`}
+        title={name ?? placeholder}
+      >
         {name ?? placeholder}
       </span>
       {companyName && (
-        <span className="subtitle4 text-secondary-text">{companyName}</span>
+        <span
+          className="subtitle4 max-w-full truncate text-secondary-text"
+          title={companyName}
+        >
+          {companyName}
+        </span>
       )}
     </button>
   );

@@ -11,6 +11,7 @@ export interface CrmCompanySliceTypes extends Pick<
   | "companies"
   | "setCompanies"
   | "updateCompany"
+  | "removeCompany"
   | "getCompanyById"
 > {}
 
@@ -25,6 +26,7 @@ export interface CrmContactSliceTypes extends Pick<
   | "contacts"
   | "setContacts"
   | "updateContact"
+  | "removeContact"
   | "getContactById"
 > {}
 

@@ -9,12 +9,20 @@ import { FC, useEffect } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetTaskById, useUpdateTask } from "~community/crm/api/TaskApi";
-import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
+import {
+  useGetRelatedTasks,
+  useGetTaskById,
+  useUpdateTask
+} from "~community/crm/api/TaskApi";
 import SidePanelDealSection from "~community/crm/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
-import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
+import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import {
+  TASK_DETAIL_ICON_SIZE,
+  TASK_PAGE_SIZE
+} from "~community/crm/constants/taskConstants";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
@@ -82,6 +90,25 @@ const TaskSidePanel: FC = () => {
 
   const selectedTask = getTaskById(selectedTaskId!);
 
+  const dealId = selectedTask?.deal?.id
+  const contactId = selectedTask?.contactId
+
+  const isEnabled = dealId != null || contactId  != null 
+
+  const {
+    data: relatedTasksData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetRelatedTasks(
+    { dealId, contactId, size: TASK_PAGE_SIZE },
+    isEnabled
+  );
+
+  const relatedTasks = (
+    relatedTasksData?.pages.flatMap((page) => page.items) ?? []
+  ).filter((task) => task.id !== selectedTaskId);
+
   const taskIcon = selectedTask
     ? getTaskTypeIcon(selectedTask.typeName, TASK_DETAIL_ICON_SIZE)
     : null;
@@ -124,10 +151,7 @@ const TaskSidePanel: FC = () => {
       closeOnBackdropClick
       header={
         isLoading ? (
-          <div className="flex items-center gap-4 pl-2" aria-hidden="true">
-            <SkeletonShape circle className="h-6 w-6 shrink-0" />
-            <SkeletonShape className="h-4 w-40" />
-          </div>
+          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
           <div className="flex items-center gap-4 pl-2">
             {taskIcon}
@@ -184,7 +208,12 @@ const TaskSidePanel: FC = () => {
                   {translateText(["sidePanel", "relatedTasksTitle"])}
                 </h2>
                 <hr className="border-secondary-accent" />
-                {/* <SidePanelTasksSection tasks={relatedTasks} /> */}
+                <SidePanelTasksSection
+                  tasks={relatedTasks}
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onFetchNextPage={fetchNextPage}
+                />
               </div>
             </div>
 

@@ -6,7 +6,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEventHandler } from "react";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCheckDealNameExists } from "~community/crm/api/crmDealApi";
+import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 import { validateDealName } from "~community/crm/utils/dealValidations";
 
@@ -32,10 +35,36 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
     onSave
   });
 
+  const trimmedTitle = editedTitle.trim();
+  const debouncedDealName = useDebounce(trimmedTitle, SEARCH_DEBOUNCE_DELAY);
+
+  const isDealNameCheckEnabled =
+    isEditing &&
+    debouncedDealName.length > 0 &&
+    debouncedDealName !== name.trim();
+
+  const { data: dealNameData } = useCheckDealNameExists(
+    debouncedDealName,
+    isDealNameCheckEnabled
+  );
+  const isDuplicateName =
+    trimmedTitle !== name.trim() && (dealNameData?.isExists ?? false);
+
+  const nameErrorMessage = isDuplicateName
+    ? translateText(["validations", "dealNameExists"])
+    : error;
+
+  const handleSave = () => {
+    if (isDuplicateName) {
+      return;
+    }
+    save();
+  };
+
   const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      save();
+      handleSave();
     }
   };
 
@@ -55,8 +84,8 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
             onChange={(e) => changeValue(e.target.value)}
             onKeyDown={handleInputKeyDown}
             className="w-full"
-            state={error ? "error" : "default"}
-            errorMessage={error}
+            state={nameErrorMessage ? "error" : "default"}
+            errorMessage={nameErrorMessage}
             autoFocus
           />
         </div>
@@ -66,7 +95,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
               aria-label={translateText(["ariaLabels", "saveTitle"])}
               isRounded={true}
               icon={<TickIcon fill="var(--color-primary-accent)" />}
-              onClick={save}
+              onClick={handleSave}
               variant="outlined"
             />
             <IconButton

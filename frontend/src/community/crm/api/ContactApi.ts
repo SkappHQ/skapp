@@ -76,6 +76,7 @@ export const useGetContactMetrics = (
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
+    refetchOnWindowFocus: false,
     enabled
   });
 };
@@ -92,7 +93,9 @@ export const useGetCrmCompanies = (size: number) => {
   });
 };
 
-const createNewContact = async (contactDetails: CrmContactCreatePayload) => {
+const createNewContact = async (
+  contactDetails: CrmContactCreatePayload
+): Promise<CrmContact> => {
   const response = await authFetch.post(
     contactEndpoints.CREATE_CONTACT,
     contactDetails
@@ -116,11 +119,14 @@ export const useCreateNewContact = (
       });
       onSuccess();
     },
-    onError: onError
+    onError
   });
 };
 
-const editContact = async ({ id, ...payload }: EditContactPayload) => {
+const editContact = async ({
+  id,
+  ...payload
+}: EditContactPayload): Promise<CrmContact> => {
   const response = await authFetch.patch(
     contactEndpoints.EDIT_CONTACT(id),
     payload
@@ -128,22 +134,15 @@ const editContact = async ({ id, ...payload }: EditContactPayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useEditContact = (onSuccess: () => void, onError: () => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useEditContact = (
+  onSuccess: (data: CrmContact) => void,
+  onError: () => void
+) =>
+  useMutation({
     mutationFn: editContact,
-    onSuccess: ({ id }) => {
-      queryClient.invalidateQueries({
-        queryKey: contactQueryKeys.GET_CONTACT_DATA
-      });
-      queryClient.invalidateQueries({
-        queryKey: contactQueryKeys.CONTACT_BY_ID(id)
-      });
-      onSuccess();
-    },
+    onSuccess,
     onError
   });
-};
 
 const fetchCompanyLookup = async (
   searchKeyword: string,
@@ -255,15 +254,11 @@ export const useDeleteContact = (
       queryClient.invalidateQueries({
         queryKey: contactQueryKeys.GET_CONTACT_DATA
       });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_OPEN_TASKS
-      });
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_COMPLETED_TASKS
       });
-      queryClient.invalidateQueries({
-        queryKey: crmDealQueryKeys.ALL
-      });
+      queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });

@@ -71,7 +71,8 @@ const ContactModalForm = ({
     enableReinitialize: true
   });
 
-  const { values, errors, handleChange, setFieldValue, submitForm } = formik;
+  const { values, errors, handleChange, setFieldValue, submitForm, dirty } =
+    formik;
 
   const debouncedEmail = useDebounce(
     values.email.trim(),
@@ -241,7 +242,7 @@ const ContactModalForm = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isPending}
+          disabled={isPending || !dirty}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -253,7 +254,7 @@ const ContactModalForm = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isPending}
+          disabled={isPending || !dirty}
           isLoading={isPending}
           aria-label={translateContactText(["ariaLabels", "save"])}
         >

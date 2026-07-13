@@ -4,12 +4,9 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC,useMemo } from "react";
+import { FC, useMemo } from "react";
 
-import {
-  CrmContactLookup,
-  CrmDealContactType
-} from "~community/crm/types/CommonTypes";
+import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
 import { buildContactOptions } from "~community/crm/utils/dealUtil";
 
@@ -18,7 +15,7 @@ import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
   contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | CrmDealContactType | null;
+  selectedContact: CrmContactLookup | null;
   onChange: (contact: CrmContactLookup | null) => void;
   onSearch: (term: string) => void;
   placeholder: string;
@@ -28,21 +25,9 @@ interface Props {
   ariaRequired?: boolean;
 }
 
-const normalizeSelectedContact = (
-  contact: CrmContactLookup | CrmDealContactType | null
-): CrmContactLookup | null => {
-  if (!contact) return null;
-  if (!("contactId" in contact)) return contact;
-  return {
-    id: contact.contactId,
-    name: contact.contactName,
-    company: contact.companyName ? { id: 0, name: contact.companyName } : null
-  };
-};
-
 const ContactPopupSearch: FC<Props> = ({
   contacts,
-  selectedContact: rawSelectedContact,
+  selectedContact,
   onChange,
   onSearch,
   placeholder,
@@ -51,8 +36,6 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
-  const selectedContact = normalizeSelectedContact(rawSelectedContact);
-
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
   const options: DropdownOption[] = useMemo(

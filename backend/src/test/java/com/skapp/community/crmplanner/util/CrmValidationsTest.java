@@ -121,6 +121,14 @@ class CrmValidationsTest {
 			assertDoesNotThrow(() -> CrmValidations.validateWebsite("https://acme.com"));
 		}
 
+		@Test
+		@DisplayName("Insecure http URL - throws CRM_ERROR_WEBSITE_INVALID")
+		void validateWebsite_HttpUrl_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateWebsite("http://acme.com"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_WEBSITE_INVALID, ex.getMessageKey());
+		}
+
 	}
 
 	// --- validateAddress ---

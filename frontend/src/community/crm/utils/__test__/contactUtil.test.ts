@@ -18,6 +18,7 @@ const baseContact: CrmContact = {
   name: "Test Contact",
   email: "test@example.com",
   contactNumber: "0711234567",
+  lastContactAt: null,
   lastModifiedDate: "2026-06-01T00:00:00",
   company: null,
   owner: {
@@ -26,6 +27,8 @@ const baseContact: CrmContact = {
     lastName: "User",
     authPic: null
   },
+  closedDealValue: null,
+  closedDealCount: null,
   openTasksCount: 5,
   overdueTasksCount: 0,
   activeDealsCount: 3,
