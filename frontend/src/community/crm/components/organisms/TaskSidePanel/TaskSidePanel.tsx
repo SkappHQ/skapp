@@ -200,6 +200,11 @@ const TaskSidePanel: FC = () => {
                 <hr className="border-secondary-accent" />
                 <SidePanelDealSection
                   deals={selectedTask?.deal ? [selectedTask.deal] : []}
+                  showAddDealAction={false}
+                  emptyDescription={translateText([
+                    "sidePanel",
+                    "noDealsDescription"
+                  ])}
                 />
               </div>
 
@@ -213,6 +218,11 @@ const TaskSidePanel: FC = () => {
                   hasNextPage={hasNextPage}
                   isFetchingNextPage={isFetchingNextPage}
                   onFetchNextPage={fetchNextPage}
+                  showAddTaskAction={false}
+                  emptyDescription={translateText([
+                    "sidePanel",
+                    "noRelatedTasksDescription"
+                  ])}
                 />
               </div>
             </div>
