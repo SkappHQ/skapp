@@ -66,7 +66,13 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
-      className: "truncate",
+      render(value) {
+        return (
+          <span className="body2 block w-full truncate" title={value}>
+            {value}
+          </span>
+        );
+      },
       width: "25%"
     },
     {
