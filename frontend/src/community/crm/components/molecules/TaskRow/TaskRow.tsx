@@ -33,10 +33,10 @@ const TaskRow: FC<Props> = ({
     updateContactTaskCompletion: store.updateContactTaskCompletion
   }));
 
-  const [isChecked, setIsChecked] = useState(task.isCompleted);
+  const [isCompleted, setIsCompleted] = useState(task.isCompleted);
 
   useEffect(() => {
-    setIsChecked(task.isCompleted);
+    setIsCompleted(task.isCompleted);
   }, [task.isCompleted]);
 
   const { mutate: updateCompletion } = useUpdateTask();
@@ -47,9 +47,9 @@ const TaskRow: FC<Props> = ({
     }
   };
 
-  const handleToggleError = (wasChecked: boolean) => {
-    setIsChecked(wasChecked);
-    syncContactTaskCompletion(wasChecked);
+  const handleToggleError = (wasCompleted: boolean) => {
+    setIsCompleted(wasCompleted);
+    syncContactTaskCompletion(wasCompleted);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -58,21 +58,21 @@ const TaskRow: FC<Props> = ({
     });
   };
 
-  const handleToggleChange = (isChecked: boolean) => {
-    const wasChecked = task.isCompleted;
+  const handleToggleChange = (isCompleted: boolean) => {
+    const wasCompleted = task.isCompleted;
 
-    setIsChecked(isChecked);
-    syncContactTaskCompletion(isChecked);
+    setIsCompleted(isCompleted);
+    syncContactTaskCompletion(isCompleted);
 
     updateCompletion(
-      { id: task.id, isCompleted: isChecked },
+      { id: task.id, isCompleted },
       {
-        onError: () => handleToggleError(wasChecked)
+        onError: () => handleToggleError(wasCompleted)
       }
     );
   };
 
-  const applyCompletedStyle = isChecked && isCheckTaskVisible;
+  const applyCompletedStyle = isCompleted && isCheckTaskVisible;
 
   return (
     <div
@@ -89,7 +89,7 @@ const TaskRow: FC<Props> = ({
         <TaskRowCheckbox
           task={task}
           handleToggleChange={handleToggleChange}
-          isChecked={isChecked}
+          isCompleted={isCompleted}
         />
       )}
 

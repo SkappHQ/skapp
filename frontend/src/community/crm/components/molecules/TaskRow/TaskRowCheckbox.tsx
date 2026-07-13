@@ -6,14 +6,14 @@ import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 interface Props {
   task: TaskRowResponseType;
-  handleToggleChange: (isChecked: boolean) => void;
-  isChecked: boolean;
+  handleToggleChange: (isCompleted: boolean) => void;
+  isCompleted: boolean;
 }
 
 const TaskRowCheckbox: FC<Props> = ({
   task,
   handleToggleChange,
-  isChecked
+  isCompleted
 }) => {
   const translateText = useTranslator("crmModule", "tasks");
 
@@ -23,10 +23,10 @@ const TaskRowCheckbox: FC<Props> = ({
       onClick={(e) => e.stopPropagation()}
     >
       <CheckTask
-        checked={isChecked}
+        checked={isCompleted}
         onChange={handleToggleChange}
         aria-label={translateText(
-          [isChecked ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"],
+          [isCompleted ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"],
           { name: task.name }
         )}
       />
