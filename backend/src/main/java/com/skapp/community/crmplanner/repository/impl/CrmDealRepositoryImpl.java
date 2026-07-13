@@ -243,8 +243,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 		deal.fetch(CrmDeal_.stage, JoinType.INNER);
-		deal.fetch(CrmDeal_.company, JoinType.LEFT);
-		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
 		deal.fetch(CrmDeal_.owner, JoinType.INNER);
 
 		query.where(cb.equal(deal.get(CrmDeal_.id), id), cb.isFalse(deal.get(CrmDeal_.isDeleted)));
