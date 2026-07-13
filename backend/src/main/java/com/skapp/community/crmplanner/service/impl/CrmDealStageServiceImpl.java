@@ -103,9 +103,6 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		stagesToShift.forEach(stage -> stage.setOrderIndex(stage.getOrderIndex() + 1));
 		crmDealStageDao.saveAll(stagesToShift);
 
-		log.info("resolveOrderIndexForNewStage: shifted {} stage(s) to insert new stage at order index {}",
-				stagesToShift.size(), newOrderIndex);
-
 		return newOrderIndex;
 	}
 
@@ -198,14 +195,14 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 		}
 
-		List<CrmDealStage> reorderedStages = IntStream.range(0, orderedRequest.size()).mapToObj(i -> {
-			CrmDealStage stage = existingStagesMap.get(orderedRequest.get(i).getId());
+		List<CrmDealStage> reorderedStages = IntStream.range(0, orderedRequest.size()).mapToObj(position -> {
+			CrmDealStage stage = existingStagesMap.get(orderedRequest.get(position).getId());
 
 			if (stage == null) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 			}
 
-			stage.setOrderIndex(availableOrderIndexes.get(i));
+			stage.setOrderIndex(availableOrderIndexes.get(position));
 			return stage;
 		}).toList();
 
