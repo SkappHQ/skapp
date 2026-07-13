@@ -46,3 +46,7 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-ppl-custom-skill.sql
 
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-leave-policy-tables.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-dml-script-v1-migrate-leave-type-data.sql

@@ -63,7 +63,22 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_PARSING_LEAVE_CYCLE_DATA("api.error.leave.parsing-leave-cycle-data"),
 	LEAVE_ERROR_MAX_CARRY_FORWARD_DAYS_EXCEEDS_LIMIT("api.error.leave.max-carry-forward-days-exceeds-limit"),
 	LEAVE_ERROR_NUMBER_OF_DAYS_CANNOT_BE_LESS_THAN_USED_DAYS(
-			"api.error.leave.number-of-days-cannot-be-less-than-used-days"),;
+			"api.error.leave.number-of-days-cannot-be-less-than-used-days"),
+	LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS("api.error.leave.leave-policy-already-exists"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND("api.error.leave.policy-leave-type-not-found"),
+	LEAVE_ERROR_LEAVE_POLICY_FIXED_DAYS_INVALID("api.error.leave.leave-policy-fixed-days-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_REQUIRED("api.error.leave.leave-policy-accrual-config-required"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_NOT_ALLOWED("api.error.leave.leave-policy-accrual-config-not-allowed"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_DAYS_INVALID("api.error.leave.leave-policy-accrual-days-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_FREQUENCY_REQUIRED("api.error.leave.leave-policy-accrual-frequency-required"),
+	LEAVE_ERROR_LEAVE_POLICY_WAITING_PERIOD_INVALID("api.error.leave.leave-policy-waiting-period-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID("api.error.leave.leave-policy-accrual-cap-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID("api.error.leave.leave-policy-carryover-date-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_DETAILS_REQUIRED(
+			"api.error.leave.leave-policy-carry-forward-details-required"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_DAYS_INVALID("api.error.leave.leave-policy-carry-forward-days-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_EXPIRY_INVALID(
+			"api.error.leave.leave-policy-carry-forward-expiry-invalid"),;
 
 	private final String messageKey;
 

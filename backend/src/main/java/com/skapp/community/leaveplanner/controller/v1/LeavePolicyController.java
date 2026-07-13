@@ -1,0 +1,48 @@
+package com.skapp.community.leaveplanner.controller.v1;
+
+import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.service.LeavePolicyService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/v1/leave/policies")
+@Tag(name = "Leave Policy Controller", description = "Operations related to leave policies")
+public class LeavePolicyController {
+
+	@NonNull
+	private final LeavePolicyService leavePolicyService;
+
+	@Operation(summary = "Create a new leave policy",
+			description = "Creates a new leave policy with accrual or fixed entitlement configuration")
+	@PostMapping
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> addLeavePolicy(
+			@Valid @RequestBody LeavePolicyRequestDto leavePolicyRequestDto) {
+		ResponseEntityDto response = leavePolicyService.addLeavePolicy(leavePolicyRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Get policy leave types",
+			description = "Returns all active leave types available for policy creation")
+	@GetMapping("/leave-types")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes() {
+		ResponseEntityDto response = leavePolicyService.getPolicyLeaveTypes();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+}
