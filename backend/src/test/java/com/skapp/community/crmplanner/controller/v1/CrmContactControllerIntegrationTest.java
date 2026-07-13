@@ -483,6 +483,7 @@ class CrmContactControllerIntegrationTest {
 		crmTaskDao.save(task);
 
 		CrmDeal deal = savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "1000");
+
 	@Test
 	@DisplayName("Edit contact omitting companyId - Company preserved")
 	void editContact_CompanyIdOmitted_CompanyPreserved() throws Exception {
