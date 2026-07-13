@@ -152,6 +152,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           label={translateText(["value"])}
           value={deal.amount ?? ""}
           placeholder={translateText(["placeholders", "none"])}
+          ariaLabel={translateText(["ariaLabels", "amount"])}
           validate={(value) => validateDealAmount(value, translateText)}
           onSave={onAmountChange}
         />

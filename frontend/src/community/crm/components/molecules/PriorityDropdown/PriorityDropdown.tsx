@@ -25,11 +25,12 @@ const PriorityDropdown: FC<PriorityDropdownProps> = ({ value, onChange }) => {
       onChange={handleDropdownChange}
       options={dropdownOptions}
       variant="jsx-content"
-      menuWidth="content"
+      menuWidth="match"
       height="min-h-8"
+      width="100%"
       hideArrowIcon={true}
       padding="py-2 px-1"
-      className="bg-transparent border-0 rounded-lg hover:bg-tertiary-background"
+      className="w-full bg-transparent border-none rounded-lg"
     />
   );
 };

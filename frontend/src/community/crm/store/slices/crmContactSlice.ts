@@ -4,9 +4,9 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactSliceTypes } from "~community/crm/types/SliceTypes";
 import {
   mergeContactUpdate,
-  reconcileContacts,
   updateContactTaskCompletion
 } from "~community/crm/utils/contactUtil";
+import { mergeWithExisting } from "~community/crm/utils/crmUtil";
 
 const CrmContactSlice = (
   set: SetType<CrmContactSliceTypes>,
@@ -23,7 +23,7 @@ const CrmContactSlice = (
   setSelectedContactId: (selectedContactId: number | null) =>
     set({ selectedContactId: selectedContactId }),
   setContacts: (contacts: CrmContact[]) =>
-    set({ contacts: reconcileContacts(get().contacts, contacts) }),
+    set({ contacts: mergeWithExisting(get().contacts, contacts) }),
   updateContact: (contact: CrmContact) =>
     set({ contacts: mergeContactUpdate(get().contacts, contact) }),
   updateContactTaskCompletion: (
