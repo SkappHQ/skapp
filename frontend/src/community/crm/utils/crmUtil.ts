@@ -102,6 +102,15 @@ export const findById = <T>(
   getId: (item: T) => number | string
 ): T | null => items.find((item) => getId(item) === id) ?? null;
 
+export const mergeWithExisting = <T extends Id>(
+  existing: T[],
+  incoming: T[]
+): T[] =>
+  incoming.map((item) => {
+    const current = existing.find((entry) => entry.id === item.id);
+    return current ? { ...current, ...item } : item;
+  });
+
 export const groupItemsByPriority = <T extends Id>(
   items: T[],
   priorityIds: number[]

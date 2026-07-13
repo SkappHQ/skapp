@@ -15,15 +15,6 @@ export const mergeContactUpdate = (
     contact.id === update.id ? { ...contact, ...update } : contact
   );
 
-export const reconcileContacts = (
-  existing: CrmContact[],
-  incoming: CrmContact[]
-): CrmContact[] =>
-  incoming.map((item) => {
-    const enriched = existing.find((contact) => contact.id === item.id);
-    return enriched ? { ...item, ...enriched } : item;
-  });
-
 export interface CompanyDropdownItem extends SearchableDropdownItem {
   isPrioritized?: boolean;
 }

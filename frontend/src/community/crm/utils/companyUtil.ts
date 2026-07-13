@@ -10,15 +10,6 @@ export const mergeCompanyUpdate = (
     company.id === update.id ? { ...company, ...update } : company
   );
 
-export const reconcileCompanies = (
-  existing: CrmCompany[],
-  incoming: CrmCompany[]
-): CrmCompany[] =>
-  incoming.map((item) => {
-    const enriched = existing.find((company) => company.id === item.id);
-    return enriched ? { ...item, ...enriched } : item;
-  });
-
 export const mapCompanyToMetricItems = (
   company: CrmCompany,
   translateText: TranslatorFunctionType

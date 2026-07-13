@@ -2,10 +2,8 @@ import { SetType } from "~community/common/types/CommonTypes";
 import { CrmCompany } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
-import {
-  mergeCompanyUpdate,
-  reconcileCompanies
-} from "~community/crm/utils/companyUtil";
+import { mergeCompanyUpdate } from "~community/crm/utils/companyUtil";
+import { mergeWithExisting } from "~community/crm/utils/crmUtil";
 
 const CrmCompanySlice = (
   set: SetType<CrmCompanySliceTypes>,
@@ -22,7 +20,7 @@ const CrmCompanySlice = (
   setSelectedCompanyId: (selectedCompanyId: number | null) =>
     set({ selectedCompanyId }),
   setCompanies: (companies: CrmCompany[]) =>
-    set({ companies: reconcileCompanies(get().companies, companies) }),
+    set({ companies: mergeWithExisting(get().companies, companies) }),
   updateCompany: (company: CrmCompany) =>
     set({ companies: mergeCompanyUpdate(get().companies, company) }),
   removeCompany: (id: number) =>
