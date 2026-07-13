@@ -3,7 +3,7 @@ import { FC, RefObject } from "react";
 
 export interface ContactTriggerContentProps {
   name?: string;
-  companyName?: string;
+  companyName?: string | null;
   placeholder?: string;
   triggerProps?: TriggerProps;
 }

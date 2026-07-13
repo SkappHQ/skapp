@@ -66,7 +66,7 @@ const ContactPopupSearch: FC<Props> = ({
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
       name={selectedContact?.name}
-      companyName={selectedContact?.companyName ?? undefined}
+      companyName={selectedContact?.companyName}
       placeholder={placeholder}
       triggerProps={triggerProps}
     />
