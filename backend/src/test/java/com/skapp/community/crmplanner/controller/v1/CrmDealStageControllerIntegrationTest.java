@@ -113,7 +113,7 @@ class CrmDealStageControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Get deal stages after creating a stage - Returns new OPEN stage before WON and LOST")
-	void getDealStages_NewOpenStageWithHighestOrderIndex_ReturnsItBeforeTerminalStages() throws Exception {
+	void getDealStages_AfterCreatingNewStage_ReturnsItBeforeTerminalStages() throws Exception {
 		performPostRequest(validPayload()).andExpect(status().isCreated());
 
 		performGetRequest().andDo(print())
@@ -122,9 +122,11 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(jsonPath("['results'].length()").value(8))
 			.andExpect(jsonPath("['results'][5]['name']").value("Proposal"))
 			.andExpect(jsonPath("['results'][5]['stageType']").value(CrmDealStageType.OPEN.name()))
-			.andExpect(jsonPath("['results'][5]['orderIndex']").value(8))
+			.andExpect(jsonPath("['results'][5]['orderIndex']").value(6))
 			.andExpect(jsonPath("['results'][6]['name']").value(CrmDealStageName.WON.name()))
-			.andExpect(jsonPath("['results'][7]['name']").value(CrmDealStageName.LOST.name()));
+			.andExpect(jsonPath("['results'][6]['orderIndex']").value(7))
+			.andExpect(jsonPath("['results'][7]['name']").value(CrmDealStageName.LOST.name()))
+			.andExpect(jsonPath("['results'][7]['orderIndex']").value(8));
 	}
 
 	@Test
@@ -138,7 +140,7 @@ class CrmDealStageControllerIntegrationTest {
 	// POST /v1/crm/deal/stage — happy path
 
 	@Test
-	@DisplayName("Create deal stage with valid payload - Returns Created with OPEN type and bottom orderIndex")
+	@DisplayName("Create deal stage with valid payload - Returns Created with OPEN type inserted before terminal stages")
 	void createDealStage_ValidPayload_ReturnsCreated() throws Exception {
 		performPostRequest(validPayload()).andDo(print())
 			.andExpect(status().isCreated())
@@ -147,7 +149,7 @@ class CrmDealStageControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['color']").value("TEAL"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Proposal sent to prospect"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stageType']").value(CrmDealStageType.OPEN.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(8));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(6));
 	}
 
 	@Test
@@ -175,11 +177,14 @@ class CrmDealStageControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create deal stage with default stages - orderIndex is 8")
-	void createDealStage_DefaultStagesExist_OrderIndexIsEight() throws Exception {
+	@DisplayName("Create deal stage with default stages - takes WON's orderIndex and shifts terminal stages")
+	void createDealStage_DefaultStagesExist_InsertedBeforeTerminalStages() throws Exception {
 		performPostRequest(validPayload()).andDo(print())
 			.andExpect(status().isCreated())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(8));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(6));
+
+		assertEquals(7, crmDealStageDao.findById(stageIdByType(CrmDealStageType.WON)).orElseThrow().getOrderIndex());
+		assertEquals(8, crmDealStageDao.findById(stageIdByType(CrmDealStageType.LOST)).orElseThrow().getOrderIndex());
 	}
 
 	@Test
@@ -435,7 +440,14 @@ class CrmDealStageControllerIntegrationTest {
 
 		performReorderRequest(payload).andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(5))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value(CrmDealStageName.LEAD.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['orderIndex']").value(1))
+			.andExpect(jsonPath("['results'][1]['name']").value(CrmDealStageName.NEGOTIATION.name()))
+			.andExpect(jsonPath("['results'][1]['orderIndex']").value(2))
+			.andExpect(jsonPath("['results'][2]['name']").value(CrmDealStageName.QUALIFIED.name()))
+			.andExpect(jsonPath("['results'][2]['orderIndex']").value(3));
 
 		assertEquals(CrmDealStageType.INITIAL, crmDealStageDao.findById(initialId).orElseThrow().getStageType());
 		assertEquals(1, crmDealStageDao.findById(initialId).orElseThrow().getOrderIndex());
@@ -444,6 +456,24 @@ class CrmDealStageControllerIntegrationTest {
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(0)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(1)).orElseThrow().getStageType());
 		assertEquals(CrmDealStageType.OPEN, crmDealStageDao.findById(ids.get(2)).orElseThrow().getStageType());
+	}
+
+	@Test
+	@DisplayName("Reorder with non-contiguous order indexes - Normalizes indexes below terminal stages")
+	void reorderDealStages_NonContiguousOrderIndexes_NormalizesBelowTerminalStages() throws Exception {
+		Long initialId = stageIdByType(CrmDealStageType.INITIAL);
+		List<Long> ids = openStageIds();
+
+		List<CrmDealStageReorderRequestDto> payload = List.of(reorderEntry(initialId, 1), reorderEntry(ids.get(0), 2),
+				reorderEntry(ids.get(1), 3), reorderEntry(ids.get(2), 4), reorderEntry(ids.get(3), 99));
+
+		performReorderRequest(payload).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(5, crmDealStageDao.findById(ids.get(3)).orElseThrow().getOrderIndex());
+		assertEquals(6, crmDealStageDao.findById(stageIdByType(CrmDealStageType.WON)).orElseThrow().getOrderIndex());
+		assertEquals(7, crmDealStageDao.findById(stageIdByType(CrmDealStageType.LOST)).orElseThrow().getOrderIndex());
 	}
 
 	@Test
