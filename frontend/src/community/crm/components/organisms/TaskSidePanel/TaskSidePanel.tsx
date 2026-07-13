@@ -58,7 +58,8 @@ const TaskSidePanel: FC = () => {
   }));
 
   const isOpen =
-    isCrmSidePanelOpen && crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
 
   const handleClose = () => {
     setSelectedTaskId(null);
@@ -90,10 +91,10 @@ const TaskSidePanel: FC = () => {
 
   const selectedTask = getTaskById(selectedTaskId!);
 
-  const dealId = selectedTask?.deal?.id
-  const contactId = selectedTask?.contactId
+  const dealId = selectedTask?.deal?.id;
+  const contactId = selectedTask?.contactId;
 
-  const isEnabled = dealId != null || contactId  != null 
+  const isEnabled = dealId != null || contactId != null;
 
   const {
     data: relatedTasksData,
