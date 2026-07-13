@@ -4,7 +4,7 @@ import React from "react";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContact } from "~community/crm/types/CommonTypes";
-import { formatValue } from "~community/crm/utils/crmUtil";
+import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
 
 const SidePanelCompanyContacts: React.FC<{
   contacts?: CrmContact[] | null;
@@ -55,7 +55,7 @@ const SidePanelCompanyContacts: React.FC<{
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatValue(row.closedDealValue?.toString() ?? null)}</div>
+            <div>{formatCurrencyValue(row.closedDealValue)}</div>
             <div className="subtitle4 text-secondary-text">
               {(row.closedDealCount ?? 0) > 0
                 ? `${row.closedDealCount} ${translateText(["dealsClosed"])}`
