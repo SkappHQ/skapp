@@ -128,11 +128,7 @@ describe("updateContactTaskCompletion", () => {
   };
 
   it("flips the matching task and recomputes openTasksCount from remaining open tasks", () => {
-    const result = updateContactTaskCompletion([contactWithTasks], {
-      contactId: 1,
-      taskId: 1,
-      isCompleted: true
-    });
+    const result = updateContactTaskCompletion([contactWithTasks], 1, 1, true);
 
     expect(result[0].tasks?.find((task) => task.id === 1)?.isCompleted).toBe(
       true
@@ -142,22 +138,14 @@ describe("updateContactTaskCompletion", () => {
 
   it("leaves non-matching contacts untouched", () => {
     const other: CrmContact = { ...contactWithTasks, id: 99 };
-    const result = updateContactTaskCompletion([other], {
-      contactId: 1,
-      taskId: 1,
-      isCompleted: true
-    });
+    const result = updateContactTaskCompletion([other], 1, 1, true);
 
     expect(result[0]).toBe(other);
   });
 
   it("returns the contact unchanged when it has no loaded tasks", () => {
     const contactNoTasks: CrmContact = { ...baseContact, tasks: null };
-    const result = updateContactTaskCompletion([contactNoTasks], {
-      contactId: 1,
-      taskId: 1,
-      isCompleted: true
-    });
+    const result = updateContactTaskCompletion([contactNoTasks], 1, 1, true);
 
     expect(result[0]).toBe(contactNoTasks);
   });

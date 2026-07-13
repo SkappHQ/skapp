@@ -1,6 +1,5 @@
 import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
-  ContactTaskCompletionUpdate,
   CrmCompany,
   CrmContact,
   CrmDealResponseType,
@@ -30,7 +29,11 @@ interface ActionTypes {
   setSelectedContactId: (contactId: number | null) => void;
   setContacts: (contacts: CrmContact[]) => void;
   updateContact: (contact: CrmContact) => void;
-  updateContactTaskCompletion: (update: ContactTaskCompletionUpdate) => void;
+  updateContactTaskCompletion: (
+    contactId: number,
+    taskId: number,
+    isCompleted: boolean
+  ) => void;
   removeContact: (id: number) => void;
   getContactById: (id: number) => CrmContact | undefined;
   setSelectedDealId: (dealId: number | null) => void;

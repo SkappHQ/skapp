@@ -1,8 +1,5 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import {
-  ContactTaskCompletionUpdate,
-  CrmContact
-} from "~community/crm/types/CommonTypes";
+import { CrmContact } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmContactSliceTypes } from "~community/crm/types/SliceTypes";
 import {
@@ -29,8 +26,19 @@ const CrmContactSlice = (
     set({ contacts: reconcileContacts(get().contacts, contacts) }),
   updateContact: (contact: CrmContact) =>
     set({ contacts: mergeContactUpdate(get().contacts, contact) }),
-  updateContactTaskCompletion: (update: ContactTaskCompletionUpdate) =>
-    set({ contacts: updateContactTaskCompletion(get().contacts, update) }),
+  updateContactTaskCompletion: (
+    contactId: number,
+    taskId: number,
+    isCompleted: boolean
+  ) =>
+    set({
+      contacts: updateContactTaskCompletion(
+        get().contacts,
+        contactId,
+        taskId,
+        isCompleted
+      )
+    }),
   removeContact: (id: number) =>
     set({ contacts: get().contacts.filter((contact) => contact.id !== id) }),
   getContactById: (id: number) =>
