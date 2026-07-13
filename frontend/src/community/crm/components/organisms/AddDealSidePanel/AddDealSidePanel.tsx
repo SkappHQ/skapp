@@ -86,10 +86,10 @@ const AddDealSidePanel: FC = () => {
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"])
     });
+    closeCrmSidePanel();
     formik.resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    closeCrmSidePanel();
   };
 
   const handleCreateDealError = () => {

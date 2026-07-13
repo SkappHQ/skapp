@@ -13,7 +13,9 @@ interface PropertyFieldProps {
   inputType?: PropertyFieldInputType;
   min?: number;
   max?: number;
+  ariaLabel?: string;
   validate?: (value: string) => string;
+  onChange?: (value: string) => void;
   onSave: (value: string) => void;
 }
 
@@ -24,7 +26,9 @@ const PropertyField: FC<PropertyFieldProps> = ({
   inputType = "text",
   min,
   max,
+  ariaLabel,
   validate,
+  onChange,
   onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
@@ -64,6 +68,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     changeValue(e.target.value);
+    onChange?.(e.target.value);
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -101,6 +106,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
               max={max}
               state={error ? "error" : "default"}
               errorMessage={error}
+              aria-label={ariaLabel}
               autoFocus
             />
           </div>
@@ -111,6 +117,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
             onClick={startEditing}
             onKeyDown={handleDisplayKeyDown}
+            aria-label={ariaLabel ? `${ariaLabel}: ${displayValue}` : undefined}
           >
             <div
               className={`body2 tracking-wide truncate ${

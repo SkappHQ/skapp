@@ -95,7 +95,9 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         label={translateText(["labels", "value"])}
         value={values.amount}
         placeholder={translateText(["placeholders", "none"])}
+        ariaLabel={translateText(["ariaLabels", "amount"])}
         validate={(value) => validateDealAmount(value, translateText)}
+        onChange={(value) => setFieldValue("amount", value)}
         onSave={(value) => setFieldValue("amount", value)}
       />
 
