@@ -37,7 +37,7 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const { companies, setSelectedCompanyId, setCompanies, openCrmSidePanel } =
@@ -66,7 +66,13 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
-      className: "truncate",
+      render(value) {
+        return (
+          <span className="body2 block w-full truncate" title={value}>
+            {value}
+          </span>
+        );
+      },
       width: "25%"
     },
     {
@@ -179,9 +185,7 @@ export const CompanyTable: FC = () => {
         columns={columns as TableColumn<any>[]}
         data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={
-          isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
-        }
+        isLoading={isLoading}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="34.5rem"
         hasMore={hasNextPage}

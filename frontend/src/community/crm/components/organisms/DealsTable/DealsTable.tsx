@@ -1,5 +1,4 @@
 import {
-  AvatarChip,
   BaseRowData,
   Column,
   GroupData,
@@ -9,9 +8,8 @@ import {
 import { FC, ReactNode, useMemo } from "react";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { concatStrings } from "~community/common/utils/commonUtil";
+import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
@@ -19,29 +17,6 @@ import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
-
-interface OwnerCellProps {
-  owner: CrmDealResponseType["owner"];
-}
-
-const OwnerCell: FC<OwnerCellProps> = ({ owner }) => {
-  const fullName = concatStrings([owner.firstName, owner.lastName ?? ""]);
-  const imageUrl = useGetImageUrl(owner.authPic ?? "");
-
-  return (
-    <AvatarChip
-      avatarProps={{
-        id: String(owner.employeeId),
-        firstName: owner.firstName,
-        lastName: owner.lastName ?? "",
-        src: imageUrl ?? "",
-        size: "sm"
-      }}
-      label={fullName}
-      backgroundColor="bg-secondary-background"
-    />
-  );
-};
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -219,7 +194,13 @@ const DealsTable: FC<Props> = ({
               {deal.contactName}
             </span>
           ),
-          dealOwner: <OwnerCell owner={deal.owner} />
+          dealOwner: (
+            <OwnerAvatarChip
+              id={`deal-${deal.id}-owner-${deal.owner.employeeId}`}
+              owner={deal.owner}
+              backgroundColor="bg-secondary-background"
+            />
+          )
         };
       }),
     [allDeals, getStageByName]

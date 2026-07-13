@@ -396,7 +396,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           variant="primary"
           type="button"
           onClick={formik.submitForm}
-          disabled={formik.isSubmitting || isPending}
+          disabled={formik.isSubmitting || isPending || !formik.dirty}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}

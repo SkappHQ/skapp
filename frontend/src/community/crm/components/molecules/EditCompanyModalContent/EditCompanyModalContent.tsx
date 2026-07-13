@@ -220,7 +220,7 @@ const EditCompanyModalContent: React.FC = () => {
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isSubmitting || !dirty}
+          disabled={isSubmitting}
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"

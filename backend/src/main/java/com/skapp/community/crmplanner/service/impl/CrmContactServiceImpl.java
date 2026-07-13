@@ -150,13 +150,17 @@ public class CrmContactServiceImpl implements CrmContactService {
 			contact.setContactNumber(CrmUtil.normalizeNullableText(requestDto.getContactNumber()));
 		}
 
-		if (requestDto.getCompanyId() != null) {
-			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-			updateContactCompany(contact, company);
-		}
-		else {
-			updateContactCompany(contact, null);
+		if (requestDto.getCompanyId().isPresent()) {
+			Long companyId = requestDto.getCompanyId().get();
+
+			if (companyId != null) {
+				CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
+					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+				contact.setCompany(company);
+			}
+			else {
+				contact.setCompany(null);
+			}
 		}
 
 		if (requestDto.getOwnerId() != null) {
