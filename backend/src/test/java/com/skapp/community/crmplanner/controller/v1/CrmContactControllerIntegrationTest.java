@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -456,14 +457,44 @@ class CrmContactControllerIntegrationTest {
 
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setName("Updated Name Only");
-		// email, contactNumber, companyId, ownerId are null
+		// companyId is always carried by the edit payload since null means "remove the
+		// company";
+		// email, contactNumber and ownerId are omitted and stay untouched
+		dto.setCompanyId(companyId);
 
 		performPatchRequest(contactId, dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact removing company - Unlinks company and cascades to its tasks and deals")
+	void editContact_RemoveCompany_CascadesUnlinkToTasksAndDeals() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "cascade@example.com").getId();
+
+		CrmTask task = savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		task.setCompany(crmCompanyDao.getReferenceById(companyId));
+		crmTaskDao.save(task);
+
+		CrmDeal deal = savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "1000");
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setName("Cascade Contact");
+		// companyId left null => remove the company
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+
+		assertNull(crmContactDao.findById(contactId).orElseThrow().getCompany());
+		assertNull(crmTaskDao.findById(task.getId()).orElseThrow().getCompany());
+		assertNull(crmDealDao.findById(deal.getId()).orElseThrow().getCompany());
 	}
 
 	@Test

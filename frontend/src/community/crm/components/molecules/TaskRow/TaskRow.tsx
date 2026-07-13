@@ -49,7 +49,12 @@ const TaskRow: FC<Props> = ({
   const handleToggleChange = (checked: boolean) => {
     setTaskCompleted(checked);
     updateCompletion(
-      { id: task.id, isCompleted: checked },
+      {
+        id: task.id,
+        isCompleted: checked,
+        contactId: task.contact?.id ?? null,
+        dealId: task.deal?.id ?? null
+      },
       { onError: handleUpdateCompletionError }
     );
   };

@@ -75,7 +75,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
   const [selectedContactName, setSelectedContactName] = useState(
-    getContactById(selectedContactId!)?.name ?? selectedTask?.contact?.name ?? ""
+    getContactById(selectedContactId!)?.name ??
+      selectedTask?.contact?.name ??
+      ""
   );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState(
@@ -214,6 +216,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
     formik.setFieldValue("contactId", null);
     setSelectedContactName("");
     setContactSearchText("");
+    formik.setFieldValue("dealId", null);
+    setSelectedDealName("");
+    setDealSearchText("");
   };
 
   const handleClearDeal = () => {

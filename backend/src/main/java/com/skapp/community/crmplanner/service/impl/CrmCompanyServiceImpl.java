@@ -23,6 +23,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -185,17 +186,17 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		if (crmCompany.getContactNumber() != null) {
 			CrmValidations.validateContactNumber(crmCompany.getContactNumber());
-			existingCompany.setContactNumber(crmCompany.getContactNumber());
+			existingCompany.setContactNumber(CrmUtil.normalizeNullableText(crmCompany.getContactNumber()));
 		}
 
 		if (crmCompany.getWebsite() != null) {
 			CrmValidations.validateWebsite(crmCompany.getWebsite());
-			existingCompany.setWebsite(crmCompany.getWebsite());
+			existingCompany.setWebsite(CrmUtil.normalizeNullableText(crmCompany.getWebsite()));
 		}
 
 		if (crmCompany.getAddress() != null) {
 			CrmValidations.validateAddress(crmCompany.getAddress());
-			existingCompany.setAddress(crmCompany.getAddress());
+			existingCompany.setAddress(CrmUtil.normalizeNullableText(crmCompany.getAddress()));
 		}
 
 		if (crmCompany.getIndustry() != null) {

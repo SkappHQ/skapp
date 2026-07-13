@@ -426,6 +426,31 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Edit company clearing text fields with empty string - Persists null values")
+	void editCompany_ClearTextFieldsWithEmptyString_PersistsNull() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
+		editDto.setWebsite("");
+		editDto.setAddress("");
+		editDto.setContactNumber("");
+
+		performPatchRequest(companyId, editDto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getWebsite()).isNull();
+		assertThat(persisted.getAddress()).isNull();
+		assertThat(persisted.getContactNumber()).isNull();
+	}
+
+	@Test
 	@DisplayName("Edit company with non-existent ID - Returns Bad Request")
 	void editCompany_NonExistentId_ReturnsBadRequest() throws Exception {
 		CrmCompanyEditDto editDto = createValidEditPayload();

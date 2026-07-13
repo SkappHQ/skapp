@@ -98,9 +98,9 @@ const EditCompanyModalContent: React.FC = () => {
       id: selectedCompany.id,
       name: values.name.trim(),
       industry: values.industry,
-      website: values.website?.trim() || null,
-      address: values.address?.trim() || null,
-      contactNumber: values.contactNumber?.trim() || null
+      website: values.website?.trim() || "",
+      address: values.address?.trim() || "",
+      contactNumber: values.contactNumber?.trim() || ""
     };
 
     editCompany(payload);

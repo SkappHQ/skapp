@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -1327,6 +1328,85 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit task removing contact - Clears contact, derived company and deal")
+	void editTask_RemoveContact_ClearsContactCompanyAndDeal() throws Exception {
+		CrmCompany company = savedCompany("Task Unlink Company");
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Task Unlink Contact");
+		contact.setEmail("task.unlink@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(company);
+		contact = crmContactDao.save(contact);
+
+		CrmDeal deal = savedDeal("Task Unlink Deal", contact, company);
+		CrmTask task = savedTask("Unlink Task", false, false, contact.getId(), deal, company);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertNull(updated.getContact());
+		assertNull(updated.getCompany());
+		assertNull(updated.getDeal());
+	}
+
+	@Test
+	@DisplayName("Edit task completion re-sending current contact and deal - Preserves associations")
+	void editTask_CompletionWithCurrentAssociations_PreservesThem() throws Exception {
+		CrmCompany company = savedCompany("Toggle Company");
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Toggle Contact");
+		contact.setEmail("toggle@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(company);
+		contact = crmContactDao.save(contact);
+
+		CrmDeal deal = savedDeal("Toggle Deal", contact, company);
+		CrmTask task = savedTask("Toggle Task", false, false, contact.getId(), deal, company);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setIsCompleted(true);
+		dto.setContactId(contact.getId());
+		dto.setDealId(deal.getId());
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertEquals(true, updated.getIsCompleted());
+		assertNotNull(updated.getContact());
+		assertEquals(contact.getId(), updated.getContact().getId());
+		assertNotNull(updated.getDeal());
+		assertEquals(deal.getId(), updated.getDeal().getId());
+		assertNotNull(updated.getCompany());
+	}
+
+	@Test
+	@DisplayName("Edit task removing only the deal - Keeps contact, clears deal")
+	void editTask_RemoveDealOnly_KeepsContact() throws Exception {
+		CrmDeal deal = savedDeal("Deal To Remove", crmContactDao.getReferenceById(contactId), null);
+		CrmTask task = savedTask("Task With Deal", false, false, contactId, deal);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setContactId(contactId);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertNotNull(updated.getContact());
+		assertEquals(contactId, updated.getContact().getId());
+		assertNull(updated.getDeal());
 	}
 
 	// --- deleteTask helper and tests ---
