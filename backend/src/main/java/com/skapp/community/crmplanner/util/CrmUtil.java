@@ -27,7 +27,11 @@ public class CrmUtil {
 	}
 
 	public boolean hasDeletedCompany(CrmDeal deal) {
-		return isCompanyDeleted(deal.getCompany());
+		if (isCompanyDeleted(deal.getCompany())) {
+			return true;
+		}
+		CrmContact contact = deal.getContact();
+		return contact != null && isCompanyDeleted(contact.getCompany());
 	}
 
 	private boolean isCompanyDeleted(CrmCompany company) {

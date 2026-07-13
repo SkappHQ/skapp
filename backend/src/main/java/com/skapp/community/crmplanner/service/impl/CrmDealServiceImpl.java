@@ -143,7 +143,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOwner(owner);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+		CrmDealResponseDto responseDto = toDealResponseDto(savedDeal);
 
 		log.info("createDeal: deal created with id={}", savedDeal.getId());
 		return new ResponseEntityDto(false, responseDto);
@@ -299,7 +299,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOrderIndex(newOrderIndex);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+		CrmDealResponseDto responseDto = toDealResponseDto(savedDeal);
 
 		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
 		return new ResponseEntityDto(false, responseDto);
@@ -341,7 +341,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOrderIndex(newOrderIndex);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+		CrmDealResponseDto responseDto = toDealResponseDto(savedDeal);
 
 		log.info("updateDealStage: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -358,7 +358,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
+		return new ResponseEntityDto(false, toDealResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
@@ -481,7 +481,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+		CrmDealResponseDto responseDto = toDealResponseDto(savedDeal);
 
 		log.info("editDeal: execution ended");
 		return new ResponseEntityDto(false, responseDto);

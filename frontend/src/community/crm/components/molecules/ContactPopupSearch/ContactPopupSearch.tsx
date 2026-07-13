@@ -4,7 +4,7 @@ import {
   DropdownWithSearchablePopup,
   TriggerProps
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo } from "react";
+import { FC,useMemo } from "react";
 
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
