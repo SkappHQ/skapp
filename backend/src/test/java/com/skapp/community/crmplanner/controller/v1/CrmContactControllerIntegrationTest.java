@@ -455,7 +455,7 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit contact with partial payload - Only provided fields updated")
+	@DisplayName("Edit contact with partial payload - Omitted fields preserved except company, which requires companyId")
 	void editContact_PartialPayload_OnlyProvidedFieldsUpdated() throws Exception {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
@@ -481,6 +481,21 @@ class CrmContactControllerIntegrationTest {
 		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Edit contact omitting companyId - Company unlinked")
+	void editContact_CompanyIdOmitted_CompanyUnlinked() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		// An absent companyId is indistinguishable from an explicit null, so the
+		// company is unlinked even when the payload only touches other fields
+		performPatchRawRequest(contactId, "{\"name\": \"Name Without Company\"}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
 	}
 
