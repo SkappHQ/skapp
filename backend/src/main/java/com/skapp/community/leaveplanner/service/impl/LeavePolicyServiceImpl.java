@@ -3,11 +3,13 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.exception.ConflictException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
+import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
@@ -20,6 +22,9 @@ import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,6 +89,29 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.toList();
 
 		return new ResponseEntityDto(false, leaveTypes);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
+		log.info("getAllLeavePolicies: execution started");
+
+		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
+		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
+
+		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leavePolicyPage.getContent()
+			.stream()
+			.map(this::toResponseDto)
+			.toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(leavePolicyResponseDtos);
+		pageDto.setCurrentPage(leavePolicyPage.getNumber());
+		pageDto.setTotalItems(leavePolicyPage.getTotalElements());
+		pageDto.setTotalPages(leavePolicyPage.getTotalPages());
+
+		log.info("getAllLeavePolicies: execution ended");
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	private String sanitizeName(String name) {
@@ -220,6 +248,11 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			responseDto.setFirstAccrual(leavePolicy.getFirstAccrual());
 			responseDto.setAccrualTiming(leavePolicy.getAccrualTiming());
 		}
+
+		// TODO: replace with a real count once employee-policy assignment
+		// (lv_employee_leave_policy) is implemented; see the assign/unassign
+		// leave policy user stories.
+		responseDto.setAssignedEmployeesCount(0);
 
 		return responseDto;
 	}

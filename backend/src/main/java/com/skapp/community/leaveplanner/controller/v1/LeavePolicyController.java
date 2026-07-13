@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,16 @@ public class LeavePolicyController {
 			@Valid @RequestBody LeavePolicyRequestDto leavePolicyRequestDto) {
 		ResponseEntityDto response = leavePolicyService.addLeavePolicy(leavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Get all leave policies",
+			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
+	@GetMapping
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(
+			@Valid LeavePolicyFilterDto leavePolicyFilterDto) {
+		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Get policy leave types",
