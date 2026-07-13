@@ -1132,7 +1132,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_UpdateNotes_ReturnsOk() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes("Updated notes content");
+		dto.setNotes(JsonNullable.of("Updated notes content"));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
@@ -1188,7 +1188,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_NotesTooLong_ReturnsBadRequest() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes("a".repeat(1001));
+		dto.setNotes(JsonNullable.of("a".repeat(1001)));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isBadRequest())

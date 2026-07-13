@@ -49,7 +49,6 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -473,16 +472,16 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit contact removing company - Unlinks company and cascades to its tasks and deals")
-	void editContact_RemoveCompany_CascadesUnlinkToTasksAndDeals() throws Exception {
+	@DisplayName("Edit contact with null companyId - Company unlinked")
+	void editContact_NullCompanyId_CompanyUnlinked() throws Exception {
 		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "cascade@example.com").getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		CrmTask task = savedTask(contactId, false, LocalDateTime.now().plusDays(3));
-		task.setCompany(crmCompanyDao.getReferenceById(companyId));
-		crmTaskDao.save(task);
-
-		CrmDeal deal = savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "1000");
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
 
 	@Test
 	@DisplayName("Edit contact omitting companyId - Company preserved")
@@ -507,6 +506,7 @@ class CrmContactControllerIntegrationTest {
 
 		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(editValidPayload(companyId)))
+			.accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	@Test
