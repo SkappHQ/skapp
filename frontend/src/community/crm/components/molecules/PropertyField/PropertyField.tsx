@@ -117,7 +117,7 @@ const PropertyField: FC<PropertyFieldProps> = ({
             className="w-full min-w-0 min-h-[32px] px-3 rounded-lg flex items-center cursor-pointer hover:bg-secondary-background transition-colors"
             onClick={startEditing}
             onKeyDown={handleDisplayKeyDown}
-            aria-label={ariaLabel ? `${ariaLabel}: ${displayValue}` : undefined}
+            aria-label={ariaLabel}
           >
             <div
               className={`body2 tracking-wide truncate ${
