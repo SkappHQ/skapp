@@ -81,9 +81,9 @@ class CrmValidationsTest {
 		}
 
 		@Test
-		@DisplayName("Formatted contact number with +, spaces, hyphens and parentheses - does not throw")
-		void validateContactNumber_FormattedWithAllowedChars_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("+94 (071) 234-5678"));
+		@DisplayName("Contact number with a leading + followed only by digits - does not throw")
+		void validateContactNumber_LeadingPlusWithDigitsOnly_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("+94771234567"));
 		}
 
 		@Test
@@ -104,11 +104,22 @@ class CrmValidationsTest {
 		}
 
 		@Test
-		@DisplayName("Plus sign in the middle or repeated, with parentheses around the country code - does not throw")
-		void validateContactNumber_PlusAnywhereWithFormatting_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("94 071 + 96-96 (108)"));
-			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("(+94)719696108"));
-			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("++94712345678"));
+		@DisplayName("Spaces, hyphens or parentheses anywhere - throws CRM_ERROR_CONTACT_NUMBER_INVALID")
+		void validateContactNumber_ContainsSpacesHyphensOrParentheses_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactNumber("94 071 + 96-96 (108)"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID, ex.getMessageKey());
+			assertThrows(ModuleException.class, () -> CrmValidations.validateContactNumber("(071)2345678"));
+			assertThrows(ModuleException.class, () -> CrmValidations.validateContactNumber("071-234-5678"));
+		}
+
+		@Test
+		@DisplayName("Plus sign that isn't the leading character - throws CRM_ERROR_CONTACT_NUMBER_INVALID")
+		void validateContactNumber_PlusNotLeading_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactNumber("(+94)719696108"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID, ex.getMessageKey());
+			assertThrows(ModuleException.class, () -> CrmValidations.validateContactNumber("++94712345678"));
 		}
 
 	}

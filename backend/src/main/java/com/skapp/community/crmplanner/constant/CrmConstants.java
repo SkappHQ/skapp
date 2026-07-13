@@ -50,7 +50,7 @@ public class CrmConstants {
 
 	public static final int PHONE_MAX_LENGTH = 15;
 
-	public static final String PHONE_NUMBER_REGEX = "^[0-9+\\-()\\s]+$";
+	public static final String PHONE_NUMBER_REGEX = "^\\+?[0-9]+$";
 
 	public static final int TASK_NAME_MAX_LENGTH = 255;
 

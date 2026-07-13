@@ -44,17 +44,19 @@ describe("isValidCrmPhoneNumber", () => {
     expect(isValidCrmPhoneNumber().test("0123456789012345")).toBe(false);
   });
 
-  it("should accept +, spaces, hyphens and parentheses as formatting in any position, counting only digits toward the limit", () => {
-    expect(isValidCrmPhoneNumber().test("+94 (71) 234-5678")).toBe(true);
-    expect(isValidCrmPhoneNumber().test("(+94)719696108")).toBe(true);
-    expect(isValidCrmPhoneNumber().test("94 071 + 96-96 (108)")).toBe(true);
+  it("should accept an optional leading + followed only by digits", () => {
+    expect(isValidCrmPhoneNumber().test("+94771234567")).toBe(true);
+    expect(isValidCrmPhoneNumber().test("94771234567")).toBe(true);
   });
 
-  it("should reject letters and out-of-range digit counts even with formatting", () => {
+  it("should reject spaces, hyphens, parentheses, letters, and a + that isn't the leading character", () => {
+    expect(isValidCrmPhoneNumber().test("(071)2345678")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("071 234 5678")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("071-234-5678")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("(+94)719696108")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("94 071 + 96-96 (108)")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("++94712345678")).toBe(false);
     expect(isValidCrmPhoneNumber().test("abc1234567")).toBe(false);
-    expect(isValidCrmPhoneNumber().test("+94 (071) 234-5678-9999")).toBe(
-      false
-    );
   });
 });
 

@@ -6,7 +6,7 @@ export function isDealNameValid(): RegExp {
 
 export function isValidCrmPhoneNumber(): RegExp {
   return new RegExp(
-    String.raw`^(?=(?:\D*\d){${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}\D*$)[0-9\s\-()+]+$`
+    String.raw`^\+?[0-9]{${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}$`
   );
 }
 
