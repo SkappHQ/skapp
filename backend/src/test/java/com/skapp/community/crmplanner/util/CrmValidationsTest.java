@@ -80,6 +80,37 @@ class CrmValidationsTest {
 			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("94771234567"));
 		}
 
+		@Test
+		@DisplayName("Formatted contact number with +, spaces, hyphens and parentheses - does not throw")
+		void validateContactNumber_FormattedWithAllowedChars_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("+94 (071) 234-5678"));
+		}
+
+		@Test
+		@DisplayName("Digit count exceeding max even with formatting chars - throws CRM_ERROR_CONTACT_NUMBER_INVALID")
+		void validateContactNumber_TooManyDigitsWithFormatting_ThrowsInvalid() {
+			String tooManyDigits = "+" + "1".repeat(CrmConstants.PHONE_MAX_LENGTH + 1);
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactNumber(tooManyDigits));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Contact number with letters - throws CRM_ERROR_CONTACT_NUMBER_INVALID")
+		void validateContactNumber_ContainsLetters_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactNumber("94771abc567"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Plus sign in the middle or repeated, with parentheses around the country code - does not throw")
+		void validateContactNumber_PlusAnywhereWithFormatting_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("94 071 + 96-96 (108)"));
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("(+94)719696108"));
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("++94712345678"));
+		}
+
 	}
 
 	// --- validateWebsite ---

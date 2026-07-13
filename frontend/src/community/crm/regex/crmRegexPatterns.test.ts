@@ -1,7 +1,8 @@
 import {
   isContactNameValid,
   isDealNameValid,
-  isValidCompanyWebsiteUrl
+  isValidCompanyWebsiteUrl,
+  isValidCrmPhoneNumber
 } from "./crmRegexPatterns";
 
 describe("isContactNameValid", () => {
@@ -32,6 +33,28 @@ describe("isDealNameValid", () => {
   it("should reject disallowed special characters", () => {
     expect(isDealNameValid().test("Deal <script>")).toBe(false);
     expect(isDealNameValid().test("Deal!")).toBe(false);
+  });
+});
+
+describe("isValidCrmPhoneNumber", () => {
+  it("should accept plain digit sequences within the 7-15 digit range", () => {
+    expect(isValidCrmPhoneNumber().test("0123456")).toBe(true);
+    expect(isValidCrmPhoneNumber().test("012345678901234")).toBe(true);
+    expect(isValidCrmPhoneNumber().test("012345")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("0123456789012345")).toBe(false);
+  });
+
+  it("should accept +, spaces, hyphens and parentheses as formatting in any position, counting only digits toward the limit", () => {
+    expect(isValidCrmPhoneNumber().test("+94 (71) 234-5678")).toBe(true);
+    expect(isValidCrmPhoneNumber().test("(+94)719696108")).toBe(true);
+    expect(isValidCrmPhoneNumber().test("94 071 + 96-96 (108)")).toBe(true);
+  });
+
+  it("should reject letters and out-of-range digit counts even with formatting", () => {
+    expect(isValidCrmPhoneNumber().test("abc1234567")).toBe(false);
+    expect(isValidCrmPhoneNumber().test("+94 (071) 234-5678-9999")).toBe(
+      false
+    );
   });
 });
 

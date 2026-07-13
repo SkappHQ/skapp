@@ -7,7 +7,7 @@ export function isValidEmail(): RegExp {
 
 export function isValidPhoneNumber(): RegExp {
   return new RegExp(
-    String.raw`^(?=(?:\D*\d){${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}\D*$)[0-9\s\-()+]+$`
+    `^[0-9]{${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}$`
   );
 }
 

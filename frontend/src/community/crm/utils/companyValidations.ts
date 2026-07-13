@@ -1,10 +1,12 @@
 import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
-import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { CrmIndustryEnum } from "~community/crm/enums/common";
-import { isValidCompanyWebsiteUrl } from "~community/crm/regex/crmRegexPatterns";
+import {
+  isValidCompanyWebsiteUrl,
+  isValidCrmPhoneNumber
+} from "~community/crm/regex/crmRegexPatterns";
 
 export const addCompanyValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -26,7 +28,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
             return true;
           }
 
-          return isValidPhoneNumber().test(inputContactNumber);
+          return isValidCrmPhoneNumber().test(inputContactNumber);
         }
       ),
     website: Yup.string()

@@ -88,7 +88,13 @@ public class CrmValidations {
 			return;
 		}
 
-		if (contactNumber.length() > CrmConstants.PHONE_MAX_LENGTH) {
+		if (!contactNumber.matches(CrmConstants.PHONE_NUMBER_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID);
+		}
+
+		long digitCount = contactNumber.chars().filter(Character::isDigit).count();
+
+		if (digitCount > CrmConstants.PHONE_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID);
 		}
 	}

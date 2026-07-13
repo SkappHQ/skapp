@@ -1,5 +1,13 @@
+import { characterLengths } from "~community/common/constants/stringConstants";
+
 export function isDealNameValid(): RegExp {
   return /^[\p{L}\p{N} \-.,&'()/:@#|]+$/u;
+}
+
+export function isValidCrmPhoneNumber(): RegExp {
+  return new RegExp(
+    String.raw`^(?=(?:\D*\d){${characterLengths.PHONE_NUMBER_LENGTH_MIN},${characterLengths.PHONE_NUMBER_LENGTH_MAX}}\D*$)[0-9\s\-()+]+$`
+  );
 }
 
 export function isValidCompanyWebsiteUrl(): RegExp {

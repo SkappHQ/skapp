@@ -1,14 +1,14 @@
 import * as Yup from "yup";
 
-import {
-  isValidEmail,
-  isValidPhoneNumber
-} from "~community/common/regex/regexPatterns";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import {
   CONTACT_EMAIL_MAX_LENGTH,
   CONTACT_NAME_MAX_LENGTH
 } from "~community/crm/constants/contactConstants";
-import { isContactNameValid } from "~community/crm/regex/crmRegexPatterns";
+import {
+  isContactNameValid,
+  isValidCrmPhoneNumber
+} from "~community/crm/regex/crmRegexPatterns";
 
 type TranslatorFunctionType = (suffixes: string[]) => string;
 
@@ -33,7 +33,7 @@ export const addContactValidations = (translator: TranslatorFunctionType) =>
       .trim()
       .nullable()
       .optional()
-      .matches(isValidPhoneNumber(), {
+      .matches(isValidCrmPhoneNumber(), {
         message: translator(["validations", "contactNumber"]),
         excludeEmptyString: true
       }),

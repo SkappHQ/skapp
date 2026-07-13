@@ -20,8 +20,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import {
   CONTACT_EMAIL_MAX_LENGTH,
-  CONTACT_NAME_MAX_LENGTH,
-  CONTACT_NUMBER_MAX_LENGTH
+  CONTACT_NAME_MAX_LENGTH
 } from "~community/crm/constants/contactConstants";
 import {
   CrmContactFormValues,
@@ -215,7 +214,6 @@ const ContactModalForm = ({
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
         aria-label={translateContactText(["ariaLabels", "contactNumber"])}
-        maxLength={CONTACT_NUMBER_MAX_LENGTH}
         fullWidth
       />
 
