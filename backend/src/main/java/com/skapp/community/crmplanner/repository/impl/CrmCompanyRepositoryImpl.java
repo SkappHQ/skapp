@@ -83,7 +83,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		closedCountSubquery.select(cb.count(closedCountDeal.get(CrmDeal_.id)))
 			.where(cb.equal(closedCountDeal.get(CrmDeal_.company), company),
 					cb.isFalse(closedCountDeal.get(CrmDeal_.isDeleted)),
-					closedCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds));
+					cb.equal(closedCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON));
 
 		Subquery<Long> openCountSubquery = query.subquery(Long.class);
 		Root<CrmDeal> openCountDeal = openCountSubquery.from(CrmDeal.class);
