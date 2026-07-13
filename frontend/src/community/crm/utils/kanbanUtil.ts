@@ -54,7 +54,7 @@ export const mapCreatedDealToSlice = (
   id: deal.id,
   name: deal.name,
   contactName: deal.contactName ?? "",
-  companyName: deal.companyName ?? null,
+  companyName: deal.companyName,
   owner: deal.owner,
   amount: deal.amount,
   priority: deal.priority,

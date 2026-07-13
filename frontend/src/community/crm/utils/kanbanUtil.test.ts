@@ -344,7 +344,7 @@ describe("mapCreatedDealToSlice", () => {
     orderIndex: "a0",
     amount: "1500",
     companyName: "Acme Corp",
-    contactId: 10,
+    contactId: 21,
     contactName: "Acme Lead",
     owner: OWNER
   };
@@ -366,29 +366,19 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should read stageId from the nested stage", () => {
-    const result = mapCreatedDealToSlice({
-      ...response,
-      stage: mkStageType(3)
-    });
+    const result = mapCreatedDealToSlice({ ...response, stage: mkStageType(3) });
 
     expect(result.stageId).toBe(3);
   });
 
   it("should default contactName to an empty string when absent", () => {
-    const result = mapCreatedDealToSlice({
-      ...response,
-      contactId: null,
-      contactName: null
-    });
+    const result = mapCreatedDealToSlice({ ...response, contactName: null });
 
     expect(result.contactName).toBe("");
   });
 
   it("should keep companyName null when absent", () => {
-    const result = mapCreatedDealToSlice({
-      ...response,
-      companyName: null
-    });
+    const result = mapCreatedDealToSlice({ ...response, companyName: null });
 
     expect(result.companyName).toBeNull();
   });

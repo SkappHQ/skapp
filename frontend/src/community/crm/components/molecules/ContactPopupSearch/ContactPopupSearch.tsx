@@ -28,9 +28,6 @@ interface Props {
   ariaRequired?: boolean;
 }
 
-// Normalizes the deal's flat contact fields into the CrmContactLookup shape
-// so the rest of this component only ever deals with one shape. company.id
-// is a placeholder here — nothing downstream reads it, only company.name is shown.
 const normalizeSelectedContact = (
   contact: CrmContactLookup | CrmDealContactType | null
 ): CrmContactLookup | null => {
