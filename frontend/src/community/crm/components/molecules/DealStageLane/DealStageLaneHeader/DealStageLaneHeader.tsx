@@ -1,13 +1,14 @@
 import { useDroppable } from "@dnd-kit/core";
 import { FC, ReactNode } from "react";
 
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import { formatValue } from "~community/crm/utils/crmUtil";
 
 export interface DealStageLaneHeaderProps {
   stage: CrmDealStageType;
-  totalValue: string;
+  totalValue: number;
   totalCount: number;
   isOver?: boolean;
   children: ReactNode;
@@ -47,7 +48,13 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
           <h2 id={String(stage.id)} className="subtitle1 truncate capitalize">
             {getStageByName(stage.name)}
           </h2>
-          <p className="body3 mt-0.5 text-secondary-icon">{totalValue}</p>
+          <p
+            className={`body3 mt-0.5 text-secondary-icon ${
+              totalValue > 0 ? "" : "invisible"
+            }`}
+          >
+            {formatValue(String(totalValue))}
+          </p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
           {totalCount}
