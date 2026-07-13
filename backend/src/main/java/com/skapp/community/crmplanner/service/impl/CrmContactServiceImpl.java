@@ -102,7 +102,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
 		contact.setEmail(lowercaseEmail);
-		contact.setContactNumber(CrmUtil.normalizeNullableText(requestDto.getContactNumber()));
+		contact.setContactNumber(requestDto.getContactNumber());
 		contact.setCompany(company);
 		contact.setOwner(owner);
 
@@ -147,7 +147,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getContactNumber() != null) {
 			CrmValidations.validateContactNumber(requestDto.getContactNumber());
-			contact.setContactNumber(CrmUtil.normalizeNullableText(requestDto.getContactNumber()));
+			contact.setContactNumber(requestDto.getContactNumber());
 		}
 
 		if (requestDto.getCompanyId().isPresent()) {

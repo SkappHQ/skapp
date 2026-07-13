@@ -22,10 +22,6 @@ public class CrmUtil {
 		return user.getEmployee().getEmployeeRole().getCrmRole() == Role.CRM_SALES_REPRESENTATIVE;
 	}
 
-	public String normalizeNullableText(String value) {
-		return value == null || value.isEmpty() ? null : value;
-	}
-
 	public boolean hasDeletedCompany(CrmContact contact) {
 		return isCompanyDeleted(contact.getCompany());
 	}
