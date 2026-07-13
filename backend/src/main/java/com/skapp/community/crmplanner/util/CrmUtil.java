@@ -27,11 +27,7 @@ public class CrmUtil {
 	}
 
 	public boolean hasDeletedCompany(CrmDeal deal) {
-		if (isCompanyDeleted(deal.getCompany())) {
-			return true;
-		}
-		CrmContact contact = deal.getContact();
-		return contact != null && isCompanyDeleted(contact.getCompany());
+		return isCompanyDeleted(deal.getCompany());
 	}
 
 	private boolean isCompanyDeleted(CrmCompany company) {
@@ -72,8 +68,8 @@ public class CrmUtil {
 
 	public CrmDealResponseDto toDealResponseDto(CrmMapper crmMapper, CrmDeal deal) {
 		CrmDealResponseDto dto = crmMapper.crmDealToCrmDealResponseDto(deal);
-		if (hasDeletedCompany(deal) && dto.getContact() != null) {
-			dto.getContact().setCompany(null);
+		if (hasDeletedCompany(deal)) {
+			dto.setCompanyName(null);
 		}
 		return dto;
 	}

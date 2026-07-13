@@ -22,7 +22,11 @@ public class CrmDealResponseDto {
 
 	private String amount;
 
-	private CrmContactLookupResponseDto contact;
+	private String companyName;
+
+	private Long contactId;
+
+	private String contactName;
 
 	private CrmOwnerResponseDto owner;
 

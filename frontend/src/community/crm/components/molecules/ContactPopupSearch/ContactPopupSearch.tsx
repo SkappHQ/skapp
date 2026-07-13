@@ -6,7 +6,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC,useMemo } from "react";
 
-import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookup,
+  CrmDealContactType
+} from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
 import { buildContactOptions } from "~community/crm/utils/dealUtil";
 
@@ -15,7 +18,7 @@ import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
   contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | null;
+  selectedContact: CrmContactLookup | CrmDealContactType | null;
   onChange: (contact: CrmContactLookup | null) => void;
   onSearch: (term: string) => void;
   placeholder: string;
@@ -25,9 +28,24 @@ interface Props {
   ariaRequired?: boolean;
 }
 
+// Normalizes the deal's flat contact fields into the CrmContactLookup shape
+// so the rest of this component only ever deals with one shape. company.id
+// is a placeholder here — nothing downstream reads it, only company.name is shown.
+const normalizeSelectedContact = (
+  contact: CrmContactLookup | CrmDealContactType | null
+): CrmContactLookup | null => {
+  if (!contact) return null;
+  if (!("contactId" in contact)) return contact;
+  return {
+    id: contact.contactId,
+    name: contact.contactName,
+    company: contact.companyName ? { id: 0, name: contact.companyName } : null
+  };
+};
+
 const ContactPopupSearch: FC<Props> = ({
   contacts,
-  selectedContact,
+  selectedContact: rawSelectedContact,
   onChange,
   onSearch,
   placeholder,
@@ -36,6 +54,8 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
+  const selectedContact = normalizeSelectedContact(rawSelectedContact);
+
   const getContactId = (contact: CrmContactLookup) => contact.id;
 
   const options: DropdownOption[] = useMemo(

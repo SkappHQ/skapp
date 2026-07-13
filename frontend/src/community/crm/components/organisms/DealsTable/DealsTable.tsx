@@ -209,14 +209,14 @@ const DealsTable: FC<Props> = ({
           companyName: (
             <span
               className="body2 block w-full truncate"
-              title={deal.contact?.company?.name ?? undefined}
+              title={deal.companyName ?? undefined}
             >
-              {deal.contact?.company?.name ?? "-"}
+              {deal.companyName ?? "-"}
             </span>
           ),
           contactName: (
             <span className="body2 block w-full truncate">
-              {deal.contact?.name}
+              {deal.contactName}
             </span>
           ),
           dealOwner: <OwnerCell owner={deal.owner} />

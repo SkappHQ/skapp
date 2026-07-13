@@ -53,8 +53,8 @@ export const mapCreatedDealToSlice = (
 ): CrmBoardDealSliceType => ({
   id: deal.id,
   name: deal.name,
-  contactName: deal.contact?.name ?? "",
-  companyName: deal.contact?.company?.name ?? null,
+  contactName: deal.contactName ?? "",
+  companyName: deal.companyName ?? null,
   owner: deal.owner,
   amount: deal.amount,
   priority: deal.priority,

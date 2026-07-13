@@ -206,8 +206,16 @@ export interface CrmDealResponseType {
   priority: CrmPriorityEnum;
   orderIndex: string;
   amount: string | null;
-  contact: CrmContactLookup | null;
+  companyName: string | null;
+  contactId: number | null;
+  contactName: string | null;
   owner: CrmOwner;
+}
+
+export interface CrmDealContactType {
+  contactId: number;
+  contactName: string;
+  companyName: string | null;
 }
 
 export interface CrmDealStageType {

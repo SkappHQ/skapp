@@ -343,7 +343,9 @@ describe("mapCreatedDealToSlice", () => {
     priority: CrmPriorityEnum.HIGH,
     orderIndex: "a0",
     amount: "1500",
-    contact: CONTACT_WITH_COMPANY,
+    companyName: "Acme Corp",
+    contactId: 10,
+    contactName: "Acme Lead",
     owner: OWNER
   };
 
@@ -373,7 +375,11 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should default contactName to an empty string when absent", () => {
-    const result = mapCreatedDealToSlice({ ...response, contact: null });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      contactId: null,
+      contactName: null
+    });
 
     expect(result.contactName).toBe("");
   });
@@ -381,7 +387,7 @@ describe("mapCreatedDealToSlice", () => {
   it("should keep companyName null when absent", () => {
     const result = mapCreatedDealToSlice({
       ...response,
-      contact: CONTACT_NO_COMPANY
+      companyName: null
     });
 
     expect(result.companyName).toBeNull();
