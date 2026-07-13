@@ -4,25 +4,41 @@ import { ChangeEvent, JSX } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   accrualFrequencyItemList,
+  carryoverDateItemList,
   firstAccrualItemList,
-  receiveAccruedTimeItemList,
-  resetDateItemList
+  receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
 import {
-  LeavePolicyEntitlementType,
-  LeavePolicyFormData
+  PolicyType,
+  LeavePolicyFormData,
+  LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
 
-import WizardDateInput from "./WizardDateInput";
 import WizardSection from "./WizardSection";
 import YesNoRadioGroup from "./YesNoRadioGroup";
 
 interface Props {
   formData: LeavePolicyFormData;
   onChange: (values: Partial<LeavePolicyFormData>) => void;
+  errors: LeavePolicyWizardErrors;
 }
 
-const EntitlementSetupStep = ({ formData, onChange }: Props): JSX.Element => {
+const FieldError = ({
+  message
+}: {
+  message: string | undefined;
+}): JSX.Element | null =>
+  message ? (
+    <p role="alert" className="body2 text-semantic-red-text">
+      {message}
+    </p>
+  ) : null;
+
+const EntitlementSetupStep = ({
+  formData,
+  onChange,
+  errors
+}: Props): JSX.Element => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
@@ -30,22 +46,26 @@ const EntitlementSetupStep = ({ formData, onChange }: Props): JSX.Element => {
     "entitlementSetup"
   );
 
-  if (formData.entitlementType === LeavePolicyEntitlementType.FIXED) {
+  if (formData.policyType === PolicyType.FIXED) {
     return (
       <div className="flex flex-1 flex-col gap-8">
         <WizardSection title={translateText(["allocationTitle"])}>
-          <div className="max-w-3xl">
+          <div className="flex max-w-3xl flex-col gap-3">
             <InputField
               label={translateText(["totalDaysAllocatedLabel"])}
               name="totalDaysAllocated"
               type="number"
               value={formData.totalDaysAllocated}
               placeholder={translateText(["totalDaysAllocatedPlaceholder"])}
+              errorMessage={errors.totalDaysAllocated}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>
                 onChange({ totalDaysAllocated: event.target.value })
               }
               fullWidth
             />
+            <p className="body2 text-tertiary-text">
+              {translateText(["fixedDescriptionLabel"])}
+            </p>
           </div>
         </WizardSection>
       </div>
@@ -55,21 +75,22 @@ const EntitlementSetupStep = ({ formData, onChange }: Props): JSX.Element => {
   return (
     <div className="flex flex-1 flex-col gap-8">
       <WizardSection title={translateText(["accrualScheduleTitle"])}>
-        <div className="flex flex-col gap-6 md:flex-row">
-          <div className="w-full md:w-64">
+        <div className="flex max-w-3xl flex-col gap-4 md:flex-row">
+          <div className="flex flex-1 flex-col gap-1.5">
             <InputField
               label={translateText(["employeesAccrueLabel"])}
               name="accrualDays"
               type="number"
               value={formData.accrualDays}
               placeholder={translateText(["employeesAccruePlaceholder"])}
+              errorMessage={errors.accrualDays}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>
                 onChange({ accrualDays: event.target.value })
               }
               fullWidth
             />
           </div>
-          <div className="w-full md:w-64">
+          <div className="flex flex-1 flex-col gap-1.5">
             <Dropdown
               id="leave-policy-accrual-frequency"
               label={translateText(["frequencyLabel"])}
@@ -81,39 +102,71 @@ const EntitlementSetupStep = ({ formData, onChange }: Props): JSX.Element => {
               }
               width="100%"
             />
-          </div>
-          <div className="w-full md:w-64">
-            <Dropdown
-              id="leave-policy-reset-date"
-              label={translateText(["resetDateLabel"])}
-              value={formData.resetDate}
-              placeholder={translateText(["resetDatePlaceholder"])}
-              options={resetDateItemList}
-              onChange={(value: string) => onChange({ resetDate: value })}
-              width="100%"
-            />
+            <FieldError message={errors.accrualFrequency} />
           </div>
         </div>
       </WizardSection>
 
       <WizardSection title={translateText(["accrualOptionsTitle"])}>
-        <div className="flex max-w-3xl flex-col gap-5">
+        <div className="flex max-w-3xl flex-col gap-4">
           <YesNoRadioGroup
             label={translateText(["waitingPeriodLabel"])}
             name="hasWaitingPeriod"
             noLabel={translateText(["waitingPeriodNo"])}
             yesLabel={translateText(["waitingPeriodYes"])}
             value={formData.hasWaitingPeriod}
-            onChange={(value) => onChange({ hasWaitingPeriod: value })}
+            onChange={(value) =>
+              onChange({
+                hasWaitingPeriod: value,
+                ...(value ? {} : { waitingPeriodDays: "" })
+              })
+            }
           />
+          {formData.hasWaitingPeriod && (
+            <div className="w-full md:w-64">
+              <InputField
+                label={translateText(["waitingPeriodDaysLabel"])}
+                name="waitingPeriodDays"
+                type="number"
+                value={formData.waitingPeriodDays}
+                placeholder={translateText(["waitingPeriodDaysPlaceholder"])}
+                errorMessage={errors.waitingPeriodDays}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  onChange({ waitingPeriodDays: event.target.value })
+                }
+                fullWidth
+              />
+            </div>
+          )}
           <YesNoRadioGroup
             label={translateText(["accrualCapLabel"])}
             name="hasAccrualCap"
             noLabel={translateText(["accrualCapNo"])}
             yesLabel={translateText(["accrualCapYes"])}
             value={formData.hasAccrualCap}
-            onChange={(value) => onChange({ hasAccrualCap: value })}
+            onChange={(value) =>
+              onChange({
+                hasAccrualCap: value,
+                ...(value ? {} : { accrualCapDays: "" })
+              })
+            }
           />
+          {formData.hasAccrualCap && (
+            <div className="w-full md:w-64">
+              <InputField
+                label={translateText(["accrualCapDaysLabel"])}
+                name="accrualCapDays"
+                type="number"
+                value={formData.accrualCapDays}
+                placeholder={translateText(["accrualCapDaysPlaceholder"])}
+                errorMessage={errors.accrualCapDays}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  onChange({ accrualCapDays: event.target.value })
+                }
+                fullWidth
+              />
+            </div>
+          )}
           <YesNoRadioGroup
             label={translateText(["carryOverLabel"])}
             name="canCarryOver"
@@ -124,12 +177,19 @@ const EntitlementSetupStep = ({ formData, onChange }: Props): JSX.Element => {
           />
           {formData.canCarryOver && (
             <>
-              <WizardDateInput
-                label={translateText(["carryOverDateLabel"])}
-                placeholder={translateText(["carryOverDatePlaceholder"])}
-                value={formData.carryOverDate}
-                onChange={(date) => onChange({ carryOverDate: date })}
-              />
+              <div className="w-full md:w-64">
+                <Dropdown
+                  id="leave-policy-carryover-date"
+                  label={translateText(["carryOverDateLabel"])}
+                  value={formData.carryOverDate}
+                  placeholder={translateText(["carryOverDatePlaceholder"])}
+                  options={carryoverDateItemList}
+                  onChange={(value: string) =>
+                    onChange({ carryOverDate: value })
+                  }
+                  width="100%"
+                />
+              </div>
               <Checkbox
                 id="reset-negative-balances"
                 checked={formData.resetNegativeBalances}

@@ -1,5 +1,5 @@
 import {
-  Button,
+  ButtonV2,
   FilterIcon,
   InputField,
   KebabMenu,
@@ -12,7 +12,7 @@ import { JSX, useMemo, useState } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { leavePolicyMockData } from "~community/leave/constants/leavePolicyConstants";
 import {
-  LeavePolicyEntitlementType,
+  PolicyType,
   LeavePolicyStatus,
   LeavePolicyType
 } from "~community/leave/types/LeavePolicyTypes";
@@ -34,8 +34,8 @@ const LeavePoliciesTable = (): JSX.Element => {
     id: policy.policyId,
     policyName: policy.name,
     leaveType: policy,
-    entitlementType:
-      policy.entitlementType === LeavePolicyEntitlementType.ACCRUAL
+    policyType:
+      policy.policyType === PolicyType.ACCRUAL
         ? translateText(["accrual"])
         : translateText(["fixed"]),
     status: policy.status,
@@ -50,9 +50,7 @@ const LeavePoliciesTable = (): JSX.Element => {
       key: "policyName",
       header: translateText(["policyNameHeader"]),
       render: (value: unknown) => (
-        <span className="text-sm font-medium text-gray-900">
-          {value as string}
-        </span>
+        <span className="subtitle3 text-black">{value as string}</span>
       )
     },
     {
@@ -61,7 +59,7 @@ const LeavePoliciesTable = (): JSX.Element => {
       render: (value: unknown) => {
         const policy = value as LeavePolicyType;
         return (
-          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-900">
+          <span className="body2 inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2 text-black">
             <span role="img" aria-hidden="true">
               {policy.leaveTypeEmoji}
             </span>
@@ -71,10 +69,10 @@ const LeavePoliciesTable = (): JSX.Element => {
       }
     },
     {
-      key: "entitlementType",
-      header: translateText(["entitlementTypeHeader"]),
+      key: "policyType",
+      header: translateText(["policyTypeHeader"]),
       render: (value: unknown) => (
-        <span className="text-sm text-gray-900">{value as string}</span>
+        <span className="body2 text-black">{value as string}</span>
       )
     },
     {
@@ -90,7 +88,11 @@ const LeavePoliciesTable = (): JSX.Element => {
                 ? translateText(["active"])
                 : translateText(["inactive"])
             }
-            iconColor={isActive ? "text-green-500" : "text-red-500"}
+            iconColor={
+              isActive
+                ? "var(--color-semantic-green-accent)"
+                : "var(--color-semantic-red-accent)"
+            }
           />
         );
       }
@@ -99,7 +101,7 @@ const LeavePoliciesTable = (): JSX.Element => {
       key: "assignedEmployees",
       header: translateText(["assignedEmployeesHeader"]),
       render: (value: unknown) => (
-        <span className="text-sm text-gray-900">{value as number}</span>
+        <span className="body2 text-black">{value as number}</span>
       )
     },
     {
@@ -137,12 +139,12 @@ const LeavePoliciesTable = (): JSX.Element => {
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder={translateText(["searchPlaceholder"])}
-            leftIcon={<SearchIcon className="size-4 text-gray-500" />}
+            leftIcon={<SearchIcon className="size-4 text-secondary-icon" />}
             fullWidth
             aria-label={translateText(["searchPlaceholder"])}
           />
         </div>
-        <Button
+        <ButtonV2
           variant="tertiary"
           size="md"
           icon={<FilterIcon />}

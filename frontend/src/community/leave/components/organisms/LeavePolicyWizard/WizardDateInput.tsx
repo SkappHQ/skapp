@@ -29,8 +29,8 @@ const WizardDateInput = ({
   return (
     <div className="flex w-full flex-col gap-1.5">
       <label
-        className={`text-sm font-medium ${
-          disabled ? "text-gray-400" : "text-gray-900"
+        className={`subtitle3 ${
+          disabled ? "text-tertiary-text" : "text-black"
         }`}
       >
         {label}
@@ -53,12 +53,12 @@ const WizardDateInput = ({
           type="button"
           disabled={disabled}
           aria-label={label}
-          className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-gray-100 px-4 py-3 text-left text-sm disabled:cursor-not-allowed disabled:opacity-60"
+          className="body2 flex w-full cursor-pointer items-center justify-between rounded-lg bg-tertiary-background px-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <span className={formattedValue ? "text-gray-900" : "text-gray-500"}>
+          <span className={formattedValue ? "text-black" : "text-tertiary-text"}>
             {formattedValue || placeholder}
           </span>
-          <CalendarIcon className="size-4 text-gray-600" />
+          <CalendarIcon className="size-4 text-secondary-icon" />
         </button>
       </DatePicker>
     </div>

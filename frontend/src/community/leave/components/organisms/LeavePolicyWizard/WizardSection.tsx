@@ -8,9 +8,9 @@ interface Props {
 const WizardSection = ({ title, children }: Props): JSX.Element => {
   return (
     <section className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3">
-        <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-        <hr className="border-gray-200" />
+      <div className="flex flex-col gap-4">
+        <h3 className="h2 text-black">{title}</h3>
+        <hr className="border-secondary-accent" />
       </div>
       {children}
     </section>

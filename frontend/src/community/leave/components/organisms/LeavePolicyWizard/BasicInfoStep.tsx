@@ -2,16 +2,17 @@ import {
   CalendarIcon,
   Dropdown,
   InputField,
-  RadioButton,
   RotateIcon
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { leaveTypeItemList } from "~community/leave/constants/leavePolicyConstants";
+import { getEmoji } from "~community/common/utils/commonUtil";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/LeavePolicyApi";
 import {
-  LeavePolicyEntitlementType,
-  LeavePolicyFormData
+  PolicyType,
+  LeavePolicyFormData,
+  LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
 
 import WizardSection from "./WizardSection";
@@ -19,6 +20,7 @@ import WizardSection from "./WizardSection";
 interface Props {
   formData: LeavePolicyFormData;
   onChange: (values: Partial<LeavePolicyFormData>) => void;
+  errors: LeavePolicyWizardErrors;
 }
 
 interface PolicyTypeCardProps {
@@ -41,24 +43,48 @@ const PolicyTypeCard = ({
     role="radio"
     aria-checked={selected}
     onClick={onClick}
-    className={`flex flex-1 cursor-pointer items-start gap-3 rounded-xl border p-5 text-left transition-colors ${
+    className={`flex flex-1 cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
       selected
-        ? "border-blue-500 bg-blue-50"
-        : "border-gray-200 bg-gray-50 hover:border-gray-300"
+        ? "border-primary-accent bg-primary-background"
+        : "border-secondary-accent bg-white hover:border-border-surface-secondary"
     }`}
   >
-    <RadioButton isSelected={selected} className="mt-0.5 shrink-0" />
-    <span className="flex flex-col gap-1.5">
-      <span className="flex items-center gap-2 text-base font-semibold text-gray-900">
+    <span
+      aria-hidden="true"
+      className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary-accent"
+    >
+      {selected && <span className="size-3 rounded-full bg-primary-accent" />}
+    </span>
+    <span className="flex flex-col gap-2">
+      <span
+        className={`subtitle2 flex items-center gap-2 ${
+          selected ? "text-primary-text" : "text-secondary-text"
+        }`}
+      >
         {icon}
         {title}
       </span>
-      <span className="text-sm text-gray-600">{description}</span>
+      <span
+        className={`body2 ${selected ? "text-primary-text" : "text-secondary-text"}`}
+      >
+        {description}
+      </span>
     </span>
   </button>
 );
 
-const BasicInfoStep = ({ formData, onChange }: Props): JSX.Element => {
+const FieldError = ({
+  message
+}: {
+  message: string | undefined;
+}): JSX.Element | null =>
+  message ? (
+    <p role="alert" className="body2 text-semantic-red-text">
+      {message}
+    </p>
+  ) : null;
+
+const BasicInfoStep = ({ formData, onChange, errors }: Props): JSX.Element => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
@@ -66,41 +92,58 @@ const BasicInfoStep = ({ formData, onChange }: Props): JSX.Element => {
     "basicInfo"
   );
 
+  const translateCommonText = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "createPolicy"
+  );
+
+  const { data: policyLeaveTypes = [], isLoading } = useGetPolicyLeaveTypes();
+
+  const leaveTypeOptions = policyLeaveTypes.map((leaveType) => ({
+    id: String(leaveType.typeId),
+    label: leaveType.emojiCode
+      ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
+      : leaveType.name,
+    value: String(leaveType.typeId)
+  }));
+
   return (
     <div className="flex flex-1 flex-col gap-8">
       <WizardSection title={translateText(["policyTypeTitle"])}>
         <div
           role="radiogroup"
           aria-label={translateText(["policyTypeTitle"])}
-          className="flex w-full flex-col gap-6 md:flex-row"
+          className="flex w-full flex-col gap-3 md:flex-row"
         >
           <PolicyTypeCard
-            icon={<RotateIcon className="size-5 text-gray-700" />}
+            icon={<RotateIcon className="size-6" />}
             title={translateText(["accrualTitle"])}
             description={translateText(["accrualDescription"])}
             selected={
-              formData.entitlementType === LeavePolicyEntitlementType.ACCRUAL
+              formData.policyType === PolicyType.ACCRUAL
             }
             onClick={() =>
               onChange({
-                entitlementType: LeavePolicyEntitlementType.ACCRUAL
+                policyType: PolicyType.ACCRUAL
               })
             }
           />
           <PolicyTypeCard
-            icon={<CalendarIcon className="size-5 text-gray-700" />}
+            icon={<CalendarIcon className="size-6" />}
             title={translateText(["fixedTitle"])}
             description={translateText(["fixedDescription"])}
             selected={
-              formData.entitlementType === LeavePolicyEntitlementType.FIXED
+              formData.policyType === PolicyType.FIXED
             }
             onClick={() =>
               onChange({
-                entitlementType: LeavePolicyEntitlementType.FIXED
+                policyType: PolicyType.FIXED
               })
             }
           />
         </div>
+        <FieldError message={errors.policyType} />
       </WizardSection>
 
       <WizardSection title={translateText(["basicDetailsTitle"])}>
@@ -111,20 +154,35 @@ const BasicInfoStep = ({ formData, onChange }: Props): JSX.Element => {
             type="text"
             value={formData.policyName}
             placeholder={translateText(["policyNamePlaceholder"])}
+            errorMessage={errors.policyName}
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
               onChange({ policyName: event.target.value })
             }
             fullWidth
           />
-          <Dropdown
-            id="leave-policy-leave-type"
-            label={translateText(["leaveTypeLabel"])}
-            value={formData.leaveType}
-            placeholder={translateText(["leaveTypePlaceholder"])}
-            options={leaveTypeItemList}
-            onChange={(value: string) => onChange({ leaveType: value })}
-            width="100%"
-          />
+          <div className="flex flex-col gap-1.5">
+            <Dropdown
+              id="leave-policy-leave-type"
+              label={translateText(["leaveTypeLabel"])}
+              value={formData.leaveType}
+              placeholder={translateText(["leaveTypePlaceholder"])}
+              options={leaveTypeOptions}
+              onChange={(value: string, option?: { label?: ReactNode }) =>
+                onChange({
+                  leaveType: value,
+                  leaveTypeName:
+                    typeof option?.label === "string" ? option.label : value
+                })
+              }
+              width="100%"
+            />
+            <FieldError message={errors.leaveType} />
+            {!isLoading && leaveTypeOptions.length === 0 && (
+              <p role="alert" className="body2 text-semantic-amber-text">
+                {translateCommonText(["noLeaveTypesWarning"])}
+              </p>
+            )}
+          </div>
         </div>
       </WizardSection>
     </div>

@@ -1,4 +1,3 @@
-import { RadioButton } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 interface Props {
@@ -25,7 +24,7 @@ const YesNoRadioGroup = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium text-gray-900">{label}</p>
+      <p className="subtitle3 text-black">{label}</p>
       <div role="radiogroup" aria-label={label} className="flex flex-col gap-2">
         {options.map((option) => (
           <button
@@ -35,10 +34,17 @@ const YesNoRadioGroup = ({
             role="radio"
             aria-checked={value === option.optionValue}
             onClick={() => onChange(option.optionValue)}
-            className="flex w-fit cursor-pointer items-center gap-2"
+            className="flex w-fit cursor-pointer items-center gap-3"
           >
-            <RadioButton isSelected={value === option.optionValue} />
-            <span className="text-sm text-gray-700">{option.label}</span>
+            <span
+              aria-hidden="true"
+              className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary-accent"
+            >
+              {value === option.optionValue && (
+                <span className="size-3 rounded-full bg-primary-accent" />
+              )}
+            </span>
+            <span className="body2 text-black">{option.label}</span>
           </button>
         ))}
       </div>

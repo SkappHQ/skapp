@@ -1,5 +1,8 @@
 import {
-  LeavePolicyEntitlementType,
+  AccrualFrequency,
+  AccrualTiming,
+  FirstAccrualType,
+  PolicyType,
   LeavePolicyFormData,
   LeavePolicyStatus,
   LeavePolicyType
@@ -11,7 +14,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Annual Leave Policy",
     leaveTypeName: "Annual",
     leaveTypeEmoji: "🌴",
-    entitlementType: LeavePolicyEntitlementType.ACCRUAL,
+    policyType: PolicyType.ACCRUAL,
     status: LeavePolicyStatus.ACTIVE,
     assignedEmployees: 42
   },
@@ -20,7 +23,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Sick Leave Policy",
     leaveTypeName: "Sick",
     leaveTypeEmoji: "🌡️",
-    entitlementType: LeavePolicyEntitlementType.FIXED,
+    policyType: PolicyType.FIXED,
     status: LeavePolicyStatus.ACTIVE,
     assignedEmployees: 38
   },
@@ -29,7 +32,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Casual Leave Policy",
     leaveTypeName: "Casual",
     leaveTypeEmoji: "👋",
-    entitlementType: LeavePolicyEntitlementType.ACCRUAL,
+    policyType: PolicyType.ACCRUAL,
     status: LeavePolicyStatus.ACTIVE,
     assignedEmployees: 27
   },
@@ -38,7 +41,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Senior Annual Leave",
     leaveTypeName: "Annual",
     leaveTypeEmoji: "🌴",
-    entitlementType: LeavePolicyEntitlementType.FIXED,
+    policyType: PolicyType.FIXED,
     status: LeavePolicyStatus.ACTIVE,
     assignedEmployees: 15
   },
@@ -47,7 +50,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Junior Sick Leave",
     leaveTypeName: "Sick",
     leaveTypeEmoji: "🌡️",
-    entitlementType: LeavePolicyEntitlementType.FIXED,
+    policyType: PolicyType.FIXED,
     status: LeavePolicyStatus.INACTIVE,
     assignedEmployees: 6
   },
@@ -56,7 +59,7 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Trial Casual Leave",
     leaveTypeName: "Casual",
     leaveTypeEmoji: "👋",
-    entitlementType: LeavePolicyEntitlementType.FIXED,
+    policyType: PolicyType.FIXED,
     status: LeavePolicyStatus.ACTIVE,
     assignedEmployees: 11
   },
@@ -65,73 +68,93 @@ export const leavePolicyMockData: LeavePolicyType[] = [
     name: "Unpaid Leave Policy",
     leaveTypeName: "Unpaid",
     leaveTypeEmoji: "🚫",
-    entitlementType: LeavePolicyEntitlementType.FIXED,
+    policyType: PolicyType.FIXED,
     status: LeavePolicyStatus.INACTIVE,
     assignedEmployees: 0
   }
 ];
 
-export const leaveTypeItemList = [
-  { id: "annual", label: "🌴 Annual", value: "Annual" },
-  { id: "sick", label: "🌡️ Sick", value: "Sick" },
-  { id: "casual", label: "👋 Casual", value: "Casual" },
-  { id: "unpaid", label: "🚫 Unpaid", value: "Unpaid" }
-];
+export const MAX_POLICY_NAME_LENGTH = 100;
+
+export const MAX_POLICY_DAYS = 365;
 
 export const accrualFrequencyItemList = [
-  { id: "monthly", label: "Monthly", value: "Monthly" },
-  { id: "quarterly", label: "Quarterly", value: "Quarterly" },
-  { id: "semi-annually", label: "Semi-annually", value: "Semi-annually" },
-  { id: "annually", label: "Annually", value: "Annually" }
+  { id: "daily", label: "Daily", value: AccrualFrequency.DAILY },
+  { id: "weekly", label: "Weekly", value: AccrualFrequency.WEEKLY },
+  {
+    id: "every-other-week",
+    label: "Every other week",
+    value: AccrualFrequency.EVERY_OTHER_WEEK
+  },
+  {
+    id: "twice-a-month",
+    label: "Twice a month",
+    value: AccrualFrequency.TWICE_A_MONTH
+  },
+  { id: "monthly", label: "Monthly", value: AccrualFrequency.MONTHLY },
+  { id: "quarterly", label: "Quarterly", value: AccrualFrequency.QUARTERLY },
+  {
+    id: "twice-a-year",
+    label: "Twice a year",
+    value: AccrualFrequency.TWICE_A_YEAR
+  },
+  { id: "yearly", label: "Yearly", value: AccrualFrequency.YEARLY },
+  {
+    id: "on-anniversary",
+    label: "On anniversary",
+    value: AccrualFrequency.ON_ANNIVERSARY
+  }
 ];
 
-export const resetDateItemList = [
-  { id: "january-1", label: "January 1", value: "January 1" },
-  { id: "april-1", label: "April 1", value: "April 1" },
-  { id: "july-1", label: "July 1", value: "July 1" },
-  { id: "october-1", label: "October 1", value: "October 1" }
+export const carryoverDateItemList = [
+  { id: "january-1", label: "1st of January", value: "01-01" },
+  { id: "april-1", label: "1st of April", value: "04-01" },
+  { id: "july-1", label: "1st of July", value: "07-01" },
+  { id: "october-1", label: "1st of October", value: "10-01" }
 ];
 
 export const firstAccrualItemList = [
   {
     id: "prorated",
     label: "Prorated, based on the accrual period",
-    value: "Prorated, based on the accrual period"
+    value: FirstAccrualType.PRORATED
   },
   {
     id: "full",
-    label: "Full accrual amount",
-    value: "Full accrual amount"
+    label: "Full amount regardless of start date",
+    value: FirstAccrualType.FULL
   }
 ];
 
 export const receiveAccruedTimeItemList = [
   {
-    id: "end-of-period",
-    label: "At the end of the accrual period",
-    value: "At the end of the accrual period"
-  },
-  {
     id: "start-of-period",
     label: "At the start of the accrual period",
-    value: "At the start of the accrual period"
+    value: AccrualTiming.PERIOD_START
+  },
+  {
+    id: "end-of-period",
+    label: "At the end of the accrual period",
+    value: AccrualTiming.PERIOD_END
   }
 ];
 
 export const leavePolicyFormInitialValues: LeavePolicyFormData = {
-  entitlementType: null,
+  policyType: null,
   policyName: "",
   leaveType: "",
+  leaveTypeName: "",
   accrualDays: "",
   accrualFrequency: "",
-  resetDate: "",
   hasWaitingPeriod: false,
+  waitingPeriodDays: "",
   hasAccrualCap: false,
+  accrualCapDays: "",
   canCarryOver: false,
-  carryOverDate: undefined,
+  carryOverDate: "01-01",
   resetNegativeBalances: false,
-  firstAccrual: "Prorated, based on the accrual period",
-  receiveAccruedTime: "At the end of the accrual period",
+  firstAccrual: FirstAccrualType.PRORATED,
+  receiveAccruedTime: AccrualTiming.PERIOD_END,
   totalDaysAllocated: "",
   isCarryForwardEnabled: false,
   maxCarryForwardDays: "",

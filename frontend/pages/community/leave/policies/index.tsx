@@ -1,6 +1,6 @@
 import {
   Breadcrumb,
-  Button,
+  ButtonV2,
   PlusIcon,
   UploadIcon
 } from "@rootcodelabs/skapp-ui";
@@ -31,11 +31,9 @@ const LeavePolicies: NextPage = () => {
         />
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {translateText(["title"])}
-            </h1>
+            <h1 className="h1 text-black">{translateText(["title"])}</h1>
             <div className="flex items-center gap-3">
-              <Button
+              <ButtonV2
                 variant="tertiary"
                 size="md"
                 icon={<UploadIcon />}
@@ -43,8 +41,8 @@ const LeavePolicies: NextPage = () => {
                 id="bulk-upload-leave-policy-btn"
               >
                 {translateText(["bulkUploadBtnTxt"])}
-              </Button>
-              <Button
+              </ButtonV2>
+              <ButtonV2
                 variant="primary"
                 size="md"
                 icon={<PlusIcon />}
@@ -53,10 +51,10 @@ const LeavePolicies: NextPage = () => {
                 onClick={() => router.push(ROUTES.LEAVE.CREATE_LEAVE_POLICY)}
               >
                 {translateText(["createPolicyBtnTxt"])}
-              </Button>
+              </ButtonV2>
             </div>
           </div>
-          <hr className="border-gray-200" />
+          <hr className="border-secondary-accent" />
         </div>
         <LeavePoliciesTable />
       </div>

@@ -1,4 +1,4 @@
-export enum LeavePolicyEntitlementType {
+export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FIXED = "FIXED"
 }
@@ -15,27 +15,58 @@ export enum LeavePolicyWizardSteps {
   SUMMARY = 3
 }
 
+export enum AccrualFrequency {
+  DAILY = "DAILY",
+  WEEKLY = "WEEKLY",
+  EVERY_OTHER_WEEK = "EVERY_OTHER_WEEK",
+  TWICE_A_MONTH = "TWICE_A_MONTH",
+  MONTHLY = "MONTHLY",
+  QUARTERLY = "QUARTERLY",
+  TWICE_A_YEAR = "TWICE_A_YEAR",
+  YEARLY = "YEARLY",
+  ON_ANNIVERSARY = "ON_ANNIVERSARY"
+}
+
+export enum FirstAccrualType {
+  PRORATED = "PRORATED",
+  FULL = "FULL"
+}
+
+export enum AccrualTiming {
+  PERIOD_START = "PERIOD_START",
+  PERIOD_END = "PERIOD_END"
+}
+
 export interface LeavePolicyType {
   policyId: number;
   name: string;
   leaveTypeName: string;
   leaveTypeEmoji: string;
-  entitlementType: LeavePolicyEntitlementType;
+  policyType: PolicyType;
   status: LeavePolicyStatus;
   assignedEmployees: number;
 }
 
+export interface PolicyLeaveTypeType {
+  typeId: number;
+  name: string;
+  emojiCode: string | null;
+  colorCode: string | null;
+}
+
 export interface LeavePolicyFormData {
-  entitlementType: LeavePolicyEntitlementType | null;
+  policyType: PolicyType | null;
   policyName: string;
   leaveType: string;
+  leaveTypeName: string;
   accrualDays: string;
   accrualFrequency: string;
-  resetDate: string;
   hasWaitingPeriod: boolean;
+  waitingPeriodDays: string;
   hasAccrualCap: boolean;
+  accrualCapDays: string;
   canCarryOver: boolean;
-  carryOverDate: Date | undefined;
+  carryOverDate: string;
   resetNegativeBalances: boolean;
   firstAccrual: string;
   receiveAccruedTime: string;
@@ -43,4 +74,31 @@ export interface LeavePolicyFormData {
   isCarryForwardEnabled: boolean;
   maxCarryForwardDays: string;
   carryForwardExpiryDate: Date | undefined;
+}
+
+export type LeavePolicyWizardErrors = Partial<
+  Record<keyof LeavePolicyFormData, string>
+>;
+
+export interface AddLeavePolicyAccrualPayload {
+  accrualDays: number;
+  frequency: string;
+  waitingPeriodDays?: number;
+  accrualCapDays?: number;
+  carryoverEnabled: boolean;
+  carryoverDate?: string;
+  resetNegativeOnCarryover: boolean;
+  firstAccrual: string;
+  accrualTiming: string;
+}
+
+export interface AddLeavePolicyPayload {
+  name: string;
+  leaveTypeId: number;
+  policyType: PolicyType;
+  fixedDaysAllocated?: number;
+  carryForwardEnabled: boolean;
+  maxCarryForwardDays?: number;
+  carryForwardExpiryDate?: string;
+  accrual?: AddLeavePolicyAccrualPayload;
 }
