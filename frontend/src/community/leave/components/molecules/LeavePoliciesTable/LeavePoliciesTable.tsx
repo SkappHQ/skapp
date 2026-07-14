@@ -155,6 +155,7 @@ const LeavePoliciesTable = (): JSX.Element => {
                 : "var(--color-semantic-red-accent)"
             }
             textColor="text-secondary-text"
+            className="w-fit"
           />
         );
       }
