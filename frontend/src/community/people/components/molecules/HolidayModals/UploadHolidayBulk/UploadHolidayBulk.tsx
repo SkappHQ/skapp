@@ -201,7 +201,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
           variant={"primary"}
           onClick={() => handleSaveCalendarBtn()}
           className={getBlinkClass(
-            !!ongoingQuickSetup.SETUP_HOLIDAYS &&
+            ongoingQuickSetup.SETUP_HOLIDAYS &&
               isNewCalendarDetailsValid &&
               newCalenderDetails.acceptedFile?.length > 0
           )}
