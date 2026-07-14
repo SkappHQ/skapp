@@ -160,9 +160,7 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
 
   return (
     <div>
-      <p className="font-normal mb-2">
-        {translateText(["addCsvTitle"])}
-      </p>
+      <p className="font-normal mb-2">{translateText(["addCsvTitle"])}</p>
       <DragAndDropField
         setAttachments={async (acceptedFiles: FileUploadType[]) =>
           await setAttachment({
@@ -196,11 +194,15 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
           {translateText(["cancelBtnText"])}
         </ButtonV2>
         <ButtonV2
-          disabled={!isNewCalendarDetailsValid}
+          disabled={
+            !isNewCalendarDetailsValid ||
+            newCalenderDetails.acceptedFile?.length <= 0
+          }
           variant={"primary"}
           onClick={() => handleSaveCalendarBtn()}
           className={getBlinkClass(
-            isNewCalendarDetailsValid &&
+            !!ongoingQuickSetup.SETUP_HOLIDAYS &&
+              isNewCalendarDetailsValid &&
               newCalenderDetails.acceptedFile?.length > 0
           )}
           icon={<RightArrowIcon />}
