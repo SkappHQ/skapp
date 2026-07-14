@@ -1,6 +1,7 @@
 import { SxProps, Theme } from "@mui/material";
 import { NextRequest, NextResponse } from "next/server";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
@@ -8,6 +9,7 @@ import {
   matchInvalidEmailCharactersSearchPattern,
   removeNonAlphaNumericCharactersPattern
 } from "~community/common/regex/regexPatterns";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
   FileUploadType
@@ -19,11 +21,8 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
-import { AdminTypes } from "~community/common/types/AuthTypes";
-
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
-import { characterLengths } from "~community/common/constants/stringConstants";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -567,21 +566,22 @@ export const isEnterpriseMode = (): boolean => {
   return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
 
+const IOS_UA_REGEX = /iPhone|iPad|iPod/i;
+const MOBILE_UA_REGEX = /Android|iPhone|iPad|iPod/i;
+
 export const isMobileDevice = (): boolean => {
-  return /Android|iPhone|iPad|iPod/i.test(
-    globalThis.navigator?.userAgent ?? ""
+  return (
+    MOBILE_UA_REGEX.test(globalThis.navigator?.userAgent ?? "") || isIOSDevice()
   );
 };
 
 export const isIOSDevice = (): boolean => {
   const userAgent = globalThis.navigator?.userAgent ?? "";
-  if (/iPhone|iPad|iPod/i.test(userAgent)) {
+  if (IOS_UA_REGEX.test(userAgent)) {
     return true;
   }
-  // iPadOS 13+ reports a desktop ("Macintosh") user agent, so fall back to
-  // detecting a Mac platform that also reports touch support.
   return (
-    globalThis.navigator?.platform === "MacIntel" &&
+    /Macintosh/.test(userAgent) &&
     (globalThis.navigator?.maxTouchPoints ?? 0) > 1
   );
 };
@@ -595,7 +595,7 @@ export const replaceTabQueryParam = (path: string, tabId: string): void => {
 
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
   return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
-}
+};
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
