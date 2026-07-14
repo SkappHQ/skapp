@@ -36,6 +36,10 @@ export const leaveTypeEndPoints = {
 
 export const leavePolicyEndPoints = {
   ADD_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policies`,
+  UPDATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}`,
+  DEACTIVATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}/deactivate`,
   GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policies/leave-types`,
   GET_LEAVE_POLICIES: (
     searchKeyword: string,

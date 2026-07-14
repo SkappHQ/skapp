@@ -110,3 +110,7 @@ export interface AddLeavePolicyPayload {
   carryForwardExpiryDate?: string;
   accrual?: AddLeavePolicyAccrualPayload;
 }
+
+export interface UpdateLeavePolicyPayload {
+  name: string;
+}

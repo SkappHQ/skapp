@@ -20,6 +20,8 @@ import {
   useGetLeavePoliciesInfinite,
   useGetPolicyLeaveTypes
 } from "~community/leave/api/LeavePolicyApi";
+import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
+import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
 import {
   LEAVE_POLICY_PAGE_SIZE,
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS
@@ -38,6 +40,12 @@ const LeavePoliciesTable = (): JSX.Element => {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
+  const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
+  const [editingPolicy, setEditingPolicy] = useState<LeavePolicyType | null>(
+    null
+  );
+  const [deactivatingPolicy, setDeactivatingPolicy] =
+    useState<LeavePolicyType | null>(null);
 
   const debouncedSearch = useDebounce(
     searchTerm,
@@ -169,17 +177,25 @@ const LeavePoliciesTable = (): JSX.Element => {
       return (
         <KebabMenu
           id={`leave-policy-kebab-menu-${policy.policyId}`}
+          isOpen={openKebabMenuId === policy.policyId}
+          onToggle={(isOpen: boolean) =>
+            setOpenKebabMenuId(isOpen ? policy.policyId : null)
+          }
           menuItems={[
             {
               id: `leave-policy-edit-${policy.policyId}`,
               label: translateText(["menuEdit"]),
-              onClick: () => {}
+              onClick: () => setEditingPolicy(policy)
             },
-            {
-              id: `leave-policy-delete-${policy.policyId}`,
-              label: translateText(["menuDelete"]),
-              onClick: () => {}
-            }
+            ...(policy.status === LeavePolicyStatus.ACTIVE
+              ? [
+                  {
+                    id: `leave-policy-deactivate-${policy.policyId}`,
+                    label: translateText(["menuDeactivate"]),
+                    onClick: () => setDeactivatingPolicy(policy)
+                  }
+                ]
+              : [])
           ]}
         />
       );
@@ -259,6 +275,16 @@ const LeavePoliciesTable = (): JSX.Element => {
         noSearchResultsState={{
           title: translateText(["noSearchResultsTitle"])
         }}
+      />
+      <EditLeavePolicyModal
+        policy={editingPolicy}
+        isOpen={!!editingPolicy}
+        onClose={() => setEditingPolicy(null)}
+      />
+      <DeactivateLeavePolicyModal
+        policy={deactivatingPolicy}
+        isOpen={!!deactivatingPolicy}
+        onClose={() => setDeactivatingPolicy(null)}
       />
     </div>
   );
