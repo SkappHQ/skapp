@@ -191,7 +191,7 @@ export const useGetDealsByCompany = (
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
+    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId, size),
     queryFn: ({ pageParam }) =>
       fetchDealsByCompany({ page: pageParam, size, companyId }),
     getNextPageParam: (lastPage) => {

@@ -100,6 +100,9 @@ const SidePanelCompanyContacts: React.FC<{
       data={contacts ?? []}
       hasMore={hasNextPage}
       onLoadMore={onFetchNextPage}
+      infiniteScrollLoadingMessage={translateText([
+        "infiniteScrollLoadingMessage"
+      ])}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
       noDataState={{
         icon: <SearchIcon />,
