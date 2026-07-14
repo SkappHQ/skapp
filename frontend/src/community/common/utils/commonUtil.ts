@@ -573,6 +573,19 @@ export const isMobileDevice = (): boolean => {
   );
 };
 
+export const isIOSDevice = (): boolean => {
+  const userAgent = globalThis.navigator?.userAgent ?? "";
+  if (/iPhone|iPad|iPod/i.test(userAgent)) {
+    return true;
+  }
+  // iPadOS 13+ reports a desktop ("Macintosh") user agent, so fall back to
+  // detecting a Mac platform that also reports touch support.
+  return (
+    globalThis.navigator?.platform === "MacIntel" &&
+    (globalThis.navigator?.maxTouchPoints ?? 0) > 1
+  );
+};
+
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
   const [basePath, query] = path.split("?");
   const params = new URLSearchParams(query);
