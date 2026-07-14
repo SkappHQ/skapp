@@ -3,7 +3,7 @@
     "pageHead": "Attendance | Skapp",
     "title": "Attendance Configurations",
     "clockInSettingsTitle": "Clock in Settings",
-    "clockInSettingsDescription": "Configure the days on which users are eligible to log their time.",
+    "clockInSettingsDescription": "Configure how and on which days users can log their time.",
     "isClockInOnNonWorkingDays": "Clock in on non working days",
     "clockInOnHolidays": "Clock in on company holidays",
     "clockInOnLeaveDays": "Clock in on leave days",
@@ -20,7 +20,18 @@
     "geoFencingSettingsDescription": "Turn on geofencing to restrict clock ins to a specific location.",
     "isGeoFencingEnabled": "Geo fencing",
     "configureWorkLocationsLink": "Configure work locations",
-    "proTier": "Pro"
+    "proTier": "Pro",
+    "isClockInClockOutOnly": "Clock in / clock out only (no breaks)",
+    "fingerprintSettingsTitle": "Fingerprint Attendance",
+    "fingerprintSettingsDescription": "Record fingerprint device punches as attendance. The first punch of the day counts as the clock in and the last punch is finalized as the clock out at the end of the day.",
+    "isFingerprintAttendanceEnabled": "Fingerprint attendance",
+    "fingerprintDevicesTitle": "Fingerprint Devices",
+    "fingerprintDevicesDescription": "Registered fingerprint devices and their sync status.",
+    "fingerprintDevicesEmpty": "No fingerprint devices have connected yet.",
+    "fingerprintDeviceAvailable": "Available",
+    "fingerprintDeviceOffline": "Offline",
+    "fingerprintDeviceLastSynced": "Last synced",
+    "fingerprintDeviceNeverSynced": "never"
   },
   "timesheet": {
     "myTimesheet": {

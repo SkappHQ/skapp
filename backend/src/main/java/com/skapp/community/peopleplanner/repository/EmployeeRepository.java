@@ -108,4 +108,10 @@ public interface EmployeeRepository {
 
 	List<Employee> findAllActiveEmployeesExcludingRole(Role excludedRole, Set<WorkLocation> workLocations);
 
+	/**
+	 * Targeted single-column update: avoids loading/flushing the whole entity (whose
+	 * field-encrypted columns would be re-encrypted on a full entity save).
+	 */
+	void updateLastClockInDate(Long employeeId, LocalDate lastClockInDate);
+
 }

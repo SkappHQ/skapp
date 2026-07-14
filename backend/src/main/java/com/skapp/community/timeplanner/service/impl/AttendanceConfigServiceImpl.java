@@ -12,6 +12,7 @@ import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
+import com.skapp.community.timeplanner.service.AttendanceModeService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	private final MessageUtil messageUtil;
 
 	private final UserService userService;
+
+	private final AttendanceModeService attendanceModeService;
 
 	@Override
 	public void setDefaultAttendanceConfig() {
@@ -61,6 +64,16 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
 
+		if (attendanceConfigRequestDto.getIsClockInClockOutOnly() != null) {
+			updateOrCreateConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY,
+					String.valueOf(attendanceConfigRequestDto.getIsClockInClockOutOnly()));
+		}
+
+		if (attendanceConfigRequestDto.getIsFingerprintAttendanceEnabled() != null) {
+			updateOrCreateConfig(AttendanceConfigType.FINGERPRINT_ATTENDANCE_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsFingerprintAttendanceEnabled()));
+		}
+
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
 				false);
@@ -84,9 +97,12 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		log.info("getAllAttendanceConfigs: execution started");
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
+		boolean isClockInClockOutOnly = attendanceModeService.isClockInClockOutOnly();
+
 		if (userService.getCurrentUserRoles().contains(AuthUtil.withRolePrefix(Role.ATTENDANCE_ADMIN))) {
 
 			AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
+			dto.setIsClockInClockOutOnly(isClockInClockOutOnly);
 
 			log.info("getAllAttendanceConfigs: execution ended");
 			return new ResponseEntityDto(false, dto);
@@ -99,7 +115,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			.orElse(false);
 
 		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
-				isGeoFencingEnabled);
+				isGeoFencingEnabled, isClockInClockOutOnly, null);
 
 		log.info("getAllAttendanceConfigs: execution ended");
 
@@ -107,7 +123,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	}
 
 	private static AttendanceConfigRequestDto getAttendanceConfigRequestDto(List<AttendanceConfig> attendanceConfigs) {
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
+		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false, false,
+				false);
 
 		for (AttendanceConfig config : attendanceConfigs) {
 			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
@@ -117,6 +134,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
 				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
 				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				case CLOCK_IN_OUT_ONLY -> dto.setIsClockInClockOutOnly(value);
+				case FINGERPRINT_ATTENDANCE_ENABLED -> dto.setIsFingerprintAttendanceEnabled(value);
 			}
 		}
 

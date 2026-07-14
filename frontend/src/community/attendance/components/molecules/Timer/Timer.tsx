@@ -1,6 +1,7 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { JSX, useCallback, useEffect, useState } from "react";
 
+import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import PlayButton from "~community/attendance/components/molecules/PlayButton/PlayButton";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
@@ -29,6 +30,10 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
   const translateText = useTranslator("attendanceModule", "timeWidget");
+
+  const { data: attendanceConfig } = useGetAttendanceConfiguration();
+  const isClockInClockOutOnly =
+    attendanceConfig?.isClockInClockOutOnly === true;
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
@@ -84,7 +89,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
             : "00:00:00"}
         </Typography>
       )}
-      <PlayButton />
+      {!isClockInClockOutOnly && <PlayButton />}
       <Tooltip
         title={translateText(["clockOut"])}
         placement={TooltipPlacement.BOTTOM}

@@ -68,5 +68,10 @@ jwt:
 domain:
   base: ${DOMAIN_BASE:localhost}
 
+attendance:
+  clock-in-out-only:
+    enabled: false # ops override: restrict attendance to clock in / clock out only (admins toggle per tenant in the UI)
+    tenants: # enterprise ops override: tenant names always restricted, e.g. boardpac
+
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}

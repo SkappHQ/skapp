@@ -19,4 +19,8 @@ public class AttendanceConfigRequestDto {
 
 	private Boolean isGeoFencingEnabled;
 
+	private Boolean isClockInClockOutOnly;
+
+	private Boolean isFingerprintAttendanceEnabled;
+
 }

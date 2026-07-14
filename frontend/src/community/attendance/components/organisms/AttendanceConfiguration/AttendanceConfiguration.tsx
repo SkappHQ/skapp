@@ -15,6 +15,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import FingerprintDevices from "~enterprise/configurations/components/organisms/FingerprintDevices/FingerprintDevices";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
 
 import styles from "./styles";
@@ -126,6 +127,17 @@ const AttendanceConfiguration = (): JSX.Element => {
                   handleSwitchChange("isClockInOnLeaveDays", checked)
                 }
               />
+              <SwitchRow
+                labelId="clock-in-out-only"
+                label={
+                  attendanceConfigurations(["isClockInClockOutOnly"]) ?? ""
+                }
+                checked={config.isClockInClockOutOnly ?? false}
+                wrapperStyles={classes.switchWrapper}
+                onChange={(checked) =>
+                  handleSwitchChange("isClockInClockOutOnly", checked)
+                }
+              />
             </>
           )}
         </Box>
@@ -158,6 +170,37 @@ const AttendanceConfiguration = (): JSX.Element => {
           initialConfig={initialConfig}
           onSwitchChange={handleSwitchChange}
         />
+
+        <Typography
+          variant="h2"
+          sx={{ ...classes.sectionTitle, marginTop: "2rem" }}
+        >
+          {attendanceConfigurations(["fingerprintSettingsTitle"]) ?? ""}
+        </Typography>
+        <Typography sx={classes.sectionDescription}>
+          {attendanceConfigurations(["fingerprintSettingsDescription"]) ?? ""}
+        </Typography>
+
+        <Box sx={classes.container}>
+          {config && (
+            <SwitchRow
+              labelId="fingerprint-attendance-enabled"
+              label={
+                attendanceConfigurations(["isFingerprintAttendanceEnabled"]) ??
+                ""
+              }
+              checked={config.isFingerprintAttendanceEnabled ?? false}
+              wrapperStyles={classes.switchWrapper}
+              onChange={(checked) =>
+                handleSwitchChange("isFingerprintAttendanceEnabled", checked)
+              }
+            />
+          )}
+        </Box>
+
+        {initialConfig?.isFingerprintAttendanceEnabled && (
+          <FingerprintDevices />
+        )}
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>
           <ButtonV2
