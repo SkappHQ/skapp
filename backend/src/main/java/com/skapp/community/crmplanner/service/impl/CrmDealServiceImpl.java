@@ -387,8 +387,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String existingOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
-			return FractionalIndexUtil.generateKeyBetween(null, existingOrderIndex);
+			String minOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
+			return FractionalIndexUtil.generateKeyBetween(null, minOrderIndex);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
