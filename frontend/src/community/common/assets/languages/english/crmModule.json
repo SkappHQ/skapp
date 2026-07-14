@@ -220,7 +220,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelAddCompany": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "companyName": "Company Name",
@@ -229,7 +229,7 @@
         "address": "Address",
         "industry": "Industry",
         "save": "Save",
-        "cancelAddCompany": "Cancel Add Company"
+        "cancel": "Cancel Add Company"
       },
       "validations": {
         "name": "Company name is required",
@@ -333,7 +333,7 @@
       },
       "buttons": {
         "save": "Save",
-        "cancelEditCompany": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "companyName": "Company Name",
@@ -342,7 +342,7 @@
         "address": "Address",
         "industry": "Industry",
         "save": "Save",
-        "cancelEditCompany": "Cancel Edit Company"
+        "cancel": "Cancel Edit Company"
       },
       "validations": {
         "name": "Company name is required",
