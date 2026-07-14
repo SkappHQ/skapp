@@ -24,6 +24,7 @@ import SidePanelHeaderActionsSkeleton from "~community/crm/components/molecules/
 import SidePanelHeaderSkeleton from "~community/crm/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { DEFAULT_PAGE_SIZE as CONTACTS_PAGE_SIZE } from "~community/crm/constants/contactConstants";
+import { DEAL_PAGE_SIZE } from "~community/crm/constants/dealConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
@@ -96,18 +97,30 @@ const CompanySidePanel: FC = () => {
     [openTaskData, completedTasks]
   );
 
-  const { data: dealData, isLoading: isDealLoading } = useGetDealsByCompany(
-    selectedCompanyId!,
-    hasSelectedCompany
+  const {
+    data: dealPages,
+    isLoading: isDealLoading,
+    fetchNextPage: fetchNextDealsPage,
+    hasNextPage: hasNextDealsPage,
+    isFetchingNextPage: isFetchingNextDealsPage
+  } = useGetDealsByCompany(selectedCompanyId!, DEAL_PAGE_SIZE, hasSelectedCompany);
+
+  const dealItems = useMemo(
+    () => dealPages?.pages.flatMap((page) => page.items) ?? [],
+    [dealPages]
   );
 
-  const { data: contactPages, isLoading: isContactLoading } =
-    useGetContactMetrics(
-      "",
-      CONTACTS_PAGE_SIZE,
-      selectedCompanyId,
-      hasSelectedCompany
-    );
+  const {
+    data: contactPages,
+    isLoading: isContactLoading,
+    fetchNextPage: fetchNextContactsPage,
+    hasNextPage: hasNextContactsPage
+  } = useGetContactMetrics(
+    "",
+    CONTACTS_PAGE_SIZE,
+    selectedCompanyId,
+    hasSelectedCompany
+  );
 
   const contactItems = useMemo(
     () => contactPages?.pages.flatMap((page) => page.items) ?? [],
@@ -125,7 +138,7 @@ const CompanySidePanel: FC = () => {
       !selectedCompanyId ||
       !openTaskData ||
       !completedTaskData ||
-      !dealData ||
+      !dealPages ||
       !contactPages
     ) {
       return;
@@ -136,16 +149,17 @@ const CompanySidePanel: FC = () => {
     updateCompany({
       ...company,
       tasks: taskData,
-      deals: dealData.items,
+      deals: dealItems,
       contacts: contactItems
     });
   }, [
     selectedCompanyId,
     openTaskData,
     completedTaskData,
-    dealData,
+    dealPages,
     contactPages,
     taskData,
+    dealItems,
     contactItems
   ]);
 
@@ -195,7 +209,14 @@ const CompanySidePanel: FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={selectedCompany?.deals ?? []} />;
+        return (
+          <SidePanelDealSection
+            deals={selectedCompany?.deals ?? []}
+            hasNextPage={hasNextDealsPage}
+            isFetchingNextPage={isFetchingNextDealsPage}
+            onFetchNextPage={fetchNextDealsPage}
+          />
+        );
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
@@ -207,7 +228,11 @@ const CompanySidePanel: FC = () => {
         );
       case SidePanelTabEnum.CONTACTS:
         return (
-          <SidePanelCompanyContacts contacts={selectedCompany?.contacts} />
+          <SidePanelCompanyContacts
+            contacts={selectedCompany?.contacts}
+            hasNextPage={hasNextContactsPage}
+            onFetchNextPage={fetchNextContactsPage}
+          />
         );
 
       default:

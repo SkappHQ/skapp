@@ -167,19 +167,38 @@ export const useSearchCompaniesByDomain = (
   });
 };
 
-const fetchDealsByCompany = async (
-  companyId: number
-): Promise<CrmDealPaginatedResponse> => {
+interface DealsByCompanySearchParams {
+  page: number;
+  size: number;
+  companyId: number;
+}
+
+const fetchDealsByCompany = async ({
+  page,
+  size,
+  companyId
+}: DealsByCompanySearchParams): Promise<CrmDealPaginatedResponse> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
-    params: { companyId }
+    params: { page, size, companyId }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
-  return useQuery({
+export const useGetDealsByCompany = (
+  companyId: number,
+  size: number,
+  enabled: boolean
+) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
     queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
-    queryFn: () => fetchDealsByCompany(companyId),
+    queryFn: ({ pageParam }) =>
+      fetchDealsByCompany({ page: pageParam, size, companyId }),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
     enabled
   });
 };

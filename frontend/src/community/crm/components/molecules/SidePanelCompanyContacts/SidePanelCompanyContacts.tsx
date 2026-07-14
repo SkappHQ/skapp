@@ -8,7 +8,9 @@ import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
 
 const SidePanelCompanyContacts: React.FC<{
   contacts?: CrmContact[] | null;
-}> = ({ contacts }) => {
+  hasNextPage?: boolean;
+  onFetchNextPage?: () => void;
+}> = ({ contacts, hasNextPage = false, onFetchNextPage = () => {} }) => {
   const translateText = useTranslator(
     "crmModule",
     "companies",
@@ -96,6 +98,8 @@ const SidePanelCompanyContacts: React.FC<{
       className="w-full"
       columns={columns as TableColumn<any>[]}
       data={contacts ?? []}
+      hasMore={hasNextPage}
+      onLoadMore={onFetchNextPage}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
       noDataState={{
         icon: <SearchIcon />,
