@@ -46,11 +46,7 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
 
       <div className="flex flex-col border border-secondary-accent rounded-xl p-3 mt-4">
         <PropertyRow label={translateText(["assignedTo"])}>
-          <OwnerAvatarChip
-            id={String(task.owner.employeeId)}
-            owner={task.owner}
-            size="xs"
-          />
+          <OwnerAvatarChip owner={task.owner} size="xs" />
         </PropertyRow>
 
         <PropertyRow label={translateText(["priority"])}>
