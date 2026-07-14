@@ -2,6 +2,7 @@ import AttendanceConfiguration from "~community/attendance/components/organisms/
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
 import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
+import LeaveConfigurations from "~community/configurations/components/organisms/LeaveConfigurations/LeaveConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import WorkLocationsTable from "~community/configurations/components/organisms/WorkLocationsTable/WorkLocationsTable";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
@@ -34,6 +35,13 @@ export const getConfigurationTabs = (
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.ATTENDANCE_ADMIN],
       component: <AttendanceConfiguration />,
       position: 1
+    },
+    {
+      id: "leave",
+      label: translateText(["tabs", "leave"]),
+      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN],
+      component: <LeaveConfigurations />,
+      position: 1.5
     },
     {
       id: "user-roles",
