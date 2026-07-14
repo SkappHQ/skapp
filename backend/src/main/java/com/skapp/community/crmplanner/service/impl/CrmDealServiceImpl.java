@@ -387,11 +387,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
-			if (existingOrderIndex != null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
-			}
-			return FractionalIndexUtil.generateKeyBetween(null, null);
+			String existingOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
+			return FractionalIndexUtil.generateKeyBetween(null, existingOrderIndex);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
