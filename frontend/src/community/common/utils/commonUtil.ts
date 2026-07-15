@@ -567,11 +567,13 @@ export const isEnterpriseMode = (): boolean => {
 };
 
 const IOS_UA_REGEX = /iPhone|iPad|iPod/i;
-const MOBILE_UA_REGEX = /Android|iPhone|iPad|iPod/i;
+const ANDROID_UA_REGEX = /Android/i;
+const MAC_UA_REGEX = /Macintosh/i;
 
 export const isMobileDevice = (): boolean => {
   return (
-    MOBILE_UA_REGEX.test(globalThis.navigator?.userAgent ?? "") || isIOSDevice()
+    ANDROID_UA_REGEX.test(globalThis.navigator?.userAgent ?? "") ||
+    isIOSDevice()
   );
 };
 
@@ -581,7 +583,7 @@ export const isIOSDevice = (): boolean => {
     return true;
   }
   return (
-    /Macintosh/.test(userAgent) &&
+    MAC_UA_REGEX.test(userAgent) &&
     (globalThis.navigator?.maxTouchPoints ?? 0) > 1
   );
 };
