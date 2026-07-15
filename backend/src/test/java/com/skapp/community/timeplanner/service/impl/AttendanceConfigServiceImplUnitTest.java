@@ -8,7 +8,6 @@ import com.skapp.community.timeplanner.constant.TimeMessageConstant;
 import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
-import com.skapp.community.timeplanner.service.AttendanceModeService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,9 +42,6 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Mock
 	private UserService userService;
-
-	@Mock
-	private AttendanceModeService attendanceModeService;
 
 	private MessageUtil originalMessageUtil;
 

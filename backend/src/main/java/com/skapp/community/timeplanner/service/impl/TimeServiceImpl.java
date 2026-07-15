@@ -91,7 +91,6 @@ import com.skapp.community.timeplanner.repository.TimeRequestDao;
 import com.skapp.community.timeplanner.repository.TimeSlotDao;
 import com.skapp.community.timeplanner.repository.projection.EmployeeTimeRecord;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
-import com.skapp.community.timeplanner.service.AttendanceModeService;
 import com.skapp.community.timeplanner.service.AttendanceNotificationService;
 import com.skapp.community.timeplanner.service.TimeEmailService;
 import com.skapp.community.timeplanner.service.TimeService;
@@ -161,8 +160,6 @@ public class TimeServiceImpl implements TimeService {
 	private final TimeSlotDao timeSlotDao;
 
 	protected final AttendanceConfigService attendanceConfigService;
-
-	protected final AttendanceModeService attendanceModeService;
 
 	private final LeaveRequestDao leaveRequestDao;
 
@@ -538,7 +535,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else if (addTimeRecordDto.getRecordActionType() == TimeRecordActionTypes.RESUME
 				|| addTimeRecordDto.getRecordActionType() == TimeRecordActionTypes.PAUSE) {
-			if (attendanceModeService.isClockInClockOutOnly()) {
+			if (attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY)) {
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_PAUSE_RESUME_NOT_AVAILABLE);
 			}
 			Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(),

@@ -12,7 +12,6 @@ import com.skapp.community.timeplanner.model.AttendanceConfig;
 import com.skapp.community.timeplanner.payload.request.AttendanceConfigRequestDto;
 import com.skapp.community.timeplanner.repository.AttendanceConfigDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
-import com.skapp.community.timeplanner.service.AttendanceModeService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +30,6 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	private final MessageUtil messageUtil;
 
 	private final UserService userService;
-
-	private final AttendanceModeService attendanceModeService;
 
 	@Override
 	public void setDefaultAttendanceConfig() {
@@ -97,22 +94,16 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		log.info("getAllAttendanceConfigs: execution started");
 		List<AttendanceConfig> attendanceConfigs = attendanceConfigDao.findAll();
 
-		boolean isClockInClockOutOnly = attendanceModeService.isClockInClockOutOnly();
-
 		if (userService.getCurrentUserRoles().contains(AuthUtil.withRolePrefix(Role.ATTENDANCE_ADMIN))) {
 
 			AttendanceConfigRequestDto dto = getAttendanceConfigRequestDto(attendanceConfigs);
-			dto.setIsClockInClockOutOnly(isClockInClockOutOnly);
 
 			log.info("getAllAttendanceConfigs: execution ended");
 			return new ResponseEntityDto(false, dto);
 		}
 
-		boolean isGeoFencingEnabled = attendanceConfigs.stream()
-			.filter(c -> c.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED)
-			.findFirst()
-			.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
-			.orElse(false);
+		boolean isGeoFencingEnabled = isConfigEnabled(attendanceConfigs, AttendanceConfigType.GEO_FENCING_ENABLED);
+		boolean isClockInClockOutOnly = isConfigEnabled(attendanceConfigs, AttendanceConfigType.CLOCK_IN_OUT_ONLY);
 
 		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
 				isGeoFencingEnabled, isClockInClockOutOnly, null);
@@ -149,6 +140,21 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_ATTENDANCE_CONFIG_NOT_FOUND);
 		}
 		return Boolean.parseBoolean(config.getAttendanceConfigValue());
+	}
+
+	@Override
+	public boolean isAttendanceConfigEnabled(AttendanceConfigType attendanceConfigType) {
+		AttendanceConfig config = attendanceConfigDao.findByAttendanceConfigType(attendanceConfigType);
+		return config != null && Boolean.parseBoolean(config.getAttendanceConfigValue());
+	}
+
+	private static boolean isConfigEnabled(List<AttendanceConfig> attendanceConfigs,
+			AttendanceConfigType attendanceConfigType) {
+		return attendanceConfigs.stream()
+			.filter(c -> c.getAttendanceConfigType() == attendanceConfigType)
+			.findFirst()
+			.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
+			.orElse(false);
 	}
 
 }
