@@ -156,10 +156,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 			if (companyId != null) {
 				CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
 					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-				contact.setCompany(company);
+				updateContactCompany(contact, company);
 			}
 			else {
-				contact.setCompany(null);
+				updateContactCompany(contact, null);
 			}
 		}
 

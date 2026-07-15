@@ -49,6 +49,8 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -496,6 +498,31 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact companyId - Cascades to linked deal and task, and clears on unlink")
+	void editContact_CompanyId_CascadesToDealAndTask() throws Exception {
+		Long companyAId = savedCompany("Company A").getId();
+		Long companyBId = savedCompany("Company B").getId();
+		Long contactId = savedContact(companyAId, "cascade@example.com").getId();
+
+		CrmDeal deal = savedDeal(contactId, companyAId, savedStage(CrmDealStageType.OPEN), "1000");
+		CrmTask task = savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		task.setCompany(crmCompanyDao.getReferenceById(companyAId));
+		crmTaskDao.save(task);
+
+		performPatchRawRequest(contactId, "{\"companyId\": " + companyBId + "}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(companyBId, crmDealDao.findById(deal.getId()).orElseThrow().getCompany().getId());
+		assertEquals(companyBId, crmTaskDao.findById(task.getId()).orElseThrow().getCompany().getId());
+
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print()).andExpect(status().isOk());
+
+		assertNull(crmDealDao.findById(deal.getId()).orElseThrow().getCompany());
+		assertNull(crmTaskDao.findById(task.getId()).orElseThrow().getCompany());
 	}
 
 	@Test
