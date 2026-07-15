@@ -29,8 +29,7 @@
     "fingerprintDevicesDescription": "Registered fingerprint devices and their sync status.",
     "fingerprintDevicesEmpty": "No fingerprint devices have connected yet.",
     "fingerprintDevicesError": "Couldn't load fingerprint devices. Please try again.",
-    "fingerprintDeviceAvailable": "Available",
-    "fingerprintDeviceOffline": "Offline",
+    "fingerprintDeviceLastOnline": "Last online",
     "fingerprintDeviceLastSynced": "Last synced",
     "fingerprintDeviceNeverSynced": "never"
   },
