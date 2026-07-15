@@ -68,10 +68,5 @@ jwt:
 domain:
   base: ${DOMAIN_BASE:localhost}
 
-attendance:
-  clock-in-out-only:
-    enabled: false
-    tenants:
-
 encryptDecryptAlgorithm:
   secret: ${ENCRYPT_DECRYPT_SECRET}
