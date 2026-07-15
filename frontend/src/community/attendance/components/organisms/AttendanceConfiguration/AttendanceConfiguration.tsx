@@ -175,10 +175,7 @@ const AttendanceConfiguration = (): JSX.Element => {
 
         {isEnterprise && (
           <>
-            <Typography
-              variant="h2"
-              sx={{ ...classes.sectionTitle, marginTop: "2rem" }}
-            >
+            <Typography variant="h2" sx={classes.sectionTitle}>
               {attendanceConfigurations(["fingerprintSettingsTitle"])}
             </Typography>
             <Typography sx={classes.sectionDescription}>
