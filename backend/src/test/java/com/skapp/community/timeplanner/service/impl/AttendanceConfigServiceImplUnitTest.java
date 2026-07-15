@@ -139,4 +139,27 @@ class AttendanceConfigServiceImplUnitTest {
 		assertTrue(attendanceConfigService.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS));
 	}
 
+	@Test
+	void isAttendanceConfigEnabled_whenConfigAbsent_returnsFalse() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY)).thenReturn(null);
+
+		assertFalse(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
+	}
+
+	@Test
+	void isAttendanceConfigEnabled_whenConfigEnabled_returnsTrue() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY, "true"));
+
+		assertTrue(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
+	}
+
+	@Test
+	void isAttendanceConfigEnabled_whenConfigDisabled_returnsFalse() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY, "false"));
+
+		assertFalse(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
+	}
+
 }

@@ -700,6 +700,7 @@ public class TimeServiceImpl implements TimeService {
 		slotToUpdate.setEndTime(dateInEpochMillis);
 		slotToUpdate.setActiveRightNow(false);
 		timeRecord.get().setClockOutTime(dateInEpochMillis);
+		timeRecord.get().setClockOutSource(TimeRecordSource.WEB);
 
 		updateWorkHours(timeRecord.get(), slotToUpdate, slotToUpdate.getSlotType());
 		timeRecord.get().setCompleted(true);
