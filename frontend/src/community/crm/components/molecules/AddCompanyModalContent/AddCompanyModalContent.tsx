@@ -29,6 +29,25 @@ const AddCompanyModalContent: React.FC = () => {
     setIsCompanyModalOpen(false);
   };
 
+  const handleSuccess = () => {
+    handleCloseModal();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
+    });
+  };
+
+  const handleError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
+    });
+  };
+
   const initialValues: CrmCompanyAddFormTypes = {
     name: "",
     industry: CrmIndustryEnum.NONE,
@@ -38,23 +57,8 @@ const AddCompanyModalContent: React.FC = () => {
   };
 
   const { mutate: createNewCompany, isPending } = useCreateNewCompany(
-    () => {
-      handleCloseModal();
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["toastMessages", "successTitle"]),
-        description: translateText(["toastMessages", "successDescription"])
-      });
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toastMessages", "errorTitle"]),
-        description: translateText(["toastMessages", "errorDescription"])
-      });
-    }
+    handleSuccess,
+    handleError
   );
 
   const createCompany = (values: CrmCompanyAddFormTypes) => {

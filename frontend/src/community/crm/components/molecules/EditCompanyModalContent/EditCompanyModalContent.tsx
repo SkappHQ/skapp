@@ -48,25 +48,29 @@ const EditCompanyModalContent: React.FC = () => {
     contactNumber: selectedCompany?.contactNumber || null
   };
 
+  const handleSuccess = (data: CrmCompany) => {
+    updateCompany(data);
+    handleCloseModal();
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
+    });
+  };
+
+  const handleError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
+    });
+  };
+
   const { mutate: editCompany, isPending } = useEditCompany(
-    (data: CrmCompany) => {
-      updateCompany(data);
-      handleCloseModal();
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["toastMessages", "successTitle"]),
-        description: translateText(["toastMessages", "successDescription"])
-      });
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toastMessages", "errorTitle"]),
-        description: translateText(["toastMessages", "errorDescription"])
-      });
-    }
+    handleSuccess,
+    handleError
   );
 
   const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
