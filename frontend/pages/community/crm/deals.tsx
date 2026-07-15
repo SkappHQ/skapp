@@ -8,6 +8,7 @@ import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/S
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
@@ -17,10 +18,13 @@ const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { openCrmSidePanel, selectedDealId } = useCrmStore((store) => ({
-    openCrmSidePanel: store.openCrmSidePanel,
-    selectedDealId: store.selectedDealId
-  }));
+  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
+    (store) => ({
+      openCrmSidePanel: store.openCrmSidePanel,
+      selectedDealId: store.selectedDealId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen
+    })
+  );
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () =>
@@ -39,10 +43,13 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapper>
+        <SidePanelWrapper
+          isOpen={isCrmSidePanelOpen}
+        >
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
+        <TaskModalController />
         <DealsSection />
       </>
     </ContentLayout>

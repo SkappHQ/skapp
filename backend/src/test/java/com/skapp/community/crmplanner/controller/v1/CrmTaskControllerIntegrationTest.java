@@ -27,6 +27,7 @@ import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,7 @@ import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -1130,7 +1132,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_UpdateNotes_ReturnsOk() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes("Updated notes content");
+		dto.setNotes(JsonNullable.of("Updated notes content"));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
@@ -1186,7 +1188,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_NotesTooLong_ReturnsBadRequest() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setNotes("a".repeat(1001));
+		dto.setNotes(JsonNullable.of("a".repeat(1001)));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -1214,7 +1216,7 @@ class CrmTaskControllerIntegrationTest {
 	void editTask_NonExistentContact_ReturnsBadRequest() throws Exception {
 		CrmTask task = savedTask();
 		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
-		dto.setContactId(999999L);
+		dto.setContactId(JsonNullable.of(999999L));
 
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -1327,6 +1329,72 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Edit task with explicit null contactId - Clears contact and derived company")
+	void editTask_NullContactId_ClearsContactAndCompany() throws Exception {
+		CrmCompany company = savedCompany("Unlink Co");
+
+		CrmContact contact = new CrmContact();
+		contact.setName("Unlink Contact");
+		contact.setEmail("unlink.task@example.com");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(company);
+		contact = crmContactDao.save(contact);
+
+		CrmTask task = savedTask("Unlink Task", false, false, contact.getId(), null, company);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setContactId(JsonNullable.of(null));
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertNull(updated.getContact());
+		assertNull(updated.getCompany());
+	}
+
+	@Test
+	@DisplayName("Edit task with explicit null dealId - Clears the deal only")
+	void editTask_NullDealId_ClearsDealOnly() throws Exception {
+		CrmDeal deal = savedDeal("Removable Deal", crmContactDao.getReferenceById(contactId), null);
+		CrmTask task = savedTask("Deal Task", false, false, contactId, deal);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setDealId(JsonNullable.of(null));
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertNotNull(updated.getContact());
+		assertEquals(contactId, updated.getContact().getId());
+		assertNull(updated.getDeal());
+	}
+
+	@Test
+	@DisplayName("Edit task completion with contactId/dealId omitted - Preserves associations")
+	void editTask_OmittedAssociations_Preserved() throws Exception {
+		CrmDeal deal = savedDeal("Kept Deal", crmContactDao.getReferenceById(contactId), null);
+		CrmTask task = savedTask("Kept Task", false, false, contactId, deal);
+
+		CrmTaskEditRequestDto dto = new CrmTaskEditRequestDto();
+		dto.setIsCompleted(true);
+
+		performEditRequest(task.getId(), dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmTask updated = crmTaskDao.findById(task.getId()).orElseThrow();
+		assertEquals(true, updated.getIsCompleted());
+		assertNotNull(updated.getContact());
+		assertEquals(contactId, updated.getContact().getId());
+		assertNotNull(updated.getDeal());
+		assertEquals(deal.getId(), updated.getDeal().getId());
 	}
 
 	// --- deleteTask helper and tests ---

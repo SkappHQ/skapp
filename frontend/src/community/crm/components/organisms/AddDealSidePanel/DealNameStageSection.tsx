@@ -4,17 +4,28 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealAddFormTypes>;
+  isDuplicateName: boolean;
 }
 
-const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
+const DealNameStageSection: FC<DealNameStageSectionProps> = ({
+  formik,
+  isDuplicateName
+}) => {
   const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+
+  let nameErrorMessage: string | undefined;
+  if (isDuplicateName) {
+    nameErrorMessage = translateText(["validations", "dealNameExists"]);
+  } else if (formik.touched.name) {
+    nameErrorMessage = formik.errors.name;
+  }
 
   const {
     dealStages,
@@ -76,10 +87,8 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({ formik }) => {
           value={formik.values.name}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          state={
-            formik.touched.name && formik.errors.name ? "error" : "default"
-          }
-          errorMessage={formik.touched.name ? formik.errors.name : undefined}
+          state={nameErrorMessage ? "error" : "default"}
+          errorMessage={nameErrorMessage}
           fullWidth
           aria-label={translateText(["ariaLabels", "dealName"])}
         />

@@ -86,12 +86,12 @@
       {
         "id": "leave-module-manager-cancel-single-day-leave",
         "title": "Leave request canceled",
-        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
+        "message": "{{employeesName}}'s request for a {{leaveDuration}} {{leaveType}} leave on {{leaveStartDate}} has been canceled."
       },
       {
         "id": "leave-module-manager-cancel-multiple-day-leave",
         "title": "Leave request canceled",
-        "message": "Your request for a {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
+        "message": "{{employeesName}}'s request for a {{leaveDuration}} {{leaveType}} leave from {{leaveStartDate}} to {{leaveEndDate}} has been canceled."
       },
       {
         "id": "leave-module-employee-approved-single-day-leave",

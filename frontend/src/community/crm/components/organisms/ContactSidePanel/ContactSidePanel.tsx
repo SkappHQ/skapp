@@ -132,7 +132,12 @@ const ContactSidePanel: FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={contact?.deals ?? []} />;
+        return (
+          <SidePanelDealSection
+            deals={contact?.deals ?? []}
+            defaultContact={contact}
+          />
+        );
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection

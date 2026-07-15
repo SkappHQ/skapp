@@ -108,6 +108,13 @@
             <artifactId>jackson-dataformat-yaml</artifactId>
         </dependency>
 
+        <!-- Jackson Databind Nullable (JsonNullable support) -->
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>0.2.10</version>
+        </dependency>
+
         <!-- Database Drivers -->
         <dependency>
             <groupId>com.mysql</groupId>

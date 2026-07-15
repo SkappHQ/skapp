@@ -19,7 +19,7 @@ import {
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/companyConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmCompanyMetricsType } from "~community/crm/types/CommonTypes";
+import { CrmCompany } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatMonetaryValue } from "~community/crm/utils/commonHelpers";
 import {
@@ -37,45 +37,53 @@ export const CompanyTable: FC = () => {
       ? EmptyStateTypeEnum.NO_DATA
       : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isFetching } =
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
-  const { setSelectedCompanyId, setCompanies, openCrmSidePanel } = useCrmStore(
-    (store) => ({
+  const { companies, setSelectedCompanyId, setCompanies, openCrmSidePanel } =
+    useCrmStore((store) => ({
+      companies: store.companies,
       setSelectedCompanyId: store.setSelectedCompanyId,
       setCompanies: store.setCompanies,
       openCrmSidePanel: store.openCrmSidePanel
-    })
-  );
+    }));
 
-  const companies = useMemo(() => {
+  const fetchedCompanies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);
   }, [data]);
 
   useEffect(() => {
-    if (companies) setCompanies(companies);
-  }, [companies]);
+    if (fetchedCompanies) setCompanies(fetchedCompanies);
+  }, [fetchedCompanies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
   };
 
-  const columns: TableColumn<CrmCompanyMetricsType>[] = [
+  const columns: TableColumn<CrmCompany>[] = [
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
       key: "name",
-      className: "truncate",
+      render(value) {
+        return (
+          <span className="body2 block w-full truncate" title={value}>
+            {value}
+          </span>
+        );
+      },
       width: "25%"
     },
     {
       columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
       header: translateText(["table", "columns", "phoneHeader"]),
       key: "contactNumber",
-      render(value) {
+      render(_value, row) {
         return (
-          <div className="flex items-baseline">{formatPhoneNumber(value)}</div>
+          <div className="flex items-baseline">
+            {formatPhoneNumber(row.contactNumber)}
+          </div>
         );
       },
       width: "20%"
@@ -83,12 +91,12 @@ export const CompanyTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
       header: translateText(["table", "columns", "tasksHeader"]),
-      key: "openTaskCount",
-      render(value, row) {
+      key: "openTasksCount",
+      render(_value, row) {
         return (
           <div className="flex flex-row items-center gap-2">
-            {formatTasks(value)}
-            {row.overdue > 0 && (
+            {formatTasks(row.openTasksCount)}
+            {(row.overdue ?? 0) > 0 && (
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
@@ -105,10 +113,10 @@ export const CompanyTable: FC = () => {
       columnAriaLabel: translateText(["table", "columns", "pipelineAriaLabel"]),
       header: translateText(["table", "columns", "pipelineHeader"]),
       key: "openValue",
-      render(openValue) {
+      render(_value, row) {
         return (
           <div className="flex justify-end">
-            {formatMonetaryValue(openValue)}
+            {formatMonetaryValue(row.openValue)}
           </div>
         );
       },
@@ -123,12 +131,12 @@ export const CompanyTable: FC = () => {
       ]),
       header: translateText(["table", "columns", "accountValueHeader"]),
       key: "accountValue",
-      render(value, row) {
+      render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatMonetaryValue(value)}</div>
+            <div>{formatMonetaryValue(row.accountValue)}</div>
             <div className="subtitle4 text-secondary-text">
-              {row.closedDeals > 0
+              {(row.closedDeals ?? 0) > 0
                 ? `${row.closedDeals} ${translateText(["table", "closedDealsLabel"])}`
                 : ""}
             </div>
@@ -177,9 +185,7 @@ export const CompanyTable: FC = () => {
         columns={columns as TableColumn<any>[]}
         data={companies ?? []}
         emptyStateType={emptyStateType}
-        isLoading={
-          isFetching && !isFetchingNextPage && (companies?.length ?? 0) === 0
-        }
+        isLoading={isLoading}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
         height="34.5rem"
         hasMore={hasNextPage}

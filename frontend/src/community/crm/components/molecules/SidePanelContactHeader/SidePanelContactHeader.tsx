@@ -5,7 +5,7 @@ import { formatISODateWithSuffix } from "~community/common/utils/dateTimeUtils";
 
 interface Props {
   name?: string;
-  lastModifiedDate?: string;
+  lastModifiedDate?: string | null;
 }
 
 const SidePanelContactHeader: FC<Props> = ({ name, lastModifiedDate }) => {

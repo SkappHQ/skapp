@@ -1,23 +1,26 @@
 import { CrmIndustryEnum } from "~community/crm/enums/common";
-import { CrmCompanyDetailType } from "~community/crm/types/CommonTypes";
+import { CrmCompany } from "~community/crm/types/CommonTypes";
 
 import { mapCompanyToMetricItems } from "../companyUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
 
-const baseCompany: CrmCompanyDetailType = {
+const baseCompany: CrmCompany = {
   id: 1,
   name: "Test Company",
   contactNumber: "1234567890",
   industry: CrmIndustryEnum.ACCOMMODATION_SERVICES,
   website: "https://www.testcompany.com",
   address: "123 Test St, Test City, TC 12345",
-  openTaskCount: 5,
+  openTasksCount: 5,
   overdue: 2,
   openValue: "50000",
   accountValue: "100000",
   openDeals: 4,
-  closedDeals: 7
+  closedDeals: 7,
+  tasks: null,
+  deals: null,
+  contacts: null
 };
 
 describe("mapCompanyToMetricItems", () => {

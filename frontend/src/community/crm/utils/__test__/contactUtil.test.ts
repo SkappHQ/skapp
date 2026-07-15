@@ -1,9 +1,17 @@
-import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
-import { CompanyLookup, CrmContact } from "~community/crm/types/CommonTypes";
+import {
+  CrmMetricLabelThemeEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
+import {
+  CompanyLookup,
+  CrmContact,
+  TaskRowResponseType
+} from "~community/crm/types/CommonTypes";
 
 import {
   mapContactToMetricItems,
-  mergeAndPrioritizeCompanyDropdownItems
+  mergeAndPrioritizeCompanyDropdownItems,
+  updateContactTaskCompletion
 } from "../contactUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
@@ -18,6 +26,7 @@ const baseContact: CrmContact = {
   name: "Test Contact",
   email: "test@example.com",
   contactNumber: "0711234567",
+  lastContactAt: null,
   lastModifiedDate: "2026-06-01T00:00:00",
   company: null,
   owner: {
@@ -26,6 +35,8 @@ const baseContact: CrmContact = {
     lastName: "User",
     authPic: null
   },
+  closedDealValue: null,
+  closedDealCount: null,
   openTasksCount: 5,
   overdueTasksCount: 0,
   activeDealsCount: 3,
@@ -92,6 +103,51 @@ describe("mapContactToMetricItems", () => {
 
     expect(result[2].amount).toBe("45000.00");
     expect(result[3].amount).toBe("20000.00");
+  });
+});
+
+describe("updateContactTaskCompletion", () => {
+  const makeTask = (
+    id: number,
+    isCompleted: boolean
+  ): TaskRowResponseType => ({
+    id,
+    name: `Task ${id}`,
+    typeName: "Call",
+    priority: CrmPriorityEnum.MEDIUM,
+    isCompleted,
+    dueAt: null,
+    owner: baseContact.owner,
+    contact: null
+  });
+
+  const contactWithTasks: CrmContact = {
+    ...baseContact,
+    openTasksCount: 2,
+    tasks: [makeTask(1, false), makeTask(2, false), makeTask(3, true)]
+  };
+
+  it("flips the matching task and recomputes openTasksCount from remaining open tasks", () => {
+    const result = updateContactTaskCompletion([contactWithTasks], 1, 1, true);
+
+    expect(result[0].tasks?.find((task) => task.id === 1)?.isCompleted).toBe(
+      true
+    );
+    expect(result[0].openTasksCount).toBe(1);
+  });
+
+  it("leaves non-matching contacts untouched", () => {
+    const other: CrmContact = { ...contactWithTasks, id: 99 };
+    const result = updateContactTaskCompletion([other], 1, 1, true);
+
+    expect(result[0]).toBe(other);
+  });
+
+  it("returns the contact unchanged when it has no loaded tasks", () => {
+    const contactNoTasks: CrmContact = { ...baseContact, tasks: null };
+    const result = updateContactTaskCompletion([contactNoTasks], 1, 1, true);
+
+    expect(result[0]).toBe(contactNoTasks);
   });
 });
 

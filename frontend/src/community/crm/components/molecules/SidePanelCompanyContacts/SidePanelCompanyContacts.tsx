@@ -1,18 +1,13 @@
-import {
-  Label,
-  PlusIcon,
-  SearchIcon,
-  Table,
-  TableColumn
-} from "@rootcodelabs/skapp-ui";
+import { Label, SearchIcon, Table, TableColumn } from "@rootcodelabs/skapp-ui";
 import React from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContact } from "~community/crm/types/CommonTypes";
+import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
 
 const SidePanelCompanyContacts: React.FC<{
-  contacts: CrmContact[];
+  contacts?: CrmContact[] | null;
 }> = ({ contacts }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -60,9 +55,9 @@ const SidePanelCompanyContacts: React.FC<{
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 text-right">
-            <div>{row.closedDealValue}</div>
+            <div>{formatCurrencyValue(row.closedDealValue)}</div>
             <div className="subtitle4 text-secondary-text">
-              {row.closedDealCount > 0
+              {(row.closedDealCount ?? 0) > 0
                 ? `${row.closedDealCount} ${translateText(["dealsClosed"])}`
                 : ""}
             </div>
@@ -75,18 +70,18 @@ const SidePanelCompanyContacts: React.FC<{
     {
       columnAriaLabel: translateText(["columns", "openTasks"]),
       header: translateText(["columns", "openTasks"]),
-      key: "openTaskCount",
+      key: "openTasksCount",
       render(_value, row) {
-        if (row.openTaskCount === 0) return "-";
+        if (!row.openTasksCount) return "-";
         return (
           <div className="flex flex-row items-center gap-2 tabular-nums">
-            <div>{row.openTaskCount}</div>
-            {row.overdueTaskCount !== undefined && row.overdueTaskCount > 0 && (
+            <div>{row.openTasksCount}</div>
+            {(row.overdueTasksCount ?? 0) > 0 && (
               <Label
                 backgroundColor="bg-semantic-red-background"
                 textColor="text-semantic-red-text"
               >
-                {`${row.overdueTaskCount} ${translateText(["overdue"])}`}
+                {`${row.overdueTasksCount} ${translateText(["overdue"])}`}
               </Label>
             )}
           </div>
@@ -102,17 +97,10 @@ const SidePanelCompanyContacts: React.FC<{
       columns={columns as TableColumn<any>[]}
       data={contacts ?? []}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
-      height="17.25rem"
       noDataState={{
         icon: <SearchIcon />,
         title: translateText(["noContacts"]),
-        description: translateText(["noContactsDescription"]),
-        buttonText: translateText(["addContact"]),
-        buttonIcon: <PlusIcon />,
-        buttonVariant: "tertiary",
-        onButtonClick: () => {
-          // Add contact action
-        }
+        description: translateText(["noContactsDescription"])
       }}
     />
   );

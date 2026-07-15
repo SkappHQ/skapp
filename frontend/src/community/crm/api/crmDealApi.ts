@@ -11,10 +11,11 @@ import { AxiosError } from "axios";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmCreateDealPayload,
-  CrmDealCreateResponseType,
-  CrmDealDetailResponseType,
+  CrmDealEditPayload,
   CrmDealFilterParams,
+  CrmDealNameExistsResponse,
   CrmDealPaginatedResponse,
+  CrmDealResponseType,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
   CrmDealStageType,
@@ -23,7 +24,11 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import {
+  contactQueryKeys,
+  crmDealQueryKeys,
+  taskQueryKeys
+} from "./utils/QueryKeys";
 
 // Standard way to handle paginated API calls using react-query's useInfiniteQuery
 export const useGetDealsInfinite = (
@@ -65,26 +70,55 @@ export const useGetDealStages = (
 
 const createDeal = async (
   payload: CrmCreateDealPayload
-): Promise<CrmDealCreateResponseType> => {
+): Promise<CrmDealResponseType> => {
   const response = await authFetch.post(crmDealEndpoints.CREATE_DEAL, payload);
   return response?.data?.results?.[0];
 };
 
 export const useCreateDeal = (
-  onSuccess: (createdDeal: CrmDealCreateResponseType) => void,
+  onSuccess: (createdDeal: CrmDealResponseType) => void,
   onError: (error: AxiosError) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,
-    onSuccess: (createdDeal) => {
+    onSuccess: (createdDeal, payload) => {
       queryClient.invalidateQueries({ queryKey: crmDealQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.CONTACT_BY_ID(payload.contactId)
+      });
+      queryClient.invalidateQueries({
+        queryKey: contactQueryKeys.GET_CONTACT_DATA
+      });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       onSuccess(createdDeal);
     },
     onError
+  });
+};
+
+const checkDealNameExists = async (
+  name: string
+): Promise<CrmDealNameExistsResponse> => {
+  const response = await authFetch.get(
+    crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
+    {
+      params: { name }
+    }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCheckDealNameExists = (
+  name: string,
+  enabled: boolean
+): UseQueryResult<CrmDealNameExistsResponse> => {
+  return useQuery({
+    queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
+    queryFn: () => checkDealNameExists(name),
+    enabled
   });
 };
 
@@ -110,26 +144,70 @@ export const useGetDealLookup = (
   contactId?: number | null
 ): UseQueryResult<CrmDealPaginatedResponse> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId),
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId, size),
     queryFn: () => fetchDealLookup(searchKeyword, size, contactId),
     enabled
   });
 };
 
-const fetchDealById = async (
-  id: number
-): Promise<CrmDealDetailResponseType> => {
+const fetchDealById = async (id: number): Promise<CrmDealResponseType> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
 export const useGetDealById = (
-  id: number
-): UseQueryResult<CrmDealDetailResponseType> => {
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmDealResponseType> => {
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled
+  });
+};
+
+const editDeal = async ({
+  id,
+  ...fields
+}: CrmDealEditPayload): Promise<CrmDealResponseType> => {
+  const response = await authFetch.patch(
+    crmDealEndpoints.EDIT_DEAL(id),
+    fields
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditDeal = (
+  onSuccess?: (updatedDeal: CrmDealResponseType) => void,
+  onError?: (error: AxiosError) => void
+) => {
+  return useMutation({
+    mutationFn: editDeal,
+    onSuccess,
+    onError
+  });
+};
+
+const deleteDeal = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));
+};
+
+export const useDeleteDeal = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskQueryKeys.RELATED_TASKS });
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
   });
 };
 

@@ -95,7 +95,7 @@ const adminRoutes = {
     ROUTES.PROJECTS.GUESTS,
     ROUTES.PROJECTS.GUEST_REQUESTS
   ],
-  [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE]
+  [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE, ROUTES.CONFIGURATIONS.BASE]
 };
 
 const managerRoutes = {

@@ -10,8 +10,10 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { DOMAIN_SEARCH_LIMIT } from "../constants/commonConstants";
 import {
+  CrmCompany,
   CrmCompanyCreatePayload,
   CrmCompanyDomainSearchResponseType,
+  CrmCompanyMetricsResponseType,
   CrmDealPaginatedResponse,
   EditCompanyPayload
 } from "../types/CommonTypes";
@@ -27,7 +29,7 @@ const fetchCompanyMetrics = async ({
   page,
   size,
   searchKeyword
-}: CompanyMetricSearchParams) => {
+}: CompanyMetricSearchParams): Promise<CrmCompanyMetricsResponseType> => {
   const response = await authFetch.get(companyEndpoints.GET_COMPANY_METRICS, {
     params: {
       page,
@@ -56,7 +58,9 @@ export const useGetCompanyMetrics = (searchKeyword: string, limit: number) => {
   });
 };
 
-const createNewCompany = async (companyDetails: CrmCompanyCreatePayload) => {
+const createNewCompany = async (
+  companyDetails: CrmCompanyCreatePayload
+): Promise<CrmCompany> => {
   const response = await authFetch.post(
     companyEndpoints.CREATE_COMPANY,
     companyDetails
@@ -80,7 +84,7 @@ export const useCreateNewCompany = (
       });
       onSuccess();
     },
-    onError: onError
+    onError
   });
 };
 
@@ -97,7 +101,10 @@ export const useCheckCompanyNameExists = (name: string, enabled: boolean) => {
   });
 };
 
-const editCompany = async ({ id, ...companyDetails }: EditCompanyPayload) => {
+const editCompany = async ({
+  id,
+  ...companyDetails
+}: EditCompanyPayload): Promise<CrmCompany> => {
   const response = await authFetch.patch(
     companyEndpoints.EDIT_COMPANY(id),
     companyDetails
@@ -105,23 +112,18 @@ const editCompany = async ({ id, ...companyDetails }: EditCompanyPayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useEditCompany = (onSuccess: () => void, onError: () => void) => {
-  const queryClient = useQueryClient();
-  return useMutation({
+export const useEditCompany = (
+  onSuccess: (data: CrmCompany) => void,
+  onError: () => void
+) =>
+  useMutation({
     mutationFn: editCompany,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: companyQueryKeys.GET_COMPANY_DATA
-      });
-      onSuccess();
-    },
-    onError: onError
+    onSuccess,
+    onError
   });
-};
 
-const deleteCompany = async (id: number) => {
-  const response = await authFetch.delete(companyEndpoints.DELETE_COMPANY(id));
-  return response?.data?.results?.[0];
+const deleteCompany = async (id: number): Promise<void> => {
+  await authFetch.delete(companyEndpoints.DELETE_COMPANY(id));
 };
 
 export const useDeleteCompany = (
@@ -140,7 +142,7 @@ export const useDeleteCompany = (
       });
       onSuccess();
     },
-    onError: onError
+    onError
   });
 };
 

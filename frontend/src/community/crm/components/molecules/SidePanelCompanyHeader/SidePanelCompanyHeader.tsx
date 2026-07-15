@@ -10,10 +10,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
 import SidePanelHeaderInfoItem from "~community/crm/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
-import { CrmCompanyDetailType } from "~community/crm/types/CommonTypes";
+import { CrmCompany } from "~community/crm/types/CommonTypes";
 
 interface Props {
-  company: CrmCompanyDetailType;
+  company: CrmCompany;
 }
 
 const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
@@ -24,7 +24,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
   );
 
   return (
-    <div className="flex items-center justify-between w-auto">
+    <div className="flex items-center gap-12 flex-wrap">
       {company.website && (
         <SidePanelHeaderInfoItem
           icon={

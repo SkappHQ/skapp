@@ -2,8 +2,9 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { isValidPhoneNumber } from "~community/common/regex/regexPatterns";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
+import { isValidCompanyWebsiteUrl } from "~community/crm/regex/crmRegexPatterns";
 
 export const addCompanyValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -32,7 +33,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
       .nullable()
       .optional()
       .transform((v) => (v === "" ? null : v))
-      .url(translator(["validations", "website"]))
+      .matches(isValidCompanyWebsiteUrl(), translator(["validations", "website"]))
       .max(
         characterLengths.CHARACTER_LENGTH,
         translator(["validations", "characterLength"])

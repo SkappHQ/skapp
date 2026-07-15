@@ -20,9 +20,14 @@ const ContactOptionItem: FC<ContactOptionItemProps> = ({
       className="flex flex-col gap-1 px-4 py-2 text-sm hover:bg-tertiary-background cursor-pointer w-full text-left"
       onClick={() => onSelect(option)}
     >
-      <span className="body2">{contact.name}</span>
+      <span className="body2 w-full truncate" title={contact.name}>
+        {contact.name}
+      </span>
       {contact.company?.name && (
-        <span className="subtitle4 text-secondary-text">
+        <span
+          className="subtitle4 w-full truncate text-secondary-text"
+          title={contact.company.name}
+        >
           {contact.company.name}
         </span>
       )}

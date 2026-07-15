@@ -5,30 +5,15 @@ import { CrmStore } from "~community/crm/types/StoreTypes";
 const CrmSidePanelSlice = (set: SetType<CrmStore>) => ({
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
-  previousCrmSidePanelType: null,
   openCrmSidePanel: (type: CrmSidePanelTypes) =>
     set({
       isCrmSidePanelOpen: true,
-      crmSidePanelType: type,
-      previousCrmSidePanelType: null
+      crmSidePanelType: type
     }),
-  pushCrmSidePanel: (type: CrmSidePanelTypes) =>
-    set((state) => ({
-      isCrmSidePanelOpen: true,
-      crmSidePanelType: type,
-      previousCrmSidePanelType: state.crmSidePanelType
-    })),
-  popCrmSidePanel: () =>
-    set((state) => ({
-      crmSidePanelType: state.previousCrmSidePanelType,
-      previousCrmSidePanelType: null,
-      isCrmSidePanelOpen: state.previousCrmSidePanelType !== null
-    })),
   closeCrmSidePanel: () =>
     set({
       isCrmSidePanelOpen: false,
-      crmSidePanelType: null,
-      previousCrmSidePanelType: null
+      crmSidePanelType: null
     })
 });
 

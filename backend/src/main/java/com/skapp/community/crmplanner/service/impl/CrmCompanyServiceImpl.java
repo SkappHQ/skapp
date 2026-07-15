@@ -183,19 +183,22 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			existingCompany.setName(crmCompany.getName());
 		}
 
-		if (crmCompany.getContactNumber() != null) {
-			CrmValidations.validateContactNumber(crmCompany.getContactNumber());
-			existingCompany.setContactNumber(crmCompany.getContactNumber());
+		if (crmCompany.getContactNumber().isPresent()) {
+			String contactNumber = crmCompany.getContactNumber().get();
+			CrmValidations.validateContactNumber(contactNumber);
+			existingCompany.setContactNumber(contactNumber);
 		}
 
-		if (crmCompany.getWebsite() != null) {
-			CrmValidations.validateWebsite(crmCompany.getWebsite());
-			existingCompany.setWebsite(crmCompany.getWebsite());
+		if (crmCompany.getWebsite().isPresent()) {
+			String website = crmCompany.getWebsite().get();
+			CrmValidations.validateWebsite(website);
+			existingCompany.setWebsite(website);
 		}
 
-		if (crmCompany.getAddress() != null) {
-			CrmValidations.validateAddress(crmCompany.getAddress());
-			existingCompany.setAddress(crmCompany.getAddress());
+		if (crmCompany.getAddress().isPresent()) {
+			String address = crmCompany.getAddress().get();
+			CrmValidations.validateAddress(address);
+			existingCompany.setAddress(address);
 		}
 
 		if (crmCompany.getIndustry() != null) {

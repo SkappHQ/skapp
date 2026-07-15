@@ -6,7 +6,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
-import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookup,
+  CrmDealContactType
+} from "~community/crm/types/CommonTypes";
 import { findById } from "~community/crm/utils/crmUtil";
 import { buildContactOptions } from "~community/crm/utils/dealUtil";
 
@@ -15,7 +18,7 @@ import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
   contacts: CrmContactLookup[];
-  selectedContact: CrmContactLookup | null;
+  selectedContact: CrmDealContactType | null;
   onChange: (contact: CrmContactLookup | null) => void;
   onSearch: (term: string) => void;
   placeholder: string;
@@ -57,35 +60,17 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    const contact = findById(contacts, Number(id), getContactId);
-    onChange(contact);
+    onChange(findById(contacts, Number(id), getContactId));
   };
 
-  const handleRenderTrigger = (
-    option: DropdownOption | null,
-    triggerProps: TriggerProps
-  ) => {
-    const contact =
-      findById(contacts, Number(option?.id), getContactId) ??
-      (Number(option?.id) === selectedContact?.id ? selectedContact : null);
-
-    if (contact && option) {
-      return (
-        <ContactTriggerContent
-          key={option.id}
-          contact={contact}
-          triggerProps={triggerProps}
-        />
-      );
-    }
-
-    return (
-      <ContactTriggerContent
-        placeholder={placeholder}
-        triggerProps={triggerProps}
-      />
-    );
-  };
+  const handleRenderTrigger = (triggerProps: TriggerProps) => (
+    <ContactTriggerContent
+      name={selectedContact?.name}
+      companyName={selectedContact?.companyName}
+      placeholder={placeholder}
+      triggerProps={triggerProps}
+    />
+  );
 
   const handleRenderOption = (
     option: DropdownOption,
@@ -115,9 +100,9 @@ const ContactPopupSearch: FC<Props> = ({
       clearable
       ariaInvalid={ariaInvalid}
       ariaRequired={ariaRequired}
-      width="100%"
-      renderTrigger={(option, _a, _b, triggerProps) =>
-        handleRenderTrigger(option as DropdownOption | null, triggerProps)
+      width="w-full"
+      renderTrigger={(_option, _isOpen, _disabled, triggerProps) =>
+        handleRenderTrigger(triggerProps)
       }
       renderOption={(option, _index, onSelect) =>
         handleRenderOption(option as DropdownOption, onSelect)
