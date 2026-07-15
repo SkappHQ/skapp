@@ -288,6 +288,19 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	@Override
+	public String findMinOrderIndexByStageId(Long stageId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<String> query = cb.createQuery(String.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.INNER);
+
+		query.select(cb.least(deal.get(CrmDeal_.orderIndex)));
+		query.where(cb.equal(stage.get(CrmDealStage_.id), stageId), cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
 	public CrmContactDealMetrics findDealMetricsByContactId(Long contactId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactDealMetrics> query = cb.createQuery(CrmContactDealMetrics.class);
