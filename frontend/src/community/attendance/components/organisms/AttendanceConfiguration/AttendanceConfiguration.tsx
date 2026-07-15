@@ -133,9 +133,7 @@ const AttendanceConfiguration = (): JSX.Element => {
               />
               <SwitchRow
                 labelId="clock-in-out-only"
-                label={
-                  attendanceConfigurations(["isClockInClockOutOnly"]) ?? ""
-                }
+                label={attendanceConfigurations(["isClockInClockOutOnly"])}
                 checked={config.isClockInClockOutOnly ?? false}
                 wrapperStyles={classes.switchWrapper}
                 onChange={(checked) =>
@@ -181,22 +179,19 @@ const AttendanceConfiguration = (): JSX.Element => {
               variant="h2"
               sx={{ ...classes.sectionTitle, marginTop: "2rem" }}
             >
-              {attendanceConfigurations(["fingerprintSettingsTitle"]) ?? ""}
+              {attendanceConfigurations(["fingerprintSettingsTitle"])}
             </Typography>
             <Typography sx={classes.sectionDescription}>
-              {attendanceConfigurations(["fingerprintSettingsDescription"]) ??
-                ""}
+              {attendanceConfigurations(["fingerprintSettingsDescription"])}
             </Typography>
 
             <Box sx={classes.container}>
               {config && (
                 <SwitchRow
                   labelId="fingerprint-attendance-enabled"
-                  label={
-                    attendanceConfigurations([
-                      "isFingerprintAttendanceEnabled"
-                    ]) ?? ""
-                  }
+                  label={attendanceConfigurations([
+                    "isFingerprintAttendanceEnabled"
+                  ])}
                   checked={config.isFingerprintAttendanceEnabled ?? false}
                   wrapperStyles={classes.switchWrapper}
                   onChange={(checked) =>
