@@ -5,7 +5,7 @@ import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
-  managerRestrictedRoutes
+  nonSuperAdminRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
   AdminTypes,
@@ -300,14 +300,14 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    // Check manager restricted routes
-    const managerRedirect = checkRestrictedRoutesAndRedirect(
+    // Check super-admin restricted routes
+    const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
       request,
-      managerRestrictedRoutes,
-      AdminTypes.PEOPLE_ADMIN,
+      nonSuperAdminRestrictedRoutes,
+      AdminTypes.SUPER_ADMIN,
       roles
     );
-    if (managerRedirect) return managerRedirect;
+    if (nonSuperAdminRedirect) return nonSuperAdminRedirect;
 
     // Check invoice employee restricted routes
     const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(

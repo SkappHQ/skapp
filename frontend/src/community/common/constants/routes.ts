@@ -184,8 +184,9 @@ export const employeeRestrictedRoutes = [
   ROUTES.PEOPLE.ADD
 ];
 
-export const managerRestrictedRoutes = [
+export const nonSuperAdminRestrictedRoutes = [
   ROUTES.PEOPLE.ADD,
   ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
-  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.SYNC_CHANGES
 ];
