@@ -21,10 +21,6 @@ public class AttendanceModeServiceImpl implements AttendanceModeService {
 		return isEnabledByConfig() || attendanceModeProperties.isEnabled();
 	}
 
-	/**
-	 * The admin-controlled per-tenant toggle persisted in attendance_config. A missing
-	 * row (tenants predating the toggle) reads as false.
-	 */
 	protected boolean isEnabledByConfig() {
 		AttendanceConfig config = attendanceConfigDao
 			.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY);
