@@ -3,6 +3,7 @@ import { JSX, memo } from "react";
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
+import RenameFolderModal from "~enterprise/common/components/molecules/RenameFolderModal/RenameFolderModal";
 
 const CommonModalController = (): JSX.Element => {
   const commonModalType = useCommonStore((state) => state.commonModalType);
@@ -17,6 +18,14 @@ const CommonModalController = (): JSX.Element => {
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
           employeeId={commonModalData?.employeeId!}
+        />
+      );
+    case CommonModalType.RENAME_FOLDER:
+      return (
+        <RenameFolderModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          folder={commonModalData?.folder!}
         />
       );
     default:
