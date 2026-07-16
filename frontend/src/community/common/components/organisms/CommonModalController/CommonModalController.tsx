@@ -7,6 +7,7 @@ import CreateFolderModal from "~enterprise/common/components/molecules/CreateFol
 const CommonModalController = (): JSX.Element => {
   const commonModalType = useCommonStore((state) => state.commonModalType);
   const isCommonModalOpen = useCommonStore((state) => state.isCommonModalOpen);
+  const commonModalData = useCommonStore((state) => state.commonModalData);
   const closeCommonModal = useCommonStore((state) => state.closeCommonModal);
 
   switch (commonModalType) {
@@ -15,6 +16,7 @@ const CommonModalController = (): JSX.Element => {
         <CreateFolderModal
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
+          employeeId={commonModalData?.employeeId!}
         />
       );
     default:
