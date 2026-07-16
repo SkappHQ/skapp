@@ -10,6 +10,7 @@ interface Props {
   onRemove: () => void;
   showRemoveButton: boolean;
   ariaLabel: string;
+  required?: boolean;
 }
 
 const SelectedOwnerField: React.FC<Props> = ({
@@ -17,14 +18,20 @@ const SelectedOwnerField: React.FC<Props> = ({
   owner,
   onRemove,
   showRemoveButton,
-  ariaLabel
+  ariaLabel,
+  required = false
 }) => {
   const imageUrl = useGetImageUrl(owner.authPic ?? "");
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div className="flex w-full flex-col gap-1">
       <span className="subtitle1 leading-normal inline-flex h-6 items-center">
         {label}
+        {required && (
+          <span className="ml-1 text-semantic-red-text" aria-hidden="true">
+            *
+          </span>
+        )}
       </span>
       <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background px-3">
         <AvatarChip
