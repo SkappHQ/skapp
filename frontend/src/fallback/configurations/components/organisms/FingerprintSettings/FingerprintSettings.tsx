@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import { AttendanceConfigurationType } from "~community/attendance/types/attendanceTypes";
 
 interface Props {
@@ -9,7 +11,7 @@ interface Props {
   ) => void;
 }
 
-const FingerprintSettings = (_props: Props) => {
+const FingerprintSettings: FC<Props> = () => {
   return <></>;
 };
 
