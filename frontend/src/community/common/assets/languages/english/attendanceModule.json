@@ -3,7 +3,7 @@
     "pageHead": "Attendance | Skapp",
     "title": "Attendance Configurations",
     "clockInSettingsTitle": "Clock in Settings",
-    "clockInSettingsDescription": "Configure how and on which days users can log their time.",
+    "clockInSettingsDescription": "Configure the days on which users are eligible to log their time.",
     "isClockInOnNonWorkingDays": "Clock in on non working days",
     "clockInOnHolidays": "Clock in on company holidays",
     "clockInOnLeaveDays": "Clock in on leave days",
