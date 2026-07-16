@@ -1144,57 +1144,5 @@
     "crmSalesManagerLimitationDescription": "Only one CRM Sales Manager account is allowed.",
     "crmSalesRepresentativeLimitationTitle": "CRM Sales Representative Limit Reached",
     "crmSalesRepresentativeLimitationDescription": "Only one CRM Sales Representative account is allowed."
-  },
-  "inbox": {
-    "pageHead": "Documents | Skapp",
-    "folders": "Folders",
-    "createFolder": "Create folder",
-    "esignDocumentsFolder": "eSign documents",
-    "renameFolder": "Rename folder",
-    "deleteFolder": "Delete folder",
-    "noFolders": {
-      "title": "No folders yet",
-      "description": "Create a folder to start organising documents."
-    },
-    "allDocuments": "All documents",
-    "unknownSender": "Unknown sender",
-    "sentBy": "Sent by",
-    "loadingMore": "Loading more documents...",
-    "tableHeaders": {
-      "documentName": "Name",
-      "recipients": "Recipients",
-      "receivedDate": "Receieved on",
-      "expireDate": "Expires on",
-      "status": "Status",
-      "sender": "Sender",
-      "position": "Position"
-    },
-    "expireSoon": "Expiring soon",
-    "emptyTable": {
-      "title": "No documents to be displayed",
-      "description": "Your Inbox is empty. Once you receive documents, they will be displayed here."
-    },
-    "noResultsTable": {
-      "title": "No results found",
-      "description": "No documents match your search. Try changing your keywords or filters."
-    },
-    "searchPlaceholder": "Search documents",
-    "documentStatus": {
-      "needToSign": "Need to sign",
-      "waitingForOthers": "Waiting",
-      "completed": "Completed",
-      "declined": "Declined",
-      "voided": "Void",
-      "expired": "Expired"
-    },
-    "dateSort": {
-      "receivedClose": "Sort By : newest to oldest",
-      "receivedFar": "Sort By : oldest to newest"
-    },
-    "statusFilter": {
-      "statusHeader": "Document Status",
-      "resetFilters": "Reset filters",
-      "applyFilters": "Apply filters"
-    }
   }
 }
