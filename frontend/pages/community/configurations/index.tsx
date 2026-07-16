@@ -12,6 +12,7 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
+import { useGetGoogleConnectionStatus } from "~enterprise/people/api/GoogleWorkspaceSyncApi";
 
 const Configurations: NextPage = () => {
   const { user } = useAuth();
@@ -19,6 +20,11 @@ const Configurations: NextPage = () => {
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
+  const isSuperAdmin = !!user?.roles?.includes(AdminTypes.SUPER_ADMIN);
+
+  const { data: googleConnectionStatus } = useGetGoogleConnectionStatus(
+    isEnterprise && isSuperAdmin
+  );
 
   const allTabs = useMemo(
     () =>
@@ -31,11 +37,14 @@ const Configurations: NextPage = () => {
   const visibleTabs = useMemo(() => {
     const userRoles = user?.roles || [];
     return allTabs.filter((tab) => {
-      return userRoles.some((role) =>
+      const hasRequiredRole = userRoles.some((role) =>
         tab.requiredRoles.includes(role as AdminTypes)
       );
+      if (!hasRequiredRole) return false;
+      if (tab.id === "people") return !!googleConnectionStatus?.connected;
+      return true;
     });
-  }, [allTabs, user?.roles]);
+  }, [allTabs, user?.roles, googleConnectionStatus]);
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 

@@ -129,7 +129,8 @@
     "userRoles": "User Roles",
     "invoice": "Invoice",
     "organization": "Organization",
-    "crm": "CRM"
+    "crm": "CRM",
+    "people": "People"
   },
   "workLocation": {
     "areYouSureModalTitle": "Are you sure?",
