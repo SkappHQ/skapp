@@ -29,6 +29,11 @@ interface ActionTypes {
   setSelectedContactId: (contactId: number | null) => void;
   setContacts: (contacts: CrmContact[]) => void;
   updateContact: (contact: CrmContact) => void;
+  updateContactTaskCompletion: (
+    contactId: number,
+    taskId: number,
+    isCompleted: boolean
+  ) => void;
   removeContact: (id: number) => void;
   getContactById: (id: number) => CrmContact | undefined;
   setSelectedDealId: (dealId: number | null) => void;

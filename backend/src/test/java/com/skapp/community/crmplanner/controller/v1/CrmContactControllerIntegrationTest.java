@@ -31,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -48,6 +49,8 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -126,6 +129,12 @@ class CrmContactControllerIntegrationTest {
 	private <T> ResultActions performPatchRequest(Long id, T content) throws Exception {
 		return performRequest(patch(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(content))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPatchRawRequest(Long id, String content) throws Exception {
+		return performRequest(patch(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
+			.content(content)
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
@@ -227,7 +236,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setName("Jane Smith Updated");
 		dto.setEmail("jane.smith.updated@example.com");
-		dto.setCompanyId(companyId);
+		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("94779999999");
 		dto.setOwnerId(1L);
 		return dto;
@@ -394,7 +403,7 @@ class CrmContactControllerIntegrationTest {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setName("  Updated Name  ");
 		dto.setEmail("  updated.email@example.com  ");
-		dto.setCompanyId(companyId);
+		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("  5551234567  ");
 		dto.setOwnerId(1L);
 
@@ -449,21 +458,71 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Edit contact with partial payload - Only provided fields updated")
+	@DisplayName("Edit contact with partial payload - Omitted fields preserved")
 	void editContact_PartialPayload_OnlyProvidedFieldsUpdated() throws Exception {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
-		dto.setName("Updated Name Only");
-		// email, contactNumber, companyId, ownerId are null
-
-		performPatchRequest(contactId, dto).andDo(print())
+		// email, contactNumber, companyId, ownerId are omitted and stay untouched
+		performPatchRawRequest(contactId, "{\"name\": \"Updated Name Only\"}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact with null companyId - Company unlinked")
+	void editContact_NullCompanyId_CompanyUnlinked() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Edit contact omitting companyId - Company preserved")
+	void editContact_CompanyIdOmitted_CompanyPreserved() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "original@example.com").getId();
+
+		// An absent companyId deserializes to JsonNullable.undefined(), which is
+		// distinct from an explicit null, so the existing company link is kept
+		performPatchRawRequest(contactId, "{\"name\": \"Name Without Company\"}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact companyId - Cascades to linked deal and task, and clears on unlink")
+	void editContact_CompanyId_CascadesToDealAndTask() throws Exception {
+		Long companyAId = savedCompany("Company A").getId();
+		Long companyBId = savedCompany("Company B").getId();
+		Long contactId = savedContact(companyAId, "cascade@example.com").getId();
+
+		CrmDeal deal = savedDeal(contactId, companyAId, savedStage(CrmDealStageType.OPEN), "1000");
+		CrmTask task = savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		task.setCompany(crmCompanyDao.getReferenceById(companyAId));
+		crmTaskDao.save(task);
+
+		performPatchRawRequest(contactId, "{\"companyId\": " + companyBId + "}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(companyBId, crmDealDao.findById(deal.getId()).orElseThrow().getCompany().getId());
+		assertEquals(companyBId, crmTaskDao.findById(task.getId()).orElseThrow().getCompany().getId());
+
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print()).andExpect(status().isOk());
+
+		assertNull(crmDealDao.findById(deal.getId()).orElseThrow().getCompany());
+		assertNull(crmTaskDao.findById(task.getId()).orElseThrow().getCompany());
 	}
 
 	@Test

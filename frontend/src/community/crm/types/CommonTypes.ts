@@ -196,6 +196,12 @@ export interface CrmDealResponseType {
   owner: CrmOwner;
 }
 
+export interface CrmDealContactType {
+  id: number;
+  name: string;
+  companyName: string | null;
+}
+
 export interface CrmDealStageType {
   id: number;
   name: string;

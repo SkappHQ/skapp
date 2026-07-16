@@ -15,13 +15,24 @@ export const mergeContactUpdate = (
     contact.id === update.id ? { ...contact, ...update } : contact
   );
 
-export const reconcileContacts = (
-  existing: CrmContact[],
-  incoming: CrmContact[]
+export const updateContactTaskCompletion = (
+  contacts: CrmContact[],
+  contactId: number,
+  taskId: number,
+  isCompleted: boolean
 ): CrmContact[] =>
-  incoming.map((item) => {
-    const enriched = existing.find((contact) => contact.id === item.id);
-    return enriched ? { ...item, ...enriched } : item;
+  contacts.map((contact) => {
+    if (contact.id !== contactId || !contact.tasks) return contact;
+
+    const updatedTasks = contact.tasks.map((task) =>
+      task.id === taskId ? { ...task, isCompleted } : task
+    );
+
+    return {
+      ...contact,
+      tasks: updatedTasks,
+      openTasksCount: updatedTasks.filter((task) => !task.isCompleted).length
+    };
   });
 
 export interface CompanyDropdownItem extends SearchableDropdownItem {

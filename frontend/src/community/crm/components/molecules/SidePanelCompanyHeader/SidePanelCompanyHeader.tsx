@@ -24,7 +24,7 @@ const SidePanelCompanyHeader: FC<Props> = ({ company }) => {
   );
 
   return (
-    <div className="flex items-center justify-between w-auto">
+    <div className="flex items-center gap-12 flex-wrap">
       {company.website && (
         <SidePanelHeaderInfoItem
           icon={

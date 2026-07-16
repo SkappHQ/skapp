@@ -131,6 +131,17 @@ const routes = [
         url: ROUTES.LEAVE.LEAVE_TYPES,
         hasSubTree: false,
         requiredAuthLevel: [AdminTypes.SUPER_ADMIN, AdminTypes.LEAVE_ADMIN]
+      },
+      {
+        id: "2E",
+        name: "Leave Policies",
+        url: ROUTES.LEAVE.LEAVE_POLICIES,
+        hasSubTree: false,
+        requiredAuthLevel: [
+          AdminTypes.SUPER_ADMIN,
+          AdminTypes.LEAVE_ADMIN,
+          AdminTypes.PEOPLE_ADMIN
+        ]
       }
     ]
   },
@@ -410,7 +421,8 @@ const routes = [
       AdminTypes.INVOICE_ADMIN,
       AdminTypes.ESIGN_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
-      AdminTypes.LEAVE_ADMIN
+      AdminTypes.LEAVE_ADMIN,
+      AdminTypes.CRM_ADMIN
     ]
   },
   {

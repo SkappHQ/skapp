@@ -26,6 +26,7 @@ export interface CrmContactSliceTypes extends Pick<
   | "contacts"
   | "setContacts"
   | "updateContact"
+  | "updateContactTaskCompletion"
   | "removeContact"
   | "getContactById"
 > {}

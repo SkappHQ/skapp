@@ -75,7 +75,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
   const [selectedContactName, setSelectedContactName] = useState(
-    getContactById(selectedContactId!)?.name ?? selectedTask?.contact?.name ?? ""
+    getContactById(selectedContactId!)?.name ??
+      selectedTask?.contact?.name ??
+      ""
   );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState(
@@ -394,7 +396,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           variant="primary"
           type="button"
           onClick={formik.submitForm}
-          disabled={formik.isSubmitting || isPending}
+          disabled={formik.isSubmitting || isPending || !formik.dirty}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}

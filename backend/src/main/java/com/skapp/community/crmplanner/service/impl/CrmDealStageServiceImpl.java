@@ -14,7 +14,6 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.service.CrmDealStageService;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +24,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
@@ -46,8 +47,8 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 	public ResponseEntityDto getDealStages() {
 		log.info("getDealStages: execution started");
 
-		List<CrmDealStage> stages = CrmUtil.sortStagesForDisplay(
-				filterVisibleDealStages(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()));
+		List<CrmDealStage> stages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 
 		log.info("getDealStages: execution ended with {} result(s)", stages.size());
 
@@ -74,13 +75,35 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		stage.setDescription(requestDto.getDescription());
 		stage.setColor(requestDto.getColor().name());
 		stage.setStageType(CrmConstants.DEFAULT_DEAL_STAGE_TYPE);
-		stage.setOrderIndex(crmDealStageDao.findNextOrderIndex());
+		stage.setOrderIndex(resolveOrderIndexForNewStage());
 
 		CrmDealStage saved = crmDealStageDao.save(stage);
 
 		log.info("createDealStage: execution ended, created stage id={}", saved.getId());
 
 		return new ResponseEntityDto(false, crmMapper.crmDealStageToCrmDealStageResponseDto(saved));
+	}
+
+	private Integer resolveOrderIndexForNewStage() {
+		List<CrmDealStage> existingStages = crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc();
+
+		Optional<Integer> firstTerminalOrderIndex = existingStages.stream()
+			.filter(stage -> CrmConstants.TERMINAL_STAGES.contains(stage.getStageType()))
+			.map(CrmDealStage::getOrderIndex)
+			.findFirst();
+
+		if (firstTerminalOrderIndex.isEmpty()) {
+			return crmDealStageDao.findNextOrderIndex();
+		}
+
+		Integer newOrderIndex = firstTerminalOrderIndex.get();
+		List<CrmDealStage> stagesToShift = existingStages.stream()
+			.filter(stage -> stage.getOrderIndex() >= newOrderIndex)
+			.toList();
+		stagesToShift.forEach(stage -> stage.setOrderIndex(stage.getOrderIndex() + 1));
+		crmDealStageDao.saveAll(stagesToShift);
+
+		return newOrderIndex;
 	}
 
 	@Override
@@ -161,32 +184,34 @@ public class CrmDealStageServiceImpl implements CrmDealStageService {
 		Map<Long, CrmDealStage> existingStagesMap = existingStages.stream()
 			.collect(Collectors.toMap(CrmDealStage::getId, Function.identity()));
 
-		CrmDealStageReorderRequestDto firstRequestedStage = changedStages.stream()
-			.min(Comparator.comparing(CrmDealStageReorderRequestDto::getOrderIndex))
-			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST));
+		List<Integer> availableOrderIndexes = existingStages.stream().map(CrmDealStage::getOrderIndex).toList();
 
-		CrmDealStage firstExistingStage = existingStagesMap.get(firstRequestedStage.getId());
+		List<CrmDealStageReorderRequestDto> orderedRequest = changedStages.stream()
+			.sorted(Comparator.comparing(CrmDealStageReorderRequestDto::getOrderIndex))
+			.toList();
+
+		CrmDealStage firstExistingStage = existingStagesMap.get(orderedRequest.getFirst().getId());
 		if (firstExistingStage == null || firstExistingStage.getStageType() != CrmDealStageType.INITIAL) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_REORDER_INVALID_REQUEST);
 		}
 
-		changedStages.forEach(newStage -> {
-			CrmDealStage stage = existingStagesMap.get(newStage.getId());
+		List<CrmDealStage> reorderedStages = IntStream.range(0, orderedRequest.size()).mapToObj(position -> {
+			CrmDealStage stage = existingStagesMap.get(orderedRequest.get(position).getId());
 
 			if (stage == null) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_STAGE_NOT_FOUND);
 			}
 
-			stage.setOrderIndex(newStage.getOrderIndex());
-		});
+			stage.setOrderIndex(availableOrderIndexes.get(position));
+			return stage;
+		}).toList();
 
-		updateStageTypesAfterReorder(existingStages);
-		crmDealStageDao.saveAll(existingStages);
+		updateStageTypesAfterReorder(reorderedStages);
+		crmDealStageDao.saveAll(reorderedStages);
 
 		log.info("reorderDealStages: execution ended");
 
-		return new ResponseEntityDto(false,
-				crmMapper.crmDealStagesToCrmDealStageResponseDtos(CrmUtil.sortStagesForDisplay(existingStages)));
+		return new ResponseEntityDto(false, crmMapper.crmDealStagesToCrmDealStageResponseDtos(reorderedStages));
 	}
 
 	private void updateStageTypesAfterReorder(List<CrmDealStage> reorderedStages) {
