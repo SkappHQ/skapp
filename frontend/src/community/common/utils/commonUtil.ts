@@ -566,24 +566,27 @@ export const isEnterpriseMode = (): boolean => {
   return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
 
-const IOS_UA_REGEX = /iPhone|iPad|iPod/;
-const ANDROID_UA_REGEX = /Android/;
-const MAC_UA_REGEX = /Macintosh/;
+const IOS_USER_AGENT_REGEX = /iPhone|iPad|iPod/i;
+const ANDROID_USER_AGENT_REGEX = /Android/i;
+const MAC_USER_AGENT_REGEX = /Macintosh/i;
 
 export const isMobileDevice = (): boolean => {
   return (
-    ANDROID_UA_REGEX.test(globalThis.navigator?.userAgent ?? "") ||
+    ANDROID_USER_AGENT_REGEX.test(globalThis.navigator?.userAgent ?? "") ||
     isIOSDevice()
   );
 };
 
+// iPadOS 13+ reports a desktop "Macintosh" user agent, so it can't be told
+// apart from a real Mac by UA alone. A Mac has no touchscreen
+// (maxTouchPoints === 0), while an iPad does (> 1) — use that to detect it.
 export const isIOSDevice = (): boolean => {
   const userAgent = globalThis.navigator?.userAgent ?? "";
-  if (IOS_UA_REGEX.test(userAgent)) {
+  if (IOS_USER_AGENT_REGEX.test(userAgent)) {
     return true;
   }
   return (
-    MAC_UA_REGEX.test(userAgent) &&
+    MAC_USER_AGENT_REGEX.test(userAgent) &&
     (globalThis.navigator?.maxTouchPoints ?? 0) > 1
   );
 };
