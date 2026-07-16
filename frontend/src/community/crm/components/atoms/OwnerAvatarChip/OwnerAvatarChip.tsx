@@ -6,7 +6,7 @@ import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwner } from "~community/crm/types/CommonTypes";
 
 interface OwnerAvatarChipProps {
-  id?: string;
+  id: string;
   owner: CrmOwner;
   backgroundColor?: string;
   size?: AvatarProps["size"];
@@ -23,7 +23,7 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
   return (
     <AvatarChip
       avatarProps={{
-        id: id ?? String(owner.employeeId),
+        id,
         firstName: owner.firstName,
         lastName: owner.lastName ?? undefined,
         src: imageUrl ?? undefined,

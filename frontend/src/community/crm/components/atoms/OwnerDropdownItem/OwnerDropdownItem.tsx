@@ -8,7 +8,7 @@ interface OwnerDropdownItemProps {
 }
 
 const OwnerDropdownItem: FC<OwnerDropdownItemProps> = ({ owner }) => (
-  <OwnerAvatarChip owner={owner} />
+  <OwnerAvatarChip id={String(owner.employeeId)} owner={owner} />
 );
 
 export default OwnerDropdownItem;
