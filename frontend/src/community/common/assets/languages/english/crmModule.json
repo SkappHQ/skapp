@@ -657,7 +657,7 @@
         "task": "Enter the task name",
         "dueDate": "Select date",
         "priority": "Select priority",
-        "contactName": "Contact name",
+        "contactName": "Select contact",
         "deal": "Select deal",
         "taskOwner": "Select task owner",
         "notes": "Add message"

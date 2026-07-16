@@ -28,7 +28,7 @@ const SelectedOwnerField: React.FC<Props> = ({
       <span className="subtitle1 leading-normal inline-flex h-6 items-center">
         {label}
         {required && (
-          <span className="ml-1 text-semantic-red-text" aria-hidden="true">
+          <span className="text-semantic-red-accent ml-1" aria-hidden="true">
             *
           </span>
         )}
