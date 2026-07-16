@@ -26,6 +26,7 @@ const CommonModalController = (): JSX.Element => {
         <RenameFolderModal
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
+          employeeId={commonModalData?.employeeId!}
           folder={commonModalData?.folder!}
         />
       );
