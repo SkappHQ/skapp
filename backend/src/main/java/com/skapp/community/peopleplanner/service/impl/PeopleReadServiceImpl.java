@@ -121,6 +121,10 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 		dto.setGeneral(mapPersonalGeneralDetails(employee, accessLevel));
 		dto.setSkills(mapEmployeeSkills(employee));
 
+		EmployeePersonalContactDetailsDto contactDto = new EmployeePersonalContactDetailsDto();
+		contactDto.setCountry(employee.getCountry());
+		dto.setContact(contactDto);
+
 		if (accessLevel.canSeeSensitiveData()) {
 			dto.setContact(mapPersonalContactDetails(employee));
 
