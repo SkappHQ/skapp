@@ -104,7 +104,7 @@ public class CrmValidations {
 
 		try {
 			URI uri = new URI(website);
-			if (!uri.isAbsolute()) {
+			if (!CrmConstants.HTTPS_SCHEME.equalsIgnoreCase(uri.getScheme())) {
 				throw new ModuleException(CrmMessageConstant.CRM_ERROR_WEBSITE_INVALID);
 			}
 			uri.toURL();

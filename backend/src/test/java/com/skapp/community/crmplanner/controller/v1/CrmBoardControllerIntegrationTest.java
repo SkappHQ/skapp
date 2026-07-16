@@ -187,20 +187,23 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Move deal to non-empty stage without neighbors - returns neighbours-required error")
-	void moveDeal_NoNeighbors_StageHasDeals_ReturnsError() throws Exception {
+	@DisplayName("Move deal to non-empty stage without neighbors - placed at top of stage")
+	void moveDeal_NoNeighbors_StageHasDeals_PlacedAtTop() throws Exception {
 		CrmDeal dealToMove = createDeal("Deal to Move", stage1, "a0", 1L);
-		createDeal("Existing Deal", stage2, "a0", 1L);
+		CrmDeal existingDeal = createDeal("Existing Deal", stage2, "a0", 1L);
 
 		CrmDealUpdateStageRequestDto request = new CrmDealUpdateStageRequestDto();
 		request.setDealId(dealToMove.getId());
 		request.setNewStageId(stage2.getId());
 
 		performPatchRequest(request, adminToken).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED)));
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmDeal updatedDeal = crmDealDao.findById(dealToMove.getId()).orElseThrow();
+		assertEquals(stage2.getId(), updatedDeal.getStage().getId());
+		// Should be positioned at the top of the stage, before the existing deal
+		assertTrue(updatedDeal.getOrderIndex().compareTo(existingDeal.getOrderIndex()) < 0);
 	}
 
 	@Test

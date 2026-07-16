@@ -9,6 +9,7 @@ import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.service.CrmContactService;
@@ -36,6 +37,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.openapitools.jackson.nullable.JsonNullable;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +53,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -161,9 +166,9 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
 		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
-		dto.setWebsite("https://acme.com");
-		dto.setAddress("123 Main St");
-		dto.setContactNumber("94771234567");
+		dto.setWebsite(JsonNullable.of("https://acme.com"));
+		dto.setAddress(JsonNullable.of("123 Main St"));
+		dto.setContactNumber(JsonNullable.of("94771234567"));
 		return dto;
 	}
 
@@ -275,8 +280,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Delete company with associated records - Keeps contacts and deals visible but hides tasks")
-	void deleteCompany_WithAssociatedRecords_KeepsContactsAndDealsVisibleButHidesTasks() throws Exception {
+	@DisplayName("Delete company with associated records - Keeps contacts, deals and tasks visible")
+	void deleteCompany_WithAssociatedRecords_KeepsAllAssociatedRecordsVisible() throws Exception {
 		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
 		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -318,6 +323,8 @@ class CrmCompanyControllerIntegrationTest {
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
 		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setContact(contact);
+		task.setDeal(deal);
 		task.setCompany(crmCompanyDao.getReferenceById(companyId));
 		Long taskId = crmTaskDao.save(task).getId();
 
@@ -362,7 +369,21 @@ class CrmCompanyControllerIntegrationTest {
 			.singleElement()
 			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
 
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).doesNotContain(taskId);
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto()))
+			.as("task remains visible after its company is deleted")
+			.extracting(CrmTask::getId)
+			.contains(taskId);
+
+		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
+			.as("contact task metrics still count tasks of a deleted company")
+			.isEqualTo(1L);
+		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId)))
+			.as("open task summary still counts tasks of a deleted company")
+			.extracting(s -> s.getContactId())
+			.contains(contactId);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId)))
+			.as("deal task count still counts tasks of a deleted company")
+			.containsEntry(dealId, 1L);
 	}
 
 	@Test
@@ -388,9 +409,9 @@ class CrmCompanyControllerIntegrationTest {
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
 		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
-		editDto.setWebsite("https://acme-updated.com");
-		editDto.setAddress("456 New St");
-		editDto.setContactNumber("94779876543");
+		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
+		editDto.setAddress(JsonNullable.of("456 New St"));
+		editDto.setContactNumber(JsonNullable.of("94779876543"));
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
@@ -407,6 +428,31 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
 		assertThat(persisted.getAddress()).isEqualTo("456 New St");
 		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
+	}
+
+	@Test
+	@DisplayName("Edit company with explicit null text fields - Clears them")
+	void editCompany_NullTextFields_PersistsNull() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
+		editDto.setWebsite(JsonNullable.of(null));
+		editDto.setAddress(JsonNullable.of(null));
+		editDto.setContactNumber(JsonNullable.of(null));
+
+		performPatchRequest(companyId, editDto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getWebsite()).isNull();
+		assertThat(persisted.getAddress()).isNull();
+		assertThat(persisted.getContactNumber()).isNull();
 	}
 
 	@Test
@@ -485,5 +531,110 @@ class CrmCompanyControllerIntegrationTest {
 
 		performSearchByDomainRequest("acme.com", 10).andDo(print()).andExpect(status().isForbidden());
 	}
+
+	// --- Company metrics tests ---
+
+	@Test
+	@DisplayName("Company metrics classify WON and LOST as closed - open metrics exclude both")
+	void getCompanyMetrics_ClassifiesWonAndLostAsClosed() {
+		CrmCompany company = createMetricsCompany("metrics classification co");
+		CrmContact contact = createMetricsContact(company, "metrics.classification@example.com");
+
+		CrmDealStage initialStage = createStage("Metrics Initial Stage", CrmDealStageType.INITIAL, 1);
+		CrmDealStage openStage = createStage("Metrics Open Stage", CrmDealStageType.OPEN, 2);
+		CrmDealStage wonStage = createStage("Metrics Won Stage", CrmDealStageType.WON, 3);
+		CrmDealStage lostStage = createStage("Metrics Lost Stage", CrmDealStageType.LOST, 4);
+
+		createDeal("Initial Deal", company, contact, initialStage, "100", false);
+		createDeal("Open Deal", company, contact, openStage, "200", false);
+		createDeal("Won Deal", company, contact, wonStage, "400", false);
+		createDeal("Lost Deal", company, contact, lostStage, "800", false);
+		// soft-deleted open deal must be ignored by every metric
+		createDeal("Deleted Open Deal", company, contact, openStage, "9999", true);
+
+		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics classification co");
+
+		assertThat(new BigDecimal(metrics.getOpenValue()))
+			.as("open value sums INITIAL + OPEN deals only; WON and LOST are excluded")
+			.isEqualByComparingTo("300");
+		assertThat(new BigDecimal(metrics.getAccountValue())).as("account value sums WON deals only")
+			.isEqualByComparingTo("400");
+		assertThat(metrics.getClosedDeals()).as("closed deals counts WON deals only").isEqualTo(1L);
+		assertThat(metrics.getOpenDeals()).as("open deals counts INITIAL + OPEN deals only; WON and LOST are excluded")
+			.isEqualTo(2L);
+	}
+
+	@Test
+	@DisplayName("Company metrics for a LOST-only company - reports zero open and zero closed")
+	void getCompanyMetrics_LostOnlyCompany_ReportsZeroOpenAndZeroClosed() {
+		CrmCompany company = createMetricsCompany("metrics lost only co");
+		CrmContact contact = createMetricsContact(company, "metrics.lostonly@example.com");
+
+		CrmDealStage lostStage = createStage("Lost Only Stage", CrmDealStageType.LOST, 1);
+		createDeal("Lost Deal One", company, contact, lostStage, "500", false);
+		createDeal("Lost Deal Two", company, contact, lostStage, "700", false);
+
+		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics lost only co");
+
+		assertThat(new BigDecimal(metrics.getOpenValue())).as("LOST deals are not open, so open value is zero")
+			.isEqualByComparingTo("0");
+		assertThat(new BigDecimal(metrics.getAccountValue())).as("LOST deals are not WON, so account value is zero")
+			.isEqualByComparingTo("0");
+		assertThat(metrics.getClosedDeals()).as("LOST deals are not WON, so closed deal count is zero").isEqualTo(0L);
+		assertThat(metrics.getOpenDeals()).as("LOST deals are not open, so open deal count is zero").isEqualTo(0L);
+	}
+
+	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
+			.getCompanyMetrics(PageRequest.of(0, 100), searchKeyword)
+			.getContent();
+
+		return metrics.stream()
+			.filter(m -> m.getId().equals(companyId))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("Metrics not found for company " + companyId));
+	}
+
+	private CrmCompany createMetricsCompany(String name) {
+		CrmCompany company = new CrmCompany();
+		company.setName(name);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		return crmCompanyDao.save(company);
+	}
+
+	private CrmContact createMetricsContact(CrmCompany company, String email) {
+		CrmContact contact = new CrmContact();
+		contact.setName("Metrics Contact");
+		contact.setEmail(email);
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		contact.setCompany(company);
+		return crmContactDao.save(contact);
+	}
+
+	private CrmDealStage createStage(String name, CrmDealStageType stageType, int orderIndex) {
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName(name);
+		stage.setColor("#123456");
+		stage.setOrderIndex(orderIndex);
+		stage.setStageType(stageType);
+		return crmDealStageDao.save(stage);
+	}
+
+	private CrmDeal createDeal(String name, CrmCompany company, CrmContact contact, CrmDealStage stage, String amount,
+			boolean deleted) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName(name);
+		deal.setStage(stage);
+		deal.setCompany(company);
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a" + orderIndexCounter++);
+		deal.setAmount(amount);
+		deal.setIsDeleted(deleted);
+		return crmDealDao.save(deal);
+	}
+
+	private int orderIndexCounter = 0;
 
 }

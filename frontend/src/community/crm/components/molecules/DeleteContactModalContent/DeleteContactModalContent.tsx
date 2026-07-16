@@ -15,13 +15,15 @@ const DeleteContactModalContent: FC = () => {
     setSelectedContactId,
     closeCrmSidePanel,
     setIsContactModalOpen,
-    getContactById
+    getContactById,
+    removeContact
   } = useCrmStore((store) => ({
     selectedContactId: store.selectedContactId,
     setSelectedContactId: store.setSelectedContactId,
     closeCrmSidePanel: store.closeCrmSidePanel,
     setIsContactModalOpen: store.setIsContactModalOpen,
-    getContactById: store.getContactById
+    getContactById: store.getContactById,
+    removeContact: store.removeContact
   }));
 
   const translateText = useTranslator(
@@ -37,6 +39,8 @@ const DeleteContactModalContent: FC = () => {
   const selectedContact = getContactById(selectedContactId!);
 
   const handleSuccess = () => {
+    if (selectedContactId) removeContact(selectedContactId);
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,

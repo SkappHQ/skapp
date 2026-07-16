@@ -8,6 +8,21 @@ import {
 import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
 
+export const dealNameValidation = (translator: TranslatorFunctionType) =>
+  Yup.string()
+    .trim()
+    .max(DEAL_NAME_MAX_LENGTH, translator(["validations", "dealNameMaxLength"]))
+    .matches(
+      isDealNameValid(),
+      translator(["validations", "dealNameInvalidChars"])
+    )
+    .required(translator(["validations", "dealNameRequired"]));
+
+export const dealTitleValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: dealNameValidation(translator)
+  });
+
 export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
@@ -25,17 +40,7 @@ export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
-    name: Yup.string()
-      .trim()
-      .required(translator(["validations", "dealNameRequired"]))
-      .max(
-        DEAL_NAME_MAX_LENGTH,
-        translator(["validations", "dealNameMaxLength"])
-      )
-      .matches(
-        isDealNameValid(),
-        translator(["validations", "dealNameInvalidChars"])
-      ),
+    name: dealNameValidation(translator),
     stageId: Yup.string().required(
       translator(["validations", "stageRequired"])
     ),
@@ -58,3 +63,36 @@ export const addDealValidations = (translator: TranslatorFunctionType) =>
       translator(["validations", "descriptionMaxLength"])
     )
   });
+
+const validateField = (
+  fieldName: string,
+  value: unknown,
+  translator: TranslatorFunctionType
+): string => {
+  try {
+    (
+      Yup.reach(addDealValidations(translator), fieldName) as Yup.AnySchema
+    ).validateSync(value);
+    return "";
+  } catch (error) {
+    if (error instanceof Yup.ValidationError) {
+      return error.message;
+    }
+    throw error;
+  }
+};
+
+export const validateDealName = (
+  name: string,
+  translator: TranslatorFunctionType
+): string => validateField("name", name, translator);
+
+export const validateDealDescription = (
+  description: string,
+  translator: TranslatorFunctionType
+): string => validateField("description", description, translator);
+
+export const validateDealAmount = (
+  amount: string,
+  translator: TranslatorFunctionType
+): string => validateField("amount", amount, translator);

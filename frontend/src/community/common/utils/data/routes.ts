@@ -421,7 +421,8 @@ const routes = [
       AdminTypes.INVOICE_ADMIN,
       AdminTypes.ESIGN_ADMIN,
       AdminTypes.PEOPLE_ADMIN,
-      AdminTypes.LEAVE_ADMIN
+      AdminTypes.LEAVE_ADMIN,
+      AdminTypes.CRM_ADMIN
     ]
   },
   {

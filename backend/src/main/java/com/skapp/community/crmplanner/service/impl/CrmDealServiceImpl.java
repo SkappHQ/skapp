@@ -358,7 +358,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealViewResponseDto(deal));
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
 	}
 
 	private String generateOrderIndex(Long dealId, Long stageId, Long previousDealId, Long nextDealId) {
@@ -387,11 +387,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
-			if (existingOrderIndex != null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
-			}
-			return FractionalIndexUtil.generateKeyBetween(null, null);
+			String minOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
+			return FractionalIndexUtil.generateKeyBetween(null, minOrderIndex);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);
@@ -481,8 +478,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
+		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
+
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override

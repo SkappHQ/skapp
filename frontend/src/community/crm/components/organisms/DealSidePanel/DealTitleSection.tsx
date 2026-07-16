@@ -4,33 +4,61 @@ import {
   InputField,
   TickIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, KeyboardEventHandler, useState } from "react";
+import { FC, KeyboardEventHandler } from "react";
 
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCheckDealNameExists } from "~community/crm/api/crmDealApi";
+import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
+import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
+import { validateDealName } from "~community/crm/utils/dealValidations";
 
 interface DealTitleSectionProps {
   name: string;
+  onSave: (name: string) => void;
 }
 
-const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
+const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editedTitle, setEditedTitle] = useState<string>("");
+  const {
+    isEditing,
+    value: editedTitle,
+    error,
+    startEditing,
+    changeValue,
+    save,
+    discard
+  } = useInlineEditForm({
+    value: name,
+    validate: (value) => validateDealName(value, translateText),
+    onSave
+  });
 
-  const handleClick = () => {
-    setIsEditing(true);
-    setEditedTitle(name);
-  };
+  const trimmedTitle = editedTitle.trim();
+  const debouncedDealName = useDebounce(trimmedTitle, SEARCH_DEBOUNCE_DELAY);
+
+  const isDealNameCheckEnabled =
+    isEditing &&
+    debouncedDealName.length > 0 &&
+    debouncedDealName !== name.trim();
+
+  const { data: dealNameData } = useCheckDealNameExists(
+    debouncedDealName,
+    isDealNameCheckEnabled
+  );
+  const isDuplicateName =
+    trimmedTitle !== name.trim() && (dealNameData?.isExists ?? false);
+
+  const nameErrorMessage = isDuplicateName
+    ? translateText(["validations", "dealNameExists"])
+    : error;
 
   const handleSave = () => {
-    // Edit API call
-    setIsEditing(false);
-  };
-
-  const handleDiscard = () => {
-    setEditedTitle(name);
-    setIsEditing(false);
+    if (isDuplicateName) {
+      return;
+    }
+    save();
   };
 
   const handleInputKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
@@ -43,7 +71,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
   const handleTitleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      handleClick();
+      startEditing();
     }
   };
 
@@ -53,9 +81,11 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
         <div className="flex-1 min-w-0 p-1">
           <InputField
             value={editedTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
+            onChange={(e) => changeValue(e.target.value)}
             onKeyDown={handleInputKeyDown}
             className="w-full"
+            state={nameErrorMessage ? "error" : "default"}
+            errorMessage={nameErrorMessage}
             autoFocus
           />
         </div>
@@ -72,7 +102,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
               aria-label={translateText(["ariaLabels", "discardTitle"])}
               isRounded={true}
               icon={<CloseIcon />}
-              onClick={handleDiscard}
+              onClick={discard}
             />
           </div>
         </div>
@@ -88,7 +118,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name }) => {
           tabIndex={0}
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
           aria-label={translateText(["ariaLabels", "editTitle"])}
-          onClick={handleClick}
+          onClick={startEditing}
           onKeyDown={handleTitleKeyDown}
         >
           {name}

@@ -1,4 +1,5 @@
 import {
+  UseInfiniteQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -21,24 +22,27 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { contactQueryKeys, taskQueryKeys } from "./utils/QueryKeys";
 
-const fetchRelatedTasks = async (
-  params: RelatedTasksParams
-): Promise<RelatedTasksPage> => {
-  const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
-    params
-  });
-  return response?.data?.results?.[0];
-};
-
-export const useGetRelatedTasks = (params: RelatedTasksParams) => {
+export const useGetRelatedTasks = (
+  params: RelatedTasksParams,
+  enabled?: boolean
+): UseInfiniteQueryResult<RelatedTasksPage> => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: taskQueryKeys.RELATED_TASKS,
-    queryFn: () => fetchRelatedTasks(params),
+    queryKey: taskQueryKeys.RELATED_TASKS_BY_PARAMS(params),
+    queryFn: async ({ pageParam = 0 }): Promise<RelatedTasksPage> => {
+      const response = await authFetch.get(taskEndpoints.GET_RELATED_TASKS, {
+        params: {
+          page: pageParam,
+          ...params
+        }
+      });
+      return response?.data?.results?.[0];
+    },
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
+    enabled,
     refetchOnWindowFocus: false
   });
 };

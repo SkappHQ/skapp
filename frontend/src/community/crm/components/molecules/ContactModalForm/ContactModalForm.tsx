@@ -66,12 +66,13 @@ const ContactModalForm = ({
     initialValues,
     onSubmit,
     validationSchema: addContactValidations(translateContactText),
-    validateOnChange: false,
+    validateOnChange: true,
     validateOnBlur: false,
     enableReinitialize: true
   });
 
-  const { values, errors, handleChange, setFieldValue, submitForm } = formik;
+  const { values, errors, touched, handleChange, setFieldValue, submitForm, dirty } =
+    formik;
 
   const debouncedEmail = useDebounce(
     values.email.trim(),
@@ -86,8 +87,10 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
-  const { data: companyLookupData, isFetching: isCompanyFetching } =
-    useGetCompanyLookup(debouncedCompanySearch, DEFAULT_LOOKUP_PAGE_SIZE);
+  const { data: companyLookupData } = useGetCompanyLookup(
+    debouncedCompanySearch,
+    DEFAULT_LOOKUP_PAGE_SIZE
+  );
 
   const addSuggestedLabel = (
     item: SearchableDropdownItem
@@ -105,9 +108,7 @@ const ContactModalForm = ({
       mergeAndPrioritizeCompanyDropdownItems(
         companyLookupData?.items,
         domainSearchData?.companies
-      ).map((item) =>
-        item.isPrioritized ? addSuggestedLabel(item) : item
-      ),
+      ).map((item) => (item.isPrioritized ? addSuggestedLabel(item) : item)),
     [
       companyLookupData?.items,
       domainSearchData?.companies,
@@ -140,8 +141,8 @@ const ContactModalForm = ({
       <InputField
         name="name"
         value={values.name}
-        errorMessage={errors.name}
-        state={errors.name ? "error" : "default"}
+        errorMessage={touched.name ? errors.name : undefined}
+        state={touched.name && errors.name ? "error" : "default"}
         label={translateContactText(["labels", "name"])}
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
@@ -154,8 +155,8 @@ const ContactModalForm = ({
       <InputField
         name="email"
         value={values.email}
-        errorMessage={errors.email}
-        state={errors.email ? "error" : "default"}
+        errorMessage={touched.email ? errors.email : undefined}
+        state={touched.email && errors.email ? "error" : "default"}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
@@ -176,16 +177,7 @@ const ContactModalForm = ({
           onChange={(event) => setCompanySearchText(event.target.value)}
           onSelect={handleCompanySelect}
           onClose={() => setCompanySearchText("")}
-          isOpenOnFocus={
-            isDomainSearchEnabled && !!domainSearchData?.companies?.length
-          }
-          emptyMessage={
-            isCompanyFetching ? undefined : (
-              <p className="px-4 py-2 body2">
-                {translateContactText(["emptyStates", "noCompanies"])}
-              </p>
-            )
-          }
+          isOpenOnFocus={true}
         />
       ) : (
         <InputField
@@ -215,8 +207,8 @@ const ContactModalForm = ({
       <InputField
         name="contactNumber"
         value={values.contactNumber}
-        errorMessage={errors.contactNumber}
-        state={errors.contactNumber ? "error" : "default"}
+        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
+        state={touched.contactNumber && errors.contactNumber ? "error" : "default"}
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
@@ -228,7 +220,7 @@ const ContactModalForm = ({
       {canEditOwner ? (
         <EditableContactOwnerField
           initialOwner={initialOwner}
-          errorMessage={errors.ownerId}
+          errorMessage={touched.ownerId ? errors.ownerId : undefined}
           translateContactText={translateContactText}
           onChange={(owner) =>
             setFieldValue("ownerId", owner?.employeeId ?? null)
@@ -260,7 +252,7 @@ const ContactModalForm = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isPending}
+          disabled={isPending || !dirty}
           isLoading={isPending}
           aria-label={translateContactText(["ariaLabels", "save"])}
         >

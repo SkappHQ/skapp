@@ -15,6 +15,26 @@ export const mergeContactUpdate = (
     contact.id === update.id ? { ...contact, ...update } : contact
   );
 
+export const updateContactTaskCompletion = (
+  contacts: CrmContact[],
+  contactId: number,
+  taskId: number,
+  isCompleted: boolean
+): CrmContact[] =>
+  contacts.map((contact) => {
+    if (contact.id !== contactId || !contact.tasks) return contact;
+
+    const updatedTasks = contact.tasks.map((task) =>
+      task.id === taskId ? { ...task, isCompleted } : task
+    );
+
+    return {
+      ...contact,
+      tasks: updatedTasks,
+      openTasksCount: updatedTasks.filter((task) => !task.isCompleted).length
+    };
+  });
+
 export interface CompanyDropdownItem extends SearchableDropdownItem {
   isPrioritized?: boolean;
 }

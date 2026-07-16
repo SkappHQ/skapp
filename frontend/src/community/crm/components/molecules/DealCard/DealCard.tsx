@@ -69,7 +69,8 @@ const DealCard: FC<DealCardProps> = ({
         <div
           role="button"
           tabIndex={0}
-          className="body2 cursor-pointer text-left hover:text-primary-text hover:underline"
+          className="body2 line-clamp-2 cursor-pointer wrap-break-word text-left hover:text-primary-text hover:underline"
+          title={title}
           onClick={onClick}
           onKeyDown={(e) => {
             if (shouldActivateButton(e.key)) {
@@ -82,12 +83,20 @@ const DealCard: FC<DealCardProps> = ({
         </div>
 
         {(contactName || companyName) && (
-          <div className="body3 flex items-center gap-1 truncate text-secondary-icon">
-            {contactName && <span>{contactName}</span>}
+          <div className="body3 flex items-center gap-1 text-secondary-icon">
+            {contactName && (
+              <span className="min-w-0 truncate" title={contactName}>
+                {contactName}
+              </span>
+            )}
             {contactName && companyName && (
               <div className="size-1 shrink-0 rounded-full bg-secondary-accent" />
             )}
-            {companyName && <span>{companyName}</span>}
+            {companyName && (
+              <span className="min-w-0 truncate" title={companyName}>
+                {companyName}
+              </span>
+            )}
           </div>
         )}
 

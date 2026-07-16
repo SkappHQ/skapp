@@ -5,10 +5,13 @@ export const crmDealEndpoints = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
   GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
+  EDIT_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
+  DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
-  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
+  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
+  CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`
 };
 
 export const crmBoardEndpoints = {

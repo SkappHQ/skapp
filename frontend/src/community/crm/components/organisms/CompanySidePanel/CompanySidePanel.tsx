@@ -121,15 +121,33 @@ const CompanySidePanel: FC = () => {
     isCompletedTaskLoading;
 
   useEffect(() => {
-    if (!selectedCompanyId) return;
+    if (
+      !selectedCompanyId ||
+      !openTaskData ||
+      !completedTaskData ||
+      !dealData ||
+      !contactPages
+    ) {
+      return;
+    }
+    const company = getCompanyById(selectedCompanyId);
+    if (!company) return;
 
     updateCompany({
-      id: selectedCompanyId,
+      ...company,
       tasks: taskData,
-      deals: dealData?.items,
+      deals: dealData.items,
       contacts: contactItems
     });
-  }, [selectedCompanyId, taskData, dealData, contactItems]);
+  }, [
+    selectedCompanyId,
+    openTaskData,
+    completedTaskData,
+    dealData,
+    contactPages,
+    taskData,
+    contactItems
+  ]);
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -177,7 +195,7 @@ const CompanySidePanel: FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case SidePanelTabEnum.DEALS:
-        return <SidePanelDealSection deals={selectedCompany?.deals} />;
+        return <SidePanelDealSection deals={selectedCompany?.deals ?? []} />;
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection

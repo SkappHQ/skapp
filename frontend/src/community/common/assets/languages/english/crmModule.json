@@ -30,7 +30,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -101,7 +100,6 @@
         "owner": "Search contact owner"
       },
       "emptyStates": {
-        "noCompanies": "No companies found",
         "noOwners": "No contact owners found"
       },
       "buttons": {
@@ -447,6 +445,18 @@
         "save": "Save",
         "discard": "Discard"
       },
+      "toastMessages": {
+        "editErrorTitle": "Failed to update deal",
+        "editErrorDescription": "Something went wrong. Please try again"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "dealNameExists": "A deal with this name already exists",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "amountInvalid": "Please enter a valid positive amount"
+      },
       "errors": {
         "dealNotFoundTitle": "Deal not found",
         "dealNotFoundDescription": "This deal is no longer available."
@@ -501,7 +511,7 @@
       "addDealBtn": "Add deal"
     },
     "deleteDealModal": {
-      "areYouSureModalTitle": "Are you sure?",
+      "title": "Delete Deal",
       "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",
@@ -510,6 +520,12 @@
       "ariaLabels": {
         "cancel": "Cancel delete deal",
         "confirm": "Confirm delete deal"
+      },
+      "toastMessages": {
+        "successTitle": "Deal deleted",
+        "successDescription": "The deal has been deleted and all linked tasks have been removed.",
+        "errorTitle": "Failed to delete deal",
+        "errorDescription": "Something went wrong. Please try again."
       }
     },
     "addDealSidePanel": {
@@ -556,6 +572,7 @@
         "dealNameRequired": "Deal name is required",
         "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
         "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "dealNameExists": "A deal with this name already exists",
         "descriptionMaxLength": "Description must be 2000 characters or less",
         "stageRequired": "Stage is required",
         "stageLoadError": "Failed to load stages. Please try again.",
@@ -588,7 +605,9 @@
       "notes": "Notes",
       "noNotes": "No notes added",
       "dealsTitle": "Deals",
+      "noDealsDescription": "No deals associated with this task",
       "relatedTasksTitle": "Related Tasks",
+      "noRelatedTasksDescription": "No related tasks yet",
       "markAsDone": "Mark as Done",
       "statusDone": "Done",
       "assignedTo": "Assigned To",

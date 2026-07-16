@@ -15,7 +15,6 @@ import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseD
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealViewResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -39,6 +38,7 @@ import java.util.List;
 public interface CrmMapper {
 
 	@Mapping(target = "companyName", source = "company.name")
+	@Mapping(target = "contactId", source = "contact.id")
 	@Mapping(target = "contactName", source = "contact.name")
 	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
@@ -74,8 +74,8 @@ public interface CrmMapper {
 
 	@Mapping(target = "closedDealValue", ignore = true)
 	@Mapping(target = "closedDealCount", ignore = true)
-	@Mapping(target = "openTaskCount", ignore = true)
-	@Mapping(target = "overdueTaskCount", ignore = true)
+	@Mapping(target = "openTasksCount", ignore = true)
+	@Mapping(target = "overdueTasksCount", ignore = true)
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	@Mapping(target = "typeId", source = "type.id")
@@ -107,9 +107,6 @@ public interface CrmMapper {
 	CrmContactDetailResponseDto crmContactToCrmContactDetailResponseDto(CrmContact contact);
 
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
-
-	@Mapping(target = "stageId", source = "stage.id")
-	CrmDealViewResponseDto crmDealToCrmDealViewResponseDto(CrmDeal deal);
 
 	@Mapping(target = "typeName", source = "type.name")
 	CrmTaskDetailResponseDto crmTaskToCrmTaskDetailResponseDto(CrmTask task);

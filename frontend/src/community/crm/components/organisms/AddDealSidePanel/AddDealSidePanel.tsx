@@ -1,5 +1,5 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC, useState } from "react";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
@@ -8,7 +8,10 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetCrmContacts } from "~community/crm/api/ContactApi";
-import { useCreateDeal } from "~community/crm/api/crmDealApi";
+import {
+  useCheckDealNameExists,
+  useCreateDeal
+} from "~community/crm/api/crmDealApi";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -19,7 +22,7 @@ import {
   CrmContactLookup,
   CrmCreateDealPayload,
   CrmDealAddFormTypes,
-  CrmDealCreateResponseType
+  CrmDealResponseType
 } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { addDealValidations } from "~community/crm/utils/dealValidations";
@@ -75,7 +78,7 @@ const AddDealSidePanel: FC = () => {
   );
   const contacts = contactLookupData?.items ?? [];
 
-  const handleCreateDealSuccess = (createdDeal: CrmDealCreateResponseType) => {
+  const handleCreateDealSuccess = (createdDeal: CrmDealResponseType) => {
     addDealToStage(mapCreatedDealToSlice(createdDeal));
     setToastMessage({
       open: true,
@@ -83,10 +86,10 @@ const AddDealSidePanel: FC = () => {
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"])
     });
+    closeCrmSidePanel();
     formik.resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    closeCrmSidePanel();
   };
 
   const handleCreateDealError = () => {
@@ -103,7 +106,16 @@ const AddDealSidePanel: FC = () => {
     handleCreateDealError
   );
 
-  const handleSubmit = (values: CrmDealAddFormTypes) => {
+  const handleSubmit = (
+    values: CrmDealAddFormTypes,
+    { setSubmitting }: FormikHelpers<CrmDealAddFormTypes>
+  ) => {
+    setSubmitting(false);
+
+    if (isDealNameCheckUnresolved || dealNameData?.isExists) {
+      return;
+    }
+
     const payload: CrmCreateDealPayload = {
       name: values.name.trim(),
       stageId: Number(values.stageId),
@@ -127,6 +139,18 @@ const AddDealSidePanel: FC = () => {
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
+  const debouncedDealName = useDebounce(
+    values.name.trim(),
+    SEARCH_DEBOUNCE_DELAY
+  );
+
+  const { data: dealNameData, isFetching: isDealNameCheckFetching } =
+    useCheckDealNameExists(debouncedDealName, debouncedDealName.length > 0);
+
+  const isDealNameCheckUnresolved =
+    values.name.trim().length > 0 &&
+    (values.name.trim() !== debouncedDealName || isDealNameCheckFetching);
+
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);
     e.target.style.height = "auto";
@@ -134,10 +158,10 @@ const AddDealSidePanel: FC = () => {
   };
 
   const handleClose = () => {
+    closeCrmSidePanel();
     resetForm();
     setSelectedContact(null);
     setPreselectedStageId(null);
-    closeCrmSidePanel();
   };
 
   return (
@@ -170,7 +194,10 @@ const AddDealSidePanel: FC = () => {
         }
       >
         <div className="flex flex-col gap-6 h-full">
-          <DealNameStageSection formik={formik} />
+          <DealNameStageSection
+            formik={formik}
+            isDuplicateName={dealNameData?.isExists ?? false}
+          />
 
           <div className="flex gap-6 items-start flex-1">
             <div className="w-2/3">
@@ -181,7 +208,7 @@ const AddDealSidePanel: FC = () => {
                 value={values.description}
                 onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
-                className="w-full min-h-[10vh]"
+                className="w-full min-h-[23.6vh]"
                 state={
                   formik.touched.description && formik.errors.description
                     ? "error"

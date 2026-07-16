@@ -14,12 +14,17 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
-  const { setIsContactModalOpen, selectedContactId, getContactById } =
-    useCrmStore((store) => ({
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      selectedContactId: store.selectedContactId,
-      getContactById: store.getContactById
-    }));
+  const {
+    setIsContactModalOpen,
+    selectedContactId,
+    getContactById,
+    updateContact
+  } = useCrmStore((store) => ({
+    setIsContactModalOpen: store.setIsContactModalOpen,
+    selectedContactId: store.selectedContactId,
+    getContactById: store.getContactById,
+    updateContact: store.updateContact
+  }));
 
   const selectedContact = getContactById(selectedContactId!);
 
@@ -28,7 +33,8 @@ const EditContactModalContent = () => {
   };
 
   const { mutate: editContact, isPending } = useEditContact(
-    () => {
+    (data) => {
+      updateContact(data);
       handleCloseModal();
       setToastMessage({
         open: true,

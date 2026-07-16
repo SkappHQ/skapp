@@ -49,6 +49,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -101,7 +102,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmContact contact = new CrmContact();
 		contact.setName(requestDto.getName());
 		contact.setEmail(lowercaseEmail);
-		contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+		contact.setContactNumber(requestDto.getContactNumber());
 		contact.setCompany(company);
 		contact.setOwner(owner);
 
@@ -146,13 +147,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		if (requestDto.getContactNumber() != null) {
 			CrmValidations.validateContactNumber(requestDto.getContactNumber());
-			contact.setContactNumber(normalizeNullableText(requestDto.getContactNumber()));
+			contact.setContactNumber(requestDto.getContactNumber());
 		}
 
-		if (requestDto.getCompanyId() != null) {
-			CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-			contact.setCompany(company);
+		if (requestDto.getCompanyId().isPresent()) {
+			Long companyId = requestDto.getCompanyId().get();
+
+			if (companyId != null) {
+				CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
+					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+				updateContactCompany(contact, company);
+			}
+			else {
+				updateContactCompany(contact, null);
+			}
 		}
 
 		if (requestDto.getOwnerId() != null) {
@@ -294,8 +302,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
 
 		CrmTaskSummary tasks = taskSummaryMap.get(contact.getId());
-		dto.setOpenTaskCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
-		dto.setOverdueTaskCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
+		dto.setOpenTasksCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
+		dto.setOverdueTasksCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
 		return dto;
 	}
@@ -346,8 +354,29 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateOwnerId(ownerId);
 	}
 
-	private String normalizeNullableText(String value) {
-		return value == null || value.isEmpty() ? null : value;
+	private void updateContactCompany(CrmContact contact, CrmCompany company) {
+		Long currentCompanyId = contact.getCompany() != null ? contact.getCompany().getId() : null;
+		Long newCompanyId = company != null ? company.getId() : null;
+		if (Objects.equals(currentCompanyId, newCompanyId)) {
+			return;
+		}
+
+		contact.setCompany(company);
+		cascadeCompanyToContactAssociations(contact.getId(), company);
+	}
+
+	private void cascadeCompanyToContactAssociations(Long contactId, CrmCompany company) {
+		List<CrmTask> tasks = crmTaskDao.findByContact_IdAndIsDeletedFalse(contactId);
+		if (!tasks.isEmpty()) {
+			tasks.forEach(task -> task.setCompany(company));
+			crmTaskDao.saveAll(tasks);
+		}
+
+		List<CrmDeal> deals = crmDealDao.findByContact_IdAndIsDeletedFalse(contactId);
+		if (!deals.isEmpty()) {
+			deals.forEach(deal -> deal.setCompany(company));
+			crmDealDao.saveAll(deals);
+		}
 	}
 
 }
