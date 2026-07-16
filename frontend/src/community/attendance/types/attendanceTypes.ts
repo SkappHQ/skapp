@@ -4,8 +4,8 @@ export type AttendanceConfigurationType = {
   isClockInOnLeaveDays: boolean;
   isAutoApprovalForChanges: boolean;
   isGeoFencingEnabled?: boolean;
-  isClockInClockOutOnly?: boolean;
-  isFingerprintAttendanceEnabled?: boolean;
+  isClockInClockOutOnly: boolean;
+  isFingerprintAttendanceEnabled: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {

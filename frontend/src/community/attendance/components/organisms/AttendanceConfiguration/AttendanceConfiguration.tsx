@@ -11,14 +11,12 @@ import { AttendanceConfigurationType } from "~community/attendance/types/attenda
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
-import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import FingerprintDevices from "~enterprise/configurations/components/organisms/FingerprintDevices/FingerprintDevices";
+import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
-import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 import styles from "./styles";
 
@@ -56,8 +54,6 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-
-  const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
 
   useEffect(() => {
     if (configData) {
@@ -134,7 +130,7 @@ const AttendanceConfiguration = (): JSX.Element => {
               <SwitchRow
                 labelId="clock-in-out-only"
                 label={attendanceConfigurations(["isClockInClockOutOnly"])}
-                checked={config.isClockInClockOutOnly ?? false}
+                checked={config.isClockInClockOutOnly}
                 wrapperStyles={classes.switchWrapper}
                 onChange={(checked) =>
                   handleSwitchChange("isClockInClockOutOnly", checked)
@@ -173,39 +169,11 @@ const AttendanceConfiguration = (): JSX.Element => {
           onSwitchChange={handleSwitchChange}
         />
 
-        {isEnterprise && (
-          <>
-            <Typography variant="h2" sx={classes.sectionTitle}>
-              {attendanceConfigurations(["fingerprintSettingsTitle"])}
-            </Typography>
-            <Typography sx={classes.sectionDescription}>
-              {attendanceConfigurations(["fingerprintSettingsDescription"])}
-            </Typography>
-
-            <Box sx={classes.container}>
-              {config && (
-                <SwitchRow
-                  labelId="fingerprint-attendance-enabled"
-                  label={attendanceConfigurations([
-                    "isFingerprintAttendanceEnabled"
-                  ])}
-                  checked={config.isFingerprintAttendanceEnabled ?? false}
-                  wrapperStyles={classes.switchWrapper}
-                  onChange={(checked) =>
-                    handleSwitchChange(
-                      "isFingerprintAttendanceEnabled",
-                      checked
-                    )
-                  }
-                />
-              )}
-            </Box>
-
-            {initialConfig?.isFingerprintAttendanceEnabled && (
-              <FingerprintDevices />
-            )}
-          </>
-        )}
+        <FingerprintSettings
+          config={config}
+          initialConfig={initialConfig}
+          onSwitchChange={handleSwitchChange}
+        />
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>
           <ButtonV2

@@ -32,8 +32,6 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
-  const isClockInClockOutOnly =
-    attendanceConfig?.isClockInClockOutOnly === true;
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
@@ -89,7 +87,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
             : "00:00:00"}
         </Typography>
       )}
-      {!isClockInClockOutOnly && <PlayButton />}
+      {!attendanceConfig?.isClockInClockOutOnly && <PlayButton />}
       <Tooltip
         title={translateText(["clockOut"])}
         placement={TooltipPlacement.BOTTOM}
