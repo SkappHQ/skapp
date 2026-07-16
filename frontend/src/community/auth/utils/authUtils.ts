@@ -1,4 +1,5 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { SUPPORTED_LANGUAGES } from "~community/common/constants/commonConstants";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import {
@@ -22,6 +23,7 @@ import {
 } from "~enterprise/auth/utils/authUtils";
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
+import i18n from "~i18n";
 
 import { config } from "../../../../middleware";
 import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
@@ -126,7 +128,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
 };
 
 export const setAccessToken = (token: string) => {
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
@@ -135,8 +137,23 @@ export const setAccessToken = (token: string) => {
   }
 };
 
+export const setUserLanguage = async (token: string) => {
+  const claims = extractClaimsFromToken(token);
+  const languageValue = claims?.lang;
+
+  if (typeof languageValue !== "string" || !languageValue) return;
+  if (!SUPPORTED_LANGUAGES.includes(languageValue)) return;
+
+  if (globalThis.window !== undefined) {
+    await i18n.changeLanguage(languageValue).catch((error) => {
+      console.error("[i18n] Failed to change language:", error);
+      i18n.changeLanguage(i18n.options.fallbackLng as string);
+    });
+  }
+};
+
 export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     const expiryDate = new Date(
       Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
     );
@@ -156,7 +173,7 @@ export const clearCookies = async (): Promise<void> => {
     console.error("Error calling signout API");
   }
 
-  if (typeof window !== "undefined") {
+  if (globalThis.window !== undefined) {
     document.cookie =
       "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
     document.cookie =
@@ -165,7 +182,7 @@ export const clearCookies = async (): Promise<void> => {
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
-  if (typeof window === "undefined") return null;
+  if (globalThis.window === undefined) return null;
 
   const currentAccessToken = getCookieValue("accessToken");
 
@@ -254,6 +271,8 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
       isPasswordChangedForTheFirstTime ?? true
     );
 
+    await setUserLanguage(accessToken);
+
     return { status: SignInStatus.SUCCESS };
   } else {
     return { status: SignInStatus.FAILURE, error: response?.data?.message };
@@ -336,12 +355,12 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (redirect === false) return;
 
-  if (typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
-    const urlParams = new URLSearchParams(window.location.search);
+  if (globalThis.window !== undefined) {
+    const currentPath = globalThis.window.location.pathname;
+    const urlParams = new URLSearchParams(globalThis.window.location.search);
     const existingCallback = urlParams.get("callback");
 
     const callbackPath = existingCallback || currentPath;
-    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+    globalThis.window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
   }
 };

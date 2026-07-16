@@ -48,7 +48,10 @@ function MyApp({
   initialLanguage
 }: MyAppPropsType) {
   const [newTheme, setNewTheme] = useState<Theme>(theme);
-  useSSR(initialI18nStore, initialLanguage);
+  const effectiveLanguage =
+    globalThis.window === undefined ? initialLanguage : i18n.language;
+  useSSR(initialI18nStore, effectiveLanguage);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -143,7 +146,7 @@ function MyApp({
 MyApp.getInitialProps = async (appContext: AppContext) => {
   const appProps = await App.getInitialProps(appContext);
 
-  if (typeof window === "undefined") {
+  if (globalThis.window === undefined) {
     return {
       ...appProps,
       initialI18nStore: i18n.store.data,

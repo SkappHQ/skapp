@@ -13,6 +13,9 @@ i18n
   .init({
     fallbackLng: "en",
     debug: false,
+    detection: {
+      order: ["localStorage"]
+    },
     resources: {
       en: {
         translation: isEnterpriseMode ? enterpriseEnglish : english
