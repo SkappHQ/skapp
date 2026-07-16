@@ -42,9 +42,7 @@ const DealStageLane: FC<DealStageLaneProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
-  const totalValue = formatValue(
-    String(deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0))
-  );
+  const totalValue = deals.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
 
   const { handleLoadMore, isFetchingNextPage } = useLoadMoreStageDeals({
     stageId: stage.id,

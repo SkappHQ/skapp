@@ -20,6 +20,7 @@ import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages"
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
+  CrmDealContactType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
@@ -51,8 +52,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = String(deal.stage.id);
   const selectedOwner = deal.owner;
-  const selectedContact: CrmContactLookup | null = deal.contactId
-    ? { id: deal.contactId, name: deal.contactName ?? "" }
+  const selectedContact: CrmDealContactType | null = deal.contactId
+    ? {
+        id: deal.contactId,
+        name: deal.contactName ?? "",
+        companyName: deal.companyName ?? null
+      }
     : null;
 
   const [contactSearchTerm, setContactSearchTerm] = useState<string>("");
@@ -96,7 +101,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   };
 
   const handleContactChange = (contact: CrmContactLookup | null): void => {
-    if (contact && contact.id !== selectedContact?.id) {
+    if (contact && contact.id !== deal.contactId) {
       onContactChange(contact);
     }
   };
@@ -152,6 +157,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           label={translateText(["value"])}
           value={deal.amount ?? ""}
           placeholder={translateText(["placeholders", "none"])}
+          ariaLabel={translateText(["ariaLabels", "amount"])}
           validate={(value) => validateDealAmount(value, translateText)}
           onSave={onAmountChange}
         />

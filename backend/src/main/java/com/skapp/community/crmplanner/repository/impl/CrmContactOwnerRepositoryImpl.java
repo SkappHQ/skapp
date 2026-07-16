@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -88,8 +89,14 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
+			Expression<String> firstLastName = cb.concat(cb.concat(employee.get(Employee_.firstName), " "),
+					employee.get(Employee_.lastName));
+			Expression<String> lastFirstName = cb.concat(cb.concat(employee.get(Employee_.lastName), " "),
+					employee.get(Employee_.firstName));
 			predicates.add(cb.or(cb.like(cb.lower(employee.get(Employee_.firstName)), likePattern, '\\'),
 					cb.like(cb.lower(employee.get(Employee_.lastName)), likePattern, '\\'),
+					cb.like(cb.lower(firstLastName), likePattern, '\\'),
+					cb.like(cb.lower(lastFirstName), likePattern, '\\'),
 					cb.like(cb.lower(user.get(User_.email)), likePattern, '\\')));
 		}
 

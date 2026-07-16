@@ -236,8 +236,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getBoardInitData() {
 		log.info("getBoardInitData: execution started");
 
-		List<CrmDealStage> visibleStages = CrmUtil.sortStagesForDisplay(
-				filterVisibleDealStages(crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc()));
+		List<CrmDealStage> visibleStages = filterVisibleDealStages(
+				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
 		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
@@ -387,11 +387,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
-			if (existingOrderIndex != null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
-			}
-			return FractionalIndexUtil.generateKeyBetween(null, null);
+			String minOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
+			return FractionalIndexUtil.generateKeyBetween(null, minOrderIndex);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);

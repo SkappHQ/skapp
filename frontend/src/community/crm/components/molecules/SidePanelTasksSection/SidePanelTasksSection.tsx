@@ -20,6 +20,7 @@ interface Props {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onFetchNextPage?: () => void;
+  showAddTaskAction?: boolean;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
@@ -30,7 +31,8 @@ const SidePanelTasksSection: FC<Props> = ({
   emptyDescription,
   hasNextPage = false,
   isFetchingNextPage = false,
-  onFetchNextPage = () => {}
+  onFetchNextPage = () => {},
+  showAddTaskAction = true
 }) => {
   const { guardCrmCreate } = useCrmLimitGuard();
 
@@ -65,6 +67,7 @@ const SidePanelTasksSection: FC<Props> = ({
         isShowContact={isShowContact}
         onTaskRowClick={onTaskRowClick}
         onAddTask={handleAddTask}
+        showAddTaskAction={showAddTaskAction}
       />
     </div>
   ) : (
@@ -74,13 +77,17 @@ const SidePanelTasksSection: FC<Props> = ({
       description={
         emptyDescription ?? translateText(["tasks", "emptyDescription"])
       }
-      button={{
-        children: translateText(["tasks", "addTaskButtonEmptyView"]),
-        variant: "tertiary",
-        onClick: handleAddTask,
-        icon: <PlusIcon />,
-        "aria-label": translateText(["tasks", "addTaskButtonEmptyView"])
-      }}
+      button={
+        showAddTaskAction
+          ? {
+              children: translateText(["tasks", "addTaskButtonEmptyView"]),
+              variant: "tertiary",
+              onClick: handleAddTask,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["tasks", "addTaskButtonEmptyView"])
+            }
+          : undefined
+      }
       className={{
         wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
       }}

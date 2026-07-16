@@ -24,9 +24,16 @@ import DealAccordionItemHeader from "./DealAccordionItemHeader";
 interface Props {
   deals: DetailPanelDealResponseType[];
   defaultContact?: CrmContactLookup;
+  showAddDealAction?: boolean;
+  emptyDescription?: string;
 }
 
-const SidePanelDealSection: FC<Props> = ({ deals, defaultContact }) => {
+const SidePanelDealSection: FC<Props> = ({
+  deals,
+  defaultContact,
+  showAddDealAction = true,
+  emptyDescription
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
@@ -85,12 +92,14 @@ const SidePanelDealSection: FC<Props> = ({ deals, defaultContact }) => {
             allowMultiple={true}
             className="gap-4"
           />
-          <div className="mt-2">{renderAddDealAction()}</div>
+          {showAddDealAction && (
+            <div className="mt-2">{renderAddDealAction()}</div>
+          )}
         </div>
       );
     }
 
-    if (isAddingDeal) {
+    if (showAddDealAction && isAddingDeal) {
       return (
         <SidePanelAddDeal
           onClose={handleCloseAddDeal}
@@ -103,16 +112,20 @@ const SidePanelDealSection: FC<Props> = ({ deals, defaultContact }) => {
       <EmptyDataView
         icon={<SearchIcon />}
         title={translateText(["emptyTitle"])}
-        description={translateText(["emptyDescription"])}
-        button={{
-          children: translateText(["addDealBtn"]),
-          variant: "tertiary",
-          onClick: handleAddDeal,
-          disabled: isCheckingCrmLimit,
-          isLoading: isCheckingCrmLimit,
-          icon: <PlusIcon />,
-          "aria-label": translateText(["ariaLabels", "addDealBtn"])
-        }}
+        description={emptyDescription ?? translateText(["emptyDescription"])}
+        button={
+          showAddDealAction
+            ? {
+                children: translateText(["addDealBtn"]),
+                variant: "tertiary",
+                onClick: handleAddDeal,
+                disabled: isCheckingCrmLimit,
+                isLoading: isCheckingCrmLimit,
+                icon: <PlusIcon />,
+                "aria-label": translateText(["ariaLabels", "addDealBtn"])
+              }
+            : undefined
+        }
         className={{
           wrapper: "h-[228px] bg-secondary-background rounded-lg"
         }}

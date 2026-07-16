@@ -18,10 +18,13 @@ const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule", "deals");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { openCrmSidePanel, selectedDealId } = useCrmStore((store) => ({
-    openCrmSidePanel: store.openCrmSidePanel,
-    selectedDealId: store.selectedDealId
-  }));
+  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
+    (store) => ({
+      openCrmSidePanel: store.openCrmSidePanel,
+      selectedDealId: store.selectedDealId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen
+    })
+  );
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () =>
@@ -40,7 +43,9 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapper>
+        <SidePanelWrapper
+          isOpen={isCrmSidePanelOpen}
+        >
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
