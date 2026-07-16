@@ -40,18 +40,10 @@ const baseTaskValidations = (translator: TranslatorFunctionType) =>({
       .required(translator(["validations", "owner"]))
   });
 
-export const addTaskValidations = (translator: TranslatorFunctionType) =>
+export const taskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     ...baseTaskValidations(translator),
     dueDate: Yup.date()
       .nullable()
       .required(translator(["validations", "dueDate"]))
-  });
-
-export const editTaskValidations = (translator: TranslatorFunctionType) =>
-  Yup.object().shape({
-    ...baseTaskValidations(translator),
-    dueDate: Yup.date()
-      .nullable()
-      .required(translator(["validations", "dueDate"])),
   });
