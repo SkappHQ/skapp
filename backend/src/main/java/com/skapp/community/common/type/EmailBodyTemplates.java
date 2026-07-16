@@ -33,6 +33,10 @@ public enum EmailBodyTemplates implements EmailTemplates {
 			"people-module-holiday-multi-day-approved-leave-request-updated-manager"),
 	PEOPLE_MODULE_PASSWORD_RESET_REQUEST_MANAGER("people-module-password-reset-request-manager"),
 
+	// Probation Templates
+	PEOPLE_MODULE_PROBATION_END_REMINDER_30_DAY("people-module-probation-end-reminder-30-day"),
+	PEOPLE_MODULE_PROBATION_END_REMINDER_14_DAY("people-module-probation-end-reminder-14-day"),
+
 	// Attendance Module Templates
 
 	// Non-Working Day Templates

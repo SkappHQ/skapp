@@ -42,6 +42,12 @@ en:
     - id: people-module-password-reset-request-manager
       subject: Password Reset Request
 
+    - id: people-module-probation-end-reminder-30-day
+      subject: "{{employeeName}}'s probation ends in 30 days"
+
+    - id: people-module-probation-end-reminder-14-day
+      subject: "Action needed: {{employeeName}}'s probation ends in 14 days"
+
   attendance:
     - id: attendance-module-non-working-day-single-day-pending-leave-request-canceled-employee
       subject: Your leave request has been canceled!
