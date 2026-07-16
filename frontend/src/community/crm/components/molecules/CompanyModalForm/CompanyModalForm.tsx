@@ -41,23 +41,20 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     initialValues,
     onSubmit,
     validationSchema: addCompanyValidations(translateText),
-    validateOnChange: false,
-    validateOnBlur: true,
+    validateOnChange: true,
+    validateOnBlur: false,
     enableReinitialize: true
   });
 
   const {
     values,
     errors,
+    touched,
     handleChange,
     dirty,
     setFieldValue,
-    setFieldError,
     submitForm
   } = formik;
-
-  const clearError = (field: keyof CrmCompanyAddFormTypes) =>
-    setFieldError(field, "");
 
   const debouncedCompanyName = useDebounce(
     values.name.trim(),
@@ -78,11 +75,12 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
 
   const nameError = hasNameConflict
     ? translateText(["validations", "companyExists"])
-    : errors.name;
+    : touched.name
+      ? errors.name
+      : undefined;
 
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
-    clearError("industry");
   };
 
   return (
@@ -94,10 +92,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         state={nameError ? "error" : "default"}
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("name");
-        }}
+        onChange={handleChange}
         aria-label={translateText(["ariaLabels", "companyName"])}
         maxLength={characterLengths.COMPANY_NAME_LENGTH}
         required
@@ -109,12 +104,13 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         label={translateText(["labels", "contactNumber"])}
         value={values.contactNumber || ""}
         placeholder={translateText(["placeholders", "contactNumber"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("contactNumber");
-        }}
-        errorMessage={errors.contactNumber || ""}
-        state={errors.contactNumber ? "error" : "default"}
+        onChange={handleChange}
+        errorMessage={
+          touched.contactNumber ? errors.contactNumber : undefined
+        }
+        state={
+          touched.contactNumber && errors.contactNumber ? "error" : "default"
+        }
         aria-label={translateText(["ariaLabels", "contactNumber"])}
         fullWidth
       />
@@ -122,14 +118,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="website"
         value={values.website || ""}
-        errorMessage={errors.website || ""}
-        state={errors.website ? "error" : "default"}
+        errorMessage={touched.website ? errors.website : undefined}
+        state={touched.website && errors.website ? "error" : "default"}
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("website");
-        }}
+        onChange={handleChange}
         aria-label={translateText(["ariaLabels", "website"])}
         fullWidth
       />
@@ -137,14 +130,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="address"
         value={values.address || ""}
-        errorMessage={errors.address || ""}
-        state={errors.address ? "error" : "default"}
+        errorMessage={touched.address ? errors.address : undefined}
+        state={touched.address && errors.address ? "error" : "default"}
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("address");
-        }}
+        onChange={handleChange}
         aria-label={translateText(["ariaLabels", "address"])}
         fullWidth
       />
