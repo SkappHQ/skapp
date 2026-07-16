@@ -1,16 +1,10 @@
-import {
-  CalendarIcon,
-  Dropdown,
-  InputField,
-  RotateIcon
-} from "@rootcodelabs/skapp-ui";
+import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import { useGetPolicyLeaveTypes } from "~community/leave/api/LeavePolicyApi";
 import {
-  PolicyType,
   LeavePolicyFormData,
   LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
@@ -22,56 +16,6 @@ interface Props {
   onChange: (values: Partial<LeavePolicyFormData>) => void;
   errors: LeavePolicyWizardErrors;
 }
-
-interface PolicyTypeCardProps {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  selected: boolean;
-  onClick: () => void;
-}
-
-const PolicyTypeCard = ({
-  icon,
-  title,
-  description,
-  selected,
-  onClick
-}: PolicyTypeCardProps): JSX.Element => (
-  <button
-    type="button"
-    role="radio"
-    aria-checked={selected}
-    onClick={onClick}
-    className={`flex flex-1 cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
-      selected
-        ? "border-primary-accent bg-primary-background"
-        : "border-secondary-accent bg-white hover:border-border-surface-secondary"
-    }`}
-  >
-    <span
-      aria-hidden="true"
-      className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary-accent"
-    >
-      {selected && <span className="size-3 rounded-full bg-primary-accent" />}
-    </span>
-    <span className="flex flex-col gap-2">
-      <span
-        className={`subtitle2 flex items-center gap-2 ${
-          selected ? "text-primary-text" : "text-secondary-text"
-        }`}
-      >
-        {icon}
-        {title}
-      </span>
-      <span
-        className={`body2 ${selected ? "text-primary-text" : "text-secondary-text"}`}
-      >
-        {description}
-      </span>
-    </span>
-  </button>
-);
 
 const FieldError = ({
   message
@@ -110,42 +54,6 @@ const BasicInfoStep = ({ formData, onChange, errors }: Props): JSX.Element => {
 
   return (
     <div className="flex flex-1 flex-col gap-8">
-      <WizardSection title={translateText(["policyTypeTitle"])}>
-        <div
-          role="radiogroup"
-          aria-label={translateText(["policyTypeTitle"])}
-          className="flex w-full flex-col gap-3 md:flex-row"
-        >
-          <PolicyTypeCard
-            icon={<RotateIcon className="size-6" />}
-            title={translateText(["accrualTitle"])}
-            description={translateText(["accrualDescription"])}
-            selected={
-              formData.policyType === PolicyType.ACCRUAL
-            }
-            onClick={() =>
-              onChange({
-                policyType: PolicyType.ACCRUAL
-              })
-            }
-          />
-          <PolicyTypeCard
-            icon={<CalendarIcon className="size-6" />}
-            title={translateText(["fixedTitle"])}
-            description={translateText(["fixedDescription"])}
-            selected={
-              formData.policyType === PolicyType.FIXED
-            }
-            onClick={() =>
-              onChange({
-                policyType: PolicyType.FIXED
-              })
-            }
-          />
-        </div>
-        <FieldError message={errors.policyType} />
-      </WizardSection>
-
       <WizardSection title={translateText(["basicDetailsTitle"])}>
         <div className="flex max-w-3xl flex-col gap-4">
           <InputField

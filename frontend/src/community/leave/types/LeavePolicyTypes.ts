@@ -1,6 +1,6 @@
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
-  FIXED = "FIXED"
+  FLEXIBLE = "FLEXIBLE"
 }
 
 export enum LeavePolicyStatus {
@@ -11,8 +11,7 @@ export enum LeavePolicyStatus {
 export enum LeavePolicyWizardSteps {
   BASIC_INFO = 0,
   ENTITLEMENT_SETUP = 1,
-  CARRY_FORWARD = 2,
-  SUMMARY = 3
+  SUMMARY = 2
 }
 
 export enum AccrualFrequency {
@@ -75,13 +74,10 @@ export interface LeavePolicyFormData {
   accrualCapDays: string;
   canCarryOver: boolean;
   carryOverDate: string;
+  maxCarryOverDays: string;
   resetNegativeBalances: boolean;
   firstAccrual: string;
   receiveAccruedTime: string;
-  totalDaysAllocated: string;
-  isCarryForwardEnabled: boolean;
-  maxCarryForwardDays: string;
-  carryForwardExpiryDate: Date | undefined;
 }
 
 export type LeavePolicyWizardErrors = Partial<
@@ -95,7 +91,8 @@ export interface AddLeavePolicyAccrualPayload {
   accrualCapDays?: number;
   carryoverEnabled: boolean;
   carryoverDate?: string;
-  resetNegativeOnCarryover: boolean;
+  maxCarryoverDays?: number;
+  resetNegativeBalancesOnCarryover?: boolean;
   firstAccrual: string;
   accrualTiming: string;
 }
@@ -104,10 +101,6 @@ export interface AddLeavePolicyPayload {
   name: string;
   leaveTypeId: number;
   policyType: PolicyType;
-  fixedDaysAllocated?: number;
-  carryForwardEnabled: boolean;
-  maxCarryForwardDays?: number;
-  carryForwardExpiryDate?: string;
   accrual?: AddLeavePolicyAccrualPayload;
 }
 

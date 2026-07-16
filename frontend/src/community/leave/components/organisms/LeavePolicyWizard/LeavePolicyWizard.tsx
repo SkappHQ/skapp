@@ -2,7 +2,9 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ButtonV2,
-  CloseIcon
+  CloseIcon,
+  IconButton,
+  SmallModal
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
@@ -18,7 +20,8 @@ import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePo
 import {
   LeavePolicyFormData,
   LeavePolicyWizardErrors,
-  LeavePolicyWizardSteps
+  LeavePolicyWizardSteps,
+  PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   getLeavePolicyStepErrors,
@@ -26,17 +29,22 @@ import {
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import BasicInfoStep from "./BasicInfoStep";
-import CarryForwardStep from "./CarryForwardStep";
 import EntitlementSetupStep from "./EntitlementSetupStep";
 import SummaryStep from "./SummaryStep";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 const HTTP_STATUS_CONFLICT = 409;
 
 const HTTP_STATUS_FORBIDDEN = 403;
 
-const LeavePolicyWizard = (): JSX.Element => {
+const POLICY_TYPE_SELECT_QUERY = "select-policy-type";
+
+interface Props {
+  policyType: PolicyType;
+}
+
+const LeavePolicyWizard = ({ policyType }: Props): JSX.Element => {
   const router = useRouter();
 
   const { setToastMessage } = useToast();
@@ -47,12 +55,15 @@ const LeavePolicyWizard = (): JSX.Element => {
     "createPolicy"
   );
 
+  const isAccrual = policyType === PolicyType.ACCRUAL;
+
   const [activeStep, setActiveStep] = useState<LeavePolicyWizardSteps>(
     LeavePolicyWizardSteps.BASIC_INFO
   );
-  const [formData, setFormData] = useState<LeavePolicyFormData>(
-    leavePolicyFormInitialValues
-  );
+  const [formData, setFormData] = useState<LeavePolicyFormData>({
+    ...leavePolicyFormInitialValues,
+    policyType
+  });
   const [isValidationVisible, setIsValidationVisible] =
     useState<boolean>(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] =
@@ -61,7 +72,6 @@ const LeavePolicyWizard = (): JSX.Element => {
   const steps = [
     translateText(["steps", "basicInfo"]),
     translateText(["steps", "entitlementSetup"]),
-    translateText(["steps", "carryForward"]),
     translateText(["steps", "summary"])
   ];
 
@@ -85,6 +95,13 @@ const LeavePolicyWizard = (): JSX.Element => {
 
   const handleClose = (): void => {
     router.push(ROUTES.LEAVE.LEAVE_POLICIES);
+  };
+
+  const handleBackToPolicyType = (): void => {
+    router.push({
+      pathname: ROUTES.LEAVE.LEAVE_POLICIES,
+      query: { action: POLICY_TYPE_SELECT_QUERY }
+    });
   };
 
   const handleSuccess = (): void => {
@@ -140,8 +157,8 @@ const LeavePolicyWizard = (): JSX.Element => {
   };
 
   const handleBack = (): void => {
-    if (activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
-      handleCancel();
+    if (!isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
+      handleBackToPolicyType();
     } else {
       setIsValidationVisible(false);
       setActiveStep((previous) => previous - 1);
@@ -154,7 +171,7 @@ const LeavePolicyWizard = (): JSX.Element => {
       return;
     }
 
-    if (activeStep === LeavePolicyWizardSteps.SUMMARY) {
+    if (!isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY) {
       if (!isPending) {
         addLeavePolicy(mapLeavePolicyFormToPayload(formData));
       }
@@ -170,18 +187,20 @@ const LeavePolicyWizard = (): JSX.Element => {
   };
 
   const renderStep = (): JSX.Element => {
+    if (!isAccrual) {
+      return (
+        <BasicInfoStep
+          formData={formData}
+          onChange={handleChange}
+          errors={visibleErrors}
+        />
+      );
+    }
+
     switch (activeStep) {
       case LeavePolicyWizardSteps.ENTITLEMENT_SETUP:
         return (
           <EntitlementSetupStep
-            formData={formData}
-            onChange={handleChange}
-            errors={visibleErrors}
-          />
-        );
-      case LeavePolicyWizardSteps.CARRY_FORWARD:
-        return (
-          <CarryForwardStep
             formData={formData}
             onChange={handleChange}
             errors={visibleErrors}
@@ -203,32 +222,38 @@ const LeavePolicyWizard = (): JSX.Element => {
     }
   };
 
+  const isLastStep =
+    !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
+
   return (
     <div className="flex min-h-full w-full flex-col gap-8">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
+          <IconButton
+            icon={<CloseIcon className="size-4 text-black" />}
+            isRounded
+            variant="tertiary"
             onClick={handleCancel}
             aria-label={translateText(["closeBtnAriaLabel"])}
-            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-secondary-accent hover:bg-border-surface-secondary"
-          >
-            <CloseIcon className="size-4 text-black" />
-          </button>
+          />
           <h1 className="h1 text-black">{translateText(["title"])}</h1>
-          <span className="subtitle3 text-primary-text">
-            {translateText(["stepCount"], {
-              current: String(activeStep + 1),
-              total: String(TOTAL_STEPS)
-            })}
-          </span>
+          {isAccrual && (
+            <span className="subtitle3 text-primary-text">
+              {translateText(["stepCount"], {
+                current: String(activeStep + 1),
+                total: String(TOTAL_STEPS)
+              })}
+            </span>
+          )}
         </div>
 
-        <StepperComponent
-          steps={steps}
-          activeStep={activeStep}
-          stepperStyles={{ maxWidth: "42.5rem" }}
-        />
+        {isAccrual && (
+          <StepperComponent
+            steps={steps}
+            activeStep={activeStep}
+            stepperStyles={{ maxWidth: "42.5rem" }}
+          />
+        )}
       </div>
 
       {renderStep()}
@@ -247,56 +272,43 @@ const LeavePolicyWizard = (): JSX.Element => {
         <ButtonV2
           variant="primary"
           size="md"
-          icon={
-            activeStep !== LeavePolicyWizardSteps.SUMMARY ? (
-              <ArrowRightIcon />
-            ) : undefined
-          }
+          icon={!isLastStep ? <ArrowRightIcon /> : undefined}
           iconPosition="end"
           onClick={handleNext}
           disabled={isPending}
         >
-          {activeStep === LeavePolicyWizardSteps.SUMMARY
+          {isLastStep
             ? translateText([isPending ? "savingBtnTxt" : "createPolicyBtnTxt"])
             : translateText(["nextBtnTxt"])}
         </ButtonV2>
       </div>
 
-      {isCancelConfirmOpen && (
-        <div
-          role="alertdialog"
-          aria-modal="true"
-          aria-label={translateText(["cancelConfirmTitle"])}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
-          <div className="flex w-full max-w-md flex-col gap-6 rounded-xl bg-white p-6">
-            <div className="flex flex-col gap-2">
-              <h2 className="h2 text-black">
-                {translateText(["cancelConfirmTitle"])}
-              </h2>
-              <p className="body2 text-secondary-text">
-                {translateText(["cancelConfirmDescription"])}
-              </p>
-            </div>
-            <div className="flex justify-end gap-3">
-              <ButtonV2
-                variant="tertiary"
-                size="md"
-                onClick={() => setIsCancelConfirmOpen(false)}
-              >
-                {translateText(["cancelDismissBtnTxt"])}
-              </ButtonV2>
-              <ButtonV2
-                variant="error"
-                size="md"
-                onClick={handleClose}
-              >
-                {translateText(["cancelConfirmBtnTxt"])}
-              </ButtonV2>
-            </div>
-          </div>
-        </div>
-      )}
+      <SmallModal
+        isOpen={isCancelConfirmOpen}
+        onClose={() => setIsCancelConfirmOpen(false)}
+        modalHeader={translateText(["cancelConfirmTitle"])}
+        content={
+          <p className="body1 text-black">
+            {translateText(["cancelConfirmDescription"])}
+          </p>
+        }
+        buttons={{
+          buttonLeft: {
+            variant: "tertiary",
+            onClick: () => setIsCancelConfirmOpen(false),
+            icon: <ArrowLeftIcon />,
+            iconPosition: "start",
+            children: translateText(["cancelDismissBtnTxt"])
+          },
+          buttonRight: {
+            variant: "error",
+            onClick: handleClose,
+            icon: <CloseIcon />,
+            iconPosition: "end",
+            children: translateText(["cancelConfirmBtnTxt"])
+          }
+        }}
+      />
     </div>
   );
 };

@@ -7,11 +7,9 @@ import {
   StatusComponent,
   Table
 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { ChangeEvent, JSX, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
-import ROUTES from "~community/common/constants/routes";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
@@ -32,9 +30,12 @@ import {
   LeavePolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-const LeavePoliciesTable = (): JSX.Element => {
+interface Props {
+  onCreatePolicy: () => void;
+}
+
+const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
-  const router = useRouter();
   const { user } = useAuth();
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
 
@@ -96,7 +97,7 @@ const LeavePoliciesTable = (): JSX.Element => {
     policyType:
       policy.policyType === PolicyType.ACCRUAL
         ? translateText(["accrual"])
-        : translateText(["fixed"]),
+        : translateText(["flexible"]),
     status: policy.status,
     assignedEmployees: policy.assignedEmployeesCount,
     actions: policy
@@ -238,7 +239,7 @@ const LeavePoliciesTable = (): JSX.Element => {
             aria-label={translateText(["searchPlaceholder"])}
           />
         </div>
-        <div className="w-full max-w-[220px]">
+        <div className="w-full max-w-55">
           <Dropdown
             id="leave-policy-leave-type-filter"
             ariaLabel={translateText(["leaveTypeFilterLabel"])}
@@ -268,8 +269,7 @@ const LeavePoliciesTable = (): JSX.Element => {
           ...(isPeopleAdmin
             ? {
                 buttonText: translateText(["createPolicyBtnTxt"]),
-                onButtonClick: () =>
-                  router.push(ROUTES.LEAVE.CREATE_LEAVE_POLICY)
+                onButtonClick: onCreatePolicy
               }
             : {})
         }}

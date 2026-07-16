@@ -87,11 +87,8 @@ export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   accrualCapDays: "",
   canCarryOver: false,
   carryOverDate: "01-01",
+  maxCarryOverDays: "",
   resetNegativeBalances: false,
   firstAccrual: FirstAccrualType.PRORATED,
-  receiveAccruedTime: AccrualTiming.PERIOD_END,
-  totalDaysAllocated: "",
-  isCarryForwardEnabled: false,
-  maxCarryForwardDays: "",
-  carryForwardExpiryDate: undefined
+  receiveAccruedTime: AccrualTiming.PERIOD_END
 };

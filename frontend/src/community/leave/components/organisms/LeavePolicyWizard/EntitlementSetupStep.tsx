@@ -9,7 +9,6 @@ import {
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
 import {
-  PolicyType,
   LeavePolicyFormData,
   LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
@@ -45,32 +44,6 @@ const EntitlementSetupStep = ({
     "createPolicy",
     "entitlementSetup"
   );
-
-  if (formData.policyType === PolicyType.FIXED) {
-    return (
-      <div className="flex flex-1 flex-col gap-8">
-        <WizardSection title={translateText(["allocationTitle"])}>
-          <div className="flex max-w-3xl flex-col gap-3">
-            <InputField
-              label={translateText(["totalDaysAllocatedLabel"])}
-              name="totalDaysAllocated"
-              type="number"
-              value={formData.totalDaysAllocated}
-              placeholder={translateText(["totalDaysAllocatedPlaceholder"])}
-              errorMessage={errors.totalDaysAllocated}
-              onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                onChange({ totalDaysAllocated: event.target.value })
-              }
-              fullWidth
-            />
-            <p className="body2 text-tertiary-text">
-              {translateText(["fixedDescriptionLabel"])}
-            </p>
-          </div>
-        </WizardSection>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-1 flex-col gap-8">
@@ -176,8 +149,8 @@ const EntitlementSetupStep = ({
             onChange={(value) => onChange({ canCarryOver: value })}
           />
           {formData.canCarryOver && (
-            <>
-              <div className="w-full md:w-64">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="flex flex-1 flex-col gap-1.5">
                 <Dropdown
                   id="leave-policy-carryover-date"
                   label={translateText(["carryOverDateLabel"])}
@@ -190,15 +163,31 @@ const EntitlementSetupStep = ({
                   width="100%"
                 />
               </div>
-              <Checkbox
-                id="reset-negative-balances"
-                checked={formData.resetNegativeBalances}
-                label={translateText(["resetNegativeBalancesLabel"])}
-                onChange={(checked: boolean) =>
-                  onChange({ resetNegativeBalances: checked })
-                }
-              />
-            </>
+              <div className="flex flex-1 flex-col gap-1.5">
+                <InputField
+                  label={translateText(["maxCarryOverDaysLabel"])}
+                  name="maxCarryOverDays"
+                  type="number"
+                  value={formData.maxCarryOverDays}
+                  placeholder={translateText(["maxCarryOverDaysPlaceholder"])}
+                  errorMessage={errors.maxCarryOverDays}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    onChange({ maxCarryOverDays: event.target.value })
+                  }
+                  fullWidth
+                />
+              </div>
+            </div>
+          )}
+          {formData.canCarryOver && (
+            <Checkbox
+              label={translateText(["resetNegativeBalancesLabel"])}
+              ariaLabel={translateText(["resetNegativeBalancesLabel"])}
+              checked={formData.resetNegativeBalances}
+              onChange={(checked) =>
+                onChange({ resetNegativeBalances: checked })
+              }
+            />
           )}
         </div>
       </WizardSection>

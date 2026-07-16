@@ -1,14 +1,14 @@
-import { ButtonV2, StatusComponent } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Card, StatusComponent } from "@rootcodelabs/skapp-ui";
 import { JSX, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   accrualFrequencyItemList,
+  carryoverDateItemList,
   firstAccrualItemList,
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
 import {
-  PolicyType,
   LeavePolicyFormData,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
@@ -37,9 +37,6 @@ const SummaryStep = ({ formData, onEdit }: Props): JSX.Element => {
     "createPolicy"
   );
 
-  const isAccrual =
-    formData.policyType === PolicyType.ACCRUAL;
-
   const summaryItem = (label: string, value: ReactNode) => (
     <div className="flex flex-col gap-1">
       <p className="subtitle4 text-secondary-text">{label}</p>
@@ -56,7 +53,7 @@ const SummaryStep = ({ formData, onEdit }: Props): JSX.Element => {
     step: LeavePolicyWizardSteps,
     children: ReactNode
   ) => (
-    <div className="flex flex-col gap-4 rounded-lg border border-secondary-accent p-4">
+    <Card className="flex flex-col gap-4 py-4">
       <div className="flex items-center justify-between">
         <h3 className="h2 text-black">{title}</h3>
         <ButtonV2
@@ -72,23 +69,7 @@ const SummaryStep = ({ formData, onEdit }: Props): JSX.Element => {
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {children}
       </div>
-    </div>
-  );
-
-  const statusChip = (
-    <StatusComponent
-      text={
-        formData.isCarryForwardEnabled
-          ? translateText(["statusActive"])
-          : translateText(["statusInactive"])
-      }
-      iconColor={
-        formData.isCarryForwardEnabled
-          ? "var(--color-semantic-green-accent)"
-          : "var(--color-semantic-red-accent)"
-      }
-      className="w-fit"
-    />
+    </Card>
   );
 
   return (
@@ -105,104 +86,95 @@ const SummaryStep = ({ formData, onEdit }: Props): JSX.Element => {
             translateText(["leaveTypeLabel"]),
             formData.leaveTypeName
           )}
+          {summaryItem(
+            translateText(["policyTypeLabel"]),
+            translateCommonText(["basicInfo", "accrualTitle"])
+          )}
         </>
       )}
 
       {summaryCard(
         translateText(["entitlementSetupTitle"]),
         LeavePolicyWizardSteps.ENTITLEMENT_SETUP,
-        isAccrual ? (
-          <>
-            {summaryItem(
-              translateText(["policyTypeLabel"]),
-              translateCommonText(["basicInfo", "accrualTitle"])
-            )}
-            {summaryItem(
-              translateText(["accrualRateLabel"]),
-              formData.accrualDays
-                ? translateText(["accrualRateValue"], {
-                    days: formData.accrualDays
-                  })
-                : "-"
-            )}
-            {summaryItem(
-              translateText(["frequencyLabel"]),
-              getOptionLabel(
-                accrualFrequencyItemList,
-                formData.accrualFrequency
-              )
-            )}
-            {summaryItem(
-              translateText(["waitingPeriodLabel"]),
-              formData.hasWaitingPeriod && formData.waitingPeriodDays
-                ? translateText(["waitingPeriodDaysValue"], {
-                    days: formData.waitingPeriodDays
-                  })
-                : translateText(["waitingPeriodNo"])
-            )}
-            {summaryItem(
-              translateText(["accrualCapLabel"]),
-              formData.hasAccrualCap && formData.accrualCapDays
-                ? translateText(["accrualCapDaysValue"], {
-                    days: formData.accrualCapDays
-                  })
-                : translateText(["accrualCapNo"])
-            )}
-            {summaryItem(
-              translateText(["receiveAccruedTimeLabel"]),
-              getOptionLabel(
-                receiveAccruedTimeItemList,
-                formData.receiveAccruedTime
-              )
-            )}
-            {summaryItem(
-              translateText(["firstAccrualLabel"]),
-              getOptionLabel(firstAccrualItemList, formData.firstAccrual).split(
-                ","
-              )[0]
-            )}
-          </>
-        ) : (
-          <>
-            {summaryItem(
-              translateText(["policyTypeLabel"]),
-              translateCommonText(["basicInfo", "fixedTitle"])
-            )}
-            {summaryItem(
-              translateText(["totalDaysAllocatedLabel"]),
-              formData.totalDaysAllocated
-                ? translateText(["totalDaysAllocatedValue"], {
-                    days: formData.totalDaysAllocated
-                  })
-                : "-"
-            )}
-          </>
-        )
+        <>
+          {summaryItem(
+            translateText(["accrualRateLabel"]),
+            formData.accrualDays
+              ? translateText(["accrualRateValue"], {
+                  days: formData.accrualDays
+                })
+              : "-"
+          )}
+          {summaryItem(
+            translateText(["frequencyLabel"]),
+            getOptionLabel(accrualFrequencyItemList, formData.accrualFrequency)
+          )}
+          {summaryItem(
+            translateText(["waitingPeriodLabel"]),
+            formData.hasWaitingPeriod && formData.waitingPeriodDays
+              ? translateText(["waitingPeriodDaysValue"], {
+                  days: formData.waitingPeriodDays
+                })
+              : translateText(["waitingPeriodNo"])
+          )}
+          {summaryItem(
+            translateText(["accrualCapLabel"]),
+            formData.hasAccrualCap && formData.accrualCapDays
+              ? translateText(["accrualCapDaysValue"], {
+                  days: formData.accrualCapDays
+                })
+              : translateText(["accrualCapNo"])
+          )}
+          {summaryItem(
+            translateText(["receiveAccruedTimeLabel"]),
+            getOptionLabel(
+              receiveAccruedTimeItemList,
+              formData.receiveAccruedTime
+            )
+          )}
+          {summaryItem(
+            translateText(["firstAccrualLabel"]),
+            getOptionLabel(firstAccrualItemList, formData.firstAccrual).split(
+              ","
+            )[0]
+          )}
+        </>
       )}
 
       {summaryCard(
         translateText(["carryForwardTitle"]),
-        LeavePolicyWizardSteps.CARRY_FORWARD,
+        LeavePolicyWizardSteps.ENTITLEMENT_SETUP,
         <>
-          {summaryItem(translateText(["statusLabel"]), statusChip)}
           {summaryItem(
-            translateText(["maxCarryDaysLabel"]),
-            formData.isCarryForwardEnabled && formData.maxCarryForwardDays
-              ? translateText(["maxCarryDaysValue"], {
-                  days: formData.maxCarryForwardDays
-                })
-              : "-"
+            translateText(["statusLabel"]),
+            <StatusComponent
+              text={
+                formData.canCarryOver
+                  ? translateCommonText(["summary", "activeStatus"])
+                  : translateCommonText(["summary", "inactiveStatus"])
+              }
+              iconColor={
+                formData.canCarryOver
+                  ? "var(--color-semantic-green-accent)"
+                  : "var(--color-semantic-red-accent)"
+              }
+              textColor="text-secondary-text"
+              className="w-fit"
+            />
           )}
           {summaryItem(
-            translateText(["expiryDateLabel"]),
-            formData.isCarryForwardEnabled && formData.carryForwardExpiryDate
-              ? formData.carryForwardExpiryDate.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric"
+            translateText(["maxCarryOverDaysLabel"]),
+            formData.canCarryOver && formData.maxCarryOverDays
+              ? translateText(["maxCarryOverDaysValue"], {
+                  days: formData.maxCarryOverDays
                 })
-              : "-"
+              : translateText(["carryOverNoLimit"])
           )}
+          {formData.canCarryOver &&
+            summaryItem(
+              translateText(["carryOverDateLabel"]),
+              getOptionLabel(carryoverDateItemList, formData.carryOverDate)
+            )}
         </>
       )}
     </div>

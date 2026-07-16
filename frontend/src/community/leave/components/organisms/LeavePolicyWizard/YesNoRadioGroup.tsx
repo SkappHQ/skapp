@@ -1,3 +1,4 @@
+import { RadioButton } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 interface Props {
@@ -36,14 +37,7 @@ const YesNoRadioGroup = ({
             onClick={() => onChange(option.optionValue)}
             className="flex w-fit cursor-pointer items-center gap-3"
           >
-            <span
-              aria-hidden="true"
-              className="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary-accent"
-            >
-              {value === option.optionValue && (
-                <span className="size-3 rounded-full bg-primary-accent" />
-              )}
-            </span>
+            <RadioButton isSelected={value === option.optionValue} />
             <span className="body2 text-black">{option.label}</span>
           </button>
         ))}
