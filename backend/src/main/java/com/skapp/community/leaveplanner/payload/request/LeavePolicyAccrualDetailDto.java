@@ -22,7 +22,7 @@ public class LeavePolicyAccrualDetailDto {
 
 	private String carryoverDate;
 
-	private Boolean resetNegativeOnCarryover = false;
+	private Float maxCarryoverDays;
 
 	private FirstAccrualType firstAccrual = FirstAccrualType.PRORATED;
 

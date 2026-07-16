@@ -28,7 +28,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -69,7 +68,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		}
 
 		validateEntitlementSetup(leavePolicyRequestDto);
-		validateCarryForward(leavePolicyRequestDto);
 
 		LeavePolicy leavePolicy = buildLeavePolicy(leavePolicyRequestDto, leaveType);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
@@ -122,21 +120,17 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	}
 
 	private void validateEntitlementSetup(LeavePolicyRequestDto dto) {
-		if (dto.getPolicyType() == PolicyType.FIXED) {
-			validateFixedSetup(dto);
+		if (dto.getPolicyType() == PolicyType.FLEXIBLE) {
+			validateFlexibleSetup(dto);
 		}
 		else {
 			validateAccrualSetup(dto.getAccrual());
 		}
 	}
 
-	private void validateFixedSetup(LeavePolicyRequestDto dto) {
+	private void validateFlexibleSetup(LeavePolicyRequestDto dto) {
 		if (dto.getAccrual() != null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_NOT_ALLOWED);
-		}
-		if (dto.getFixedDaysAllocated() == null || dto.getFixedDaysAllocated() < MIN_DAYS
-				|| dto.getFixedDaysAllocated() > MAX_DAYS) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_FIXED_DAYS_INVALID);
 		}
 	}
 
@@ -164,21 +158,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			else if (!CARRYOVER_DATE_PATTERN.matcher(accrual.getCarryoverDate()).matches()) {
 				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
 			}
-		}
-	}
-
-	private void validateCarryForward(LeavePolicyRequestDto dto) {
-		if (!Boolean.TRUE.equals(dto.getCarryForwardEnabled())) {
-			return;
-		}
-		if (dto.getMaxCarryForwardDays() == null || dto.getCarryForwardExpiryDate() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_DETAILS_REQUIRED);
-		}
-		if (dto.getMaxCarryForwardDays() < MIN_DAYS || dto.getMaxCarryForwardDays() > MAX_DAYS) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_DAYS_INVALID);
-		}
-		if (!dto.getCarryForwardExpiryDate().isAfter(LocalDate.now())) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRY_FORWARD_EXPIRY_INVALID);
+			if (accrual.getMaxCarryoverDays() != null
+					&& (accrual.getMaxCarryoverDays() < MIN_DAYS || accrual.getMaxCarryoverDays() > MAX_DAYS)) {
+				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
+			}
 		}
 	}
 
@@ -188,17 +171,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setLeaveType(leaveType);
 		leavePolicy.setPolicyType(dto.getPolicyType());
 		leavePolicy.setStatus(LeavePolicyStatus.ACTIVE);
-		leavePolicy.setIsCarryForwardEnabled(Boolean.TRUE.equals(dto.getCarryForwardEnabled()));
 
-		if (Boolean.TRUE.equals(dto.getCarryForwardEnabled())) {
-			leavePolicy.setMaxCarryForwardDays(dto.getMaxCarryForwardDays());
-			leavePolicy.setCarryForwardExpiryDate(dto.getCarryForwardExpiryDate());
-		}
-
-		if (dto.getPolicyType() == PolicyType.FIXED) {
-			leavePolicy.setFixedDaysAllocated(dto.getFixedDaysAllocated());
-		}
-		else {
+		if (dto.getPolicyType() == PolicyType.ACCRUAL) {
 			applyAccrualDetail(leavePolicy, dto.getAccrual());
 		}
 
@@ -214,8 +188,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
 		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
-		leavePolicy.setIsResetNegativeOnCarryover(
-				carryoverEnabled && Boolean.TRUE.equals(accrualDto.getResetNegativeOnCarryover()));
+		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);
 
 		leavePolicy.setFirstAccrual(
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
@@ -232,19 +205,15 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		responseDto.setLeaveTypeEmoji(leavePolicy.getLeaveType().getEmojiCode());
 		responseDto.setPolicyType(leavePolicy.getPolicyType());
 		responseDto.setStatus(leavePolicy.getStatus());
-		responseDto.setFixedDaysAllocated(leavePolicy.getFixedDaysAllocated());
-		responseDto.setCarryForwardEnabled(leavePolicy.getIsCarryForwardEnabled());
-		responseDto.setMaxCarryForwardDays(leavePolicy.getMaxCarryForwardDays());
-		responseDto.setCarryForwardExpiryDate(leavePolicy.getCarryForwardExpiryDate());
 
-		if (leavePolicy.getPolicyType() != PolicyType.FIXED) {
+		if (leavePolicy.getPolicyType() == PolicyType.ACCRUAL) {
 			responseDto.setAccrualDays(leavePolicy.getAccrualDays());
 			responseDto.setFrequency(leavePolicy.getFrequency());
 			responseDto.setWaitingPeriodDays(leavePolicy.getWaitingPeriodDays());
 			responseDto.setAccrualCapDays(leavePolicy.getAccrualCapDays());
 			responseDto.setCarryoverEnabled(leavePolicy.getIsCarryoverEnabled());
 			responseDto.setCarryoverDate(leavePolicy.getCarryoverDate());
-			responseDto.setResetNegativeOnCarryover(leavePolicy.getIsResetNegativeOnCarryover());
+			responseDto.setMaxCarryoverDays(leavePolicy.getMaxCarryoverDays());
 			responseDto.setFirstAccrual(leavePolicy.getFirstAccrual());
 			responseDto.setAccrualTiming(leavePolicy.getAccrualTiming());
 		}

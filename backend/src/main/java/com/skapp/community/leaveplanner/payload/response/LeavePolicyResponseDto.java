@@ -8,8 +8,6 @@ import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 public class LeavePolicyResponseDto {
@@ -28,14 +26,6 @@ public class LeavePolicyResponseDto {
 
 	private LeavePolicyStatus status;
 
-	private Float fixedDaysAllocated;
-
-	private Boolean carryForwardEnabled;
-
-	private Float maxCarryForwardDays;
-
-	private LocalDate carryForwardExpiryDate;
-
 	private Float accrualDays;
 
 	private AccrualFrequency frequency;
@@ -48,7 +38,7 @@ public class LeavePolicyResponseDto {
 
 	private String carryoverDate;
 
-	private Boolean resetNegativeOnCarryover;
+	private Float maxCarryoverDays;
 
 	private FirstAccrualType firstAccrual;
 
