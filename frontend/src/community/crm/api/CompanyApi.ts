@@ -15,6 +15,7 @@ import {
   CrmCompanyDomainSearchResponseType,
   CrmCompanyMetricsResponseType,
   CrmDealPaginatedResponse,
+  CrmDealsByCompanyParams,
   EditCompanyPayload
 } from "../types/CommonTypes";
 import { companyEndpoints, crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -167,20 +168,24 @@ export const useSearchCompaniesByDomain = (
   });
 };
 
+const fetchDealsByCompany = async (
+  params: CrmDealsByCompanyParams,
+  page: number
+): Promise<CrmDealPaginatedResponse> => {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
+    params: { ...params, page }
+  });
+  return response?.data?.results?.[0];
+};
+
 export const useGetDealsByCompany = (
-  companyId: number,
-  size: number,
+  params: CrmDealsByCompanyParams,
   enabled: boolean
 ) => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId, size),
-    queryFn: async ({ pageParam }): Promise<CrmDealPaginatedResponse> => {
-      const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
-        params: { page: pageParam, size, companyId }
-      });
-      return response?.data?.results?.[0];
-    },
+    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(params),
+    queryFn: ({ pageParam }) => fetchDealsByCompany(params, pageParam),
     getNextPageParam: (lastPage) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;

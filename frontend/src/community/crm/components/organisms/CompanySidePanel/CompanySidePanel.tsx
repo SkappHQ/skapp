@@ -28,6 +28,7 @@ import { DEAL_PAGE_SIZE } from "~community/crm/constants/dealConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmDealsByCompanyParams } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { mapCompanyToMetricItems } from "~community/crm/utils/companyUtil";
@@ -97,17 +98,18 @@ const CompanySidePanel: FC = () => {
     [openTaskData, completedTasks]
   );
 
+  const dealsParams: CrmDealsByCompanyParams = {
+    companyId: selectedCompanyId!,
+    size: DEAL_PAGE_SIZE
+  };
+
   const {
     data: dealPages,
     isLoading: isDealLoading,
     fetchNextPage: fetchNextDealsPage,
     hasNextPage: hasNextDealsPage,
     isFetchingNextPage: isFetchingNextDealsPage
-  } = useGetDealsByCompany(
-    selectedCompanyId!,
-    DEAL_PAGE_SIZE,
-    hasSelectedCompany
-  );
+  } = useGetDealsByCompany(dealsParams, hasSelectedCompany);
 
   const dealItems = useMemo(
     () => dealPages?.pages.flatMap((page) => page.items) ?? [],

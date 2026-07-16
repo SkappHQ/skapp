@@ -30,7 +30,7 @@ interface Props {
   emptyDescription?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
-  onFetchNextPage: () => void;
+  onFetchNextPage?: () => void;
 }
 
 const SidePanelDealSection: FC<Props> = ({
@@ -49,7 +49,7 @@ const SidePanelDealSection: FC<Props> = ({
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
-    onLoadMore: onFetchNextPage
+    onLoadMore: () => onFetchNextPage?.()
   });
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);

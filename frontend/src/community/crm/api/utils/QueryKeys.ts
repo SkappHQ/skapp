@@ -1,6 +1,7 @@
 import { CrmBoardDealsGroupedRequest } from "~community/crm/types/BoardTypes";
 import {
   CrmDealFilterParams,
+  CrmDealsByCompanyParams,
   RelatedTasksParams
 } from "~community/crm/types/CommonTypes";
 
@@ -14,11 +15,10 @@ export const crmDealQueryKeys = {
     contactId?: number | null,
     size?: number
   ) => ["crm-deal-lookup", searchKeyword, contactId, size],
-  GET_DEALS_BY_COMPANY: (companyId: number, size: number) => [
+  GET_DEALS_BY_COMPANY: (params: CrmDealsByCompanyParams) => [
     "crm-deals",
     "company",
-    companyId,
-    size
+    params
   ],
   DEAL_BY_ID: (id: number) => ["crm-deal", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists", name]
