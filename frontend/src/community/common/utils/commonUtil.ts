@@ -566,9 +566,9 @@ export const isEnterpriseMode = (): boolean => {
   return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
 
-const IOS_UA_REGEX = /iPhone|iPad|iPod/i;
-const ANDROID_UA_REGEX = /Android/i;
-const MAC_UA_REGEX = /Macintosh/i;
+const IOS_UA_REGEX = /iPhone|iPad|iPod/;
+const ANDROID_UA_REGEX = /Android/;
+const MAC_UA_REGEX = /Macintosh/;
 
 export const isMobileDevice = (): boolean => {
   return (
