@@ -44,7 +44,6 @@ export interface LeavePolicyType {
   leaveTypeEmoji: string | null;
   policyType: PolicyType;
   status: LeavePolicyStatus;
-  assignedEmployeesCount: number;
 }
 
 export interface LeavePoliciesPage {

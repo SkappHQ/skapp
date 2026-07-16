@@ -99,7 +99,6 @@ const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
         ? translateText(["accrual"])
         : translateText(["flexible"]),
     status: policy.status,
-    assignedEmployees: policy.assignedEmployeesCount,
     actions: policy
   }));
 
@@ -160,13 +159,6 @@ const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
           />
         );
       }
-    },
-    {
-      key: "assignedEmployees",
-      header: translateText(["assignedEmployeesHeader"]),
-      render: (value: unknown) => (
-        <span className="body1 text-black">{value as number}</span>
-      )
     }
   ];
 

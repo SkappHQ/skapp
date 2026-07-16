@@ -160,7 +160,6 @@
     "policyNameHeader": "POLICY NAME",
     "leaveTypeHeader": "LEAVE TYPE",
     "statusHeader": "STATUS",
-    "assignedEmployeesHeader": "ASSIGNED EMPLOYEES",
     "active": "Active",
     "inactive": "Inactive",
     "accrual": "Accrual",
