@@ -103,7 +103,11 @@ const CompanySidePanel: FC = () => {
     fetchNextPage: fetchNextDealsPage,
     hasNextPage: hasNextDealsPage,
     isFetchingNextPage: isFetchingNextDealsPage
-  } = useGetDealsByCompany(selectedCompanyId!, DEAL_PAGE_SIZE, hasSelectedCompany);
+  } = useGetDealsByCompany(
+    selectedCompanyId!,
+    DEAL_PAGE_SIZE,
+    hasSelectedCompany
+  );
 
   const dealItems = useMemo(
     () => dealPages?.pages.flatMap((page) => page.items) ?? [],
@@ -224,12 +228,13 @@ const CompanySidePanel: FC = () => {
             hasNextPage={hasNextCompletedTasksPage}
             isFetchingNextPage={isFetchingNextCompletedTasksPage}
             onFetchNextPage={fetchNextCompletedTasksPage}
+            emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
       case SidePanelTabEnum.CONTACTS:
         return (
           <SidePanelCompanyContacts
-            contacts={selectedCompany?.contacts}
+            contacts={selectedCompany?.contacts ?? []}
             hasNextPage={hasNextContactsPage}
             onFetchNextPage={fetchNextContactsPage}
           />

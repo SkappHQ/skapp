@@ -30,7 +30,7 @@ interface Props {
   emptyDescription?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
-  onFetchNextPage?: () => void;
+  onFetchNextPage: () => void;
 }
 
 const SidePanelDealSection: FC<Props> = ({
@@ -40,7 +40,7 @@ const SidePanelDealSection: FC<Props> = ({
   emptyDescription,
   hasNextPage = false,
   isFetchingNextPage = false,
-  onFetchNextPage = () => {}
+  onFetchNextPage
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;

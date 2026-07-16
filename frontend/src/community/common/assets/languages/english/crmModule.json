@@ -155,6 +155,9 @@
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
       },
+      "deals": {
+        "emptyDescription": "No deals associated with this contact"
+      },
       "errors": {
         "contactNotFoundTitle": "Contact not found",
         "contactNotFoundDescription": "This contact is no longer available."
@@ -393,6 +396,9 @@
         "accountValue": "Account value",
         "openDeals": "Open deals",
         "closedDeals": "Closed deals"
+      },
+      "tasks": {
+        "emptyDescription": "No tasks associated with this company"
       }
     }
   },
