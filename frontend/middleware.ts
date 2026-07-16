@@ -58,7 +58,8 @@ const superAdminRoutes = {
     ROUTES.PROJECTS.GUEST_REQUESTS,
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
-    ROUTES.INVOICE.CUSTOMERS.BASE
+    ROUTES.INVOICE.CUSTOMERS.BASE,
+    ROUTES.CRM.BASE
   ]
 };
 
@@ -213,6 +214,7 @@ export function middleware(request: NextRequest) {
     | EmployeeTypes
     | SuperAdminType
     | SenderTypes
+    | RepresentativeTypes
   )[] = claims?.roles || [];
 
   const isPasswordChangedForTheFirstTime = request.cookies.get(
@@ -293,6 +295,15 @@ export function middleware(request: NextRequest) {
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
       !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    if (
+      request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
+      !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
