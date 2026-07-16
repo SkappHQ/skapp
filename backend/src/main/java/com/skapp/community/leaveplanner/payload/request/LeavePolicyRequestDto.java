@@ -8,8 +8,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Getter
 @Setter
 public class LeavePolicyRequestDto {
@@ -23,14 +21,6 @@ public class LeavePolicyRequestDto {
 
 	@NotNull(message = "Policy type is required")
 	private PolicyType policyType;
-
-	private Float fixedDaysAllocated;
-
-	private Boolean carryForwardEnabled = false;
-
-	private Float maxCarryForwardDays;
-
-	private LocalDate carryForwardExpiryDate;
 
 	@Valid
 	private LeavePolicyAccrualDetailDto accrual;

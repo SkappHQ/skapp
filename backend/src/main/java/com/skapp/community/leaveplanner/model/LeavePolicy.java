@@ -21,8 +21,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @Setter
@@ -50,18 +48,6 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "status", nullable = false, columnDefinition = "varchar(255)")
 	private LeavePolicyStatus status;
 
-	@Column(name = "fixed_days_allocated")
-	private Float fixedDaysAllocated;
-
-	@Column(name = "is_carry_forward_enabled", nullable = false)
-	private Boolean isCarryForwardEnabled = false;
-
-	@Column(name = "max_carry_forward_days")
-	private Float maxCarryForwardDays;
-
-	@Column(name = "carry_forward_expiry_date")
-	private LocalDate carryForwardExpiryDate;
-
 	@Column(name = "accrual_days")
 	private Float accrualDays;
 
@@ -81,8 +67,8 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "carryover_date", length = 5)
 	private String carryoverDate;
 
-	@Column(name = "is_reset_negative_on_carryover", nullable = false)
-	private Boolean isResetNegativeOnCarryover = false;
+	@Column(name = "max_carryover_days")
+	private Float maxCarryoverDays;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "first_accrual", columnDefinition = "varchar(255)")
