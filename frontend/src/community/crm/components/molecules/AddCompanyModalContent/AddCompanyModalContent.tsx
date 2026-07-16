@@ -8,7 +8,7 @@ import CompanyModalForm from "~community/crm/components/molecules/CompanyModalFo
 import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmCompanyAddFormTypes,
+  CrmCompanyFormTypes,
   CrmCompanyCreatePayload
 } from "~community/crm/types/CommonTypes";
 
@@ -48,7 +48,7 @@ const AddCompanyModalContent: React.FC = () => {
     });
   };
 
-  const initialValues: CrmCompanyAddFormTypes = {
+  const initialValues: CrmCompanyFormTypes = {
     name: "",
     industry: CrmIndustryEnum.NONE,
     website: null,
@@ -61,7 +61,7 @@ const AddCompanyModalContent: React.FC = () => {
     handleError
   );
 
-  const createCompany = (values: CrmCompanyAddFormTypes) => {
+  const createCompany = (values: CrmCompanyFormTypes) => {
     const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
       industry: values.industry,

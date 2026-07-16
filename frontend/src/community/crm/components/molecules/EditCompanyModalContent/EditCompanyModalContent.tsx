@@ -9,7 +9,7 @@ import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompany,
-  CrmCompanyEditFormTypes,
+  CrmCompanyFormTypes,
   EditCompanyPayload
 } from "~community/crm/types/CommonTypes";
 
@@ -40,7 +40,7 @@ const EditCompanyModalContent: React.FC = () => {
     setIsCompanyModalOpen(false);
   };
 
-  const initialValues: CrmCompanyEditFormTypes = {
+  const initialValues: CrmCompanyFormTypes = {
     name: selectedCompany?.name || "",
     industry: selectedCompany?.industry || CrmIndustryEnum.NONE,
     website: selectedCompany?.website || null,
@@ -73,7 +73,7 @@ const EditCompanyModalContent: React.FC = () => {
     handleError
   );
 
-  const submitEditCompany = (values: CrmCompanyEditFormTypes) => {
+  const submitEditCompany = (values: CrmCompanyFormTypes) => {
     if (!selectedCompany) return;
 
     const payload: EditCompanyPayload = {
