@@ -136,6 +136,7 @@ const ContactSidePanel: FC = () => {
           <SidePanelDealSection
             deals={contact?.deals ?? []}
             defaultContact={contact}
+            emptyDescription={translateText(["deals", "emptyDescription"])}
           />
         );
       case SidePanelTabEnum.TASKS:
