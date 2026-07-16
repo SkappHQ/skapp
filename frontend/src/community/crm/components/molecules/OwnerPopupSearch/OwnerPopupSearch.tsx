@@ -56,7 +56,7 @@ const OwnerPopupSearch: FC<Props> = ({
   const options: DropdownOption[] = useMemo(
     () =>
       buildOwnerOptions(users, selectedUser, (u) =>
-        concatStrings([u.firstName, u.lastName ?? "", u.email ?? ""])
+        concatStrings([u.firstName, u.lastName ?? ""])
       ),
     [users, selectedUser]
   );

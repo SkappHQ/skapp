@@ -15,7 +15,6 @@ export interface CrmOwner {
   employeeId: number;
   firstName: string;
   lastName: string | null;
-  email?: string | null;
   authPic: string | null;
 }
 
