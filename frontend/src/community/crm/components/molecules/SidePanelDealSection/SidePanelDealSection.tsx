@@ -8,6 +8,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import SidePanelAddDeal from "~community/crm/components/molecules/SidePanelAddDeal/SidePanelAddDeal";
 import {
@@ -20,23 +21,36 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 import DealAccordionItemBadge from "./DealAccordionItemBadge";
 import DealAccordionItemContent from "./DealAccordionItemContent";
 import DealAccordionItemHeader from "./DealAccordionItemHeader";
+import DealAccordionItemSkeleton from "./DealAccordionItemSkeleton";
 
 interface Props {
   deals: DetailPanelDealResponseType[];
   defaultContact?: CrmContactLookup;
   showAddDealAction?: boolean;
   emptyDescription?: string;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onFetchNextPage?: () => void;
 }
 
 const SidePanelDealSection: FC<Props> = ({
   deals,
   defaultContact,
   showAddDealAction = true,
-  emptyDescription
+  emptyDescription,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  onFetchNextPage
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const hasDeals = deals.length > 0;
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: () => onFetchNextPage?.()
+  });
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
 
@@ -86,12 +100,13 @@ const SidePanelDealSection: FC<Props> = ({
   const renderDealsContent = () => {
     if (hasDeals) {
       return (
-        <div className="flex flex-col w-full">
+        <div ref={loadingRef} className="flex flex-col w-full gap-2">
           <AdvancedAccordion
             items={accordionItems}
             allowMultiple={true}
             className="gap-4"
           />
+          {isFetchingNextPage && <DealAccordionItemSkeleton />}
           {showAddDealAction && (
             <div className="mt-2">{renderAddDealAction()}</div>
           )}

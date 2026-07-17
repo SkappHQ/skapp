@@ -1,4 +1,4 @@
-import { AvatarChip } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, AvatarProps } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
@@ -9,12 +9,14 @@ interface OwnerAvatarChipProps {
   id: string;
   owner: CrmOwner;
   backgroundColor?: string;
+  size?: AvatarProps["size"];
 }
 
 const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
   id,
   owner,
-  backgroundColor
+  backgroundColor,
+  size = "sm"
 }) => {
   const imageUrl = useGetImageUrl(owner.authPic ?? "");
 
@@ -25,7 +27,7 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
         firstName: owner.firstName,
         lastName: owner.lastName ?? undefined,
         src: imageUrl ?? undefined,
-        size: "sm"
+        size
       }}
       label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
       backgroundColor={backgroundColor}
