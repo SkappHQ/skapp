@@ -347,6 +347,10 @@ export interface CrmDealNameExistsResponse {
   isExists: boolean;
 }
 
+export interface CrmContactEmailExistsResponse {
+  isExists: boolean;
+}
+
 export interface CrmCompanyEditFormTypes {
   name: string;
   industry: CrmIndustryEnum;

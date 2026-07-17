@@ -29,7 +29,8 @@ export const contactEndpoints = {
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`,
   CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
-  DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`
+  DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists`
 };
 
 export const taskEndpoints = {
