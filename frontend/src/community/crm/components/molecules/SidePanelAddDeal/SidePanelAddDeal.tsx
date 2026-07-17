@@ -19,6 +19,7 @@ import {
   CrmPriorityEnum
 } from "~community/crm/enums/common";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
+import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
   CrmCreateDealPayload,
@@ -39,6 +40,10 @@ interface Props {
 const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
+
+  const incrementCompanyOpenDeals = useCrmStore(
+    (store) => store.incrementCompanyOpenDeals
+  );
 
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookup | null>(defaultContact ?? null);
@@ -66,6 +71,11 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   };
 
   const handleCreateDealSuccess = () => {
+    const companyId = selectedContact?.company?.id;
+    if (companyId != null) {
+      incrementCompanyOpenDeals(companyId);
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
