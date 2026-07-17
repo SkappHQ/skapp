@@ -1,5 +1,5 @@
 import { RadioButton } from "@rootcodelabs/skapp-ui";
-import { JSX } from "react";
+import { FC } from "react";
 
 interface Props {
   label: string;
@@ -10,14 +10,14 @@ interface Props {
   onChange: (value: boolean) => void;
 }
 
-const YesNoRadioGroup = ({
+const YesNoRadioGroup: FC<Props> = ({
   label,
   name,
   noLabel,
   yesLabel,
   value,
   onChange
-}: Props): JSX.Element => {
+}) => {
   const options = [
     { id: `${name}-no`, label: noLabel, optionValue: false },
     { id: `${name}-yes`, label: yesLabel, optionValue: true }
@@ -25,7 +25,7 @@ const YesNoRadioGroup = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="subtitle3 text-black">{label}</p>
+      <p className="subtitle1 text-black">{label}</p>
       <div role="radiogroup" aria-label={label} className="flex flex-col gap-2">
         {options.map((option) => (
           <button

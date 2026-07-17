@@ -1,5 +1,5 @@
 import { Checkbox, Dropdown, InputField } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX } from "react";
+import { ChangeEvent, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -22,22 +22,14 @@ interface Props {
   errors: LeavePolicyWizardErrors;
 }
 
-const FieldError = ({
-  message
-}: {
-  message: string | undefined;
-}): JSX.Element | null =>
+const FieldError: FC<{ message: string | undefined }> = ({ message }) =>
   message ? (
     <p role="alert" className="body2 text-semantic-red-text">
       {message}
     </p>
   ) : null;
 
-const EntitlementSetupStep = ({
-  formData,
-  onChange,
-  errors
-}: Props): JSX.Element => {
+const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",

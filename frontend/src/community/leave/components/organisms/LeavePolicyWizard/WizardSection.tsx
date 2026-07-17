@@ -1,11 +1,11 @@
-import { JSX, ReactNode } from "react";
+import { FC, ReactNode } from "react";
 
 interface Props {
   title: string;
   children: ReactNode;
 }
 
-const WizardSection = ({ title, children }: Props): JSX.Element => {
+const WizardSection: FC<Props> = ({ title, children }) => {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-4">

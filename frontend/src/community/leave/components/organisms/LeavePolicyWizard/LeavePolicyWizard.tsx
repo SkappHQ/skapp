@@ -8,7 +8,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
-import { JSX, useMemo, useState } from "react";
+import { FC, JSX, useMemo, useState } from "react";
 
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
 import ROUTES from "~community/common/constants/routes";
@@ -44,7 +44,7 @@ interface Props {
   policyType: PolicyType;
 }
 
-const LeavePolicyWizard = ({ policyType }: Props): JSX.Element => {
+const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   const router = useRouter();
 
   const { setToastMessage } = useToast();

@@ -7,7 +7,7 @@ import {
   StatusComponent,
   Table
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useMemo, useState } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -20,6 +20,7 @@ import {
 } from "~community/leave/api/LeavePolicyApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
+import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
 import {
   LEAVE_POLICY_PAGE_SIZE,
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS
@@ -34,7 +35,7 @@ interface Props {
   onCreatePolicy: () => void;
 }
 
-const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
+const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const { user } = useAuth();
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
@@ -247,6 +248,12 @@ const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
         data={tableData}
         tableAriaLabel={translateText(["title"])}
         isLoading={isLoading}
+        customSkeletonLoader={
+          <LeavePoliciesTableSkeletonLoader
+            rowCount={8}
+            showActionsColumn={isPeopleAdmin}
+          />
+        }
         emptyStateType={isFiltering ? "no-search-results" : "no-data"}
         onLoadMore={
           hasNextPage

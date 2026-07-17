@@ -4,7 +4,7 @@ import {
   SaveIcon,
   SmallModal
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useEffect, useState } from "react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -20,11 +20,11 @@ interface EditLeavePolicyModalProps {
   onClose: () => void;
 }
 
-const EditLeavePolicyModal = ({
+const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   policy,
   isOpen,
   onClose
-}: EditLeavePolicyModalProps): JSX.Element | null => {
+}) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",

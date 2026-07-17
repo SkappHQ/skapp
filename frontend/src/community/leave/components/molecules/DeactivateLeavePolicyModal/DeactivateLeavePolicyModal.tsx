@@ -1,5 +1,5 @@
 import { CloseIcon, DeleteButtonIcon, SmallModal } from "@rootcodelabs/skapp-ui";
-import { JSX } from "react";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -13,11 +13,11 @@ interface DeactivateLeavePolicyModalProps {
   onClose: () => void;
 }
 
-const DeactivateLeavePolicyModal = ({
+const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
   policy,
   isOpen,
   onClose
-}: DeactivateLeavePolicyModalProps): JSX.Element | null => {
+}) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
