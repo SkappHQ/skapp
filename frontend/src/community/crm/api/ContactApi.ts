@@ -156,7 +156,10 @@ const checkContactEmailExists = async (
   return response?.data?.results?.[0];
 };
 
-export const useCheckContactEmailExists = (email: string, enabled: boolean) => {
+export const useCheckContactEmailExists = (
+  email: string,
+  enabled: boolean
+): UseQueryResult<CrmContactEmailExistsResponse> => {
   return useQuery({
     queryKey: contactQueryKeys.CHECK_CONTACT_EMAIL_EXISTS(email),
     queryFn: () => checkContactEmailExists(email),
