@@ -2,7 +2,6 @@ package com.skapp.community.leaveplanner.payload.request;
 
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,19 +11,14 @@ import java.time.LocalDate;
 @Setter
 public class LeaveTypeRequestDto {
 
-	@NotNull
 	private String name;
 
-	@NotNull
 	private String emojiCode;
 
-	@NotNull
 	private String colorCode;
 
-	@NotNull
 	private CalculationType calculationType;
 
-	@NotNull
 	private LeaveDuration leaveDuration;
 
 	private float maxCarryForwardDays;
