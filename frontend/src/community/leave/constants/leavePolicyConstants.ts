@@ -7,7 +7,7 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
-export const LEAVE_POLICY_PAGE_SIZE = 20;
+export const LEAVE_POLICY_PAGE_SIZE = 10;
 
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
