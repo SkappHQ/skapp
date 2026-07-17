@@ -15,19 +15,6 @@ import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyCon
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { CrmCompanyFormTypes } from "~community/crm/types/CommonTypes";
 
-interface FieldValidation {
-  errorMessage?: string;
-  state: "error" | "default";
-}
-
-const getFieldValidation = (
-  isTouched: boolean | undefined,
-  error?: string
-): FieldValidation => ({
-  errorMessage: isTouched ? error : undefined,
-  state: isTouched && error ? "error" : "default"
-});
-
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyFormTypes>;
   isPending: boolean;
@@ -48,42 +35,32 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const {
     values,
     errors,
-    touched,
     handleChange,
     dirty,
     isSubmitting,
     setFieldValue,
+    setFieldError,
     submitForm
   } = formik;
 
-  const debouncedCompanyName = useDebounce(
-    values.name.trim(),
-    COMPANY_NAME_DEBOUNCE_DELAY
-  );
-
+  const trimmedName = values.name.trim();
   const trimmedOriginalName = originalName?.trim();
-  const isNameUnchanged = values.name.trim() === trimmedOriginalName;
+  const debouncedName = useDebounce(trimmedName, COMPANY_NAME_DEBOUNCE_DELAY);
 
   const { data: companyNameData } = useCheckCompanyNameExists(
-    debouncedCompanyName,
-    debouncedCompanyName.length > 0 &&
-      debouncedCompanyName !== trimmedOriginalName
+    debouncedName,
+    debouncedName.length > 0 && debouncedName !== trimmedOriginalName
   );
 
   const isAlreadyNameExists =
-    !isNameUnchanged && companyNameData?.isExists === true;
+    trimmedName !== trimmedOriginalName && companyNameData?.isExists === true;
 
-  const schemaNameError = touched.name ? errors.name : undefined;
   const nameError = isAlreadyNameExists
     ? translateText(["validations", "companyExists"])
-    : schemaNameError;
+    : errors.name;
 
-  const contactNumberValidation = getFieldValidation(
-    touched.contactNumber,
-    errors.contactNumber
-  );
-  const websiteValidation = getFieldValidation(touched.website, errors.website);
-  const addressValidation = getFieldValidation(touched.address, errors.address);
+  const clearError = (field: keyof CrmCompanyFormTypes) =>
+    setFieldError(field, undefined);
 
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
@@ -98,7 +75,10 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         state={nameError ? "error" : "default"}
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
-        onChange={handleChange}
+        onChange={(e) => {
+          handleChange(e);
+          clearError("name");
+        }}
         aria-label={translateText(["ariaLabels", "companyName"])}
         maxLength={characterLengths.COMPANY_NAME_LENGTH}
         required
@@ -110,9 +90,12 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         label={translateText(["labels", "contactNumber"])}
         value={values.contactNumber}
         placeholder={translateText(["placeholders", "contactNumber"])}
-        onChange={handleChange}
-        errorMessage={contactNumberValidation.errorMessage}
-        state={contactNumberValidation.state}
+        onChange={(e) => {
+          handleChange(e);
+          clearError("contactNumber");
+        }}
+        errorMessage={errors.contactNumber}
+        state={errors.contactNumber ? "error" : "default"}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
         fullWidth
       />
@@ -120,11 +103,14 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="website"
         value={values.website}
-        errorMessage={websiteValidation.errorMessage}
-        state={websiteValidation.state}
+        errorMessage={errors.website}
+        state={errors.website ? "error" : "default"}
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
-        onChange={handleChange}
+        onChange={(e) => {
+          handleChange(e);
+          clearError("website");
+        }}
         aria-label={translateText(["ariaLabels", "website"])}
         fullWidth
       />
@@ -132,11 +118,14 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="address"
         value={values.address}
-        errorMessage={addressValidation.errorMessage}
-        state={addressValidation.state}
+        errorMessage={errors.address}
+        state={errors.address ? "error" : "default"}
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
-        onChange={handleChange}
+        onChange={(e) => {
+          handleChange(e);
+          clearError("address");
+        }}
         aria-label={translateText(["ariaLabels", "address"])}
         fullWidth
       />
@@ -147,10 +136,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         onChange={handleIndustryChange}
         label={translateText(["labels", "industry"])}
         className="rounded-lg"
-        errorMessage={touched.industry ? errors.industry || "" : ""}
-        variant={
-          touched.industry && errors.industry ? "primary-error" : "primary"
-        }
+        variant="primary"
         ariaLabel={translateText(["ariaLabels", "industry"])}
         width="100%"
       />

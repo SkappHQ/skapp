@@ -27,7 +27,7 @@ const AddCompanyModalContent: React.FC = () => {
     initialValues: getCompanyFormInitialValues(),
     onSubmit: (values) => createCompany(values),
     validationSchema: addCompanyValidations(translateText),
-    validateOnChange: true,
+    validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
   });
