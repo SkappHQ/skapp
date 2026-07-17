@@ -92,6 +92,8 @@ const DealSidePanel: FC = () => {
 
     if (hasStageChanged) {
       refreshStages([previousStageId, updatedDeal.stage.id]);
+    } else if (previousStageId !== null) {
+      refreshStages([updatedDeal.stage.id]);
     } else {
       updateDealInStage(mapCreatedDealToSlice(updatedDeal));
     }

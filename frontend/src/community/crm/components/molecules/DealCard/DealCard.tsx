@@ -7,7 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import useOwnerImageUrl from "~community/crm/hooks/useOwnerImageUrl";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import PriorityLabel from "~community/crm/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/enums/common";
@@ -39,7 +39,7 @@ const DealCard: FC<DealCardProps> = ({
   ariaLabel,
   onClick
 }) => {
-  const imageUrl = useGetImageUrl(owner?.authPic ?? "");
+  const imageUrl = useOwnerImageUrl(owner?.authPic);
 
   return (
     <div
