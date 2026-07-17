@@ -70,9 +70,9 @@ export interface MetricItem {
 export interface CrmCompanyFormTypes {
   name: string;
   industry: CrmIndustryEnum;
-  website: string | null;
-  address: string | null;
-  contactNumber: string | null;
+  website: string;
+  address: string;
+  contactNumber: string;
 }
 
 export interface CrmCompanyCreatePayload {

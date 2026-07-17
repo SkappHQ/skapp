@@ -5,21 +5,16 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateNewCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
-  CrmCompanyFormTypes,
-  CrmCompanyCreatePayload
+  CrmCompanyCreatePayload,
+  CrmCompanyFormTypes
 } from "~community/crm/types/CommonTypes";
 
 const AddCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "addCompanyModal"
-  );
+  const translateText = useTranslator("crmModule", "companies", "companyModal");
 
   const { setIsCompanyModalOpen } = useCrmStore((store) => ({
     setIsCompanyModalOpen: store.setIsCompanyModalOpen
@@ -34,8 +29,8 @@ const AddCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText(["toastMessages", "add", "successTitle"]),
+      description: translateText(["toastMessages", "add", "successDescription"])
     });
   };
 
@@ -43,17 +38,9 @@ const AddCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText(["toastMessages", "add", "errorTitle"]),
+      description: translateText(["toastMessages", "add", "errorDescription"])
     });
-  };
-
-  const initialValues: CrmCompanyFormTypes = {
-    name: "",
-    industry: CrmIndustryEnum.NONE,
-    website: null,
-    address: null,
-    contactNumber: null
   };
 
   const { mutate: createNewCompany, isPending } = useCreateNewCompany(
@@ -65,9 +52,9 @@ const AddCompanyModalContent: React.FC = () => {
     const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
       industry: values.industry,
-      website: values.website?.trim() || null,
-      address: values.address?.trim() || null,
-      contactNumber: values.contactNumber?.trim() || null
+      website: values.website.trim() || null,
+      address: values.address.trim() || null,
+      contactNumber: values.contactNumber.trim() || null
     };
 
     createNewCompany(payload);
@@ -75,8 +62,7 @@ const AddCompanyModalContent: React.FC = () => {
 
   return (
     <CompanyModalForm
-      translateText={translateText}
-      initialValues={initialValues}
+      mode="add"
       isPending={isPending}
       onSubmit={createCompany}
       onCancel={handleCloseModal}

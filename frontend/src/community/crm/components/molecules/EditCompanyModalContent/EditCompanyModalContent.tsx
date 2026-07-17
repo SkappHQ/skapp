@@ -5,7 +5,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmCompany,
@@ -16,11 +15,7 @@ import {
 const EditCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "editCompanyModal"
-  );
+  const translateText = useTranslator("crmModule", "companies", "companyModal");
 
   const {
     setIsCompanyModalOpen,
@@ -40,22 +35,18 @@ const EditCompanyModalContent: React.FC = () => {
     setIsCompanyModalOpen(false);
   };
 
-  const initialValues: CrmCompanyFormTypes = {
-    name: selectedCompany?.name || "",
-    industry: selectedCompany?.industry || CrmIndustryEnum.NONE,
-    website: selectedCompany?.website || null,
-    address: selectedCompany?.address || null,
-    contactNumber: selectedCompany?.contactNumber || null
-  };
-
   const handleSuccess = (data: CrmCompany) => {
     updateCompany(data);
     handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText(["toastMessages", "edit", "successTitle"]),
+      description: translateText([
+        "toastMessages",
+        "edit",
+        "successDescription"
+      ])
     });
   };
 
@@ -63,8 +54,8 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText(["toastMessages", "edit", "errorTitle"]),
+      description: translateText(["toastMessages", "edit", "errorDescription"])
     });
   };
 
@@ -80,9 +71,9 @@ const EditCompanyModalContent: React.FC = () => {
       id: selectedCompany.id,
       name: values.name.trim(),
       industry: values.industry,
-      website: values.website?.trim() || null,
-      address: values.address?.trim() || null,
-      contactNumber: values.contactNumber?.trim() || null
+      website: values.website.trim() || null,
+      address: values.address.trim() || null,
+      contactNumber: values.contactNumber.trim() || null
     };
 
     editCompany(payload);
@@ -90,12 +81,10 @@ const EditCompanyModalContent: React.FC = () => {
 
   return (
     <CompanyModalForm
-      translateText={translateText}
-      initialValues={initialValues}
+      mode="edit"
       isPending={isPending}
       onSubmit={submitEditCompany}
       onCancel={handleCloseModal}
-      originalName={selectedCompany?.name}
     />
   );
 };
