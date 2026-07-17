@@ -45,9 +45,7 @@
       "cancelButton": "Cancel",
       "validations": {
         "nameRequired": "Device name is required",
-        "nameLength": "Device name must be at most 100 characters",
         "serialRequired": "Serial number is required",
-        "serialLength": "Serial number must be at most 100 characters",
         "serialExists": "A device with this serial number already exists"
       },
       "toasts": {
