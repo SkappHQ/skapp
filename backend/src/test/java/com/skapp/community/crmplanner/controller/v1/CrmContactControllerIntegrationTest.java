@@ -67,6 +67,8 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
 
+	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+
 	private static final String METRICS_PATH = BASE_PATH + "/metrics";
 
 	private static final String OWNERS_PATH = BASE_PATH + "/owners";
@@ -144,6 +146,10 @@ class CrmContactControllerIntegrationTest {
 
 	private ResultActions performGetByIdRequest(Long id) throws Exception {
 		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetExistsRequest(String email) throws Exception {
+		return performRequest(get(EXISTS_PATH).param("email", email).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetMetricsRequest() throws Exception {
@@ -240,6 +246,72 @@ class CrmContactControllerIntegrationTest {
 		dto.setContactNumber("94779999999");
 		dto.setOwnerId(1L);
 		return dto;
+	}
+
+	// --- Check contact email exists tests ---
+
+	@Test
+	@DisplayName("Check contact email exists when not found - Returns OK with false")
+	void checkContactEmailExists_NotFound_ReturnsOkWithFalse() throws Exception {
+		performGetExistsRequest("nonexistent@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists when found - Returns OK with true")
+	void checkContactEmailExists_Found_ReturnsOkWithTrue() throws Exception {
+		savedNamedContact("Existing Contact", null, "existing.contact@example.com");
+
+		performGetExistsRequest("existing.contact@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists is case-insensitive - Returns OK with true for different casing")
+	void checkContactEmailExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
+		savedNamedContact("Case Contact", null, "case.contact@example.com");
+
+		performGetExistsRequest("CASE.CONTACT@EXAMPLE.COM").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists for soft-deleted contact - Returns OK with false")
+	void checkContactEmailExists_SoftDeletedContact_ReturnsOkWithFalse() throws Exception {
+		CrmContact contact = savedNamedContact("Deleted Contact", null, "deleted.contact@example.com");
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		performGetExistsRequest("deleted.contact@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists with blank email - Returns Bad Request")
+	void checkContactEmailExists_BlankEmail_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists with invalid email format - Returns Bad Request")
+	void checkContactEmailExists_InvalidEmail_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("not-an-email").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_INVALID)));
 	}
 
 	// --- createContact ---
