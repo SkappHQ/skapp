@@ -11,6 +11,7 @@ import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
@@ -72,8 +73,31 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		LeavePolicy leavePolicy = buildLeavePolicy(leavePolicyRequestDto, leaveType);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
-		log.info("addLeavePolicy: policy created successfully policyId: {} policyType: {}",
-				leavePolicy.getPolicyId(), leavePolicy.getPolicyType());
+		log.info("addLeavePolicy: policy created successfully policyId: {} policyType: {}", leavePolicy.getPolicyId(),
+				leavePolicy.getPolicyType());
+
+		return new ResponseEntityDto(false, toResponseDto(leavePolicy));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto updateLeavePolicy(Long policyId, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
+		log.info("updateLeavePolicy: execution started policyId: {}", policyId);
+
+		LeavePolicy leavePolicy = leavePolicyDao.findById(policyId)
+			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
+
+		String sanitizedName = sanitizeName(leavePolicyUpdateRequestDto.getName());
+
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(sanitizedName,
+				leavePolicy.getLeaveType().getTypeId(), policyId)) {
+			throw new ConflictException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
+		}
+
+		leavePolicy.setName(sanitizedName);
+		leavePolicy = leavePolicyDao.save(leavePolicy);
+
+		log.info("updateLeavePolicy: policy updated successfully policyId: {}", leavePolicy.getPolicyId());
 
 		return new ResponseEntityDto(false, toResponseDto(leavePolicy));
 	}
