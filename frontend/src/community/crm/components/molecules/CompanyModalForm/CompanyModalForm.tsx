@@ -4,72 +4,33 @@ import {
   Dropdown,
   InputField
 } from "@rootcodelabs/skapp-ui";
-import { useFormik } from "formik";
+import { FormikProps } from "formik";
 import { FC } from "react";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
 import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
-import { CrmIndustryEnum } from "~community/crm/enums/common";
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
-import { useCrmStore } from "~community/crm/store/store";
-import {
-  CrmCompany,
-  CrmCompanyFormTypes
-} from "~community/crm/types/CommonTypes";
-import { addCompanyValidations } from "~community/crm/utils/companyValidations";
-
-type CompanyModalFormMode = "add" | "edit";
+import { CrmCompanyFormTypes } from "~community/crm/types/CommonTypes";
 
 interface CompanyModalFormProps {
-  mode: CompanyModalFormMode;
+  formik: FormikProps<CrmCompanyFormTypes>;
   isPending: boolean;
-  onSubmit: (values: CrmCompanyFormTypes) => void;
+  translateText: TranslatorFunctionType;
+  originalName?: string;
   onCancel: () => void;
 }
 
-const getInitialValues = (company?: CrmCompany): CrmCompanyFormTypes => ({
-  name: company?.name || "",
-  industry: company?.industry || CrmIndustryEnum.NONE,
-  website: company?.website || "",
-  address: company?.address || "",
-  contactNumber: company?.contactNumber || ""
-});
-
 const CompanyModalForm: FC<CompanyModalFormProps> = ({
-  mode,
+  formik,
   isPending,
-  onSubmit,
+  translateText,
+  originalName,
   onCancel
 }) => {
-  const translateText = useTranslator("crmModule", "companies", "companyModal");
-
   const industryOptions = useGetIndustryOptions();
-
-  const { selectedCompanyId, getCompanyById } = useCrmStore((store) => ({
-    selectedCompanyId: store.selectedCompanyId,
-    getCompanyById: store.getCompanyById
-  }));
-
-  const selectedCompany =
-    mode === "edit" ? getCompanyById(selectedCompanyId!) : undefined;
-
-  const initialValues = getInitialValues(selectedCompany);
-  const originalName = selectedCompany?.name;
-
-  const formik = useFormik<CrmCompanyFormTypes>({
-    initialValues,
-    onSubmit: (values, { setSubmitting }) => {
-      onSubmit(values);
-      setSubmitting(false);
-    },
-    validationSchema: addCompanyValidations(translateText),
-    validateOnChange: true,
-    validateOnBlur: false,
-    enableReinitialize: true
-  });
 
   const {
     values,
@@ -77,6 +38,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     touched,
     handleChange,
     dirty,
+    isSubmitting,
     setFieldValue,
     submitForm
   } = formik;
@@ -179,7 +141,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isPending}
+          disabled={isPending || isSubmitting}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -191,7 +153,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isPending || isAlreadyNameExists || !dirty}
+          disabled={isPending || isSubmitting || isAlreadyNameExists || !dirty}
           isLoading={isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >

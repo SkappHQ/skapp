@@ -1,3 +1,4 @@
+import { useFormik } from "formik";
 import React from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -10,6 +11,8 @@ import {
   CrmCompanyCreatePayload,
   CrmCompanyFormTypes
 } from "~community/crm/types/CommonTypes";
+import { getCompanyFormInitialValues } from "~community/crm/utils/companyUtil";
+import { addCompanyValidations } from "~community/crm/utils/companyValidations";
 
 const AddCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
@@ -20,11 +23,23 @@ const AddCompanyModalContent: React.FC = () => {
     setIsCompanyModalOpen: store.setIsCompanyModalOpen
   }));
 
+  const formik = useFormik<CrmCompanyFormTypes>({
+    initialValues: getCompanyFormInitialValues(),
+    onSubmit: (values) => createCompany(values),
+    validationSchema: addCompanyValidations(translateText),
+    validateOnChange: true,
+    validateOnBlur: false,
+    enableReinitialize: true
+  });
+
+  const { setSubmitting } = formik;
+
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);
   };
 
   const handleSuccess = () => {
+    setSubmitting(false);
     handleCloseModal();
     setToastMessage({
       open: true,
@@ -35,6 +50,7 @@ const AddCompanyModalContent: React.FC = () => {
   };
 
   const handleError = () => {
+    setSubmitting(false);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -62,9 +78,9 @@ const AddCompanyModalContent: React.FC = () => {
 
   return (
     <CompanyModalForm
-      mode="add"
+      formik={formik}
       isPending={isPending}
-      onSubmit={createCompany}
+      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );

@@ -1,6 +1,21 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { CrmIndustryEnum } from "~community/crm/enums/common";
 
-import { CrmCompany, MetricItem } from "../types/CommonTypes";
+import {
+  CrmCompany,
+  CrmCompanyFormTypes,
+  MetricItem
+} from "../types/CommonTypes";
+
+export const getCompanyFormInitialValues = (
+  company?: CrmCompany
+): CrmCompanyFormTypes => ({
+  name: company?.name || "",
+  industry: company?.industry || CrmIndustryEnum.NONE,
+  website: company?.website || "",
+  address: company?.address || "",
+  contactNumber: company?.contactNumber || ""
+});
 
 export const mergeCompanyUpdate = (
   companies: CrmCompany[],
