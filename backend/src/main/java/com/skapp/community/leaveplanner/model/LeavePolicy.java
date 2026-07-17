@@ -33,7 +33,7 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "policy_id")
 	private Long policyId;
 
-	@Column(name = "name", nullable = false, length = 100)
+	@Column(name = "name", nullable = false, columnDefinition = "text")
 	private String name;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -41,18 +41,18 @@ public class LeavePolicy extends Auditable<String> {
 	private PolicyLeaveType leaveType;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "policy_type", nullable = false, columnDefinition = "varchar(255)")
+	@Column(name = "policy_type", nullable = false, columnDefinition = "text")
 	private PolicyType policyType;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, columnDefinition = "varchar(255)")
+	@Column(name = "status", nullable = false, columnDefinition = "text")
 	private LeavePolicyStatus status;
 
 	@Column(name = "accrual_days")
 	private Float accrualDays;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "frequency", columnDefinition = "varchar(255)")
+	@Column(name = "frequency", columnDefinition = "text")
 	private AccrualFrequency frequency;
 
 	@Column(name = "waiting_period_days")
@@ -64,18 +64,18 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "is_carryover_enabled", nullable = false)
 	private Boolean isCarryoverEnabled = false;
 
-	@Column(name = "carryover_date", length = 5)
+	@Column(name = "carryover_date", columnDefinition = "text")
 	private String carryoverDate;
 
 	@Column(name = "max_carryover_days")
 	private Float maxCarryoverDays;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "first_accrual", columnDefinition = "varchar(255)")
+	@Column(name = "first_accrual", columnDefinition = "text")
 	private FirstAccrualType firstAccrual;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "accrual_timing", columnDefinition = "varchar(255)")
+	@Column(name = "accrual_timing", columnDefinition = "text")
 	private AccrualTiming accrualTiming;
 
 }
