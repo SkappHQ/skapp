@@ -22,7 +22,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -85,7 +85,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		CrmValidations.validateContactEmail(email);
 		boolean exists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email.trim());
 
-		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
+		CrmExistsResponseDto responseDto = new CrmExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkContactEmailExists: execution ended");

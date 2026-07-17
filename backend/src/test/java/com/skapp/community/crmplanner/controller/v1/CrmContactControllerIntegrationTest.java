@@ -314,6 +314,15 @@ class CrmContactControllerIntegrationTest {
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_INVALID)));
 	}
 
+	@Test
+	@DisplayName("Check contact email exists without CRM role - Returns Forbidden")
+	void checkContactEmailExists_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		performRequest(get(EXISTS_PATH).param("email", "any@example.com").accept(MediaType.APPLICATION_JSON),
+				noRoleToken)
+			.andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
 	// --- createContact ---
 
 	@Test
