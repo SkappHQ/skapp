@@ -163,6 +163,7 @@ export const useCheckContactEmailExists = (
   return useQuery({
     queryKey: contactQueryKeys.CHECK_CONTACT_EMAIL_EXISTS(email),
     queryFn: () => checkContactEmailExists(email),
+    refetchOnWindowFocus: false,
     enabled
   });
 };
