@@ -5,6 +5,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
 import DeleteFolderModal from "~enterprise/common/components/molecules/DeleteFolderModal/DeleteFolderModal";
 import RenameFolderModal from "~enterprise/common/components/molecules/RenameFolderModal/RenameFolderModal";
+import UploadDocumentModal from "~enterprise/common/components/molecules/UploadDocumentModal/UploadDocumentModal";
 
 const CommonModalController = (): JSX.Element => {
   const commonModalType = useCommonStore((state) => state.commonModalType);
@@ -36,6 +37,15 @@ const CommonModalController = (): JSX.Element => {
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
           folder={commonModalData?.folder!}
+        />
+      );
+    case CommonModalType.UPLOAD_DOCUMENT:
+      return (
+        <UploadDocumentModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          employeeId={commonModalData?.employeeId!}
+          parentId={commonModalData?.parentId!}
         />
       );
     default:
