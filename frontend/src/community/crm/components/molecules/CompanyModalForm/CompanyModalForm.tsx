@@ -15,6 +15,19 @@ import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyCon
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
 import { CrmCompanyFormTypes } from "~community/crm/types/CommonTypes";
 
+interface FieldValidation {
+  errorMessage?: string;
+  state: "error" | "default";
+}
+
+const getFieldValidation = (
+  isTouched: boolean | undefined,
+  error?: string
+): FieldValidation => ({
+  errorMessage: isTouched ? error : undefined,
+  state: isTouched && error ? "error" : "default"
+});
+
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyFormTypes>;
   isPending: boolean;
@@ -65,6 +78,13 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : schemaNameError;
 
+  const contactNumberValidation = getFieldValidation(
+    touched.contactNumber,
+    errors.contactNumber
+  );
+  const websiteValidation = getFieldValidation(touched.website, errors.website);
+  const addressValidation = getFieldValidation(touched.address, errors.address);
+
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
   };
@@ -91,10 +111,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         value={values.contactNumber}
         placeholder={translateText(["placeholders", "contactNumber"])}
         onChange={handleChange}
-        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
-        state={
-          touched.contactNumber && errors.contactNumber ? "error" : "default"
-        }
+        errorMessage={contactNumberValidation.errorMessage}
+        state={contactNumberValidation.state}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
         fullWidth
       />
@@ -102,8 +120,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="website"
         value={values.website}
-        errorMessage={touched.website ? errors.website : undefined}
-        state={touched.website && errors.website ? "error" : "default"}
+        errorMessage={websiteValidation.errorMessage}
+        state={websiteValidation.state}
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
         onChange={handleChange}
@@ -114,8 +132,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="address"
         value={values.address}
-        errorMessage={touched.address ? errors.address : undefined}
-        state={touched.address && errors.address ? "error" : "default"}
+        errorMessage={addressValidation.errorMessage}
+        state={addressValidation.state}
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
         onChange={handleChange}
