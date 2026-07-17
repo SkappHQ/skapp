@@ -217,12 +217,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			responseDto.setFirstAccrual(leavePolicy.getFirstAccrual());
 			responseDto.setAccrualTiming(leavePolicy.getAccrualTiming());
 		}
-
-		// TODO: replace with a real count once employee-policy assignment
-		// (lv_employee_leave_policy) is implemented; see the assign/unassign
-		// leave policy user stories.
-		responseDto.setAssignedEmployeesCount(0);
-
 		return responseDto;
 	}
 
