@@ -11,6 +11,7 @@ export interface CrmCompanySliceTypes extends Pick<
   | "companies"
   | "setCompanies"
   | "updateCompany"
+  | "updateCompanyTaskCompletion"
   | "removeCompany"
   | "getCompanyById"
 > {}
@@ -41,6 +42,7 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setSelectedTaskId"
   | "tasks"
   | "setTasks"
+  | "setTaskCompletion"
   | "getTaskById"
   | "updateTask"
 > {}

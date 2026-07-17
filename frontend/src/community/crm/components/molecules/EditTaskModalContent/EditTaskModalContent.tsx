@@ -10,6 +10,7 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import {
+  CrmTaskDetailType,
   CrmTaskFormTypes,
   CrmTaskUpdatePayload
 } from "~community/crm/types/CommonTypes";
@@ -21,13 +22,13 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId, getTaskById } = useCrmStore(
-    (store) => ({
+  const { setIsTaskModalOpen, selectedTaskId, getTaskById, updateTask } =
+    useCrmStore((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       selectedTaskId: store.selectedTaskId,
-      getTaskById: store.getTaskById
-    })
-  );
+      getTaskById: store.getTaskById,
+      updateTask: store.updateTask
+    }));
 
   const { getCategoryById } = useGetTaskTypeOptions(translateText);
 
@@ -75,8 +76,9 @@ const EditTaskModalContent: FC = () => {
 
   const { setSubmitting } = formik;
 
-  const handleSuccess = () => {
+  const handleSuccess = (updatedTask: CrmTaskDetailType) => {
     setSubmitting(false);
+    updateTask(updatedTask);
     setIsTaskModalOpen(false);
 
     setToastMessage({

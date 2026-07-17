@@ -2,8 +2,8 @@ import { SetType } from "~community/common/types/CommonTypes";
 import { CrmCompany } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
-import { mergeCompanyUpdate } from "~community/crm/utils/companyUtil";
-import { mergeWithExisting } from "~community/crm/utils/crmUtil";
+import { updateCompanyTaskCompletion } from "~community/crm/utils/companyUtil";
+import { mergeById, mergeWithExisting } from "~community/crm/utils/crmUtil";
 
 const CrmCompanySlice = (
   set: SetType<CrmCompanySliceTypes>,
@@ -22,7 +22,20 @@ const CrmCompanySlice = (
   setCompanies: (companies: CrmCompany[]) =>
     set({ companies: mergeWithExisting(get().companies, companies) }),
   updateCompany: (company: CrmCompany) =>
-    set({ companies: mergeCompanyUpdate(get().companies, company) }),
+    set({ companies: mergeById(get().companies, company) }),
+  updateCompanyTaskCompletion: (
+    companyId: number,
+    taskId: number,
+    isCompleted: boolean
+  ) =>
+    set({
+      companies: updateCompanyTaskCompletion(
+        get().companies,
+        companyId,
+        taskId,
+        isCompleted
+      )
+    }),
   removeCompany: (id: number) =>
     set({ companies: get().companies.filter((company) => company.id !== id) }),
   getCompanyById: (id: number) =>

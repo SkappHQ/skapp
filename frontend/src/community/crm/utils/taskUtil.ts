@@ -14,14 +14,17 @@ import {
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
+import {
+  CrmPriorityEnum,
+  CrmTaskGroupEnum,
+  CrmTaskTabEnum
+} from "~community/crm/enums/common";
 import {
   CrmTaskDetailType,
   CrmTaskFormTypes,
   CrmTaskUpdatePayload
 } from "~community/crm/types/CommonTypes";
 
-import { CrmTaskTabEnum } from "../enums/common";
 import { isDueToday, isDueTomorrow, isOverdue } from "./taskValidations";
 
 export interface TaskDueDateInfo {
@@ -172,11 +175,30 @@ export const getChangedTaskFields = (
   return changedFields;
 };
 
-export const mergeTaskUpdate = (
+/** Flip the completion flag of one task in a flat list (mark done / undone). */
+export const setTaskCompletionInList = <
+  T extends { id: number; isCompleted: boolean }
+>(
+  tasks: T[],
+  taskId: number,
+  isCompleted: boolean
+): T[] =>
+  tasks.map((task) => (task.id === taskId ? { ...task, isCompleted } : task));
+
+/**
+ * The tasks page holds open + completed in one array but fetches them from two
+ * separate queries. This replaces the group that was just fetched with the fresh
+ * server data and keeps the other group intact, so switching tabs stays instant
+ * and search (which shrinks a group) is reflected correctly.
+ */
+export const replaceTaskGroup = (
   tasks: CrmTaskDetailType[],
-  update: CrmTaskDetailType
-): CrmTaskDetailType[] =>
-  tasks.map((task) => (task.id === update.id ? { ...task, ...update } : task));
+  fresh: CrmTaskDetailType[],
+  group: CrmTaskGroupEnum
+): CrmTaskDetailType[] => {
+  const wantCompleted = group === CrmTaskGroupEnum.COMPLETED;
+  return [...tasks.filter((task) => task.isCompleted !== wantCompleted), ...fresh];
+};
 
 export const getTaskGroups = (
   tasks: CrmTaskDetailType[],

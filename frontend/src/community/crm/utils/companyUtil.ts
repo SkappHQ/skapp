@@ -1,14 +1,27 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { countOpenTasks } from "~community/crm/utils/crmUtil";
 
 import { CrmCompany, MetricItem } from "../types/CommonTypes";
 
-export const mergeCompanyUpdate = (
+export const updateCompanyTaskCompletion = (
   companies: CrmCompany[],
-  update: CrmCompany
+  companyId: number,
+  taskId: number,
+  isCompleted: boolean
 ): CrmCompany[] =>
-  companies.map((company) =>
-    company.id === update.id ? { ...company, ...update } : company
-  );
+  companies.map((company) => {
+    if (company.id !== companyId || !company.tasks) return company;
+
+    const updatedTasks = company.tasks.map((task) =>
+      task.id === taskId ? { ...task, isCompleted } : task
+    );
+
+    return {
+      ...company,
+      tasks: updatedTasks,
+      openTasksCount: countOpenTasks(updatedTasks)
+    };
+  });
 
 export const mapCompanyToMetricItems = (
   company: CrmCompany,

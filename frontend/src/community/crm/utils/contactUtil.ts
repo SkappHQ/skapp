@@ -5,15 +5,7 @@ import {
   CrmContact,
   MetricItem
 } from "~community/crm/types/CommonTypes";
-import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
-
-export const mergeContactUpdate = (
-  contacts: CrmContact[],
-  update: CrmContact
-): CrmContact[] =>
-  contacts.map((contact) =>
-    contact.id === update.id ? { ...contact, ...update } : contact
-  );
+import { countOpenTasks, groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
 export const updateContactTaskCompletion = (
   contacts: CrmContact[],
@@ -31,7 +23,7 @@ export const updateContactTaskCompletion = (
     return {
       ...contact,
       tasks: updatedTasks,
-      openTasksCount: updatedTasks.filter((task) => !task.isCompleted).length
+      openTasksCount: countOpenTasks(updatedTasks)
     };
   });
 

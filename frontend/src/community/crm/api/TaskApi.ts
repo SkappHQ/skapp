@@ -60,6 +60,9 @@ export const useCreateTask = (
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createTask,
+    // Create can happen from the tasks page, a contact panel or a company panel,
+    // each backed by a different query. A newly added row has no in-place flicker
+    // to avoid, so invalidation is the simplest correct way to refresh them all.
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: taskQueryKeys.GET_OPEN_TASKS
@@ -201,27 +204,17 @@ const editTask = async ({ id, ...payload }: CrmTaskUpdatePayload) => {
   return response?.data?.results?.[0];
 };
 
-export const useUpdateTask = (onSuccess?: () => void, onError?: () => void) => {
-  const queryClient = useQueryClient();
+export const useUpdateTask = (
+  onSuccess?: (task: CrmTaskDetailType) => void,
+  onError?: () => void
+) => {
   return useMutation({
     mutationFn: editTask,
-    onSuccess: async ({ id }) => {
-      await queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_OPEN_TASKS
-      });
-      await queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_DATA
-      });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_TASK_BY_ID(id)
-      });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.RELATED_TASKS
-      });
-      if (onSuccess) onSuccess();
+    // No query invalidation: mark-done reflects the change optimistically and
+    // edit merges the returned task into the store (updateTask), so lists update
+    // in place without a refetch and the row never flickers.
+    onSuccess: (task: CrmTaskDetailType) => {
+      onSuccess?.(task);
     },
     onError
   });

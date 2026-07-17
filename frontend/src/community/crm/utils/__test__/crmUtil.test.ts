@@ -1,7 +1,9 @@
 import {
+  countOpenTasks,
   findById,
   formatValue,
   groupItemsByPriority,
+  mergeById,
   toDropdownOptions,
   toSelectedDropdownOption
 } from "../crmUtil";
@@ -19,6 +21,39 @@ interface TestUser {
 
 const getId = (item: TestItem) => item.id;
 const getUserId = (user: TestUser) => user.employeeId;
+
+describe("mergeById", () => {
+  it("merges the matching item and leaves the rest untouched", () => {
+    const items = [
+      { id: 1, name: "a" },
+      { id: 2, name: "b" }
+    ];
+    const result = mergeById(items, { id: 2, name: "b-updated" });
+
+    expect(result).toEqual([
+      { id: 1, name: "a" },
+      { id: 2, name: "b-updated" }
+    ]);
+    expect(result[0]).toBe(items[0]);
+  });
+
+  it("is a no-op when no item matches", () => {
+    const items = [{ id: 1, name: "a" }];
+    expect(mergeById(items, { id: 9, name: "x" })).toEqual(items);
+  });
+});
+
+describe("countOpenTasks", () => {
+  it("counts only tasks that are not completed", () => {
+    expect(
+      countOpenTasks([
+        { isCompleted: false },
+        { isCompleted: true },
+        { isCompleted: false }
+      ])
+    ).toBe(2);
+  });
+});
 
 describe("formatValue", () => {
   it("should format numeric strings as currency", () => {

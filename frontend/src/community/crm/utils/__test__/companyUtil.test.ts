@@ -1,9 +1,44 @@
-import { CrmIndustryEnum } from "~community/crm/enums/common";
-import { CrmCompany } from "~community/crm/types/CommonTypes";
+import {
+  CrmIndustryEnum,
+  CrmPriorityEnum
+} from "~community/crm/enums/common";
+import { CrmCompany, CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 
-import { mapCompanyToMetricItems } from "../companyUtil";
+import {
+  mapCompanyToMetricItems,
+  updateCompanyTaskCompletion
+} from "../companyUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
+
+const owner = {
+  employeeId: 1,
+  firstName: "Owner",
+  lastName: "User",
+  authPic: null
+};
+
+const makeCompanyTask = (
+  id: number,
+  isCompleted: boolean,
+  companyId: number | null
+): CrmTaskDetailType => ({
+  id,
+  name: `Task ${id}`,
+  typeId: 1,
+  typeName: "CALL",
+  priority: CrmPriorityEnum.MEDIUM,
+  isCompleted,
+  dueAt: null,
+  notes: null,
+  contactId: 10,
+  owner,
+  contact:
+    companyId == null
+      ? null
+      : { id: 10, name: "Contact", company: { id: companyId, name: "Co" } },
+  deal: null
+});
 
 const baseCompany: CrmCompany = {
   id: 1,
@@ -52,5 +87,30 @@ describe("mapCompanyToMetricItems", () => {
     expect(result[0].amount).toBe("100000");
     expect(result[1].amount).toBe("4");
     expect(result[2].amount).toBe("7");
+  });
+});
+
+describe("updateCompanyTaskCompletion", () => {
+  const companyWithTasks: CrmCompany = {
+    ...baseCompany,
+    id: 1,
+    openTasksCount: 2,
+    tasks: [makeCompanyTask(1, false, 1), makeCompanyTask(2, false, 1)]
+  };
+
+  it("flips the matching task and recomputes openTasksCount", () => {
+    const result = updateCompanyTaskCompletion([companyWithTasks], 1, 1, true);
+
+    expect(result[0].tasks?.find((task) => task.id === 1)?.isCompleted).toBe(
+      true
+    );
+    expect(result[0].openTasksCount).toBe(1);
+  });
+
+  it("leaves companies without loaded tasks untouched", () => {
+    const companyNoTasks: CrmCompany = { ...baseCompany, id: 1, tasks: null };
+    const result = updateCompanyTaskCompletion([companyNoTasks], 1, 1, true);
+
+    expect(result[0]).toBe(companyNoTasks);
   });
 });

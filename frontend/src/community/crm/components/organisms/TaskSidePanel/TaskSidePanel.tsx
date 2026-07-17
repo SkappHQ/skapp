@@ -23,7 +23,9 @@ import {
   TASK_DETAIL_ICON_SIZE,
   TASK_PAGE_SIZE
 } from "~community/crm/constants/taskConstants";
+import { useSyncTaskCompletion } from "~community/crm/hooks/useSyncTaskCompletion";
 import { useCrmStore } from "~community/crm/store/store";
+import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { getTaskTypeIcon } from "~community/crm/utils/taskUtil";
@@ -56,6 +58,8 @@ const TaskSidePanel: FC = () => {
     getTaskById: store.getTaskById,
     updateTask: store.updateTask
   }));
+
+  const syncTaskCompletion = useSyncTaskCompletion();
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -138,10 +142,23 @@ const TaskSidePanel: FC = () => {
     }
   ];
 
+  const handleMarkAsDoneError = (task: CrmTaskDetailType) => {
+    syncTaskCompletion(task, false);
+    handleUpdateTaskCompletionError();
+  };
+
   const handleMarkAsDone = () => {
+    if (!selectedTask) return;
+
+    // Optimistically flip, then just close on success (store already updated);
+    // revert on error.
+    syncTaskCompletion(selectedTask, true);
     updateTaskCompletion(
-      { id: selectedTaskId!, isCompleted: true },
-      { onSuccess: handleClose, onError: handleUpdateTaskCompletionError }
+      { id: selectedTask.id, isCompleted: true },
+      {
+        onSuccess: handleClose,
+        onError: () => handleMarkAsDoneError(selectedTask)
+      }
     );
   };
 

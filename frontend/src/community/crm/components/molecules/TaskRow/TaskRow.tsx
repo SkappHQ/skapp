@@ -4,7 +4,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/api/TaskApi";
-import { useCrmStore } from "~community/crm/store/store";
+import { useSyncTaskCompletion } from "~community/crm/hooks/useSyncTaskCompletion";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
@@ -29,9 +29,7 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { updateContactTaskCompletion } = useCrmStore((store) => ({
-    updateContactTaskCompletion: store.updateContactTaskCompletion
-  }));
+  const syncTaskCompletion = useSyncTaskCompletion();
 
   const [isCompleted, setIsCompleted] = useState(task.isCompleted);
 
@@ -41,15 +39,9 @@ const TaskRow: FC<Props> = ({
 
   const { mutate: updateCompletion } = useUpdateTask();
 
-  const syncContactTaskCompletion = (isCompleted: boolean) => {
-    if (task.contact) {
-      updateContactTaskCompletion(task.contact.id, task.id, isCompleted);
-    }
-  };
-
-  const handleToggleError = (wasCompleted: boolean) => {
-    setIsCompleted(wasCompleted);
-    syncContactTaskCompletion(wasCompleted);
+  const handleToggleError = (previousCompleted: boolean) => {
+    setIsCompleted(previousCompleted);
+    syncTaskCompletion(task, previousCompleted);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -59,15 +51,18 @@ const TaskRow: FC<Props> = ({
   };
 
   const handleToggleChange = (isCompleted: boolean) => {
-    const wasCompleted = task.isCompleted;
+    const previousCompleted = task.isCompleted;
 
+    // Optimistic in-place flip — the row updates instantly and (on the tasks
+    // page) leaves the open list on its own. No invalidation, and nothing to do
+    // on success since the store already reflects the change; revert on error.
     setIsCompleted(isCompleted);
-    syncContactTaskCompletion(isCompleted);
+    syncTaskCompletion(task, isCompleted);
 
     updateCompletion(
       { id: task.id, isCompleted },
       {
-        onError: () => handleToggleError(wasCompleted)
+        onError: () => handleToggleError(previousCompleted)
       }
     );
   };

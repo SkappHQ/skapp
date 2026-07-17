@@ -1,3 +1,5 @@
+import { CrmTaskGroupEnum } from "~community/crm/enums/common";
+
 import { CrmBoardDealSliceType, CrmBoardStageDealsType } from "./BoardTypes";
 import {
   CrmCompany,
@@ -16,12 +18,18 @@ interface ActionTypes {
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
   setCompanies: (companies: CrmCompany[]) => void;
   updateCompany: (company: CrmCompany) => void;
+  updateCompanyTaskCompletion: (
+    companyId: number,
+    taskId: number,
+    isCompleted: boolean
+  ) => void;
   removeCompany: (id: number) => void;
   getCompanyById: (id: number) => CrmCompany | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setSelectedTaskId: (taskId: number | null) => void;
-  setTasks: (tasks: CrmTaskDetailType[]) => void;
+  setTasks: (tasks: CrmTaskDetailType[], group: CrmTaskGroupEnum) => void;
+  setTaskCompletion: (id: number, isCompleted: boolean) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   updateTask: (task: CrmTaskDetailType) => void;
   openCrmSidePanel: (type: CrmSidePanelTypes) => void;
