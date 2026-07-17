@@ -1,6 +1,6 @@
 import {
+  CircleMinusIcon,
   CloseIcon,
-  DeleteButtonIcon,
   SmallModal
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
@@ -99,7 +99,7 @@ const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
           disabled: isPending,
           isLoading: isPending,
           icon: (
-            <DeleteButtonIcon
+            <CircleMinusIcon
               fill="var(--color-semantic-red-text)"
               width="14"
               height="14"

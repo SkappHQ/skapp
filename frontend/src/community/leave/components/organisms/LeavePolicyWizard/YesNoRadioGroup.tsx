@@ -37,7 +37,10 @@ const YesNoRadioGroup: FC<Props> = ({
             onClick={() => onChange(option.optionValue)}
             className="flex w-fit cursor-pointer items-center gap-3"
           >
-            <RadioButton isSelected={value === option.optionValue} />
+            <RadioButton
+              isSelected={value === option.optionValue}
+              variant="dot"
+            />
             <span className="body2 text-black">{option.label}</span>
           </button>
         ))}

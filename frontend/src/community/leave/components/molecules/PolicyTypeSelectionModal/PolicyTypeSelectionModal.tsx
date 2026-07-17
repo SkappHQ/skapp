@@ -1,4 +1,4 @@
-import { CalendarIcon, LargeModal, RotateIcon } from "@rootcodelabs/skapp-ui";
+import { CalendarIcon, LargeModal, RefreshIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -31,13 +31,13 @@ const PolicyTypeSelectionModal: FC<Props> = ({ isOpen, onClose, onSelect }) => {
       content={
         <div className="flex flex-col gap-4 pt-2 md:flex-row md:gap-8">
           <PolicyTypeCard
-            icon={<RotateIcon className="size-16" />}
+            icon={<RefreshIcon className="size-16" />}
             title={translateText(["basicInfo", "accrualTitle"])}
             description={translateText(["basicInfo", "accrualDescription"])}
             onSelect={() => onSelect(PolicyType.ACCRUAL)}
           />
           <PolicyTypeCard
-            icon={<CalendarIcon className="size-16" />}
+            icon={<CalendarIcon className="size-16"/>}
             title={translateText(["basicInfo", "flexibleTitle"])}
             description={translateText(["basicInfo", "flexibleDescription"])}
             onSelect={() => onSelect(PolicyType.FLEXIBLE)}
