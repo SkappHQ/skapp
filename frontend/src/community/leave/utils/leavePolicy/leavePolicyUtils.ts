@@ -4,10 +4,10 @@ import {
 } from "~community/leave/constants/leavePolicyConstants";
 import {
   AddLeavePolicyPayload,
-  PolicyType,
   LeavePolicyFormData,
   LeavePolicyWizardErrors,
-  LeavePolicyWizardSteps
+  LeavePolicyWizardSteps,
+  PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
 const isPositiveNumber = (value: string): boolean =>

@@ -13,6 +13,8 @@ export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
 export const MAX_POLICY_DAYS = 365;
 
+export const POLICY_TYPE_SELECT_QUERY = "select-policy-type";
+
 export const accrualFrequencyItemList = [
   { id: "daily", label: "Daily", value: AccrualFrequency.DAILY },
   { id: "weekly", label: "Weekly", value: AccrualFrequency.WEEKLY },

@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { JSX, useEffect } from "react";
+import { useEffect } from "react";
 
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -29,24 +29,16 @@ const CreateLeavePolicy: NextPage = () => {
     }
   }, [router, router.isReady, policyType]);
 
-  const renderWizard = (): JSX.Element | null => {
-    if (!policyType) {
-      return null;
-    }
-
-    return (
-      <div className="h-full p-4 sm:px-12 sm:py-6">
-        <LeavePolicyWizard policyType={policyType} />
-      </div>
-    );
-  };
-
   return (
     <>
       <Head>
         <title>{translateText(["pageHead"])}</title>
       </Head>
-      {renderWizard()}
+      {policyType && (
+        <div className="h-full p-4 sm:px-12 sm:py-6">
+          <LeavePolicyWizard policyType={policyType} />
+        </div>
+      )}
     </>
   );
 };

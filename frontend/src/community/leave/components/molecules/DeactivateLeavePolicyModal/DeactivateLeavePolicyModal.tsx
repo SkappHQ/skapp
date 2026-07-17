@@ -1,4 +1,8 @@
-import { CloseIcon, DeleteButtonIcon, SmallModal } from "@rootcodelabs/skapp-ui";
+import {
+  CloseIcon,
+  DeleteButtonIcon,
+  SmallModal
+} from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -94,7 +98,13 @@ const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
           onClick: handleConfirm,
           disabled: isPending,
           isLoading: isPending,
-          icon: <DeleteButtonIcon fill="var(--color-semantic-red-text)" width="14" height="14" />,
+          icon: (
+            <DeleteButtonIcon
+              fill="var(--color-semantic-red-text)"
+              width="14"
+              height="14"
+            />
+          ),
           iconPosition: "end",
           children: translateText(["deactivateBtnTxt"])
         }

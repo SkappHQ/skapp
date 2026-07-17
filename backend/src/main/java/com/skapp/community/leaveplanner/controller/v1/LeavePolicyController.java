@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -49,6 +50,14 @@ public class LeavePolicyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Deactivate a leave policy", description = "Marks an existing leave policy as inactive")
+	@PatchMapping("/{policyId}/deactivate")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> deactivateLeavePolicy(@PathVariable Long policyId) {
+		ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(policyId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Get all leave policies",
 			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
 	@GetMapping
@@ -61,7 +70,7 @@ public class LeavePolicyController {
 	@Operation(summary = "Get policy leave types",
 			description = "Returns all active leave types available for policy creation")
 	@GetMapping("/leave-types")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes() {
 		ResponseEntityDto response = leavePolicyService.getPolicyLeaveTypes();
 		return new ResponseEntity<>(response, HttpStatus.OK);

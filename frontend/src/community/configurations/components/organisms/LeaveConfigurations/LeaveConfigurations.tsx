@@ -1,17 +1,10 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  DeleteButtonIcon,
-  SaveIcon,
-  SmallModal,
-  Toggle,
-  YellowWarningIcon
-} from "@rootcodelabs/skapp-ui";
-import { JSX, useState } from "react";
+import { ButtonV2, CloseIcon, SaveIcon, Toggle } from "@rootcodelabs/skapp-ui";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import EnableLeavePoliciesConfirmModal from "~community/configurations/components/molecules/EnableLeavePoliciesConfirmModal/EnableLeavePoliciesConfirmModal";
 
-const LeaveConfigurations = (): JSX.Element => {
+const LeaveConfigurations: FC = () => {
   const translateText = useTranslator("configurations", "leave");
 
   const [isLeavePoliciesEnabled, setIsLeavePoliciesEnabled] = useState(false);
@@ -29,7 +22,8 @@ const LeaveConfigurations = (): JSX.Element => {
     setIsLeavePoliciesEnabled(false);
   };
 
-  const handleCloseEnableConfirmModal = () => setIsEnableConfirmModalOpen(false);
+  const handleCloseEnableConfirmModal = () =>
+    setIsEnableConfirmModalOpen(false);
 
   const handleConfirmEnable = () => {
     setIsLeavePoliciesEnabled(true);
@@ -82,62 +76,10 @@ const LeaveConfigurations = (): JSX.Element => {
         </ButtonV2>
       </div>
 
-      <SmallModal
+      <EnableLeavePoliciesConfirmModal
         isOpen={isEnableConfirmModalOpen}
         onClose={handleCloseEnableConfirmModal}
-        modalHeader={translateText(["enableConfirmModal", "title"])}
-        content={
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-3 rounded-lg bg-semantic-amber-background px-4 py-3">
-              <YellowWarningIcon className="size-4 shrink-0" />
-              <p className="body2 text-black">
-                <span className="font-medium">
-                  {translateText(["enableConfirmModal", "warningTitle"])}
-                </span>{" "}
-                {translateText(["enableConfirmModal", "warningDescription"])}
-              </p>
-            </div>
-            <div className="body1 text-black">
-              <p>{translateText(["enableConfirmModal", "consequencesTitle"])}</p>
-              <ul className="list-disc pl-6">
-                <li>
-                  {translateText([
-                    "enableConfirmModal",
-                    "consequenceDeleteAllocations"
-                  ])}
-                </li>
-                <li>
-                  {translateText([
-                    "enableConfirmModal",
-                    "consequenceRemoveBulkUpload"
-                  ])}
-                </li>
-                <li>
-                  {translateText([
-                    "enableConfirmModal",
-                    "consequenceRetainRecords"
-                  ])}
-                </li>
-              </ul>
-            </div>
-          </div>
-        }
-        buttons={{
-          buttonLeft: {
-            variant: "tertiary",
-            onClick: handleCloseEnableConfirmModal,
-            icon: <CloseIcon />,
-            iconPosition: "end",
-            children: translateText(["buttons", "cancel"])
-          },
-          buttonRight: {
-            variant: "error",
-            onClick: handleConfirmEnable,
-            icon: <DeleteButtonIcon fill="var(--color-semantic-red-text)" />,
-            iconPosition: "end",
-            children: translateText(["enableConfirmModal", "confirmButton"])
-          }
-        }}
+        onConfirm={handleConfirmEnable}
       />
     </div>
   );

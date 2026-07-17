@@ -9,6 +9,7 @@ import {
   LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
 
+import FieldError from "./FieldError";
 import WizardSection from "./WizardSection";
 
 interface Props {
@@ -16,13 +17,6 @@ interface Props {
   onChange: (values: Partial<LeavePolicyFormData>) => void;
   errors: LeavePolicyWizardErrors;
 }
-
-const FieldError: FC<{ message: string | undefined }> = ({ message }) =>
-  message ? (
-    <p role="alert" className="body2 text-semantic-red-text">
-      {message}
-    </p>
-  ) : null;
 
 const BasicInfoStep: FC<Props> = ({ formData, onChange, errors }) => {
   const translateText = useTranslator(

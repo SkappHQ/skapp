@@ -10,16 +10,18 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import LeavePoliciesTable from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTable";
 import PolicyTypeSelectionModal from "~community/leave/components/molecules/PolicyTypeSelectionModal/PolicyTypeSelectionModal";
+import { POLICY_TYPE_SELECT_QUERY } from "~community/leave/constants/leavePolicyConstants";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
-
-const POLICY_TYPE_SELECT_QUERY = "select-policy-type";
 
 const LeavePolicies: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
 
   const router = useRouter();
   const { user } = useAuth();
-  const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+  const canManagePolicies = Boolean(
+    user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+    user?.roles?.includes(AdminTypes.LEAVE_ADMIN)
+  );
 
   const [isPolicyTypeModalOpen, setIsPolicyTypeModalOpen] =
     useState<boolean>(false);
@@ -28,14 +30,14 @@ const LeavePolicies: NextPage = () => {
     if (
       router.isReady &&
       router.query.action === POLICY_TYPE_SELECT_QUERY &&
-      isPeopleAdmin
+      canManagePolicies
     ) {
       setIsPolicyTypeModalOpen(true);
       router.replace(ROUTES.LEAVE.LEAVE_POLICIES, undefined, {
         shallow: true
       });
     }
-  }, [router, router.isReady, router.query.action, isPeopleAdmin]);
+  }, [router, router.isReady, router.query.action, canManagePolicies]);
 
   const handleSelectPolicyType = (policyType: PolicyType): void => {
     setIsPolicyTypeModalOpen(false);
@@ -54,10 +56,10 @@ const LeavePolicies: NextPage = () => {
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       primaryButtonText={
-        isPeopleAdmin ? translateText(["createPolicyBtnTxt"]) : undefined
+        canManagePolicies ? translateText(["createPolicyBtnTxt"]) : undefined
       }
       secondaryBtnText={
-        isPeopleAdmin ? translateText(["bulkUploadBtnTxt"]) : undefined
+        canManagePolicies ? translateText(["bulkUploadBtnTxt"]) : undefined
       }
       secondaryBtnIconName={IconName.UP_ARROW_ICON}
       onPrimaryButtonClick={() => setIsPolicyTypeModalOpen(true)}

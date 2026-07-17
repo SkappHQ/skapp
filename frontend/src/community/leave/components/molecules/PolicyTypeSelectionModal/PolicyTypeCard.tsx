@@ -8,12 +8,7 @@ interface Props {
   onSelect: () => void;
 }
 
-const PolicyTypeCard: FC<Props> = ({
-  icon,
-  title,
-  description,
-  onSelect
-}) => (
+const PolicyTypeCard: FC<Props> = ({ icon, title, description, onSelect }) => (
   <Card
     role="button"
     aria-label={title}

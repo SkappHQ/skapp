@@ -2,9 +2,9 @@ package com.skapp.community.leaveplanner.payload.response;
 
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
-import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.PolicyType;
 import lombok.Getter;
 import lombok.Setter;
 

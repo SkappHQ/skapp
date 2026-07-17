@@ -1,10 +1,8 @@
 import {
-  ButtonV2,
   Dropdown,
   InputField,
   KebabMenu,
   SearchIcon,
-  StatusComponent,
   Table
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useMemo, useState } from "react";
@@ -13,22 +11,24 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   useGetLeavePoliciesInfinite,
   useGetPolicyLeaveTypes
 } from "~community/leave/api/LeavePolicyApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
+import LeavePoliciesErrorState from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesErrorState";
 import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
+import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
+import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import {
   LEAVE_POLICY_PAGE_SIZE,
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS
 } from "~community/leave/constants/leavePolicyConstants";
 import {
-  PolicyType,
   LeavePolicyStatus,
-  LeavePolicyType
+  LeavePolicyType,
+  PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
 interface Props {
@@ -38,7 +38,10 @@ interface Props {
 const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const { user } = useAuth();
-  const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
+  const canManagePolicies = Boolean(
+    user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
+    user?.roles?.includes(AdminTypes.LEAVE_ADMIN)
+  );
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
@@ -91,17 +94,21 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     [policyPages]
   );
 
-  const tableData = policies.map((policy: LeavePolicyType) => ({
-    id: policy.policyId,
-    policyName: policy.name,
-    leaveType: policy,
-    policyType:
-      policy.policyType === PolicyType.ACCRUAL
-        ? translateText(["accrual"])
-        : translateText(["flexible"]),
-    status: policy.status,
-    actions: policy
-  }));
+  const tableData = useMemo(
+    () =>
+      policies.map((policy: LeavePolicyType) => ({
+        id: policy.policyId,
+        policyName: policy.name,
+        leaveType: policy,
+        policyType:
+          policy.policyType === PolicyType.ACCRUAL
+            ? translateText(["accrual"])
+            : translateText(["flexible"]),
+        status: policy.status,
+        actions: policy
+      })),
+    [policies, translateText]
+  );
 
   type TableRow = (typeof tableData)[number];
 
@@ -119,14 +126,10 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       render: (value: unknown) => {
         const policy = value as LeavePolicyType;
         return (
-          <span className="body2 inline-flex w-fit items-center gap-2 rounded-full bg-secondary-background px-5 py-3 text-secondary-text">
-            {policy.leaveTypeEmoji && (
-              <span role="img" aria-hidden="true">
-                {getEmoji(policy.leaveTypeEmoji)}
-              </span>
-            )}
-            {policy.leaveTypeName}
-          </span>
+          <LeaveTypeChip
+            name={policy.leaveTypeName}
+            emojiCode={policy.leaveTypeEmoji}
+          />
         );
       }
     },
@@ -144,19 +147,11 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         const isActive =
           (value as LeavePolicyStatus) === LeavePolicyStatus.ACTIVE;
         return (
-          <StatusComponent
+          <LeavePolicyStatusBadge
+            isActive={isActive}
             text={
-              isActive
-                ? translateText(["active"])
-                : translateText(["inactive"])
+              isActive ? translateText(["active"]) : translateText(["inactive"])
             }
-            iconColor={
-              isActive
-                ? "var(--color-semantic-green-accent)"
-                : "var(--color-semantic-red-accent)"
-            }
-            textColor="text-secondary-text"
-            className="w-fit"
           />
         );
       }
@@ -197,24 +192,14 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     }
   };
 
-  const columns = isPeopleAdmin ? [...baseColumns, actionsColumn] : baseColumns;
+  const columns = canManagePolicies
+    ? [...baseColumns, actionsColumn]
+    : baseColumns;
 
   const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);
 
   if (isError && policies.length === 0) {
-    return (
-      <div className="mt-4 flex flex-col items-center gap-4 rounded-lg border border-secondary-accent px-6 py-16 text-center">
-        <p className="subtitle2 text-black">
-          {translateText(["errorStateTitle"])}
-        </p>
-        <p className="body2 text-secondary-text">
-          {translateText(["errorStateDescription"])}
-        </p>
-        <ButtonV2 variant="tertiary" size="md" onClick={() => refetch()}>
-          {translateText(["retryBtnTxt"])}
-        </ButtonV2>
-      </div>
-    );
+    return <LeavePoliciesErrorState onRetry={() => refetch()} />;
   }
 
   return (
@@ -251,7 +236,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         customSkeletonLoader={
           <LeavePoliciesTableSkeletonLoader
             rowCount={8}
-            showActionsColumn={isPeopleAdmin}
+            showActionsColumn={canManagePolicies}
           />
         }
         emptyStateType={isFiltering ? "no-search-results" : "no-data"}
@@ -265,7 +250,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         hasMore={hasNextPage ?? false}
         noDataState={{
           title: translateText(["noPoliciesYetTitle"]),
-          ...(isPeopleAdmin
+          ...(canManagePolicies
             ? {
                 buttonText: translateText(["createPolicyBtnTxt"]),
                 onButtonClick: onCreatePolicy

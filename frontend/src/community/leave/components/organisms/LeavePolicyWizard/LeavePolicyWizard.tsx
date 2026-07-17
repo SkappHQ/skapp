@@ -3,12 +3,11 @@ import {
   ArrowRightIcon,
   ButtonV2,
   CloseIcon,
-  IconButton,
-  SmallModal
+  IconButton
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
-import { FC, JSX, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
 import ROUTES from "~community/common/constants/routes";
@@ -16,7 +15,10 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useAddLeavePolicy } from "~community/leave/api/LeavePolicyApi";
-import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
+import {
+  POLICY_TYPE_SELECT_QUERY,
+  leavePolicyFormInitialValues
+} from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
   LeavePolicyWizardErrors,
@@ -28,9 +30,8 @@ import {
   mapLeavePolicyFormToPayload
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
-import BasicInfoStep from "./BasicInfoStep";
-import EntitlementSetupStep from "./EntitlementSetupStep";
-import SummaryStep from "./SummaryStep";
+import CancelPolicyCreationModal from "./CancelPolicyCreationModal";
+import LeavePolicyStepContent from "./LeavePolicyStepContent";
 
 const TOTAL_STEPS = 3;
 
@@ -38,7 +39,24 @@ const HTTP_STATUS_CONFLICT = 409;
 
 const HTTP_STATUS_FORBIDDEN = 403;
 
-const POLICY_TYPE_SELECT_QUERY = "select-policy-type";
+const getErrorToastKeys = (
+  status: number | undefined
+): { title: string; description: string } => {
+  switch (status) {
+    case HTTP_STATUS_CONFLICT:
+      return {
+        title: "duplicateToastTitle",
+        description: "duplicateToastDescription"
+      };
+    case HTTP_STATUS_FORBIDDEN:
+      return {
+        title: "permissionToastTitle",
+        description: "permissionToastDescription"
+      };
+    default:
+      return { title: "errorToastTitle", description: "errorToastDescription" };
+  }
+};
 
 interface Props {
   policyType: PolicyType;
@@ -117,30 +135,14 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleError = (error: AxiosError): void => {
-    const status = error?.response?.status;
+    const { title, description } = getErrorToastKeys(error?.response?.status);
 
-    if (status === HTTP_STATUS_CONFLICT) {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["duplicateToastTitle"]),
-        description: translateText(["duplicateToastDescription"])
-      });
-    } else if (status === HTTP_STATUS_FORBIDDEN) {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["permissionToastTitle"]),
-        description: translateText(["permissionToastDescription"])
-      });
-    } else {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["errorToastTitle"]),
-        description: translateText(["errorToastDescription"])
-      });
-    }
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([title]),
+      description: translateText([description])
+    });
   };
 
   const { mutate: addLeavePolicy, isPending } = useAddLeavePolicy(
@@ -186,42 +188,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     setActiveStep(step);
   };
 
-  const renderStep = (): JSX.Element => {
-    if (!isAccrual) {
-      return (
-        <BasicInfoStep
-          formData={formData}
-          onChange={handleChange}
-          errors={visibleErrors}
-        />
-      );
-    }
-
-    switch (activeStep) {
-      case LeavePolicyWizardSteps.ENTITLEMENT_SETUP:
-        return (
-          <EntitlementSetupStep
-            formData={formData}
-            onChange={handleChange}
-            errors={visibleErrors}
-          />
-        );
-      case LeavePolicyWizardSteps.SUMMARY:
-        return (
-          <SummaryStep formData={formData} onEdit={handleEditFromSummary} />
-        );
-      case LeavePolicyWizardSteps.BASIC_INFO:
-      default:
-        return (
-          <BasicInfoStep
-            formData={formData}
-            onChange={handleChange}
-            errors={visibleErrors}
-          />
-        );
-    }
-  };
-
   const isLastStep =
     !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
 
@@ -256,7 +222,14 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
         )}
       </div>
 
-      {renderStep()}
+      <LeavePolicyStepContent
+        activeStep={activeStep}
+        isAccrual={isAccrual}
+        formData={formData}
+        errors={visibleErrors}
+        onChange={handleChange}
+        onEditFromSummary={handleEditFromSummary}
+      />
 
       <div className="mt-auto flex justify-end gap-4 pt-8">
         <ButtonV2
@@ -283,31 +256,10 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
         </ButtonV2>
       </div>
 
-      <SmallModal
+      <CancelPolicyCreationModal
         isOpen={isCancelConfirmOpen}
-        onClose={() => setIsCancelConfirmOpen(false)}
-        modalHeader={translateText(["cancelConfirmTitle"])}
-        content={
-          <p className="body1 text-black">
-            {translateText(["cancelConfirmDescription"])}
-          </p>
-        }
-        buttons={{
-          buttonLeft: {
-            variant: "tertiary",
-            onClick: () => setIsCancelConfirmOpen(false),
-            icon: <ArrowLeftIcon />,
-            iconPosition: "start",
-            children: translateText(["cancelDismissBtnTxt"])
-          },
-          buttonRight: {
-            variant: "error",
-            onClick: handleClose,
-            icon: <CloseIcon />,
-            iconPosition: "end",
-            children: translateText(["cancelConfirmBtnTxt"])
-          }
-        }}
+        onDismiss={() => setIsCancelConfirmOpen(false)}
+        onConfirm={handleClose}
       />
     </div>
   );

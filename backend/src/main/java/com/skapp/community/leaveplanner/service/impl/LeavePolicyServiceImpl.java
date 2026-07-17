@@ -6,6 +6,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
@@ -18,9 +19,9 @@ import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
-import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.PolicyType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private final PolicyLeaveTypeDao policyLeaveTypeDao;
 
+	private final LeaveMapper leaveMapper;
+
 	@Override
 	@Transactional
 	public ResponseEntityDto addLeavePolicy(LeavePolicyRequestDto leavePolicyRequestDto) {
@@ -76,7 +79,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		log.info("addLeavePolicy: policy created successfully policyId: {} policyType: {}", leavePolicy.getPolicyId(),
 				leavePolicy.getPolicyType());
 
-		return new ResponseEntityDto(false, toResponseDto(leavePolicy));
+		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
 	}
 
 	@Override
@@ -84,8 +87,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto updateLeavePolicy(Long policyId, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
 		log.info("updateLeavePolicy: execution started policyId: {}", policyId);
 
-		LeavePolicy leavePolicy = leavePolicyDao.findById(policyId)
-			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
+		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
 
 		String sanitizedName = sanitizeName(leavePolicyUpdateRequestDto.getName());
 
@@ -99,16 +101,29 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("updateLeavePolicy: policy updated successfully policyId: {}", leavePolicy.getPolicyId());
 
-		return new ResponseEntityDto(false, toResponseDto(leavePolicy));
+		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto deactivateLeavePolicy(Long policyId) {
+		log.info("deactivateLeavePolicy: execution started policyId: {}", policyId);
+
+		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
+
+		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
+		leavePolicy = leavePolicyDao.save(leavePolicy);
+
+		log.info("deactivateLeavePolicy: policy deactivated successfully policyId: {}", leavePolicy.getPolicyId());
+
+		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getPolicyLeaveTypes() {
-		List<PolicyLeaveTypeResponseDto> leaveTypes = policyLeaveTypeDao.findAllByIsActive(true)
-			.stream()
-			.map(this::toPolicyLeaveTypeResponseDto)
-			.toList();
+		List<PolicyLeaveTypeResponseDto> leaveTypes = leaveMapper
+			.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(policyLeaveTypeDao.findAllByIsActive(true));
 
 		return new ResponseEntityDto(false, leaveTypes);
 	}
@@ -121,10 +136,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
 		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
 
-		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leavePolicyPage.getContent()
-			.stream()
-			.map(this::toResponseDto)
-			.toList();
+		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
+			.leavePolicyListToLeavePolicyResponseDtoList(leavePolicyPage.getContent());
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(leavePolicyResponseDtos);
@@ -134,6 +147,11 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private LeavePolicy getLeavePolicyById(Long policyId) {
+		return leavePolicyDao.findById(policyId)
+			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
 	}
 
 	private String sanitizeName(String name) {
@@ -176,16 +194,20 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID);
 		}
 		if (Boolean.TRUE.equals(accrual.getCarryoverEnabled())) {
-			if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
-				accrual.setCarryoverDate(DEFAULT_CARRYOVER_DATE);
-			}
-			else if (!CARRYOVER_DATE_PATTERN.matcher(accrual.getCarryoverDate()).matches()) {
-				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
-			}
-			if (accrual.getMaxCarryoverDays() != null
-					&& (accrual.getMaxCarryoverDays() < MIN_DAYS || accrual.getMaxCarryoverDays() > MAX_DAYS)) {
-				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
-			}
+			validateCarryoverSetup(accrual);
+		}
+	}
+
+	private void validateCarryoverSetup(LeavePolicyAccrualDetailDto accrual) {
+		if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
+			accrual.setCarryoverDate(DEFAULT_CARRYOVER_DATE);
+		}
+		else if (!CARRYOVER_DATE_PATTERN.matcher(accrual.getCarryoverDate()).matches()) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
+		}
+		if (accrual.getMaxCarryoverDays() != null
+				&& (accrual.getMaxCarryoverDays() < MIN_DAYS || accrual.getMaxCarryoverDays() > MAX_DAYS)) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
 		}
 	}
 
@@ -218,39 +240,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
 		leavePolicy.setAccrualTiming(
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
-	}
-
-	private LeavePolicyResponseDto toResponseDto(LeavePolicy leavePolicy) {
-		LeavePolicyResponseDto responseDto = new LeavePolicyResponseDto();
-		responseDto.setPolicyId(leavePolicy.getPolicyId());
-		responseDto.setName(leavePolicy.getName());
-		responseDto.setLeaveTypeId(leavePolicy.getLeaveType().getTypeId());
-		responseDto.setLeaveTypeName(leavePolicy.getLeaveType().getName());
-		responseDto.setLeaveTypeEmoji(leavePolicy.getLeaveType().getEmojiCode());
-		responseDto.setPolicyType(leavePolicy.getPolicyType());
-		responseDto.setStatus(leavePolicy.getStatus());
-
-		if (leavePolicy.getPolicyType() == PolicyType.ACCRUAL) {
-			responseDto.setAccrualDays(leavePolicy.getAccrualDays());
-			responseDto.setFrequency(leavePolicy.getFrequency());
-			responseDto.setWaitingPeriodDays(leavePolicy.getWaitingPeriodDays());
-			responseDto.setAccrualCapDays(leavePolicy.getAccrualCapDays());
-			responseDto.setCarryoverEnabled(leavePolicy.getIsCarryoverEnabled());
-			responseDto.setCarryoverDate(leavePolicy.getCarryoverDate());
-			responseDto.setMaxCarryoverDays(leavePolicy.getMaxCarryoverDays());
-			responseDto.setFirstAccrual(leavePolicy.getFirstAccrual());
-			responseDto.setAccrualTiming(leavePolicy.getAccrualTiming());
-		}
-		return responseDto;
-	}
-
-	private PolicyLeaveTypeResponseDto toPolicyLeaveTypeResponseDto(PolicyLeaveType policyLeaveType) {
-		PolicyLeaveTypeResponseDto responseDto = new PolicyLeaveTypeResponseDto();
-		responseDto.setTypeId(policyLeaveType.getTypeId());
-		responseDto.setName(policyLeaveType.getName());
-		responseDto.setEmojiCode(policyLeaveType.getEmojiCode());
-		responseDto.setColorCode(policyLeaveType.getColorCode());
-		return responseDto;
 	}
 
 }

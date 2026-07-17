@@ -9,10 +9,13 @@ import { ChangeEvent, FC, useEffect, useState } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { getEmoji } from "~community/common/utils/commonUtil";
 import { useUpdateLeavePolicy } from "~community/leave/api/LeavePolicyApi";
+import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import { MAX_POLICY_NAME_LENGTH } from "~community/leave/constants/leavePolicyConstants";
-import { LeavePolicyType, PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import {
+  LeavePolicyType,
+  PolicyType
+} from "~community/leave/types/LeavePolicyTypes";
 
 interface EditLeavePolicyModalProps {
   policy: LeavePolicyType | null;
@@ -119,14 +122,11 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
               {translateText(["leaveTypeLabel"])}
             </p>
             <div className="flex items-center rounded-lg bg-tertiary-background px-3 py-2">
-              <span className="body2 inline-flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-secondary-text">
-                {policy.leaveTypeEmoji && (
-                  <span role="img" aria-hidden="true">
-                    {getEmoji(policy.leaveTypeEmoji)}
-                  </span>
-                )}
-                {policy.leaveTypeName}
-              </span>
+              <LeaveTypeChip
+                name={policy.leaveTypeName}
+                emojiCode={policy.leaveTypeEmoji}
+                className="bg-white px-4 py-2"
+              />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -137,7 +137,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
               <p className="body1 text-secondary-text">
                 {policy.policyType === PolicyType.ACCRUAL
                   ? translateCommonText(["accrual"])
-                  : translateCommonText(["fixed"])}
+                  : translateCommonText(["flexible"])}
               </p>
             </div>
           </div>

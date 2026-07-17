@@ -11,6 +11,8 @@ public interface LeavePolicyService {
 
 	ResponseEntityDto updateLeavePolicy(Long policyId, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto);
 
+	ResponseEntityDto deactivateLeavePolicy(Long policyId);
+
 	ResponseEntityDto getPolicyLeaveTypes();
 
 	ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto);
