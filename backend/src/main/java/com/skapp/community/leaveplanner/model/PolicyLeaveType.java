@@ -30,17 +30,17 @@ public class PolicyLeaveType extends Auditable<String> {
 	@Column(name = "type_id")
 	private Long typeId;
 
-	@Column(name = "name", nullable = false, length = 100)
+	@Column(name = "name", nullable = false, columnDefinition = "text")
 	private String name;
 
-	@Column(name = "emoji_code")
+	@Column(name = "emoji_code", columnDefinition = "text")
 	private String emojiCode;
 
-	@Column(name = "color_code")
+	@Column(name = "color_code", columnDefinition = "text")
 	private String colorCode;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "min_duration", nullable = false, columnDefinition = "varchar(255)")
+	@Column(name = "min_duration", nullable = false, columnDefinition = "text")
 	private LeaveDuration minDuration;
 
 	@Column(name = "is_attachment", nullable = false)
