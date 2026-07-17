@@ -53,7 +53,7 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
     step: LeavePolicyWizardSteps,
     children: ReactNode
   ) => (
-    <Card className="flex flex-col gap-4 py-4">
+    <Card className="flex flex-col gap-4 bg-white py-4">
       <div className="flex items-center justify-between">
         <h3 className="h2 text-black">{title}</h3>
         <ButtonV2
