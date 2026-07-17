@@ -1,5 +1,5 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, ReactNode } from "react";
+import { ChangeEvent, FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmoji } from "~community/common/utils/commonUtil";
@@ -17,18 +17,14 @@ interface Props {
   errors: LeavePolicyWizardErrors;
 }
 
-const FieldError = ({
-  message
-}: {
-  message: string | undefined;
-}): JSX.Element | null =>
+const FieldError: FC<{ message: string | undefined }> = ({ message }) =>
   message ? (
     <p role="alert" className="body2 text-semantic-red-text">
       {message}
     </p>
   ) : null;
 
-const BasicInfoStep = ({ formData, onChange, errors }: Props): JSX.Element => {
+const BasicInfoStep: FC<Props> = ({ formData, onChange, errors }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",

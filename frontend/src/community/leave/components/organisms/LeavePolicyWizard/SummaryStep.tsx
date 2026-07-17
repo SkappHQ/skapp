@@ -1,5 +1,5 @@
 import { ButtonV2, Card, StatusComponent } from "@rootcodelabs/skapp-ui";
-import { JSX, ReactNode } from "react";
+import { FC, ReactNode } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -23,7 +23,7 @@ const getOptionLabel = (
   value: string
 ): string => options.find((option) => option.value === value)?.label ?? "-";
 
-const SummaryStep = ({ formData, onEdit }: Props): JSX.Element => {
+const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",

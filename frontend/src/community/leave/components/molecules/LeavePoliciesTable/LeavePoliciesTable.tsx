@@ -7,7 +7,7 @@ import {
   StatusComponent,
   Table
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useMemo, useState } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -34,7 +34,7 @@ interface Props {
   onCreatePolicy: () => void;
 }
 
-const LeavePoliciesTable = ({ onCreatePolicy }: Props): JSX.Element => {
+const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const { user } = useAuth();
   const isPeopleAdmin = user?.roles?.includes(AdminTypes.PEOPLE_ADMIN);
