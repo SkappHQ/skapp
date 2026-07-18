@@ -3,6 +3,7 @@ import { JSX, memo } from "react";
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
+import DeleteDocumentModal from "~enterprise/common/components/molecules/DeleteDocumentModal/DeleteDocumentModal";
 import DeleteFolderModal from "~enterprise/common/components/molecules/DeleteFolderModal/DeleteFolderModal";
 import RenameFolderModal from "~enterprise/common/components/molecules/RenameFolderModal/RenameFolderModal";
 import UploadDocumentModal from "~enterprise/common/components/molecules/UploadDocumentModal/UploadDocumentModal";
@@ -36,7 +37,7 @@ const CommonModalController = (): JSX.Element => {
         <DeleteFolderModal
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
-          folder={commonModalData?.folder!}
+          document={commonModalData?.document!}
         />
       );
     case CommonModalType.UPLOAD_DOCUMENT:
@@ -46,6 +47,14 @@ const CommonModalController = (): JSX.Element => {
           onClose={closeCommonModal}
           employeeId={commonModalData?.employeeId!}
           parentId={commonModalData?.parentId!}
+        />
+      );
+    case CommonModalType.DELETE_DOCUMENT:
+      return (
+        <DeleteDocumentModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          document={commonModalData?.document!}
         />
       );
     default:
