@@ -128,6 +128,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getPolicyLeaveTypes() {
+		log.info("getPolicyLeaveTypes: execution started");
+
 		List<PolicyLeaveTypeResponseDto> leaveTypes = leaveMapper
 			.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(policyLeaveTypeDao.findAllByIsActive(true));
 
