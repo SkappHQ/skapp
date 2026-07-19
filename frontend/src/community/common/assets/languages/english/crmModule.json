@@ -155,6 +155,9 @@
         "dueDateToday": "Due today",
         "dueDateDueOn": "Due on {{date}}"
       },
+      "deals": {
+        "emptyDescription": "No deals associated with this contact"
+      },
       "errors": {
         "contactNotFoundTitle": "Contact not found",
         "contactNotFoundDescription": "This contact is no longer available."
@@ -312,7 +315,8 @@
         "noContactsDescription": "No contacts associated with this company",
         "addContact": "Add Contact",
         "dealsClosed": "Deals closed",
-        "overdue": "overdue"
+        "overdue": "overdue",
+        "infiniteScrollLoadingMessage": "Loading contacts..."
       }
     },
     "editCompanyModal": {
@@ -392,6 +396,9 @@
         "accountValue": "Account value",
         "openDeals": "Open deals",
         "closedDeals": "Closed deals"
+      },
+      "tasks": {
+        "emptyDescription": "No tasks associated with this company"
       }
     }
   },
@@ -657,8 +664,8 @@
         "task": "Enter the task name",
         "dueDate": "Select date",
         "priority": "Select priority",
-        "contactName": "Enter name",
-        "deal": "Enter deal",
+        "contactName": "Select contact",
+        "deal": "Select deal",
         "taskOwner": "Select task owner",
         "notes": "Add message"
       },
@@ -693,15 +700,15 @@
         "cancel": "Cancel add task"
       },
       "successTitle": "Task added successfully",
-      "errorTitle": "Failed to add task",
-      "errorDescription": "Please try again or contact support",
+      "successDescription": "Task has been added successfully",
+      "errorTitle": "Oops! Something went wrong",
+      "errorDescription": "Failed to add task. Please try again",
       "validations": {
-        "type": "Please select a task type.",
+        "type": "Please select a task type",
         "name": "Task subject is required",
         "nameLength": "Task name must be less than 255 characters",
         "notesLength": "Notes must be less than 1000 characters",
         "dueDate": "Please select a valid due date.",
-        "dueDatePast": "Due date cannot be in the past.",
         "owner": "Please select a task owner."
       },
       "emptyStates": {
@@ -727,8 +734,8 @@
         "task": "Enter the task name",
         "dueDate": "Select date",
         "priority": "Select priority",
-        "contactName": "Enter name",
-        "deal": "Enter deal",
+        "contactName": "Contact name",
+        "deal": "Select deal",
         "taskOwner": "Select task owner",
         "notes": "Add message"
       },
@@ -758,12 +765,12 @@
         "errorDescription": "Failed to update task. Please try again"
       },
       "validations": {
-        "type": "Please select a task type.",
+        "type": "Please select a task type",
         "name": "Task subject is required",
         "nameLength": "Task name must be less than 255 characters",
         "notesLength": "Notes must be less than 1000 characters",
-        "dueDate": "Please select a valid due date.",
-        "owner": "Please select a task owner."
+        "dueDate": "Please select a valid due date",
+        "owner": "Please select a task owner"
       },
       "emptyStates": {
         "noContacts": "No contacts found",
