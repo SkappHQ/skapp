@@ -70,6 +70,8 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_LEAVE_POLICY_NAME_MAX_LENGTH_EXCEEDED("api.error.leave.leave-policy-name-max-length-exceeded"),
 	LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED("api.error.leave.leave-policy-leave-type-required"),
 	LEAVE_ERROR_LEAVE_POLICY_POLICY_TYPE_REQUIRED("api.error.leave.leave-policy-policy-type-required"),
+	LEAVE_ERROR_LEAVE_POLICY_PAGE_INVALID("api.error.leave.leave-policy-page-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_PAGE_SIZE_INVALID("api.error.leave.leave-policy-page-size-invalid"),
 	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_REQUIRED("api.error.leave.leave-policy-accrual-config-required"),
 	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_NOT_ALLOWED("api.error.leave.leave-policy-accrual-config-not-allowed"),
 	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_DAYS_INVALID("api.error.leave.leave-policy-accrual-days-invalid"),

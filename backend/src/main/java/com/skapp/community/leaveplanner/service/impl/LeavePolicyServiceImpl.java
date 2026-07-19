@@ -40,6 +40,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private static final int MAX_NAME_LENGTH = 100;
 
+	private static final int MAX_PAGE_SIZE = 100;
+
 	private static final float MIN_DAYS = 0.5F;
 
 	private static final float MAX_DAYS = 365F;
@@ -137,6 +139,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		log.info("getAllLeavePolicies: execution started");
 
+		validatePagination(leavePolicyFilterDto);
+
 		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
 		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
 
@@ -163,6 +167,15 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			return null;
 		}
 		return HTML_TAG_PATTERN.matcher(name).replaceAll("").trim();
+	}
+
+	private void validatePagination(LeavePolicyFilterDto filterDto) {
+		if (filterDto.getPage() < 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_INVALID);
+		}
+		if (filterDto.getSize() < 1 || filterDto.getSize() > MAX_PAGE_SIZE) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_SIZE_INVALID);
+		}
 	}
 
 	private void validateRequiredFields(LeavePolicyRequestDto dto) {
