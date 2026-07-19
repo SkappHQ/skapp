@@ -16,49 +16,49 @@ export const MAX_POLICY_DAYS = 365;
 export const POLICY_TYPE_SELECT_QUERY = "select-policy-type";
 
 export const accrualFrequencyItemList = [
-  { id: "daily", label: "Daily", value: AccrualFrequency.DAILY },
-  { id: "weekly", label: "Weekly", value: AccrualFrequency.WEEKLY },
+  { id: "daily", labelKey: "daily", value: AccrualFrequency.DAILY },
+  { id: "weekly", labelKey: "weekly", value: AccrualFrequency.WEEKLY },
   {
     id: "every-other-week",
-    label: "Every other week",
+    labelKey: "everyOtherWeek",
     value: AccrualFrequency.EVERY_OTHER_WEEK
   },
   {
     id: "twice-a-month",
-    label: "Twice a month",
+    labelKey: "twiceAMonth",
     value: AccrualFrequency.TWICE_A_MONTH
   },
-  { id: "monthly", label: "Monthly", value: AccrualFrequency.MONTHLY },
-  { id: "quarterly", label: "Quarterly", value: AccrualFrequency.QUARTERLY },
+  { id: "monthly", labelKey: "monthly", value: AccrualFrequency.MONTHLY },
+  { id: "quarterly", labelKey: "quarterly", value: AccrualFrequency.QUARTERLY },
   {
     id: "twice-a-year",
-    label: "Twice a year",
+    labelKey: "twiceAYear",
     value: AccrualFrequency.TWICE_A_YEAR
   },
-  { id: "yearly", label: "Yearly", value: AccrualFrequency.YEARLY },
+  { id: "yearly", labelKey: "yearly", value: AccrualFrequency.YEARLY },
   {
     id: "on-anniversary",
-    label: "On anniversary",
+    labelKey: "onAnniversary",
     value: AccrualFrequency.ON_ANNIVERSARY
   }
 ];
 
 export const carryoverDateItemList = [
-  { id: "january-1", label: "1st of January", value: "01-01" },
-  { id: "april-1", label: "1st of April", value: "04-01" },
-  { id: "july-1", label: "1st of July", value: "07-01" },
-  { id: "october-1", label: "1st of October", value: "10-01" }
+  { id: "january-1", labelKey: "january1", value: "01-01" },
+  { id: "april-1", labelKey: "april1", value: "04-01" },
+  { id: "july-1", labelKey: "july1", value: "07-01" },
+  { id: "october-1", labelKey: "october1", value: "10-01" }
 ];
 
 export const firstAccrualItemList = [
   {
     id: "prorated",
-    label: "Prorated, based on the accrual period",
+    labelKey: "prorated",
     value: FirstAccrualType.PRORATED
   },
   {
     id: "full",
-    label: "Full amount regardless of start date",
+    labelKey: "full",
     value: FirstAccrualType.FULL
   }
 ];
@@ -66,12 +66,12 @@ export const firstAccrualItemList = [
 export const receiveAccruedTimeItemList = [
   {
     id: "start-of-period",
-    label: "At the start of the accrual period",
+    labelKey: "startOfPeriod",
     value: AccrualTiming.PERIOD_START
   },
   {
     id: "end-of-period",
-    label: "At the end of the accrual period",
+    labelKey: "endOfPeriod",
     value: AccrualTiming.PERIOD_END
   }
 ];

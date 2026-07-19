@@ -12,6 +12,7 @@ import {
   LeavePolicyFormData,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
+import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import SummaryCard from "./SummaryCard";
 import SummaryItem from "./SummaryItem";
@@ -38,6 +39,34 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
     "leaveModule",
     "leavePolicies",
     "createPolicy"
+  );
+
+  const translateOptions = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "createPolicy",
+    "options"
+  );
+
+  const accrualFrequencyOptions = buildTranslatedOptionList(
+    accrualFrequencyItemList,
+    "accrualFrequency",
+    translateOptions
+  );
+  const carryoverDateOptions = buildTranslatedOptionList(
+    carryoverDateItemList,
+    "carryoverDate",
+    translateOptions
+  );
+  const firstAccrualOptions = buildTranslatedOptionList(
+    firstAccrualItemList,
+    "firstAccrual",
+    translateOptions
+  );
+  const receiveAccruedTimeOptions = buildTranslatedOptionList(
+    receiveAccruedTimeItemList,
+    "receiveAccruedTime",
+    translateOptions
   );
 
   return (
@@ -77,7 +106,7 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         <SummaryItem
           label={translateText(["frequencyLabel"])}
           value={getOptionLabel(
-            accrualFrequencyItemList,
+            accrualFrequencyOptions,
             formData.accrualFrequency
           )}
         />
@@ -104,14 +133,14 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         <SummaryItem
           label={translateText(["receiveAccruedTimeLabel"])}
           value={getOptionLabel(
-            receiveAccruedTimeItemList,
+            receiveAccruedTimeOptions,
             formData.receiveAccruedTime
           )}
         />
         <SummaryItem
           label={translateText(["firstAccrualLabel"])}
           value={
-            getOptionLabel(firstAccrualItemList, formData.firstAccrual).split(
+            getOptionLabel(firstAccrualOptions, formData.firstAccrual).split(
               ","
             )[0]
           }
@@ -149,7 +178,7 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
           <SummaryItem
             label={translateText(["carryOverDateLabel"])}
             value={getOptionLabel(
-              carryoverDateItemList,
+              carryoverDateOptions,
               formData.carryOverDate
             )}
           />

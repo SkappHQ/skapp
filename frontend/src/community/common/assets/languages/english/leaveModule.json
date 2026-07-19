@@ -277,6 +277,33 @@
         "activeStatus": "Active",
         "inactiveStatus": "Inactive"
       },
+      "options": {
+        "accrualFrequency": {
+          "daily": "Daily",
+          "weekly": "Weekly",
+          "everyOtherWeek": "Every other week",
+          "twiceAMonth": "Twice a month",
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "twiceAYear": "Twice a year",
+          "yearly": "Yearly",
+          "onAnniversary": "On anniversary"
+        },
+        "carryoverDate": {
+          "january1": "1st of January",
+          "april1": "1st of April",
+          "july1": "1st of July",
+          "october1": "1st of October"
+        },
+        "firstAccrual": {
+          "prorated": "Prorated, based on the accrual period",
+          "full": "Full amount regardless of start date"
+        },
+        "receiveAccruedTime": {
+          "startOfPeriod": "At the start of the accrual period",
+          "endOfPeriod": "At the end of the accrual period"
+        }
+      },
       "errors": {
         "policyNameRequired": "Policy name is required.",
         "policyNameMaxLength": "Policy name cannot exceed 100 characters.",

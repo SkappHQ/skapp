@@ -12,6 +12,7 @@ import {
   LeavePolicyFormData,
   LeavePolicyWizardErrors
 } from "~community/leave/types/LeavePolicyTypes";
+import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import FieldError from "./FieldError";
 import WizardSection from "./WizardSection";
@@ -29,6 +30,34 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
     "leavePolicies",
     "createPolicy",
     "entitlementSetup"
+  );
+
+  const translateOptions = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "createPolicy",
+    "options"
+  );
+
+  const accrualFrequencyOptions = buildTranslatedOptionList(
+    accrualFrequencyItemList,
+    "accrualFrequency",
+    translateOptions
+  );
+  const carryoverDateOptions = buildTranslatedOptionList(
+    carryoverDateItemList,
+    "carryoverDate",
+    translateOptions
+  );
+  const firstAccrualOptions = buildTranslatedOptionList(
+    firstAccrualItemList,
+    "firstAccrual",
+    translateOptions
+  );
+  const receiveAccruedTimeOptions = buildTranslatedOptionList(
+    receiveAccruedTimeItemList,
+    "receiveAccruedTime",
+    translateOptions
   );
 
   return (
@@ -55,7 +84,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
               label={translateText(["frequencyLabel"])}
               value={formData.accrualFrequency}
               placeholder={translateText(["frequencyPlaceholder"])}
-              options={accrualFrequencyItemList}
+              options={accrualFrequencyOptions}
               onChange={(value: string) =>
                 onChange({ accrualFrequency: value })
               }
@@ -142,7 +171,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
                   label={translateText(["carryOverDateLabel"])}
                   value={formData.carryOverDate}
                   placeholder={translateText(["carryOverDatePlaceholder"])}
-                  options={carryoverDateItemList}
+                  options={carryoverDateOptions}
                   onChange={(value: string) =>
                     onChange({ carryOverDate: value })
                   }
@@ -174,7 +203,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
             id="leave-policy-first-accrual"
             label={translateText(["firstAccrualLabel"])}
             value={formData.firstAccrual}
-            options={firstAccrualItemList}
+            options={firstAccrualOptions}
             onChange={(value: string) => onChange({ firstAccrual: value })}
             width="100%"
           />
@@ -182,7 +211,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
             id="leave-policy-receive-accrued-time"
             label={translateText(["receiveAccruedTimeLabel"])}
             value={formData.receiveAccruedTime}
-            options={receiveAccruedTimeItemList}
+            options={receiveAccruedTimeOptions}
             onChange={(value: string) =>
               onChange({ receiveAccruedTime: value })
             }

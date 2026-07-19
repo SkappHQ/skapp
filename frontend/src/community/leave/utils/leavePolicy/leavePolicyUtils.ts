@@ -13,6 +13,17 @@ import {
 const isPositiveNumber = (value: string): boolean =>
   value !== "" && !Number.isNaN(Number(value)) && Number(value) > 0;
 
+export const buildTranslatedOptionList = (
+  itemList: { id: string; labelKey: string; value: string }[],
+  optionGroup: string,
+  translateOptions: (suffixes: string[]) => string
+): { id: string; label: string; value: string }[] =>
+  itemList.map((item) => ({
+    id: item.id,
+    label: translateOptions([optionGroup, item.labelKey]),
+    value: item.value
+  }));
+
 export const getLeavePolicyStepErrors = (
   step: LeavePolicyWizardSteps,
   formData: LeavePolicyFormData
