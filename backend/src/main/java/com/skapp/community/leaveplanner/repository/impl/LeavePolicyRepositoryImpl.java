@@ -2,6 +2,8 @@ package com.skapp.community.leaveplanner.repository.impl;
 
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
+import com.skapp.community.leaveplanner.model.LeavePolicy_;
+import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyRepository;
 import jakarta.persistence.EntityManager;
@@ -35,10 +37,10 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 
 		CriteriaQuery<LeavePolicy> query = cb.createQuery(LeavePolicy.class);
 		Root<LeavePolicy> root = query.from(LeavePolicy.class);
-		root.fetch("leaveType", JoinType.LEFT);
+		root.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
 
 		query.select(root).where(buildPredicates(cb, root, filterDto).toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(root.<String>get("name"))));
+		query.orderBy(cb.asc(cb.lower(root.get(LeavePolicy_.name))));
 
 		TypedQuery<LeavePolicy> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
@@ -62,11 +64,12 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
-			predicates.add(cb.like(cb.lower(root.<String>get("name")), "%" + escaped + "%", '\\'));
+			predicates.add(cb.like(cb.lower(root.get(LeavePolicy_.name)), "%" + escaped + "%", '\\'));
 		}
 
 		if (filterDto.getLeaveTypeId() != null) {
-			predicates.add(cb.equal(root.get("leaveType").get("typeId"), filterDto.getLeaveTypeId()));
+			predicates.add(cb.equal(root.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.typeId),
+					filterDto.getLeaveTypeId()));
 		}
 
 		return predicates;
