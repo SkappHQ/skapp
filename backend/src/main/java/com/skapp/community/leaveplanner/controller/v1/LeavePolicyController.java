@@ -7,7 +7,6 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequest
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -35,8 +34,7 @@ public class LeavePolicyController {
 			description = "Creates a new leave policy with accrual or fixed entitlement configuration")
 	@PostMapping
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> addLeavePolicy(
-			@Valid @RequestBody LeavePolicyRequestDto leavePolicyRequestDto) {
+	public ResponseEntity<ResponseEntityDto> addLeavePolicy(@RequestBody LeavePolicyRequestDto leavePolicyRequestDto) {
 		ResponseEntityDto response = leavePolicyService.addLeavePolicy(leavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -45,7 +43,7 @@ public class LeavePolicyController {
 	@PutMapping("/{policyId}")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateLeavePolicy(@PathVariable Long policyId,
-			@Valid @RequestBody LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
+			@RequestBody LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
 		ResponseEntityDto response = leavePolicyService.updateLeavePolicy(policyId, leavePolicyUpdateRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -62,7 +60,7 @@ public class LeavePolicyController {
 			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN','ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(@Valid LeavePolicyFilterDto leavePolicyFilterDto) {
+	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
