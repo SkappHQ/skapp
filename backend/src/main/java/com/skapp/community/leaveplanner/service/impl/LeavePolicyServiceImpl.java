@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class LeavePolicyServiceImpl implements LeavePolicyService {
 
+	private static final int MAX_NAME_LENGTH = 100;
+
 	private static final float MIN_DAYS = 0.5F;
 
 	private static final float MAX_DAYS = 365F;
@@ -59,7 +61,9 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto addLeavePolicy(LeavePolicyRequestDto leavePolicyRequestDto) {
 		log.info("addLeavePolicy: execution started");
 
-		String sanitizedName = sanitizeName(leavePolicyRequestDto.getName());
+		validateRequiredFields(leavePolicyRequestDto);
+
+		String sanitizedName = validateAndSanitizeName(leavePolicyRequestDto.getName());
 		leavePolicyRequestDto.setName(sanitizedName);
 
 		PolicyLeaveType leaveType = policyLeaveTypeDao
@@ -89,7 +93,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
 
-		String sanitizedName = sanitizeName(leavePolicyUpdateRequestDto.getName());
+		String sanitizedName = validateAndSanitizeName(leavePolicyUpdateRequestDto.getName());
 
 		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(sanitizedName,
 				leavePolicy.getLeaveType().getTypeId(), policyId)) {
@@ -159,6 +163,26 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			return null;
 		}
 		return HTML_TAG_PATTERN.matcher(name).replaceAll("").trim();
+	}
+
+	private void validateRequiredFields(LeavePolicyRequestDto dto) {
+		if (dto.getLeaveTypeId() == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED);
+		}
+		if (dto.getPolicyType() == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_POLICY_TYPE_REQUIRED);
+		}
+	}
+
+	private String validateAndSanitizeName(String name) {
+		String sanitizedName = sanitizeName(name);
+		if (sanitizedName == null || sanitizedName.isBlank()) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_REQUIRED);
+		}
+		if (sanitizedName.length() > MAX_NAME_LENGTH) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_MAX_LENGTH_EXCEEDED);
+		}
+		return sanitizedName;
 	}
 
 	private void validateEntitlementSetup(LeavePolicyRequestDto dto) {
