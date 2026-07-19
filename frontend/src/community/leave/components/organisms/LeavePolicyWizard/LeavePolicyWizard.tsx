@@ -26,6 +26,7 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import {
+  getLeavePolicyErrorToastKeys,
   getLeavePolicyStepErrors,
   mapLeavePolicyFormToPayload
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
@@ -34,29 +35,6 @@ import CancelPolicyCreationModal from "./CancelPolicyCreationModal";
 import LeavePolicyStepContent from "./LeavePolicyStepContent";
 
 const TOTAL_STEPS = 3;
-
-const HTTP_STATUS_CONFLICT = 409;
-
-const HTTP_STATUS_FORBIDDEN = 403;
-
-const getErrorToastKeys = (
-  status: number | undefined
-): { title: string; description: string } => {
-  switch (status) {
-    case HTTP_STATUS_CONFLICT:
-      return {
-        title: "duplicateToastTitle",
-        description: "duplicateToastDescription"
-      };
-    case HTTP_STATUS_FORBIDDEN:
-      return {
-        title: "permissionToastTitle",
-        description: "permissionToastDescription"
-      };
-    default:
-      return { title: "errorToastTitle", description: "errorToastDescription" };
-  }
-};
 
 interface Props {
   policyType: PolicyType;
@@ -135,7 +113,9 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleError = (error: AxiosError): void => {
-    const { title, description } = getErrorToastKeys(error?.response?.status);
+    const { title, description } = getLeavePolicyErrorToastKeys(
+      error?.response?.status
+    );
 
     setToastMessage({
       open: true,

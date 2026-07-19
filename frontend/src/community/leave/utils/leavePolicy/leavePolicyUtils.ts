@@ -1,4 +1,8 @@
 import {
+  HTTP_CONFLICT,
+  HTTP_FORBIDDEN
+} from "~community/common/constants/httpStatusCodes";
+import {
   MAX_POLICY_DAYS,
   MAX_POLICY_NAME_LENGTH
 } from "~community/leave/constants/leavePolicyConstants";
@@ -12,6 +16,25 @@ import {
 
 const isPositiveNumber = (value: string): boolean =>
   value !== "" && !Number.isNaN(Number(value)) && Number(value) > 0;
+
+export const getLeavePolicyErrorToastKeys = (
+  status: number | undefined
+): { title: string; description: string } => {
+  switch (status) {
+    case HTTP_CONFLICT:
+      return {
+        title: "duplicateToastTitle",
+        description: "duplicateToastDescription"
+      };
+    case HTTP_FORBIDDEN:
+      return {
+        title: "permissionToastTitle",
+        description: "permissionToastDescription"
+      };
+    default:
+      return { title: "errorToastTitle", description: "errorToastDescription" };
+  }
+};
 
 export const buildTranslatedOptionList = (
   itemList: { id: string; labelKey: string; value: string }[],

@@ -4,6 +4,7 @@ import {
   SaveIcon,
   SmallModal
 } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { ChangeEvent, FC, useEffect, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -16,6 +17,7 @@ import {
   LeavePolicyType,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
+import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 interface EditLeavePolicyModalProps {
   policy: LeavePolicyType | null;
@@ -57,12 +59,16 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       });
       onClose();
     },
-    () => {
+    (error: AxiosError) => {
+      const { title, description } = getLeavePolicyErrorToastKeys(
+        error?.response?.status
+      );
+
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText(["errorToastTitle"]),
-        description: translateText(["errorToastDescription"]),
+        title: translateText([title]),
+        description: translateText([description]),
         isIcon: true
       });
     }
