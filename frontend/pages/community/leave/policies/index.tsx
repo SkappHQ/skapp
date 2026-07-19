@@ -2,26 +2,21 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import LeavePoliciesTable from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTable";
 import PolicyTypeSelectionModal from "~community/leave/components/molecules/PolicyTypeSelectionModal/PolicyTypeSelectionModal";
 import { POLICY_TYPE_SELECT_QUERY } from "~community/leave/constants/leavePolicyConstants";
+import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
 
 const LeavePolicies: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
 
   const router = useRouter();
-  const { user } = useAuth();
-  const canManagePolicies = Boolean(
-    user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-    user?.roles?.includes(AdminTypes.LEAVE_ADMIN)
-  );
+  const canManagePolicies = useCanManageLeavePolicies();
 
   const [isPolicyTypeModalOpen, setIsPolicyTypeModalOpen] =
     useState<boolean>(false);
