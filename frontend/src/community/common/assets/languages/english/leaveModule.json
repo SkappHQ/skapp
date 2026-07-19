@@ -238,7 +238,6 @@
         "carryOverDatePlaceholder": "Select date",
         "maxCarryOverDaysLabel": "Maximum carry over days",
         "maxCarryOverDaysPlaceholder": "Enter days",
-        "resetNegativeBalancesLabel": "Reset negative balances to 0 days on carryover date",
         "fineTuningTitle": "Fine tuning",
         "firstAccrualLabel": "Employees' first accrual should be",
         "receiveAccruedTimeLabel": "Employees receive accrued time",

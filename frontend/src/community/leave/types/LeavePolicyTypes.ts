@@ -74,7 +74,6 @@ export interface LeavePolicyFormData {
   canCarryOver: boolean;
   carryOverDate: string;
   maxCarryOverDays: string;
-  resetNegativeBalances: boolean;
   firstAccrual: string;
   receiveAccruedTime: string;
 }
@@ -91,7 +90,6 @@ export interface AddLeavePolicyAccrualPayload {
   carryoverEnabled: boolean;
   carryoverDate?: string;
   maxCarryoverDays?: number;
-  resetNegativeBalancesOnCarryover?: boolean;
   firstAccrual: string;
   accrualTiming: string;
 }

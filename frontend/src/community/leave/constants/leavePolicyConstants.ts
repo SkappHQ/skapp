@@ -90,7 +90,6 @@ export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   canCarryOver: false,
   carryOverDate: "01-01",
   maxCarryOverDays: "",
-  resetNegativeBalances: false,
   firstAccrual: FirstAccrualType.PRORATED,
   receiveAccruedTime: AccrualTiming.PERIOD_END
 };

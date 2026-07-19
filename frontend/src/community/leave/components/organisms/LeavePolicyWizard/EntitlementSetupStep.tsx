@@ -1,4 +1,4 @@
-import { Checkbox, Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -164,16 +164,6 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
                 />
               </div>
             </div>
-          )}
-          {formData.canCarryOver && (
-            <Checkbox
-              label={translateText(["resetNegativeBalancesLabel"])}
-              ariaLabel={translateText(["resetNegativeBalancesLabel"])}
-              checked={formData.resetNegativeBalances}
-              onChange={(checked) =>
-                onChange({ resetNegativeBalances: checked })
-              }
-            />
           )}
         </div>
       </WizardSection>

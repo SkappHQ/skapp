@@ -99,9 +99,6 @@ export const mapLeavePolicyFormToPayload = (
         formData.canCarryOver && formData.maxCarryOverDays !== ""
           ? Number(formData.maxCarryOverDays)
           : undefined,
-      resetNegativeBalancesOnCarryover: formData.canCarryOver
-        ? formData.resetNegativeBalances
-        : undefined,
       firstAccrual: formData.firstAccrual,
       accrualTiming: formData.receiveAccruedTime
     };
