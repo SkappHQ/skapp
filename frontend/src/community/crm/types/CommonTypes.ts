@@ -343,11 +343,7 @@ export interface CrmCreateDealPayload {
   closingAt?: string | null;
 }
 
-export interface CrmDealNameExistsResponse {
-  isExists: boolean;
-}
-
-export interface CrmContactEmailExistsResponse {
+export interface CrmExistsResponse {
   isExists: boolean;
 }
 

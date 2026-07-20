@@ -20,9 +20,9 @@ import {
   CrmCompaniesResponseType,
   CrmContact,
   CrmContactCreatePayload,
-  CrmContactEmailExistsResponse,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
+  CrmExistsResponse,
   CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
@@ -146,7 +146,7 @@ export const useEditContact = (
 
 const checkContactEmailExists = async (
   email: string
-): Promise<CrmContactEmailExistsResponse> => {
+): Promise<CrmExistsResponse> => {
   const response = await authFetch.get(
     contactEndpoints.CHECK_CONTACT_EMAIL_EXISTS,
     {
@@ -159,7 +159,7 @@ const checkContactEmailExists = async (
 export const useCheckContactEmailExists = (
   email: string,
   enabled: boolean
-): UseQueryResult<CrmContactEmailExistsResponse> => {
+): UseQueryResult<CrmExistsResponse> => {
   return useQuery({
     queryKey: contactQueryKeys.CHECK_CONTACT_EMAIL_EXISTS(email),
     queryFn: () => checkContactEmailExists(email),
