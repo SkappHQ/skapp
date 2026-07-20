@@ -7,7 +7,6 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequest
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Leave Policy Controller", description = "Operations related to leave policies")
 public class LeavePolicyController {
 
-	@NonNull
 	private final LeavePolicyService leavePolicyService;
 
 	@Operation(summary = "Create a new leave policy",
 			description = "Creates a new leave policy with accrual or fixed entitlement configuration")
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> addLeavePolicy(@RequestBody LeavePolicyRequestDto leavePolicyRequestDto) {
 		ResponseEntityDto response = leavePolicyService.addLeavePolicy(leavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -41,7 +39,7 @@ public class LeavePolicyController {
 
 	@Operation(summary = "Update a leave policy", description = "Updates the name of an existing leave policy")
 	@PutMapping("/{policyId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateLeavePolicy(@PathVariable Long policyId,
 			@RequestBody LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
 		ResponseEntityDto response = leavePolicyService.updateLeavePolicy(policyId, leavePolicyUpdateRequestDto);
@@ -50,7 +48,7 @@ public class LeavePolicyController {
 
 	@Operation(summary = "Deactivate a leave policy", description = "Marks an existing leave policy as inactive")
 	@PatchMapping("/{policyId}/deactivate")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> deactivateLeavePolicy(@PathVariable Long policyId) {
 		ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(policyId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -59,7 +57,7 @@ public class LeavePolicyController {
 	@Operation(summary = "Get all leave policies",
 			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -68,7 +66,7 @@ public class LeavePolicyController {
 	@Operation(summary = "Get policy leave types",
 			description = "Returns all active leave types available for policy creation")
 	@GetMapping("/leave-types")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_LEAVE_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes() {
 		ResponseEntityDto response = leavePolicyService.getPolicyLeaveTypes();
 		return new ResponseEntity<>(response, HttpStatus.OK);
