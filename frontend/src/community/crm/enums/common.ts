@@ -10,7 +10,6 @@ export enum CrmTaskTabEnum {
   COMPLETED_TASKS = "completed-tasks"
 }
 
-/** Which of the two server-fed halves a batch of tasks belongs to. */
 export enum CrmTaskGroupEnum {
   OPEN = "OPEN",
   COMPLETED = "COMPLETED"

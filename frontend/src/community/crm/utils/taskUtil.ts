@@ -63,24 +63,23 @@ export const getDueDateStatus = (
   };
 };
 
-const TASK_TYPE_ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+const TASK_TYPE_ICON_MAP: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
   email: EmailFilledIcon,
   call: PhoneFilledIcon,
   meeting: MeetingFilledIcon,
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (
-  typeName: string,
-  size = 20
-): ReactElement => {
+export const getTaskTypeIcon = (typeName: string, size = 20): ReactElement => {
   return createElement(
     TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
       ChecklistVerificationFilledIcon,
     { width: size, height: size }
   );
 };
-
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum
@@ -175,7 +174,6 @@ export const getChangedTaskFields = (
   return changedFields;
 };
 
-/** Flip the completion flag of one task in a flat list (mark done / undone). */
 export const setTaskCompletionInList = <
   T extends { id: number; isCompleted: boolean }
 >(
@@ -185,19 +183,16 @@ export const setTaskCompletionInList = <
 ): T[] =>
   tasks.map((task) => (task.id === taskId ? { ...task, isCompleted } : task));
 
-/**
- * The tasks page holds open + completed in one array but fetches them from two
- * separate queries. This replaces the group that was just fetched with the fresh
- * server data and keeps the other group intact, so switching tabs stays instant
- * and search (which shrinks a group) is reflected correctly.
- */
 export const replaceTaskGroup = (
   tasks: CrmTaskDetailType[],
   fresh: CrmTaskDetailType[],
   group: CrmTaskGroupEnum
 ): CrmTaskDetailType[] => {
-  const wantCompleted = group === CrmTaskGroupEnum.COMPLETED;
-  return [...tasks.filter((task) => task.isCompleted !== wantCompleted), ...fresh];
+  const isReplacingCompleted = group === CrmTaskGroupEnum.COMPLETED;
+  const otherGroup = tasks.filter(
+    (task) => task.isCompleted !== isReplacingCompleted
+  );
+  return [...otherGroup, ...fresh];
 };
 
 export const getTaskGroups = (

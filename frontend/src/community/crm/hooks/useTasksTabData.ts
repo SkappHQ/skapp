@@ -11,11 +11,6 @@ import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
-/**
- * Owns everything the tasks page needs for a tab: it fires the two server
- * queries, seeds each half into the store, then derives the render data back
- * out of the store. The component only consumes the result and renders.
- */
 export const useTasksTabData = (
   tab: CrmTaskTabEnum,
   searchKeyword: string,
@@ -26,7 +21,6 @@ export const useTasksTabData = (
     setTasks: store.setTasks
   }));
 
-  // 1. Fetch — open (live) and completed (paginated).
   const isOpenTab =
     tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.ALL_TASKS;
 
@@ -54,7 +48,6 @@ export const useTasksTabData = (
     [completedTaskData]
   );
 
-  // 2. Seed the store — each query refreshes only its own half.
   useEffect(() => {
     if (openTaskData?.tasks) {
       setTasks(openTaskData.tasks, CrmTaskGroupEnum.OPEN);
@@ -67,7 +60,6 @@ export const useTasksTabData = (
     }
   }, [completedTaskData, completedFromQuery, setTasks]);
 
-  // 3. Derive render data from the store.
   const openTaskGroups = useMemo(
     () =>
       getTaskGroups(

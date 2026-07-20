@@ -53,9 +53,6 @@ const TaskRow: FC<Props> = ({
   const handleToggleChange = (isCompleted: boolean) => {
     const previousCompleted = task.isCompleted;
 
-    // Optimistic in-place flip — the row updates instantly and (on the tasks
-    // page) leaves the open list on its own. No invalidation, and nothing to do
-    // on success since the store already reflects the change; revert on error.
     setIsCompleted(isCompleted);
     syncTaskCompletion(task, isCompleted);
 

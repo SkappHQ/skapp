@@ -150,8 +150,6 @@ const TaskSidePanel: FC = () => {
   const handleMarkAsDone = () => {
     if (!selectedTask) return;
 
-    // Optimistically flip, then just close on success (store already updated);
-    // revert on error.
     syncTaskCompletion(selectedTask, true);
     updateTaskCompletion(
       { id: selectedTask.id, isCompleted: true },

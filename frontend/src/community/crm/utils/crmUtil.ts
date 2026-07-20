@@ -111,13 +111,12 @@ export const mergeWithExisting = <T extends Id>(
     return current ? { ...current, ...item } : item;
   });
 
-/** Merge a single updated item into a list by id (leaves the rest untouched). */
 export const mergeById = <T extends { id: number }>(
   items: T[],
   update: T
-): T[] => items.map((item) => (item.id === update.id ? { ...item, ...update } : item));
+): T[] =>
+  items.map((item) => (item.id === update.id ? { ...item, ...update } : item));
 
-/** Count the tasks that are still open. */
 export const countOpenTasks = <T extends { isCompleted: boolean }>(
   tasks: T[]
 ): number => tasks.filter((task) => !task.isCompleted).length;
