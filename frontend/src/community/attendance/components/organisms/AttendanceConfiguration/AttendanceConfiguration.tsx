@@ -15,6 +15,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
 
 import styles from "./styles";
@@ -126,6 +127,15 @@ const AttendanceConfiguration = (): JSX.Element => {
                   handleSwitchChange("isClockInOnLeaveDays", checked)
                 }
               />
+              <SwitchRow
+                labelId="clock-in-out-only"
+                label={attendanceConfigurations(["isClockInClockOutOnly"])}
+                checked={config.isClockInClockOutOnly}
+                wrapperStyles={classes.switchWrapper}
+                onChange={(checked) =>
+                  handleSwitchChange("isClockInClockOutOnly", checked)
+                }
+              />
             </>
           )}
         </Box>
@@ -154,6 +164,12 @@ const AttendanceConfiguration = (): JSX.Element => {
         </Box>
 
         <GeoFencingSettings
+          config={config}
+          initialConfig={initialConfig}
+          onSwitchChange={handleSwitchChange}
+        />
+
+        <FingerprintSettings
           config={config}
           initialConfig={initialConfig}
           onSwitchChange={handleSwitchChange}

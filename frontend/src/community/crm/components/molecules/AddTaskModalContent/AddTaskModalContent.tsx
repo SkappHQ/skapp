@@ -70,7 +70,8 @@ const AddTaskModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["successTitle"])
+      title: translateText(["successTitle"]),
+      description: translateText(["successDescription"])
     });
   };
 

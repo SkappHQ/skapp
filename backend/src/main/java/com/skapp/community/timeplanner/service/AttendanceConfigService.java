@@ -14,4 +14,6 @@ public interface AttendanceConfigService {
 
 	boolean getAttendanceConfigByType(AttendanceConfigType attendanceConfigType);
 
+	boolean isAttendanceConfigEnabled(AttendanceConfigType attendanceConfigType);
+
 }
