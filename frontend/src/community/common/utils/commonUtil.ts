@@ -571,10 +571,7 @@ const ANDROID_USER_AGENT_REGEX = /Android/i;
 const MAC_USER_AGENT_REGEX = /Macintosh/i;
 
 export const isMobileDevice = (): boolean => {
-  return (
-    ANDROID_USER_AGENT_REGEX.test(globalThis.navigator?.userAgent ?? "") ||
-    isIOSDevice()
-  );
+  return isAndroidDevice() || isIOSDevice();
 };
 
 // iPadOS 13+ reports a desktop "Macintosh" user agent, so it can't be told
@@ -589,6 +586,10 @@ export const isIOSDevice = (): boolean => {
     MAC_USER_AGENT_REGEX.test(userAgent) &&
     (globalThis.navigator?.maxTouchPoints ?? 0) > 1
   );
+};
+
+export const isAndroidDevice = (): boolean => {
+  return ANDROID_USER_AGENT_REGEX.test(globalThis.navigator?.userAgent ?? "");
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
