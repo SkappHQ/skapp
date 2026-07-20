@@ -29,4 +29,6 @@ public class CommonConstants {
 
 	public static final long WORK_LOCATION_NAME_MAX_LENGTH = 50;
 
+	public static final String SKAPP_DOMAIN = ".skapp.com";
+
 }
