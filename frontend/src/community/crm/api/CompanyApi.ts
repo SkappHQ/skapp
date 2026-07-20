@@ -15,6 +15,7 @@ import {
   CrmCompanyDomainSearchResponseType,
   CrmCompanyMetricsResponseType,
   CrmDealPaginatedResponse,
+  CrmDealsByCompanyParams,
   EditCompanyPayload
 } from "../types/CommonTypes";
 import { companyEndpoints, crmDealEndpoints } from "./utils/ApiEndpoints";
@@ -168,18 +169,28 @@ export const useSearchCompaniesByDomain = (
 };
 
 const fetchDealsByCompany = async (
-  companyId: number
+  params: CrmDealsByCompanyParams,
+  page: number
 ): Promise<CrmDealPaginatedResponse> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
-    params: { companyId }
+    params: { ...params, page }
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetDealsByCompany = (companyId: number, enabled: boolean) => {
-  return useQuery({
-    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(companyId),
-    queryFn: () => fetchDealsByCompany(companyId),
+export const useGetDealsByCompany = (
+  params: CrmDealsByCompanyParams,
+  enabled: boolean
+) => {
+  return useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: crmDealQueryKeys.GET_DEALS_BY_COMPANY(params),
+    queryFn: ({ pageParam }) => fetchDealsByCompany(params, pageParam),
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false,
     enabled
   });
 };

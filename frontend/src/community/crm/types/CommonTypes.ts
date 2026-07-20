@@ -311,6 +311,11 @@ export interface CrmDealFilterParams {
   priority?: CrmPriorityEnum;
 }
 
+export interface CrmDealsByCompanyParams {
+  companyId: number;
+  size: number;
+}
+
 export interface RelatedTasksParams {
   contactId?: number | null;
   dealId?: number | null;
