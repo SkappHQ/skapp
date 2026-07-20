@@ -10,7 +10,10 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
-import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import {
+  useCheckContactEmailExists,
+  useGetCompanyLookup
+} from "~community/crm/api/ContactApi";
 import SuggestedBadge from "~community/crm/components/atoms/SuggestedBadge/SuggestedBadge";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
@@ -23,7 +26,6 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   CONTACT_NUMBER_MAX_LENGTH
 } from "~community/crm/constants/contactConstants";
-import useContactEmailDuplicateCheck from "~community/crm/hooks/useContactEmailDuplicateCheck";
 import {
   CrmContactFormValues,
   CrmOwner
@@ -85,11 +87,28 @@ const ContactModalForm = ({
     dirty
   } = formik;
 
-  const { debouncedEmail, isDuplicateEmail, isEmailCheckUnresolved } =
-    useContactEmailDuplicateCheck({
-      email: values.email,
-      originalEmail: initialValues.email
-    });
+  const trimmedEmail = values.email.trim();
+  const trimmedOriginalEmail = initialValues.email.trim();
+
+  const debouncedEmail = useDebounce(trimmedEmail, SEARCH_DEBOUNCE_DELAY);
+
+  const isEmailCheckEnabled =
+    debouncedEmail.length > 0 &&
+    isValidEmail().test(debouncedEmail) &&
+    debouncedEmail !== trimmedOriginalEmail;
+
+  const { data: emailExistsData, isFetching: isEmailCheckFetching } =
+    useCheckContactEmailExists(debouncedEmail, isEmailCheckEnabled);
+
+  const isDuplicateEmail =
+    trimmedEmail === debouncedEmail &&
+    trimmedEmail !== trimmedOriginalEmail &&
+    (emailExistsData?.isExists ?? false);
+
+  const isEmailCheckUnresolved =
+    trimmedEmail.length > 0 &&
+    trimmedEmail !== trimmedOriginalEmail &&
+    (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
 
   const extractedDomain = extractDomainFromEmail(debouncedEmail);
   const isDomainSearchEnabled =
