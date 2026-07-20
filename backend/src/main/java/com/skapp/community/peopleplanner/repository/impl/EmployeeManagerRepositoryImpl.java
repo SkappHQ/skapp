@@ -1,9 +1,12 @@
 package com.skapp.community.peopleplanner.repository.impl;
 
+import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerRepository;
 import jakarta.persistence.EntityManager;
@@ -12,6 +15,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -53,6 +57,11 @@ public class EmployeeManagerRepositoryImpl implements EmployeeManagerRepository 
 
 		predicates.add(criteriaBuilder
 			.equal(employeeManagerJoin.get(EmployeeManager_.manager).get(Employee_.employeeId), managerId));
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray).distinct(true);

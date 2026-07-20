@@ -187,6 +187,10 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
 		predicates.add(criteriaBuilder.equal(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
 
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray);
@@ -235,6 +239,10 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 		predicates.add(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

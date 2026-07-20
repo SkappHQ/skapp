@@ -69,6 +69,10 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.isTrue(employeeRoot.get(Employee_.user).get(User_.isActive)));
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
+		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
 		if (teamsFilter.contains(-1L)) {
 			Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);
 			Root<EmployeeManager> managerRoot = managedEmployeesSubquery.from(EmployeeManager.class);
@@ -138,6 +142,10 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		}
 
 		predicates.add(criteriaBuilder.isTrue(userJoin.get(User_.isActive)));
+
+		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		Subquery<String> attendanceRoleSubquery = criteriaQuery.subquery(String.class);
 		Root<EmployeeRole> employeeRoleRoot = attendanceRoleSubquery.from(EmployeeRole.class);
@@ -257,6 +265,10 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 
 		predicates.add(criteriaBuilder.isTrue(employeeRoot.get(Employee_.user).get(User_.isActive)));
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
+		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isAdmin) {
