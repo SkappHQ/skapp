@@ -16,7 +16,7 @@ export const withIncrementedOpenDeals = (
 ): CrmCompany[] =>
   companies.map((company) =>
     company.id === companyId
-      ? { ...company, openDeals: (company.openDeals ?? 0) + 1 }
+      ? { ...company, openDeals: company.openDeals + 1 }
       : company
   );
 

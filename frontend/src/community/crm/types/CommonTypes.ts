@@ -40,7 +40,7 @@ export interface CrmCompany {
   openValue: string | null;
   accountValue: string | null;
   closedDeals: number | null;
-  openDeals: number | null;
+  openDeals: number;
   tasks: CrmTaskDetailType[] | null;
   deals: CrmDealListItem[] | null;
   contacts: CrmContact[] | null;

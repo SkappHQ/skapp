@@ -68,18 +68,6 @@ describe("withIncrementedOpenDeals", () => {
     expect(result[0].openDeals).toBe(5);
   });
 
-  it("should treat a null openDeals as 0 and set it to 1", () => {
-    const companyWithNull: CrmCompany = {
-      ...baseCompany,
-      id: 3,
-      openDeals: null
-    };
-
-    const result = withIncrementedOpenDeals([companyWithNull], 3);
-
-    expect(result[0].openDeals).toBe(1);
-  });
-
   it("should leave non-matching companies unchanged", () => {
     const result = withIncrementedOpenDeals([companyA, companyB], 1);
 
