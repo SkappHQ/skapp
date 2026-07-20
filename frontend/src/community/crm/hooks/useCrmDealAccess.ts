@@ -7,7 +7,6 @@ import { useToast } from "~community/common/providers/ToastProvider";
 
 interface UseCrmDealAccessReturn {
   ensureDealAccess: (ownerEmployeeId: number) => boolean;
-  hasFullDealAccess: boolean;
 }
 
 export const useCrmDealAccess = (): UseCrmDealAccessReturn => {
@@ -41,5 +40,5 @@ export const useCrmDealAccess = (): UseCrmDealAccessReturn => {
     [canAccessDeal]
   );
 
-  return { ensureDealAccess, hasFullDealAccess };
+  return { ensureDealAccess };
 };
