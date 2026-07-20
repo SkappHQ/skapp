@@ -834,6 +834,26 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal by ID - Non-owner representative returns bad request")
+	void getDealById_RepNonOwner_ReturnsBadRequest() throws Exception {
+		// user2@gmail.com is given the CRM_SALES_REPRESENTATIVE role only
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		// Deal is owned by user1 (employee 1L) via savedDeal()
+		CrmDeal deal = savedDeal();
+
+		// user2 is a sales representative and not the deal owner
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED)));
+	}
+
+	@Test
 	@DisplayName("Delete non-existent deal - Returns Bad Request")
 	void deleteDeal_NonExistent_ReturnsBadRequest() throws Exception {
 		performDeleteRequest(99999L).andDo(print())
