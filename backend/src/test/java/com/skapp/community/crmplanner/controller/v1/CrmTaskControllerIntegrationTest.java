@@ -42,6 +42,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.LocalDateTime;
+
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -825,16 +827,22 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create task with a due date in the past - Returns Bad Request")
-	void createTask_PastDueDate_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create task with a due date in the past - Returns Created and persists it")
+	void createTask_PastDueDate_ReturnsCreated() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
-		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().minusDays(1));
+		LocalDateTime pastDueAt = DateTimeUtils.getCurrentUtcDateTime().minusDays(1);
+		dto.setDueAt(pastDueAt);
 
-		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_IN_PAST)));
+		MvcResult result = performCreateRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andReturn();
+
+		Long savedId = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "$.results[0].id"))
+			.longValue();
+
+		CrmTask saved = crmTaskDao.findById(savedId).orElseThrow();
+		assertEquals(pastDueAt, saved.getDueAt());
 	}
 
 	@Test

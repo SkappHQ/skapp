@@ -1,11 +1,11 @@
-import { AvatarChip, ButtonV2, Label } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Label } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
+import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { getPriorityConfig } from "~community/crm/utils/taskUtil";
@@ -19,11 +19,6 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const priorityConfig = getPriorityConfig(task.priority);
-
-  const ownerName = concatStrings([
-    task.owner.firstName,
-    task.owner.lastName ?? ""
-  ]);
 
   return (
     <>
@@ -51,16 +46,10 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
 
       <div className="flex flex-col border border-secondary-accent rounded-xl p-3 mt-4">
         <PropertyRow label={translateText(["assignedTo"])}>
-          <AvatarChip
-            label={ownerName}
-            avatarProps={{
-              id: String(task.owner.employeeId),
-              firstName: task.owner.firstName,
-              lastName: task.owner.lastName ?? "",
-              src: task.owner.authPic ?? "",
-              size: "xs"
-            }}
-            showActionButton={false}
+          <OwnerAvatarChip
+            id={String(task.owner.employeeId)}
+            owner={task.owner}
+            size="xs"
           />
         </PropertyRow>
 

@@ -2,6 +2,7 @@ package com.skapp.community.timeplanner.model;
 
 import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.timeplanner.type.TimeRecordSource;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,6 +48,14 @@ public class TimeRecord extends Auditable<String> {
 
 	@Column(name = "clock_out_time")
 	private Long clockOutTime;
+
+	@Column(name = "clock_in_source")
+	@Enumerated(EnumType.STRING)
+	private TimeRecordSource clockInSource;
+
+	@Column(name = "clock_out_source")
+	@Enumerated(EnumType.STRING)
+	private TimeRecordSource clockOutSource;
 
 	@Column(name = "is_manual")
 	private boolean isManual;

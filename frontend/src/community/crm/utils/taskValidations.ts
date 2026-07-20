@@ -1,10 +1,8 @@
 import {
-  isAfter,
   isBefore,
   isToday,
   isTomorrow,
   parseISO,
-  startOfDay,
   startOfToday
 } from "date-fns";
 import * as Yup from "yup";
@@ -42,28 +40,10 @@ const baseTaskValidations = (translator: TranslatorFunctionType) =>({
       .required(translator(["validations", "owner"]))
   });
 
-export const addTaskValidations = (translator: TranslatorFunctionType) =>
+export const taskValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     ...baseTaskValidations(translator),
     dueDate: Yup.date()
       .nullable()
       .required(translator(["validations", "dueDate"]))
-      .test(
-        "not-backdated",
-        translator(["validations", "dueDatePast"]),
-        function (value) {
-          if (!value) return true;
-          return (
-            isToday(value) || isAfter(startOfDay(value), startOfDay(new Date()))
-          );
-        }
-      )
-  });
-
-export const editTaskValidations = (translator: TranslatorFunctionType) =>
-  Yup.object().shape({
-    ...baseTaskValidations(translator),
-    dueDate: Yup.date()
-      .nullable()
-      .required(translator(["validations", "dueDate"])),
   });

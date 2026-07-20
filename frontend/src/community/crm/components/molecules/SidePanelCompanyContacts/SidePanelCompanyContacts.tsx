@@ -1,14 +1,22 @@
 import { Label, SearchIcon, Table, TableColumn } from "@rootcodelabs/skapp-ui";
-import React from "react";
+import { FC } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContact } from "~community/crm/types/CommonTypes";
 import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
 
-const SidePanelCompanyContacts: React.FC<{
-  contacts?: CrmContact[] | null;
-}> = ({ contacts }) => {
+interface Props {
+  contacts: CrmContact[];
+  hasNextPage?: boolean;
+  onFetchNextPage?: () => void;
+}
+
+const SidePanelCompanyContacts: FC<Props> = ({
+  contacts,
+  hasNextPage = false,
+  onFetchNextPage
+}) => {
   const translateText = useTranslator(
     "crmModule",
     "companies",
@@ -95,7 +103,12 @@ const SidePanelCompanyContacts: React.FC<{
     <Table
       className="w-full"
       columns={columns as TableColumn<any>[]}
-      data={contacts ?? []}
+      data={contacts}
+      hasMore={hasNextPage}
+      onLoadMore={onFetchNextPage}
+      infiniteScrollLoadingMessage={translateText([
+        "infiniteScrollLoadingMessage"
+      ])}
       emptyStateType={EmptyStateTypeEnum.NO_DATA}
       noDataState={{
         icon: <SearchIcon />,
