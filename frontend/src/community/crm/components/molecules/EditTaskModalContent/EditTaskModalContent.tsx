@@ -14,7 +14,7 @@ import {
   CrmTaskUpdatePayload
 } from "~community/crm/types/CommonTypes";
 import { getChangedTaskFields } from "~community/crm/utils/taskUtil";
-import { editTaskValidations } from "~community/crm/utils/taskValidations";
+import { taskValidations } from "~community/crm/utils/taskValidations";
 
 const EditTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -67,7 +67,7 @@ const EditTaskModalContent: FC = () => {
   const formik = useFormik({
     initialValues,
     onSubmit: submitEditTask,
-    validationSchema: editTaskValidations(translateText),
+    validationSchema: taskValidations(translateText),
     validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
