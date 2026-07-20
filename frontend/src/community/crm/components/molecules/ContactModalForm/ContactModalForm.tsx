@@ -89,6 +89,7 @@ const ContactModalForm = ({
 
   const trimmedEmail = values.email.trim();
   const trimmedOriginalEmail = initialValues.email.trim();
+  const isEmailChanged = trimmedEmail !== trimmedOriginalEmail;
 
   const debouncedEmail = useDebounce(trimmedEmail, SEARCH_DEBOUNCE_DELAY);
 
@@ -101,14 +102,10 @@ const ContactModalForm = ({
     useCheckContactEmailExists(debouncedEmail, isEmailCheckEnabled);
 
   const isDuplicateEmail =
-    trimmedEmail === debouncedEmail &&
-    trimmedEmail !== trimmedOriginalEmail &&
-    (emailExistsData?.isExists ?? false);
+    isEmailChanged && (emailExistsData?.isExists ?? false);
 
   const isEmailCheckUnresolved =
-    trimmedEmail.length > 0 &&
-    trimmedEmail !== trimmedOriginalEmail &&
-    (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
+    isEmailChanged && (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
 
   const extractedDomain = extractDomainFromEmail(debouncedEmail);
   const isDomainSearchEnabled =
