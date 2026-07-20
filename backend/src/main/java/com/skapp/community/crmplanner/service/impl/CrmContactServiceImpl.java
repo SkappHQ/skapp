@@ -82,8 +82,9 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkContactEmailExists(String email) {
 		log.info("checkContactEmailExists: execution started");
+
 		CrmValidations.validateContactEmail(email);
-		boolean exists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email.trim());
+		boolean exists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email);
 
 		CrmExistsResponseDto responseDto = new CrmExistsResponseDto();
 		responseDto.setIsExists(exists);
