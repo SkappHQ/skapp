@@ -49,6 +49,8 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -64,6 +66,8 @@ class CrmContactControllerIntegrationTest {
 	private static final String BASE_PATH = "/v1/crm/contact";
 
 	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
+
+	private static final String EXISTS_PATH = BASE_PATH + "/exists/email";
 
 	private static final String METRICS_PATH = BASE_PATH + "/metrics";
 
@@ -142,6 +146,10 @@ class CrmContactControllerIntegrationTest {
 
 	private ResultActions performGetByIdRequest(Long id) throws Exception {
 		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetExistsRequest(String email) throws Exception {
+		return performRequest(get(EXISTS_PATH).param("email", email).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetMetricsRequest() throws Exception {
@@ -238,6 +246,81 @@ class CrmContactControllerIntegrationTest {
 		dto.setContactNumber("94779999999");
 		dto.setOwnerId(1L);
 		return dto;
+	}
+
+	// --- Check contact email exists tests ---
+
+	@Test
+	@DisplayName("Check contact email exists when not found - Returns OK with false")
+	void checkContactEmailExists_NotFound_ReturnsOkWithFalse() throws Exception {
+		performGetExistsRequest("nonexistent@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists when found - Returns OK with true")
+	void checkContactEmailExists_Found_ReturnsOkWithTrue() throws Exception {
+		savedNamedContact("Existing Contact", null, "existing.contact@example.com");
+
+		performGetExistsRequest("existing.contact@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists is case-insensitive - Returns OK with true for different casing")
+	void checkContactEmailExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
+		savedNamedContact("Case Contact", null, "case.contact@example.com");
+
+		performGetExistsRequest("CASE.CONTACT@EXAMPLE.COM").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(true));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists for soft-deleted contact - Returns OK with false")
+	void checkContactEmailExists_SoftDeletedContact_ReturnsOkWithFalse() throws Exception {
+		CrmContact contact = savedNamedContact("Deleted Contact", null, "deleted.contact@example.com");
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		performGetExistsRequest("deleted.contact@example.com").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['isExists']").value(false));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists with blank email - Returns Bad Request")
+	void checkContactEmailExists_BlankEmail_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists with invalid email format - Returns Bad Request")
+	void checkContactEmailExists_InvalidEmail_ReturnsBadRequest() throws Exception {
+		performGetExistsRequest("not-an-email").andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_INVALID)));
+	}
+
+	@Test
+	@DisplayName("Check contact email exists without CRM role - Returns Forbidden")
+	void checkContactEmailExists_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		performRequest(get(EXISTS_PATH).param("email", "any@example.com").accept(MediaType.APPLICATION_JSON),
+				noRoleToken)
+			.andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 	// --- createContact ---
@@ -496,6 +579,31 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Edit contact companyId - Cascades to linked deal and task, and clears on unlink")
+	void editContact_CompanyId_CascadesToDealAndTask() throws Exception {
+		Long companyAId = savedCompany("Company A").getId();
+		Long companyBId = savedCompany("Company B").getId();
+		Long contactId = savedContact(companyAId, "cascade@example.com").getId();
+
+		CrmDeal deal = savedDeal(contactId, companyAId, savedStage(CrmDealStageType.OPEN), "1000");
+		CrmTask task = savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		task.setCompany(crmCompanyDao.getReferenceById(companyAId));
+		crmTaskDao.save(task);
+
+		performPatchRawRequest(contactId, "{\"companyId\": " + companyBId + "}").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+		assertEquals(companyBId, crmDealDao.findById(deal.getId()).orElseThrow().getCompany().getId());
+		assertEquals(companyBId, crmTaskDao.findById(task.getId()).orElseThrow().getCompany().getId());
+
+		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print()).andExpect(status().isOk());
+
+		assertNull(crmDealDao.findById(deal.getId()).orElseThrow().getCompany());
+		assertNull(crmTaskDao.findById(task.getId()).orElseThrow().getCompany());
 	}
 
 	@Test

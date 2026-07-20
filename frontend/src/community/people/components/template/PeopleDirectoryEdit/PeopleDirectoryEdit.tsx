@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import { labelDayButton } from "react-day-picker";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";

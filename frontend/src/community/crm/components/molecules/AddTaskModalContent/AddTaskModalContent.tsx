@@ -12,7 +12,7 @@ import {
   CrmTaskCreatePayload,
   CrmTaskFormTypes
 } from "~community/crm/types/CommonTypes";
-import { addTaskValidations } from "~community/crm/utils/taskValidations";
+import { taskValidations } from "~community/crm/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import TaskModalForm from "../TaskModalForm/TaskModalForm";
@@ -56,7 +56,7 @@ const AddTaskModalContent: FC = () => {
   const formik = useFormik({
     initialValues,
     onSubmit: (values) => createTask(values),
-    validationSchema: addTaskValidations(translateText),
+    validationSchema: taskValidations(translateText),
     validateOnChange: false,
     validateOnBlur: false,
     enableReinitialize: true
@@ -70,7 +70,8 @@ const AddTaskModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["successTitle"])
+      title: translateText(["successTitle"]),
+      description: translateText(["successDescription"])
     });
   };
 

@@ -88,7 +88,7 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Test
 	void updateAttendanceConfig_whenGeoFencingNull_skipsGeoConfigUpdate() {
-		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null);
+		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null, null, null);
 
 		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
 
@@ -109,7 +109,7 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Test
 	void updateAttendanceConfig_whenGeoFencingProvided_savesAllFiveConfigs() {
-		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, true);
+		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, true, null, null);
 		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
 
 		attendanceConfigService.updateAttendanceConfig(request);
@@ -137,6 +137,29 @@ class AttendanceConfigServiceImplUnitTest {
 			.thenReturn(new AttendanceConfig(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS, "true"));
 
 		assertTrue(attendanceConfigService.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS));
+	}
+
+	@Test
+	void isAttendanceConfigEnabled_whenConfigAbsent_returnsFalse() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY)).thenReturn(null);
+
+		assertFalse(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
+	}
+
+	@Test
+	void isAttendanceConfigEnabled_whenConfigEnabled_returnsTrue() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY, "true"));
+
+		assertTrue(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
+	}
+
+	@Test
+	void isAttendanceConfigEnabled_whenConfigDisabled_returnsFalse() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.CLOCK_IN_OUT_ONLY))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY, "false"));
+
+		assertFalse(attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY));
 	}
 
 }

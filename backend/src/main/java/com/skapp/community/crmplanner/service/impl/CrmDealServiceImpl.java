@@ -22,7 +22,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -88,7 +88,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealName(name);
 		boolean exists = crmDealDao.existsByNameAndIsDeletedFalse(name);
 
-		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
+		CrmExistsResponseDto responseDto = new CrmExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkDealNameExists: execution ended");
@@ -387,11 +387,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		if (previousDealId == null && nextDealId == null) {
-			String existingOrderIndex = crmDealDao.findMaxOrderIndexByStageId(stageId);
-			if (existingOrderIndex != null) {
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
-			}
-			return FractionalIndexUtil.generateKeyBetween(null, null);
+			String minOrderIndex = crmDealDao.findMinOrderIndexByStageId(stageId);
+			return FractionalIndexUtil.generateKeyBetween(null, minOrderIndex);
 		}
 
 		return FractionalIndexUtil.generateKeyBetween(previousOrderIndex, nextOrderIndex);

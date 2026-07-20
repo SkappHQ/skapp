@@ -315,6 +315,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
               onRemove={handleClearOwner}
               showRemoveButton={isCrmSalesManager ?? false}
               ariaLabel={translateText(["ariaLabels", "removeOwner"])}
+              required
             />
           ) : (
             <SearchableDropdown
@@ -328,6 +329,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
               state={formik.errors.owner ? "error" : "default"}
               errorMessage={formik.errors.owner}
               emptyMessage={translateText(["emptyStates", "noOwners"])}
+              required
             />
           )}
         </div>
