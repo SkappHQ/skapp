@@ -20,7 +20,55 @@
     "geoFencingSettingsDescription": "Turn on geofencing to restrict clock ins to a specific location.",
     "isGeoFencingEnabled": "Geo fencing",
     "configureWorkLocationsLink": "Configure work locations",
-    "proTier": "Pro"
+    "proTier": "Pro",
+    "isClockInClockOutOnly": "Clock in / clock out only (no breaks)",
+    "fingerprintSettingsTitle": "Fingerprint Attendance",
+    "fingerprintSettingsDescription": "Record fingerprint device punches as attendance. The first punch of the day counts as the clock in and the last punch is finalized as the clock out at the end of the day.",
+    "isFingerprintAttendanceEnabled": "Fingerprint attendance",
+    "fingerprintDevicesTitle": "Fingerprint Devices",
+    "fingerprintDevicesDescription": "Only devices added here can record attendance. Punches from any other device are ignored.",
+    "fingerprintDevicesEmpty": "No fingerprint devices added yet. Add a device to start recording punches.",
+    "fingerprintDevicesError": "Couldn't load fingerprint devices. Please try again.",
+    "fingerprintDeviceAvailable": "Available",
+    "fingerprintDeviceOffline": "Offline",
+    "fingerprintDeviceLastSynced": "Last synced",
+    "fingerprintDeviceNeverSynced": "never",
+    "fingerprintDeviceAddButton": "Add device",
+    "fingerprintDeviceEditAriaLabel": "Edit device",
+    "fingerprintDeviceDeleteAriaLabel": "Delete device",
+    "fingerprintDeviceModal": {
+      "addTitle": "Add Fingerprint Device",
+      "editTitle": "Edit Fingerprint Device",
+      "nameLabel": "Device name",
+      "serialLabel": "Serial number",
+      "saveButton": "Save",
+      "cancelButton": "Cancel",
+      "validations": {
+        "nameRequired": "Device name is required",
+        "serialRequired": "Serial number is required",
+        "serialExists": "A device with this serial number already exists"
+      },
+      "toasts": {
+        "addSuccessTitle": "Device Added",
+        "addSuccessDescription": "The fingerprint device has been added successfully.",
+        "updateSuccessTitle": "Device Updated",
+        "updateSuccessDescription": "The fingerprint device has been updated successfully.",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Something went wrong. Please try again."
+      }
+    },
+    "fingerprintDeviceDeleteModal": {
+      "title": "Delete Fingerprint Device",
+      "description": "Are you sure you want to delete this device? Its punches will no longer be recorded.",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel",
+      "toasts": {
+        "successTitle": "Device Deleted",
+        "successDescription": "The fingerprint device has been deleted successfully.",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to delete the device. Please try again."
+      }
+    }
   },
   "timesheet": {
     "myTimesheet": {

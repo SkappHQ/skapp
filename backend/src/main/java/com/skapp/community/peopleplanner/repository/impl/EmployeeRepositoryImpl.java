@@ -45,6 +45,7 @@ import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -1614,6 +1615,18 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		query.select(root).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public void updateLastClockInDate(Long employeeId, LocalDate lastClockInDate) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaUpdate<Employee> update = cb.createCriteriaUpdate(Employee.class);
+		Root<Employee> root = update.from(Employee.class);
+
+		update.set(root.get(Employee_.lastClockInDate), lastClockInDate);
+		update.where(cb.equal(root.get(Employee_.employeeId), employeeId));
+
+		entityManager.createQuery(update).executeUpdate();
 	}
 
 }
