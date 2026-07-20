@@ -8,6 +8,6 @@ interface Props {
   document: DocumentResponse;
 }
 
-const DeleteFolderModal: FC<Props> = () => <></>;
+const DeleteDocumentModal: FC<Props> = () => <></>;
 
-export default DeleteFolderModal;
+export default DeleteDocumentModal;

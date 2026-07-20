@@ -17,17 +17,15 @@ export const commonModalSlice = (
   isCommonModalOpen: false,
   commonModalData: null,
   openCommonModal: (modalType: CommonModalType, data?: CommonModalData) =>
-    set((state) => ({
-      ...state,
+    set({
       commonModalType: modalType,
       commonModalData: data ?? null,
       isCommonModalOpen: true
-    })),
+    }),
   closeCommonModal: () =>
-    set((state) => ({
-      ...state,
+    set({
       isCommonModalOpen: false,
       commonModalType: CommonModalType.NONE,
       commonModalData: null
-    }))
+    })
 });
