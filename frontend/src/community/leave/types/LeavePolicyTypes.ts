@@ -87,7 +87,7 @@ export interface AddLeavePolicyAccrualPayload {
   frequency: string;
   waitingPeriodDays?: number;
   accrualCapDays?: number;
-  carryoverEnabled: boolean;
+  isCarryoverEnabled: boolean;
   carryoverDate?: string;
   maxCarryoverDays?: number;
   firstAccrual: string;

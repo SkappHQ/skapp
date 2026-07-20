@@ -34,7 +34,7 @@ public class LeavePolicyResponseDto {
 
 	private Float accrualCapDays;
 
-	private Boolean carryoverEnabled;
+	private Boolean isCarryoverEnabled;
 
 	private String carryoverDate;
 

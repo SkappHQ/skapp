@@ -147,7 +147,7 @@ class LeavePolicyServiceImplUnitTest {
 			dto.setName("  <b>Annual</b> Policy  ");
 			dto.getAccrual().setWaitingPeriodDays(30);
 			dto.getAccrual().setAccrualCapDays(20F);
-			dto.getAccrual().setCarryoverEnabled(true);
+			dto.getAccrual().setIsCarryoverEnabled(true);
 			dto.getAccrual().setCarryoverDate("04-01");
 			dto.getAccrual().setMaxCarryoverDays(10F);
 			dto.getAccrual().setFirstAccrual(FirstAccrualType.FULL);
@@ -220,7 +220,7 @@ class LeavePolicyServiceImplUnitTest {
 			mockSaveAndMap();
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
-			dto.getAccrual().setCarryoverEnabled(true);
+			dto.getAccrual().setIsCarryoverEnabled(true);
 
 			leavePolicyService.addLeavePolicy(dto);
 
@@ -399,7 +399,7 @@ class LeavePolicyServiceImplUnitTest {
 		@Test
 		@DisplayName("Throws when carryover date is not in MM-DD format")
 		void addLeavePolicy_InvalidCarryoverDate_ThrowsModuleException() {
-			dto.getAccrual().setCarryoverEnabled(true);
+			dto.getAccrual().setIsCarryoverEnabled(true);
 			dto.getAccrual().setCarryoverDate("13-01");
 			assertThrowsWithKey(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
 		}
@@ -407,7 +407,7 @@ class LeavePolicyServiceImplUnitTest {
 		@Test
 		@DisplayName("Throws when max carryover days is out of range")
 		void addLeavePolicy_InvalidMaxCarryoverDays_ThrowsModuleException() {
-			dto.getAccrual().setCarryoverEnabled(true);
+			dto.getAccrual().setIsCarryoverEnabled(true);
 			dto.getAccrual().setCarryoverDate("01-01");
 			dto.getAccrual().setMaxCarryoverDays(366F);
 			assertThrowsWithKey(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);

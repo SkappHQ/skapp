@@ -232,7 +232,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		if (accrual.getAccrualCapDays() != null && accrual.getAccrualCapDays() < 1) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID);
 		}
-		if (Boolean.TRUE.equals(accrual.getCarryoverEnabled())) {
+		if (Boolean.TRUE.equals(accrual.getIsCarryoverEnabled())) {
 			validateCarryoverSetup(accrual);
 		}
 	}
@@ -270,7 +270,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setWaitingPeriodDays(accrualDto.getWaitingPeriodDays());
 		leavePolicy.setAccrualCapDays(accrualDto.getAccrualCapDays());
 
-		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getCarryoverEnabled());
+		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getIsCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
 		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
 		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);

@@ -143,7 +143,7 @@ export const mapLeavePolicyFormToPayload = (
       accrualCapDays: formData.hasAccrualCap
         ? Number(formData.accrualCapDays)
         : undefined,
-      carryoverEnabled: formData.canCarryOver,
+      isCarryoverEnabled: formData.canCarryOver,
       carryoverDate: formData.canCarryOver ? formData.carryOverDate : undefined,
       maxCarryoverDays:
         formData.canCarryOver && formData.maxCarryOverDays !== ""

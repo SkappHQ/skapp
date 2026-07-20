@@ -154,7 +154,6 @@ public interface LeaveMapper {
 	@Mapping(target = "leaveTypeId", source = "leaveType.typeId")
 	@Mapping(target = "leaveTypeName", source = "leaveType.name")
 	@Mapping(target = "leaveTypeEmoji", source = "leaveType.emojiCode")
-	@Mapping(target = "carryoverEnabled", source = "isCarryoverEnabled")
 	LeavePolicyResponseDto leavePolicyToLeavePolicyResponseDto(LeavePolicy leavePolicy);
 
 	List<LeavePolicyResponseDto> leavePolicyListToLeavePolicyResponseDtoList(List<LeavePolicy> leavePolicies);

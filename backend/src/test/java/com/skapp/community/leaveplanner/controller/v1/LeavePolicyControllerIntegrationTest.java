@@ -56,7 +56,7 @@ class LeavePolicyControllerIntegrationTest {
 			  "accrual": {
 			    "accrualDays": 1.5,
 			    "frequency": "MONTHLY",
-			    "carryoverEnabled": false
+			    "isCarryoverEnabled": false
 			  }
 			}
 			""";
