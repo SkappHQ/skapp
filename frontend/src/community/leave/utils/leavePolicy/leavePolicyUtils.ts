@@ -1,6 +1,13 @@
 import {
+  HTTP_CONFLICT,
+  HTTP_FORBIDDEN
+} from "~community/common/constants/httpStatusCodes";
+import {
   MAX_POLICY_DAYS,
-  MAX_POLICY_NAME_LENGTH
+  MAX_POLICY_NAME_LENGTH,
+  MIN_ACCRUAL_CAP_DAYS,
+  MIN_POLICY_DAYS,
+  MIN_WAITING_PERIOD_DAYS
 } from "~community/leave/constants/leavePolicyConstants";
 import {
   AddLeavePolicyPayload,
@@ -10,8 +17,34 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-const isPositiveNumber = (value: string): boolean =>
-  value !== "" && !Number.isNaN(Number(value)) && Number(value) > 0;
+const isNumberInRange = (value: string, min: number, max?: number): boolean => {
+  const numericValue = Number(value);
+  return (
+    value !== "" &&
+    !Number.isNaN(numericValue) &&
+    numericValue >= min &&
+    (max === undefined || numericValue <= max)
+  );
+};
+
+export const getLeavePolicyErrorToastKeys = (
+  status: number | undefined
+): { title: string; description: string } => {
+  switch (status) {
+    case HTTP_CONFLICT:
+      return {
+        title: "duplicateToastTitle",
+        description: "duplicateToastDescription"
+      };
+    case HTTP_FORBIDDEN:
+      return {
+        title: "permissionToastTitle",
+        description: "permissionToastDescription"
+      };
+    default:
+      return { title: "errorToastTitle", description: "errorToastDescription" };
+  }
+};
 
 export const buildTranslatedOptionList = (
   itemList: { id: string; labelKey: string; value: string }[],
@@ -47,8 +80,11 @@ export const getLeavePolicyStepErrors = (
         if (formData.accrualDays === "") {
           errors.accrualDays = "accrualDaysRequired";
         } else if (
-          !isPositiveNumber(formData.accrualDays) ||
-          Number(formData.accrualDays) > MAX_POLICY_DAYS
+          !isNumberInRange(
+            formData.accrualDays,
+            MIN_POLICY_DAYS,
+            MAX_POLICY_DAYS
+          )
         ) {
           errors.accrualDays = "accrualDaysInvalid";
         }
@@ -57,21 +93,24 @@ export const getLeavePolicyStepErrors = (
         }
         if (
           formData.hasWaitingPeriod &&
-          !isPositiveNumber(formData.waitingPeriodDays)
+          !isNumberInRange(formData.waitingPeriodDays, MIN_WAITING_PERIOD_DAYS)
         ) {
           errors.waitingPeriodDays = "waitingPeriodDaysRequired";
         }
         if (
           formData.hasAccrualCap &&
-          !isPositiveNumber(formData.accrualCapDays)
+          !isNumberInRange(formData.accrualCapDays, MIN_ACCRUAL_CAP_DAYS)
         ) {
           errors.accrualCapDays = "accrualCapRequired";
         }
         if (
           formData.canCarryOver &&
           formData.maxCarryOverDays !== "" &&
-          (!isPositiveNumber(formData.maxCarryOverDays) ||
-            Number(formData.maxCarryOverDays) > MAX_POLICY_DAYS)
+          !isNumberInRange(
+            formData.maxCarryOverDays,
+            MIN_POLICY_DAYS,
+            MAX_POLICY_DAYS
+          )
         ) {
           errors.maxCarryOverDays = "maxCarryOverDaysInvalid";
         }

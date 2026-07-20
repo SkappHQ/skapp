@@ -178,7 +178,11 @@
       "successToastTitle": "Policy updated",
       "successToastDescription": "\"{{policyName}}\" has been updated successfully.",
       "errorToastTitle": "Oops! Something went wrong",
-      "errorToastDescription": "Failed to update the policy. Please try again or contact support."
+      "errorToastDescription": "Failed to update the policy. Please try again or contact support.",
+      "duplicateToastTitle": "Duplicate policy name",
+      "duplicateToastDescription": "A policy with this name already exists for the selected leave type. Please use a different name.",
+      "permissionToastTitle": "Access Denied",
+      "permissionToastDescription": "You don't have permission to update policies."
     },
     "deactivatePolicyModal": {
       "title": "Are you sure?",

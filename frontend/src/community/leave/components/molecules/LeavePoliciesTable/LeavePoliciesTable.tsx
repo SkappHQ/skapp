@@ -7,10 +7,8 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useMemo, useState } from "react";
 
-import { useAuth } from "~community/auth/providers/AuthProvider";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   useGetLeavePoliciesInfinite,
   useGetPolicyLeaveTypes
@@ -25,6 +23,7 @@ import {
   LEAVE_POLICY_PAGE_SIZE,
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS
 } from "~community/leave/constants/leavePolicyConstants";
+import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import {
   LeavePolicyStatus,
   LeavePolicyType,
@@ -37,11 +36,7 @@ interface Props {
 
 const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
-  const { user } = useAuth();
-  const canManagePolicies = Boolean(
-    user?.roles?.includes(AdminTypes.SUPER_ADMIN) ||
-    user?.roles?.includes(AdminTypes.LEAVE_ADMIN)
-  );
+  const canManagePolicies = useCanManageLeavePolicies();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
