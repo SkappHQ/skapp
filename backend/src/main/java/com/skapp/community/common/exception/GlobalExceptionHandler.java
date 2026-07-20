@@ -98,15 +98,6 @@ public class GlobalExceptionHandler {
 				status);
 	}
 
-	@ExceptionHandler(ConflictException.class)
-	public ResponseEntity<ResponseEntityDto> handleConflictExceptions(ConflictException e) {
-		HttpStatus status = HttpStatus.CONFLICT;
-		handleException(e, e.getMessageKey().name(), status);
-
-		return new ResponseEntity<>(
-				new ResponseEntityDto(true, new ErrorResponse(status, e.getMessage(), e.getMessageKey())), status);
-	}
-
 	@ExceptionHandler(ModuleException.class)
 	public ResponseEntity<ResponseEntityDto> handleModuleExceptions(ModuleException e) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;

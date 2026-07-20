@@ -127,9 +127,9 @@ class LeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns conflict when a policy with the same name exists for the leave type")
+		@DisplayName("Returns bad request when a policy with the same name exists for the leave type")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
-		void addLeavePolicy_DuplicateNameDifferentCase_ReturnsConflict() throws Exception {
+		void addLeavePolicy_DuplicateNameDifferentCase_ReturnsBadRequest() throws Exception {
 			String duplicate = """
 					{
 					  "name": "existing policy",
@@ -138,7 +138,7 @@ class LeavePolicyControllerIntegrationTest {
 					}
 					""";
 
-			performCreate(leaveAdminToken(), duplicate).andDo(print()).andExpect(status().isConflict());
+			performCreate(leaveAdminToken(), duplicate).andDo(print()).andExpect(status().isBadRequest());
 		}
 
 		@Test

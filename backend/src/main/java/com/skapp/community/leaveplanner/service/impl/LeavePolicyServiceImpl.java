@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.service.impl;
 
-import com.skapp.community.common.exception.ConflictException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
@@ -74,7 +73,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
 
 		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId(sanitizedName, leaveType.getTypeId())) {
-			throw new ConflictException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
 		validateEntitlementSetup(leavePolicyRequestDto);
@@ -99,7 +98,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(sanitizedName,
 				leavePolicy.getLeaveType().getTypeId(), policyId)) {
-			throw new ConflictException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
 		leavePolicy.setName(sanitizedName);

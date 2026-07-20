@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.service.impl;
 
-import com.skapp.community.common.exception.ConflictException;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
@@ -307,13 +306,13 @@ class LeavePolicyServiceImplUnitTest {
 
 		@Test
 		@DisplayName("Throws a conflict when a policy with the same name exists for the leave type")
-		void addLeavePolicy_DuplicateName_ThrowsConflictException() {
+		void addLeavePolicy_DuplicateName_ThrowsModuleException() {
 			mockActiveLeaveType();
 			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(true);
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
 
-			ConflictException exception = assertThrows(ConflictException.class,
+			ModuleException exception = assertThrows(ModuleException.class,
 					() -> leavePolicyService.addLeavePolicy(dto));
 			assertEquals(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS, exception.getMessageKey());
 		}
@@ -513,7 +512,7 @@ class LeavePolicyServiceImplUnitTest {
 
 		@Test
 		@DisplayName("Throws a conflict when another policy already uses the new name")
-		void updateLeavePolicy_DuplicateName_ThrowsConflictException() {
+		void updateLeavePolicy_DuplicateName_ThrowsModuleException() {
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(buildExistingPolicy()));
 			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot("Renamed", 1L, 5L))
 				.thenReturn(true);
@@ -521,7 +520,7 @@ class LeavePolicyServiceImplUnitTest {
 			LeavePolicyUpdateRequestDto dto = new LeavePolicyUpdateRequestDto();
 			dto.setName("Renamed");
 
-			ConflictException exception = assertThrows(ConflictException.class,
+			ModuleException exception = assertThrows(ModuleException.class,
 					() -> leavePolicyService.updateLeavePolicy(5L, dto));
 			assertEquals(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS, exception.getMessageKey());
 		}
