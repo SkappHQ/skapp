@@ -36,13 +36,6 @@ public class PeopleUtil {
 		return keyword.toLowerCase() + "%";
 	}
 
-	/**
-	 * Predicate excluding guest employees (PM_GUEST_EMPLOYEE). roleJoin must be a left
-	 * join so employees with a null pmRole are not excluded along with actual guests.
-	 * @param criteriaBuilder criteria builder of the calling query
-	 * @param roleJoin left join to EmployeeRole of the calling query
-	 * @return predicate matching only non-guest employees
-	 */
 	public static Predicate notGuestEmployeePredicate(CriteriaBuilder criteriaBuilder,
 			Join<Employee, EmployeeRole> roleJoin) {
 		return criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
