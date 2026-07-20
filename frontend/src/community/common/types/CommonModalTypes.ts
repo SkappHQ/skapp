@@ -6,4 +6,5 @@ export interface CommonModalData {
   parentId?: number;
   folder?: DocumentFolder;
   document?: DocumentResponse;
+  documentCount?: number;
 }
