@@ -1,12 +1,10 @@
 package com.skapp.community.peopleplanner.repository.impl;
 
-import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerRepository;
 import jakarta.persistence.EntityManager;
@@ -24,6 +22,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,8 +59,7 @@ public class EmployeeManagerRepositoryImpl implements EmployeeManagerRepository 
 			.equal(employeeManagerJoin.get(EmployeeManager_.manager).get(Employee_.employeeId), managerId));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

@@ -5,9 +5,14 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.Team;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +34,19 @@ public class PeopleUtil {
 
 	public static String getSearchString(String keyword) {
 		return keyword.toLowerCase() + "%";
+	}
+
+	/**
+	 * Predicate excluding guest employees (PM_GUEST_EMPLOYEE). roleJoin must be a left
+	 * join so employees with a null pmRole are not excluded along with actual guests.
+	 * @param criteriaBuilder criteria builder of the calling query
+	 * @param roleJoin left join to EmployeeRole of the calling query
+	 * @return predicate matching only non-guest employees
+	 */
+	public static Predicate notGuestEmployeePredicate(CriteriaBuilder criteriaBuilder,
+			Join<Employee, EmployeeRole> roleJoin) {
+		return criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE));
 	}
 
 	public static void validateUserIsSupervisor(List<Team> teams, User user) {

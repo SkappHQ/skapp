@@ -37,6 +37,8 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
+
 @Repository
 @RequiredArgsConstructor
 public class TeamRepositoryImpl implements TeamRepository {
@@ -129,8 +131,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER) {
 			Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);
@@ -188,8 +189,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
@@ -241,8 +241,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

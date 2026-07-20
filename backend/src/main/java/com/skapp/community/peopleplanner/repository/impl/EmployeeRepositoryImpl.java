@@ -72,6 +72,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
+import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
 
 @Repository
 @RequiredArgsConstructor
@@ -472,10 +473,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
 
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
-		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			predicates.add(findByEmailName(keyword, criteriaBuilder, root, userJoin));
@@ -1219,8 +1220,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
-				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		String searchString = getSearchString(keyword);
 		predicates.add(criteriaBuilder.or(

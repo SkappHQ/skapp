@@ -95,4 +95,18 @@ class GuestEmployeeExclusionIntegrationTest {
 		assertThat(supervisedEmployeeIds).contains(2L).doesNotContain(GUEST_ID);
 	}
 
+	@Test
+	@DisplayName("findEmployeeByNameEmail excludes guests but keeps employees with null pmRole")
+	void findEmployeeByNameEmail_ExcludesGuestsAndKeepsNullPmRoleEmployees() {
+		List<Employee> guestMatches = employeeDao.findEmployeeByNameEmail("Guestonly", null);
+
+		assertThat(guestMatches).isEmpty();
+
+		// previously used an inner join with a bare notEqual, which silently dropped
+		// employees whose pmRole is null
+		List<Employee> nullPmRoleMatches = employeeDao.findEmployeeByNameEmail("Employee User One", null);
+
+		assertThat(nullPmRoleMatches).extracting(Employee::getEmployeeId).contains(1L);
+	}
+
 }
