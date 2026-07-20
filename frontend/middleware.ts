@@ -152,7 +152,10 @@ const employeeRoutes = {
     ...commonRoutes
   ],
   [EmployeeTypes.PM_EMPLOYEE]: [...commonRoutes],
-  [EmployeeTypes.PM_GUEST_EMPLOYEE]: [...commonRoutes],
+  // Guests must not reach the core-side project list page, so exclude it
+  [EmployeeTypes.PM_GUEST_EMPLOYEE]: commonRoutes.filter(
+    (route) => route !== ROUTES.PROJECTS.BASE
+  ),
   [RepresentativeTypes.CRM_SALES_REPRESENTATIVE]: [
     ROUTES.CRM.BASE,
     ...commonRoutes
