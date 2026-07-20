@@ -10,6 +10,7 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
+import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
@@ -30,6 +31,8 @@ const DealsSection: FC = () => {
       openCrmSidePanel: store.openCrmSidePanel
     })
   );
+
+  const { ensureDealAccess } = useCrmDealAccess();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -60,6 +63,9 @@ const DealsSection: FC = () => {
   };
 
   const handleDealOnClick = (deal: CrmDealResponseType) => {
+    if (!ensureDealAccess(deal.owner.employeeId)) {
+      return;
+    }
     setSelectedDealId(deal.id);
     openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };

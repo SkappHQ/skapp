@@ -13,9 +13,11 @@ import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
 import { useBoardData } from "~community/crm/hooks/useBoardData";
+import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { findDealById } from "~community/crm/utils/kanbanUtil";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
@@ -44,6 +46,8 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
+  const { ensureDealAccess } = useCrmDealAccess();
+
   const handleAddDeal = (stageId: number) => {
     const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
     setPreselectedStageId(stageId);
@@ -51,6 +55,10 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   };
 
   const handleDealClick = (dealId: number) => {
+    const deal = findDealById(stageMap, dealId);
+    if (!ensureDealAccess(deal.owner.employeeId)) {
+      return;
+    }
     const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();
     setSelectedDealId(dealId);
     openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);

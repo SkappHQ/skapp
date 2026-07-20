@@ -4,6 +4,10 @@
       "placeholder": "None",
       "searchPlaceholder": "Search Owner",
       "noResults": "No results"
+    },
+    "permissionToast": {
+      "title": "Action Not Permitted",
+      "description": "You can only move and view deals that are assigned to you."
     }
   },
   "contacts": {

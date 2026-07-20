@@ -9,6 +9,7 @@ import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
 } from "~community/crm/api/BoardApi";
+import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useCrmStore } from "~community/crm/store/store";
 import type {
   CrmBoardDealSliceType,
@@ -40,6 +41,8 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     boardStageDeals: store.boardStageDeals,
     setBoardStageDeals: store.setBoardStageDeals
   }));
+
+  const { ensureDealAccess } = useCrmDealAccess();
 
   const [activeDeal, setActiveDeal] = useState<CrmBoardDealSliceType | null>(
     null
@@ -82,6 +85,11 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     }
     const snapshot = dragStartSnapshotRef.current;
     if (!snapshot) {
+      cleanup();
+      return;
+    }
+    const draggedDeal = findDealById(snapshot, activeDealId);
+    if (!ensureDealAccess(draggedDeal.owner.employeeId)) {
       cleanup();
       return;
     }
