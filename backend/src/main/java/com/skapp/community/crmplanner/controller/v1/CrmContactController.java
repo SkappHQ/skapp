@@ -33,7 +33,7 @@ public class CrmContactController {
 
 	@Operation(summary = "Check if a contact email exists",
 			description = "Check if a contact with the given email already exists")
-	@GetMapping("/exists")
+	@GetMapping("/exists/email")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> checkContactEmailExists(@RequestParam String email) {
 		ResponseEntityDto responseDto = contactService.checkContactEmailExists(email);

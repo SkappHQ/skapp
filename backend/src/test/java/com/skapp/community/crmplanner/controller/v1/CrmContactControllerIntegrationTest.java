@@ -67,7 +67,7 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
 
-	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+	private static final String EXISTS_PATH = BASE_PATH + "/exists/email";
 
 	private static final String METRICS_PATH = BASE_PATH + "/metrics";
 
