@@ -34,6 +34,9 @@ import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
 import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 
+const getFieldState = (errorMessage?: string) =>
+  errorMessage ? "error" : "default";
+
 export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
   initialValues: CrmContactFormValues;
@@ -116,6 +119,12 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
+  const nameErrorMessage = touched.name ? errors.name : undefined;
+  const contactNumberErrorMessage = touched.contactNumber
+    ? errors.contactNumber
+    : undefined;
+  const ownerErrorMessage = touched.ownerId ? errors.ownerId : undefined;
+
   const emailValidationError = touched.email ? errors.email : undefined;
   const emailErrorMessage = isDuplicateEmail
     ? translateContactText(["validations", "emailExists"])
@@ -175,8 +184,8 @@ const ContactModalForm = ({
       <InputField
         name="name"
         value={values.name}
-        errorMessage={touched.name ? errors.name : undefined}
-        state={touched.name && errors.name ? "error" : "default"}
+        errorMessage={nameErrorMessage}
+        state={getFieldState(nameErrorMessage)}
         label={translateContactText(["labels", "name"])}
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
@@ -190,7 +199,7 @@ const ContactModalForm = ({
         name="email"
         value={values.email}
         errorMessage={emailErrorMessage}
-        state={emailErrorMessage ? "error" : "default"}
+        state={getFieldState(emailErrorMessage)}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
@@ -241,10 +250,8 @@ const ContactModalForm = ({
       <InputField
         name="contactNumber"
         value={values.contactNumber}
-        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
-        state={
-          touched.contactNumber && errors.contactNumber ? "error" : "default"
-        }
+        errorMessage={contactNumberErrorMessage}
+        state={getFieldState(contactNumberErrorMessage)}
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
@@ -256,7 +263,7 @@ const ContactModalForm = ({
       {canEditOwner ? (
         <EditableContactOwnerField
           initialOwner={initialOwner}
-          errorMessage={touched.ownerId ? errors.ownerId : undefined}
+          errorMessage={ownerErrorMessage}
           translateContactText={translateContactText}
           onChange={(owner) =>
             setFieldValue("ownerId", owner?.employeeId ?? null)
