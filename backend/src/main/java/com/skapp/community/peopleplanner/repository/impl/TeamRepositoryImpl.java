@@ -6,6 +6,8 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
+import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -19,6 +21,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -124,6 +127,10 @@ public class TeamRepositoryImpl implements TeamRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), Boolean.TRUE));
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
 
 		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER) {
 			Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);

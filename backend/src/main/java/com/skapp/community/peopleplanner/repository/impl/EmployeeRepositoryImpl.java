@@ -1218,6 +1218,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.pmRole).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.pmRole), Role.PM_GUEST_EMPLOYEE)));
+
 		String searchString = getSearchString(keyword);
 		predicates.add(criteriaBuilder.or(
 				criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.FIRST_NAME)), searchString),
