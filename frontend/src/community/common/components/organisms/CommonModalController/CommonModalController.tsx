@@ -5,6 +5,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import ConfirmDeleteModal from "~enterprise/common/components/molecules/ConfirmDeleteModal/ConfirmDeleteModal";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
 import FolderNotEmptyModal from "~enterprise/common/components/molecules/FolderNotEmptyModal/FolderNotEmptyModal";
+import MoveDocumentModal from "~enterprise/common/components/molecules/MoveDocumentModal/MoveDocumentModal";
 import RenameFolderModal from "~enterprise/common/components/molecules/RenameFolderModal/RenameFolderModal";
 import UploadDocumentModal from "~enterprise/common/components/molecules/UploadDocumentModal/UploadDocumentModal";
 
@@ -47,6 +48,15 @@ const CommonModalController = (): JSX.Element => {
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
           document={commonModalData?.document!}
+        />
+      );
+    case CommonModalType.MOVE_DOCUMENT:
+      return (
+        <MoveDocumentModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          document={commonModalData?.document!}
+          employeeId={commonModalData?.employeeId!}
         />
       );
     case CommonModalType.FOLDER_NOT_EMPTY:
