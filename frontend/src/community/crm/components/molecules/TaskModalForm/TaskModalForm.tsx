@@ -152,7 +152,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
     () =>
       contactLookupData?.items?.map((contact) => ({
         id: String(contact.id),
-        content: contact.name
+        content: (
+          <span className="block w-full truncate" title={contact.name}>
+            {contact.name}
+          </span>
+        )
       })) ?? [],
     [contactLookupData]
   );
@@ -161,7 +165,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
     () =>
       dealLookupData?.items?.map((deal) => ({
         id: String(deal.id),
-        content: deal.name
+        content: (
+          <span className="block w-full truncate" title={deal.name}>
+            {deal.name}
+          </span>
+        )
       })) ?? [],
     [dealLookupData]
   );
@@ -194,7 +202,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (contactLookupItem) => String(contactLookupItem.id) === item.id
     );
     formik.setFieldValue("contactId", Number(item.id));
-    setSelectedContactName(contact?.name ?? String(item.content));
+    setSelectedContactName(contact?.name ?? "");
     setContactSearchText("");
   };
 
@@ -203,7 +211,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (dealLookupItem) => String(dealLookupItem.id) === item.id
     );
     formik.setFieldValue("dealId", Number(item.id));
-    setSelectedDealName(deal?.name ?? String(item.content));
+    setSelectedDealName(deal?.name ?? "");
     setDealSearchText("");
   };
 

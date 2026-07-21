@@ -245,7 +245,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setActiveIndex(index)}
                     className={`
-                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative overflow-hidden
+                      px-4 py-2 cursor-pointer outline-none transition-all duration-150 relative
                       ${
                         index === activeIndex
                           ? "bg-tertiary-background rounded"
@@ -253,16 +253,7 @@ const SearchableDropdown: FC<SearchableDropdownProps> = ({
                       }
                     `}
                   >
-                    {typeof item.content === "string" ? (
-                      <span
-                        className="block w-full truncate"
-                        title={item.content}
-                      >
-                        {item.content}
-                      </span>
-                    ) : (
-                      item.content
-                    )}
+                    {item.content}
                   </li>
                 ))}
               </ul>
