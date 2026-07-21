@@ -7,7 +7,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.EmployeeRole_;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.EmployeeTeam_;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -15,6 +14,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.peopleplanner.repository.TeamRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -36,8 +36,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
 
 @Repository
 @RequiredArgsConstructor
@@ -131,7 +129,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (currentUser.getEmployee().getEmployeeRole().getAttendanceRole() == Role.ATTENDANCE_MANAGER) {
 			Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);
@@ -189,7 +187,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(criteriaBuilder.equal(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
@@ -241,7 +239,7 @@ public class TeamRepositoryImpl implements TeamRepository {
 		predicates.add(employeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(teamIds));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

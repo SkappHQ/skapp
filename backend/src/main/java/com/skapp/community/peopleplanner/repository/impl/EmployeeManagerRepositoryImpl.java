@@ -7,6 +7,7 @@ import com.skapp.community.peopleplanner.model.EmployeeManager_;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerRepository;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
 
 @Repository
 @RequiredArgsConstructor
@@ -59,7 +58,7 @@ public class EmployeeManagerRepositoryImpl implements EmployeeManagerRepository 
 			.equal(employeeManagerJoin.get(EmployeeManager_.manager).get(Employee_.employeeId), managerId));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

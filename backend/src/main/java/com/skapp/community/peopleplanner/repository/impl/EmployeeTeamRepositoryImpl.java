@@ -19,6 +19,7 @@ import com.skapp.community.peopleplanner.model.Team_;
 import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.timeplanner.model.TimeRecord;
 import com.skapp.community.timeplanner.model.TimeRecord_;
 import com.skapp.community.timeplanner.type.ClockInType;
@@ -37,8 +38,6 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.skapp.community.peopleplanner.util.PeopleUtil.notGuestEmployeePredicate;
 
 @Repository
 @RequiredArgsConstructor
@@ -72,7 +71,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
 		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (teamsFilter.contains(-1L)) {
 			Subquery<Long> managedEmployeesSubquery = criteriaQuery.subquery(Long.class);
@@ -145,7 +144,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.isTrue(userJoin.get(User_.isActive)));
 
 		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		Subquery<String> attendanceRoleSubquery = criteriaQuery.subquery(String.class);
 		Root<EmployeeRole> employeeRoleRoot = attendanceRoleSubquery.from(EmployeeRole.class);
@@ -267,7 +266,7 @@ public class EmployeeTeamRepositoryImpl implements EmployeeTeamRepository {
 		predicates.add(criteriaBuilder.equal(employeeRoot.get(Employee_.ACCOUNT_STATUS), AccountStatus.ACTIVE));
 
 		Join<Employee, EmployeeRole> roleJoin = employeeRoot.join(Employee_.employeeRole, JoinType.LEFT);
-		predicates.add(notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (teams == null || teams.isEmpty() || teams.contains(-1L)) {
 			if (isAdmin) {
