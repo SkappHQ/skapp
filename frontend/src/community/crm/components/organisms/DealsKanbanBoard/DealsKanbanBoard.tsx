@@ -16,6 +16,8 @@ import { useBoardData } from "~community/crm/hooks/useBoardData";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
@@ -44,10 +46,15 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
+  const { guardCrmCreate } = useCrmLimitGuard();
+
   const handleAddDeal = (stageId: number) => {
-    const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
-    setPreselectedStageId(stageId);
-    openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+    guardCrmCreate(CrmLimitResource.DEALS, () => {
+      const { setPreselectedStageId, openCrmSidePanel } =
+        useCrmStore.getState();
+      setPreselectedStageId(stageId);
+      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+    });
   };
 
   const handleDealClick = (dealId: number) => {
