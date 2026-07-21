@@ -301,15 +301,6 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    if (
-      request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
-      !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-
     // Check super-admin restricted routes
     const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
       request,
