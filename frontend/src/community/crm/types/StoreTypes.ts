@@ -29,7 +29,6 @@ interface ActionTypes {
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
   setSelectedTaskId: (taskId: number | null) => void;
   setTasks: (tasks: CrmTaskDetailType[], group: CrmTaskGroupEnum) => void;
-  addTasks: (tasks: CrmTaskDetailType[]) => void;
   setTaskCompletion: (id: number, isCompleted: boolean) => void;
   getTaskById: (id: number) => CrmTaskDetailType | undefined;
   updateTask: (task: CrmTaskDetailType) => void;

@@ -46,9 +46,7 @@ const TaskSidePanel: FC = () => {
     setTaskModalType,
     selectedTaskId,
     getTaskById,
-    updateTask,
-    tasks,
-    addTasks
+    updateTask
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
@@ -58,9 +56,7 @@ const TaskSidePanel: FC = () => {
     setTaskModalType: store.setTaskModalType,
     selectedTaskId: store.selectedTaskId,
     getTaskById: store.getTaskById,
-    updateTask: store.updateTask,
-    tasks: store.tasks,
-    addTasks: store.addTasks
+    updateTask: store.updateTask
   }));
 
   const syncTaskCompletion = useSyncTaskCompletion();
@@ -114,26 +110,12 @@ const TaskSidePanel: FC = () => {
     isEnabled
   );
 
-  const relatedQueryItems = useMemo(
+  const relatedTasks = useMemo(
     () =>
       (relatedTasksData?.pages.flatMap((page) => page?.items) ?? []).filter(
         (task) => task.id !== selectedTaskId
       ),
     [relatedTasksData, selectedTaskId]
-  );
-
-  useEffect(() => {
-    if (relatedQueryItems.length) {
-      addTasks(relatedQueryItems);
-    }
-  }, [relatedQueryItems, addTasks]);
-
-  const relatedTasks = useMemo(
-    () =>
-      relatedQueryItems.map(
-        (item) => tasks.find((task) => task.id === item.id) ?? item
-      ),
-    [relatedQueryItems, tasks]
   );
 
   const taskIcon = selectedTask

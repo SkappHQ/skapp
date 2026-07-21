@@ -1,5 +1,4 @@
 import {
-  appendMissingById,
   countOpenTasks,
   findById,
   formatValue,
@@ -53,28 +52,6 @@ describe("countOpenTasks", () => {
         { isCompleted: false }
       ])
     ).toBe(2);
-  });
-});
-
-describe("appendMissingById", () => {
-  it("appends only the incoming items whose id isn't already present", () => {
-    const existing = [{ id: 1, name: "a" }];
-    const result = appendMissingById(existing, [
-      { id: 1, name: "a-new" },
-      { id: 2, name: "b" }
-    ]);
-
-    // id 1 kept as-is (existing wins), id 2 appended
-    expect(result).toEqual([
-      { id: 1, name: "a" },
-      { id: 2, name: "b" }
-    ]);
-  });
-
-  it("keeps existing items that aren't in the incoming list", () => {
-    const result = appendMissingById([{ id: 1 }, { id: 2 }], [{ id: 3 }]);
-
-    expect(result.map((item) => item.id)).toEqual([1, 2, 3]);
   });
 });
 
