@@ -246,16 +246,15 @@
         "industry": "Please select a valid industry"
       },
       "toastMessages": {
+        "errorTitle": "Oops! Something went wrong",
         "add": {
           "successTitle": "Company added successfully",
           "successDescription": "The company has been successfully added",
-          "errorTitle": "Oops! Something went wrong",
           "errorDescription": "Failed to add the company. Please try again"
         },
         "edit": {
           "successTitle": "Company updated successfully",
           "successDescription": "The company has been successfully updated",
-          "errorTitle": "Oops! Something went wrong",
           "errorDescription": "Failed to edit the company. Please try again"
         }
       }

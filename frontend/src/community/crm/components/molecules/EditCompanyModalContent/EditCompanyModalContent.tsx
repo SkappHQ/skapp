@@ -75,7 +75,7 @@ const EditCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "edit", "errorTitle"]),
+      title: translateText(["toastMessages", "errorTitle"]),
       description: translateText(["toastMessages", "edit", "errorDescription"])
     });
   };

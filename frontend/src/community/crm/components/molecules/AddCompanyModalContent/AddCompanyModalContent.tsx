@@ -54,7 +54,7 @@ const AddCompanyModalContent: React.FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "add", "errorTitle"]),
+      title: translateText(["toastMessages", "errorTitle"]),
       description: translateText(["toastMessages", "add", "errorDescription"])
     });
   };
