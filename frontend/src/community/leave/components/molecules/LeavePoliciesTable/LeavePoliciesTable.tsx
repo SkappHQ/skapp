@@ -78,11 +78,11 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetLeavePoliciesInfinite(
-    debouncedSearch,
-    leaveTypeFilter,
-    LEAVE_POLICY_PAGE_SIZE
-  );
+  } = useGetLeavePoliciesInfinite({
+    searchKeyword: debouncedSearch,
+    leaveTypeId: leaveTypeFilter,
+    size: LEAVE_POLICY_PAGE_SIZE
+  });
 
   const policies: LeavePolicyType[] = useMemo(
     () => policyPages?.pages?.flatMap((page) => page?.items ?? []) ?? [],
