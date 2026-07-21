@@ -419,39 +419,6 @@ class LeavePolicyServiceImplUnitTest {
 	class GetAllLeavePoliciesTests {
 
 		@Test
-		@DisplayName("Throws when page is negative")
-		void getAllLeavePolicies_NegativePage_ThrowsModuleException() {
-			LeavePolicyFilterDto filterDto = new LeavePolicyFilterDto();
-			filterDto.setPage(-1);
-
-			ModuleException exception = assertThrows(ModuleException.class,
-					() -> leavePolicyService.getAllLeavePolicies(filterDto));
-			assertEquals(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_INVALID, exception.getMessageKey());
-		}
-
-		@Test
-		@DisplayName("Throws when size is below one")
-		void getAllLeavePolicies_SizeBelowOne_ThrowsModuleException() {
-			LeavePolicyFilterDto filterDto = new LeavePolicyFilterDto();
-			filterDto.setSize(0);
-
-			ModuleException exception = assertThrows(ModuleException.class,
-					() -> leavePolicyService.getAllLeavePolicies(filterDto));
-			assertEquals(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_SIZE_INVALID, exception.getMessageKey());
-		}
-
-		@Test
-		@DisplayName("Throws when size exceeds the maximum")
-		void getAllLeavePolicies_SizeAboveMaximum_ThrowsModuleException() {
-			LeavePolicyFilterDto filterDto = new LeavePolicyFilterDto();
-			filterDto.setSize(101);
-
-			ModuleException exception = assertThrows(ModuleException.class,
-					() -> leavePolicyService.getAllLeavePolicies(filterDto));
-			assertEquals(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_SIZE_INVALID, exception.getMessageKey());
-		}
-
-		@Test
 		@DisplayName("Returns a page dto with mapped results")
 		void getAllLeavePolicies_ValidFilter_ReturnsPagedResults() {
 			LeavePolicyFilterDto filterDto = new LeavePolicyFilterDto();

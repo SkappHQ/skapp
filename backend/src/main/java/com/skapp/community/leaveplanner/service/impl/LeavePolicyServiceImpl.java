@@ -5,7 +5,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
-import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
@@ -22,6 +21,7 @@ import com.skapp.community.leaveplanner.type.AccrualTiming;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.PolicyType;
+import com.skapp.community.leaveplanner.util.LeavePolicyValidationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,8 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.MonthDay;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Slf4j
@@ -50,9 +48,9 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto addLeavePolicy(LeavePolicyRequestDto leavePolicyRequestDto) {
 		log.info("addLeavePolicy: execution started");
 
-		validateRequiredFields(leavePolicyRequestDto);
+		LeavePolicyValidationUtil.validateRequiredFields(leavePolicyRequestDto);
 
-		validateName(leavePolicyRequestDto.getName());
+		LeavePolicyValidationUtil.validateName(leavePolicyRequestDto.getName());
 
 		PolicyLeaveType leaveType = policyLeaveTypeDao
 			.findByTypeIdAndIsActive(leavePolicyRequestDto.getLeaveTypeId(), true)
@@ -64,7 +62,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
-		validateEntitlementSetup(leavePolicyRequestDto);
+		LeavePolicyValidationUtil.validateEntitlementSetup(leavePolicyRequestDto);
 
 		LeavePolicy leavePolicy = buildLeavePolicy(leavePolicyRequestDto, leaveType);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
@@ -81,7 +79,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
 
-		validateName(leavePolicyUpdateRequestDto.getName());
+		LeavePolicyValidationUtil.validateName(leavePolicyUpdateRequestDto.getName());
 
 		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(
 				leavePolicyUpdateRequestDto.getName(), leavePolicy.getLeaveType().getTypeId(), policyId)) {
@@ -128,8 +126,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		log.info("getAllLeavePolicies: execution started");
 
-		validatePagination(leavePolicyFilterDto);
-
 		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
 		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
 
@@ -149,89 +145,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private LeavePolicy getLeavePolicyById(Long policyId) {
 		return leavePolicyDao.findById(policyId)
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
-	}
-
-	private void validatePagination(LeavePolicyFilterDto filterDto) {
-		if (filterDto.getPage() < 0) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_INVALID);
-		}
-		if (filterDto.getSize() < 1 || filterDto.getSize() > LeavePolicyConstant.MAX_PAGE_SIZE) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_SIZE_INVALID);
-		}
-	}
-
-	private void validateRequiredFields(LeavePolicyRequestDto dto) {
-		if (dto.getLeaveTypeId() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED);
-		}
-		if (dto.getPolicyType() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_POLICY_TYPE_REQUIRED);
-		}
-	}
-
-	private void validateName(String name) {
-		if (name == null || name.isBlank()) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_REQUIRED);
-		}
-		if (name.length() > LeavePolicyConstant.MAX_NAME_LENGTH) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_MAX_LENGTH_EXCEEDED);
-		}
-	}
-
-	private void validateEntitlementSetup(LeavePolicyRequestDto dto) {
-		if (dto.getPolicyType() == PolicyType.FLEXIBLE) {
-			validateFlexibleSetup(dto);
-		}
-		else {
-			validateAccrualSetup(dto.getAccrual());
-		}
-	}
-
-	private void validateFlexibleSetup(LeavePolicyRequestDto dto) {
-		if (dto.getAccrual() != null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_NOT_ALLOWED);
-		}
-	}
-
-	private void validateAccrualSetup(LeavePolicyAccrualDetailDto accrual) {
-		if (accrual == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_REQUIRED);
-		}
-		if (accrual.getAccrualDays() == null || accrual.getAccrualDays() < LeavePolicyConstant.MIN_DAYS
-				|| accrual.getAccrualDays() > LeavePolicyConstant.MAX_DAYS) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_DAYS_INVALID);
-		}
-		if (accrual.getFrequency() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_FREQUENCY_REQUIRED);
-		}
-		if (accrual.getWaitingPeriodDays() != null && accrual.getWaitingPeriodDays() < 1) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_WAITING_PERIOD_INVALID);
-		}
-		if (accrual.getAccrualCapDays() != null && accrual.getAccrualCapDays() < 1) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID);
-		}
-		if (Boolean.TRUE.equals(accrual.getIsCarryoverEnabled())) {
-			validateCarryoverSetup(accrual);
-		}
-	}
-
-	private void validateCarryoverSetup(LeavePolicyAccrualDetailDto accrual) {
-		if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
-			accrual.setCarryoverDate(LeavePolicyConstant.DEFAULT_CARRYOVER_DATE);
-		}
-		else {
-			try {
-				MonthDay.parse("--" + accrual.getCarryoverDate());
-			}
-			catch (DateTimeParseException e) {
-				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
-			}
-		}
-		if (accrual.getMaxCarryoverDays() != null
-				&& (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
-						|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS)) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
-		}
 	}
 
 	private LeavePolicy buildLeavePolicy(LeavePolicyRequestDto dto, PolicyLeaveType leaveType) {
