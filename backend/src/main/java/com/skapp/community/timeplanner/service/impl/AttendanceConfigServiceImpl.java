@@ -61,6 +61,16 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 					String.valueOf(attendanceConfigRequestDto.getIsGeoFencingEnabled()));
 		}
 
+		if (attendanceConfigRequestDto.getIsClockInClockOutOnly() != null) {
+			updateOrCreateConfig(AttendanceConfigType.CLOCK_IN_OUT_ONLY,
+					String.valueOf(attendanceConfigRequestDto.getIsClockInClockOutOnly()));
+		}
+
+		if (attendanceConfigRequestDto.getIsFingerprintAttendanceEnabled() != null) {
+			updateOrCreateConfig(AttendanceConfigType.FINGERPRINT_ATTENDANCE_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsFingerprintAttendanceEnabled()));
+		}
+
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
 				false);
@@ -92,14 +102,11 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			return new ResponseEntityDto(false, dto);
 		}
 
-		boolean isGeoFencingEnabled = attendanceConfigs.stream()
-			.filter(c -> c.getAttendanceConfigType() == AttendanceConfigType.GEO_FENCING_ENABLED)
-			.findFirst()
-			.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
-			.orElse(false);
+		boolean isGeoFencingEnabled = isConfigEnabled(attendanceConfigs, AttendanceConfigType.GEO_FENCING_ENABLED);
+		boolean isClockInClockOutOnly = isConfigEnabled(attendanceConfigs, AttendanceConfigType.CLOCK_IN_OUT_ONLY);
 
 		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
-				isGeoFencingEnabled);
+				isGeoFencingEnabled, isClockInClockOutOnly, null);
 
 		log.info("getAllAttendanceConfigs: execution ended");
 
@@ -107,7 +114,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	}
 
 	private static AttendanceConfigRequestDto getAttendanceConfigRequestDto(List<AttendanceConfig> attendanceConfigs) {
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false);
+		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false, false,
+				false);
 
 		for (AttendanceConfig config : attendanceConfigs) {
 			boolean value = Boolean.parseBoolean(config.getAttendanceConfigValue());
@@ -117,6 +125,8 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case CLOCK_IN_ON_LEAVE_DAYS -> dto.setIsClockInOnLeaveDays(value);
 				case AUTO_APPROVAL_FOR_CHANGES -> dto.setIsAutoApprovalForChanges(value);
 				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
+				case CLOCK_IN_OUT_ONLY -> dto.setIsClockInClockOutOnly(value);
+				case FINGERPRINT_ATTENDANCE_ENABLED -> dto.setIsFingerprintAttendanceEnabled(value);
 			}
 		}
 
@@ -130,6 +140,21 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_ATTENDANCE_CONFIG_NOT_FOUND);
 		}
 		return Boolean.parseBoolean(config.getAttendanceConfigValue());
+	}
+
+	@Override
+	public boolean isAttendanceConfigEnabled(AttendanceConfigType attendanceConfigType) {
+		AttendanceConfig config = attendanceConfigDao.findByAttendanceConfigType(attendanceConfigType);
+		return config != null && Boolean.parseBoolean(config.getAttendanceConfigValue());
+	}
+
+	private static boolean isConfigEnabled(List<AttendanceConfig> attendanceConfigs,
+			AttendanceConfigType attendanceConfigType) {
+		return attendanceConfigs.stream()
+			.filter(c -> c.getAttendanceConfigType() == attendanceConfigType)
+			.findFirst()
+			.map(c -> Boolean.parseBoolean(c.getAttendanceConfigValue()))
+			.orElse(false);
 	}
 
 }
