@@ -1,6 +1,7 @@
 import * as Yup from "yup";
 
 import { allowsOnlyNumbersAndOptionalDecimal } from "~community/common/regex/regexPatterns";
+import { MAX_POLICY_NAME_LENGTH } from "~community/leave/constants/leavePolicyConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
@@ -90,6 +91,16 @@ export const addLeaveTypeValidationSchema = (
             translateText(["emptyCarryForwardExpirationDaysError"])
           )
       })
+  });
+
+export const editLeavePolicyValidation = (
+  translateText: TranslatorFunctionType
+) =>
+  Yup.object({
+    policyName: Yup.string()
+      .trim()
+      .required(translateText(["policyNameRequiredError"]))
+      .max(MAX_POLICY_NAME_LENGTH, translateText(["policyNameMaxLengthError"]))
   });
 
 export const addEditCustomLeaveAllocationValidationSchema = (

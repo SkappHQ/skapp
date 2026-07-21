@@ -5,19 +5,20 @@ import {
   SmallModal
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { useFormik } from "formik";
+import { FC, useRef } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateLeavePolicy } from "~community/leave/api/LeavePolicyApi";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
-import { MAX_POLICY_NAME_LENGTH } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyType,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import { editLeavePolicyValidation } from "~community/leave/utils/validations";
 
 interface EditLeavePolicyModalProps {
   policy: LeavePolicyType | null;
@@ -38,65 +39,73 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   const translateCommonText = useTranslator("leaveModule", "leavePolicies");
   const { setToastMessage } = useToast();
 
-  const [policyName, setPolicyName] = useState<string>("");
+  const submittedNameRef = useRef<string>("");
 
-  useEffect(() => {
-    if (policy) {
-      setPolicyName(policy.name);
-    }
-  }, [policy]);
+  const onUpdateSuccess = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["successToastTitle"]),
+      description: translateText(["successToastDescription"], {
+        policyName: submittedNameRef.current
+      }),
+      isIcon: true
+    });
+    onClose();
+  };
+
+  const onUpdateError = (error: AxiosError): void => {
+    const { title, description } = getLeavePolicyErrorToastKeys(
+      error?.response?.status
+    );
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([title]),
+      description: translateText([description]),
+      isIcon: true
+    });
+  };
 
   const { mutate: updateLeavePolicy, isPending } = useUpdateLeavePolicy(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["successToastTitle"]),
-        description: translateText(["successToastDescription"], {
-          policyName: policyName.trim()
-        }),
-        isIcon: true
-      });
-      onClose();
-    },
-    (error: AxiosError) => {
-      const { title, description } = getLeavePolicyErrorToastKeys(
-        error?.response?.status
-      );
-
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText([title]),
-        description: translateText([description]),
-        isIcon: true
-      });
-    }
+    onUpdateSuccess,
+    onUpdateError
   );
+
+  const onSubmit = (formValues: { policyName: string }): void => {
+    if (!policy) {
+      return;
+    }
+    const trimmedName = formValues.policyName.trim();
+    submittedNameRef.current = trimmedName;
+    updateLeavePolicy({
+      id: policy.id,
+      payload: { name: trimmedName }
+    });
+  };
+
+  const { values, errors, handleChange, handleSubmit, resetForm } = useFormik({
+    initialValues: { policyName: policy?.name ?? "" },
+    validationSchema: editLeavePolicyValidation(translateText),
+    enableReinitialize: true,
+    validateOnMount: true,
+    onSubmit
+  });
 
   if (!policy) {
     return null;
   }
 
-  const trimmedName = policyName.trim();
-  const isNameEmpty = trimmedName.length === 0;
-  const isNameTooLong = trimmedName.length > MAX_POLICY_NAME_LENGTH;
-  const isNameValid = !isNameEmpty && !isNameTooLong;
-  const isChanged = trimmedName !== policy.name;
+  const isChanged = values.policyName.trim() !== policy.name;
 
   const handleDiscard = (): void => {
-    setPolicyName(policy.name);
+    resetForm();
     onClose();
   };
 
   const handleSave = (): void => {
-    if (!isNameValid || !isChanged || isPending) {
-      return;
-    }
-    updateLeavePolicy({
-      id: policy.id,
-      payload: { name: trimmedName }
-    });
+    handleSubmit();
   };
 
   return (
@@ -110,17 +119,9 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
             label={translateText(["policyNameLabel"])}
             name="policyName"
             type="text"
-            value={policyName}
-            errorMessage={
-              isNameEmpty
-                ? translateText(["policyNameRequiredError"])
-                : isNameTooLong
-                  ? translateText(["policyNameMaxLengthError"])
-                  : undefined
-            }
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setPolicyName(event.target.value)
-            }
+            value={values.policyName}
+            errorMessage={errors.policyName}
+            onChange={handleChange}
             fullWidth
           />
           <div className="flex flex-col gap-1.5">
@@ -161,7 +162,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
         buttonRight: {
           variant: "primary",
           onClick: handleSave,
-          disabled: isPending || !isNameValid || !isChanged,
+          disabled: isPending || !isChanged,
           isLoading: isPending,
           icon: <SaveIcon />,
           iconPosition: "end",
