@@ -138,3 +138,15 @@ export const dealStageColors: ColorOption[] = Object.entries(
   value: key,
   color
 }));
+
+interface DealAccessSession {
+  userId: number | undefined;
+  isCrmAdmin: boolean | undefined;
+  isCrmSalesManager: boolean | undefined;
+}
+
+export const canAccessDeal = (
+  ownerEmployeeId: number,
+  { userId, isCrmAdmin, isCrmSalesManager }: DealAccessSession
+): boolean =>
+  Boolean(isCrmAdmin || isCrmSalesManager) || ownerEmployeeId === userId;

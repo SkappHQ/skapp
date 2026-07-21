@@ -17,7 +17,7 @@ import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { canAccessDeal } from "~community/crm/utils/dealAccessUtil";
+import { canAccessDeal } from "~community/crm/utils/crmUtil";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 

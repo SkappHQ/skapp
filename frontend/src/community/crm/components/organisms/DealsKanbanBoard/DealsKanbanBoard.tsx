@@ -20,7 +20,7 @@ import { useBoardData } from "~community/crm/hooks/useBoardData";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { canAccessDeal } from "~community/crm/utils/dealAccessUtil";
+import { canAccessDeal } from "~community/crm/utils/crmUtil";
 import { findDealById } from "~community/crm/utils/kanbanUtil";
 
 interface DealsKanbanBoardProps {

@@ -20,7 +20,7 @@ import type {
   KanbanDragData
 } from "~community/crm/types/BoardTypes";
 
-import { canAccessDeal } from "../utils/dealAccessUtil";
+import { canAccessDeal } from "../utils/crmUtil";
 import {
   applyMoveToStageMap,
   applyReorderToStageMap,
