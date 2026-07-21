@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -165,11 +166,15 @@ public class EmailServiceImpl implements EmailService {
 
 	private void mergeModuleTemplates(Map<String, List<EmailTemplateMetadata>> moduleTemplates, String module,
 			List<EmailTemplateMetadata> incomingTemplates) {
+		if (incomingTemplates == null) {
+			return;
+		}
+
 		List<EmailTemplateMetadata> existingTemplates = moduleTemplates.computeIfAbsent(module,
 				key -> new ArrayList<>());
 
 		for (EmailTemplateMetadata incomingTemplate : incomingTemplates) {
-			existingTemplates.removeIf(template -> template.getId().equals(incomingTemplate.getId()));
+			existingTemplates.removeIf(template -> Objects.equals(template.getId(), incomingTemplate.getId()));
 			existingTemplates.add(incomingTemplate);
 		}
 	}
