@@ -309,8 +309,7 @@ class LeavePolicyServiceImplUnitTest {
 		void setupLeaveType() {
 			mockActiveLeaveType();
 			dto = buildAccrualRequest();
-			lenient().when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L))
-				.thenReturn(false);
+			lenient().when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L)).thenReturn(false);
 		}
 
 		private void assertThrowsWithKey(LeaveMessageConstant expectedKey) {
@@ -469,8 +468,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Throws a conflict when another policy already uses the new name")
 		void updateLeavePolicy_DuplicateName_ThrowsModuleException() {
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(buildExistingPolicy()));
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L))
-				.thenReturn(true);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L)).thenReturn(true);
 
 			LeavePolicyUpdateRequestDto dto = new LeavePolicyUpdateRequestDto();
 			dto.setName("Renamed");
@@ -485,8 +483,7 @@ class LeavePolicyServiceImplUnitTest {
 		void updateLeavePolicy_ValidName_UpdatesName() {
 			LeavePolicy existing = buildExistingPolicy();
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(existing));
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L))
-				.thenReturn(false);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L)).thenReturn(false);
 			when(leavePolicyDao.save(existing)).thenReturn(existing);
 			when(leaveMapper.leavePolicyToLeavePolicyResponseDto(existing)).thenReturn(new LeavePolicyResponseDto());
 

@@ -60,7 +60,8 @@ class PolicyLeaveTypeControllerIntegrationTest {
 	@DisplayName("Leave admin can list active policy leave types")
 	@Sql(statements = { SEED_LEAVE_TYPE })
 	void getPolicyLeaveTypes_LeaveAdmin_ReturnsActiveTypes() throws Exception {
-		mvc.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+		mvc.perform(
+				get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(leaveAdminToken())))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))

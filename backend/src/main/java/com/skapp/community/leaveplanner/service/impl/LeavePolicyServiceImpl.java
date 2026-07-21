@@ -51,13 +51,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicyValidationUtil.validateName(leavePolicyRequestDto.getName());
 
-		PolicyLeaveType leaveType = policyLeaveTypeDao
-			.findByIdAndIsActiveTrue(leavePolicyRequestDto.getLeaveTypeId())
-			.orElseThrow(
-					() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
+		PolicyLeaveType leaveType = policyLeaveTypeDao.findByIdAndIsActiveTrue(leavePolicyRequestDto.getLeaveTypeId())
+			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(leavePolicyRequestDto.getName(),
-				leaveType.getId())) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(leavePolicyRequestDto.getName(), leaveType.getId())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
@@ -80,8 +77,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicyValidationUtil.validateName(leavePolicyUpdateRequestDto.getName());
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot(
-				leavePolicyUpdateRequestDto.getName(), leavePolicy.getLeaveType().getId(), id)) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot(leavePolicyUpdateRequestDto.getName(),
+				leavePolicy.getLeaveType().getId(), id)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
