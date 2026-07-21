@@ -102,7 +102,7 @@ const ContactModalForm = ({
     useCheckContactEmailExists(debouncedEmail, isEmailCheckEnabled);
 
   const isDuplicateEmail =
-    isEmailChanged && (emailExistsData?.isExists ?? false);
+    isEmailChanged && (emailExistsData?.isExists);
 
   const isEmailCheckUnresolved =
     isEmailChanged && (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
@@ -116,11 +116,10 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
+  const emailFieldError = touched.email ? errors.email : undefined;
   const emailErrorMessage = isDuplicateEmail
     ? translateContactText(["validations", "emailExists"])
-    : touched.email
-      ? errors.email
-      : undefined;
+    : emailFieldError;
 
   const { data: companyLookupData } = useGetCompanyLookup(
     debouncedCompanySearch,
