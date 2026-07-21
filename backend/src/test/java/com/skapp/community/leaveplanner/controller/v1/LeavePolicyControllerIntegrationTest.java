@@ -266,7 +266,7 @@ class LeavePolicyControllerIntegrationTest {
 				.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results[0].status").value("INACTIVE"));
+				.andExpect(jsonPath("$.results[0].status").value("DEACTIVATED"));
 		}
 
 	}

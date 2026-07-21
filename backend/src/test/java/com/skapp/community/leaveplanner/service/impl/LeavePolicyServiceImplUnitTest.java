@@ -528,7 +528,7 @@ class LeavePolicyServiceImplUnitTest {
 			ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(5L);
 
 			assertEquals("successful", response.getStatus());
-			assertEquals(LeavePolicyStatus.INACTIVE, existing.getStatus());
+			assertEquals(LeavePolicyStatus.DEACTIVATED, existing.getStatus());
 		}
 
 	}
