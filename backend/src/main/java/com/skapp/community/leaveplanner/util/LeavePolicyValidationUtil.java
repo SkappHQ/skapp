@@ -1,15 +1,13 @@
 package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import lombok.experimental.UtilityClass;
-
-import java.time.MonthDay;
-import java.time.format.DateTimeParseException;
 
 @UtilityClass
 public class LeavePolicyValidationUtil {
@@ -75,10 +73,7 @@ public class LeavePolicyValidationUtil {
 		if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_REQUIRED);
 		}
-		try {
-			MonthDay.parse("--" + accrual.getCarryoverDate());
-		}
-		catch (DateTimeParseException e) {
+		if (!DateTimeUtils.isValidMonthDay(accrual.getCarryoverDate())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
 		}
 		if (accrual.getMaxCarryoverDays() != null && (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
