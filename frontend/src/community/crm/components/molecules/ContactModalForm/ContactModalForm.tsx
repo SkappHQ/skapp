@@ -34,9 +34,6 @@ import { extractDomainFromEmail } from "~community/crm/utils/commonHelpers";
 import { mergeAndPrioritizeCompanyDropdownItems } from "~community/crm/utils/contactUtil";
 import { addContactValidations } from "~community/crm/utils/contactValidations";
 
-const getFieldState = (errorMessage?: string) =>
-  errorMessage ? "error" : "default";
-
 export interface ContactFormProps {
   translateContactText: TranslatorFunctionType;
   initialValues: CrmContactFormValues;
@@ -185,7 +182,7 @@ const ContactModalForm = ({
         name="name"
         value={values.name}
         errorMessage={nameErrorMessage}
-        state={getFieldState(nameErrorMessage)}
+        state={nameErrorMessage ? "error" : "default"}
         label={translateContactText(["labels", "name"])}
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
@@ -199,7 +196,7 @@ const ContactModalForm = ({
         name="email"
         value={values.email}
         errorMessage={emailErrorMessage}
-        state={getFieldState(emailErrorMessage)}
+        state={emailErrorMessage ? "error" : "default"}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
@@ -251,7 +248,7 @@ const ContactModalForm = ({
         name="contactNumber"
         value={values.contactNumber}
         errorMessage={contactNumberErrorMessage}
-        state={getFieldState(contactNumberErrorMessage)}
+        state={contactNumberErrorMessage ? "error" : "default"}
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
