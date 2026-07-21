@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { RefObject, useEffect, useMemo } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import {
@@ -9,13 +9,20 @@ import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { CrmTaskGroupEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
-import { getTaskGroups } from "~community/crm/utils/taskUtil";
+import { GroupedTasks, getTaskGroups } from "~community/crm/utils/taskUtil";
+
+export interface TasksTabData extends GroupedTasks {
+  completedTasks: CrmTaskDetailType[];
+  loadingRef: RefObject<HTMLDivElement>;
+  isLoading: boolean;
+  isError: boolean;
+}
 
 export const useTasksTabData = (
   tab: CrmTaskTabEnum,
   searchKeyword: string,
   userId: number | undefined
-) => {
+): TasksTabData => {
   const { tasks, setTasks } = useCrmStore((store) => ({
     tasks: store.tasks,
     setTasks: store.setTasks
