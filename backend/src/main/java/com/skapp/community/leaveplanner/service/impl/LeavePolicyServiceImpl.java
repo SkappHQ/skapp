@@ -45,8 +45,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private static final float MAX_DAYS = 365F;
 
-	private static final Pattern HTML_TAG_PATTERN = Pattern.compile("<[^>]*>");
-
 	private static final Pattern CARRYOVER_DATE_PATTERN = Pattern.compile("^(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$");
 
 	private static final String DEFAULT_CARRYOVER_DATE = "01-01";
@@ -64,15 +62,15 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		validateRequiredFields(leavePolicyRequestDto);
 
-		String sanitizedName = validateAndSanitizeName(leavePolicyRequestDto.getName());
-		leavePolicyRequestDto.setName(sanitizedName);
+		validateName(leavePolicyRequestDto.getName());
 
 		PolicyLeaveType leaveType = policyLeaveTypeDao
 			.findByTypeIdAndIsActive(leavePolicyRequestDto.getLeaveTypeId(), true)
 			.orElseThrow(
 					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId(sanitizedName, leaveType.getTypeId())) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId(leavePolicyRequestDto.getName(),
+				leaveType.getTypeId())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
@@ -94,14 +92,14 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
 
-		String sanitizedName = validateAndSanitizeName(leavePolicyUpdateRequestDto.getName());
+		validateName(leavePolicyUpdateRequestDto.getName());
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(sanitizedName,
-				leavePolicy.getLeaveType().getTypeId(), policyId)) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(
+				leavePolicyUpdateRequestDto.getName(), leavePolicy.getLeaveType().getTypeId(), policyId)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
-		leavePolicy.setName(sanitizedName);
+		leavePolicy.setName(leavePolicyUpdateRequestDto.getName());
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
 		log.info("updateLeavePolicy: policy updated successfully policyId: {}", leavePolicy.getPolicyId());
@@ -163,13 +161,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
 	}
 
-	private String sanitizeName(String name) {
-		if (name == null) {
-			return null;
-		}
-		return HTML_TAG_PATTERN.matcher(name).replaceAll("").trim();
-	}
-
 	private void validatePagination(LeavePolicyFilterDto filterDto) {
 		if (filterDto.getPage() < 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_PAGE_INVALID);
@@ -188,15 +179,13 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		}
 	}
 
-	private String validateAndSanitizeName(String name) {
-		String sanitizedName = sanitizeName(name);
-		if (sanitizedName == null || sanitizedName.isBlank()) {
+	private void validateName(String name) {
+		if (name == null || name.isBlank()) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_REQUIRED);
 		}
-		if (sanitizedName.length() > MAX_NAME_LENGTH) {
+		if (name.length() > MAX_NAME_LENGTH) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NAME_MAX_LENGTH_EXCEEDED);
 		}
-		return sanitizedName;
 	}
 
 	private void validateEntitlementSetup(LeavePolicyRequestDto dto) {

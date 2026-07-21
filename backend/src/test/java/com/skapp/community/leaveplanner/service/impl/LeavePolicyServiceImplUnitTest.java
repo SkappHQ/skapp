@@ -136,14 +136,14 @@ class LeavePolicyServiceImplUnitTest {
 	class AddLeavePolicySuccessTests {
 
 		@Test
-		@DisplayName("Creates an accrual policy with sanitized name and all accrual fields applied")
+		@DisplayName("Creates an accrual policy with all accrual fields applied")
 		void addLeavePolicy_AccrualPolicy_SavesPolicyWithAccrualDetail() {
 			mockActiveLeaveType();
 			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(false);
 			mockSaveAndMap();
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
-			dto.setName("  <b>Annual</b> Policy  ");
+			dto.setName("Annual Policy");
 			dto.getAccrual().setWaitingPeriodDays(30);
 			dto.getAccrual().setAccrualCapDays(20F);
 			dto.getAccrual().setIsCarryoverEnabled(true);
@@ -270,10 +270,10 @@ class LeavePolicyServiceImplUnitTest {
 		}
 
 		@Test
-		@DisplayName("Throws when name is blank after HTML sanitization")
-		void addLeavePolicy_NameBlankAfterSanitization_ThrowsModuleException() {
+		@DisplayName("Throws when name is blank")
+		void addLeavePolicy_BlankName_ThrowsModuleException() {
 			LeavePolicyRequestDto dto = buildAccrualRequest();
-			dto.setName("<b> </b>");
+			dto.setName("   ");
 
 			ModuleException exception = assertThrows(ModuleException.class,
 					() -> leavePolicyService.addLeavePolicy(dto));
@@ -526,8 +526,8 @@ class LeavePolicyServiceImplUnitTest {
 		}
 
 		@Test
-		@DisplayName("Updates the policy with the sanitized name")
-		void updateLeavePolicy_ValidName_UpdatesSanitizedName() {
+		@DisplayName("Updates the policy with the new name")
+		void updateLeavePolicy_ValidName_UpdatesName() {
 			LeavePolicy existing = buildExistingPolicy();
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(existing));
 			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot("Renamed", 1L, 5L))
@@ -536,7 +536,7 @@ class LeavePolicyServiceImplUnitTest {
 			when(leaveMapper.leavePolicyToLeavePolicyResponseDto(existing)).thenReturn(new LeavePolicyResponseDto());
 
 			LeavePolicyUpdateRequestDto dto = new LeavePolicyUpdateRequestDto();
-			dto.setName("  <i>Renamed</i>  ");
+			dto.setName("Renamed");
 
 			ResponseEntityDto response = leavePolicyService.updateLeavePolicy(5L, dto);
 
