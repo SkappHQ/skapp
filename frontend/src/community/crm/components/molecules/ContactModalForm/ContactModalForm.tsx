@@ -116,10 +116,6 @@ const ContactModalForm = ({
     isDomainSearchEnabled
   );
 
-  const nameErrorMessage = touched.name ? errors.name : undefined;
-  const contactNumberErrorMessage = touched.contactNumber
-    ? errors.contactNumber
-    : undefined;
   const emailErrorMessage = isDuplicateEmail
     ? translateContactText(["validations", "emailExists"])
     : touched.email
@@ -180,8 +176,8 @@ const ContactModalForm = ({
       <InputField
         name="name"
         value={values.name}
-        errorMessage={nameErrorMessage}
-        state={nameErrorMessage ? "error" : "default"}
+        errorMessage={touched.name ? errors.name : undefined}
+        state={touched.name && errors.name ? "error" : "default"}
         label={translateContactText(["labels", "name"])}
         placeholder={translateContactText(["placeholders", "name"])}
         onChange={handleChange}
@@ -246,8 +242,10 @@ const ContactModalForm = ({
       <InputField
         name="contactNumber"
         value={values.contactNumber}
-        errorMessage={contactNumberErrorMessage}
-        state={contactNumberErrorMessage ? "error" : "default"}
+        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
+        state={
+          touched.contactNumber && errors.contactNumber ? "error" : "default"
+        }
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
