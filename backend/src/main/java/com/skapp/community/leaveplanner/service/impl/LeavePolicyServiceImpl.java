@@ -13,7 +13,6 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
@@ -107,18 +106,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		log.info("deactivateLeavePolicy: policy deactivated successfully");
 
 		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getPolicyLeaveTypes() {
-		log.info("getPolicyLeaveTypes: execution started");
-
-		List<PolicyLeaveTypeResponseDto> leaveTypes = leaveMapper
-			.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(policyLeaveTypeDao.findAllByIsActive(true));
-
-		log.info("getPolicyLeaveTypes: execution ended");
-		return new ResponseEntityDto(false, leaveTypes);
 	}
 
 	@Override

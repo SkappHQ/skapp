@@ -14,7 +14,6 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
@@ -541,25 +540,6 @@ class LeavePolicyServiceImplUnitTest {
 
 			assertEquals("successful", response.getStatus());
 			assertEquals(LeavePolicyStatus.INACTIVE, existing.getStatus());
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Get Policy Leave Types")
-	class GetPolicyLeaveTypesTests {
-
-		@Test
-		@DisplayName("Returns the active leave types")
-		void getPolicyLeaveTypes_ActiveTypesExist_ReturnsMappedTypes() {
-			when(policyLeaveTypeDao.findAllByIsActive(true)).thenReturn(List.of(buildLeaveType()));
-			when(leaveMapper.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(anyList()))
-				.thenReturn(List.of(new PolicyLeaveTypeResponseDto()));
-
-			ResponseEntityDto response = leavePolicyService.getPolicyLeaveTypes();
-
-			assertEquals("successful", response.getStatus());
-			assertEquals(1, response.getResults().size());
 		}
 
 	}

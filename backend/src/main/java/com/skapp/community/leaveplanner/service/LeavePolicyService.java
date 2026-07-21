@@ -13,8 +13,6 @@ public interface LeavePolicyService {
 
 	ResponseEntityDto deactivateLeavePolicy(Long policyId);
 
-	ResponseEntityDto getPolicyLeaveTypes();
-
 	ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto);
 
 }

@@ -63,13 +63,4 @@ public class LeavePolicyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get policy leave types",
-			description = "Returns all active leave types available for policy creation")
-	@GetMapping("/leave-types")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes() {
-		ResponseEntityDto response = leavePolicyService.getPolicyLeaveTypes();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 }

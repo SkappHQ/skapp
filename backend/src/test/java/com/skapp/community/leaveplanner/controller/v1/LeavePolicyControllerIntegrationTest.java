@@ -269,19 +269,6 @@ class LeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].status").value("INACTIVE"));
 		}
 
-		@Test
-		@DisplayName("Leave admin can list active policy leave types")
-		@Sql(statements = { SEED_LEAVE_TYPE })
-		void getPolicyLeaveTypes_LeaveAdmin_ReturnsActiveTypes() throws Exception {
-			mvc.perform(get(ENDPOINT + "/leave-types").accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].name").value("PolicyAnnual"));
-		}
-
 	}
 
 }
