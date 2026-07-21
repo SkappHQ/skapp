@@ -66,6 +66,19 @@ public class WebSocketHandler extends TextWebSocketHandler {
 		}
 	}
 
+	public void broadcast(String message) {
+		sessions.values().forEach(session -> {
+			if (session.isOpen()) {
+				try {
+					session.sendMessage(new TextMessage(message));
+				}
+				catch (IOException e) {
+					log.error("broadcast: Unable to send the message: {}", e.getMessage());
+				}
+			}
+		});
+	}
+
 	private String getUserIdFromSession(WebSocketSession session) {
 		if (session == null) {
 			return null;

@@ -90,13 +90,32 @@ function MyApp({
     }
   }, []);
 
-  const shouldUseWebSocketProvider =
-    process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
+  const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 
   return (
     <div className={inter.className}>
       <AuthProvider>
-        {shouldUseWebSocketProvider ? (
+        {isEnterpriseMode ? (
+          <WebSocketProvider>
+            <ToastProvider>
+              <TanStackProvider>
+                <ThemeProvider theme={newTheme}>
+                  <I18nextProvider i18n={i18n}>
+                    <AnnouncementProvider>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                      </ErrorBoundary>
+                      <AnnouncementWrapper />
+                    </AnnouncementProvider>
+                    <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                  </I18nextProvider>
+                </ThemeProvider>
+              </TanStackProvider>
+            </ToastProvider>
+          </WebSocketProvider>
+        ) : (
           <WebSocketProvider>
             <ToastProvider>
               <TanStackProvider>
@@ -116,24 +135,6 @@ function MyApp({
               </TanStackProvider>
             </ToastProvider>
           </WebSocketProvider>
-        ) : (
-          <ToastProvider>
-            <TanStackProvider>
-              <ThemeProvider theme={newTheme}>
-                <I18nextProvider i18n={i18n}>
-                  <AnnouncementProvider>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
-                    <AnnouncementWrapper />
-                  </AnnouncementProvider>
-                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                </I18nextProvider>
-              </ThemeProvider>
-            </TanStackProvider>
-          </ToastProvider>
         )}
       </AuthProvider>
     </div>
