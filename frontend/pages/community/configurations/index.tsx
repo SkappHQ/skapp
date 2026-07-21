@@ -68,14 +68,13 @@ const Configurations: NextPage = () => {
     );
   };
 
-  // If the currently active tab disappears from visibleTabs (e.g. the People
-  // tab hides itself once auto-sync is disabled and the Google connection is
-  // torn down), fall back to the Attendance tab rather than showing a stale,
-  // no-longer-listed tab.
   useEffect(() => {
     if (!router.isReady || visibleTabs.length === 0) return;
     if (activeTab && !visibleTabs.some((tab) => tab.id === activeTab)) {
-      handleTabChange("attendance");
+      const fallbackTabId = visibleTabs[0]?.id;
+      if (fallbackTabId) {
+        handleTabChange(fallbackTabId);
+      }
     }
   }, [visibleTabs, activeTab, router.isReady]);
 

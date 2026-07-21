@@ -59,7 +59,10 @@ const superAdminRoutes = {
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.CRM.BASE
+    ROUTES.CRM.BASE,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+    ROUTES.PEOPLE.SYNC_CHANGES
   ]
 };
 
@@ -295,6 +298,15 @@ export function middleware(request: NextRequest) {
     if (
       request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
       !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    if (
+      request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
+      !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
     ) {
       return NextResponse.redirect(
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
