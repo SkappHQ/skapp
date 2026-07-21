@@ -52,12 +52,12 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		LeavePolicyValidationUtil.validateName(leavePolicyRequestDto.getName());
 
 		PolicyLeaveType leaveType = policyLeaveTypeDao
-			.findByTypeIdAndIsActiveTrue(leavePolicyRequestDto.getLeaveTypeId())
+			.findByIdAndIsActiveTrue(leavePolicyRequestDto.getLeaveTypeId())
 			.orElseThrow(
 					() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId(leavePolicyRequestDto.getName(),
-				leaveType.getTypeId())) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(leavePolicyRequestDto.getName(),
+				leaveType.getId())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
@@ -73,15 +73,15 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateLeavePolicy(Long policyId, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
+	public ResponseEntityDto updateLeavePolicy(Long id, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
 		log.info("updateLeavePolicy: execution started");
 
-		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
+		LeavePolicy leavePolicy = getLeavePolicyById(id);
 
 		LeavePolicyValidationUtil.validateName(leavePolicyUpdateRequestDto.getName());
 
-		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(
-				leavePolicyUpdateRequestDto.getName(), leavePolicy.getLeaveType().getTypeId(), policyId)) {
+		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot(
+				leavePolicyUpdateRequestDto.getName(), leavePolicy.getLeaveType().getId(), id)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS);
 		}
 
@@ -95,10 +95,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	@Override
 	@Transactional
-	public ResponseEntityDto deactivateLeavePolicy(Long policyId) {
+	public ResponseEntityDto deactivateLeavePolicy(Long id) {
 		log.info("deactivateLeavePolicy: execution started");
 
-		LeavePolicy leavePolicy = getLeavePolicyById(policyId);
+		LeavePolicy leavePolicy = getLeavePolicyById(id);
 
 		leavePolicy.setStatus(LeavePolicyStatus.DEACTIVATED);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
@@ -129,8 +129,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	private LeavePolicy getLeavePolicyById(Long policyId) {
-		return leavePolicyDao.findById(policyId)
+	private LeavePolicy getLeavePolicyById(Long id) {
+		return leavePolicyDao.findById(id)
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
 	}
 

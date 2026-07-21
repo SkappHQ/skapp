@@ -37,7 +37,7 @@ class PolicyLeaveTypeServiceImplUnitTest {
 
 	private PolicyLeaveType buildLeaveType() {
 		PolicyLeaveType leaveType = new PolicyLeaveType();
-		leaveType.setTypeId(1L);
+		leaveType.setId(1L);
 		leaveType.setName("Annual");
 		return leaveType;
 	}

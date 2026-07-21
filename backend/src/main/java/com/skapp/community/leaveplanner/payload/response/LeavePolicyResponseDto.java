@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class LeavePolicyResponseDto {
 
-	private Long policyId;
+	private Long id;
 
 	private String name;
 

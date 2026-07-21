@@ -67,7 +67,7 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		}
 
 		if (filterDto.getLeaveTypeId() != null) {
-			predicates.add(cb.equal(root.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.typeId),
+			predicates.add(cb.equal(root.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id),
 					filterDto.getLeaveTypeId()));
 		}
 

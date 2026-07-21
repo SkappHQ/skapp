@@ -93,7 +93,7 @@ class LeavePolicyServiceImplUnitTest {
 
 	private PolicyLeaveType buildLeaveType() {
 		PolicyLeaveType leaveType = new PolicyLeaveType();
-		leaveType.setTypeId(1L);
+		leaveType.setId(1L);
 		leaveType.setName("Annual");
 		return leaveType;
 	}
@@ -115,7 +115,7 @@ class LeavePolicyServiceImplUnitTest {
 	}
 
 	private void mockActiveLeaveType() {
-		when(policyLeaveTypeDao.findByTypeIdAndIsActiveTrue(1L)).thenReturn(Optional.of(buildLeaveType()));
+		when(policyLeaveTypeDao.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(buildLeaveType()));
 	}
 
 	private void mockSaveAndMap() {
@@ -138,7 +138,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Creates an accrual policy with all accrual fields applied")
 		void addLeavePolicy_AccrualPolicy_SavesPolicyWithAccrualDetail() {
 			mockActiveLeaveType();
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(false);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L)).thenReturn(false);
 			mockSaveAndMap();
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
@@ -173,7 +173,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Creates a flexible policy without applying accrual detail")
 		void addLeavePolicy_FlexiblePolicy_SavesPolicyWithoutAccrualDetail() {
 			mockActiveLeaveType();
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Flexible Policy", 1L)).thenReturn(false);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Flexible Policy", 1L)).thenReturn(false);
 			mockSaveAndMap();
 
 			LeavePolicyRequestDto dto = new LeavePolicyRequestDto();
@@ -194,7 +194,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Applies default first accrual and accrual timing when not provided")
 		void addLeavePolicy_MissingFineTuning_AppliesDefaults() {
 			mockActiveLeaveType();
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(false);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L)).thenReturn(false);
 			mockSaveAndMap();
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
@@ -275,7 +275,7 @@ class LeavePolicyServiceImplUnitTest {
 		@Test
 		@DisplayName("Throws when the leave type does not exist or is inactive")
 		void addLeavePolicy_LeaveTypeNotFound_ThrowsModuleException() {
-			when(policyLeaveTypeDao.findByTypeIdAndIsActiveTrue(1L)).thenReturn(Optional.empty());
+			when(policyLeaveTypeDao.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.empty());
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
 
@@ -288,7 +288,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Throws a conflict when a policy with the same name exists for the leave type")
 		void addLeavePolicy_DuplicateName_ThrowsModuleException() {
 			mockActiveLeaveType();
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(true);
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L)).thenReturn(true);
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
 
@@ -309,7 +309,7 @@ class LeavePolicyServiceImplUnitTest {
 		void setupLeaveType() {
 			mockActiveLeaveType();
 			dto = buildAccrualRequest();
-			lenient().when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L))
+			lenient().when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id("Annual Policy", 1L))
 				.thenReturn(false);
 		}
 
@@ -433,7 +433,7 @@ class LeavePolicyServiceImplUnitTest {
 
 		private LeavePolicy buildExistingPolicy() {
 			LeavePolicy leavePolicy = new LeavePolicy();
-			leavePolicy.setPolicyId(5L);
+			leavePolicy.setId(5L);
 			leavePolicy.setName("Old Name");
 			leavePolicy.setLeaveType(buildLeaveType());
 			leavePolicy.setStatus(LeavePolicyStatus.ACTIVE);
@@ -469,7 +469,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Throws a conflict when another policy already uses the new name")
 		void updateLeavePolicy_DuplicateName_ThrowsModuleException() {
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(buildExistingPolicy()));
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot("Renamed", 1L, 5L))
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L))
 				.thenReturn(true);
 
 			LeavePolicyUpdateRequestDto dto = new LeavePolicyUpdateRequestDto();
@@ -485,7 +485,7 @@ class LeavePolicyServiceImplUnitTest {
 		void updateLeavePolicy_ValidName_UpdatesName() {
 			LeavePolicy existing = buildExistingPolicy();
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(existing));
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot("Renamed", 1L, 5L))
+			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_IdAndIdNot("Renamed", 1L, 5L))
 				.thenReturn(false);
 			when(leavePolicyDao.save(existing)).thenReturn(existing);
 			when(leaveMapper.leavePolicyToLeavePolicyResponseDto(existing)).thenReturn(new LeavePolicyResponseDto());
@@ -519,7 +519,7 @@ class LeavePolicyServiceImplUnitTest {
 		@DisplayName("Marks the policy as inactive")
 		void deactivateLeavePolicy_ExistingPolicy_MarksInactive() {
 			LeavePolicy existing = new LeavePolicy();
-			existing.setPolicyId(5L);
+			existing.setId(5L);
 			existing.setStatus(LeavePolicyStatus.ACTIVE);
 			when(leavePolicyDao.findById(5L)).thenReturn(Optional.of(existing));
 			when(leavePolicyDao.save(existing)).thenReturn(existing);

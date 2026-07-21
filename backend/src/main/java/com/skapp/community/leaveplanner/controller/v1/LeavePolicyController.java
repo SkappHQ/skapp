@@ -38,19 +38,19 @@ public class LeavePolicyController {
 	}
 
 	@Operation(summary = "Update a leave policy", description = "Updates the name of an existing leave policy")
-	@PutMapping("/{policyId}")
+	@PutMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> updateLeavePolicy(@PathVariable Long policyId,
+	public ResponseEntity<ResponseEntityDto> updateLeavePolicy(@PathVariable Long id,
 			@RequestBody LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto) {
-		ResponseEntityDto response = leavePolicyService.updateLeavePolicy(policyId, leavePolicyUpdateRequestDto);
+		ResponseEntityDto response = leavePolicyService.updateLeavePolicy(id, leavePolicyUpdateRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Deactivate a leave policy", description = "Marks an existing leave policy as inactive")
-	@PatchMapping("/{policyId}/deactivate")
+	@PatchMapping("/{id}/deactivate")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> deactivateLeavePolicy(@PathVariable Long policyId) {
-		ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(policyId);
+	public ResponseEntity<ResponseEntityDto> deactivateLeavePolicy(@PathVariable Long id) {
+		ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

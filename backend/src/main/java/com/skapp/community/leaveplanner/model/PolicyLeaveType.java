@@ -26,8 +26,8 @@ public class PolicyLeaveType extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "type_id")
-	private Long typeId;
+	@Column(name = "id")
+	private Long id;
 
 	@Column(name = "name", nullable = false, columnDefinition = "text")
 	private String name;

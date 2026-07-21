@@ -9,9 +9,9 @@ public interface LeavePolicyService {
 
 	ResponseEntityDto addLeavePolicy(LeavePolicyRequestDto leavePolicyRequestDto);
 
-	ResponseEntityDto updateLeavePolicy(Long policyId, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto);
+	ResponseEntityDto updateLeavePolicy(Long id, LeavePolicyUpdateRequestDto leavePolicyUpdateRequestDto);
 
-	ResponseEntityDto deactivateLeavePolicy(Long policyId);
+	ResponseEntityDto deactivateLeavePolicy(Long id);
 
 	ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto);
 
