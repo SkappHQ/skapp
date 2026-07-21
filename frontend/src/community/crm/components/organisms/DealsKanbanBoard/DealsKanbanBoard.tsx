@@ -9,14 +9,18 @@ import {
 } from "@dnd-kit/core";
 import { FC } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import DealCard from "~community/crm/components/molecules/DealCard/DealCard";
 import DealStageLane from "~community/crm/components/molecules/DealStageLane/DealStageLane";
 import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
 import { useBoardData } from "~community/crm/hooks/useBoardData";
-import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { canAccessDeal } from "~community/crm/utils/dealAccessUtil";
 import { findDealById } from "~community/crm/utils/kanbanUtil";
 
 interface DealsKanbanBoardProps {
@@ -46,7 +50,9 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
-  const { ensureDealAccess } = useCrmDealAccess();
+  const { userId, isCrmAdmin, isCrmSalesManager } = useSessionData();
+  const { setToastMessage } = useToast();
+  const translateText = useTranslator("crmModule", "common", "permissionToast");
 
   const handleAddDeal = (stageId: number) => {
     const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
@@ -56,7 +62,19 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
 
   const handleDealClick = (dealId: number) => {
     const deal = findDealById(stageMap, dealId);
-    if (!ensureDealAccess(deal.owner.employeeId)) {
+    if (
+      !canAccessDeal(deal.owner.employeeId, {
+        userId,
+        isCrmAdmin,
+        isCrmSalesManager
+      })
+    ) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.WARN,
+        title: translateText(["title"]),
+        description: translateText(["description"])
+      });
       return;
     }
     const { setSelectedDealId, openCrmSidePanel } = useCrmStore.getState();

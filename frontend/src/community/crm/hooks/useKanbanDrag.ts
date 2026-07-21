@@ -5,11 +5,14 @@ import type {
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
 } from "~community/crm/api/BoardApi";
-import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useCrmStore } from "~community/crm/store/store";
 import type {
   CrmBoardDealSliceType,
@@ -17,6 +20,7 @@ import type {
   KanbanDragData
 } from "~community/crm/types/BoardTypes";
 
+import { canAccessDeal } from "../utils/dealAccessUtil";
 import {
   applyMoveToStageMap,
   applyReorderToStageMap,
@@ -42,7 +46,9 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     setBoardStageDeals: store.setBoardStageDeals
   }));
 
-  const { ensureDealAccess } = useCrmDealAccess();
+  const { userId, isCrmAdmin, isCrmSalesManager } = useSessionData();
+  const { setToastMessage } = useToast();
+  const translateText = useTranslator("crmModule", "common", "permissionToast");
 
   const [activeDeal, setActiveDeal] = useState<CrmBoardDealSliceType | null>(
     null
@@ -89,7 +95,19 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
       return;
     }
     const draggedDeal = findDealById(snapshot, activeDealId);
-    if (!ensureDealAccess(draggedDeal.owner.employeeId)) {
+    if (
+      !canAccessDeal(draggedDeal.owner.employeeId, {
+        userId,
+        isCrmAdmin,
+        isCrmSalesManager
+      })
+    ) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.WARN,
+        title: translateText(["title"]),
+        description: translateText(["description"])
+      });
       cleanup();
       return;
     }

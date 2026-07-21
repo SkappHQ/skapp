@@ -1,6 +1,10 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { useGetDealsInfinite } from "~community/crm/api/crmDealApi";
 import DealsKanbanBoard from "~community/crm/components/organisms/DealsKanbanBoard/DealsKanbanBoard";
@@ -10,10 +14,10 @@ import {
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/enums/common";
-import { useCrmDealAccess } from "~community/crm/hooks/useCrmDealAccess";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { canAccessDeal } from "~community/crm/utils/dealAccessUtil";
 
 import DealsHeader from "./DealsHeader/DealsHeader";
 
@@ -32,7 +36,9 @@ const DealsSection: FC = () => {
     })
   );
 
-  const { ensureDealAccess } = useCrmDealAccess();
+  const { userId, isCrmAdmin, isCrmSalesManager } = useSessionData();
+  const { setToastMessage } = useToast();
+  const translateText = useTranslator("crmModule", "common", "permissionToast");
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
     useGetDealsInfinite(
@@ -63,7 +69,19 @@ const DealsSection: FC = () => {
   };
 
   const handleDealOnClick = (deal: CrmDealResponseType) => {
-    if (!ensureDealAccess(deal.owner.employeeId)) {
+    if (
+      !canAccessDeal(deal.owner.employeeId, {
+        userId,
+        isCrmAdmin,
+        isCrmSalesManager
+      })
+    ) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.WARN,
+        title: translateText(["title"]),
+        description: translateText(["description"])
+      });
       return;
     }
     setSelectedDealId(deal.id);
