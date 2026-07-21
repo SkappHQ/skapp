@@ -108,4 +108,6 @@ public interface EmployeeRepository {
 
 	List<Employee> findAllActiveEmployeesExcludingRole(Role excludedRole, Set<WorkLocation> workLocations);
 
+	void updateLastClockInDate(Long employeeId, LocalDate lastClockInDate);
+
 }

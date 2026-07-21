@@ -100,6 +100,7 @@ import com.skapp.community.timeplanner.type.SlotType;
 import com.skapp.community.timeplanner.type.TimeBlocks;
 import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
+import com.skapp.community.timeplanner.type.TimeRecordSource;
 import com.skapp.community.timeplanner.util.TimeUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
@@ -534,6 +535,9 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else if (addTimeRecordDto.getRecordActionType() == TimeRecordActionTypes.RESUME
 				|| addTimeRecordDto.getRecordActionType() == TimeRecordActionTypes.PAUSE) {
+			if (attendanceConfigService.isAttendanceConfigEnabled(AttendanceConfigType.CLOCK_IN_OUT_ONLY)) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_PAUSE_RESUME_NOT_AVAILABLE);
+			}
 			Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(),
 					DateTimeUtils.toLocalDate(addTimeRecordDto.getTime()));
 			if (timeRecord.isPresent()) {
@@ -696,6 +700,7 @@ public class TimeServiceImpl implements TimeService {
 		slotToUpdate.setEndTime(dateInEpochMillis);
 		slotToUpdate.setActiveRightNow(false);
 		timeRecord.get().setClockOutTime(dateInEpochMillis);
+		timeRecord.get().setClockOutSource(TimeRecordSource.WEB);
 
 		updateWorkHours(timeRecord.get(), slotToUpdate, slotToUpdate.getSlotType());
 		timeRecord.get().setCompleted(true);
@@ -1968,6 +1973,7 @@ public class TimeServiceImpl implements TimeService {
 			TimeRecord newTimeRecord = timeMapper.newTimeRecordToTimeRecord(currentUser.getEmployee(), timeInMillis,
 					CommonModuleUtils.getDayOfWeek(DateTimeUtils.getLocalDateFromEpoch(timeInMillis)),
 					DateTimeUtils.epochMillisToUtcLocalDate(timeInMillis));
+			newTimeRecord.setClockInSource(TimeRecordSource.WEB);
 			timeRecordDao.save(newTimeRecord);
 			createTimeSlot(newTimeRecord, timeInMillis, TimeRecordActionTypes.START);
 			Employee currentEmployee = currentUser.getEmployee();
@@ -1980,6 +1986,7 @@ public class TimeServiceImpl implements TimeService {
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE);
 			}
 			timeRecord.get().setClockOutTime(timeInMillis);
+			timeRecord.get().setClockOutSource(TimeRecordSource.WEB);
 			timeRecord.get().setCompleted(true);
 			timeRecordDao.save(timeRecord.get());
 			createTimeSlot(timeRecord.get(), timeInMillis, TimeRecordActionTypes.END);

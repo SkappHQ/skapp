@@ -22,6 +22,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
@@ -76,6 +77,21 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmMapper crmMapper;
 
 	private final CrmOwnerResolverService crmOwnerResolver;
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkContactEmailExists(String email) {
+		log.info("checkContactEmailExists: execution started");
+
+		CrmValidations.validateContactEmail(email);
+		boolean exists = crmContactDao.existsByEmailIgnoreCaseAndIsDeletedFalse(email);
+
+		CrmExistsResponseDto responseDto = new CrmExistsResponseDto();
+		responseDto.setIsExists(exists);
+
+		log.info("checkContactEmailExists: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
 
 	@Override
 	@Transactional
@@ -156,10 +172,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 			if (companyId != null) {
 				CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(companyId)
 					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
-				contact.setCompany(company);
+				updateContactCompany(contact, company);
 			}
 			else {
-				contact.setCompany(null);
+				updateContactCompany(contact, null);
 			}
 		}
 

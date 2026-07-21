@@ -45,4 +45,6 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-ppl-employee-skill.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-ppl-custom-skill.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time-record-add-source-columns.sql
 

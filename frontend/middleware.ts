@@ -214,6 +214,7 @@ export function middleware(request: NextRequest) {
     | EmployeeTypes
     | SuperAdminType
     | SenderTypes
+    | RepresentativeTypes
   )[] = claims?.roles || [];
 
   const isPasswordChangedForTheFirstTime = request.cookies.get(
@@ -300,8 +301,22 @@ export function middleware(request: NextRequest) {
       );
     }
 
+<<<<<<< HEAD
     // Check super-admin restricted routes
     const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
+=======
+    if (
+      request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
+      !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    // Check manager restricted routes
+    const managerRedirect = checkRestrictedRoutesAndRedirect(
+>>>>>>> develop
       request,
       nonSuperAdminRestrictedRoutes,
       AdminTypes.SUPER_ADMIN,

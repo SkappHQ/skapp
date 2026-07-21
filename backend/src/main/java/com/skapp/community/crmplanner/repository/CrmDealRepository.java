@@ -24,6 +24,8 @@ public interface CrmDealRepository {
 
 	String findMaxOrderIndexByStageId(Long stageId);
 
+	String findMinOrderIndexByStageId(Long stageId);
+
 	List<CrmDeal> findByContactIdWithAssociations(Long contactId);
 
 	CrmDeal findByIdWithAssociations(Long id);

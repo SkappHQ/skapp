@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,6 +30,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class CrmContactController {
 
 	private final CrmContactService contactService;
+
+	@Operation(summary = "Check if a contact email exists",
+			description = "Check if a contact with the given email already exists")
+	@GetMapping("/exists/email")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> checkContactEmailExists(@RequestParam String email) {
+		ResponseEntityDto responseDto = contactService.checkContactEmailExists(email);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Create CRM contact", description = "Creates a CRM contact and assigns an owner.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
