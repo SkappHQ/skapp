@@ -117,6 +117,16 @@ export const mergeById = <T extends { id: number }>(
 ): T[] =>
   items.map((item) => (item.id === update.id ? { ...item, ...update } : item));
 
+export const appendMissingById = <T extends { id: number }>(
+  items: T[],
+  incoming: T[]
+): T[] => [
+  ...items,
+  ...incoming.filter(
+    (item) => !items.some((existing) => existing.id === item.id)
+  )
+];
+
 export const countOpenTasks = <T extends { isCompleted: boolean }>(
   tasks: T[]
 ): number => tasks.filter((task) => !task.isCompleted).length;

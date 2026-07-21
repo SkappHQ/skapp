@@ -4,7 +4,7 @@ import {
   KebabMenu,
   SidePanel
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -46,7 +46,9 @@ const TaskSidePanel: FC = () => {
     setTaskModalType,
     selectedTaskId,
     getTaskById,
-    updateTask
+    updateTask,
+    tasks,
+    addTasks
   } = useCrmStore((store) => ({
     isCrmSidePanelOpen: store.isCrmSidePanelOpen,
     crmSidePanelType: store.crmSidePanelType,
@@ -56,7 +58,9 @@ const TaskSidePanel: FC = () => {
     setTaskModalType: store.setTaskModalType,
     selectedTaskId: store.selectedTaskId,
     getTaskById: store.getTaskById,
-    updateTask: store.updateTask
+    updateTask: store.updateTask,
+    tasks: store.tasks,
+    addTasks: store.addTasks
   }));
 
   const syncTaskCompletion = useSyncTaskCompletion();
@@ -110,9 +114,27 @@ const TaskSidePanel: FC = () => {
     isEnabled
   );
 
-  const relatedTasks = (
-    relatedTasksData?.pages.flatMap((page) => page.items) ?? []
-  ).filter((task) => task.id !== selectedTaskId);
+  const relatedQueryItems = useMemo(
+    () =>
+      (relatedTasksData?.pages.flatMap((page) => page?.items) ?? []).filter(
+        (task) => task.id !== selectedTaskId
+      ),
+    [relatedTasksData, selectedTaskId]
+  );
+
+  useEffect(() => {
+    if (relatedQueryItems.length) {
+      addTasks(relatedQueryItems);
+    }
+  }, [relatedQueryItems, addTasks]);
+
+  const relatedTasks = useMemo(
+    () =>
+      relatedQueryItems.map(
+        (item) => tasks.find((task) => task.id === item.id) ?? item
+      ),
+    [relatedQueryItems, tasks]
+  );
 
   const taskIcon = selectedTask
     ? getTaskTypeIcon(selectedTask.typeName, TASK_DETAIL_ICON_SIZE)

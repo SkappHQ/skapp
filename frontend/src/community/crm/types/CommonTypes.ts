@@ -436,7 +436,7 @@ export interface CrmContact {
 }
 
 export interface RelatedTasksPage {
-  items: TaskRowResponseType[];
+  items: CrmTaskDetailType[];
   totalItems: number;
   currentPage: number;
   totalPages: number;

@@ -20,7 +20,6 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmGetTasksResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -133,10 +132,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, ownerId, pageable);
 
-		List<CrmTaskDetailResponseDto> tasks = taskPage.getContent()
-			.stream()
-			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
-			.toList();
+		List<CrmTaskResponseDto> tasks = crmMapper.crmTasksToCrmTaskResponseDtos(taskPage.getContent());
 
 		PageDto response = new PageDto();
 		response.setItems(tasks);

@@ -42,6 +42,7 @@ export interface CrmTaskSliceTypes extends Pick<
   | "setSelectedTaskId"
   | "tasks"
   | "setTasks"
+  | "addTasks"
   | "setTaskCompletion"
   | "getTaskById"
   | "updateTask"
