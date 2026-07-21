@@ -151,7 +151,7 @@ public interface LeaveMapper {
 
 	LeaveRequestManagerResponseDto leaveRequestToLeaveRequestManagerResponseDto(LeaveRequest leaveRequest);
 
-	@Mapping(target = "leaveTypeId", source = "leaveType.typeId")
+	@Mapping(target = "leaveTypeId", source = "leaveType.id")
 	@Mapping(target = "leaveTypeName", source = "leaveType.name")
 	@Mapping(target = "leaveTypeEmoji", source = "leaveType.emojiCode")
 	LeavePolicyResponseDto leavePolicyToLeavePolicyResponseDto(LeavePolicy leavePolicy);

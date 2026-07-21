@@ -33,7 +33,7 @@ class PolicyLeaveTypeControllerIntegrationTest {
 
 	private static final String ENDPOINT = "/v1/leave/policy-leave-types";
 
-	private static final String SEED_LEAVE_TYPE = "INSERT INTO lv_leave_type (type_id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
+	private static final String SEED_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
 			+ "VALUES (100, 'PolicyAnnual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true)";
 
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -60,7 +60,8 @@ class PolicyLeaveTypeControllerIntegrationTest {
 	@DisplayName("Leave admin can list active policy leave types")
 	@Sql(statements = { SEED_LEAVE_TYPE })
 	void getPolicyLeaveTypes_LeaveAdmin_ReturnsActiveTypes() throws Exception {
-		mvc.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+		mvc.perform(
+				get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(leaveAdminToken())))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
