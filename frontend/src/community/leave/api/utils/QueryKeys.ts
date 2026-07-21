@@ -278,9 +278,7 @@ export const reportsQueryKeys = {
 
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
-  POLICY_LEAVE_TYPES: function () {
-    return [...(this?.ALL || []), "policy-leave-types"];
-  },
+  POLICY_LEAVE_TYPES: ["policy-leave-types"],
   LEAVE_POLICIES_INFINITE: function (
     searchKeyword: string,
     leaveTypeId: string,
