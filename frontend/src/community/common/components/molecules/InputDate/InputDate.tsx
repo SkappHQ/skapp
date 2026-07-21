@@ -281,9 +281,9 @@ const InputDate: FC<Props> = ({
       >
         <Typography
           component="label"
+          variant="label"
           lineHeight={1.5}
           sx={{
-            fontWeight: 400,
             color: disabled
               ? theme.palette.grey[700]
               : error
@@ -293,7 +293,14 @@ const InputDate: FC<Props> = ({
         >
           {label}
           {required && (
-            <span style={{ color: theme.palette.error.contrastText }}>*</span>
+            <span
+              style={{
+                color: theme.palette.error.contrastText,
+                marginLeft: "0.25rem"
+              }}
+            >
+              *
+            </span>
           )}
         </Typography>
         {tooltip && (

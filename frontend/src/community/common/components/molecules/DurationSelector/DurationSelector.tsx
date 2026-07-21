@@ -200,12 +200,12 @@ const DurationSelector = <T,>({
     >
       <Stack sx={classes.container}>
         <Typography
-          variant="body1"
+          variant="label"
           sx={{
             color: error ? theme.palette.error.contrastText : "common.black"
           }}
         >
-          {label} &nbsp;
+          {label}
           {isRequired && (
             <Typography component="span" sx={classes.asterisk}>
               *

@@ -190,6 +190,7 @@ const InputField = ({
       <Stack sx={mergeSx([classes.labelWrapper, tooltipStyles])}>
         <Typography
           component="label"
+          variant="label"
           sx={mergeSx([
             {
               color: isDisabled
@@ -201,7 +202,7 @@ const InputField = ({
             labelStyles
           ])}
         >
-          {label}{" "}
+          {label}
           {required && showAsterisk && !isDisabled && (
             <Typography
               component="span"
