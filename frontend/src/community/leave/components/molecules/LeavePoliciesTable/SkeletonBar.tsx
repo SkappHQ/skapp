@@ -7,7 +7,7 @@ interface Props {
 
 const SkeletonBar: FC<Props> = ({ width, className = "" }) => (
   <div
-    className={`h-4 animate-pulse rounded-sm bg-neutral-200 ${width} ${className}`}
+    className={`h-4 animate-pulse rounded-sm bg-secondary-accent ${width} ${className}`}
   />
 );
 

@@ -9,6 +9,8 @@ export const MAX_POLICY_NAME_LENGTH = 100;
 
 export const LEAVE_POLICY_PAGE_SIZE = 10;
 
+export const LEAVE_POLICY_SKELETON_ROW_COUNT = 8;
+
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
 export const MAX_POLICY_DAYS = 365;

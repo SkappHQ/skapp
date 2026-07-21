@@ -21,7 +21,8 @@ import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeaveP
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import {
   LEAVE_POLICY_PAGE_SIZE,
-  LEAVE_POLICY_SEARCH_DEBOUNCE_MS
+  LEAVE_POLICY_SEARCH_DEBOUNCE_MS,
+  LEAVE_POLICY_SKELETON_ROW_COUNT
 } from "~community/leave/constants/leavePolicyConstants";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import {
@@ -52,7 +53,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: policyLeaveTypes = [] } = useGetPolicyLeaveTypes();
+  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes();
 
   const leaveTypeFilterOptions = useMemo(
     () => [
@@ -61,7 +62,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         label: translateText(["leaveTypeFilterAllOption"]),
         value: ""
       },
-      ...policyLeaveTypes.map((leaveType) => ({
+      ...(policyLeaveTypes ?? []).map((leaveType) => ({
         id: String(leaveType.id),
         label: leaveType.name,
         value: String(leaveType.id)
@@ -193,8 +194,44 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
 
   const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);
 
+  const noDataState = {
+    title: translateText(["noPoliciesYetTitle"]),
+    ...(canManagePolicies
+      ? {
+          buttonText: translateText(["createPolicyBtnTxt"]),
+          onButtonClick: onCreatePolicy
+        }
+      : {})
+  };
+
+  const handleRetry = (): void => {
+    refetch();
+  };
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleLeaveTypeFilterChange = (value: string): void => {
+    setLeaveTypeFilter(value);
+  };
+
+  const handleLoadMore = async (): Promise<void> => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  };
+
+  const handleCloseEditModal = (): void => {
+    setEditingPolicy(null);
+  };
+
+  const handleCloseDeactivateModal = (): void => {
+    setDeactivatingPolicy(null);
+  };
+
   if (isError && policies.length === 0) {
-    return <LeavePoliciesErrorState onRetry={() => refetch()} />;
+    return <LeavePoliciesErrorState onRetry={handleRetry} />;
   }
 
   return (
@@ -203,9 +240,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         <div className="w-full max-w-lg">
           <InputField
             value={searchTerm}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setSearchTerm(event.target.value)
-            }
+            onChange={handleSearchChange}
             placeholder={translateText(["searchPlaceholder"])}
             leftIcon={<SearchIcon className="size-4 text-secondary-icon" />}
             fullWidth
@@ -218,7 +253,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
             ariaLabel={translateText(["leaveTypeFilterLabel"])}
             value={leaveTypeFilter}
             options={leaveTypeFilterOptions}
-            onChange={(value: string) => setLeaveTypeFilter(value)}
+            onChange={handleLeaveTypeFilterChange}
             width="100%"
           />
         </div>
@@ -230,28 +265,14 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         isLoading={isLoading}
         customSkeletonLoader={
           <LeavePoliciesTableSkeletonLoader
-            rowCount={8}
+            rowCount={LEAVE_POLICY_SKELETON_ROW_COUNT}
             showActionsColumn={canManagePolicies}
           />
         }
         emptyStateType={isFiltering ? "no-search-results" : "no-data"}
-        onLoadMore={
-          hasNextPage
-            ? async () => {
-                if (hasNextPage && !isFetchingNextPage) await fetchNextPage();
-              }
-            : undefined
-        }
+        onLoadMore={hasNextPage ? handleLoadMore : undefined}
         hasMore={hasNextPage ?? false}
-        noDataState={{
-          title: translateText(["noPoliciesYetTitle"]),
-          ...(canManagePolicies
-            ? {
-                buttonText: translateText(["createPolicyBtnTxt"]),
-                onButtonClick: onCreatePolicy
-              }
-            : {})
-        }}
+        noDataState={noDataState}
         noSearchResultsState={{
           title: translateText(["noSearchResultsTitle"])
         }}
@@ -259,12 +280,12 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       <EditLeavePolicyModal
         policy={editingPolicy}
         isOpen={!!editingPolicy}
-        onClose={() => setEditingPolicy(null)}
+        onClose={handleCloseEditModal}
       />
       <DeactivateLeavePolicyModal
         policy={deactivatingPolicy}
         isOpen={!!deactivatingPolicy}
-        onClose={() => setDeactivatingPolicy(null)}
+        onClose={handleCloseDeactivateModal}
       />
     </div>
   );

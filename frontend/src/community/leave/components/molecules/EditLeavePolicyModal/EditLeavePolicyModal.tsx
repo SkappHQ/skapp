@@ -89,7 +89,6 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
     initialValues: { policyName: policy?.name ?? "" },
     validationSchema: editLeavePolicyValidation(translateText),
     enableReinitialize: true,
-    validateOnMount: true,
     onSubmit
   });
 
