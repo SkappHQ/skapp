@@ -3,29 +3,10 @@ import {
   HTTP_FORBIDDEN
 } from "~community/common/constants/httpStatusCodes";
 import {
-  MAX_POLICY_DAYS,
-  MAX_POLICY_NAME_LENGTH,
-  MIN_ACCRUAL_CAP_DAYS,
-  MIN_POLICY_DAYS,
-  MIN_WAITING_PERIOD_DAYS
-} from "~community/leave/constants/leavePolicyConstants";
-import {
   AddLeavePolicyPayload,
   LeavePolicyFormData,
-  LeavePolicyWizardErrors,
-  LeavePolicyWizardSteps,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
-
-const isNumberInRange = (value: string, min: number, max?: number): boolean => {
-  const numericValue = Number(value);
-  return (
-    value !== "" &&
-    !Number.isNaN(numericValue) &&
-    numericValue >= min &&
-    (max === undefined || numericValue <= max)
-  );
-};
 
 export const getLeavePolicyErrorToastKeys = (
   status: number | undefined
@@ -56,73 +37,6 @@ export const buildTranslatedOptionList = (
     label: translateOptions([optionGroup, item.labelKey]),
     value: item.value
   }));
-
-export const getLeavePolicyStepErrors = (
-  step: LeavePolicyWizardSteps,
-  formData: LeavePolicyFormData
-): LeavePolicyWizardErrors => {
-  const errors: LeavePolicyWizardErrors = {};
-
-  switch (step) {
-    case LeavePolicyWizardSteps.BASIC_INFO: {
-      if (!formData.policyName.trim()) {
-        errors.policyName = "policyNameRequired";
-      } else if (formData.policyName.trim().length > MAX_POLICY_NAME_LENGTH) {
-        errors.policyName = "policyNameMaxLength";
-      }
-      if (!formData.leaveType) {
-        errors.leaveType = "leaveTypeRequired";
-      }
-      break;
-    }
-    case LeavePolicyWizardSteps.ENTITLEMENT_SETUP: {
-      if (formData.policyType === PolicyType.ACCRUAL) {
-        if (formData.accrualDays === "") {
-          errors.accrualDays = "accrualDaysRequired";
-        } else if (
-          !isNumberInRange(
-            formData.accrualDays,
-            MIN_POLICY_DAYS,
-            MAX_POLICY_DAYS
-          )
-        ) {
-          errors.accrualDays = "accrualDaysInvalid";
-        }
-        if (!formData.accrualFrequency) {
-          errors.accrualFrequency = "frequencyRequired";
-        }
-        if (
-          formData.hasWaitingPeriod &&
-          !isNumberInRange(formData.waitingPeriodDays, MIN_WAITING_PERIOD_DAYS)
-        ) {
-          errors.waitingPeriodDays = "waitingPeriodDaysRequired";
-        }
-        if (
-          formData.hasAccrualCap &&
-          !isNumberInRange(formData.accrualCapDays, MIN_ACCRUAL_CAP_DAYS)
-        ) {
-          errors.accrualCapDays = "accrualCapRequired";
-        }
-        if (
-          formData.canCarryOver &&
-          formData.maxCarryOverDays !== "" &&
-          !isNumberInRange(
-            formData.maxCarryOverDays,
-            MIN_POLICY_DAYS,
-            MAX_POLICY_DAYS
-          )
-        ) {
-          errors.maxCarryOverDays = "maxCarryOverDaysInvalid";
-        }
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  return errors;
-};
 
 export const mapLeavePolicyFormToPayload = (
   formData: LeavePolicyFormData

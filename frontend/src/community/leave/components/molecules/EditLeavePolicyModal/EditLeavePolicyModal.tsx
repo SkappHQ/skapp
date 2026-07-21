@@ -119,6 +119,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
             name="policyName"
             type="text"
             value={values.policyName}
+            state={errors.policyName ? "error" : "default"}
             errorMessage={errors.policyName}
             onChange={handleChange}
             fullWidth

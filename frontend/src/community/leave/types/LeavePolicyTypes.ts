@@ -99,10 +99,6 @@ export interface LeavePolicyFormData {
   receiveAccruedTime: string;
 }
 
-export type LeavePolicyWizardErrors = Partial<
-  Record<keyof LeavePolicyFormData, string>
->;
-
 export interface AddLeavePolicyAccrualPayload {
   accrualDays: number;
   frequency: string;

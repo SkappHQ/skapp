@@ -6,8 +6,9 @@ import {
   IconButton
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
+import { useFormik } from "formik";
 import { useRouter } from "next/router";
-import { FC, useMemo, useState } from "react";
+import { FC, useRef, useState } from "react";
 
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
 import ROUTES from "~community/common/constants/routes";
@@ -18,20 +19,34 @@ import { useAddLeavePolicy } from "~community/leave/api/LeavePolicyApi";
 import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
-  LeavePolicyWizardErrors,
   LeavePolicyWizardSteps,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   getLeavePolicyErrorToastKeys,
-  getLeavePolicyStepErrors,
   mapLeavePolicyFormToPayload
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import { leavePolicyWizardValidation } from "~community/leave/utils/validations";
 
 import CancelPolicyCreationModal from "./CancelPolicyCreationModal";
 import LeavePolicyStepContent from "./LeavePolicyStepContent";
 
 const TOTAL_STEPS = 3;
+
+const STEP_FIELDS: Record<
+  LeavePolicyWizardSteps,
+  (keyof LeavePolicyFormData)[]
+> = {
+  [LeavePolicyWizardSteps.BASIC_INFO]: ["policyName", "leaveType"],
+  [LeavePolicyWizardSteps.ENTITLEMENT_SETUP]: [
+    "accrualDays",
+    "accrualFrequency",
+    "waitingPeriodDays",
+    "accrualCapDays",
+    "maxCarryOverDays"
+  ],
+  [LeavePolicyWizardSteps.SUMMARY]: []
+};
 
 interface Props {
   policyType: PolicyType;
@@ -47,44 +62,28 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     "leavePolicies",
     "createPolicy"
   );
+  const translateError = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "createPolicy",
+    "errors"
+  );
 
   const isAccrual = policyType === PolicyType.ACCRUAL;
 
   const [activeStep, setActiveStep] = useState<LeavePolicyWizardSteps>(
     LeavePolicyWizardSteps.BASIC_INFO
   );
-  const [formData, setFormData] = useState<LeavePolicyFormData>({
-    ...leavePolicyFormInitialValues,
-    policyType
-  });
-  const [isValidationVisible, setIsValidationVisible] =
-    useState<boolean>(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] =
     useState<boolean>(false);
+
+  const submittedNameRef = useRef<string>("");
 
   const steps = [
     translateText(["steps", "basicInfo"]),
     translateText(["steps", "entitlementSetup"]),
     translateText(["steps", "summary"])
   ];
-
-  const stepErrors = useMemo(
-    () => getLeavePolicyStepErrors(activeStep, formData),
-    [activeStep, formData]
-  );
-
-  const visibleErrors: LeavePolicyWizardErrors = useMemo(() => {
-    if (!isValidationVisible) {
-      return {};
-    }
-
-    return Object.fromEntries(
-      Object.entries(stepErrors).map(([field, errorKey]) => [
-        field,
-        translateText(["errors", errorKey as string])
-      ])
-    );
-  }, [isValidationVisible, stepErrors, translateText]);
 
   const handleClose = (): void => {
     router.push(ROUTES.LEAVE.LEAVE_POLICIES);
@@ -100,7 +99,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       toastType: ToastType.SUCCESS,
       title: translateText(["successToastTitle"]),
       description: translateText(["successToastDescription"], {
-        policyName: formData.policyName.trim()
+        policyName: submittedNameRef.current
       })
     });
     handleClose();
@@ -124,46 +123,65 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     handleError
   );
 
-  const handleChange = (values: Partial<LeavePolicyFormData>): void => {
-    setFormData((previous) => ({ ...previous, ...values }));
+  const formik = useFormik<LeavePolicyFormData>({
+    initialValues: { ...leavePolicyFormInitialValues, policyType },
+    validationSchema: leavePolicyWizardValidation(translateError, isAccrual),
+    validateOnBlur: false,
+    onSubmit: (values) => {
+      submittedNameRef.current = values.policyName.trim();
+      addLeavePolicy(mapLeavePolicyFormToPayload(values));
+    }
+  });
+
+  const handleFieldsChange = (values: Partial<LeavePolicyFormData>): void => {
+    formik.setValues({ ...formik.values, ...values });
   };
 
   const handleCancel = (): void => {
     setIsCancelConfirmOpen(true);
   };
 
+  const isLastStep =
+    !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
+
   const handleBack = (): void => {
     if (!isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
       handleBackToPolicyType();
     } else {
-      setIsValidationVisible(false);
       setActiveStep((previous) => previous - 1);
     }
   };
 
-  const handleNext = (): void => {
-    if (Object.keys(stepErrors).length > 0) {
-      setIsValidationVisible(true);
+  const handleNext = async (): Promise<void> => {
+    const currentStepFields = STEP_FIELDS[activeStep];
+    const validationErrors = await formik.validateForm();
+    const hasStepError = currentStepFields.some(
+      (field) => validationErrors[field]
+    );
+
+    if (hasStepError) {
+      await formik.setTouched(
+        currentStepFields.reduce(
+          (touched, field) => ({ ...touched, [field]: true }),
+          formik.touched
+        )
+      );
       return;
     }
 
-    if (!isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY) {
+    if (isLastStep) {
       if (!isPending) {
-        addLeavePolicy(mapLeavePolicyFormToPayload(formData));
+        await formik.submitForm();
       }
-    } else {
-      setIsValidationVisible(false);
-      setActiveStep((previous) => previous + 1);
+      return;
     }
+
+    setActiveStep((previous) => previous + 1);
   };
 
   const handleEditFromSummary = (step: LeavePolicyWizardSteps): void => {
-    setIsValidationVisible(false);
     setActiveStep(step);
   };
-
-  const isLastStep =
-    !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
 
   return (
     <div className="flex min-h-full w-full flex-col gap-8">
@@ -199,9 +217,10 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       <LeavePolicyStepContent
         activeStep={activeStep}
         isAccrual={isAccrual}
-        formData={formData}
-        errors={visibleErrors}
-        onChange={handleChange}
+        formData={formik.values}
+        errors={formik.errors}
+        touched={formik.touched}
+        onChange={handleFieldsChange}
         onEditFromSummary={handleEditFromSummary}
       />
 
