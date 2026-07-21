@@ -1,6 +1,7 @@
 import { SxProps, Theme } from "@mui/material";
 import { NextRequest, NextResponse } from "next/server";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
@@ -8,6 +9,7 @@ import {
   matchInvalidEmailCharactersSearchPattern,
   removeNonAlphaNumericCharactersPattern
 } from "~community/common/regex/regexPatterns";
+import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
   FileUploadType
@@ -19,11 +21,8 @@ import {
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
-import { AdminTypes } from "~community/common/types/AuthTypes";
-
 import { appModes } from "../constants/configs";
 import ROUTES from "../constants/routes";
-import { characterLengths } from "~community/common/constants/stringConstants";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -567,10 +566,30 @@ export const isEnterpriseMode = (): boolean => {
   return process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
 };
 
+const IOS_USER_AGENT_REGEX = /iPhone|iPad|iPod/;
+const ANDROID_USER_AGENT_REGEX = /Android/;
+const MAC_USER_AGENT_REGEX = /Macintosh/;
+
 export const isMobileDevice = (): boolean => {
-  return /Android|iPhone|iPad|iPod/i.test(
-    globalThis.navigator?.userAgent ?? ""
+  return isAndroidDevice() || isIOSDevice();
+};
+
+// iPadOS 13+ reports a desktop "Macintosh" user agent, so it can't be told
+// apart from a real Mac by UA alone. A Mac has no touchscreen
+// (maxTouchPoints === 0), while an iPad does (> 1) — use that to detect it.
+export const isIOSDevice = (): boolean => {
+  const userAgent = globalThis.navigator?.userAgent ?? "";
+  if (IOS_USER_AGENT_REGEX.test(userAgent)) {
+    return true;
+  }
+  return (
+    MAC_USER_AGENT_REGEX.test(userAgent) &&
+    (globalThis.navigator?.maxTouchPoints ?? 0) > 1
   );
+};
+
+export const isAndroidDevice = (): boolean => {
+  return ANDROID_USER_AGENT_REGEX.test(globalThis.navigator?.userAgent ?? "");
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
@@ -582,7 +601,7 @@ export const replaceTabQueryParam = (path: string, tabId: string): void => {
 
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
   return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
-}
+};
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
