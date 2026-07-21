@@ -10,6 +10,8 @@ import {
   getHoursArray,
   getLabelByValue,
   hasUnicodeCharacters,
+  isIOSDevice,
+  isMobileDevice,
   mergeSx,
   pascalCaseFormatter,
   removeDuplicates
@@ -396,6 +398,103 @@ describe("pascalCaseFormatter", () => {
           value: i + 1
         });
       }
+    });
+  });
+});
+
+describe("device detection", () => {
+  const originalNavigator = globalThis.navigator;
+
+  const setNavigator = (navigator: unknown): void => {
+    Object.defineProperty(globalThis, "navigator", {
+      value: navigator,
+      configurable: true,
+      writable: true
+    });
+  };
+
+  const IPHONE_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)";
+  const IPAD_UA = "Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X)";
+  const IPOD_UA = "Mozilla/5.0 (iPod touch; CPU iPhone OS 15_0 like Mac OS X)";
+  // iPadOS 13+ reports a desktop "Macintosh" user agent.
+  const IPADOS_DESKTOP_UA =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15";
+  const MAC_UA =
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36";
+  const ANDROID_UA = "Mozilla/5.0 (Linux; Android 13; Pixel 7)";
+  const WINDOWS_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
+
+  afterEach(() => {
+    setNavigator(originalNavigator);
+  });
+
+  describe("isIOSDevice", () => {
+    it.each([
+      ["iPhone", IPHONE_UA],
+      ["iPad", IPAD_UA],
+      ["iPod", IPOD_UA]
+    ])("returns true for a %s user agent", (_label, userAgent) => {
+      setNavigator({ userAgent, maxTouchPoints: 5 });
+      expect(isIOSDevice()).toBe(true);
+    });
+
+    it("returns true for iPadOS 13+ (Macintosh UA with touch support)", () => {
+      setNavigator({ userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 5 });
+      expect(isIOSDevice()).toBe(true);
+    });
+
+    it("returns false for a real Mac (Macintosh UA, no touch support)", () => {
+      setNavigator({ userAgent: MAC_UA, maxTouchPoints: 0 });
+      expect(isIOSDevice()).toBe(false);
+    });
+
+    it("returns false for Android", () => {
+      setNavigator({ userAgent: ANDROID_UA, maxTouchPoints: 5 });
+      expect(isIOSDevice()).toBe(false);
+    });
+
+    it("returns false for desktop Windows", () => {
+      setNavigator({ userAgent: WINDOWS_UA, maxTouchPoints: 0 });
+      expect(isIOSDevice()).toBe(false);
+    });
+
+    it("returns false and does not throw when navigator is undefined (SSR)", () => {
+      setNavigator(undefined);
+      expect(() => isIOSDevice()).not.toThrow();
+      expect(isIOSDevice()).toBe(false);
+    });
+  });
+
+  describe("isMobileDevice", () => {
+    it.each([
+      ["iPhone", IPHONE_UA],
+      ["iPad", IPAD_UA],
+      ["iPod", IPOD_UA],
+      ["Android", ANDROID_UA]
+    ])("returns true for a %s user agent", (_label, userAgent) => {
+      setNavigator({ userAgent, maxTouchPoints: 5 });
+      expect(isMobileDevice()).toBe(true);
+    });
+
+    it("returns true for iPadOS 13+ (Macintosh UA with touch support)", () => {
+      setNavigator({ userAgent: IPADOS_DESKTOP_UA, maxTouchPoints: 5 });
+      expect(isMobileDevice()).toBe(true);
+    });
+
+    it("returns false for a real Mac (Macintosh UA, no touch support)", () => {
+      setNavigator({ userAgent: MAC_UA, maxTouchPoints: 0 });
+      expect(isMobileDevice()).toBe(false);
+    });
+
+    it("returns false for desktop Windows", () => {
+      setNavigator({ userAgent: WINDOWS_UA, maxTouchPoints: 0 });
+      expect(isMobileDevice()).toBe(false);
+    });
+
+    it("returns false and does not throw when navigator is undefined (SSR)", () => {
+      setNavigator(undefined);
+      expect(() => isMobileDevice()).not.toThrow();
+      expect(isMobileDevice()).toBe(false);
     });
   });
 });

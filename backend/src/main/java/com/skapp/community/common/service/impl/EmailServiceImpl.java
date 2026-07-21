@@ -16,11 +16,13 @@ import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -152,13 +154,28 @@ public class EmailServiceImpl implements EmailService {
 						String innerKey = innerEntry.getKey();
 						List<EmailTemplateMetadata> metadataList = innerEntry.getValue();
 
-						templateDetailsMap.get(outerKey).put(innerKey, metadataList);
+						mergeModuleTemplates(templateDetailsMap.get(outerKey), innerKey, metadataList);
 					}
 				}
 			}
 		}
 		catch (IOException e) {
 			log.warn("Failed to load templates from {}: {}", path, e.getMessage());
+		}
+	}
+
+	private void mergeModuleTemplates(Map<String, List<EmailTemplateMetadata>> moduleTemplates, String module,
+			List<EmailTemplateMetadata> incomingTemplates) {
+		if (incomingTemplates == null) {
+			return;
+		}
+
+		List<EmailTemplateMetadata> existingTemplates = moduleTemplates.computeIfAbsent(module,
+				key -> new ArrayList<>());
+
+		for (EmailTemplateMetadata incomingTemplate : incomingTemplates) {
+			existingTemplates.removeIf(template -> Objects.equals(template.getId(), incomingTemplate.getId()));
+			existingTemplates.add(incomingTemplate);
 		}
 	}
 
