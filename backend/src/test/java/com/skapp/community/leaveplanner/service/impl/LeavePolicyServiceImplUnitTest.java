@@ -115,7 +115,7 @@ class LeavePolicyServiceImplUnitTest {
 	}
 
 	private void mockActiveLeaveType() {
-		when(policyLeaveTypeDao.findByTypeIdAndIsActive(1L, true)).thenReturn(Optional.of(buildLeaveType()));
+		when(policyLeaveTypeDao.findByTypeIdAndIsActiveTrue(1L)).thenReturn(Optional.of(buildLeaveType()));
 	}
 
 	private void mockSaveAndMap() {
@@ -210,25 +210,6 @@ class LeavePolicyServiceImplUnitTest {
 			assertNull(saved.getCarryoverDate());
 		}
 
-		@Test
-		@DisplayName("Defaults carryover date to 01-01 when carryover is enabled without a date")
-		void addLeavePolicy_CarryoverWithoutDate_DefaultsCarryoverDate() {
-			mockActiveLeaveType();
-			when(leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId("Annual Policy", 1L)).thenReturn(false);
-			mockSaveAndMap();
-
-			LeavePolicyRequestDto dto = buildAccrualRequest();
-			dto.getAccrual().setIsCarryoverEnabled(true);
-
-			leavePolicyService.addLeavePolicy(dto);
-
-			assertEquals("01-01", capturedCarryoverDate());
-		}
-
-		private String capturedCarryoverDate() {
-			return captureSavedPolicy().getCarryoverDate();
-		}
-
 	}
 
 	@Nested
@@ -293,12 +274,12 @@ class LeavePolicyServiceImplUnitTest {
 
 		@Test
 		@DisplayName("Throws when the leave type does not exist or is inactive")
-		void addLeavePolicy_LeaveTypeNotFound_ThrowsEntityNotFoundException() {
-			when(policyLeaveTypeDao.findByTypeIdAndIsActive(1L, true)).thenReturn(Optional.empty());
+		void addLeavePolicy_LeaveTypeNotFound_ThrowsModuleException() {
+			when(policyLeaveTypeDao.findByTypeIdAndIsActiveTrue(1L)).thenReturn(Optional.empty());
 
 			LeavePolicyRequestDto dto = buildAccrualRequest();
 
-			EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+			ModuleException exception = assertThrows(ModuleException.class,
 					() -> leavePolicyService.addLeavePolicy(dto));
 			assertEquals(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND, exception.getMessageKey());
 		}
@@ -392,6 +373,14 @@ class LeavePolicyServiceImplUnitTest {
 		void addLeavePolicy_AccrualCapBelowOne_ThrowsModuleException() {
 			dto.getAccrual().setAccrualCapDays(0.5F);
 			assertThrowsWithKey(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID);
+		}
+
+		@Test
+		@DisplayName("Throws when carryover is enabled without a carryover date")
+		void addLeavePolicy_CarryoverEnabledWithoutDate_ThrowsModuleException() {
+			dto.getAccrual().setIsCarryoverEnabled(true);
+			dto.getAccrual().setCarryoverDate(null);
+			assertThrowsWithKey(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_REQUIRED);
 		}
 
 		@Test

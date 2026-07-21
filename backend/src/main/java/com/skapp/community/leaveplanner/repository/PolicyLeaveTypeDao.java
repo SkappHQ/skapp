@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface PolicyLeaveTypeDao extends JpaRepository<PolicyLeaveType, Long> {
 
-	Optional<PolicyLeaveType> findByTypeIdAndIsActive(Long typeId, boolean isActive);
+	Optional<PolicyLeaveType> findByTypeIdAndIsActiveTrue(Long typeId);
 
 	List<PolicyLeaveType> findAllByIsActive(boolean isActive);
 

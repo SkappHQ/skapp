@@ -11,6 +11,4 @@ public class LeavePolicyConstant {
 
 	public static final float MAX_DAYS = 365F;
 
-	public static final String DEFAULT_CARRYOVER_DATE = "01-01";
-
 }

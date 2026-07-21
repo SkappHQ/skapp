@@ -71,15 +71,13 @@ public class LeavePolicyValidationUtil {
 
 	private static void validateCarryoverSetup(LeavePolicyAccrualDetailDto accrual) {
 		if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
-			accrual.setCarryoverDate(LeavePolicyConstant.DEFAULT_CARRYOVER_DATE);
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_REQUIRED);
 		}
-		else {
-			try {
-				MonthDay.parse("--" + accrual.getCarryoverDate());
-			}
-			catch (DateTimeParseException e) {
-				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
-			}
+		try {
+			MonthDay.parse("--" + accrual.getCarryoverDate());
+		}
+		catch (DateTimeParseException e) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
 		}
 		if (accrual.getMaxCarryoverDays() != null && (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
 				|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS)) {

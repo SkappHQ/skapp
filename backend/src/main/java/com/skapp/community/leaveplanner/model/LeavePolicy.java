@@ -36,7 +36,7 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "name", nullable = false)
 	private String name;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "leave_type_id", nullable = false)
 	private PolicyLeaveType leaveType;
 
@@ -62,7 +62,7 @@ public class LeavePolicy extends Auditable<String> {
 	private Float accrualCapDays;
 
 	@Column(name = "is_carryover_enabled", nullable = false)
-	private Boolean isCarryoverEnabled = false;
+	private Boolean isCarryoverEnabled = Boolean.FALSE;
 
 	@Column(name = "carryover_date")
 	private String carryoverDate;

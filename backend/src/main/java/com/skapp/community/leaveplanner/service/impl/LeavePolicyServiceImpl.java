@@ -52,9 +52,9 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		LeavePolicyValidationUtil.validateName(leavePolicyRequestDto.getName());
 
 		PolicyLeaveType leaveType = policyLeaveTypeDao
-			.findByTypeIdAndIsActive(leavePolicyRequestDto.getLeaveTypeId(), true)
+			.findByTypeIdAndIsActiveTrue(leavePolicyRequestDto.getLeaveTypeId())
 			.orElseThrow(
-					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
+					() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND));
 
 		if (leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_TypeId(leavePolicyRequestDto.getName(),
 				leaveType.getTypeId())) {

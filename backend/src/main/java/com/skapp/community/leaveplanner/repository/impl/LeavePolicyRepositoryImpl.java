@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @Component
 @RequiredArgsConstructor
@@ -63,7 +62,7 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 
 		String searchKeyword = filterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
 			predicates.add(cb.like(cb.lower(root.get(LeavePolicy_.name)), "%" + escaped + "%", '\\'));
 		}
 

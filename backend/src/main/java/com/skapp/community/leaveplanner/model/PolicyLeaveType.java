@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -44,21 +43,21 @@ public class PolicyLeaveType extends Auditable<String> {
 	private LeaveDuration minDuration;
 
 	@Column(name = "is_attachment", nullable = false)
-	private Boolean isAttachment = false;
+	private Boolean isAttachment = Boolean.FALSE;
 
 	@Column(name = "is_attachment_must", nullable = false)
-	private Boolean isAttachmentMust = false;
+	private Boolean isAttachmentMust = Boolean.FALSE;
 
 	@Column(name = "is_comment_must", nullable = false)
-	private Boolean isCommentMust = false;
+	private Boolean isCommentMust = Boolean.FALSE;
 
 	@Column(name = "is_auto_approval", nullable = false)
-	private Boolean isAutoApproval = false;
+	private Boolean isAutoApproval = Boolean.FALSE;
 
 	@Column(name = "is_active", nullable = false)
-	private Boolean isActive = true;
+	private Boolean isActive = Boolean.TRUE;
 
 	@OneToMany(mappedBy = "leaveType")
-	private List<LeavePolicy> leavePolicies = new ArrayList<>();
+	private List<LeavePolicy> leavePolicies;
 
 }
