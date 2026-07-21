@@ -94,7 +94,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       return;
     }
     updateLeavePolicy({
-      policyId: policy.policyId,
+      id: policy.id,
       payload: { name: trimmedName }
     });
   };

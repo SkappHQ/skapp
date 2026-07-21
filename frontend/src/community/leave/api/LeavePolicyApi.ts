@@ -88,20 +88,20 @@ export const useUpdateLeavePolicy = (
 ): UseMutationResult<
   unknown,
   AxiosError,
-  { policyId: number; payload: UpdateLeavePolicyPayload }
+  { id: number; payload: UpdateLeavePolicyPayload }
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({
-      policyId,
+      id,
       payload
     }: {
-      policyId: number;
+      id: number;
       payload: UpdateLeavePolicyPayload;
     }) =>
       authFetch.put(
-        leavePolicyEndPoints.UPDATE_LEAVE_POLICY(policyId),
+        leavePolicyEndPoints.UPDATE_LEAVE_POLICY(id),
         payload
       ),
     onSuccess: () => {
@@ -119,8 +119,8 @@ export const useDeactivateLeavePolicy = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (policyId: number) =>
-      authFetch.patch(leavePolicyEndPoints.DEACTIVATE_LEAVE_POLICY(policyId)),
+    mutationFn: (id: number) =>
+      authFetch.patch(leavePolicyEndPoints.DEACTIVATE_LEAVE_POLICY(id)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
       onSuccess();

@@ -37,7 +37,7 @@ export enum AccrualTiming {
 }
 
 export interface LeavePolicyType {
-  policyId: number;
+  id: number;
   name: string;
   leaveTypeId: number;
   leaveTypeName: string;
@@ -54,7 +54,7 @@ export interface LeavePoliciesPage {
 }
 
 export interface PolicyLeaveTypeType {
-  typeId: number;
+  id: number;
   name: string;
   emojiCode: string | null;
   colorCode: string | null;

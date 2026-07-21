@@ -35,11 +35,11 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors }) => {
   const { data: policyLeaveTypes = [], isLoading } = useGetPolicyLeaveTypes();
 
   const leaveTypeOptions = policyLeaveTypes.map((leaveType) => ({
-    id: String(leaveType.typeId),
+    id: String(leaveType.id),
     label: leaveType.emojiCode
       ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
       : leaveType.name,
-    value: String(leaveType.typeId)
+    value: String(leaveType.id)
   }));
 
   return (

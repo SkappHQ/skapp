@@ -15,10 +15,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useAddLeavePolicy } from "~community/leave/api/LeavePolicyApi";
-import {
-  POLICY_TYPE_SELECT_QUERY,
-  leavePolicyFormInitialValues
-} from "~community/leave/constants/leavePolicyConstants";
+import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
   LeavePolicyWizardErrors,
@@ -94,10 +91,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleBackToPolicyType = (): void => {
-    router.push({
-      pathname: ROUTES.LEAVE.LEAVE_POLICIES,
-      query: { action: POLICY_TYPE_SELECT_QUERY }
-    });
+    router.push(ROUTES.LEAVE.LEAVE_POLICIES);
   };
 
   const handleSuccess = (): void => {

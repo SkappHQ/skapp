@@ -61,7 +61,7 @@ const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
     if (isPending) {
       return;
     }
-    deactivateLeavePolicy(policy.policyId);
+    deactivateLeavePolicy(policy.id);
   };
 
   return (

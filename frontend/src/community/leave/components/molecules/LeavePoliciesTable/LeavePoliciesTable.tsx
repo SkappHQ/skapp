@@ -62,9 +62,9 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         value: ""
       },
       ...policyLeaveTypes.map((leaveType) => ({
-        id: String(leaveType.typeId),
+        id: String(leaveType.id),
         label: leaveType.name,
-        value: String(leaveType.typeId)
+        value: String(leaveType.id)
       }))
     ],
     [policyLeaveTypes, translateText]
@@ -92,7 +92,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const tableData = useMemo(
     () =>
       policies.map((policy: LeavePolicyType) => ({
-        id: policy.policyId,
+        id: policy.id,
         policyName: policy.name,
         leaveType: policy,
         policyType:
@@ -161,21 +161,21 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       const policy = value as LeavePolicyType;
       return (
         <KebabMenu
-          id={`leave-policy-kebab-menu-${policy.policyId}`}
-          isOpen={openKebabMenuId === policy.policyId}
+          id={`leave-policy-kebab-menu-${policy.id}`}
+          isOpen={openKebabMenuId === policy.id}
           onToggle={(isOpen: boolean) =>
-            setOpenKebabMenuId(isOpen ? policy.policyId : null)
+            setOpenKebabMenuId(isOpen ? policy.id : null)
           }
           menuItems={[
             {
-              id: `leave-policy-edit-${policy.policyId}`,
+              id: `leave-policy-edit-${policy.id}`,
               label: translateText(["menuEdit"]),
               onClick: () => setEditingPolicy(policy)
             },
             ...(policy.status === LeavePolicyStatus.ACTIVE
               ? [
                   {
-                    id: `leave-policy-deactivate-${policy.policyId}`,
+                    id: `leave-policy-deactivate-${policy.id}`,
                     label: translateText(["menuDeactivate"]),
                     onClick: () => setDeactivatingPolicy(policy)
                   }
