@@ -76,7 +76,7 @@ const AppBar = () => {
   const { data: unreadCount } = useGetUnreadNotificationsCount();
 
   useEffect(() => {
-    if (unreadCount === undefined) return;
+    if (unreadCount == null) return;
 
     setNotifyData({
       unreadCount
