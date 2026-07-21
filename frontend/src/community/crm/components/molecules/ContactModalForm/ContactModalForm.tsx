@@ -120,12 +120,11 @@ const ContactModalForm = ({
   const contactNumberErrorMessage = touched.contactNumber
     ? errors.contactNumber
     : undefined;
-  const ownerErrorMessage = touched.ownerId ? errors.ownerId : undefined;
-
-  const emailValidationError = touched.email ? errors.email : undefined;
   const emailErrorMessage = isDuplicateEmail
     ? translateContactText(["validations", "emailExists"])
-    : emailValidationError;
+    : touched.email
+      ? errors.email
+      : undefined;
 
   const { data: companyLookupData } = useGetCompanyLookup(
     debouncedCompanySearch,
@@ -260,7 +259,7 @@ const ContactModalForm = ({
       {canEditOwner ? (
         <EditableContactOwnerField
           initialOwner={initialOwner}
-          errorMessage={ownerErrorMessage}
+          errorMessage={touched.ownerId ? errors.ownerId : undefined}
           translateContactText={translateContactText}
           onChange={(owner) =>
             setFieldValue("ownerId", owner?.employeeId ?? null)
