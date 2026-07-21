@@ -190,9 +190,9 @@ const InputField = ({
       <Stack sx={mergeSx([classes.labelWrapper, tooltipStyles])}>
         <Typography
           component="label"
-          variant="label"
           sx={mergeSx([
             {
+              fontWeight: 400,
               color: isDisabled
                 ? theme.palette.grey[700]
                 : error

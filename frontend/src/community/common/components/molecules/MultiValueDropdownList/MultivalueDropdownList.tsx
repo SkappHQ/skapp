@@ -127,7 +127,6 @@ const MultivalueDropdownList: FC<Props> = ({
         >
           <Typography
             component="label"
-            variant="label"
             sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
           >
             {label}

@@ -281,9 +281,9 @@ const InputDate: FC<Props> = ({
       >
         <Typography
           component="label"
-          variant="label"
           lineHeight={1.5}
           sx={{
+            fontWeight: 400,
             color: disabled
               ? theme.palette.grey[700]
               : error
