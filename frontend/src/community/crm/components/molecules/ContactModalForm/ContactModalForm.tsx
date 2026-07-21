@@ -101,11 +101,12 @@ const ContactModalForm = ({
   const { data: emailExistsData, isFetching: isEmailCheckFetching } =
     useCheckContactEmailExists(debouncedEmail, isEmailCheckEnabled);
 
-  const isDuplicateEmail =
-    isEmailChanged && (emailExistsData?.isExists);
+  const isDuplicateEmail = isEmailChanged && emailExistsData?.isExists;
 
   const isEmailCheckUnresolved =
     isEmailChanged && (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
+
+  const emailFieldError = touched.email ? errors.email : undefined;
 
   const extractedDomain = extractDomainFromEmail(debouncedEmail);
   const isDomainSearchEnabled =
@@ -115,11 +116,6 @@ const ContactModalForm = ({
     extractedDomain,
     isDomainSearchEnabled
   );
-
-  const emailFieldError = touched.email ? errors.email : undefined;
-  const emailErrorMessage = isDuplicateEmail
-    ? translateContactText(["validations", "emailExists"])
-    : emailFieldError;
 
   const { data: companyLookupData } = useGetCompanyLookup(
     debouncedCompanySearch,
@@ -189,8 +185,14 @@ const ContactModalForm = ({
       <InputField
         name="email"
         value={values.email}
-        errorMessage={emailErrorMessage}
-        state={emailErrorMessage ? "error" : "default"}
+        errorMessage={
+          isDuplicateEmail
+            ? translateContactText(["validations", "emailExists"])
+            : emailFieldError
+        }
+        state={
+          isDuplicateEmail || emailFieldError ? "error" : "default"
+        }
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
