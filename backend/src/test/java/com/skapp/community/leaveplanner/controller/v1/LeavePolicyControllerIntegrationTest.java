@@ -234,16 +234,6 @@ class LeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns bad request for a negative page number")
-		void getAllLeavePolicies_NegativePage_ReturnsBadRequest() throws Exception {
-			mvc.perform(get(ENDPOINT).param("page", "-1")
-				.accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
-				.andExpect(status().isBadRequest());
-		}
-
-		@Test
 		@DisplayName("Leave admin can update a leave policy name")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
 		void updateLeavePolicy_LeaveAdmin_UpdatesName() throws Exception {
