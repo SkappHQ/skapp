@@ -1,17 +1,24 @@
 import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
+  useGetCompletedTasks,
+  useGetOpenTasks
+} from "~community/crm/api/TaskApi";
+import {
+  TASK_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY,
   TASK_SKELETON_CONFIG
 } from "~community/crm/constants/taskConstants";
-import { CrmTaskTabEnum } from "~community/crm/enums/common";
-import { useTasksTabData } from "~community/crm/hooks/useTasksTabData";
+import { CrmTaskGroupEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
 import { getEmptyStateType } from "~community/crm/utils/crmUtil";
+import { getTaskGroups } from "~community/crm/utils/taskUtil";
 
 import TaskGroup from "../../atoms/TaskGroup/TaskGroup";
 import TaskTabSkeleton from "./TaskTabSkeleton";
@@ -24,20 +31,77 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const { userId } = useSessionData();
 
+  const { tasks, setTasks } = useCrmStore((store) => ({
+    tasks: store.tasks,
+    setTasks: store.setTasks
+  }));
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
 
   const {
-    overdue,
-    dueToday,
-    dueTomorrow,
-    upcoming,
-    isOpenTasksEmpty,
-    completedTasks,
-    loadingRef,
-    isLoading,
-    isError
-  } = useTasksTabData(tab, debouncedSearch, userId);
+    data: openTaskData,
+    isLoading: isOpenTasksLoading,
+    isError: isOpenTasksError
+  } = useGetOpenTasks(
+    debouncedSearch,
+    tab === CrmTaskTabEnum.MY_TASKS || tab === CrmTaskTabEnum.ALL_TASKS
+  );
+
+  const {
+    data: completedTaskData,
+    isLoading: isCompletedTasksLoading,
+    isError: isCompletedTasksError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetCompletedTasks(
+    debouncedSearch,
+    TASK_PAGE_SIZE,
+    tab === CrmTaskTabEnum.COMPLETED_TASKS
+  );
+
+  const completedFromQuery = useMemo(
+    () => completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    [completedTaskData]
+  );
+
+  // Seed each half of the store from its own query (open / completed).
+  useEffect(() => {
+    if (openTaskData?.tasks) {
+      setTasks(openTaskData.tasks, CrmTaskGroupEnum.OPEN);
+    }
+  }, [openTaskData, setTasks]);
+
+  useEffect(() => {
+    if (completedTaskData) {
+      setTasks(completedFromQuery, CrmTaskGroupEnum.COMPLETED);
+    }
+  }, [completedTaskData, completedFromQuery, setTasks]);
+
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(
+    () =>
+      getTaskGroups(
+        tasks.filter((task) => !task.isCompleted),
+        tab,
+        userId
+      ),
+    [tasks, tab, userId]
+  );
+
+  const completedTasks = useMemo(
+    () => tasks.filter((task) => task.isCompleted),
+    [tasks]
+  );
+
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage
+  });
+
+  const isLoading = isOpenTasksLoading || isCompletedTasksLoading;
+  const isError = isOpenTasksError || isCompletedTasksError;
 
   const emptyStateType = getEmptyStateType(debouncedSearch);
 

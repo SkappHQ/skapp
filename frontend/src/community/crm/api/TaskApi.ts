@@ -206,15 +206,9 @@ export const useUpdateTask = (
   onSuccess?: (task: CrmTaskDetailType) => void,
   onError?: () => void
 ) => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: editTask,
     onSuccess: (task: CrmTaskDetailType) => {
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.GET_OPEN_TASKS });
-      queryClient.invalidateQueries({
-        queryKey: taskQueryKeys.GET_COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({ queryKey: taskQueryKeys.RELATED_TASKS });
       onSuccess?.(task);
     },
     onError
