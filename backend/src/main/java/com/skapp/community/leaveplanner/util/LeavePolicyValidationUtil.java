@@ -58,10 +58,12 @@ public class LeavePolicyValidationUtil {
 		if (accrual.getFrequency() == null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_FREQUENCY_REQUIRED);
 		}
-		if (accrual.getWaitingPeriodDays() != null && accrual.getWaitingPeriodDays() < 1) {
+		if (accrual.getWaitingPeriodDays() != null
+				&& accrual.getWaitingPeriodDays() < LeavePolicyConstant.MIN_WAITING_PERIOD_DAYS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_WAITING_PERIOD_INVALID);
 		}
-		if (accrual.getAccrualCapDays() != null && accrual.getAccrualCapDays() < 1) {
+		if (accrual.getAccrualCapDays() != null
+				&& accrual.getAccrualCapDays() < LeavePolicyConstant.MIN_ACCRUAL_CAP_DAYS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID);
 		}
 		if (Boolean.TRUE.equals(accrual.getIsCarryoverEnabled())) {
