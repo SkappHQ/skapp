@@ -185,7 +185,6 @@ export const employeeRestrictedRoutes = [
 ];
 
 export const nonSuperAdminRestrictedRoutes = [
-  ROUTES.PEOPLE.ADD,
   ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
   ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
   ROUTES.PEOPLE.SYNC_CHANGES

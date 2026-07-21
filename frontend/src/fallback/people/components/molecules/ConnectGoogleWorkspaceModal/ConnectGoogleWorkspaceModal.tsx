@@ -1,4 +1,12 @@
-const ConnectGoogleWorkspaceModal = () => {
+interface ConnectGoogleWorkspaceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const ConnectGoogleWorkspaceModal = ({
+  isOpen,
+  onClose
+}: ConnectGoogleWorkspaceModalProps) => {
   return <></>;
 };
 

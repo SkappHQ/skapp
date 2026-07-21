@@ -1,4 +1,4 @@
-import { JSX } from "react";
+import { JSX, useId } from "react";
 
 import { IconProps } from "~community/common/types/IconTypes";
 
@@ -9,6 +9,15 @@ const GoogleIcon = ({
   svgProps,
   onClick
 }: IconProps): JSX.Element => {
+  // Suffix the def ids with a per-instance uid so multiple GoogleIcons on the
+  // same page don't collide on url(#...) references (browsers resolve to the
+  // first matching id in document order otherwise).
+  const uid = useId();
+  const clipId = `clip0_300_7501_${uid}`;
+  const paint0Id = `paint0_radial_300_7501_${uid}`;
+  const paint1Id = `paint1_radial_300_7501_${uid}`;
+  const paint2Id = `paint2_linear_300_7501_${uid}`;
+
   return (
     <svg
       id={id}
@@ -16,31 +25,31 @@ const GoogleIcon = ({
       height={height}
       viewBox="0 0 48 48"
       fill="none"
-      xmlns="w3.org/2000/svg"
+      xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
       {...svgProps}
     >
-      <g clipPath="url(#clip0_300_7501)">
+      <g clipPath={`url(#${clipId})`}>
         <path
           d="M47.0816 19.6406H24.4785V28.9313H37.3973C36.8254 31.9219 35.1285 34.4531 32.5785 36.15C30.441 37.5938 27.7129 38.4656 24.4879 38.4656C18.2441 38.4656 12.9473 34.2562 11.0441 28.5844H11.016L11.0441 28.5656C10.566 27.1219 10.2848 25.5938 10.2848 24.0094C10.2848 22.425 10.566 20.8875 11.0441 19.4531C12.9379 13.7812 18.2441 9.57187 24.4879 9.57187C28.0223 9.57187 31.1629 10.7906 33.6754 13.1531L40.5473 6.28125C36.3754 2.38125 30.9566 0 24.4785 0C15.0941 0 7.00352 5.39062 3.05664 13.2469C1.41602 16.4719 0.478516 20.1187 0.478516 24C0.478516 27.8813 1.41602 31.5281 3.05664 34.7531V34.7719C7.00352 42.6094 15.0941 48 24.4785 48C30.9566 48 36.3941 45.8625 40.3598 42.1969C44.8973 38.0063 47.5129 31.8562 47.5129 24.5437C47.5223 22.8469 47.3723 21.2062 47.0816 19.6406Z"
           fill="#FC4C53"
         />
         <path
           d="M11.0441 28.5847H11.016L11.0441 28.5659C10.566 27.1222 10.2848 25.594 10.2848 24.0097C10.2848 22.4159 10.566 20.8878 11.0441 19.4534C12.2441 15.8628 14.8129 12.8722 18.1035 11.1472C15.8441 8.14717 12.966 6.00029 9.75039 5.08154C6.96602 7.26592 4.65977 10.0409 3.04727 13.2378C1.41602 16.4722 0.478516 20.119 0.478516 24.0003C0.478516 27.8815 1.41602 31.5284 3.05664 34.7534V34.7722C5.70976 40.0222 10.2285 44.1753 15.741 46.3409C18.0473 44.2315 19.9316 41.3722 21.2348 38.0253C16.4629 36.8628 12.6004 33.2347 11.0441 28.5847Z"
-          fill="url(#paint0_radial_300_7501)"
+          fill={`url(#${paint0Id})`}
         />
         <path
           d="M3.23438 35.1003C7.2375 42.7597 15.225 48.0003 24.4781 48.0003C30.9562 48.0003 36.3937 45.8628 40.3594 42.1972C44.8969 38.0065 47.5125 31.8565 47.5125 24.544C47.5125 24.1221 47.475 23.7284 47.4562 23.3159C41.925 21.4972 35.5875 20.8128 28.9687 21.6378C27.4312 21.8253 25.95 22.1159 24.4875 22.4534V28.9315H37.4062C36.8344 31.9222 35.1375 34.4534 32.5875 36.1503C30.45 37.594 27.7219 38.4659 24.4969 38.4659C18.2531 38.4659 12.9562 34.2565 11.0531 28.5847H11.025L11.0531 28.5659C11.0062 28.4253 10.9875 28.2753 10.9406 28.1347C7.89375 30.1315 5.29687 32.494 3.23438 35.1003Z"
-          fill="url(#paint1_radial_300_7501)"
+          fill={`url(#${paint1Id})`}
         />
         <path
           d="M40.3598 42.1965C44.8973 38.0059 47.5129 31.8559 47.5129 24.5434C47.5129 22.8371 47.3629 21.2059 47.0723 19.6309H24.4785V28.9215H37.3973C36.8254 31.9121 35.1285 34.4434 32.5785 36.1402C31.041 37.1715 29.1941 37.9027 27.0848 38.2309L35.1191 45.7027C37.0691 44.7934 38.8316 43.6121 40.3598 42.1965Z"
-          fill="url(#paint2_linear_300_7501)"
+          fill={`url(#${paint2Id})`}
         />
       </g>
       <defs>
         <radialGradient
-          id="paint0_radial_300_7501"
+          id={paint0Id}
           cx="0"
           cy="0"
           r="1"
@@ -52,7 +61,7 @@ const GoogleIcon = ({
           <stop offset="1" stopColor="#FFCF09" stopOpacity="0" />
         </radialGradient>
         <radialGradient
-          id="paint1_radial_300_7501"
+          id={paint1Id}
           cx="0"
           cy="0"
           r="1"
@@ -64,7 +73,7 @@ const GoogleIcon = ({
           <stop offset="1" stopColor="#34A853" stopOpacity="0" />
         </radialGradient>
         <linearGradient
-          id="paint2_linear_300_7501"
+          id={paint2Id}
           x1="48.8818"
           y1="10.8685"
           x2="23.986"
@@ -74,7 +83,7 @@ const GoogleIcon = ({
           <stop offset="0.671" stopColor="#4285F4" />
           <stop offset="0.885" stopColor="#4285F4" stopOpacity="0" />
         </linearGradient>
-        <clipPath id="clip0_300_7501">
+        <clipPath id={clipId}>
           <rect width="48" height="48" fill="white" />
         </clipPath>
       </defs>
