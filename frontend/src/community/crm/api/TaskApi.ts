@@ -1,5 +1,4 @@
 import {
-  InfiniteData,
   UseInfiniteQueryResult,
   useInfiniteQuery,
   useMutation,
