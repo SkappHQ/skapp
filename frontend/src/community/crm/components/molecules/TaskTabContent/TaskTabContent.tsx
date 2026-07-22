@@ -92,9 +92,6 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     onLoadMore: fetchNextPage
   });
 
-  const isLoading = isOpenTasksLoading || isCompletedTasksLoading;
-  const isError = isOpenTasksError || isCompletedTasksError;
-
   const emptyStateType = getEmptyStateType(debouncedSearch);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +99,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isOpenTasksLoading || isCompletedTasksLoading) {
       const skeletonProps =
         tab === CrmTaskTabEnum.COMPLETED_TASKS
           ? TASK_SKELETON_CONFIG.COMPLETED
@@ -111,7 +108,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
       return <TaskTabSkeleton {...skeletonProps} />;
     }
 
-    if (isError) {
+    if (isOpenTasksError || isCompletedTasksError) {
       return (
         <EmptyDataView
           title={translateText(["table", "errorState", "title"])}
