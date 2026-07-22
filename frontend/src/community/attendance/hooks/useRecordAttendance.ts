@@ -6,7 +6,10 @@ import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes"
 import { getCurrentLocation } from "~community/attendance/utils/geolocationUtils";
 import { appModes } from "~community/common/constants/configs";
 import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
-import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
+import {
+  useGetUserGeofenceStatus,
+  useUpdateEmployeeStatusWithLocation
+} from "~enterprise/attendance/api/AttendanceApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 export const useRecordAttendance = (
@@ -23,11 +26,16 @@ export const useRecordAttendance = (
   const isEnterprise = environment === appModes.ENTERPRISE;
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
-  const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled;
+  const isGeoFencingEnabled: boolean = attendanceConfig?.isGeoFencingEnabled;
+
+  const { data: geofenceStatus } = useGetUserGeofenceStatus(
+    isGeoFencingEnabled && isEnterprise
+  );
+  const isGeofenceConfigured = geofenceStatus?.geofenceConfigured;
 
   const recordAttendance = useCallback(
     (slotType: AttendanceSlotType) => {
-      if (isGeoFencingEnabled && isEnterprise) {
+      if (isGeoFencingEnabled && isEnterprise && isGeofenceConfigured) {
         getCurrentLocation().then(({ latitude, longitude }) => {
           mutateWithLocation({
             recordActionType: slotType,
@@ -40,7 +48,13 @@ export const useRecordAttendance = (
         mutate(slotType);
       }
     },
-    [isGeoFencingEnabled, isEnterprise, mutateWithLocation, mutate]
+    [
+      isGeoFencingEnabled,
+      isEnterprise,
+      isGeofenceConfigured,
+      mutateWithLocation,
+      mutate
+    ]
   );
 
   return {
