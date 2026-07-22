@@ -68,9 +68,9 @@ const AddCompanyModalContent: React.FC = () => {
     const payload: CrmCompanyCreatePayload = {
       name: values.name.trim(),
       industry: values.industry,
-      website: values.website.trim() || null,
-      address: values.address.trim() || null,
-      contactNumber: values.contactNumber.trim() || null
+      website: values.website?.trim() || null,
+      address: values.address?.trim() || null,
+      contactNumber: values.contactNumber?.trim() || null
     };
 
     createNewCompany(payload);
