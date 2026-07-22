@@ -36,10 +36,10 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     values,
     errors,
     handleChange,
+    handleBlur,
     dirty,
     isSubmitting,
     setFieldValue,
-    setFieldError,
     submitForm
   } = formik;
 
@@ -59,9 +59,6 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : errors.name;
 
-  const clearError = (field: keyof CrmCompanyFormTypes) =>
-    setFieldError(field, undefined);
-
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
   };
@@ -75,10 +72,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         state={nameError ? "error" : "default"}
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("name");
-        }}
+        onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateText(["ariaLabels", "companyName"])}
         maxLength={characterLengths.COMPANY_NAME_LENGTH}
         required
@@ -90,10 +85,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         label={translateText(["labels", "contactNumber"])}
         value={values.contactNumber}
         placeholder={translateText(["placeholders", "contactNumber"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("contactNumber");
-        }}
+        onChange={handleChange}
+        onBlur={handleBlur}
         errorMessage={errors.contactNumber}
         state={errors.contactNumber ? "error" : "default"}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
@@ -107,10 +100,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         state={errors.website ? "error" : "default"}
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("website");
-        }}
+        onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateText(["ariaLabels", "website"])}
         fullWidth
       />
@@ -122,10 +113,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         state={errors.address ? "error" : "default"}
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
-        onChange={(e) => {
-          handleChange(e);
-          clearError("address");
-        }}
+        onChange={handleChange}
+        onBlur={handleBlur}
         aria-label={translateText(["ariaLabels", "address"])}
         fullWidth
       />

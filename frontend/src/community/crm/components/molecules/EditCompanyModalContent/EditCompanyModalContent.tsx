@@ -44,7 +44,7 @@ const EditCompanyModalContent: React.FC = () => {
     onSubmit: (values) => submitEditCompany(values),
     validationSchema: addCompanyValidations(translateText),
     validateOnChange: false,
-    validateOnBlur: false,
+    validateOnBlur: true,
     enableReinitialize: true
   });
 
