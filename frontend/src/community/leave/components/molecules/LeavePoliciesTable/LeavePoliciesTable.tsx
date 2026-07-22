@@ -15,7 +15,6 @@ import {
 } from "~community/leave/api/LeavePolicyApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
-import LeavePoliciesErrorState from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesErrorState";
 import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
@@ -74,8 +73,6 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const {
     data: policyPages,
     isLoading,
-    isError,
-    refetch,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
@@ -204,10 +201,6 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       : {})
   };
 
-  const handleRetry = (): void => {
-    refetch();
-  };
-
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(event.target.value);
   };
@@ -229,10 +222,6 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const handleCloseDeactivateModal = (): void => {
     setDeactivatingPolicy(null);
   };
-
-  if (isError && policies.length === 0) {
-    return <LeavePoliciesErrorState onRetry={handleRetry} />;
-  }
 
   return (
     <div className="mt-4 flex flex-col gap-4">

@@ -338,10 +338,7 @@
     "leaveTypeFilterLabel": "Leave Type",
     "leaveTypeFilterAllOption": "All",
     "noSearchResultsTitle": "No policies found. Try a different search term.",
-    "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started.",
-    "errorStateTitle": "Something went wrong",
-    "errorStateDescription": "We couldn't load leave policies. Please try again.",
-    "retryBtnTxt": "Retry"
+    "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
   },
   "leaveTypes": {
     "title": "Leave Types",
