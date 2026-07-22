@@ -15,7 +15,7 @@ import {
   TASK_SEARCH_DEBOUNCE_DELAY,
   TASK_SKELETON_CONFIG
 } from "~community/crm/constants/taskConstants";
-import { CrmTaskGroupEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
+import { CrmTaskTabEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import { getEmptyStateType } from "~community/crm/utils/crmUtil";
 import { getTaskGroups } from "~community/crm/utils/taskUtil";
@@ -58,7 +58,7 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   } = useGetCompletedTasks(
     debouncedSearch,
     TASK_PAGE_SIZE,
-    tab === CrmTaskTabEnum.COMPLETED_TASKS
+    tab === CrmTaskTabEnum.COMPLETED_TASKS || tab === CrmTaskTabEnum.MY_TASKS
   );
 
   const completedFromQuery = useMemo(
@@ -66,28 +66,20 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     [completedTaskData]
   );
 
-  // Seed each half of the store from its own query (open / completed).
   useEffect(() => {
-    if (openTaskData?.tasks) {
-      setTasks(openTaskData.tasks, CrmTaskGroupEnum.OPEN);
-    }
-  }, [openTaskData, setTasks]);
+    setTasks([...(openTaskData?.tasks ?? []), ...completedFromQuery]);
+  }, [openTaskData, completedFromQuery, setTasks]);
 
-  useEffect(() => {
-    if (completedTaskData) {
-      setTasks(completedFromQuery, CrmTaskGroupEnum.COMPLETED);
-    }
-  }, [completedTaskData, completedFromQuery, setTasks]);
-
-  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } = useMemo(
-    () =>
-      getTaskGroups(
-        tasks.filter((task) => !task.isCompleted),
-        tab,
-        userId
-      ),
-    [tasks, tab, userId]
-  );
+  const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
+    useMemo(
+      () =>
+        getTaskGroups(
+          tasks.filter((task) => !task.isCompleted),
+          tab,
+          userId
+        ),
+      [tasks, tab, userId]
+    );
 
   const completedTasks = useMemo(
     () => tasks.filter((task) => task.isCompleted),

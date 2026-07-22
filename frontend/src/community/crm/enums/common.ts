@@ -10,11 +10,6 @@ export enum CrmTaskTabEnum {
   COMPLETED_TASKS = "completed-tasks"
 }
 
-export enum CrmTaskGroupEnum {
-  OPEN = "OPEN",
-  COMPLETED = "COMPLETED"
-}
-
 export enum CrmIndustryEnum {
   NONE = "NONE",
   ACCOMMODATION_SERVICES = "ACCOMMODATION_SERVICES",

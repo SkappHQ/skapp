@@ -1,13 +1,9 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmTaskGroupEnum } from "~community/crm/enums/common";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmTaskSliceTypes } from "~community/crm/types/SliceTypes";
 import { mergeById } from "~community/crm/utils/crmUtil";
-import {
-  replaceTaskGroup,
-  setTaskCompletionInList
-} from "~community/crm/utils/taskUtil";
+import { setTaskCompletionInList } from "~community/crm/utils/taskUtil";
 
 const CrmTaskSlice = (
   set: SetType<CrmTaskSliceTypes>,
@@ -23,8 +19,7 @@ const CrmTaskSlice = (
     set({ taskModalType: taskModalType }),
   setSelectedTaskId: (selectedTaskId: number | null) =>
     set({ selectedTaskId: selectedTaskId }),
-  setTasks: (fresh: CrmTaskDetailType[], group: CrmTaskGroupEnum) =>
-    set({ tasks: replaceTaskGroup(get().tasks, fresh, group) }),
+  setTasks: (tasks: CrmTaskDetailType[]) => set({ tasks }),
   setTaskCompletion: (id: number, isCompleted: boolean) =>
     set({ tasks: setTaskCompletionInList(get().tasks, id, isCompleted) }),
   updateTask: (task: CrmTaskDetailType) =>

@@ -14,11 +14,7 @@ import {
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
-import {
-  CrmPriorityEnum,
-  CrmTaskGroupEnum,
-  CrmTaskTabEnum
-} from "~community/crm/enums/common";
+import { CrmPriorityEnum, CrmTaskTabEnum } from "~community/crm/enums/common";
 import {
   CrmTaskDetailType,
   CrmTaskFormTypes,
@@ -182,18 +178,6 @@ export const setTaskCompletionInList = <
   isCompleted: boolean
 ): T[] =>
   tasks.map((task) => (task.id === taskId ? { ...task, isCompleted } : task));
-
-export const replaceTaskGroup = (
-  tasks: CrmTaskDetailType[],
-  fresh: CrmTaskDetailType[],
-  group: CrmTaskGroupEnum
-): CrmTaskDetailType[] => {
-  const isReplacingCompleted = group === CrmTaskGroupEnum.COMPLETED;
-  const otherGroup = tasks.filter(
-    (task) => task.isCompleted !== isReplacingCompleted
-  );
-  return [...otherGroup, ...fresh];
-};
 
 export const getTaskGroups = (
   tasks: CrmTaskDetailType[],
