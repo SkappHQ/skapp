@@ -46,7 +46,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const handleAddDeal = (stageId: number) => {
     guardCrmCreate(CrmLimitResource.DEALS, () => {
@@ -90,6 +90,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
                 searchKeyword={searchKeyword}
                 onDealClick={handleDealClick}
                 onAddDeal={handleAddDeal}
+                isAddDealDisabled={isCheckingCrmLimit}
               />
             );
           })}
