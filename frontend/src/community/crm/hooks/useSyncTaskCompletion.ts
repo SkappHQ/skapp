@@ -1,6 +1,7 @@
 import { useCrmStore } from "~community/crm/store/store";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
 
+//This is a temp hook for existing store architecture. Once we migrate to new store architecture this will remove.
 export const useSyncTaskCompletion = () => {
   const {
     setTaskCompletion,
