@@ -19,6 +19,7 @@ interface Props {
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
   emptyMessage?: string;
+  positionStrategy?: "absolute" | "fixed";
 }
 
 const SelectableSearchField: React.FC<Props> = ({
@@ -34,7 +35,8 @@ const SelectableSearchField: React.FC<Props> = ({
   items,
   onSelect,
   emptyMessage,
-  isOpenOnFocus = true
+  isOpenOnFocus = true,
+  positionStrategy
 }) => {
   if (selectedValue) {
     return (
@@ -69,6 +71,7 @@ const SelectableSearchField: React.FC<Props> = ({
       onSelect={onSelect}
       emptyMessage={emptyMessage}
       isOpenOnFocus={isOpenOnFocus}
+      positionStrategy={positionStrategy}
     />
   );
 };
