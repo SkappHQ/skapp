@@ -66,12 +66,7 @@ const UserRolesTable = (): JSX.Element => {
           return {
             ...role,
             name: moduleDisplayNames[moduleEnum],
-            roles:
-              moduleEnum === Modules.CRM
-                ? role.roles?.filter(
-                    (roleName) => roleName !== CRM_NONE_ROLE_LABEL //CRM NONE role should not show in the table even though it is present in the API response.
-                  )
-                : role.roles
+            roles: role.roles
           };
         });
       return formattedUserRoles;
