@@ -20,8 +20,6 @@ import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/ap
 
 import styles from "./styles";
 
-const CRM_NONE_ROLE_LABEL = "None";
-
 const UserRolesTable = (): JSX.Element => {
   const theme = useTheme();
   const classes = styles(theme);
@@ -65,8 +63,7 @@ const UserRolesTable = (): JSX.Element => {
 
           return {
             ...role,
-            name: moduleDisplayNames[moduleEnum],
-            roles: role.roles
+            name: moduleDisplayNames[moduleEnum]
           };
         });
       return formattedUserRoles;
