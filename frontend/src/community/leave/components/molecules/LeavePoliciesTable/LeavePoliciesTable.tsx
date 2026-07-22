@@ -61,7 +61,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         label: translateText(["leaveTypeFilterAllOption"]),
         value: ""
       },
-      ...(policyLeaveTypes ?? []).map((leaveType) => ({
+      ...(policyLeaveTypes?.leaveTypes ?? []).map((leaveType) => ({
         id: String(leaveType.id),
         label: leaveType.name,
         value: String(leaveType.id)

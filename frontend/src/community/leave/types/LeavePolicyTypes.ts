@@ -77,8 +77,12 @@ export interface PolicyLeaveTypeType {
   colorCode: string | null;
 }
 
+export interface PolicyLeaveTypesResult {
+  leaveTypes: PolicyLeaveTypeType[];
+}
+
 export interface PolicyLeaveTypesResponse {
-  results: PolicyLeaveTypeType[];
+  results: PolicyLeaveTypesResult[];
 }
 
 export interface LeavePolicyFormData {

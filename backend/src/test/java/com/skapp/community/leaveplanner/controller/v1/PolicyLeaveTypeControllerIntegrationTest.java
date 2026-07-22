@@ -66,7 +66,8 @@ class PolicyLeaveTypeControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("$.results", hasSize(1)))
-			.andExpect(jsonPath("$.results[0].name").value("PolicyAnnual"));
+			.andExpect(jsonPath("$.results[0].leaveTypes", hasSize(1)))
+			.andExpect(jsonPath("$.results[0].leaveTypes[0].name").value("PolicyAnnual"));
 	}
 
 	@Test

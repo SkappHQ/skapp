@@ -35,15 +35,17 @@ const BasicInfoStep: FC<Props> = ({
     "createPolicy"
   );
 
-  const { data: policyLeaveTypes = [], isLoading } = useGetPolicyLeaveTypes();
+  const { data: policyLeaveTypes, isLoading } = useGetPolicyLeaveTypes();
 
-  const leaveTypeOptions = policyLeaveTypes.map((leaveType) => ({
-    id: String(leaveType.id),
-    label: leaveType.emojiCode
-      ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
-      : leaveType.name,
-    value: String(leaveType.id)
-  }));
+  const leaveTypeOptions = (policyLeaveTypes?.leaveTypes ?? []).map(
+    (leaveType) => ({
+      id: String(leaveType.id),
+      label: leaveType.emojiCode
+        ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
+        : leaveType.name,
+      value: String(leaveType.id)
+    })
+  );
 
   const policyNameError = touched.policyName ? errors.policyName : undefined;
   const leaveTypeError = touched.leaveType ? errors.leaveType : undefined;
