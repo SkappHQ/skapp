@@ -89,7 +89,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	private final MessageUtil messageUtil;
 
-	private EntityManager entityManager;
+	private final EntityManager entityManager;
 
 	public static List<LocalDate> getAllDaysBetween(DayOfWeek day, LocalDate startDate, LocalDate endDate) {
 		List<LocalDate> removingDays = new ArrayList<>();

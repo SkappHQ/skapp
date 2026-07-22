@@ -27,7 +27,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 
-	@NonNull
 	private final EntityManager entityManager;
 
 	@Override

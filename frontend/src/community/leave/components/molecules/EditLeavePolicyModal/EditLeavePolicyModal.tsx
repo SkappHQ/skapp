@@ -55,9 +55,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   };
 
   const onUpdateError = (error: AxiosError): void => {
-    const { title, description } = getLeavePolicyErrorToastKeys(
-      error?.response?.status
-    );
+    const { title, description } = getLeavePolicyErrorToastKeys(error);
 
     setToastMessage({
       open: true,

@@ -1,23 +1,32 @@
+import { AxiosError } from "axios";
+
 import {
-  HTTP_CONFLICT,
-  HTTP_FORBIDDEN
-} from "~community/common/constants/httpStatusCodes";
+  COMMON_ERROR_ACCESS_DENIED,
+  LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS
+} from "~community/common/constants/errorMessageKeys";
 import {
   AddLeavePolicyPayload,
   LeavePolicyFormData,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
+interface LeavePolicyErrorData {
+  results?: { messageKey?: string }[];
+}
+
 export const getLeavePolicyErrorToastKeys = (
-  status: number | undefined
+  error: AxiosError
 ): { title: string; description: string } => {
-  switch (status) {
-    case HTTP_CONFLICT:
+  const errorData = error?.response?.data as LeavePolicyErrorData | undefined;
+  const messageKey = errorData?.results?.[0]?.messageKey;
+
+  switch (messageKey) {
+    case LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS:
       return {
         title: "duplicateToastTitle",
         description: "duplicateToastDescription"
       };
-    case HTTP_FORBIDDEN:
+    case COMMON_ERROR_ACCESS_DENIED:
       return {
         title: "permissionToastTitle",
         description: "permissionToastDescription"
