@@ -25,13 +25,6 @@ const BasicInfoStep: FC<Props> = ({
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
-    "createPolicy",
-    "basicInfo"
-  );
-
-  const translateCommonText = useTranslator(
-    "leaveModule",
-    "leavePolicies",
     "createPolicy"
   );
 
@@ -50,16 +43,25 @@ const BasicInfoStep: FC<Props> = ({
   const policyNameError = touched.policyName ? errors.policyName : undefined;
   const leaveTypeError = touched.leaveType ? errors.leaveType : undefined;
 
+  const handleLeaveTypeChange = (value: string): void => {
+    onChange({
+      leaveType: value,
+      leaveTypeName:
+        leaveTypeOptions.find((option) => option.value === value)?.label ??
+        value
+    });
+  };
+
   return (
     <div className="flex flex-1 flex-col gap-8">
-      <WizardSection title={translateText(["basicDetailsTitle"])}>
+      <WizardSection title={translateText(["basicInfo", "basicDetailsTitle"])}>
         <div className="flex max-w-3xl flex-col gap-4">
           <InputField
-            label={translateText(["policyNameLabel"])}
+            label={translateText(["basicInfo", "policyNameLabel"])}
             name="policyName"
             type="text"
             value={formData.policyName}
-            placeholder={translateText(["policyNamePlaceholder"])}
+            placeholder={translateText(["basicInfo", "policyNamePlaceholder"])}
             state={policyNameError ? "error" : "default"}
             errorMessage={policyNameError}
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -70,25 +72,18 @@ const BasicInfoStep: FC<Props> = ({
           <div className="flex flex-col gap-1.5">
             <Dropdown
               id="leave-policy-leave-type"
-              label={translateText(["leaveTypeLabel"])}
+              label={translateText(["basicInfo", "leaveTypeLabel"])}
               value={formData.leaveType}
-              placeholder={translateText(["leaveTypePlaceholder"])}
+              placeholder={translateText(["basicInfo", "leaveTypePlaceholder"])}
               options={leaveTypeOptions}
               variant={leaveTypeError ? "primary-error" : "primary"}
               errorMessage={leaveTypeError}
-              onChange={(value: string) =>
-                onChange({
-                  leaveType: value,
-                  leaveTypeName:
-                    leaveTypeOptions.find((option) => option.value === value)
-                      ?.label ?? value
-                })
-              }
+              onChange={handleLeaveTypeChange}
               width="100%"
             />
             {!isLoading && leaveTypeOptions.length === 0 && (
               <p role="alert" className="body2 text-semantic-amber-text">
-                {translateCommonText(["noLeaveTypesWarning"])}
+                {translateText(["noLeaveTypesWarning"])}
               </p>
             )}
           </div>

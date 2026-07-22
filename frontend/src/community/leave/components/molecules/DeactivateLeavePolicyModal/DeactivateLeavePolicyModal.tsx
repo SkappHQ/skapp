@@ -38,7 +38,7 @@ const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
         toastType: ToastType.SUCCESS,
         title: translateText(["successToastTitle"]),
         description: translateText(["successToastDescription"], {
-          policyName: policy?.name ?? ""
+          policyName: policy?.name
         }),
         isIcon: true
       });

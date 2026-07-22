@@ -125,27 +125,32 @@ export const editLeavePolicyValidation = (
   });
 
 export const leavePolicyWizardValidation = (
-  translateError: TranslatorFunctionType,
+  translateText: TranslatorFunctionType,
   isAccrual: boolean
 ) =>
   Yup.object({
     policyName: Yup.string()
       .trim()
-      .required(translateError(["policyNameRequired"]))
-      .max(MAX_POLICY_NAME_LENGTH, translateError(["policyNameMaxLength"])),
-    leaveType: Yup.string().required(translateError(["leaveTypeRequired"])),
+      .required(translateText(["errors", "policyNameRequired"]))
+      .max(
+        MAX_POLICY_NAME_LENGTH,
+        translateText(["errors", "policyNameMaxLength"])
+      ),
+    leaveType: Yup.string().required(
+      translateText(["errors", "leaveTypeRequired"])
+    ),
     ...(isAccrual
       ? {
           accrualDays: Yup.string()
-            .required(translateError(["accrualDaysRequired"]))
+            .required(translateText(["errors", "accrualDaysRequired"]))
             .test(
               "accrual-days-in-range",
-              translateError(["accrualDaysInvalid"]),
+              translateText(["errors", "accrualDaysInvalid"]),
               (value) =>
                 isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
             ),
           accrualFrequency: Yup.string().required(
-            translateError(["frequencyRequired"])
+            translateText(["errors", "frequencyRequired"])
           ),
           hasWaitingPeriod: Yup.boolean(),
           waitingPeriodDays: Yup.string().when("hasWaitingPeriod", {
@@ -153,7 +158,7 @@ export const leavePolicyWizardValidation = (
             then: (schema) =>
               schema.test(
                 "waiting-period-days-valid",
-                translateError(["waitingPeriodDaysRequired"]),
+                translateText(["errors", "waitingPeriodDaysRequired"]),
                 (value) => isNumberInRange(value, MIN_WAITING_PERIOD_DAYS)
               )
           }),
@@ -163,7 +168,7 @@ export const leavePolicyWizardValidation = (
             then: (schema) =>
               schema.test(
                 "accrual-cap-days-valid",
-                translateError(["accrualCapRequired"]),
+                translateText(["errors", "accrualCapRequired"]),
                 (value) => isNumberInRange(value, MIN_ACCRUAL_CAP_DAYS)
               )
           }),
@@ -173,7 +178,7 @@ export const leavePolicyWizardValidation = (
             then: (schema) =>
               schema.test(
                 "max-carryover-days-valid",
-                translateError(["maxCarryOverDaysInvalid"]),
+                translateText(["errors", "maxCarryOverDaysInvalid"]),
                 (value) =>
                   !value ||
                   isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)

@@ -62,12 +62,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     "leavePolicies",
     "createPolicy"
   );
-  const translateError = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "createPolicy",
-    "errors"
-  );
 
   const isAccrual = policyType === PolicyType.ACCRUAL;
 
@@ -123,7 +117,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
 
   const formik = useFormik<LeavePolicyFormData>({
     initialValues: { ...leavePolicyFormInitialValues, policyType },
-    validationSchema: leavePolicyWizardValidation(translateError, isAccrual),
+    validationSchema: leavePolicyWizardValidation(translateText, isAccrual),
     validateOnBlur: false,
     onSubmit: (values) => {
       submittedNameRef.current = values.policyName.trim();

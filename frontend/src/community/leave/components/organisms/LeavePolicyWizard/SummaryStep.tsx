@@ -22,10 +22,13 @@ interface Props {
   onEdit: (step: LeavePolicyWizardSteps) => void;
 }
 
-const getOptionLabel = (
-  options: { label: string; value: string }[],
-  value: string
-): string => options.find((option) => option.value === value)?.label ?? "-";
+interface SummaryOption {
+  label: string;
+  value: string;
+}
+
+const getOptionLabel = (options: SummaryOption[], value: string): string =>
+  options.find((option) => option.value === value)?.label ?? "-";
 
 const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
   const translateText = useTranslator(

@@ -14,9 +14,14 @@ interface LeavePolicyErrorData {
   results?: { messageKey?: string }[];
 }
 
+interface LeavePolicyErrorToastKeys {
+  title: string;
+  description: string;
+}
+
 export const getLeavePolicyErrorToastKeys = (
   error: AxiosError
-): { title: string; description: string } => {
+): LeavePolicyErrorToastKeys => {
   const errorData = error?.response?.data as LeavePolicyErrorData | undefined;
   const messageKey = errorData?.results?.[0]?.messageKey;
 
@@ -36,11 +41,23 @@ export const getLeavePolicyErrorToastKeys = (
   }
 };
 
+interface TranslatableOptionItem {
+  id: string;
+  labelKey: string;
+  value: string;
+}
+
+interface TranslatedOption {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export const buildTranslatedOptionList = (
-  itemList: { id: string; labelKey: string; value: string }[],
+  itemList: TranslatableOptionItem[],
   optionGroup: string,
   translateOptions: (suffixes: string[]) => string
-): { id: string; label: string; value: string }[] =>
+): TranslatedOption[] =>
   itemList.map((item) => ({
     id: item.id,
     label: translateOptions([optionGroup, item.labelKey]),

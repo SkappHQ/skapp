@@ -26,6 +26,10 @@ interface EditLeavePolicyModalProps {
   onClose: () => void;
 }
 
+interface EditLeavePolicyFormValues {
+  policyName: string;
+}
+
 const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   policy,
   isOpen,
@@ -71,7 +75,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
     onUpdateError
   );
 
-  const onSubmit = (formValues: { policyName: string }): void => {
+  const onSubmit = (formValues: EditLeavePolicyFormValues): void => {
     if (!policy) {
       return;
     }
