@@ -194,7 +194,9 @@
       "successToastTitle": "Policy deactivated",
       "successToastDescription": "\"{{policyName}}\" has been deactivated successfully.",
       "errorToastTitle": "Oops! Something went wrong",
-      "errorToastDescription": "Failed to deactivate the policy. Please try again or contact support."
+      "errorToastDescription": "Failed to deactivate the policy. Please try again or contact support.",
+      "permissionToastTitle": "Access Denied",
+      "permissionToastDescription": "You don't have permission to deactivate policies."
     },
     "createPolicy": {
       "title": "Create Policy",

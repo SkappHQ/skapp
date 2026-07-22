@@ -3,6 +3,7 @@ import {
   CloseIcon,
   SmallModal
 } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -10,6 +11,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeactivateLeavePolicy } from "~community/leave/api/LeavePolicyApi";
 import { LeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 interface DeactivateLeavePolicyModalProps {
   policy: LeavePolicyType | null;
@@ -42,12 +44,14 @@ const DeactivateLeavePolicyModal: FC<DeactivateLeavePolicyModalProps> = ({
       });
       onClose();
     },
-    () => {
+    (error: AxiosError) => {
+      const { title, description } = getLeavePolicyErrorToastKeys(error);
+
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText(["errorToastTitle"]),
-        description: translateText(["errorToastDescription"]),
+        title: translateText([title]),
+        description: translateText([description]),
         isIcon: true
       });
     }

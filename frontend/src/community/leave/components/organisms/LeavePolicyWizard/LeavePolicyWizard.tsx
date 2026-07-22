@@ -106,9 +106,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleError = (error: AxiosError): void => {
-    const { title, description } = getLeavePolicyErrorToastKeys(
-      error?.response?.status
-    );
+    const { title, description } = getLeavePolicyErrorToastKeys(error);
 
     setToastMessage({
       open: true,
