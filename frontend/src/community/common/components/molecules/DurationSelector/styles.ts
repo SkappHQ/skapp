@@ -10,7 +10,8 @@ const styles = (theme: Theme) => ({
     width: "100%"
   },
   asterisk: {
-    color: theme.palette.error.contrastText
+    color: theme.palette.error.contrastText,
+    marginLeft: "0.25rem"
   },
   btnWrapper: {
     flexDirection: { xs: "column", sm: "row" },

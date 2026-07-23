@@ -205,7 +205,7 @@ const DurationSelector = <T,>({
             color: error ? theme.palette.error.contrastText : "common.black"
           }}
         >
-          {label} &nbsp;
+          {label}
           {isRequired && (
             <Typography component="span" sx={classes.asterisk}>
               *
