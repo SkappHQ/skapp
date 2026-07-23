@@ -1,6 +1,8 @@
 import { type Theme } from "@mui/material";
 
-const styles = (theme: Theme) => ({
+import { StyleProps } from "~community/common/types/CommonTypes";
+
+const styles = (theme: Theme): StyleProps => ({
   tableHead: {
     borderTopLeftRadius: "0.625rem",
     borderTopRightRadius: "0.625rem"
@@ -23,13 +25,16 @@ const styles = (theme: Theme) => ({
     maxWidth: "fit-content",
     minWidth: 0
   },
-  supervisorsWrapper: (count: number) => ({
-    display: "grid",
-    gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`,
+  supervisorsWrapper: {
+    display: "flex",
     gap: "0.5rem",
     width: "100%",
     alignItems: "center"
-  }),
+  },
+  supervisorItem: {
+    flex: 1,
+    minWidth: 0
+  },
   avatarGroup: {
     ".MuiAvatarGroup-avatar": {
       bgcolor: theme.palette.grey[100],

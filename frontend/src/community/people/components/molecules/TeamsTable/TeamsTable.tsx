@@ -75,12 +75,10 @@ const TeamsTable: FC<Props> = ({
         teamId: teamDetails?.teamId,
         teamName: teamDetails?.teamName,
         supervisors:
-          (teamDetails?.supervisors?.length < 3 ? (
-            <Box
-              sx={classes.supervisorsWrapper(teamDetails?.supervisors?.length)}
-            >
+          teamDetails?.supervisors?.length < 3 ? (
+            <Box sx={classes.supervisorsWrapper}>
               {teamDetails?.supervisors?.map((supervisor: EmployeeType) => (
-                <Box key={supervisor?.employeeId} sx={{ minWidth: 0 }}>
+                <Box key={supervisor?.employeeId} sx={classes.supervisorItem}>
                   <AvatarChip
                     key={supervisor?.employeeId}
                     firstName={supervisor?.firstName}
@@ -110,7 +108,7 @@ const TeamsTable: FC<Props> = ({
               }
               max={6}
             />
-          )),
+          ),
         teamMembers:
           (teamDetails?.teamMembers?.length < 2 ? (
             teamDetails?.teamMembers?.map((teamMember: EmployeeType) => {
