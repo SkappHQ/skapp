@@ -111,6 +111,7 @@ export const mergeWithExisting = <T extends Id>(
     return current ? { ...current, ...item } : item;
   });
 
+//This is a temp util for existing store architecture. Once we migrate to new store architecture this will remove.
 export const mergeById = <T extends { id: number }>(
   items: T[],
   update: T

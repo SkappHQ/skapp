@@ -170,6 +170,7 @@ export const getChangedTaskFields = (
   return changedFields;
 };
 
+//This is a temp util for existing store architecture. Once we migrate to new store architecture this will remove.
 export const setTaskCompletionInList = <
   T extends { id: number; isCompleted: boolean }
 >(
