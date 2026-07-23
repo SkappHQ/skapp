@@ -283,6 +283,10 @@ public class CommonModuleUtils {
 		}
 	}
 
+	public static boolean isExternalAuthPicUrl(String authPic) {
+		return authPic != null && (authPic.startsWith("https://"));
+	}
+
 	/**
 	 * Safely extracts and sets a value from a nested structure only if not null. Combines
 	 * safeGet and setIfNotNull for cleaner syntax.
