@@ -18,7 +18,7 @@ public class LeavePolicyAccrualDetailDto {
 
 	private Float accrualCapDays;
 
-	private Boolean isCarryoverEnabled = Boolean.FALSE;
+	private Boolean isCarryoverEnabled;
 
 	private String carryoverDate;
 

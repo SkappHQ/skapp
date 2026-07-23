@@ -28,6 +28,15 @@ public class LeavePolicyController {
 
 	private final LeavePolicyService leavePolicyService;
 
+	@Operation(summary = "Get all leave policies",
+			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
+	@GetMapping
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
+		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Create a new leave policy",
 			description = "Creates a new leave policy with accrual or fixed entitlement configuration")
 	@PostMapping
@@ -51,15 +60,6 @@ public class LeavePolicyController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> deactivateLeavePolicy(@PathVariable Long id) {
 		ResponseEntityDto response = leavePolicyService.deactivateLeavePolicy(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get all leave policies",
-			description = "Returns a paginated list of leave policies with optional search by name and leave type filter")
-	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
-		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
