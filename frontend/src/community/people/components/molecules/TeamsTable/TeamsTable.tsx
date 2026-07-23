@@ -80,13 +80,11 @@ const TeamsTable: FC<Props> = ({
               {teamDetails?.supervisors?.map((supervisor: EmployeeType) => (
                 <Box key={supervisor?.employeeId} sx={classes.supervisorItem}>
                   <AvatarChip
-                    key={supervisor?.employeeId}
                     firstName={supervisor?.firstName}
                     lastName={supervisor?.lastName}
                     avatarUrl={supervisor?.authPic}
                     isResponsiveLayout={true}
                     chipStyles={classes.avatarChip}
-                    isTooltipEnabled
                   />
                 </Box>
               ))}
@@ -115,7 +113,6 @@ const TeamsTable: FC<Props> = ({
               return (
                 <Box key={teamMember?.employeeId} width="100%">
                   <AvatarChip
-                    key={teamMember?.employeeId}
                     firstName={teamMember?.firstName}
                     lastName={teamMember?.lastName}
                     avatarUrl={teamMember?.authPic}
