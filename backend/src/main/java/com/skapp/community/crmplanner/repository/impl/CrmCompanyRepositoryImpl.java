@@ -124,7 +124,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		predicates.add(cb.isFalse(root.get(CrmCompany_.isDeleted)));
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
+			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword.toLowerCase(Locale.ROOT));
 
 			String likePattern = "%" + escapedKeyword + "%";
 			predicates.add(cb.like(cb.lower(root.get(CrmCompany_.name)), likePattern, '\\'));
@@ -137,7 +137,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		List<Order> orders = new ArrayList<>();
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String normalizedKeyword = searchKeyword.toLowerCase();
+			String normalizedKeyword = searchKeyword.toLowerCase(Locale.ROOT);
 			String escapedKeyword = StringUtils.escapeLikePattern(normalizedKeyword);
 			Expression<String> lowerName = cb.lower(company.get(CrmCompany_.name));
 
@@ -149,7 +149,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 			orders.add(cb.asc(relevanceRank));
 		}
 
-		orders.add(cb.asc(company.get(CrmCompany_.name)));
+		orders.add(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 		orders.add(cb.asc(company.get(CrmCompany_.id)));
 
 		return orders;

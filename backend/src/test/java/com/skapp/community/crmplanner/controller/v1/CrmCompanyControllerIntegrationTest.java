@@ -584,6 +584,21 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(metrics.getOpenDeals()).as("LOST deals are not open, so open deal count is zero").isEqualTo(0L);
 	}
 
+	@Test
+	@DisplayName("Company metrics search ranks exact match, then prefix match, then contains match")
+	void getCompanyMetrics_RanksByRelevance() {
+		createMetricsCompany("Global Rankacme Partners");
+		createMetricsCompany("Rankacme Corp");
+		createMetricsCompany("Rankacme");
+
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanyMetrics(PageRequest.of(0, 100), "rankacme")
+			.getContent();
+
+		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
+			.as("exact match first, then prefix match, then contains match")
+			.containsExactly("Rankacme", "Rankacme Corp", "Global Rankacme Partners");
+	}
+
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
 		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
 			.getCompanyMetrics(PageRequest.of(0, 100), searchKeyword)
