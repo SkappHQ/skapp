@@ -13,13 +13,13 @@ import {
   CrmCreateDealPayload,
   CrmDealEditPayload,
   CrmDealFilterParams,
-  CrmDealNameExistsResponse,
   CrmDealPaginatedResponse,
   CrmDealResponseType,
   CrmDealStageCreatePayload,
   CrmDealStageReorderItem,
   CrmDealStageType,
-  CrmDealStageUpdatePayload
+  CrmDealStageUpdatePayload,
+  CrmExistsResponse
 } from "~community/crm/types/CommonTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -101,7 +101,7 @@ export const useCreateDeal = (
 
 const checkDealNameExists = async (
   name: string
-): Promise<CrmDealNameExistsResponse> => {
+): Promise<CrmExistsResponse> => {
   const response = await authFetch.get(
     crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
     {
@@ -114,7 +114,7 @@ const checkDealNameExists = async (
 export const useCheckDealNameExists = (
   name: string,
   enabled: boolean
-): UseQueryResult<CrmDealNameExistsResponse> => {
+): UseQueryResult<CrmExistsResponse> => {
   return useQuery({
     queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
     queryFn: () => checkDealNameExists(name),

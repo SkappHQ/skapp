@@ -54,6 +54,7 @@
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",
+        "emailExists": "A contact with this email already exists",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
@@ -124,6 +125,7 @@
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",
+        "emailExists": "A contact with this email already exists",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
