@@ -54,6 +54,7 @@
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",
+        "emailExists": "A contact with this email already exists",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
@@ -124,6 +125,7 @@
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",
+        "emailExists": "A contact with this email already exists",
         "contactNumber": "Invalid contact number",
         "owner": "Owner is required"
       },
@@ -206,8 +208,11 @@
     "pageHead": "Companies | Skapp",
     "title": "Companies",
     "addCompanyBtn": "Add company",
-    "addCompanyModal": {
-      "title": "Add company",
+    "companyModal": {
+      "title": {
+        "add": "Add company",
+        "edit": "Edit company"
+      },
       "labels": {
         "name": "Company name",
         "contactNumber": "Contact no.",
@@ -219,11 +224,12 @@
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
-        "address": "Enter address"
+        "address": "Enter address",
+        "industry": "Select industry"
       },
       "buttons": {
         "save": "Save",
-        "cancelAddCompany": "Cancel"
+        "cancel": "Cancel"
       },
       "ariaLabels": {
         "companyName": "Company Name",
@@ -232,7 +238,7 @@
         "address": "Address",
         "industry": "Industry",
         "save": "Save",
-        "cancelAddCompany": "Cancel Add Company"
+        "cancel": "Cancel"
       },
       "validations": {
         "name": "Company name is required",
@@ -245,10 +251,17 @@
         "industry": "Please select a valid industry"
       },
       "toastMessages": {
-        "successTitle": "Company added successfully",
-        "successDescription": "The company has been successfully added",
         "errorTitle": "Oops! Something went wrong",
-        "errorDescription": "Failed to add the company. Please try again"
+        "add": {
+          "successTitle": "Company added successfully",
+          "successDescription": "The company has been successfully added",
+          "errorDescription": "Failed to add the company. Please try again"
+        },
+        "edit": {
+          "successTitle": "Company updated successfully",
+          "successDescription": "The company has been successfully updated",
+          "errorDescription": "Failed to edit the company. Please try again"
+        }
       }
     },
     "industryOptions": {
@@ -317,52 +330,6 @@
         "dealsClosed": "Deals closed",
         "overdue": "overdue",
         "infiniteScrollLoadingMessage": "Loading contacts..."
-      }
-    },
-    "editCompanyModal": {
-      "title": "Edit company",
-      "labels": {
-        "name": "Company name",
-        "contactNumber": "Contact no.",
-        "website": "Website URL",
-        "address": "Address",
-        "industry": "Industry"
-      },
-      "placeholders": {
-        "name": "Enter company name",
-        "contactNumber": "Enter contact no.",
-        "website": "Enter website",
-        "address": "Enter address",
-        "industry": "Select industry"
-      },
-      "buttons": {
-        "save": "Save",
-        "cancelEditCompany": "Cancel"
-      },
-      "ariaLabels": {
-        "companyName": "Company Name",
-        "contactNumber": "Contact Number",
-        "website": "Website",
-        "address": "Address",
-        "industry": "Industry",
-        "save": "Save",
-        "cancelEditCompany": "Cancel Edit Company"
-      },
-      "validations": {
-        "name": "Company name is required",
-        "companyExists": "A company with this name already exists",
-        "website": "Please enter a valid website URL",
-        "contactNumber": "Contact number is invalid",
-        "companyNameLength": "Company name must be less than 30 characters",
-        "characterLength": "Entry must be less than 50 characters",
-        "addressLength": "Address must be less than 100 characters",
-        "industry": "Please select a valid industry"
-      },
-      "toastMessages": {
-        "successTitle": "Company updated successfully",
-        "successDescription": "The company has been successfully updated",
-        "errorTitle": "Oops! Something went wrong",
-        "errorDescription": "Failed to edit the company. Please try again"
       }
     },
     "deleteCompanyModal": {
