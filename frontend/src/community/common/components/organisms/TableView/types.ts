@@ -1,7 +1,8 @@
 import type {
   GridHeader,
   GridRow,
-  TableToolBarProps
+  TableToolBarProps,
+  TableV2Props
 } from "@rootcodelabs/skapp-ui";
 import type { ReactNode } from "react";
 
@@ -54,14 +55,7 @@ export interface TableViewProps {
   isLoading?: boolean;
   skeletonRows?: number;
   loader?: ReactNode;
-  emptyState?:
-    | ReactNode
-    | {
-        icon?: ReactNode;
-        title?: string;
-        description?: string;
-        actions?: any[];
-      };
+  emptyState?: TableV2Props["emptyState"];
   onRowClick?: (row: GridRow, id: string | number) => void;
   className?: string;
   height?: string;

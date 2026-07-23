@@ -11,11 +11,10 @@ import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   convertDateToFormat,
-  convertYYYYMMDDToDateTime
+  convertYYYYMMDDToDateTime,
+  getFirstDateOfYear
 } from "~community/common/utils/dateTimeUtils";
 
-/** Store `["YYYY-MM-DD", "YYYY-MM-DD"]` → `DateRange`. Luxon local time avoids
- * the `new Date("YYYY-MM-DD")` UTC day-shift. */
 const toDateRange = (dates: string[]): DateRange | undefined => {
   const [from, to] = dates ?? [];
   if (!from && !to) return undefined;
@@ -31,19 +30,23 @@ const fromDateRange = (range?: DateRange): string[] => [
   range?.to ? convertDateToFormat(range.to, DATE_FORMAT) : ""
 ];
 
+/**
+ * skapp-ui's DateRangePicker has no minDate prop, so the calendar itself can't
+ * grey out prior years. Clamp here instead to preserve the current-year-only
+ * constraint the legacy filter enforced via minDate.
+ */
+const clampToCurrentYear = (range?: DateRange): DateRange | undefined => {
+  if (!range) return range;
+  const yearStart = getFirstDateOfYear(new Date().getFullYear()).toJSDate();
+  const clamp = (date?: Date) => (date && date < yearStart ? yearStart : date);
+  return { from: clamp(range.from), to: clamp(range.to) };
+};
+
 interface Props {
-  /** Selects the manager slice instead of the employee slice. */
   isManager?: boolean;
-  /** Dismiss the popover after applying / resetting. */
   close: () => void;
 }
 
-/**
- * Self-contained filter body (date range + status) for the employee & manager
- * timesheet-request tables. Injected into TableView's popover via its
- * `filter.filterContent` render-prop. Mounts on open / unmounts on close, so its
- * temp state seeds from the applied store values and reverts naturally.
- */
 const TimesheetRequestFilterBody: FC<Props> = ({
   isManager = false,
   close
@@ -55,14 +58,12 @@ const TimesheetRequestFilterBody: FC<Props> = ({
     employeeTimesheetRequestsFilters,
     employeeTimesheetRequestSelectedDates,
     setEmployeeTimesheetRequestsFilters,
-    setEmployeeTimesheetSelectedFilterLabels,
     setEmployeeTimesheetRequestSelectedDates,
     resetEmployeeTimesheetRequestParams,
     timesheetRequestsFilterValues,
     timesheetRequestsFilters,
     timesheetRequestSelectedDates,
     setTimesheetRequestsFilters,
-    setTimesheetSelectedFilterLabels,
     setTimesheetRequestSelectedDates,
     resetTimesheetRequestParams
   } = useAttendanceStore((state) => state);
@@ -79,9 +80,6 @@ const TimesheetRequestFilterBody: FC<Props> = ({
   const setFilters = isManager
     ? setTimesheetRequestsFilters
     : setEmployeeTimesheetRequestsFilters;
-  const setLabels = isManager
-    ? setTimesheetSelectedFilterLabels
-    : setEmployeeTimesheetSelectedFilterLabels;
   const setDates = isManager
     ? setTimesheetRequestSelectedDates
     : setEmployeeTimesheetRequestSelectedDates;
@@ -104,11 +102,6 @@ const TimesheetRequestFilterBody: FC<Props> = ({
     );
 
   const handleApply = () => {
-    const labels = filterValues.status
-      .filter((status) => tempStatus.includes(status.value))
-      .map((status) => status.label);
-
-    setLabels(labels);
     setFilters({ status: tempStatus });
     setDates(fromDateRange(tempDates));
     close();
@@ -136,7 +129,10 @@ const TimesheetRequestFilterBody: FC<Props> = ({
     >
       <div className="flex flex-col gap-2">
         <p className="subtitle1">{translateText(["dateRangeLabel"])}</p>
-        <DateRangePicker value={tempDates} onChange={setTempDates} />
+        <DateRangePicker
+          value={tempDates}
+          onChange={(range) => setTempDates(clampToCurrentYear(range))}
+        />
       </div>
       <SelectableItemList
         title={translateText(["statusFilterTitle"])}

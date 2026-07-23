@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { FC, JSX, useEffect } from "react";
+import { FC, JSX } from "react";
 
 import { useCancelTimeRequest } from "~community/attendance/api/AttendanceEmployeeApi";
 import TimesheetRequestFilterBody from "~community/attendance/components/molecules/TimesheetRequestFilterBody/TimesheetRequestFilterBody";
@@ -8,6 +8,7 @@ import {
   TimeSheetRequestStates,
   TimeSheetRequestTypes
 } from "~community/attendance/enums/timesheetEnums";
+import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRequestDataResponseType,
@@ -54,28 +55,10 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
 
   const {
     employeeTimesheetRequestParams,
-    setEmployeeTimesheetRequestPagination,
-    employeeTimesheetRequestsFilters,
-    employeeTimesheetRequestSelectedDates,
-    resetEmployeeTimesheetRequestParams,
-    setEmployeeTimesheetRequestSelectedDates
+    setEmployeeTimesheetRequestPagination
   } = useAttendanceStore((state) => state);
 
-  const [appliedStartDate, appliedEndDate] =
-    employeeTimesheetRequestSelectedDates;
-  const filterCount =
-    employeeTimesheetRequestsFilters.status.length +
-    (appliedStartDate && appliedEndDate ? 1 : 0);
-
-  useEffect(() => {
-    return () => {
-      resetEmployeeTimesheetRequestParams();
-      setEmployeeTimesheetRequestSelectedDates(["", ""]);
-    };
-  }, [
-    resetEmployeeTimesheetRequestParams,
-    setEmployeeTimesheetRequestSelectedDates
-  ]);
+  const { filterCount } = useTimesheetRequestFilterState(false);
 
   const onSuccess = () => {
     setToastMessage({

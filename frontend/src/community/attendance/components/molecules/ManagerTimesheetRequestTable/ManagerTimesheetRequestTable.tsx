@@ -2,7 +2,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
-import { FC, JSX, useEffect } from "react";
+import { FC, JSX } from "react";
 
 import { useCancelTimeRequest } from "~community/attendance/api/AttendanceEmployeeApi";
 import { DEFAULT_TOTAL_HOURS } from "~community/attendance/constants/constants";
@@ -10,6 +10,7 @@ import {
   TimeSheetRequestStates,
   TimeSheetRequestTypes
 } from "~community/attendance/enums/timesheetEnums";
+import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRequestDataResponseType,
@@ -76,29 +77,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
 
   const {
     timesheetRequestParams,
-    timesheetRequestsFilters,
-    timesheetRequestSelectedDates,
     setTimesheetRequestPagination,
-    setTimesheetRequestSelectedDates,
     resetTimesheetRequestParams
   } = useAttendanceStore((state) => state);
 
-  const [appliedStartDate, appliedEndDate] = timesheetRequestSelectedDates;
-  const filterCount =
-    timesheetRequestsFilters.status.length +
-    (appliedStartDate && appliedEndDate ? 1 : 0);
-
-  useEffect(() => {
-    if (!hasFullList) return;
-    return () => {
-      resetTimesheetRequestParams();
-      setTimesheetRequestSelectedDates(["", ""]);
-    };
-  }, [
-    hasFullList,
-    resetTimesheetRequestParams,
-    setTimesheetRequestSelectedDates
-  ]);
+  const { filterCount } = useTimesheetRequestFilterState(true, hasFullList);
 
   const onSuccess = () => {
     setToastMessage({
