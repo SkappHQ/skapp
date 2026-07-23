@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
@@ -76,9 +76,11 @@ const TeamsTable: FC<Props> = ({
         teamName: teamDetails?.teamName,
         supervisors:
           (teamDetails?.supervisors?.length < 3 ? (
-            teamDetails?.supervisors?.map((supervisor: EmployeeType) => {
-              return (
-                <Stack key={supervisor?.employeeId} width="100%">
+            <Box
+              sx={classes.supervisorsWrapper(teamDetails?.supervisors?.length)}
+            >
+              {teamDetails?.supervisors?.map((supervisor: EmployeeType) => (
+                <Box key={supervisor?.employeeId} sx={{ minWidth: 0 }}>
                   <AvatarChip
                     key={supervisor?.employeeId}
                     firstName={supervisor?.firstName}
@@ -86,10 +88,11 @@ const TeamsTable: FC<Props> = ({
                     avatarUrl={supervisor?.authPic}
                     isResponsiveLayout={true}
                     chipStyles={classes.avatarChip}
+                    isTooltipEnabled
                   />
-                </Stack>
-              );
-            })
+                </Box>
+              ))}
+            </Box>
           ) : (
             <AvatarGroup
               componentStyles={classes.avatarGroup}
@@ -107,7 +110,7 @@ const TeamsTable: FC<Props> = ({
               }
               max={6}
             />
-          )) || [],
+          )),
         teamMembers:
           (teamDetails?.teamMembers?.length < 2 ? (
             teamDetails?.teamMembers?.map((teamMember: EmployeeType) => {
