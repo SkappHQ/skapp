@@ -99,7 +99,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicy leavePolicy = getLeavePolicyById(id);
 
-		leavePolicy.setStatus(LeavePolicyStatus.DEACTIVATED);
+		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
 		log.info("deactivateLeavePolicy: policy deactivated successfully");
