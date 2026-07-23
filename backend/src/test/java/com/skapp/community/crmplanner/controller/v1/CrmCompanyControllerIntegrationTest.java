@@ -328,7 +328,7 @@ class CrmCompanyControllerIntegrationTest {
 		task.setCompany(crmCompanyDao.getReferenceById(companyId));
 		Long taskId = crmTaskDao.save(task).getId();
 
-		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), PageRequest.of(0, 100)).getContent())
+		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDeal::getId)
 			.contains(dealId);
 		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
