@@ -25,16 +25,6 @@ const styles = (theme: Theme): StyleProps => ({
     maxWidth: "fit-content",
     minWidth: 0
   },
-  supervisorsWrapper: {
-    display: "flex",
-    gap: "0.5rem",
-    width: "100%",
-    alignItems: "center"
-  },
-  supervisorItem: {
-    flex: 1,
-    minWidth: 0
-  },
   avatarGroup: {
     ".MuiAvatarGroup-avatar": {
       bgcolor: theme.palette.grey[100],

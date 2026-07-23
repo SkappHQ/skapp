@@ -76,9 +76,9 @@ const TeamsTable: FC<Props> = ({
         teamName: teamDetails?.teamName,
         supervisors:
           teamDetails?.supervisors?.length < 3 ? (
-            <Box sx={classes.supervisorsWrapper}>
+            <div className="flex w-full items-center gap-2">
               {teamDetails?.supervisors?.map((supervisor: EmployeeType) => (
-                <Box key={supervisor?.employeeId} sx={classes.supervisorItem}>
+                <div key={supervisor?.employeeId} className="min-w-0 flex-1">
                   <AvatarChip
                     firstName={supervisor?.firstName}
                     lastName={supervisor?.lastName}
@@ -86,9 +86,9 @@ const TeamsTable: FC<Props> = ({
                     isResponsiveLayout={true}
                     chipStyles={classes.avatarChip}
                   />
-                </Box>
+                </div>
               ))}
-            </Box>
+            </div>
           ) : (
             <AvatarGroup
               componentStyles={classes.avatarGroup}
