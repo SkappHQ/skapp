@@ -53,6 +53,14 @@ export const isSuperAdminOnlySession = (roles?: string[]): boolean => {
   );
 };
 
+export const isSuperOrPeopleAdmin = (roles?: string[]): boolean => {
+  return (
+    (roles?.includes(AdminTypes.SUPER_ADMIN) ||
+      roles?.includes(AdminTypes.PEOPLE_ADMIN)) ??
+    false
+  );
+};
+
 export const getEmoji = (unicode: string): string => {
   try {
     if (unicode.startsWith("&#")) {

@@ -10,7 +10,10 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useSearchCompaniesByDomain } from "~community/crm/api/CompanyApi";
-import { useGetCompanyLookup } from "~community/crm/api/ContactApi";
+import {
+  useCheckContactEmailExists,
+  useGetCompanyLookup
+} from "~community/crm/api/ContactApi";
 import SuggestedBadge from "~community/crm/components/atoms/SuggestedBadge/SuggestedBadge";
 import EditableContactOwnerField from "~community/crm/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
@@ -64,20 +67,47 @@ const ContactModalForm = ({
 
   const formik = useFormik<CrmContactFormValues>({
     initialValues,
-    onSubmit,
+    onSubmit: (formValues) => {
+      if (isEmailCheckUnresolved || isDuplicateEmail) return;
+      onSubmit(formValues);
+    },
     validationSchema: addContactValidations(translateContactText),
     validateOnChange: true,
     validateOnBlur: false,
     enableReinitialize: true
   });
 
-  const { values, errors, touched, handleChange, setFieldValue, submitForm, dirty } =
-    formik;
+  const {
+    values,
+    errors,
+    touched,
+    handleChange,
+    setFieldValue,
+    submitForm,
+    dirty
+  } = formik;
 
-  const debouncedEmail = useDebounce(
-    values.email.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
+  const trimmedEmail = values.email.trim();
+  const trimmedOriginalEmail = initialValues.email.trim();
+  const isEmailChanged = trimmedEmail !== trimmedOriginalEmail;
+
+  const debouncedEmail = useDebounce(trimmedEmail, SEARCH_DEBOUNCE_DELAY);
+
+  const isEmailCheckEnabled =
+    debouncedEmail.length > 0 &&
+    isValidEmail().test(debouncedEmail) &&
+    debouncedEmail !== trimmedOriginalEmail;
+
+  const { data: emailExistsData, isFetching: isEmailCheckFetching } =
+    useCheckContactEmailExists(debouncedEmail, isEmailCheckEnabled);
+
+  const isDuplicateEmail = isEmailChanged && emailExistsData?.isExists;
+
+  const isEmailCheckUnresolved =
+    isEmailChanged && (trimmedEmail !== debouncedEmail || isEmailCheckFetching);
+
+  const emailFieldError = touched.email ? errors.email : undefined;
+
   const extractedDomain = extractDomainFromEmail(debouncedEmail);
   const isDomainSearchEnabled =
     extractedDomain.length > 0 && isValidEmail().test(debouncedEmail);
@@ -155,8 +185,14 @@ const ContactModalForm = ({
       <InputField
         name="email"
         value={values.email}
-        errorMessage={touched.email ? errors.email : undefined}
-        state={touched.email && errors.email ? "error" : "default"}
+        errorMessage={
+          isDuplicateEmail
+            ? translateContactText(["validations", "emailExists"])
+            : emailFieldError
+        }
+        state={
+          isDuplicateEmail || emailFieldError ? "error" : "default"
+        }
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
@@ -208,7 +244,9 @@ const ContactModalForm = ({
         name="contactNumber"
         value={values.contactNumber}
         errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
-        state={touched.contactNumber && errors.contactNumber ? "error" : "default"}
+        state={
+          touched.contactNumber && errors.contactNumber ? "error" : "default"
+        }
         label={translateContactText(["labels", "contactNumber"])}
         placeholder={translateContactText(["placeholders", "contactNumber"])}
         onChange={handleChange}
