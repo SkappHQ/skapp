@@ -67,12 +67,12 @@ export interface MetricItem {
   chip?: MetricChip;
 }
 
-export interface CrmCompanyAddFormTypes {
+export interface CrmCompanyFormTypes {
   name: string;
   industry: CrmIndustryEnum;
-  website: string | null;
-  address: string | null;
-  contactNumber: string | null;
+  website: string;
+  address: string;
+  contactNumber: string;
 }
 
 export interface CrmCompanyCreatePayload {
@@ -350,14 +350,6 @@ export interface CrmCreateDealPayload {
 
 export interface CrmExistsResponse {
   isExists: boolean;
-}
-
-export interface CrmCompanyEditFormTypes {
-  name: string;
-  industry: CrmIndustryEnum;
-  website: string | null;
-  address: string | null;
-  contactNumber: string | null;
 }
 
 export interface CrmTaskFormTypes {
