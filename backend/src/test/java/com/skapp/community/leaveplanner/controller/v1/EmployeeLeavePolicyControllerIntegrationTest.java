@@ -59,8 +59,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			+ "(700, 'Annual Flexible', 100, 'FLEXIBLE', 'ACTIVE', false)";
 
 	// An open (ACTIVE) window for employee 1 on policy 500 (leave type 100).
-	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, effective_to, status) "
-			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', NULL, 'ACTIVE')";
+	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, leave_type_id, effective_date_type, effective_from, effective_to, status) "
+			+ "VALUES (900, 1, 500, 100, 'SPECIFIC', '2023-01-01', NULL, 'ACTIVE')";
 
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 

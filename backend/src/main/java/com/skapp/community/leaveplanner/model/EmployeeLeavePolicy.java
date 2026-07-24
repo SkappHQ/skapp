@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,7 +41,9 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "lv_employee_leave_policy")
+@Table(name = "lv_employee_leave_policy",
+		uniqueConstraints = @UniqueConstraint(name = "UK_lv_employee_leave_policy_employee_leave_type",
+				columnNames = { "employee_id", "leave_type_id" }))
 public class EmployeeLeavePolicy extends Auditable<String> {
 
 	@Id
@@ -55,6 +58,15 @@ public class EmployeeLeavePolicy extends Auditable<String> {
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "policy_id", nullable = false)
 	private LeavePolicy policy;
+
+	/**
+	 * Denormalized leave type, populated only while the window is ACTIVE and nulled when
+	 * it closes. Backs the unique index {@code (employee_id, leave_type_id)}, which lets
+	 * the database enforce "at most one open window per (employee, leave type)" without
+	 * locks (ENDED rows carry NULL, and MySQL allows duplicate NULLs in a unique index).
+	 */
+	@Column(name = "leave_type_id")
+	private Long leaveTypeId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "effective_date_type", nullable = false)

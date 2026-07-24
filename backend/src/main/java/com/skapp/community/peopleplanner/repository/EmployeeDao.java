@@ -4,10 +4,8 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,14 +19,6 @@ public interface EmployeeDao
 	List<Employee> findByJobFamilyAndJobTitle(JobFamily jobFamily, JobTitle jobTitle);
 
 	Optional<Employee> findByEmployeeId(Long employeeId);
-
-	/**
-	 * Load an employee holding a pessimistic write lock on the row. Used to serialize
-	 * concurrent writes scoped to a single employee (e.g. leave-policy assignment, where
-	 * the "one open window per leave type" invariant is enforced by a read-then-write).
-	 */
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	Optional<Employee> findWithLockByEmployeeId(Long employeeId);
 
 	Employee findEmployeeByEmployeeId(Long employeeId);
 
