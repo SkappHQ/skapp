@@ -62,36 +62,32 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		LocalDate effectiveFrom = resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 
 		Long leaveTypeId = policy.getLeaveType().getId();
-		EmployeeLeavePolicy activeAssignment = employeeLeavePolicyDao
+		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(), leaveTypeId,
 					EmployeeLeavePolicyStatus.ACTIVE)
 			.orElse(null);
 
-		if (activeAssignment != null) {
-			if (activeAssignment.getPolicy().getId().equals(policy.getId())
-					&& effectiveFrom.equals(activeAssignment.getEffectiveFrom())
-					&& activeAssignment.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
-				log.info("assignLeavePolicy: identical assignment already active; treating as no-op");
+		if (activeEmployeeLeavePolicy != null) {
+			if (activeEmployeeLeavePolicy.getPolicy().getId().equals(policy.getId())
+					&& effectiveFrom.equals(activeEmployeeLeavePolicy.getEffectiveFrom()) && activeEmployeeLeavePolicy
+						.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
 				return new ResponseEntityDto(false,
-						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeAssignment));
+						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeEmployeeLeavePolicy));
 			}
-			endAssignment(activeAssignment);
+			markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 		}
 
-		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
-		assignment.setEmployee(employee);
-		assignment.setPolicy(policy);
-		assignment.setEffectiveDateType(assignLeavePolicyRequestDto.getEffectiveDateType());
-		assignment.setEffectiveFrom(effectiveFrom);
-		assignment.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
-		assignment = employeeLeavePolicyDao.save(assignment);
+		EmployeeLeavePolicy employeeLeavePolicy = new EmployeeLeavePolicy();
+		employeeLeavePolicy.setEmployee(employee);
+		employeeLeavePolicy.setPolicy(policy);
+		employeeLeavePolicy.setEffectiveDateType(assignLeavePolicyRequestDto.getEffectiveDateType());
+		employeeLeavePolicy.setEffectiveFrom(effectiveFrom);
+		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
+		employeeLeavePolicy = employeeLeavePolicyDao.save(employeeLeavePolicy);
 
-		log.info("assignLeavePolicy: policy {} assigned to employee {} effective {}", policy.getId(),
-				employee.getEmployeeId(), effectiveFrom);
-
-		EmployeeLeavePolicyResponseDto responseDto = leaveMapper
-			.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(assignment);
-		return new ResponseEntityDto(false, responseDto);
+		log.info("assignLeavePolicy: execution ended");
+		return new ResponseEntityDto(false,
+				leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(employeeLeavePolicy));
 	}
 
 	@Override
@@ -102,13 +98,13 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		getEmployeeOrThrow(unassignLeavePolicyRequestDto.getEmployeeId());
 
-		EmployeeLeavePolicy activeAssignment = employeeLeavePolicyDao
+		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new EntityNotFoundException(
 					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
-		endAssignment(activeAssignment);
+		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
 		log.info("unassignLeavePolicy: execution ended");
 		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
@@ -121,19 +117,17 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		getEmployeeOrThrow(employeeId);
 
-		List<EmployeeLeavePolicy> activeAssignments = employeeLeavePolicyDao
+		List<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE);
 
-		List<EmployeeLeavePolicyResponseDto> responseDtos = leaveMapper
-			.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeAssignments);
-
-		log.info("getEmployeeLeavePolicies: returning {} active assignment(s)", responseDtos.size());
-		return new ResponseEntityDto(false, responseDtos);
+		log.info("getEmployeeLeavePolicies: execution ended");
+		return new ResponseEntityDto(false,
+				leaveMapper.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeEmployeeLeavePolicies));
 	}
 
-	private void endAssignment(EmployeeLeavePolicy assignment) {
-		assignment.setStatus(EmployeeLeavePolicyStatus.ENDED);
-		employeeLeavePolicyDao.save(assignment);
+	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {
+		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ENDED);
+		employeeLeavePolicyDao.save(employeeLeavePolicy);
 	}
 
 	private LocalDate resolveEffectiveFrom(AssignLeavePolicyRequestDto dto, Employee employee) {
