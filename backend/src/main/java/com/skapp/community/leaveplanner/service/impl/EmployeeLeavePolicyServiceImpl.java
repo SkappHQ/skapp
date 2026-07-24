@@ -22,7 +22,6 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,20 +90,10 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
 		assignment.setEmployee(employee);
 		assignment.setPolicy(policy);
-		assignment.setLeaveTypeId(leaveTypeId);
 		assignment.setEffectiveDateType(assignLeavePolicyRequestDto.getEffectiveDateType());
 		assignment.setEffectiveFrom(effectiveFrom);
 		assignment.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
-		try {
-			assignment = employeeLeavePolicyDao.saveAndFlush(assignment);
-		}
-		catch (DataIntegrityViolationException ex) {
-			// The unique (employee_id, leave_type_id) index rejected a concurrent assign
-			// that raced to open a second active window for this leave type. The
-			// invariant
-			// is upheld by the DB; the losing caller is asked to retry.
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ASSIGNMENT_CONFLICT);
-		}
+		assignment = employeeLeavePolicyDao.save(assignment);
 
 		log.info("assignLeavePolicy: policy {} assigned to employee {} effective {}", policy.getId(),
 				employee.getEmployeeId(), effectiveFrom);
@@ -167,9 +156,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	/**
 	 * Close a window: cap {@code effectiveTo} so it never precedes {@code effectiveFrom}
 	 * (which would be an invalid range when a window is superseded/unassigned on or
-	 * before its own start date), mark it {@code ENDED}, and null {@code leaveTypeId} to
-	 * release the unique (employee, leave type) slot. Flushed immediately so, on the
-	 * supersede path, the slot is freed before the replacement window is inserted.
+	 * before its own start date), then mark it {@code ENDED} with the given reason.
 	 */
 	private void closeWindow(EmployeeLeavePolicy window, LocalDate proposedEffectiveTo,
 			EmployeeLeavePolicyEndedReason reason) {
@@ -178,8 +165,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		window.setEffectiveTo(effectiveTo);
 		window.setStatus(EmployeeLeavePolicyStatus.ENDED);
 		window.setEndedReason(reason);
-		window.setLeaveTypeId(null);
-		employeeLeavePolicyDao.saveAndFlush(window);
+		employeeLeavePolicyDao.save(window);
 	}
 
 	private LocalDate resolveEffectiveFrom(AssignLeavePolicyRequestDto dto, Employee employee) {

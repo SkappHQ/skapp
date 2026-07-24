@@ -91,9 +91,7 @@ public enum LeaveMessageConstant implements MessageConstant {
 
 	LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL("api.error.leave.leave-policy-not-accrual"),
 
-	LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND("api.error.leave.employee-leave-policy-not-found"),
-
-	LEAVE_ERROR_LEAVE_POLICY_ASSIGNMENT_CONFLICT("api.error.leave.leave-policy-assignment-conflict");
+	LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND("api.error.leave.employee-leave-policy-not-found");
 
 	private final String messageKey;
 
