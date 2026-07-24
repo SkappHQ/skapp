@@ -137,7 +137,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		List<Order> orders = new ArrayList<>();
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String normalizedKeyword = searchKeyword.toLowerCase(Locale.ROOT);
+			String normalizedKeyword = searchKeyword.toLowerCase();
 			String escapedKeyword = StringUtils.escapeLikePattern(normalizedKeyword);
 			Expression<String> lowerName = cb.lower(company.get(CrmCompany_.name));
 
