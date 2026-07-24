@@ -28,37 +28,47 @@ export const useRecordAttendance = (
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
   const isGeoFencingEnabled: boolean = attendanceConfig?.isGeoFencingEnabled;
 
-  const { data: geofenceStatus } = useGetUserGeofenceStatus(
-    isGeoFencingEnabled && isEnterprise
-  );
+  const {
+    data: geofenceStatus,
+    isLoading: isGeofenceStatusLoading,
+    isError: isGeofenceStatusError
+  } = useGetUserGeofenceStatus(isGeoFencingEnabled && isEnterprise);
   const isGeofenceConfigured = geofenceStatus?.geofenceConfigured;
 
   const recordAttendance = useCallback(
     (slotType: AttendanceSlotType) => {
-      if (isGeoFencingEnabled && isEnterprise && isGeofenceConfigured) {
-        getCurrentLocation().then(({ latitude, longitude }) => {
-          mutateWithLocation({
-            recordActionType: slotType,
-            time: convertDateToUTC(new Date().toISOString()) as string,
-            latitude,
-            longitude
+      if (isGeoFencingEnabled && isEnterprise) {
+        if (isGeofenceStatusError) {
+          onError?.();
+          return;
+        }
+        if (isGeofenceConfigured) {
+          getCurrentLocation().then(({ latitude, longitude }) => {
+            mutateWithLocation({
+              recordActionType: slotType,
+              time: convertDateToUTC(new Date().toISOString()) as string,
+              latitude,
+              longitude
+            });
           });
-        });
-      } else {
-        mutate(slotType);
+          return;
+        }
       }
+      mutate(slotType);
     },
     [
       isGeoFencingEnabled,
       isEnterprise,
+      isGeofenceStatusError,
       isGeofenceConfigured,
       mutateWithLocation,
-      mutate
+      mutate,
+      onError
     ]
   );
 
   return {
     recordAttendance,
-    isPending: isPending || isEpPending
+    isPending: isPending || isEpPending || isGeofenceStatusLoading
   };
 };
