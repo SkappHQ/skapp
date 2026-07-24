@@ -15,6 +15,7 @@ import {
   NotificationSummaryItem,
   NotificationSummaryType
 } from "~community/common/types/notificationTypes";
+import { SYNC_CHANGES } from "~enterprise/people/constants/routes";
 
 export const getNotificationCount = (
   summaryResults: NotificationSummaryItem[] | undefined,
@@ -171,7 +172,7 @@ export const handleNotifyRow = ({
     notificationType === NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED ||
     notificationType === NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED
   ) {
-    router.push(ROUTES.PEOPLE.SYNC_CHANGES);
+    router.push(SYNC_CHANGES);
   }
   mutate(id);
 };
