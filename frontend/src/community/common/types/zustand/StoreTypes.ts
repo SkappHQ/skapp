@@ -1,5 +1,7 @@
 import { BreadcrumbItem } from "@rootcodelabs/skapp-ui";
 
+import { CommonModalType } from "../../enums/CommonModalEnums";
+import { CommonModalData } from "../CommonModalTypes";
 import { OrganizationCreateType } from "../OrganizationCreateTypes";
 import { SettingsModalTypes } from "../SettingsTypes";
 import { VersionUpgradeInfoType } from "../VersionUpgrade";
@@ -21,6 +23,13 @@ export interface CommonStoreTypes extends actionTypes {
   setModalType: (value: SettingsModalTypes) => void;
   isModalOpen: boolean;
   setModalOpen: (value: boolean) => void;
+
+  // Common modal
+  commonModalType: CommonModalType;
+  isCommonModalOpen: boolean;
+  commonModalData: CommonModalData | null;
+  openCommonModal: (modalType: CommonModalType, data?: CommonModalData) => void;
+  closeCommonModal: () => void;
 
   // Notifications
   notifyData: {

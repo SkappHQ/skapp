@@ -41,19 +41,7 @@ export const leavePolicyEndPoints = {
   DEACTIVATE_LEAVE_POLICY: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policies/${id}/deactivate`,
   GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
-  GET_LEAVE_POLICIES: (
-    searchKeyword: string,
-    leaveTypeId: string,
-    page: number,
-    size: number
-  ): string => {
-    const params = new URLSearchParams();
-    if (searchKeyword) params.append("searchKeyword", searchKeyword);
-    if (leaveTypeId) params.append("leaveTypeId", leaveTypeId);
-    params.append("page", String(page));
-    params.append("size", String(size));
-    return `${moduleAPIPath.LEAVE}/policies?${params.toString()}`;
-  }
+  GET_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies`
 };
 
 export const leaveEntitlementEndPoints = {

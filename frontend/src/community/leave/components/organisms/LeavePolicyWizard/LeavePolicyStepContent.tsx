@@ -1,8 +1,8 @@
+import { FormikErrors, FormikTouched } from "formik";
 import { FC } from "react";
 
 import {
   LeavePolicyFormData,
-  LeavePolicyWizardErrors,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
 
@@ -14,7 +14,8 @@ interface Props {
   activeStep: LeavePolicyWizardSteps;
   isAccrual: boolean;
   formData: LeavePolicyFormData;
-  errors: LeavePolicyWizardErrors;
+  errors: FormikErrors<LeavePolicyFormData>;
+  touched: FormikTouched<LeavePolicyFormData>;
   onChange: (values: Partial<LeavePolicyFormData>) => void;
   onEditFromSummary: (step: LeavePolicyWizardSteps) => void;
 }
@@ -24,6 +25,7 @@ const LeavePolicyStepContent: FC<Props> = ({
   isAccrual,
   formData,
   errors,
+  touched,
   onChange,
   onEditFromSummary
 }) => {
@@ -37,12 +39,18 @@ const LeavePolicyStepContent: FC<Props> = ({
         formData={formData}
         onChange={onChange}
         errors={errors}
+        touched={touched}
       />
     );
   }
 
   return (
-    <BasicInfoStep formData={formData} onChange={onChange} errors={errors} />
+    <BasicInfoStep
+      formData={formData}
+      onChange={onChange}
+      errors={errors}
+      touched={touched}
+    />
   );
 };
 

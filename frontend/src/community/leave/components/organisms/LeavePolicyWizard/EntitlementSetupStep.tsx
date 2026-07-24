@@ -1,4 +1,5 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
+import { FormikErrors, FormikTouched } from "formik";
 import { ChangeEvent, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,23 +9,25 @@ import {
   firstAccrualItemList,
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
-import {
-  LeavePolicyFormData,
-  LeavePolicyWizardErrors
-} from "~community/leave/types/LeavePolicyTypes";
+import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
 import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
-import FieldError from "./FieldError";
 import WizardSection from "./WizardSection";
-import YesNoRadioGroup from "./YesNoRadioGroup";
+import RadioGroup from "./RadioGroup";
 
 interface Props {
   formData: LeavePolicyFormData;
   onChange: (values: Partial<LeavePolicyFormData>) => void;
-  errors: LeavePolicyWizardErrors;
+  errors: FormikErrors<LeavePolicyFormData>;
+  touched: FormikTouched<LeavePolicyFormData>;
 }
 
-const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
+const EntitlementSetupStep: FC<Props> = ({
+  formData,
+  onChange,
+  errors,
+  touched
+}) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
@@ -71,7 +74,12 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
               type="number"
               value={formData.accrualDays}
               placeholder={translateText(["employeesAccruePlaceholder"])}
-              errorMessage={errors.accrualDays}
+              state={
+                touched.accrualDays && errors.accrualDays ? "error" : "default"
+              }
+              errorMessage={
+                touched.accrualDays ? errors.accrualDays : undefined
+              }
               onChange={(event: ChangeEvent<HTMLInputElement>) =>
                 onChange({ accrualDays: event.target.value })
               }
@@ -85,19 +93,26 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
               value={formData.accrualFrequency}
               placeholder={translateText(["frequencyPlaceholder"])}
               options={accrualFrequencyOptions}
+              variant={
+                touched.accrualFrequency && errors.accrualFrequency
+                  ? "primary-error"
+                  : "primary"
+              }
+              errorMessage={
+                touched.accrualFrequency ? errors.accrualFrequency : undefined
+              }
               onChange={(value: string) =>
                 onChange({ accrualFrequency: value })
               }
               width="100%"
             />
-            <FieldError message={errors.accrualFrequency} />
           </div>
         </div>
       </WizardSection>
 
       <WizardSection title={translateText(["accrualOptionsTitle"])}>
         <div className="flex max-w-3xl flex-col gap-4">
-          <YesNoRadioGroup
+          <RadioGroup
             label={translateText(["waitingPeriodLabel"])}
             name="hasWaitingPeriod"
             noLabel={translateText(["waitingPeriodNo"])}
@@ -118,7 +133,16 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
                 type="number"
                 value={formData.waitingPeriodDays}
                 placeholder={translateText(["waitingPeriodDaysPlaceholder"])}
-                errorMessage={errors.waitingPeriodDays}
+                state={
+                  touched.waitingPeriodDays && errors.waitingPeriodDays
+                    ? "error"
+                    : "default"
+                }
+                errorMessage={
+                  touched.waitingPeriodDays
+                    ? errors.waitingPeriodDays
+                    : undefined
+                }
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   onChange({ waitingPeriodDays: event.target.value })
                 }
@@ -126,7 +150,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
               />
             </div>
           )}
-          <YesNoRadioGroup
+          <RadioGroup
             label={translateText(["accrualCapLabel"])}
             name="hasAccrualCap"
             noLabel={translateText(["accrualCapNo"])}
@@ -147,7 +171,14 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
                 type="number"
                 value={formData.accrualCapDays}
                 placeholder={translateText(["accrualCapDaysPlaceholder"])}
-                errorMessage={errors.accrualCapDays}
+                state={
+                  touched.accrualCapDays && errors.accrualCapDays
+                    ? "error"
+                    : "default"
+                }
+                errorMessage={
+                  touched.accrualCapDays ? errors.accrualCapDays : undefined
+                }
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   onChange({ accrualCapDays: event.target.value })
                 }
@@ -155,7 +186,7 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
               />
             </div>
           )}
-          <YesNoRadioGroup
+          <RadioGroup
             label={translateText(["carryOverLabel"])}
             name="canCarryOver"
             noLabel={translateText(["carryOverNo"])}
@@ -185,7 +216,16 @@ const EntitlementSetupStep: FC<Props> = ({ formData, onChange, errors }) => {
                   type="number"
                   value={formData.maxCarryOverDays}
                   placeholder={translateText(["maxCarryOverDaysPlaceholder"])}
-                  errorMessage={errors.maxCarryOverDays}
+                  state={
+                    touched.maxCarryOverDays && errors.maxCarryOverDays
+                      ? "error"
+                      : "default"
+                  }
+                  errorMessage={
+                    touched.maxCarryOverDays
+                      ? errors.maxCarryOverDays
+                      : undefined
+                  }
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     onChange({ maxCarryOverDays: event.target.value })
                   }

@@ -27,7 +27,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 
-	@NonNull
 	private final EntityManager entityManager;
 
 	@Override
@@ -67,8 +66,8 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		}
 
 		if (filterDto.getLeaveTypeId() != null) {
-			predicates.add(cb.equal(root.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.typeId),
-					filterDto.getLeaveTypeId()));
+			predicates
+				.add(cb.equal(root.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id), filterDto.getLeaveTypeId()));
 		}
 
 		return predicates;

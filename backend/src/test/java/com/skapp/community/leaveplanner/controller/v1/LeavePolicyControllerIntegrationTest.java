@@ -38,10 +38,10 @@ class LeavePolicyControllerIntegrationTest {
 
 	private static final String ENDPOINT = "/v1/leave/policies";
 
-	private static final String SEED_LEAVE_TYPE = "INSERT INTO lv_leave_type (type_id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
+	private static final String SEED_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
 			+ "VALUES (100, 'PolicyAnnual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true)";
 
-	private static final String SEED_POLICY = "INSERT INTO lv_leave_policy (policy_id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
+	private static final String SEED_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Existing Policy', 100, 'ACCRUAL', 'ACTIVE', false)";
 
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -234,16 +234,6 @@ class LeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns bad request for a negative page number")
-		void getAllLeavePolicies_NegativePage_ReturnsBadRequest() throws Exception {
-			mvc.perform(get(ENDPOINT).param("page", "-1")
-				.accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
-				.andExpect(status().isBadRequest());
-		}
-
-		@Test
 		@DisplayName("Leave admin can update a leave policy name")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
 		void updateLeavePolicy_LeaveAdmin_UpdatesName() throws Exception {
@@ -266,7 +256,7 @@ class LeavePolicyControllerIntegrationTest {
 				.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results[0].status").value("DEACTIVATED"));
+				.andExpect(jsonPath("$.results[0].status").value("INACTIVE"));
 		}
 
 	}

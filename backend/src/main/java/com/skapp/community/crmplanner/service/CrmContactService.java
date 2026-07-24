@@ -6,9 +6,10 @@ import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
 
 public interface CrmContactService {
+
+	ResponseEntityDto checkContactEmailExists(String email);
 
 	ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto);
 

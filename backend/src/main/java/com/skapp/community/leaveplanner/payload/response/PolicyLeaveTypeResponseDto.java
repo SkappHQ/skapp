@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class PolicyLeaveTypeResponseDto {
 
-	private Long typeId;
+	private Long id;
 
 	private String name;
 

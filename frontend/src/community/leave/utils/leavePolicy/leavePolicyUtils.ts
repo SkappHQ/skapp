@@ -1,42 +1,37 @@
+import { AxiosError } from "axios";
+
 import {
-  HTTP_CONFLICT,
-  HTTP_FORBIDDEN
-} from "~community/common/constants/httpStatusCodes";
-import {
-  MAX_POLICY_DAYS,
-  MAX_POLICY_NAME_LENGTH,
-  MIN_ACCRUAL_CAP_DAYS,
-  MIN_POLICY_DAYS,
-  MIN_WAITING_PERIOD_DAYS
-} from "~community/leave/constants/leavePolicyConstants";
+  COMMON_ERROR_ACCESS_DENIED,
+  LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS
+} from "~community/common/constants/errorMessageKeys";
 import {
   AddLeavePolicyPayload,
   LeavePolicyFormData,
-  LeavePolicyWizardErrors,
-  LeavePolicyWizardSteps,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-const isNumberInRange = (value: string, min: number, max?: number): boolean => {
-  const numericValue = Number(value);
-  return (
-    value !== "" &&
-    !Number.isNaN(numericValue) &&
-    numericValue >= min &&
-    (max === undefined || numericValue <= max)
-  );
-};
+interface LeavePolicyErrorData {
+  results?: { messageKey?: string }[];
+}
+
+interface LeavePolicyErrorToastKeys {
+  title: string;
+  description: string;
+}
 
 export const getLeavePolicyErrorToastKeys = (
-  status: number | undefined
-): { title: string; description: string } => {
-  switch (status) {
-    case HTTP_CONFLICT:
+  error: AxiosError
+): LeavePolicyErrorToastKeys => {
+  const errorData = error?.response?.data as LeavePolicyErrorData | undefined;
+  const messageKey = errorData?.results?.[0]?.messageKey;
+
+  switch (messageKey) {
+    case LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS:
       return {
         title: "duplicateToastTitle",
         description: "duplicateToastDescription"
       };
-    case HTTP_FORBIDDEN:
+    case COMMON_ERROR_ACCESS_DENIED:
       return {
         title: "permissionToastTitle",
         description: "permissionToastDescription"
@@ -46,83 +41,28 @@ export const getLeavePolicyErrorToastKeys = (
   }
 };
 
+interface TranslatableOptionItem {
+  id: string;
+  labelKey: string;
+  value: string;
+}
+
+interface TranslatedOption {
+  id: string;
+  label: string;
+  value: string;
+}
+
 export const buildTranslatedOptionList = (
-  itemList: { id: string; labelKey: string; value: string }[],
+  itemList: TranslatableOptionItem[],
   optionGroup: string,
   translateOptions: (suffixes: string[]) => string
-): { id: string; label: string; value: string }[] =>
+): TranslatedOption[] =>
   itemList.map((item) => ({
     id: item.id,
     label: translateOptions([optionGroup, item.labelKey]),
     value: item.value
   }));
-
-export const getLeavePolicyStepErrors = (
-  step: LeavePolicyWizardSteps,
-  formData: LeavePolicyFormData
-): LeavePolicyWizardErrors => {
-  const errors: LeavePolicyWizardErrors = {};
-
-  switch (step) {
-    case LeavePolicyWizardSteps.BASIC_INFO: {
-      if (!formData.policyName.trim()) {
-        errors.policyName = "policyNameRequired";
-      } else if (formData.policyName.trim().length > MAX_POLICY_NAME_LENGTH) {
-        errors.policyName = "policyNameMaxLength";
-      }
-      if (!formData.leaveType) {
-        errors.leaveType = "leaveTypeRequired";
-      }
-      break;
-    }
-    case LeavePolicyWizardSteps.ENTITLEMENT_SETUP: {
-      if (formData.policyType === PolicyType.ACCRUAL) {
-        if (formData.accrualDays === "") {
-          errors.accrualDays = "accrualDaysRequired";
-        } else if (
-          !isNumberInRange(
-            formData.accrualDays,
-            MIN_POLICY_DAYS,
-            MAX_POLICY_DAYS
-          )
-        ) {
-          errors.accrualDays = "accrualDaysInvalid";
-        }
-        if (!formData.accrualFrequency) {
-          errors.accrualFrequency = "frequencyRequired";
-        }
-        if (
-          formData.hasWaitingPeriod &&
-          !isNumberInRange(formData.waitingPeriodDays, MIN_WAITING_PERIOD_DAYS)
-        ) {
-          errors.waitingPeriodDays = "waitingPeriodDaysRequired";
-        }
-        if (
-          formData.hasAccrualCap &&
-          !isNumberInRange(formData.accrualCapDays, MIN_ACCRUAL_CAP_DAYS)
-        ) {
-          errors.accrualCapDays = "accrualCapRequired";
-        }
-        if (
-          formData.canCarryOver &&
-          formData.maxCarryOverDays !== "" &&
-          !isNumberInRange(
-            formData.maxCarryOverDays,
-            MIN_POLICY_DAYS,
-            MAX_POLICY_DAYS
-          )
-        ) {
-          errors.maxCarryOverDays = "maxCarryOverDaysInvalid";
-        }
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  return errors;
-};
 
 export const mapLeavePolicyFormToPayload = (
   formData: LeavePolicyFormData

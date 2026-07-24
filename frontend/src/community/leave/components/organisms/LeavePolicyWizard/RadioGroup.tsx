@@ -10,7 +10,7 @@ interface Props {
   onChange: (value: boolean) => void;
 }
 
-const YesNoRadioGroup: FC<Props> = ({
+const RadioGroup: FC<Props> = ({
   label,
   name,
   noLabel,
@@ -49,4 +49,4 @@ const YesNoRadioGroup: FC<Props> = ({
   );
 };
 
-export default YesNoRadioGroup;
+export default RadioGroup;

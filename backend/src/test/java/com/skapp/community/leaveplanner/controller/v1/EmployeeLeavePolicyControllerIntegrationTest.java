@@ -44,22 +44,22 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	 */
 	private static final String EMPLOYEE_1_JOIN_DATE = "2022-05-17";
 
-	private static final String SEED_LEAVE_TYPES = "INSERT INTO lv_leave_type (type_id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
+	private static final String SEED_LEAVE_TYPES = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
 			+ "VALUES (100, 'AssignAnnual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true), "
 			+ "(200, 'AssignCasual', 'U+1F334', '#4CAF50', 'FULL_DAY', false, false, false, false, true)";
 
 	// 500/501 are both ACTIVE accrual policies on leave type 100 (conflict pair);
 	// 502 is DEACTIVATED; 600 is an accrual policy on a different leave type (200);
 	// 700 is a FLEXIBLE policy (rejected this phase — accrual only).
-	private static final String SEED_POLICIES = "INSERT INTO lv_leave_policy (policy_id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
+	private static final String SEED_POLICIES = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Annual Standard', 100, 'ACCRUAL', 'ACTIVE', false), "
 			+ "(501, 'Annual Senior', 100, 'ACCRUAL', 'ACTIVE', false), "
-			+ "(502, 'Annual Retired', 100, 'ACCRUAL', 'DEACTIVATED', false), "
+			+ "(502, 'Annual Retired', 100, 'ACCRUAL', 'INACTIVE', false), "
 			+ "(600, 'Casual Basic', 200, 'ACCRUAL', 'ACTIVE', false), "
 			+ "(700, 'Annual Flexible', 100, 'FLEXIBLE', 'ACTIVE', false)";
 
 	// An open (ACTIVE) window for employee 1 on policy 500 (leave type 100).
-	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (employee_policy_id, employee_id, policy_id, effective_date_type, effective_from, effective_to, status) "
+	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, effective_to, status) "
 			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', NULL, 'ACTIVE')";
 
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";

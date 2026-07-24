@@ -22,123 +22,112 @@ interface Props {
   onEdit: (step: LeavePolicyWizardSteps) => void;
 }
 
-const getOptionLabel = (
-  options: { label: string; value: string }[],
-  value: string
-): string => options.find((option) => option.value === value)?.label ?? "-";
+interface SummaryOption {
+  label: string;
+  value: string;
+}
+
+const getOptionLabel = (options: SummaryOption[], value: string): string =>
+  options.find((option) => option.value === value)?.label ?? "-";
 
 const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
-    "createPolicy",
-    "summary"
-  );
-
-  const translateCommonText = useTranslator(
-    "leaveModule",
-    "leavePolicies",
     "createPolicy"
-  );
-
-  const translateOptions = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "createPolicy",
-    "options"
   );
 
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
-    translateOptions
+    (suffixes) => translateText(["options", ...suffixes])
   );
   const carryoverDateOptions = buildTranslatedOptionList(
     carryoverDateItemList,
     "carryoverDate",
-    translateOptions
+    (suffixes) => translateText(["options", ...suffixes])
   );
   const firstAccrualOptions = buildTranslatedOptionList(
     firstAccrualItemList,
     "firstAccrual",
-    translateOptions
+    (suffixes) => translateText(["options", ...suffixes])
   );
   const receiveAccruedTimeOptions = buildTranslatedOptionList(
     receiveAccruedTimeItemList,
     "receiveAccruedTime",
-    translateOptions
+    (suffixes) => translateText(["options", ...suffixes])
   );
 
   return (
     <div className="flex flex-1 flex-col gap-4">
       <SummaryCard
-        title={translateText(["basicInfoTitle"])}
+        title={translateText(["summary", "basicInfoTitle"])}
         onEdit={() => onEdit(LeavePolicyWizardSteps.BASIC_INFO)}
       >
         <SummaryItem
-          label={translateText(["policyNameLabel"])}
+          label={translateText(["summary", "policyNameLabel"])}
           value={formData.policyName}
         />
         <SummaryItem
-          label={translateText(["leaveTypeLabel"])}
+          label={translateText(["summary", "leaveTypeLabel"])}
           value={formData.leaveTypeName}
         />
         <SummaryItem
-          label={translateText(["policyTypeLabel"])}
-          value={translateCommonText(["basicInfo", "accrualTitle"])}
+          label={translateText(["summary", "policyTypeLabel"])}
+          value={translateText(["basicInfo", "accrualTitle"])}
         />
       </SummaryCard>
 
       <SummaryCard
-        title={translateText(["entitlementSetupTitle"])}
+        title={translateText(["summary", "entitlementSetupTitle"])}
         onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
       >
         <SummaryItem
-          label={translateText(["accrualRateLabel"])}
+          label={translateText(["summary", "accrualRateLabel"])}
           value={
             formData.accrualDays
-              ? translateText(["accrualRateValue"], {
+              ? translateText(["summary", "accrualRateValue"], {
                   days: formData.accrualDays
                 })
               : "-"
           }
         />
         <SummaryItem
-          label={translateText(["frequencyLabel"])}
+          label={translateText(["summary", "frequencyLabel"])}
           value={getOptionLabel(
             accrualFrequencyOptions,
             formData.accrualFrequency
           )}
         />
         <SummaryItem
-          label={translateText(["waitingPeriodLabel"])}
+          label={translateText(["summary", "waitingPeriodLabel"])}
           value={
             formData.hasWaitingPeriod && formData.waitingPeriodDays
-              ? translateText(["waitingPeriodDaysValue"], {
+              ? translateText(["summary", "waitingPeriodDaysValue"], {
                   days: formData.waitingPeriodDays
                 })
-              : translateText(["waitingPeriodNo"])
+              : translateText(["summary", "waitingPeriodNo"])
           }
         />
         <SummaryItem
-          label={translateText(["accrualCapLabel"])}
+          label={translateText(["summary", "accrualCapLabel"])}
           value={
             formData.hasAccrualCap && formData.accrualCapDays
-              ? translateText(["accrualCapDaysValue"], {
+              ? translateText(["summary", "accrualCapDaysValue"], {
                   days: formData.accrualCapDays
                 })
-              : translateText(["accrualCapNo"])
+              : translateText(["summary", "accrualCapNo"])
           }
         />
         <SummaryItem
-          label={translateText(["receiveAccruedTimeLabel"])}
+          label={translateText(["summary", "receiveAccruedTimeLabel"])}
           value={getOptionLabel(
             receiveAccruedTimeOptions,
             formData.receiveAccruedTime
           )}
         />
         <SummaryItem
-          label={translateText(["firstAccrualLabel"])}
+          label={translateText(["summary", "firstAccrualLabel"])}
           value={
             getOptionLabel(firstAccrualOptions, formData.firstAccrual).split(
               ","
@@ -148,39 +137,36 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
       </SummaryCard>
 
       <SummaryCard
-        title={translateText(["carryForwardTitle"])}
+        title={translateText(["summary", "carryForwardTitle"])}
         onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
       >
         <SummaryItem
-          label={translateText(["statusLabel"])}
+          label={translateText(["summary", "statusLabel"])}
           value={
             <LeavePolicyStatusBadge
               isActive={formData.canCarryOver}
               text={
                 formData.canCarryOver
-                  ? translateText(["activeStatus"])
-                  : translateText(["inactiveStatus"])
+                  ? translateText(["summary", "activeStatus"])
+                  : translateText(["summary", "inactiveStatus"])
               }
             />
           }
         />
         <SummaryItem
-          label={translateText(["maxCarryOverDaysLabel"])}
+          label={translateText(["summary", "maxCarryOverDaysLabel"])}
           value={
             formData.canCarryOver && formData.maxCarryOverDays
-              ? translateText(["maxCarryOverDaysValue"], {
+              ? translateText(["summary", "maxCarryOverDaysValue"], {
                   days: formData.maxCarryOverDays
                 })
-              : translateText(["carryOverNoLimit"])
+              : translateText(["summary", "carryOverNoLimit"])
           }
         />
         {formData.canCarryOver && (
           <SummaryItem
-            label={translateText(["carryOverDateLabel"])}
-            value={getOptionLabel(
-              carryoverDateOptions,
-              formData.carryOverDate
-            )}
+            label={translateText(["summary", "carryOverDateLabel"])}
+            value={getOptionLabel(carryoverDateOptions, formData.carryOverDate)}
           />
         )}
       </SummaryCard>

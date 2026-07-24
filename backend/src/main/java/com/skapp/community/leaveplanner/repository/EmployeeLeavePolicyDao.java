@@ -16,13 +16,13 @@ public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolic
 	 * and close a conflicting assignment when a new policy of the same leave type is
 	 * assigned.
 	 */
-	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_TypeIdAndStatus(Long employeeId,
+	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(Long employeeId,
 			Long leaveTypeId, EmployeeLeavePolicyStatus status);
 
 	/**
 	 * The open window for a specific (employee, policy), if any. Used by unassign.
 	 */
-	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_PolicyIdAndStatus(Long employeeId, Long policyId,
+	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_IdAndStatus(Long employeeId, Long policyId,
 			EmployeeLeavePolicyStatus status);
 
 	/**
@@ -36,6 +36,6 @@ public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolic
 	 * All open windows for a policy. Used when a policy is deactivated so its open
 	 * employee assignments can be closed in the same flow.
 	 */
-	List<EmployeeLeavePolicy> findByPolicy_PolicyIdAndStatus(Long policyId, EmployeeLeavePolicyStatus status);
+	List<EmployeeLeavePolicy> findByPolicy_IdAndStatus(Long policyId, EmployeeLeavePolicyStatus status);
 
 }

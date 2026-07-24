@@ -3,6 +3,7 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypesResponseDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.PolicyLeaveTypeService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 			.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(policyLeaveTypeDao.findAllByIsActive(true));
 
 		log.info("getPolicyLeaveTypes: execution ended");
-		return new ResponseEntityDto(false, leaveTypes);
+		return new ResponseEntityDto(false, new PolicyLeaveTypesResponseDto(leaveTypes));
 	}
 
 }

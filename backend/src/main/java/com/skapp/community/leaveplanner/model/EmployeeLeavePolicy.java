@@ -13,7 +13,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -34,23 +33,20 @@ import java.time.LocalDate;
  * time; enforced in the service layer since leave type is only reachable through the
  * policy.
  * <p>
- * Schema matches the canonical migration
- * {@code 00123_create_table_lv_employee_leave_policy}.
+ * Table {@code lv_employee_leave_policy} is created by the shared leave-policy foundation
+ * migration; {@code effective_date_type} is added by this feature's ALTER migration.
  */
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "lv_employee_leave_policy",
-		indexes = {
-				@Index(name = "IDX_lv_employee_leave_policy_employee_id_status", columnList = "employee_id, status"),
-				@Index(name = "IDX_lv_employee_leave_policy_policy_id_status", columnList = "policy_id, status") })
+@Table(name = "lv_employee_leave_policy")
 public class EmployeeLeavePolicy extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "employee_policy_id")
-	private Long employeePolicyId;
+	@Column(name = "id")
+	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "employee_id", nullable = false)

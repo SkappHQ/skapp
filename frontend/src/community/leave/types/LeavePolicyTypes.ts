@@ -37,7 +37,7 @@ export enum AccrualTiming {
 }
 
 export interface LeavePolicyType {
-  policyId: number;
+  id: number;
   name: string;
   leaveTypeId: number;
   leaveTypeName: string;
@@ -53,11 +53,36 @@ export interface LeavePoliciesPage {
   totalPages: number;
 }
 
+export interface GetLeavePoliciesInfiniteArgs {
+  searchKeyword: string;
+  leaveTypeId: string;
+  size: number;
+}
+
+export interface GetLeavePoliciesParams {
+  searchKeyword?: string;
+  leaveTypeId?: string;
+  page: number;
+  size: number;
+}
+
+export interface LeavePoliciesResponse {
+  results: LeavePoliciesPage[];
+}
+
 export interface PolicyLeaveTypeType {
-  typeId: number;
+  id: number;
   name: string;
   emojiCode: string | null;
   colorCode: string | null;
+}
+
+export interface PolicyLeaveTypesResult {
+  leaveTypes: PolicyLeaveTypeType[];
+}
+
+export interface PolicyLeaveTypesResponse {
+  results: PolicyLeaveTypesResult[];
 }
 
 export interface LeavePolicyFormData {
@@ -77,10 +102,6 @@ export interface LeavePolicyFormData {
   firstAccrual: string;
   receiveAccruedTime: string;
 }
-
-export type LeavePolicyWizardErrors = Partial<
-  Record<keyof LeavePolicyFormData, string>
->;
 
 export interface AddLeavePolicyAccrualPayload {
   accrualDays: number;
@@ -103,4 +124,32 @@ export interface AddLeavePolicyPayload {
 
 export interface UpdateLeavePolicyPayload {
   name: string;
+}
+
+export interface UpdateLeavePolicyVariables {
+  id: number;
+  payload: UpdateLeavePolicyPayload;
+}
+
+export interface LeavePolicyResponseDto {
+  id: number;
+  name: string;
+  leaveTypeId: number;
+  leaveTypeName: string;
+  leaveTypeEmoji: string | null;
+  policyType: PolicyType;
+  status: LeavePolicyStatus;
+  accrualDays: number | null;
+  frequency: AccrualFrequency | null;
+  waitingPeriodDays: number | null;
+  accrualCapDays: number | null;
+  isCarryoverEnabled: boolean | null;
+  carryoverDate: string | null;
+  maxCarryoverDays: number | null;
+  firstAccrual: FirstAccrualType | null;
+  accrualTiming: AccrualTiming | null;
+}
+
+export interface LeavePolicyMutationResponse {
+  results: LeavePolicyResponseDto[];
 }

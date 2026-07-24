@@ -153,7 +153,7 @@ public interface LeaveMapper {
 
 	LeaveRequestManagerResponseDto leaveRequestToLeaveRequestManagerResponseDto(LeaveRequest leaveRequest);
 
-	@Mapping(target = "leaveTypeId", source = "leaveType.typeId")
+	@Mapping(target = "leaveTypeId", source = "leaveType.id")
 	@Mapping(target = "leaveTypeName", source = "leaveType.name")
 	@Mapping(target = "leaveTypeEmoji", source = "leaveType.emojiCode")
 	LeavePolicyResponseDto leavePolicyToLeavePolicyResponseDto(LeavePolicy leavePolicy);
@@ -161,10 +161,10 @@ public interface LeaveMapper {
 	List<LeavePolicyResponseDto> leavePolicyListToLeavePolicyResponseDtoList(List<LeavePolicy> leavePolicies);
 
 	@Mapping(target = "employeeId", source = "employee.employeeId")
-	@Mapping(target = "policyId", source = "policy.policyId")
+	@Mapping(target = "policyId", source = "policy.id")
 	@Mapping(target = "policyName", source = "policy.name")
 	@Mapping(target = "policyType", source = "policy.policyType")
-	@Mapping(target = "leaveTypeId", source = "policy.leaveType.typeId")
+	@Mapping(target = "leaveTypeId", source = "policy.leaveType.id")
 	@Mapping(target = "leaveTypeName", source = "policy.leaveType.name")
 	@Mapping(target = "leaveTypeEmoji", source = "policy.leaveType.emojiCode")
 	EmployeeLeavePolicyResponseDto employeeLeavePolicyToEmployeeLeavePolicyResponseDto(

@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @Setter
 public class EmployeeLeavePolicyResponseDto {
 
-	private Long employeePolicyId;
+	private Long id;
 
 	private Long employeeId;
 

@@ -67,9 +67,9 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		// existing
 		// open window of the same leave type before opening the new one
 		// (last-write-wins).
-		Long leaveTypeId = policy.getLeaveType().getTypeId();
+		Long leaveTypeId = policy.getLeaveType().getId();
 		employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_LeaveType_TypeIdAndStatus(employee.getEmployeeId(), leaveTypeId,
+			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(), leaveTypeId,
 					EmployeeLeavePolicyStatus.ACTIVE)
 			.ifPresent(openWindow -> closeWindow(openWindow, effectiveFrom.minusDays(1),
 					EmployeeLeavePolicyEndedReason.SUPERSEDED));
@@ -82,7 +82,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		assignment.setStatus(EmployeeLeavePolicyStatus.ACTIVE);
 		assignment = employeeLeavePolicyDao.save(assignment);
 
-		log.info("assignLeavePolicy: policy {} assigned to employee {} effective {}", policy.getPolicyId(),
+		log.info("assignLeavePolicy: policy {} assigned to employee {} effective {}", policy.getId(),
 				employee.getEmployeeId(), effectiveFrom);
 
 		EmployeeLeavePolicyResponseDto responseDto = leaveMapper
@@ -102,7 +102,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		// not
 		// fail with "not found".
 		employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_PolicyIdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
+			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
 			.ifPresentOrElse(
 					openWindow -> closeWindow(openWindow, LocalDate.now(), EmployeeLeavePolicyEndedReason.UNASSIGNED),
@@ -132,7 +132,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	@Override
 	@Transactional
 	public int endOpenWindowsForPolicy(Long policyId) {
-		List<EmployeeLeavePolicy> openWindows = employeeLeavePolicyDao.findByPolicy_PolicyIdAndStatus(policyId,
+		List<EmployeeLeavePolicy> openWindows = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
 				EmployeeLeavePolicyStatus.ACTIVE);
 		LocalDate today = LocalDate.now();
 		openWindows.forEach(window -> closeWindow(window, today, EmployeeLeavePolicyEndedReason.POLICY_DEACTIVATED));

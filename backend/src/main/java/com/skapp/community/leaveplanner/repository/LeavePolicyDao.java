@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 public interface LeavePolicyDao
 		extends JpaRepository<LeavePolicy, Long>, JpaSpecificationExecutor<LeavePolicy>, LeavePolicyRepository {
 
-	boolean existsByNameIgnoreCaseAndLeaveType_TypeId(String name, Long leaveTypeId);
+	boolean existsByNameIgnoreCaseAndLeaveType_Id(String name, Long leaveTypeId);
 
-	boolean existsByNameIgnoreCaseAndLeaveType_TypeIdAndPolicyIdNot(String name, Long leaveTypeId, Long policyId);
+	boolean existsByNameIgnoreCaseAndLeaveType_IdAndIdNot(String name, Long leaveTypeId, Long id);
 
 }
