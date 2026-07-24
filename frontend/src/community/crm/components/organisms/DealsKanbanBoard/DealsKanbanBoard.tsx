@@ -49,7 +49,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const handleAddDeal = (stageId: number) => {
-    void guardCrmCreate(CrmLimitResource.DEALS, () => {
+    guardCrmCreate(CrmLimitResource.DEALS, () => {
       const { setPreselectedStageId, openCrmSidePanel } =
         useCrmStore.getState();
       setPreselectedStageId(stageId);
