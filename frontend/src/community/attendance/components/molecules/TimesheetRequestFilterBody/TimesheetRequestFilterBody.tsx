@@ -6,10 +6,13 @@ import {
 import { FC, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
-import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
+import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-
-import { clampToCurrentYear, fromDateRange, toDateRange } from "./utils";
+import {
+  clampToCurrentYear,
+  fromDateRange,
+  toDateRange
+} from "~community/common/utils/dateTimeUtils";
 
 interface Props {
   isManager?: boolean;
@@ -23,56 +26,31 @@ const TimesheetRequestFilterBody: FC<Props> = ({
   const translateText = useTranslator("attendanceModule", "timesheet");
 
   const {
-    employeeTimesheetRequestsFilterValues,
-    employeeTimesheetRequestsFilters,
-    employeeTimesheetRequestSelectedDates,
-    setEmployeeTimesheetRequestsFilters,
-    setEmployeeTimesheetRequestSelectedDates,
-    resetEmployeeTimesheetRequestParams,
-    timesheetRequestsFilterValues,
-    timesheetRequestsFilters,
-    timesheetRequestSelectedDates,
-    setTimesheetRequestsFilters,
-    setTimesheetRequestSelectedDates,
-    resetTimesheetRequestParams
-  } = useAttendanceStore((state) => state);
+    filterValues,
+    appliedStatus,
+    appliedDates,
+    setFilters,
+    setDates,
+    resetParams
+  } = useTimesheetRequestFilterState(isManager, false);
 
-  const filterValues = isManager
-    ? timesheetRequestsFilterValues
-    : employeeTimesheetRequestsFilterValues;
-  const appliedStatus = isManager
-    ? timesheetRequestsFilters.status
-    : employeeTimesheetRequestsFilters.status;
-  const appliedDates = isManager
-    ? timesheetRequestSelectedDates
-    : employeeTimesheetRequestSelectedDates;
-  const setFilters = isManager
-    ? setTimesheetRequestsFilters
-    : setEmployeeTimesheetRequestsFilters;
-  const setDates = isManager
-    ? setTimesheetRequestSelectedDates
-    : setEmployeeTimesheetRequestSelectedDates;
-  const resetParams = isManager
-    ? resetTimesheetRequestParams
-    : resetEmployeeTimesheetRequestParams;
-
-  const [tempStatus, setTempStatus] = useState<string[]>(appliedStatus);
-  const [tempDates, setTempDates] = useState<DateRange | undefined>(
+  const [selectedStatus, setSelectedStatus] = useState<string[]>(appliedStatus);
+  const [selectedDateRange, setSelectedDateRange] = useState<DateRange | undefined>(
     toDateRange(appliedDates)
   );
 
-  const isEmpty = tempStatus.length === 0 && !tempDates?.from && !tempDates?.to;
+  const isEmpty = selectedStatus.length === 0 && !selectedDateRange?.from && !selectedDateRange?.to;
 
   const toggleStatus = (value: string) =>
-    setTempStatus((previous) =>
+    setSelectedStatus((previous) =>
       previous.includes(value)
         ? previous.filter((item) => item !== value)
         : [...previous, value]
     );
 
   const handleApply = () => {
-    setFilters({ status: tempStatus });
-    setDates(fromDateRange(tempDates));
+    setFilters({ status: selectedStatus });
+    setDates(fromDateRange(selectedDateRange));
     close();
   };
 
@@ -99,8 +77,8 @@ const TimesheetRequestFilterBody: FC<Props> = ({
       <div className="flex flex-col gap-2">
         <p className="subtitle1">{translateText(["dateRangeLabel"])}</p>
         <DateRangePicker
-          value={tempDates}
-          onChange={(range) => setTempDates(clampToCurrentYear(range))}
+          value={selectedDateRange}
+          onChange={(range) => setSelectedDateRange(clampToCurrentYear(range))}
         />
       </div>
       <SelectableItemList
@@ -109,7 +87,7 @@ const TimesheetRequestFilterBody: FC<Props> = ({
           label: status.label,
           value: status.value
         }))}
-        selectedValues={tempStatus}
+        selectedValues={selectedStatus}
         onChipClick={(value) => toggleStatus(value)}
       />
     </BasicFilterStructure>

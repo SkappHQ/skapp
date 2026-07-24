@@ -2,39 +2,45 @@ import { useEffect } from "react";
 
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 
-/**
- * Shared filter-count derivation + unmount cleanup for the employee and
- * manager timesheet-request tables, which mirror each other except for
- * which store slice (`employeeTimesheetRequest*` vs `timesheetRequest*`)
- * they read from.
- */
 export const useTimesheetRequestFilterState = (
   isManager: boolean,
   shouldRegisterCleanup = true
-): { filterCount: number } => {
+) => {
   const {
+    employeeTimesheetRequestsFilterValues,
     employeeTimesheetRequestsFilters,
     employeeTimesheetRequestSelectedDates,
-    resetEmployeeTimesheetRequestParams,
+    setEmployeeTimesheetRequestsFilters,
     setEmployeeTimesheetRequestSelectedDates,
+    resetEmployeeTimesheetRequestParams,
+    timesheetRequestsFilterValues,
     timesheetRequestsFilters,
     timesheetRequestSelectedDates,
-    resetTimesheetRequestParams,
-    setTimesheetRequestSelectedDates
+    setTimesheetRequestsFilters,
+    setTimesheetRequestSelectedDates,
+    resetTimesheetRequestParams
   } = useAttendanceStore((state) => state);
 
+  const filterValues = isManager
+    ? timesheetRequestsFilterValues
+    : employeeTimesheetRequestsFilterValues;
   const appliedStatus = isManager
     ? timesheetRequestsFilters.status
     : employeeTimesheetRequestsFilters.status;
-  const [appliedStartDate, appliedEndDate] = isManager
+  const appliedDates = isManager
     ? timesheetRequestSelectedDates
     : employeeTimesheetRequestSelectedDates;
-  const resetParams = isManager
-    ? resetTimesheetRequestParams
-    : resetEmployeeTimesheetRequestParams;
+  const setFilters = isManager
+    ? setTimesheetRequestsFilters
+    : setEmployeeTimesheetRequestsFilters;
   const setDates = isManager
     ? setTimesheetRequestSelectedDates
     : setEmployeeTimesheetRequestSelectedDates;
+  const resetParams = isManager
+    ? resetTimesheetRequestParams
+    : resetEmployeeTimesheetRequestParams;
+
+  const [appliedStartDate, appliedEndDate] = appliedDates;
 
   useEffect(() => {
     if (!shouldRegisterCleanup) return;
@@ -45,6 +51,13 @@ export const useTimesheetRequestFilterState = (
   }, [shouldRegisterCleanup, resetParams, setDates]);
 
   return {
-    filterCount: appliedStatus.length + (appliedStartDate || appliedEndDate ? 1 : 0)
+    filterValues,
+    appliedStatus,
+    appliedDates,
+    setFilters,
+    setDates,
+    resetParams,
+    filterCount:
+      appliedStatus.length + (appliedStartDate || appliedEndDate ? 1 : 0)
   };
 };

@@ -26,9 +26,13 @@ export interface TableViewInfiniteScroll {
   loadingMessage?: string;
 }
 
+export interface TableViewFilterContentArgs {
+  close: () => void;
+}
+
 export interface TableViewFilter {
   filterCount: number;
-  filterContent: (args: { close: () => void }) => ReactNode;
+  filterContent: (args: TableViewFilterContentArgs) => ReactNode;
   filterButtonAriaLabel?: string;
   popoverAriaLabel?: string;
   popoverAriaLabelledBy?: string;
@@ -67,7 +71,7 @@ export interface TableViewProps {
   infiniteScroll?: TableViewInfiniteScroll;
 
   // ---- toolbar (skapp-ui TableToolBar); filterButton is managed internally ----
-  toolbar?: Omit<TableToolBarProps, "filterButton"> & { isEnabled?: boolean };
+  toolbar?: Omit<TableToolBarProps, "filterButton">;
 
   // ---- filter popover wired into the toolbar filter button ----
   filter?: TableViewFilter;

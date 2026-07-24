@@ -20,7 +20,8 @@ import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMen
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
   GridHeader,
-  GridRow
+  GridRow,
+  TableViewFilterContentArgs
 } from "~community/common/components/organisms/TableView/types";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
@@ -78,6 +79,14 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
     });
   };
 
+  const handlePageChange = (page: number) => {
+    setEmployeeTimesheetRequestPagination(page);
+  };
+
+  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody close={close} />
+  );
+
   const getKebabMenuOptions = (timeRequestId: number) => [
     {
       id: timeRequestId,
@@ -124,7 +133,7 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
   const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
     label: col.headerName,
-    align: "center" as const
+    align: "center"
   }));
   const transformToTableRows = (): GridRow[] => {
     return (requestData?.items ?? []).map(
@@ -247,17 +256,13 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
       pagination={{
         totalPages: requestData?.totalPages,
         currentPage: employeeTimesheetRequestParams?.page,
-        onPageChange: (page: number) => {
-          setEmployeeTimesheetRequestPagination(page);
-        }
+        onPageChange: handlePageChange
       }}
       filter={{
         filterCount,
         filterButtonAriaLabel: translateAria(["filterButton"]),
         popoverId: "employee-timesheet-request-filter",
-        filterContent: ({ close }) => (
-          <TimesheetRequestFilterBody close={close} />
-        )
+        filterContent: renderFilterContent
       }}
     />
   );

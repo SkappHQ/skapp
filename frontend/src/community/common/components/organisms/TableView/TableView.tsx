@@ -34,8 +34,7 @@ const TableView: FC<TableViewProps> = ({
 
   const open = Boolean(anchorEl);
   const isFilterEnabled = filter;
-  const { isEnabled: toolbarEnabled, ...toolbarProps } = toolbar ?? {};
-  const isToolbarVisible = toolbarEnabled || isFilterEnabled;
+  const isToolbarVisible = Boolean(toolbar) || isFilterEnabled;
   const isInfiniteScroll = infiniteScroll?.isEnabled;
   const isPaginated = !isInfiniteScroll && pagination;
   const popoverId = filter?.popoverId;
@@ -70,7 +69,7 @@ const TableView: FC<TableViewProps> = ({
 
       {isToolbarVisible && (
         <TableToolBar
-          {...toolbarProps}
+          {...toolbar}
           filterButton={
             isFilterEnabled
               ? {

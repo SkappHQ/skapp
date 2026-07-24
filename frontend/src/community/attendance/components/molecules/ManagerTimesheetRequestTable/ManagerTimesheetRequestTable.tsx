@@ -26,7 +26,8 @@ import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMen
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
   GridHeader,
-  GridRow
+  GridRow,
+  TableViewFilterContentArgs
 } from "~community/common/components/organisms/TableView/types";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -107,6 +108,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
     });
   };
 
+  const handlePageChange = (page: number) => {
+    setTimesheetRequestPagination(page + 1);
+  };
+
+  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody isManager close={close} />
+  );
+
   const getKebabMenuOptions = (timeRequestId: number) => [
     {
       id: timeRequestId,
@@ -154,7 +163,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
     label: col.headerName,
-    align: "center" as const
+    align: "center"
   }));
 
   const transformToTableRows = (): GridRow[] => {
@@ -352,9 +361,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
             ? {
                 totalPages: requestData?.totalPages,
                 currentPage: timesheetRequestParams.page - 1,
-                onPageChange: (page: number) => {
-                  setTimesheetRequestPagination(page + 1);
-                }
+                onPageChange: handlePageChange
               }
             : undefined
         }
@@ -364,9 +371,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 filterCount,
                 filterButtonAriaLabel: translateAria(["filterButton"]),
                 popoverId: "manager-timesheet-request-filter",
-                filterContent: ({ close }) => (
-                  <TimesheetRequestFilterBody isManager close={close} />
-                )
+                filterContent: renderFilterContent
               }
             : undefined
         }
