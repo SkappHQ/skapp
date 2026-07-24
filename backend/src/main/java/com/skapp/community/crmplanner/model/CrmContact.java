@@ -29,8 +29,11 @@ public class CrmContact extends Auditable<String> {
 	@Column(name = "id", nullable = false, updatable = false)
 	private Long id;
 
-	@Column(name = "name", nullable = false)
-	private String name;
+	@Column(name = "first_name", nullable = false)
+	private String firstName;
+
+	@Column(name = "last_name")
+	private String lastName;
 
 	@Column(name = "email", nullable = false)
 	private String email;
@@ -51,5 +54,9 @@ public class CrmContact extends Auditable<String> {
 
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
+
+	public String getFullName() {
+		return lastName != null ? firstName + " " + lastName : firstName;
+	}
 
 }

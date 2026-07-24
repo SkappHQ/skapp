@@ -8,7 +8,9 @@ import org.openapitools.jackson.nullable.JsonNullable;
 @Setter
 public class CrmContactEditRequestDto {
 
-	private String name;
+	private String firstName;
+
+	private String lastName;
 
 	private String email;
 

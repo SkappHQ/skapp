@@ -98,8 +98,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
 		log.info("createContact: execution started");
 
-		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
-				requestDto.getOwnerId());
+		validateContactPayload(requestDto.getFirstName(), requestDto.getLastName(), requestDto.getEmail(),
+				requestDto.getContactNumber(), requestDto.getOwnerId());
 		validateContactCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
@@ -116,7 +116,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
-		contact.setName(requestDto.getName());
+		contact.setFirstName(requestDto.getFirstName());
+		contact.setLastName(requestDto.getLastName());
 		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(requestDto.getContactNumber());
 		contact.setCompany(company);
@@ -146,9 +147,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
 		}
 
-		if (requestDto.getName() != null) {
-			CrmValidations.validateContactName(requestDto.getName());
-			contact.setName(requestDto.getName());
+		if (requestDto.getFirstName() != null) {
+			CrmValidations.validateContactFirstName(requestDto.getFirstName());
+			contact.setFirstName(requestDto.getFirstName());
+		}
+
+		if (requestDto.getLastName() != null) {
+			CrmValidations.validateContactLastName(requestDto.getLastName());
+			contact.setLastName(requestDto.getLastName());
 		}
 
 		if (requestDto.getEmail() != null) {
@@ -363,8 +369,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId) {
-		CrmValidations.validateContactName(name);
+	private void validateContactPayload(String firstName, String lastName, String email, String contactNumber,
+			Long ownerId) {
+		CrmValidations.validateContactFirstName(firstName);
+		CrmValidations.validateContactLastName(lastName);
 		CrmValidations.validateContactEmail(email);
 		CrmValidations.validateContactNumber(contactNumber);
 		CrmValidations.validateOwnerId(ownerId);

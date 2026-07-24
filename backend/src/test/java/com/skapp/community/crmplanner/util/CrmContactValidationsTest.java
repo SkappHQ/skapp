@@ -18,97 +18,193 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class CrmContactValidationsTest {
 
 	@Nested
-	@DisplayName("validateContactName")
-	class ValidateContactName {
+	@DisplayName("validateContactFirstName")
+	class ValidateContactFirstName {
 
 		@Test
-		@DisplayName("Blank name - throws CRM_ERROR_CONTACT_NAME_REQUIRED")
-		void validateContactName_BlankName_ThrowsRequired() {
-			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateContactName("   "));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED, ex.getMessageKey());
+		@DisplayName("Blank first name - throws CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED")
+		void validateContactFirstName_BlankName_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactFirstName("   "));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED, ex.getMessageKey());
 		}
 
 		@Test
-		@DisplayName("Name exceeding max length - throws CRM_ERROR_CONTACT_NAME_TOO_LONG")
-		void validateContactName_TooLong_ThrowsTooLong() {
+		@DisplayName("Null first name - throws CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED")
+		void validateContactFirstName_NullName_ThrowsRequired() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactFirstName(null));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("First name exceeding max length - throws CRM_ERROR_CONTACT_FIRST_NAME_TOO_LONG")
+		void validateContactFirstName_TooLong_ThrowsTooLong() {
 			String tooLong = "A".repeat(CrmConstants.CONTACT_NAME_MAX_LENGTH + 1);
-			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateContactName(tooLong));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG, ex.getMessageKey());
-		}
-
-		@Test
-		@DisplayName("Valid name - does not throw")
-		void validateContactName_ValidName_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("Jane Cooper"));
-		}
-
-		@Test
-		@DisplayName("Name with hyphen - does not throw")
-		void validateContactName_WithHyphen_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("Mary-Jane Watson"));
-		}
-
-		@Test
-		@DisplayName("Name with period - does not throw")
-		void validateContactName_WithPeriod_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("Dr. John Smith"));
-		}
-
-		@Test
-		@DisplayName("Name with comma - does not throw")
-		void validateContactName_WithComma_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("Smith, John"));
-		}
-
-		@Test
-		@DisplayName("Unicode name - does not throw")
-		void validateContactName_UnicodeName_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("Ångström Müller"));
-		}
-
-		@Test
-		@DisplayName("Name with apostrophe - does not throw")
-		void validateContactName_WithApostrophe_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateContactName("O'Brien"));
-		}
-
-		@Test
-		@DisplayName("Name with HTML injection characters - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_WithHtmlChars_ThrowsInvalid() {
 			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateContactName("<script>alert(1)</script>"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+					() -> CrmValidations.validateContactFirstName(tooLong));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_TOO_LONG, ex.getMessageKey());
 		}
 
 		@Test
-		@DisplayName("Name with SQL injection characters - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_WithSqlChars_ThrowsInvalid() {
+		@DisplayName("Valid first name - does not throw")
+		void validateContactFirstName_ValidName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactFirstName("Jane"));
+		}
+
+		@Test
+		@DisplayName("First name with hyphen - does not throw")
+		void validateContactFirstName_WithHyphen_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactFirstName("Mary-Jane"));
+		}
+
+		@Test
+		@DisplayName("First name with period - does not throw")
+		void validateContactFirstName_WithPeriod_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactFirstName("Dr. John"));
+		}
+
+		@Test
+		@DisplayName("First name with comma - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_WithComma_ThrowsInvalid() {
 			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateContactName("'; DROP TABLE contacts;--"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+					() -> CrmValidations.validateContactFirstName("Smith, John"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
 		}
 
 		@Test
-		@DisplayName("Numeric-only name - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_NumericOnly_ThrowsInvalid() {
-			ModuleException ex = assertThrows(ModuleException.class, () -> CrmValidations.validateContactName("12345"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+		@DisplayName("Unicode first name - does not throw")
+		void validateContactFirstName_UnicodeName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactFirstName("Ångström"));
 		}
 
 		@Test
-		@DisplayName("Name with emoji - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_WithEmoji_ThrowsInvalid() {
+		@DisplayName("First name with apostrophe - does not throw")
+		void validateContactFirstName_WithApostrophe_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactFirstName("O'Brien"));
+		}
+
+		@Test
+		@DisplayName("First name with HTML injection characters - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_WithHtmlChars_ThrowsInvalid() {
 			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateContactName("John 😊"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+					() -> CrmValidations.validateContactFirstName("<script>alert(1)</script>"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
 		}
 
 		@Test
-		@DisplayName("Name with special symbols - throws CRM_ERROR_CONTACT_NAME_INVALID")
-		void validateContactName_WithSpecialSymbols_ThrowsInvalid() {
+		@DisplayName("First name with SQL injection characters - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_WithSqlChars_ThrowsInvalid() {
 			ModuleException ex = assertThrows(ModuleException.class,
-					() -> CrmValidations.validateContactName("John@Doe"));
-			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID, ex.getMessageKey());
+					() -> CrmValidations.validateContactFirstName("'; DROP TABLE contacts;--"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Numeric-only first name - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_NumericOnly_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactFirstName("12345"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("First name with emoji - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_WithEmoji_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactFirstName("John 😊"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("First name with special symbols - throws CRM_ERROR_CONTACT_FIRST_NAME_INVALID")
+		void validateContactFirstName_WithSpecialSymbols_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactFirstName("John@Doe"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID, ex.getMessageKey());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("validateContactLastName")
+	class ValidateContactLastName {
+
+		@Test
+		@DisplayName("Blank last name - does not throw (optional)")
+		void validateContactLastName_BlankName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName("   "));
+		}
+
+		@Test
+		@DisplayName("Null last name - does not throw (optional)")
+		void validateContactLastName_NullName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName(null));
+		}
+
+		@Test
+		@DisplayName("Last name exceeding max length - throws CRM_ERROR_CONTACT_LAST_NAME_TOO_LONG")
+		void validateContactLastName_TooLong_ThrowsTooLong() {
+			String tooLong = "A".repeat(CrmConstants.CONTACT_NAME_MAX_LENGTH + 1);
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactLastName(tooLong));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_TOO_LONG, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Valid last name - does not throw")
+		void validateContactLastName_ValidName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName("Cooper"));
+		}
+
+		@Test
+		@DisplayName("Last name with hyphen - does not throw")
+		void validateContactLastName_WithHyphen_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName("Watson-Jones"));
+		}
+
+		@Test
+		@DisplayName("Unicode last name - does not throw")
+		void validateContactLastName_UnicodeName_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName("Müller"));
+		}
+
+		@Test
+		@DisplayName("Last name with apostrophe - does not throw")
+		void validateContactLastName_WithApostrophe_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactLastName("O'Brien"));
+		}
+
+		@Test
+		@DisplayName("Last name with comma - throws CRM_ERROR_CONTACT_LAST_NAME_INVALID")
+		void validateContactLastName_WithComma_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactLastName("Smith, Jr"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Last name with HTML injection characters - throws CRM_ERROR_CONTACT_LAST_NAME_INVALID")
+		void validateContactLastName_WithHtmlChars_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactLastName("<script>alert(1)</script>"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Numeric-only last name - throws CRM_ERROR_CONTACT_LAST_NAME_INVALID")
+		void validateContactLastName_NumericOnly_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactLastName("12345"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Last name with special symbols - throws CRM_ERROR_CONTACT_LAST_NAME_INVALID")
+		void validateContactLastName_WithSpecialSymbols_ThrowsInvalid() {
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactLastName("Doe@Smith"));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID, ex.getMessageKey());
 		}
 
 	}
