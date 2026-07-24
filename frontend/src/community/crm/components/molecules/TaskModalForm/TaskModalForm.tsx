@@ -48,6 +48,17 @@ const TaskModalForm: FC<TaskFormProps> = ({
   translateText
 }) => {
   const {
+    values,
+    errors,
+    handleChange,
+    handleBlur,
+    dirty,
+    isSubmitting,
+    setFieldValue,
+    submitForm
+  } = formik;
+
+  const {
     setIsTaskModalOpen,
     selectedTaskId,
     selectedContactId,
@@ -122,21 +133,21 @@ const TaskModalForm: FC<TaskFormProps> = ({
   );
 
   const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 || !!formik.values.dealId;
+    debouncedContactSearchText.length > 0 || !!values.dealId;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isContactSearchEnabled,
-    formik.values.dealId
+    values.dealId
   );
 
   const isDealSearchEnabled =
-    debouncedDealSearchText.length > 0 || !!formik.values.contactId;
+    debouncedDealSearchText.length > 0 || !!values.contactId;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isDealSearchEnabled,
-    formik.values.contactId
+    values.contactId
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
@@ -153,9 +164,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
       contactLookupData?.items?.map((contact) => ({
         id: String(contact.id),
         content: (
-          <span className="block w-full truncate" title={contact.name}>
+          <div className="w-full truncate" title={contact.name}>
             {contact.name}
-          </span>
+          </div>
         )
       })) ?? [],
     [contactLookupData]
@@ -166,33 +177,27 @@ const TaskModalForm: FC<TaskFormProps> = ({
       dealLookupData?.items?.map((deal) => ({
         id: String(deal.id),
         content: (
-          <span className="block w-full truncate" title={deal.name}>
+          <div className="w-full truncate" title={deal.name}>
             {deal.name}
-          </span>
+          </div>
         )
       })) ?? [],
     [dealLookupData]
   );
 
-  const clearError = (field: keyof CrmTaskFormTypes) =>
-    formik.setFieldError(field, undefined);
-
   const handleTypeSelect = (value: string) => {
-    formik.setFieldValue("type", getCategoryById(Number(value)) ?? null);
-    clearError("type");
+    setFieldValue("type", getCategoryById(Number(value)) ?? null);
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
-    formik.setFieldValue("dueDate", date?.toISOString() ?? null);
-    clearError("dueDate");
+    setFieldValue("dueDate", date?.toISOString() ?? null);
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupData?.items?.find(
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
-    formik.setFieldValue("owner", owner?.employeeId);
-    clearError("owner");
+    setFieldValue("owner", owner?.employeeId);
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -201,7 +206,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     const contact = contactLookupData?.items?.find(
       (contactLookupItem) => String(contactLookupItem.id) === item.id
     );
-    formik.setFieldValue("contactId", Number(item.id));
+    setFieldValue("contactId", Number(item.id));
     setSelectedContactName(contact?.name ?? "");
     setContactSearchText("");
   };
@@ -210,30 +215,30 @@ const TaskModalForm: FC<TaskFormProps> = ({
     const deal = dealLookupData?.items?.find(
       (dealLookupItem) => String(dealLookupItem.id) === item.id
     );
-    formik.setFieldValue("dealId", Number(item.id));
+    setFieldValue("dealId", Number(item.id));
     setSelectedDealName(deal?.name ?? "");
     setDealSearchText("");
   };
 
   const handleClearOwner = () => {
     setSelectedOwner(null);
-    formik.setFieldValue("owner", null);
+    setFieldValue("owner", null);
   };
 
   const handleClearContact = () => {
-    formik.setFieldValue("contactId", null);
+    setFieldValue("contactId", null);
     setSelectedContactName("");
     setContactSearchText("");
   };
 
   const handleClearDeal = () => {
-    formik.setFieldValue("dealId", null);
+    setFieldValue("dealId", null);
     setSelectedDealName("");
     setDealSearchText("");
   };
 
-  const parsedDueDate = formik.values.dueDate
-    ? convertUTCStringToLocalDateTime(formik.values.dueDate).toJSDate()
+  const parsedDueDate = values.dueDate
+    ? convertUTCStringToLocalDateTime(values.dueDate).toJSDate()
     : undefined;
 
   const formattedDueDate = parsedDueDate
@@ -245,15 +250,13 @@ const TaskModalForm: FC<TaskFormProps> = ({
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="name"
-          value={formik.values.name}
-          errorMessage={formik.errors.name}
-          state={formik.errors.name ? "error" : "default"}
+          value={values.name}
+          errorMessage={errors.name}
+          state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
-          onChange={(e) => {
-            formik.handleChange(e);
-            clearError("name");
-          }}
+          onChange={handleChange}
+          onBlur={handleBlur}
           aria-label={translateText(["ariaLabels", "task"])}
           fullWidth
           required
@@ -265,10 +268,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
               label={translateText(["labels", "type"])}
               placeholder={translateText(["placeholders", "type"])}
               options={taskTypeOptions}
-              value={formik.values.type?.id?.toString() ?? undefined}
+              value={values.type?.id?.toString() ?? undefined}
               onChange={handleTypeSelect}
-              errorMessage={formik.errors.type}
-              variant={formik.errors.type ? "primary-error" : "primary"}
+              errorMessage={errors.type}
+              variant={errors.type ? "primary-error" : "primary"}
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "type"])}
@@ -280,9 +283,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
               label={translateText(["labels", "priority"])}
               placeholder={translateText(["placeholders", "priority"])}
               options={priorityDropdownOptions}
-              value={formik.values.priority ?? undefined}
-              onChange={(value) => formik.setFieldValue("priority", value)}
-              errorMessage={formik.errors.priority || ""}
+              value={values.priority ?? undefined}
+              onChange={(value) => setFieldValue("priority", value)}
+              errorMessage={errors.priority || ""}
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "priority"])}
@@ -304,8 +307,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
                   value={formattedDueDate}
                   label={translateText(["labels", "dueDate"])}
                   placeholder={translateText(["placeholders", "dueDate"])}
-                  state={formik.errors.dueDate ? "error" : "default"}
-                  errorMessage={formik.errors.dueDate || ""}
+                  state={errors.dueDate ? "error" : "default"}
+                  errorMessage={errors.dueDate || ""}
                   aria-label={translateText(["ariaLabels", "dueDate"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
@@ -335,8 +338,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
                 placeholder={translateText(["placeholders", "taskOwner"])}
                 value={ownerSearchText}
                 onChange={(e) => setOwnerSearchText(e.target.value)}
-                state={formik.errors.owner ? "error" : "default"}
-                errorMessage={formik.errors.owner}
+                state={errors.owner ? "error" : "default"}
+                errorMessage={errors.owner}
                 emptyMessage={translateText(["emptyStates", "noOwners"])}
                 positionStrategy="fixed"
                 required
@@ -381,15 +384,13 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
         <TextArea
           name="notes"
-          value={formik.values.notes}
+          value={values.notes}
           placeholder={translateText(["placeholders", "notes"])}
           label={translateText(["labels", "notes"])}
-          errorMessage={formik.errors.notes}
-          state={formik.errors.notes ? "error" : "default"}
-          onChange={(e) => {
-            formik.handleChange(e);
-            clearError("notes");
-          }}
+          errorMessage={errors.notes}
+          state={errors.notes ? "error" : "default"}
+          onChange={handleChange}
+          onBlur={handleBlur}
           rows={3}
           aria-label={translateText(["ariaLabels", "notes"])}
         />
@@ -399,7 +400,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={formik.isSubmitting}
+          disabled={isSubmitting}
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -410,8 +411,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
         <ButtonV2
           variant="primary"
           type="button"
-          onClick={formik.submitForm}
-          disabled={formik.isSubmitting || isPending || !formik.dirty}
+          onClick={submitForm}
+          disabled={isSubmitting || isPending || !dirty}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}
