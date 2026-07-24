@@ -41,11 +41,6 @@ interface Props {
 
 const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
-  const translateActivateToast = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "activatePolicy"
-  );
   const canManagePolicies = useCanManageLeavePolicies();
   const { setToastMessage } = useToast();
 
@@ -63,8 +58,8 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateActivateToast(["successToastTitle"]),
-      description: translateActivateToast(["successToastDescription"], {
+      title: translateText(["activatePolicy", "successToastTitle"]),
+      description: translateText(["activatePolicy", "successToastDescription"], {
         policyName: activatingPolicyName
       }),
       isIcon: true
@@ -76,8 +71,8 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateActivateToast([title]),
-      description: translateActivateToast([description]),
+      title: translateText(["activatePolicy", title]),
+      description: translateText(["activatePolicy", description]),
       isIcon: true
     });
   };
