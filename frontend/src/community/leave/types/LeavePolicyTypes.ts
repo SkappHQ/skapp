@@ -153,3 +153,11 @@ export interface LeavePolicyResponseDto {
 export interface LeavePolicyMutationResponse {
   results: LeavePolicyResponseDto[];
 }
+
+export interface LeavePolicyConfigResult {
+  enabled: boolean;
+}
+
+export interface LeavePolicyConfigResponse {
+  results: LeavePolicyConfigResult[];
+}

@@ -10,12 +10,14 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
   isOpen: boolean;
+  isEnabling: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
 
 const EnableLeavePoliciesConfirmModal: FC<Props> = ({
   isOpen,
+  isEnabling,
   onClose,
   onConfirm
 }) => {
@@ -24,7 +26,6 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
     "leave",
     "enableConfirmModal"
   );
-  const translateButtonText = useTranslator("configurations", "leave", "buttons");
 
   return (
     <SmallModal
@@ -33,22 +34,26 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
       modalHeader={translateText(["title"])}
       content={
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 rounded-lg bg-semantic-amber-background px-4 py-3">
-            <YellowWarningIcon className="size-4 shrink-0" />
-            <p className="body2 text-black">
-              <span className="font-medium">
-                {translateText(["warningTitle"])}
-              </span>{" "}
-              {translateText(["warningDescription"])}
-            </p>
+          <div className="flex justify-center">
+            <YellowWarningIcon aria-hidden="true" className="size-8" />
           </div>
+          <p className="body1 font-semibold text-black">
+            {translateText(["irreversibleNotice"])}
+          </p>
           <div className="body1 text-black">
             <p>{translateText(["consequencesTitle"])}</p>
             <ul className="list-disc pl-6">
-              <li>{translateText(["consequenceDeleteAllocations"])}</li>
+              <li>{translateText(["consequenceZeroAllocations"])}</li>
+              <li>{translateText(["consequenceCancelPending"])}</li>
               <li>{translateText(["consequenceRemoveBulkUpload"])}</li>
               <li>{translateText(["consequenceRetainRecords"])}</li>
             </ul>
+          </div>
+          <div className="flex items-center gap-3 rounded-lg bg-semantic-amber-background px-4 py-3">
+            <YellowWarningIcon aria-hidden="true" className="size-4 shrink-0" />
+            <p className="body2 text-black">
+              {translateText(["recommendationNotice"])}
+            </p>
           </div>
         </div>
       }
@@ -56,16 +61,22 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
         buttonLeft: {
           variant: "tertiary",
           onClick: onClose,
+          disabled: isEnabling,
           icon: <CloseIcon />,
           iconPosition: "end",
-          children: translateButtonText(["cancel"])
+          children: translateText(["cancelButton"])
         },
         buttonRight: {
           variant: "error",
           onClick: onConfirm,
+          disabled: isEnabling,
+          isLoading: isEnabling,
           icon: <DeleteButtonIcon fill="var(--color-semantic-red-text)" />,
           iconPosition: "end",
-          children: translateText(["confirmButton"])
+          title: isEnabling ? translateText(["confirmingTooltip"]) : undefined,
+          children: isEnabling
+            ? translateText(["confirmingButton"])
+            : translateText(["confirmButton"])
         }
       }}
     />
