@@ -14,7 +14,6 @@ import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
-import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyEndedReason;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.PolicyType;
@@ -76,7 +75,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 				return new ResponseEntityDto(false,
 						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(openWindow));
 			}
-			closeWindow(openWindow, effectiveFrom.minusDays(1), EmployeeLeavePolicyEndedReason.SUPERSEDED);
+			closeWindow(openWindow, effectiveFrom.minusDays(1));
 		}
 
 		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
@@ -109,7 +108,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.orElseThrow(() -> new EntityNotFoundException(
 					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
-		closeWindow(openWindow, LocalDate.now(), EmployeeLeavePolicyEndedReason.UNASSIGNED);
+		closeWindow(openWindow, LocalDate.now());
 
 		log.info("unassignLeavePolicy: execution ended");
 		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
@@ -138,20 +137,18 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		List<EmployeeLeavePolicy> openWindows = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
 				EmployeeLeavePolicyStatus.ACTIVE);
 		LocalDate today = LocalDate.now();
-		openWindows.forEach(window -> closeWindow(window, today, EmployeeLeavePolicyEndedReason.POLICY_DEACTIVATED));
+		openWindows.forEach(window -> closeWindow(window, today));
 		if (!openWindows.isEmpty()) {
 			log.info("endOpenWindowsForPolicy: closed {} open window(s) for policy {}", openWindows.size(), policyId);
 		}
 		return openWindows.size();
 	}
 
-	private void closeWindow(EmployeeLeavePolicy window, LocalDate proposedEffectiveTo,
-			EmployeeLeavePolicyEndedReason reason) {
+	private void closeWindow(EmployeeLeavePolicy window, LocalDate proposedEffectiveTo) {
 		LocalDate effectiveTo = proposedEffectiveTo.isBefore(window.getEffectiveFrom()) ? window.getEffectiveFrom()
 				: proposedEffectiveTo;
 		window.setEffectiveTo(effectiveTo);
 		window.setStatus(EmployeeLeavePolicyStatus.ENDED);
-		window.setEndedReason(reason);
 		employeeLeavePolicyDao.save(window);
 	}
 

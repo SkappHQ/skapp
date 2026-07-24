@@ -2,7 +2,6 @@ package com.skapp.community.leaveplanner.model;
 
 import com.skapp.community.common.model.Auditable;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
-import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyEndedReason;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.peopleplanner.model.Employee;
 import jakarta.persistence.Column;
@@ -55,9 +54,5 @@ public class EmployeeLeavePolicy extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private EmployeeLeavePolicyStatus status;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "ended_reason")
-	private EmployeeLeavePolicyEndedReason endedReason;
 
 }
