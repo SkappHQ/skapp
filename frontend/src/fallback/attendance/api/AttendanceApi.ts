@@ -13,6 +13,8 @@ export interface UserGeofenceStatus {
 
 export const useGetUserGeofenceStatus = (_enabled: boolean = true) => {
   return {
-    data: { geofenceConfigured: false } as UserGeofenceStatus
+    data: { geofenceConfigured: false } as UserGeofenceStatus,
+    isLoading: false,
+    isError: false
   };
 };
