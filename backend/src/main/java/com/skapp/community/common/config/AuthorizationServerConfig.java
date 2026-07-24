@@ -31,8 +31,9 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -90,8 +91,18 @@ public class AuthorizationServerConfig {
 					authorizationServer -> authorizationServer
 						.oidc(oidc -> oidc.clientRegistrationEndpoint(Customizer.withDefaults())))
 			.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-			.exceptionHandling(exceptions -> exceptions
-				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(signInRedirectUrl)))
+			// Unauthenticated /oauth2/authorize -> redirect to the real Skapp /signin,
+			// passing
+			// the original authorize URL as ?callback so the FE can return here after
+			// login.
+			.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint((request, response, authException) -> {
+				String target = request.getRequestURL().toString();
+				if (request.getQueryString() != null) {
+					target += "?" + request.getQueryString();
+				}
+				response
+					.sendRedirect(signInRedirectUrl + "?callback=" + URLEncoder.encode(target, StandardCharsets.UTF_8));
+			}))
 			.oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()));
 
 		return http.build();

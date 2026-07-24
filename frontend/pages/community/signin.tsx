@@ -8,6 +8,7 @@ import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import { getAccessToken } from "~community/auth/utils/authUtils";
 import { useGetApplicationVersionDetails } from "~community/common/api/VersionUpgradeApi";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import RequestPasswordChangeModal from "~community/common/components/molecules/RequestPasswordChangeModal/RequestPasswordChangeModal";
@@ -127,7 +128,15 @@ const SignIn: NextPage = () => {
       } else {
         // Check for callback parameter
         const callbackPath = router.query.callback as string;
-        if (callbackPath) {
+        if (callbackPath && callbackPath.includes("/oauth2/authorize")) {
+          // OAuth authorization flow: seed the authorization-server session with the
+          // just-issued token, then hand the browser back to the authorize endpoint.
+          const token = await getAccessToken();
+          if (token) {
+            await authFetch.post("/auth/oauth/session-login", { token });
+          }
+          window.location.href = callbackPath;
+        } else if (callbackPath) {
           router.push(callbackPath);
         } else {
           handleRedirect();

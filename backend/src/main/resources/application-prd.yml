@@ -68,6 +68,10 @@ oauth2:
     private-key: ${OAUTH2_JWK_PRIVATE_KEY}
     public-key: ${OAUTH2_JWK_PUBLIC_KEY}
     key-id: ${OAUTH2_JWK_KEY_ID}
+  client:
+    client-id: ${OAUTH2_CLIENT_ID:}
+    redirect-uris: ${OAUTH2_CLIENT_REDIRECT_URIS:}
+    scopes: ${OAUTH2_CLIENT_SCOPES:openid,skapp}
 
 domain:
   base: ${DOMAIN_BASE}
