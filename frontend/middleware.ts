@@ -19,6 +19,11 @@ import {
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
+import {
+  GOOGLE_IMPORT_REVIEW,
+  GOOGLE_IMPORT_SYNCING,
+  SYNC_CHANGES
+} from "~enterprise/people/constants/routes";
 
 // Define common routes shared by all roles
 const commonRoutes = [
@@ -60,9 +65,9 @@ const superAdminRoutes = {
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.CRM.BASE,
-    ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
-    ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
-    ROUTES.PEOPLE.SYNC_CHANGES
+    GOOGLE_IMPORT_SYNCING,
+    GOOGLE_IMPORT_REVIEW,
+    SYNC_CHANGES
   ]
 };
 

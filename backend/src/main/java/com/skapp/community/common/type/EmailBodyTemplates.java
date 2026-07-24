@@ -13,6 +13,10 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	PEOPLE_MODULE_USER_INVITATION_MICROSOFT_SSO("people-module-user-invitation-microsoft-sso"),
 	PEOPLE_MODULE_USER_TERMINATION_V1("people-module-user-termination"),
 
+	// People Module — External Sync Templates
+	PEOPLE_MODULE_EXTERNAL_SYNC_COMPLETED("people-module-external-sync-completed"),
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_USER_REMOVED("people-module-google-workspace-user-removed"),
+
 	// Holiday Templates
 	PEOPLE_MODULE_NEW_HOLIDAY_DECLARED("people-module-new-holiday-declared-employee"),
 	PEOPLE_MODULE_HOLIDAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE(
@@ -104,11 +108,7 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	// E-Sign Templates
 	ESIGN_DOCUMENT_SIGN_REQUEST("esign-document-sign-request"), ESIGN_DOCUMENT_COMPLETED("esign-document-completed"),
 	ESIGN_DOCUMENT_DECLINED("esign-document-declined"), ESIGN_DOCUMENT_VOIDED("esign-document-voided"),
-	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired"),
-
-	// People Module — External Sync Templates
-	PEOPLE_MODULE_EXTERNAL_SYNC_COMPLETED("people-module-external-sync-completed"),
-	PEOPLE_MODULE_GOOGLE_WORKSPACE_USER_REMOVED("people-module-google-workspace-user-removed");
+	ESIGN_DOCUMENT_REMINDER("esign-document-reminder"), ESIGN_DOCUMENT_EXPIRED("esign-document-expired");
 
 	private final String templateId;
 

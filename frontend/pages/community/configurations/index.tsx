@@ -7,9 +7,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
-import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
+import {
+  getConfigurationTabs,
+  getFallbackTabId
+} from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
 import { useGetGoogleConnectionStatus } from "~enterprise/people/api/GoogleWorkspaceSyncApi";
@@ -20,7 +23,7 @@ const Configurations: NextPage = () => {
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
-  const isSuperAdmin = !!user?.roles?.includes(AdminTypes.SUPER_ADMIN);
+  const { isSuperAdmin } = useSessionData();
 
   const { data: googleConnectionStatus } = useGetGoogleConnectionStatus(
     isEnterprise && isSuperAdmin
@@ -37,10 +40,8 @@ const Configurations: NextPage = () => {
   const visibleTabs = useMemo(() => {
     const userRoles = user?.roles || [];
     return allTabs.filter((tab) => {
-      const hasRequiredRole = userRoles.some((role) =>
-        tab.requiredRoles.includes(role as AdminTypes)
-      );
-      if (!hasRequiredRole) return false;
+      if (!tab.requiredRoles.some((role) => userRoles.includes(role)))
+        return false;
       if (tab.id === "people") return !!googleConnectionStatus?.connected;
       return true;
     });
@@ -70,11 +71,9 @@ const Configurations: NextPage = () => {
 
   useEffect(() => {
     if (!router.isReady || visibleTabs.length === 0) return;
-    if (activeTab && !visibleTabs.some((tab) => tab.id === activeTab)) {
-      const fallbackTabId = visibleTabs[0]?.id;
-      if (fallbackTabId) {
-        handleTabChange(fallbackTabId);
-      }
+    const fallbackTabId = getFallbackTabId(visibleTabs, activeTab);
+    if (fallbackTabId) {
+      handleTabChange(fallbackTabId);
     }
   }, [visibleTabs, activeTab, router.isReady]);
 
