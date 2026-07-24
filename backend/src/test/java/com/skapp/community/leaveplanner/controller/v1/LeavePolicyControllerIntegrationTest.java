@@ -302,6 +302,24 @@ class LeavePolicyControllerIntegrationTest {
 				.andExpect(status().isBadRequest());
 		}
 
+		@Test
+		@DisplayName("Leave admin gets not found when activating an unknown policy")
+		void activateLeavePolicy_UnknownPolicy_ReturnsNotFound() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/9999/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("Leave admin gets not found when deactivating an unknown policy")
+		void deactivateLeavePolicy_UnknownPolicy_ReturnsNotFound() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/9999/deactivate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isNotFound());
+		}
+
 	}
 
 }
