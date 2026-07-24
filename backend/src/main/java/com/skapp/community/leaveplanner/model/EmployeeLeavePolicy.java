@@ -22,20 +22,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-/**
- * Effective-dated assignment window linking an {@link Employee} to a {@link LeavePolicy}.
- * <p>
- * Rows are append-only: an assignment is never hard-deleted. Unassigning (or being
- * superseded by a newer policy of the same leave type, or the policy being deactivated)
- * closes the window by setting {@code effectiveTo}, flipping {@code status} to
- * {@code ENDED} and recording an {@code endedReason}. At most one window per (employee,
- * policy leave type) is open ({@code effectiveTo IS NULL}, {@code status = ACTIVE}) at a
- * time; enforced in the service layer since leave type is only reachable through the
- * policy.
- * <p>
- * Table {@code lv_employee_leave_policy} is created by the shared leave-policy foundation
- * migration; {@code effective_date_type} is added by this feature's ALTER migration.
- */
 @Entity
 @Getter
 @Setter

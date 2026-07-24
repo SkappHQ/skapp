@@ -8,12 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-/**
- * A leave-policy assignment window as shown in the profile Leave Policies section.
- * <p>
- * Note: no entitlement balance is exposed here. Balance depends on an accrual engine that
- * does not yet exist; it will be added when that engine lands.
- */
 @Getter
 @Setter
 public class EmployeeLeavePolicyResponseDto {
@@ -30,7 +24,7 @@ public class EmployeeLeavePolicyResponseDto {
 
 	private String leaveTypeName;
 
-	private String leaveTypeEmoji;
+	private String leaveTypeEmojiCode;
 
 	private PolicyType policyType;
 

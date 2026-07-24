@@ -17,16 +17,9 @@ public class AssignLeavePolicyRequestDto {
 	@NotNull
 	private Long policyId;
 
-	/**
-	 * Whether the window starts on the employee's hire date or an admin-picked date. Kept
-	 * in the request only; the resolved date is persisted in {@code effectiveFrom}.
-	 */
 	@NotNull
 	private EffectiveDateType effectiveDateType;
 
-	/**
-	 * Required only when {@link #effectiveDateType} is {@code SPECIFIC}.
-	 */
 	private LocalDate specificDate;
 
 }

@@ -11,31 +11,15 @@ import java.util.Optional;
 @Repository
 public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolicy, Long> {
 
-	/**
-	 * The single open window for an employee within a leave type, if any. Used to detect
-	 * and close a conflicting assignment when a new policy of the same leave type is
-	 * assigned.
-	 */
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(Long employeeId,
 			Long leaveTypeId, EmployeeLeavePolicyStatus status);
 
-	/**
-	 * The open window for a specific (employee, policy), if any. Used by unassign.
-	 */
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_IdAndStatus(Long employeeId, Long policyId,
 			EmployeeLeavePolicyStatus status);
 
-	/**
-	 * All windows for an employee with the given status, newest first. Used to render the
-	 * profile Leave Policies section (status = ACTIVE).
-	 */
 	List<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(Long employeeId,
 			EmployeeLeavePolicyStatus status);
 
-	/**
-	 * All open windows for a policy. Used when a policy is deactivated so its open
-	 * employee assignments can be closed in the same flow.
-	 */
 	List<EmployeeLeavePolicy> findByPolicy_IdAndStatus(Long policyId, EmployeeLeavePolicyStatus status);
 
 }

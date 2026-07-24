@@ -56,14 +56,12 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACTIVE);
 		}
 
-		// This phase supports accrual policies only; flexible allocation is out of scope.
 		if (policy.getPolicyType() != PolicyType.ACCRUAL) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL);
 		}
 
 		LocalDate effectiveFrom = resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 
-		// Conflict rule: at most one open window per (employee, leave type).
 		Long leaveTypeId = policy.getLeaveType().getId();
 		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(), leaveTypeId,
@@ -71,9 +69,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.orElse(null);
 
 		if (openWindow != null) {
-			// Re-assigning the exact same policy on the same effective date is a no-op;
-			// return
-			// the existing window rather than churning history with a SUPERSEDED row.
 			if (openWindow.getPolicy().getId().equals(policy.getId())
 					&& effectiveFrom.equals(openWindow.getEffectiveFrom())
 					&& openWindow.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
@@ -81,9 +76,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 				return new ResponseEntityDto(false,
 						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(openWindow));
 			}
-			// A different policy (or the same policy re-dated) supersedes the current
-			// window
-			// (last-write-wins), in the same transaction as the insert below.
 			closeWindow(openWindow, effectiveFrom.minusDays(1), EmployeeLeavePolicyEndedReason.SUPERSEDED);
 		}
 
@@ -153,11 +145,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		return openWindows.size();
 	}
 
-	/**
-	 * Close a window: cap {@code effectiveTo} so it never precedes {@code effectiveFrom}
-	 * (which would be an invalid range when a window is superseded/unassigned on or
-	 * before its own start date), then mark it {@code ENDED} with the given reason.
-	 */
 	private void closeWindow(EmployeeLeavePolicy window, LocalDate proposedEffectiveTo,
 			EmployeeLeavePolicyEndedReason reason) {
 		LocalDate effectiveTo = proposedEffectiveTo.isBefore(window.getEffectiveFrom()) ? window.getEffectiveFrom()
@@ -176,7 +163,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			return dto.getSpecificDate();
 		}
 
-		// HIRE_DATE
 		if (employee.getJoinDate() == null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_HIRE_DATE_UNAVAILABLE);
 		}

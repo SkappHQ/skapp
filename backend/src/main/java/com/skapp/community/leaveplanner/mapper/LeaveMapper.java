@@ -166,7 +166,7 @@ public interface LeaveMapper {
 	@Mapping(target = "policyType", source = "policy.policyType")
 	@Mapping(target = "leaveTypeId", source = "policy.leaveType.id")
 	@Mapping(target = "leaveTypeName", source = "policy.leaveType.name")
-	@Mapping(target = "leaveTypeEmoji", source = "policy.leaveType.emojiCode")
+	@Mapping(target = "leaveTypeEmojiCode", source = "policy.leaveType.emojiCode")
 	EmployeeLeavePolicyResponseDto employeeLeavePolicyToEmployeeLeavePolicyResponseDto(
 			EmployeeLeavePolicy employeeLeavePolicy);
 
