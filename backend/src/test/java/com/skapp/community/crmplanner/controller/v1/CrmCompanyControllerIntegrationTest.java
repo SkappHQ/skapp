@@ -297,7 +297,8 @@ class CrmCompanyControllerIntegrationTest {
 		crmDealStageDao.save(stage);
 
 		CrmContact contact = new CrmContact();
-		contact.setName("Test Contact");
+		contact.setFirstName("Test");
+		contact.setLastName("Contact");
 		contact.setEmail("deal.test@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
@@ -604,7 +605,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private CrmContact createMetricsContact(CrmCompany company, String email) {
 		CrmContact contact = new CrmContact();
-		contact.setName("Metrics Contact");
+		contact.setFirstName("Metrics");
+		contact.setLastName("Contact");
 		contact.setEmail(email);
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact.setCompany(company);

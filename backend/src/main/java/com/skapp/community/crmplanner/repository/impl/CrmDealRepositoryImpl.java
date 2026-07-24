@@ -108,7 +108,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
 			Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
 			predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
-					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.firstName)), keyword),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.lastName)), keyword),
+					cb.like(cb.lower(cb.concat(cb.concat(contactJoin.get(CrmContact_.firstName), " "),
+							contactJoin.get(CrmContact_.lastName))), keyword),
 					cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
 					cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
 					cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),
@@ -155,7 +158,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Join<CrmDeal, CrmContact> contactJoin = deal.join(CrmDeal_.contact, JoinType.LEFT);
 		Join<CrmDeal, Employee> ownerJoin = deal.join(CrmDeal_.owner, JoinType.LEFT);
 		predicates.add(cb.or(cb.like(cb.lower(deal.get(CrmDeal_.name)), keyword),
-				cb.like(cb.lower(contactJoin.get(CrmContact_.name)), keyword),
+				cb.like(cb.lower(contactJoin.get(CrmContact_.firstName)), keyword),
+				cb.like(cb.lower(contactJoin.get(CrmContact_.lastName)), keyword),
+				cb.like(cb.lower(cb.concat(cb.concat(contactJoin.get(CrmContact_.firstName), " "),
+						contactJoin.get(CrmContact_.lastName))), keyword),
 				cb.like(cb.lower(ownerJoin.get(Employee_.firstName)), keyword),
 				cb.like(cb.lower(ownerJoin.get(Employee_.lastName)), keyword),
 				cb.like(cb.lower(cb.concat(cb.concat(ownerJoin.get(Employee_.firstName), " "),

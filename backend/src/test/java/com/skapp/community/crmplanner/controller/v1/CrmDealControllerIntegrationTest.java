@@ -149,7 +149,8 @@ class CrmDealControllerIntegrationTest {
 
 	private CrmContact savedContact(CrmCompany company) {
 		CrmContact contact = new CrmContact();
-		contact.setName("Deal Test Contact");
+		contact.setFirstName("Deal");
+		contact.setLastName("Test Contact");
 		contact.setEmail("deal.contact@example.com");
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));
@@ -232,14 +233,16 @@ class CrmDealControllerIntegrationTest {
 		CrmCompany company = savedCompany("Contact Filter Deal Company");
 
 		CrmContact contactA = new CrmContact();
-		contactA.setName("Contact A");
+		contactA.setFirstName("Contact");
+		contactA.setLastName("A");
 		contactA.setEmail("deal.filter.contact.a@example.com");
 		contactA.setCompany(company);
 		contactA.setOwner(employeeDao.getReferenceById(1L));
 		contactA = crmContactDao.save(contactA);
 
 		CrmContact contactB = new CrmContact();
-		contactB.setName("Contact B");
+		contactB.setFirstName("Contact");
+		contactB.setLastName("B");
 		contactB.setEmail("deal.filter.contact.b@example.com");
 		contactB.setCompany(company);
 		contactB.setOwner(employeeDao.getReferenceById(1L));
@@ -420,7 +423,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany newCompany = savedCompany("New Company");
 		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
+		newContact.setFirstName("New");
+		newContact.setLastName("Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -450,7 +454,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany newCompany = savedCompany("New Corp");
 		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
+		newContact.setFirstName("New");
+		newContact.setLastName("Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -474,7 +479,8 @@ class CrmDealControllerIntegrationTest {
 		deal = crmDealDao.save(deal);
 
 		CrmContact newContact = savedContact(null);
-		newContact.setName("No Company Contact");
+		newContact.setFirstName("No");
+		newContact.setLastName("Company Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -499,7 +505,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany deletedCompany = savedCompany("Deleted Corp");
 		CrmContact newContact = savedContact(deletedCompany);
-		newContact.setName("Deleted Company Contact");
+		newContact.setFirstName("Deleted");
+		newContact.setLastName("Company Contact");
 		newContact = crmContactDao.save(newContact);
 
 		// soft-delete the new contact's company

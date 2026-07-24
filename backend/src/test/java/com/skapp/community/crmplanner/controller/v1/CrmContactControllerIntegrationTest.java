@@ -580,7 +580,8 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		// lastName, email, contactNumber, companyId, ownerId are omitted and stay untouched
+		// lastName, email, contactNumber, companyId, ownerId are omitted and stay
+		// untouched
 		performPatchRawRequest(contactId, "{\"firstName\": \"Updated Name Only\"}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
