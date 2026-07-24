@@ -61,6 +61,10 @@ jwt:
     short-duration:
       expiration-time: 21600000 # Expiration time in milliseconds (6 hours)
 
+oauth2:
+  issuer: ${OAUTH2_ISSUER}
+  signin-redirect-url: ${OAUTH2_SIGNIN_URL}
+
 domain:
   base: ${DOMAIN_BASE}
 
