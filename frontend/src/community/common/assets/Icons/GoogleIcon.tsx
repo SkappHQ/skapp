@@ -1,4 +1,4 @@
-import { JSX, useId } from "react";
+import { JSX } from "react";
 
 import { IconProps } from "~community/common/types/IconTypes";
 
@@ -9,14 +9,10 @@ const GoogleIcon = ({
   svgProps,
   onClick
 }: IconProps): JSX.Element => {
-  // Suffix the def ids with a per-instance uid so multiple GoogleIcons on the
-  // same page don't collide on url(#...) references (browsers resolve to the
-  // first matching id in document order otherwise).
-  const uid = useId();
-  const clipId = `clip0_300_7501_${uid}`;
-  const paint0Id = `paint0_radial_300_7501_${uid}`;
-  const paint1Id = `paint1_radial_300_7501_${uid}`;
-  const paint2Id = `paint2_linear_300_7501_${uid}`;
+  const clipId = "clip0_300_7501";
+  const paint0Id = "paint0_radial_300_7501";
+  const paint1Id = "paint1_radial_300_7501";
+  const paint2Id = "paint2_linear_300_7501";
 
   return (
     <svg

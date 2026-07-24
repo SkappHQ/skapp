@@ -6,6 +6,16 @@ import TimeConfigurations from "~community/configurations/components/organisms/T
 import WorkLocationsTable from "~community/configurations/components/organisms/WorkLocationsTable/WorkLocationsTable";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
 
+export const getFallbackTabId = (
+  visibleTabs: ConfigurationTab[],
+  activeTabId?: string
+): string | undefined => {
+  if (activeTabId && visibleTabs.some((tab) => tab.id === activeTabId)) {
+    return undefined;
+  }
+  return visibleTabs[0]?.id;
+};
+
 export const getConfigurationTabs = (
   translateText: (keys: string[]) => string
 ): ConfigurationTab[] => {
