@@ -163,3 +163,30 @@ export const useDeactivateLeavePolicy = (
     onError
   });
 };
+
+const activateLeavePolicy = (
+  id: number
+): Promise<AxiosResponse<LeavePolicyMutationResponse>> =>
+  authFetch.patch<LeavePolicyMutationResponse>(
+    leavePolicyEndPoints.ACTIVATE_LEAVE_POLICY(id)
+  );
+
+export const useActivateLeavePolicy = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<LeavePolicyMutationResponse>,
+  AxiosError,
+  number
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: activateLeavePolicy,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};

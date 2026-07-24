@@ -5,11 +5,15 @@ import {
   SearchIcon,
   Table
 } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { ChangeEvent, FC, useMemo, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
+  useActivateLeavePolicy,
   useGetLeavePoliciesInfinite,
   useGetPolicyLeaveTypes
 } from "~community/leave/api/LeavePolicyApi";
@@ -29,6 +33,7 @@ import {
   LeavePolicyType,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
+import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 interface Props {
   onCreatePolicy: () => void;
@@ -36,7 +41,13 @@ interface Props {
 
 const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
+  const translateActivateToast = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "activatePolicy"
+  );
   const canManagePolicies = useCanManageLeavePolicies();
+  const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
@@ -46,6 +57,33 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   );
   const [deactivatingPolicy, setDeactivatingPolicy] =
     useState<LeavePolicyType | null>(null);
+  const [activatingPolicyName, setActivatingPolicyName] = useState<string>("");
+
+  const handleActivateSuccess = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateActivateToast(["successToastTitle"]),
+      description: translateActivateToast(["successToastDescription"], {
+        policyName: activatingPolicyName
+      }),
+      isIcon: true
+    });
+  };
+
+  const handleActivateError = (error: AxiosError): void => {
+    const { title, description } = getLeavePolicyErrorToastKeys(error);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateActivateToast([title]),
+      description: translateActivateToast([description]),
+      isIcon: true
+    });
+  };
+
+  const { mutate: activateLeavePolicy, isPending: isActivating } =
+    useActivateLeavePolicy(handleActivateSuccess, handleActivateError);
 
   const debouncedSearch = useDebounce(
     searchTerm,
@@ -178,7 +216,13 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
                     onClick: () => setDeactivatingPolicy(policy)
                   }
                 ]
-              : [])
+              : [
+                  {
+                    id: `leave-policy-activate-${policy.id}`,
+                    label: translateText(["menuActivate"]),
+                    onClick: () => handleActivate(policy)
+                  }
+                ])
           ]}
         />
       );
@@ -221,6 +265,15 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
 
   const handleCloseDeactivateModal = (): void => {
     setDeactivatingPolicy(null);
+  };
+
+  const handleActivate = (policy: LeavePolicyType): void => {
+    if (isActivating) {
+      return;
+    }
+    setActivatingPolicyName(policy.name);
+    setOpenKebabMenuId(null);
+    activateLeavePolicy(policy.id);
   };
 
   return (
