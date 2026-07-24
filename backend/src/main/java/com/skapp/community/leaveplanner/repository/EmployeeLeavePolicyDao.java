@@ -20,6 +20,4 @@ public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolic
 	List<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(Long employeeId,
 			EmployeeLeavePolicyStatus status);
 
-	List<EmployeeLeavePolicy> findByPolicy_IdAndStatus(Long policyId, EmployeeLeavePolicyStatus status);
-
 }

@@ -62,20 +62,20 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		LocalDate effectiveFrom = resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 
 		Long leaveTypeId = policy.getLeaveType().getId();
-		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
+		EmployeeLeavePolicy activeAssignment = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(), leaveTypeId,
 					EmployeeLeavePolicyStatus.ACTIVE)
 			.orElse(null);
 
-		if (openWindow != null) {
-			if (openWindow.getPolicy().getId().equals(policy.getId())
-					&& effectiveFrom.equals(openWindow.getEffectiveFrom())
-					&& openWindow.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
+		if (activeAssignment != null) {
+			if (activeAssignment.getPolicy().getId().equals(policy.getId())
+					&& effectiveFrom.equals(activeAssignment.getEffectiveFrom())
+					&& activeAssignment.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
 				log.info("assignLeavePolicy: identical assignment already active; treating as no-op");
 				return new ResponseEntityDto(false,
-						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(openWindow));
+						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeAssignment));
 			}
-			closeWindow(openWindow);
+			endAssignment(activeAssignment);
 		}
 
 		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
@@ -102,13 +102,13 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		getEmployeeOrThrow(unassignLeavePolicyRequestDto.getEmployeeId());
 
-		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
+		EmployeeLeavePolicy activeAssignment = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new EntityNotFoundException(
 					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
-		closeWindow(openWindow);
+		endAssignment(activeAssignment);
 
 		log.info("unassignLeavePolicy: execution ended");
 		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
@@ -131,21 +131,9 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		return new ResponseEntityDto(false, responseDtos);
 	}
 
-	@Override
-	@Transactional
-	public int endOpenWindowsForPolicy(Long policyId) {
-		List<EmployeeLeavePolicy> openWindows = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
-				EmployeeLeavePolicyStatus.ACTIVE);
-		openWindows.forEach(this::closeWindow);
-		if (!openWindows.isEmpty()) {
-			log.info("endOpenWindowsForPolicy: closed {} open window(s) for policy {}", openWindows.size(), policyId);
-		}
-		return openWindows.size();
-	}
-
-	private void closeWindow(EmployeeLeavePolicy window) {
-		window.setStatus(EmployeeLeavePolicyStatus.ENDED);
-		employeeLeavePolicyDao.save(window);
+	private void endAssignment(EmployeeLeavePolicy assignment) {
+		assignment.setStatus(EmployeeLeavePolicyStatus.ENDED);
+		employeeLeavePolicyDao.save(assignment);
 	}
 
 	private LocalDate resolveEffectiveFrom(AssignLeavePolicyRequestDto dto, Employee employee) {

@@ -12,6 +12,4 @@ public interface EmployeeLeavePolicyService {
 
 	ResponseEntityDto getEmployeeLeavePolicies(Long employeeId);
 
-	int endOpenWindowsForPolicy(Long policyId);
-
 }
