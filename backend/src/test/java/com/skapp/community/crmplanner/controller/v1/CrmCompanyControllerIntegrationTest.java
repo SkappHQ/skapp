@@ -5,7 +5,10 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
@@ -114,6 +117,10 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmContactService contactService;
 
 	private final CrmDealService dealService;
+
+	private final AuthorityService authorityService;
+
+	private final UserDao userDao;
 
 	private String authToken;
 
@@ -358,6 +365,11 @@ class CrmCompanyControllerIntegrationTest {
 			.as("contact remains visible after its company is deleted")
 			.singleElement()
 			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
+
+		// dealService.getDeals resolves the current user, but the MockMvc delete request
+		// above clears the security context, so re-establish it for this direct call
+		User currentUser = userDao.findByEmail("user1@gmail.com").orElseThrow();
+		SecurityTestUtils.setupSecurityContext(authorityService, currentUser);
 
 		CrmDealFilterDto dealFilter = new CrmDealFilterDto();
 		dealFilter.setSize(100);
