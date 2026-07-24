@@ -249,20 +249,18 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Unassigning when there is no open window is an idempotent no-op (not 404)")
+		@DisplayName("Returns 404 when there is no active assignment to unassign")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void unassign_NoOpenWindow_ReturnsOkNoOp() throws Exception {
-			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(0)));
+		void unassign_NoOpenWindow_ReturnsNotFound() throws Exception {
+			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isNotFound());
 		}
 
 		@Test
-		@DisplayName("Replaying an unassign after removal still returns 200 (idempotent)")
+		@DisplayName("Replaying an unassign after removal returns 404 (nothing left to unassign)")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
-		void unassign_Replay_ReturnsOkBothTimes() throws Exception {
+		void unassign_Replay_SecondReturnsNotFound() throws Exception {
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andExpect(status().isOk());
-			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isOk());
+			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isNotFound());
 		}
 
 		@Test
@@ -311,7 +309,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	class FullLifecycleTests {
 
 		@Test
-		@DisplayName("End-to-end: empty -> assign -> supersede same type -> keep other type -> unassign -> idempotent replay -> empty")
+		@DisplayName("End-to-end: empty -> assign -> supersede same type -> keep other type -> unassign -> empty")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void fullLifecycle_AssignSupersedeUnassign_TracksActiveState() throws Exception {
 			String token = leaveAdminToken();
@@ -347,13 +345,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].policyId").value(600));
 
-			// 7. Replaying the same unassign is an idempotent no-op (still 200, state
-			// unchanged).
-			performUnassign(token, unassignBody(1, 501)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(600));
-
-			// 8. Unassign the last one - back to empty.
+			// 7. Unassign the last one - back to empty.
 			performUnassign(token, unassignBody(1, 600)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results", hasSize(0)));
 

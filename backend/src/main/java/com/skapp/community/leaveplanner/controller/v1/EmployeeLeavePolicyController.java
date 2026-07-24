@@ -39,7 +39,7 @@ public class EmployeeLeavePolicyController {
 	}
 
 	@Operation(summary = "Unassign a leave policy from an employee",
-			description = "Closes the employee's open window for the policy; idempotent (no-op if already ended)")
+			description = "Closes the employee's open window for the policy; 404 if no active assignment exists")
 	@DeleteMapping
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> unassignLeavePolicy(

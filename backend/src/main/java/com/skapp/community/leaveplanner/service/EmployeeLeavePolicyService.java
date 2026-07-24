@@ -14,9 +14,9 @@ public interface EmployeeLeavePolicyService {
 	ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto);
 
 	/**
-	 * Unassign a policy by closing the employee's open window for it. Idempotent: if no
-	 * open window exists, this is a no-op and still succeeds (the append-only history is
-	 * never hard-deleted, so there is nothing to "not find").
+	 * Unassign a policy by closing the employee's open window for it. Throws
+	 * {@code EntityNotFoundException} if the employee has no active assignment for the
+	 * policy.
 	 */
 	ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto);
 

@@ -96,17 +96,13 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		log.info("unassignLeavePolicy: execution started for employee {} policy {}",
 				unassignLeavePolicyRequestDto.getEmployeeId(), unassignLeavePolicyRequestDto.getPolicyId());
 
-		// Idempotent: if there is no open window for this (employee, policy) the call is
-		// a
-		// no-op and still succeeds. History rows are never hard-deleted, so a replay must
-		// not
-		// fail with "not found".
-		employeeLeavePolicyDao
+		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
-			.ifPresentOrElse(
-					openWindow -> closeWindow(openWindow, LocalDate.now(), EmployeeLeavePolicyEndedReason.UNASSIGNED),
-					() -> log.info("unassignLeavePolicy: no open window found; treating as no-op"));
+			.orElseThrow(() -> new EntityNotFoundException(
+					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
+
+		closeWindow(openWindow, LocalDate.now(), EmployeeLeavePolicyEndedReason.UNASSIGNED);
 
 		log.info("unassignLeavePolicy: execution ended");
 		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
