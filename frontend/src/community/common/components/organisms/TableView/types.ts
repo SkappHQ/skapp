@@ -47,6 +47,12 @@ export interface TableViewAriaLabels {
   getPageAriaLabel?: (page: number) => string;
 }
 
+/** Footer region rendered below the table. */
+export interface TableViewFooter {
+  left?: ReactNode;
+  right?: ReactNode;
+}
+
 export interface TableViewProps {
   // ---- heading rendered above the toolbar/table ----
   heading?: ReactNode;
@@ -77,5 +83,5 @@ export interface TableViewProps {
   filter?: TableViewFilter;
 
   // ---- footer region below the table (view-full-list button, notes, …) ----
-  footer?: { left?: ReactNode; right?: ReactNode };
+  footer?: TableViewFooter;
 }
