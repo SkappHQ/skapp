@@ -41,4 +41,6 @@ public class LeaveModuleConstant {
 
 	public static final long HOURS_PER_DAY = 24;
 
+	public static final String LEAVE_POLICY_IS_ENABLED = "isEnabled";
+
 }

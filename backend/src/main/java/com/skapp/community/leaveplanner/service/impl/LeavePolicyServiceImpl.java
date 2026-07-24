@@ -2,24 +2,36 @@ package com.skapp.community.leaveplanner.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.OrganizationConfig;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
+import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
+import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
+import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
+import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.LeavePolicyValidationUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +41,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -42,6 +58,16 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final PolicyLeaveTypeDao policyLeaveTypeDao;
 
 	private final LeaveMapper leaveMapper;
+
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final LeaveEntitlementDao leaveEntitlementDao;
+
+	private final LeaveRequestDao leaveRequestDao;
+
+	private final UserService userService;
+
+	private final JsonMapper jsonMapper;
 
 	@Override
 	@Transactional
@@ -127,6 +153,90 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto enableLeavePolicies() {
+		log.info("enableLeavePolicies: execution started");
+
+		User currentUser = userService.getCurrentUser();
+
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+
+		if (existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get())) {
+			log.info("AUDIT action=ENABLE_LEAVE_POLICIES adminUserId={} outcome=REJECTED errorCode=ALREADY_ENABLED",
+					currentUser.getUserId());
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_ENABLED);
+		}
+
+		int zeroedAllocations = zeroCustomAllocationBalances();
+		int cancelledPendingRequests = cancelPendingLeaveRequests();
+
+		ObjectNode configValue = jsonMapper.createObjectNode();
+		configValue.put(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED, true);
+		String jsonValue = jsonMapper.writeValueAsString(configValue);
+
+		OrganizationConfig organizationConfig = existingConfig
+			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), jsonValue));
+		organizationConfig.setOrganizationConfigValue(jsonValue);
+		organizationConfigDao.save(organizationConfig);
+
+		log.info(
+				"AUDIT action=ENABLE_LEAVE_POLICIES adminUserId={} outcome=SUCCESS zeroedCustomAllocations={} "
+						+ "cancelledPendingRequests={}",
+				currentUser.getUserId(), zeroedAllocations, cancelledPendingRequests);
+		log.info("enableLeavePolicies: execution ended");
+
+		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(true));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getLeavePolicyConfig() {
+		log.info("getLeavePolicyConfig: execution started");
+
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+
+		boolean enabled = existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get());
+
+		log.info("getLeavePolicyConfig: execution ended");
+		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(enabled));
+	}
+
+	private int zeroCustomAllocationBalances() {
+		List<LeaveEntitlement> customAllocations = leaveEntitlementDao.findByIsManualTrue();
+		if (customAllocations.isEmpty()) {
+			return 0;
+		}
+
+		customAllocations.forEach(allocation -> {
+			allocation.setTotalDaysAllocated(0F);
+			allocation.setActive(false);
+		});
+		leaveEntitlementDao.saveAll(customAllocations);
+
+		return customAllocations.size();
+	}
+
+	private int cancelPendingLeaveRequests() {
+		List<LeaveRequest> pendingRequests = leaveRequestDao.findByStatus(LeaveRequestStatus.PENDING);
+		if (pendingRequests.isEmpty()) {
+			return 0;
+		}
+
+		pendingRequests.forEach(request -> request.setStatus(LeaveRequestStatus.CANCELLED));
+		leaveRequestDao.saveAll(pendingRequests);
+
+		return pendingRequests.size();
+	}
+
+	private boolean isLeavePolicyEnabled(OrganizationConfig organizationConfig) {
+		JsonNode configNode = jsonMapper.readTree(organizationConfig.getOrganizationConfigValue());
+		JsonNode enabledNode = configNode.get(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED);
+		return enabledNode != null && enabledNode.asBoolean();
 	}
 
 	private LeavePolicy getLeavePolicyById(Long id) {

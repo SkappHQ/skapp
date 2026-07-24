@@ -20,6 +20,7 @@ import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
@@ -212,8 +213,22 @@ public class OrganizationServiceImpl implements OrganizationService {
 		okrConfigService.setOkrDefaultConfig();
 		crmConfigService.setDefaultCrmConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
+		setDefaultLeavePolicyConfig();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
+	}
+
+	protected void setDefaultLeavePolicyConfig() {
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+		if (existingConfig.isPresent()) {
+			return;
+		}
+
+		ObjectNode configValue = objectMapper.createObjectNode();
+		configValue.put(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED, true);
+		organizationConfigDao.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(),
+				objectMapper.writeValueAsString(configValue)));
 	}
 
 	@Override

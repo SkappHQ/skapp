@@ -63,4 +63,23 @@ public class LeavePolicyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Enable leave policies",
+			description = "Enables the leave policies feature for an existing tenant. Permanently deletes all custom "
+					+ "leave allocations and switches leave management to policies. This action is irreversible.")
+	@PostMapping("/enable")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> enableLeavePolicies() {
+		ResponseEntityDto response = leavePolicyService.enableLeavePolicies();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get leave policy configuration",
+			description = "Returns whether the leave policies feature is enabled for the tenant")
+	@GetMapping("/config")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<ResponseEntityDto> getLeavePolicyConfig() {
+		ResponseEntityDto response = leavePolicyService.getLeavePolicyConfig();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
