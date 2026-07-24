@@ -10,8 +10,8 @@ import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useT
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   clampToCurrentYear,
-  convertDateRangeToDates,
-  convertDatesToDateRange
+  convertDateRangeArrayToDateRange,
+  convertDateRangeToDateRangeArray
 } from "~community/common/utils/dateTimeUtils";
 
 interface Props {
@@ -36,7 +36,7 @@ const TimesheetRequestFilterBody: FC<Props> = ({
 
   const [selectedStatus, setSelectedStatus] = useState<string[]>(appliedStatus);
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange | undefined>(
-    convertDatesToDateRange(appliedDates)
+    convertDateRangeArrayToDateRange(appliedDates)
   );
 
   const isEmpty = selectedStatus.length === 0 && !selectedDateRange?.from && !selectedDateRange?.to;
@@ -50,7 +50,7 @@ const TimesheetRequestFilterBody: FC<Props> = ({
 
   const handleApply = () => {
     setFilters({ status: selectedStatus });
-    setDates(convertDateRangeToDates(selectedDateRange));
+    setDates(convertDateRangeToDateRangeArray(selectedDateRange));
     close();
   };
 

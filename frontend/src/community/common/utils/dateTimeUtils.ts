@@ -679,7 +679,7 @@ export const getLocaleDateString = (date: Date) => {
   });
 };
 
-export const convertDatesToDateRange = (
+export const convertDateRangeArrayToDateRange = (
   dates: string[]
 ): DateRange | undefined => {
   const [from, to] = dates;
@@ -690,7 +690,9 @@ export const convertDatesToDateRange = (
   };
 };
 
-export const convertDateRangeToDates = (range?: DateRange): string[] => [
+export const convertDateRangeToDateRangeArray = (
+  range?: DateRange
+): string[] => [
   range?.from ? convertDateToFormat(range.from, DATE_FORMAT) : "",
   range?.to ? convertDateToFormat(range.to, DATE_FORMAT) : ""
 ];
