@@ -54,12 +54,8 @@ export interface TableViewFooter {
 }
 
 export interface TableViewProps {
-  // ---- heading rendered above the toolbar/table ----
   heading?: ReactNode;
-
-  // ---- TableV2 passthrough ----
   tableName?: string;
-  regionAriaLabel?: string;
   ariaLabel?: TableViewAriaLabels;
   headers: GridHeader[];
   rows: GridRow[];
@@ -71,17 +67,9 @@ export interface TableViewProps {
   className?: string;
   height?: string;
   minHeight?: string;
-
-  // ---- mode: at most one of these ----
   pagination?: TableViewPagination;
   infiniteScroll?: TableViewInfiniteScroll;
-
-  // ---- toolbar (skapp-ui TableToolBar); filterButton is managed internally ----
   toolbar?: Omit<TableToolBarProps, "filterButton">;
-
-  // ---- filter popover wired into the toolbar filter button ----
   filter?: TableViewFilter;
-
-  // ---- footer region below the table (view-full-list button, notes, …) ----
   footer?: TableViewFooter;
 }

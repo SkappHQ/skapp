@@ -19,7 +19,7 @@ export const useTimesheetRequestFilterState = (
     setTimesheetRequestsFilters,
     setTimesheetRequestSelectedDates,
     resetTimesheetRequestParams
-  } = useAttendanceStore((state) => state);
+  } = useAttendanceStore();
 
   const filterValues = isManager
     ? timesheetRequestsFilterValues
@@ -41,6 +41,8 @@ export const useTimesheetRequestFilterState = (
     : resetEmployeeTimesheetRequestParams;
 
   const [appliedStartDate, appliedEndDate] = appliedDates;
+  const filterCount =
+    appliedStatus.length + (appliedStartDate && appliedEndDate ? 1 : 0);
 
   useEffect(() => {
     if (!shouldRegisterCleanup) return;
@@ -57,7 +59,6 @@ export const useTimesheetRequestFilterState = (
     setFilters,
     setDates,
     resetParams,
-    filterCount:
-      appliedStatus.length + (appliedStartDate || appliedEndDate ? 1 : 0)
+    filterCount
   };
 };

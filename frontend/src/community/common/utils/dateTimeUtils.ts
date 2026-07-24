@@ -679,16 +679,18 @@ export const getLocaleDateString = (date: Date) => {
   });
 };
 
-export const toDateRange = (dates: string[]): DateRange | undefined => {
+export const convertDatesToDateRange = (
+  dates: string[]
+): DateRange | undefined => {
   const [from, to] = dates;
-  if (!from && !to) return undefined;
+  if (!(from || to)) return undefined;
   return {
     from: convertYYYYMMDDToDateTime(from).toJSDate(),
     to: convertYYYYMMDDToDateTime(to).toJSDate()
   };
 };
 
-export const fromDateRange = (range?: DateRange): string[] => [
+export const convertDateRangeToDates = (range?: DateRange): string[] => [
   range?.from ? convertDateToFormat(range.from, DATE_FORMAT) : "",
   range?.to ? convertDateToFormat(range.to, DATE_FORMAT) : ""
 ];

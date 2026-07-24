@@ -11,7 +11,6 @@ import { TableViewProps } from "./types";
 const TableView: FC<TableViewProps> = ({
   heading,
   tableName,
-  regionAriaLabel,
   ariaLabel,
   headers,
   rows,
@@ -20,7 +19,7 @@ const TableView: FC<TableViewProps> = ({
   loader,
   emptyState,
   onRowClick,
-  className,
+  className = "",
   height,
   minHeight = "min-h-70",
   pagination,
@@ -28,11 +27,11 @@ const TableView: FC<TableViewProps> = ({
   toolbar,
   filter
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
-  const open = Boolean(anchorEl);
+  const isOpen = anchorEl !== null;
   const isFilterEnabled = filter;
-  const isToolbarVisible = Boolean(toolbar) || isFilterEnabled;
+  const isToolbarVisible = toolbar !== undefined || isFilterEnabled;
   const isInfiniteScroll = infiniteScroll?.isEnabled;
   const isPaginated = !isInfiniteScroll && pagination;
   const popoverId = filter?.popoverId;
@@ -52,9 +51,8 @@ const TableView: FC<TableViewProps> = ({
   const togglePopover = (event: MouseEvent<HTMLElement>) =>
     setAnchorEl(anchorEl ? null : event.currentTarget);
 
-  // Merge ariaLabel with backwards-compatible regionAriaLabel fallback
   const mergedAriaLabel = {
-    regionAriaLabel: ariaLabel?.regionAriaLabel ?? regionAriaLabel,
+    regionAriaLabel: ariaLabel?.regionAriaLabel,
     paginationAriaLabel: ariaLabel?.paginationAriaLabel,
     previousPageLabel: ariaLabel?.previousPageLabel,
     nextPageLabel: ariaLabel?.nextPageLabel,
@@ -62,7 +60,7 @@ const TableView: FC<TableViewProps> = ({
   };
 
   return (
-    <div className={`flex w-full flex-col gap-3 ${className ?? ""}`}>
+    <div className={`flex w-full flex-col gap-3 ${className}`}>
       {heading && <h2 className="h2 my-4">{heading}</h2>}
 
       {isToolbarVisible && (
@@ -73,7 +71,7 @@ const TableView: FC<TableViewProps> = ({
               ? {
                   onClick: togglePopover,
                   "aria-label": filter?.filterButtonAriaLabel,
-                  "aria-expanded": open,
+                  "aria-expanded": isOpen,
                   "aria-haspopup": "dialog",
                   badge: {
                     count: filter?.filterCount ?? 0,
@@ -112,7 +110,7 @@ const TableView: FC<TableViewProps> = ({
 
       {isFilterEnabled && (
         <Popper
-          open={open}
+          open={isOpen}
           anchorEl={anchorEl}
           position="bottom-end"
           id={popoverId}
