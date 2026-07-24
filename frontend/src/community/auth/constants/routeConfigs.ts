@@ -2,6 +2,7 @@ import ROUTES from "../../common/constants/routes";
 
 export const drawerHiddenProtectedRoutes = [
   ROUTES.ORGANIZATION.SETUP,
+  ROUTES.LEAVE.CREATE_LEAVE_POLICY,
   ROUTES.AUTH.RESET_PASSWORD,
   ROUTES.AUTH.VERIFY,
   ROUTES.AUTH.VERIFY_SUCCESS,

@@ -63,7 +63,23 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_PARSING_LEAVE_CYCLE_DATA("api.error.leave.parsing-leave-cycle-data"),
 	LEAVE_ERROR_MAX_CARRY_FORWARD_DAYS_EXCEEDS_LIMIT("api.error.leave.max-carry-forward-days-exceeds-limit"),
 	LEAVE_ERROR_NUMBER_OF_DAYS_CANNOT_BE_LESS_THAN_USED_DAYS(
-			"api.error.leave.number-of-days-cannot-be-less-than-used-days"),;
+			"api.error.leave.number-of-days-cannot-be-less-than-used-days"),
+	LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS("api.error.leave.leave-policy-already-exists"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_FOUND("api.error.leave.policy-leave-type-not-found"),
+	LEAVE_ERROR_LEAVE_POLICY_NAME_REQUIRED("api.error.leave.leave-policy-name-required"),
+	LEAVE_ERROR_LEAVE_POLICY_NAME_MAX_LENGTH_EXCEEDED("api.error.leave.leave-policy-name-max-length-exceeded"),
+	LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED("api.error.leave.leave-policy-leave-type-required"),
+	LEAVE_ERROR_LEAVE_POLICY_POLICY_TYPE_REQUIRED("api.error.leave.leave-policy-policy-type-required"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_REQUIRED("api.error.leave.leave-policy-accrual-config-required"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CONFIG_NOT_ALLOWED("api.error.leave.leave-policy-accrual-config-not-allowed"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_DAYS_INVALID("api.error.leave.leave-policy-accrual-days-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_FREQUENCY_REQUIRED("api.error.leave.leave-policy-accrual-frequency-required"),
+	LEAVE_ERROR_LEAVE_POLICY_WAITING_PERIOD_INVALID("api.error.leave.leave-policy-waiting-period-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_ACCRUAL_CAP_INVALID("api.error.leave.leave-policy-accrual-cap-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_REQUIRED("api.error.leave.leave-policy-carryover-date-required"),
+	LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID("api.error.leave.leave-policy-carryover-date-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID("api.error.leave.leave-policy-max-carryover-days-invalid"),
+	LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND("api.error.leave.leave-policy-not-found");
 
 	private final String messageKey;
 

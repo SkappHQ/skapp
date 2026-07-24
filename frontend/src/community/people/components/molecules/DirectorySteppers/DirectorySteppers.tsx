@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useState } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -43,9 +43,7 @@ const DirectorySteppers = ({
 
   const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = user?.roles?.includes(
-    AdminTypes.ATTENDANCE_ADMIN
-  );
+  const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 
   const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
@@ -88,9 +86,7 @@ const DirectorySteppers = ({
     ...(isEditView
       ? [translateText(["editAllInfo", "systemPermissions"])]
       : []),
-    ...(isEditView
-      ? [translateText(["editAllInfo", "timeline"])]
-      : []),
+    ...(isEditView ? [translateText(["editAllInfo", "timeline"])] : []),
     ...(isLeaveTabVisible &&
     !isAccountView &&
     user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
@@ -101,7 +97,8 @@ const DirectorySteppers = ({
     user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-    ...(isEditView && (isSuperAdmin || (isPeopleAdmin && isESignSender))
+    ...((isEditView && (isSuperAdmin || (isPeopleAdmin && isESignSender))) ||
+    (isAccountView && user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE))
       ? [translateText(["editAllInfo", "documents"])]
       : [])
   ];

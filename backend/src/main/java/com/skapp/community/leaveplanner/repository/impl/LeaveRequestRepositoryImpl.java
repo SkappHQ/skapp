@@ -87,11 +87,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
-	@NonNull
 	private final MessageUtil messageUtil;
 
-	@NonNull
-	private EntityManager entityManager;
+	private final EntityManager entityManager;
 
 	public static List<LocalDate> getAllDaysBetween(DayOfWeek day, LocalDate startDate, LocalDate endDate) {
 		List<LocalDate> removingDays = new ArrayList<>();
