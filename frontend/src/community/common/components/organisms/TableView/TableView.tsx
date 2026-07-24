@@ -6,8 +6,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent, useState } from "react";
 
-import useAutoFocusMenuListener from "~community/common/utils/hooks/useAutoFocusMenuListeners";
-
 import { TableViewProps } from "./types";
 
 const TableView: FC<TableViewProps> = ({
