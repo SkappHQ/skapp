@@ -63,4 +63,13 @@ public class LeavePolicyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Activate a leave policy",
+			description = "Marks an existing inactive leave policy as active so it is available for assignment")
+	@PatchMapping("/{id}/activate")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> activateLeavePolicy(@PathVariable Long id) {
+		ResponseEntityDto response = leavePolicyService.activateLeavePolicy(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
