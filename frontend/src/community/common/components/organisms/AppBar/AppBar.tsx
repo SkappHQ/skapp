@@ -76,9 +76,13 @@ const AppBar = () => {
   const { data: unreadCount } = useGetUnreadNotificationsCount();
 
   useEffect(() => {
+    if (unreadCount == null) return;
+
     setNotifyData({
-      unreadCount: unreadCount || 0
+      unreadCount
     });
+
+    localStorage.setItem("unReadMsgCount", unreadCount.toString());
   }, [setNotifyData, unreadCount]);
 
   useEffect(() => {

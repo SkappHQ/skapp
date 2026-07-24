@@ -125,6 +125,7 @@
   "tabs": {
     "time": "Time",
     "attendance": "Attendance",
+    "leave": "Leave",
     "sign": "Sign",
     "userRoles": "User Roles",
     "invoice": "Invoice",
@@ -330,6 +331,27 @@
     "aria": {
       "editStage": "Edit stage {{stageName}}",
       "deleteStage": "Delete stage {{stageName}}"
+    }
+  },
+  "leave": {
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save changes"
+    },
+    "leavePoliciesSection": {
+      "title": "Leave policies",
+      "description": "Automate leave entitlements using policies. This replaces manual bulk uploads and custom allocations.",
+      "enableLabel": "Enable leave policies"
+    },
+    "enableConfirmModal": {
+      "title": "Are you sure?",
+      "warningTitle": "This action cannot be undone.",
+      "warningDescription": "We recommend enabling this at the start of a new leave period to avoid mid-period disruption",
+      "consequencesTitle": "Switching to Leave Policies will:",
+      "consequenceDeleteAllocations": "Permanently delete all existing custom leave allocations",
+      "consequenceRemoveBulkUpload": "Remove the Bulk Upload option from Leave Entitlements",
+      "consequenceRetainRecords": "Retain all past applied leave records",
+      "confirmButton": "Enable leave policies"
     }
   }
 }
