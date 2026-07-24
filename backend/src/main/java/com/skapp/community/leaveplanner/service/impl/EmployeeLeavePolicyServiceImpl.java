@@ -75,7 +75,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 				return new ResponseEntityDto(false,
 						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(openWindow));
 			}
-			closeWindow(openWindow, effectiveFrom.minusDays(1));
+			closeWindow(openWindow);
 		}
 
 		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
@@ -108,7 +108,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.orElseThrow(() -> new EntityNotFoundException(
 					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
-		closeWindow(openWindow, LocalDate.now());
+		closeWindow(openWindow);
 
 		log.info("unassignLeavePolicy: execution ended");
 		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
@@ -136,18 +136,14 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public int endOpenWindowsForPolicy(Long policyId) {
 		List<EmployeeLeavePolicy> openWindows = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
 				EmployeeLeavePolicyStatus.ACTIVE);
-		LocalDate today = LocalDate.now();
-		openWindows.forEach(window -> closeWindow(window, today));
+		openWindows.forEach(this::closeWindow);
 		if (!openWindows.isEmpty()) {
 			log.info("endOpenWindowsForPolicy: closed {} open window(s) for policy {}", openWindows.size(), policyId);
 		}
 		return openWindows.size();
 	}
 
-	private void closeWindow(EmployeeLeavePolicy window, LocalDate proposedEffectiveTo) {
-		LocalDate effectiveTo = proposedEffectiveTo.isBefore(window.getEffectiveFrom()) ? window.getEffectiveFrom()
-				: proposedEffectiveTo;
-		window.setEffectiveTo(effectiveTo);
+	private void closeWindow(EmployeeLeavePolicy window) {
 		window.setStatus(EmployeeLeavePolicyStatus.ENDED);
 		employeeLeavePolicyDao.save(window);
 	}

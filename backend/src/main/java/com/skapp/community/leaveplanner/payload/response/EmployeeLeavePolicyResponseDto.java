@@ -32,8 +32,6 @@ public class EmployeeLeavePolicyResponseDto {
 
 	private LocalDate effectiveFrom;
 
-	private LocalDate effectiveTo;
-
 	private EmployeeLeavePolicyStatus status;
 
 }

@@ -59,8 +59,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			+ "(700, 'Annual Flexible', 100, 'FLEXIBLE', 'ACTIVE', false)";
 
 	// An open (ACTIVE) window for employee 1 on policy 500 (leave type 100).
-	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, effective_to, status) "
-			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', NULL, 'ACTIVE')";
+	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
+			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', 'ACTIVE')";
 
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 
@@ -133,8 +133,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].policyType").value("ACCRUAL"))
 				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"))
 				.andExpect(jsonPath("$.results[0].effectiveDateType").value("HIRE_DATE"))
-				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE))
-				.andExpect(jsonPath("$.results[0].effectiveTo").doesNotExist());
+				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 		}
 
 		@Test
