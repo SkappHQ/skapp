@@ -12,6 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * Bridges the real Skapp {@code /signin} into the OAuth Authorization Server session.
@@ -66,8 +70,15 @@ public class OAuthSessionLoginController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 
-		Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
-				userDetails.getAuthorities());
+		// Use a String principal + SimpleGrantedAuthority so the authorization (persisted
+		// by
+		// JdbcOAuth2AuthorizationService) round-trips through Spring Security's Jackson
+		// mapper.
+		List<GrantedAuthority> authorities = userDetails.getAuthorities()
+			.stream()
+			.map(authority -> (GrantedAuthority) new SimpleGrantedAuthority(authority.getAuthority()))
+			.toList();
+		Authentication authentication = new UsernamePasswordAuthenticationToken(email, null, authorities);
 		SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
 		securityContext.setAuthentication(authentication);
 		SecurityContextHolder.setContext(securityContext);
