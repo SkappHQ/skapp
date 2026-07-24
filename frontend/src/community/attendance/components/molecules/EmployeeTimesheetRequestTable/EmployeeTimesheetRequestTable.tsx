@@ -234,39 +234,32 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
   };
 
   return (
-    <>
-      <Typography variant="h2" mb={"1.5rem"}>
-        {translateText(["requestTableEmployeeTitle"])}
-      </Typography>
-      <TableView
-        tableName={TableNames.TIME_ENTRY_REQUEST}
-        headers={tableHeaders}
-        rows={transformToTableRows()}
-        isLoading={isRequestLoading}
-        skeletonRows={3}
-        emptyState={{
-          title: translateText(["emptyRequestTitle"]),
-          description: translateText(["emptyRequestDesEmployee"])
-        }}
-        pagination={{
-          isEnabled: true,
-          totalPages: requestData?.totalPages,
-          currentPage: employeeTimesheetRequestParams?.page,
-          onPageChange: (page: number) => {
-            setEmployeeTimesheetRequestPagination(page);
-          }
-        }}
-        filter={{
-          isEnabled: true,
-          filterCount,
-          filterButtonAriaLabel: translateAria(["filterButton"]),
-          popoverId: "employee-timesheet-request-filter",
-          filterContent: ({ close }) => (
-            <TimesheetRequestFilterBody close={close} />
-          )
-        }}
-      />
-    </>
+    <TableView
+      heading={translateText(["requestTableEmployeeTitle"])}
+      tableName={TableNames.TIME_ENTRY_REQUEST}
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isRequestLoading}
+      emptyState={{
+        title: translateText(["emptyRequestTitle"]),
+        description: translateText(["emptyRequestDesEmployee"])
+      }}
+      pagination={{
+        totalPages: requestData?.totalPages,
+        currentPage: employeeTimesheetRequestParams?.page,
+        onPageChange: (page: number) => {
+          setEmployeeTimesheetRequestPagination(page);
+        }
+      }}
+      filter={{
+        filterCount,
+        filterButtonAriaLabel: translateAria(["filterButton"]),
+        popoverId: "employee-timesheet-request-filter",
+        filterContent: ({ close }) => (
+          <TimesheetRequestFilterBody close={close} />
+        )
+      }}
+    />
   );
 };
 

@@ -1,4 +1,9 @@
-import { Popper, TableToolBar, TableV2 } from "@rootcodelabs/skapp-ui";
+import {
+  Popper,
+  type PopperProps,
+  TableToolBar,
+  TableV2
+} from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent, useState } from "react";
 
 import useAutoFocusMenuListener from "~community/common/utils/hooks/useAutoFocusMenuListeners";
@@ -6,18 +11,20 @@ import useAutoFocusMenuListener from "~community/common/utils/hooks/useAutoFocus
 import { TableViewProps } from "./types";
 
 const TableView: FC<TableViewProps> = ({
+  heading,
   tableName,
   regionAriaLabel,
   ariaLabel,
   headers,
   rows,
   isLoading,
-  skeletonRows,
+  skeletonRows = 4,
   loader,
   emptyState,
   onRowClick,
   className,
   height,
+  minHeight = "min-h-70",
   pagination,
   infiniteScroll,
   toolbar,
@@ -26,16 +33,24 @@ const TableView: FC<TableViewProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
-  const isFilterEnabled = Boolean(filter?.isEnabled);
+  const isFilterEnabled = filter;
   const { isEnabled: toolbarEnabled, ...toolbarProps } = toolbar ?? {};
-  const isToolbarVisible = Boolean(toolbarEnabled) || isFilterEnabled;
-  const isInfiniteScroll = Boolean(infiniteScroll?.isEnabled);
-  const isPaginated = !isInfiniteScroll && Boolean(pagination?.isEnabled);
-  const popoverId = filter?.popoverId ?? "table-view-filter-popper";
+  const isToolbarVisible = toolbarEnabled || isFilterEnabled;
+  const isInfiniteScroll = infiniteScroll?.isEnabled;
+  const isPaginated = !isInfiniteScroll && pagination;
+  const popoverId = filter?.popoverId;
 
   const closePopover = () => setAnchorEl(null);
 
-  useAutoFocusMenuListener(anchorEl, popoverId, closePopover);
+  const popperProps: Omit<
+    PopperProps,
+    "open" | "anchorEl" | "position" | "id"
+  > = {
+    handleClose: closePopover,
+    ariaRole: "dialog",
+    ariaLabel: filter?.popoverAriaLabel,
+    ariaLabelledBy: filter?.popoverAriaLabelledBy
+  };
 
   const togglePopover = (event: MouseEvent<HTMLElement>) =>
     setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -50,7 +65,9 @@ const TableView: FC<TableViewProps> = ({
   };
 
   return (
-    <div className={`flex w-full flex-col gap-3 ${className ?? ""}`.trim()}>
+    <div className={`flex w-full flex-col gap-3 ${className ?? ""}`}>
+      {heading && <h2 className="h2 my-4">{heading}</h2>}
+
       {isToolbarVisible && (
         <TableToolBar
           {...toolbarProps}
@@ -81,6 +98,7 @@ const TableView: FC<TableViewProps> = ({
         loader={loader}
         emptyState={emptyState}
         onRowClick={onRowClick}
+        className={minHeight}
         height={isInfiniteScroll ? infiniteScroll?.height : height}
         hasMore={isInfiniteScroll ? infiniteScroll?.hasMore : undefined}
         isFetchingNextPage={
@@ -99,12 +117,10 @@ const TableView: FC<TableViewProps> = ({
         <Popper
           open={open}
           anchorEl={anchorEl}
-          handleClose={closePopover}
           position="bottom-end"
           id={popoverId}
-          ariaRole="dialog"
-          ariaLabel={filter?.popoverAriaLabel}
-          ariaLabelledBy={filter?.popoverAriaLabelledBy}
+          containerClassName="rounded-4 shadow-lg"
+          {...popperProps}
         >
           {filter?.filterContent({ close: closePopover })}
         </Popper>

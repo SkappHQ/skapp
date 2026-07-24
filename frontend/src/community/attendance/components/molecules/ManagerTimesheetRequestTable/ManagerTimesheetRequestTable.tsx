@@ -335,33 +335,32 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
 
   return (
     <>
-      {!hasFullList && (
-        <Typography variant="h2" my={"1.5rem"}>
-          {translateText(["requestTableManagerTitle"])}
-        </Typography>
-      )}
       <TableView
+        heading={
+          !hasFullList ? translateText(["requestTableManagerTitle"]) : undefined
+        }
         tableName={tableName}
         headers={tableHeaders}
         rows={transformToTableRows()}
         isLoading={isRequestLoading}
-        skeletonRows={3}
         emptyState={{
           title: translateText(["emptyRequestTitle"]),
           description: translateText(["emptyRequestDesEmployee"])
         }}
-        pagination={{
-          isEnabled: hasFullList,
-          totalPages: requestData?.totalPages,
-          currentPage: timesheetRequestParams.page - 1,
-          onPageChange: (page: number) => {
-            setTimesheetRequestPagination(page + 1);
-          }
-        }}
+        pagination={
+          hasFullList
+            ? {
+                totalPages: requestData?.totalPages,
+                currentPage: timesheetRequestParams.page - 1,
+                onPageChange: (page: number) => {
+                  setTimesheetRequestPagination(page + 1);
+                }
+              }
+            : undefined
+        }
         filter={
           hasFullList
             ? {
-                isEnabled: true,
                 filterCount,
                 filterButtonAriaLabel: translateAria(["filterButton"]),
                 popoverId: "manager-timesheet-request-filter",

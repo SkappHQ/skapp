@@ -10,7 +10,6 @@ export type { GridHeader, GridRow } from "@rootcodelabs/skapp-ui";
 
 /** Static pagination — 0-based, passed straight through to TableV2. */
 export interface TableViewPagination {
-  isEnabled?: boolean;
   totalPages?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
@@ -28,13 +27,12 @@ export interface TableViewInfiniteScroll {
 }
 
 export interface TableViewFilter {
-  isEnabled?: boolean;
   filterCount: number;
   filterContent: (args: { close: () => void }) => ReactNode;
   filterButtonAriaLabel?: string;
   popoverAriaLabel?: string;
   popoverAriaLabelledBy?: string;
-  popoverId?: string;
+  popoverId: string;
 }
 
 export interface TableViewAriaLabels {
@@ -46,6 +44,9 @@ export interface TableViewAriaLabels {
 }
 
 export interface TableViewProps {
+  // ---- heading rendered above the toolbar/table ----
+  heading?: ReactNode;
+
   // ---- TableV2 passthrough ----
   tableName?: string;
   regionAriaLabel?: string;
@@ -59,6 +60,7 @@ export interface TableViewProps {
   onRowClick?: (row: GridRow, id: string | number) => void;
   className?: string;
   height?: string;
+  minHeight?: string;
 
   // ---- mode: at most one of these ----
   pagination?: TableViewPagination;
