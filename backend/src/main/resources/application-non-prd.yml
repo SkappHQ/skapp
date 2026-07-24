@@ -68,6 +68,10 @@ jwt:
 oauth2:
   issuer: ${OAUTH2_ISSUER:http://localhost:8080}
   signin-redirect-url: ${OAUTH2_SIGNIN_URL:http://localhost:3000/signin}
+  jwk:
+    private-key: ${OAUTH2_JWK_PRIVATE_KEY:}
+    public-key: ${OAUTH2_JWK_PUBLIC_KEY:}
+    key-id: ${OAUTH2_JWK_KEY_ID:skapp-oauth}
 
 domain:
   base: ${DOMAIN_BASE:localhost}

@@ -64,6 +64,10 @@ jwt:
 oauth2:
   issuer: ${OAUTH2_ISSUER}
   signin-redirect-url: ${OAUTH2_SIGNIN_URL}
+  jwk:
+    private-key: ${OAUTH2_JWK_PRIVATE_KEY}
+    public-key: ${OAUTH2_JWK_PUBLIC_KEY}
+    key-id: ${OAUTH2_JWK_KEY_ID}
 
 domain:
   base: ${DOMAIN_BASE}

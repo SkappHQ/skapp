@@ -17,47 +17,44 @@ import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
- * Spring Authorization Server (OAuth 2.1) — an ADDITIVE layer that lives alongside the
- * existing custom JWT auth (which is left untouched). It only governs the OAuth endpoints
- * (its own filter chain, ordered first); every other request continues through the
- * existing {@code SecurityConfig} / {@code EPSecurityConfig} stateless chain.
+ * OAuth 2.1 Authorization Server, added as a dedicated {@link SecurityFilterChain}
+ * (ordered first) that governs only the {@code /oauth2/**} endpoints. It runs alongside
+ * the existing custom-JWT security chain, which is left unchanged.
  *
- * Purpose: let Claude (and other MCP clients) obtain access tokens for the Skapp MCP
- * server via a standards-compliant OAuth 2.1 flow. Login is delegated to the real Skapp
- * {@code /signin} via {@code OAuthSessionLoginController}.
- *
- * NOTE (must verify on build — Spring Boot 4 / Security 7, no build available in the
- * authoring environment): - The JWK source below GENERATES an RSA key at startup. For
- * production this MUST be replaced with a persisted key (env/keystore) with rotation, or
- * tokens are invalidated on restart and across instances. - Anonymous Dynamic Client
- * Registration (RFC 7591), which Claude uses, may require additional configuration of the
- * OIDC client-registration endpoint policy (initial access token) — verify against the
- * resolved SAS version.
+ * <p>
+ * MCP clients (e.g. Claude connectors) obtain access tokens here via OAuth 2.1 with PKCE
+ * and OIDC dynamic client registration. User login is delegated to the real Skapp
+ * {@code /signin} (see
+ * {@link com.skapp.community.common.controller.v1.OAuthSessionLoginController}).
  */
 @Slf4j
 @Configuration
@@ -68,11 +65,20 @@ public class AuthorizationServerConfig {
 
 	private final BulkContextService bulkContextService;
 
-	@Value("${oauth2.issuer:http://localhost:8080}")
+	@Value("${oauth2.issuer}")
 	private String issuer;
 
-	@Value("${oauth2.signin-redirect-url:http://localhost:3000/signin}")
+	@Value("${oauth2.signin-redirect-url}")
 	private String signInRedirectUrl;
+
+	@Value("${oauth2.jwk.private-key:}")
+	private String jwkPrivateKey;
+
+	@Value("${oauth2.jwk.public-key:}")
+	private String jwkPublicKey;
+
+	@Value("${oauth2.jwk.key-id:skapp-oauth}")
+	private String jwkKeyId;
 
 	@Bean
 	@Order(1)
@@ -80,16 +86,12 @@ public class AuthorizationServerConfig {
 		OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer();
 
 		http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-			// Enable OIDC + the client-registration (DCR) endpoint that MCP clients use.
 			.with(authorizationServerConfigurer,
 					authorizationServer -> authorizationServer
 						.oidc(oidc -> oidc.clientRegistrationEndpoint(Customizer.withDefaults())))
 			.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-			// Unauthenticated /oauth2/authorize -> send the browser to the real Skapp
-			// /signin.
 			.exceptionHandling(exceptions -> exceptions
 				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint(signInRedirectUrl)))
-			// Accept the AS's own JWTs on protected OIDC endpoints (e.g. userinfo).
 			.oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()));
 
 		return http.build();
@@ -119,9 +121,8 @@ public class AuthorizationServerConfig {
 
 	@Bean
 	public JWKSource<SecurityContext> jwkSource() {
-		RSAKey rsaKey = generateRsaKey();
-		JWKSet jwkSet = new JWKSet(rsaKey);
-		return new ImmutableJWKSet<>(jwkSet);
+		RSAKey rsaKey = (jwkPrivateKey.isBlank() || jwkPublicKey.isBlank()) ? generateRsaKey() : loadConfiguredRsaKey();
+		return new ImmutableJWKSet<>(new JWKSet(rsaKey));
 	}
 
 	@Bean
@@ -130,10 +131,9 @@ public class AuthorizationServerConfig {
 	}
 
 	/**
-	 * Embed the identity/tenant claims that the MCP server and downstream Skapp services
-	 * need. Roles come from the authenticated resource owner (populated by the /signin
-	 * session bridge); userId is resolved by email and tenant is read from the
-	 * request-scoped context.
+	 * Embeds the identity/tenant claims downstream services need: {@code roles} from the
+	 * authenticated resource owner, {@code userId} resolved by email, and the current
+	 * {@code tenant}.
 	 */
 	@Bean
 	public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
@@ -151,7 +151,6 @@ public class AuthorizationServerConfig {
 				.stream()
 				.map(authority -> authority.getAuthority())
 				.toList();
-
 			context.getClaims().claim("roles", roles);
 
 			Optional<User> optionalUser = userDao.findByEmail(email);
@@ -164,19 +163,34 @@ public class AuthorizationServerConfig {
 		};
 	}
 
+	private RSAKey loadConfiguredRsaKey() {
+		try {
+			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+			RSAPublicKey publicKey = (RSAPublicKey) keyFactory
+				.generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(jwkPublicKey)));
+			RSAPrivateKey privateKey = (RSAPrivateKey) keyFactory
+				.generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(jwkPrivateKey)));
+			return new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(jwkKeyId).build();
+		}
+		catch (GeneralSecurityException e) {
+			throw new IllegalStateException("Failed to load the configured OAuth RSA signing key", e);
+		}
+	}
+
 	private RSAKey generateRsaKey() {
 		try {
 			KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 			keyPairGenerator.initialize(2048);
 			KeyPair keyPair = keyPairGenerator.generateKeyPair();
-			RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-			RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-			log.warn("AuthorizationServerConfig: generated an in-memory RSA signing key. "
-					+ "Replace with a persisted key (env/keystore) + rotation before production.");
-			return new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
+			log.warn("oauth2.jwk keys are not configured; generated an ephemeral RSA signing key. "
+					+ "Configure oauth2.jwk.private-key/public-key for non-dev environments.");
+			return new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+				.privateKey((RSAPrivateKey) keyPair.getPrivate())
+				.keyID(jwkKeyId)
+				.build();
 		}
-		catch (Exception e) {
-			throw new IllegalStateException("Failed to generate RSA key for the authorization server", e);
+		catch (GeneralSecurityException e) {
+			throw new IllegalStateException("Failed to generate an RSA signing key for the authorization server", e);
 		}
 	}
 
