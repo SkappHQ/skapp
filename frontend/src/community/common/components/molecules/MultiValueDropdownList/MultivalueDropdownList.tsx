@@ -130,12 +130,14 @@ const MultivalueDropdownList: FC<Props> = ({
             sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
           >
             {label}
-            &nbsp;
             {required && (
               // TODO: move styles to styles.ts
               <Typography
                 component="span"
-                style={{ color: theme.palette.error.contrastText }}
+                style={{
+                  color: theme.palette.error.contrastText,
+                  marginLeft: "0.25rem"
+                }}
               >
                 *
               </Typography>

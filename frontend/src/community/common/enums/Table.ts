@@ -18,6 +18,7 @@ export enum TableNames {
   LEAVE_ENTITLEMENTS = "Leave entitlements",
   LEAVE_REQUESTS_REPORT = "Leave requests report",
   LEAVE_TYPES = "Leave types",
+  LEAVE_POLICIES = "Leave policies",
   MANAGER_LEAVE_REQUESTS = "Manager leave requests",
   USER_LEAVE_HISTORY = "User leave history",
   PENDING_LEAVE_REQUESTS = "Pending leave requests",

@@ -5,7 +5,6 @@ import {
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
-
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   companyEndpoints,
@@ -23,6 +22,7 @@ import {
   CrmContactCreatePayload,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
+  CrmExistsResponse,
   CrmOwner,
   CrmOwnersResponseType,
   EditContactPayload
@@ -143,6 +143,30 @@ export const useEditContact = (
     onSuccess,
     onError
   });
+
+const checkContactEmailExists = async (
+  email: string
+): Promise<CrmExistsResponse> => {
+  const response = await authFetch.get(
+    contactEndpoints.CHECK_CONTACT_EMAIL_EXISTS,
+    {
+      params: { email }
+    }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCheckContactEmailExists = (
+  email: string,
+  enabled: boolean
+): UseQueryResult<CrmExistsResponse> => {
+  return useQuery({
+    queryKey: contactQueryKeys.CHECK_CONTACT_EMAIL_EXISTS(email),
+    queryFn: () => checkContactEmailExists(email),
+    refetchOnWindowFocus: false,
+    enabled
+  });
+};
 
 const fetchCompanyLookup = async (
   searchKeyword: string,

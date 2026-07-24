@@ -1,6 +1,13 @@
 import * as Yup from "yup";
 
 import { allowsOnlyNumbersAndOptionalDecimal } from "~community/common/regex/regexPatterns";
+import {
+  MAX_POLICY_DAYS,
+  MAX_POLICY_NAME_LENGTH,
+  MIN_ACCRUAL_CAP_DAYS,
+  MIN_POLICY_DAYS,
+  MIN_WAITING_PERIOD_DAYS
+} from "~community/leave/constants/leavePolicyConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
@@ -8,6 +15,21 @@ type TranslatorFunctionType = (
   suffixes: string[],
   interpolationValues?: Record<string, string>
 ) => string;
+
+const isNumberInRange = (
+  value: string | undefined,
+  min: number,
+  max?: number
+): boolean => {
+  const numericValue = Number(value);
+  return (
+    value !== undefined &&
+    value !== "" &&
+    !Number.isNaN(numericValue) &&
+    numericValue >= min &&
+    (max === undefined || numericValue <= max)
+  );
+};
 
 export const customLeaveAllocationValidation = (
   translateText: TranslatorFunctionType
@@ -90,6 +112,80 @@ export const addLeaveTypeValidationSchema = (
             translateText(["emptyCarryForwardExpirationDaysError"])
           )
       })
+  });
+
+export const editLeavePolicyValidation = (
+  translateText: TranslatorFunctionType
+) =>
+  Yup.object({
+    policyName: Yup.string()
+      .trim()
+      .required(translateText(["policyNameRequiredError"]))
+      .max(MAX_POLICY_NAME_LENGTH, translateText(["policyNameMaxLengthError"]))
+  });
+
+export const leavePolicyWizardValidation = (
+  translateText: TranslatorFunctionType,
+  isAccrual: boolean
+) =>
+  Yup.object({
+    policyName: Yup.string()
+      .trim()
+      .required(translateText(["errors", "policyNameRequired"]))
+      .max(
+        MAX_POLICY_NAME_LENGTH,
+        translateText(["errors", "policyNameMaxLength"])
+      ),
+    leaveType: Yup.string().required(
+      translateText(["errors", "leaveTypeRequired"])
+    ),
+    ...(isAccrual
+      ? {
+          accrualDays: Yup.string()
+            .required(translateText(["errors", "accrualDaysRequired"]))
+            .test(
+              "accrual-days-in-range",
+              translateText(["errors", "accrualDaysInvalid"]),
+              (value) =>
+                isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+            ),
+          accrualFrequency: Yup.string().required(
+            translateText(["errors", "frequencyRequired"])
+          ),
+          hasWaitingPeriod: Yup.boolean(),
+          waitingPeriodDays: Yup.string().when("hasWaitingPeriod", {
+            is: true,
+            then: (schema) =>
+              schema.test(
+                "waiting-period-days-valid",
+                translateText(["errors", "waitingPeriodDaysRequired"]),
+                (value) => isNumberInRange(value, MIN_WAITING_PERIOD_DAYS)
+              )
+          }),
+          hasAccrualCap: Yup.boolean(),
+          accrualCapDays: Yup.string().when("hasAccrualCap", {
+            is: true,
+            then: (schema) =>
+              schema.test(
+                "accrual-cap-days-valid",
+                translateText(["errors", "accrualCapRequired"]),
+                (value) => isNumberInRange(value, MIN_ACCRUAL_CAP_DAYS)
+              )
+          }),
+          canCarryOver: Yup.boolean(),
+          maxCarryOverDays: Yup.string().when("canCarryOver", {
+            is: true,
+            then: (schema) =>
+              schema.test(
+                "max-carryover-days-valid",
+                translateText(["errors", "maxCarryOverDaysInvalid"]),
+                (value) =>
+                  !value ||
+                  isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+              )
+          })
+        }
+      : {})
   });
 
 export const addEditCustomLeaveAllocationValidationSchema = (

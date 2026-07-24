@@ -293,7 +293,14 @@ const InputDate: FC<Props> = ({
         >
           {label}
           {required && (
-            <span style={{ color: theme.palette.error.contrastText }}>*</span>
+            <span
+              style={{
+                color: theme.palette.error.contrastText,
+                marginLeft: "0.25rem"
+              }}
+            >
+              *
+            </span>
           )}
         </Typography>
         {tooltip && (
