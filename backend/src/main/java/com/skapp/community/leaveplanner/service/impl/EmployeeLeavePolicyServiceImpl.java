@@ -47,7 +47,12 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		log.info("assignLeavePolicy: execution started for employee {} policy {}",
 				assignLeavePolicyRequestDto.getEmployeeId(), assignLeavePolicyRequestDto.getPolicyId());
 
-		Employee employee = getEmployeeOrThrow(assignLeavePolicyRequestDto.getEmployeeId());
+		// Acquire a pessimistic lock on the employee row FIRST, before any other read, so
+		// concurrent assigns for the same employee serialize. Being the first DB access
+		// also
+		// means the conflict re-read below runs only after any competing transaction has
+		// committed, so the "one open window per leave type" check sees up-to-date data.
+		Employee employee = getEmployeeForUpdateOrThrow(assignLeavePolicyRequestDto.getEmployeeId());
 
 		LeavePolicy policy = leavePolicyDao.findById(assignLeavePolicyRequestDto.getPolicyId())
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
@@ -63,16 +68,29 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		LocalDate effectiveFrom = resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 
-		// Conflict rule: at most one open window per (employee, leave type). Close any
-		// existing
-		// open window of the same leave type before opening the new one
-		// (last-write-wins).
+		// Conflict rule: at most one open window per (employee, leave type).
 		Long leaveTypeId = policy.getLeaveType().getId();
-		employeeLeavePolicyDao
+		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(), leaveTypeId,
 					EmployeeLeavePolicyStatus.ACTIVE)
-			.ifPresent(openWindow -> closeWindow(openWindow, effectiveFrom.minusDays(1),
-					EmployeeLeavePolicyEndedReason.SUPERSEDED));
+			.orElse(null);
+
+		if (openWindow != null) {
+			// Re-assigning the exact same policy on the same effective date is a no-op;
+			// return
+			// the existing window rather than churning history with a SUPERSEDED row.
+			if (openWindow.getPolicy().getId().equals(policy.getId())
+					&& effectiveFrom.equals(openWindow.getEffectiveFrom())
+					&& openWindow.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
+				log.info("assignLeavePolicy: identical assignment already active; treating as no-op");
+				return new ResponseEntityDto(false,
+						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(openWindow));
+			}
+			// A different policy (or the same policy re-dated) supersedes the current
+			// window
+			// (last-write-wins), in the same transaction as the insert below.
+			closeWindow(openWindow, effectiveFrom.minusDays(1), EmployeeLeavePolicyEndedReason.SUPERSEDED);
+		}
 
 		EmployeeLeavePolicy assignment = new EmployeeLeavePolicy();
 		assignment.setEmployee(employee);
@@ -95,6 +113,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
 		log.info("unassignLeavePolicy: execution started for employee {} policy {}",
 				unassignLeavePolicyRequestDto.getEmployeeId(), unassignLeavePolicyRequestDto.getPolicyId());
+
+		getEmployeeOrThrow(unassignLeavePolicyRequestDto.getEmployeeId());
 
 		EmployeeLeavePolicy openWindow = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
@@ -170,6 +190,11 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 	private Employee getEmployeeOrThrow(Long employeeId) {
 		return employeeDao.findByEmployeeId(employeeId)
+			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
+	}
+
+	private Employee getEmployeeForUpdateOrThrow(Long employeeId) {
+		return employeeDao.findWithLockByEmployeeId(employeeId)
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
 	}
 

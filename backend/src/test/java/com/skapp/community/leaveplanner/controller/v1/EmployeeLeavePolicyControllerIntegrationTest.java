@@ -209,6 +209,22 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Re-assigning the same policy on the same date is idempotent (no duplicate active window)")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_IdenticalReassign_IsNoOp() throws Exception {
+			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01"))
+				.andExpect(status().isCreated());
+			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01")).andDo(print())
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.results[0].policyId").value(500))
+				.andExpect(jsonPath("$.results[0].effectiveFrom").value("2024-03-01"));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].policyId").value(500));
+		}
+
+		@Test
 		@DisplayName("Returns 404 when the policy does not exist")
 		void assign_UnknownPolicy_ReturnsNotFound() throws Exception {
 			performAssign(leaveAdminToken(), assignBody(1, 999, "HIRE_DATE", null)).andDo(print())
@@ -261,6 +277,15 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		void unassign_Replay_SecondReturnsNotFound() throws Exception {
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andExpect(status().isOk());
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("Returns 404 (employee not found) when unassigning for an unknown employee")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void unassign_UnknownEmployee_ReturnsEmployeeNotFound() throws Exception {
+			performUnassign(leaveAdminToken(), unassignBody(9999, 500)).andDo(print())
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.results[0].messageKey").value("LEAVE_ERROR_EMPLOYEE_NOT_FOUND"));
 		}
 
 		@Test
