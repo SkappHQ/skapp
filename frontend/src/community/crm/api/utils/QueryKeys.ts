@@ -59,7 +59,11 @@ export const contactQueryKeys = {
     searchKeyword,
     size
   ],
-  CONTACT_BY_ID: (id: number) => ["crm-contact-by-id", id]
+  CONTACT_BY_ID: (id: number) => ["crm-contact-by-id", id],
+  CHECK_CONTACT_EMAIL_EXISTS: (email: string) => [
+    "crm-contact-email-exists",
+    email
+  ]
 };
 
 export const companyQueryKeys = {

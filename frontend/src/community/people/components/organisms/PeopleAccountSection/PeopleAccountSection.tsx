@@ -1,8 +1,10 @@
 import { Box } from "@mui/material";
 import { RefObject } from "react";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
+import IndividualEmployeeDocumentView from "~enterprise/people/components/molecules/IndividualEmployeeDocumentView/IndividualEmployeeDocumentView";
 
 import EmergencyDetailsForm from "../EmergencyDetailsSection/EmergencyDetailsForm";
 import EmploymentDetailsForm from "../EmploymentFormSection/EmploymentDetailsForm";
@@ -14,6 +16,7 @@ interface Props {
 
 const PeopleAccountSection = ({ formRef }: Props) => {
   const { currentStep } = usePeopleStore((state) => state);
+  const { userId } = useSessionData();
 
   const getSections = () => {
     switch (currentStep) {
@@ -23,6 +26,8 @@ const PeopleAccountSection = ({ formRef }: Props) => {
         return <EmergencyDetailsForm />;
       case EditPeopleFormTypes.employment:
         return <EmploymentDetailsForm isUpdate isProfileView />;
+      case EditPeopleFormTypes.documents:
+        return <IndividualEmployeeDocumentView selectedUser={userId!} />;
       default:
         return;
     }

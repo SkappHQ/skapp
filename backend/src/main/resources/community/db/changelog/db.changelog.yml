@@ -48,3 +48,5 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time-record-add-source-columns.sql
 
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-leave-policy-tables.sql
