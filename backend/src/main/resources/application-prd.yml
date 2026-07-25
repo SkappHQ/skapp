@@ -61,18 +61,6 @@ jwt:
     short-duration:
       expiration-time: 21600000 # Expiration time in milliseconds (6 hours)
 
-oauth2:
-  issuer: ${OAUTH2_ISSUER}
-  signin-redirect-url: ${OAUTH2_SIGNIN_URL}
-  jwk:
-    private-key: ${OAUTH2_JWK_PRIVATE_KEY}
-    public-key: ${OAUTH2_JWK_PUBLIC_KEY}
-    key-id: ${OAUTH2_JWK_KEY_ID}
-  client:
-    client-id: ${OAUTH2_CLIENT_ID:}
-    redirect-uris: ${OAUTH2_CLIENT_REDIRECT_URIS:}
-    scopes: ${OAUTH2_CLIENT_SCOPES:openid,skapp}
-
 domain:
   base: ${DOMAIN_BASE}
 
