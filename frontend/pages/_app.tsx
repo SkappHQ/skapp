@@ -96,25 +96,23 @@ function MyApp({
     <div className={inter.className}>
       <AuthProvider>
         {isEnterpriseMode ? (
-          <WebSocketProvider>
-            <ToastProvider>
-              <TanStackProvider>
-                <ThemeProvider theme={newTheme}>
-                  <I18nextProvider i18n={i18n}>
-                    <AnnouncementProvider>
-                      <ErrorBoundary FallbackComponent={Error}>
-                        <BaseLayout>
-                          <Component {...pageProps} />
-                        </BaseLayout>
-                      </ErrorBoundary>
-                      <AnnouncementWrapper />
-                    </AnnouncementProvider>
-                    <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                  </I18nextProvider>
-                </ThemeProvider>
-              </TanStackProvider>
-            </ToastProvider>
-          </WebSocketProvider>
+          <ToastProvider>
+            <TanStackProvider>
+              <ThemeProvider theme={newTheme}>
+                <I18nextProvider i18n={i18n}>
+                  <AnnouncementProvider>
+                    <ErrorBoundary FallbackComponent={Error}>
+                      <BaseLayout>
+                        <Component {...pageProps} />
+                      </BaseLayout>
+                    </ErrorBoundary>
+                    <AnnouncementWrapper />
+                  </AnnouncementProvider>
+                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+                </I18nextProvider>
+              </ThemeProvider>
+            </TanStackProvider>
+          </ToastProvider>
         ) : (
           <WebSocketProvider>
             <ToastProvider>

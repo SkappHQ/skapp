@@ -194,3 +194,5 @@ export const nonSuperAdminRestrictedRoutes = [
   GOOGLE_IMPORT_REVIEW,
   SYNC_CHANGES
 ];
+
+export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];

@@ -5,7 +5,6 @@ import { FC } from "react";
 import AttendanceModuleIcon from "~community/common/assets/Icons/AttendanceModuleIcon";
 import EsignatureModuleIcon from "~community/common/assets/Icons/EsignatureModuleIcon";
 import LeaveModuleIcon from "~community/common/assets/Icons/LeaveModuleIcon";
-import PeopleModuleIcon from "~community/common/assets/Icons/PeopleModuleIcon";
 import ROUTES from "~community/common/constants/routes";
 import { TimePeriodEnums } from "~community/common/enums/CommonEnums";
 import { IconProps } from "~community/common/types/IconTypes";
@@ -15,7 +14,23 @@ import {
   NotificationSummaryItem,
   NotificationSummaryType
 } from "~community/common/types/notificationTypes";
-import { SYNC_CHANGES } from "~enterprise/people/constants/routes";
+
+interface NotificationTypeHandler {
+  icon: FC<IconProps>;
+  getRoute: () => string;
+}
+
+const notificationTypeHandlerRegistry = new Map<
+  NotificationItemsTypes,
+  NotificationTypeHandler
+>();
+
+export const registerNotificationTypeHandler = (
+  types: NotificationItemsTypes[],
+  handler: NotificationTypeHandler
+): void => {
+  types.forEach((type) => notificationTypeHandlerRegistry.set(type, handler));
+};
 
 export const getNotificationCount = (
   summaryResults: NotificationSummaryItem[] | undefined,
@@ -44,11 +59,10 @@ export const getNotificationIcon = (
     case NotificationItemsTypes.ESIGN_DOCUMENT_COMPLETED_OWNER:
     case NotificationItemsTypes.ESIGN_DOCUMENT_DECLINED_OWNER:
       return EsignatureModuleIcon;
-    case NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED:
-    case NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED:
-      return PeopleModuleIcon;
     default:
-      return null;
+      return notificationType
+        ? (notificationTypeHandlerRegistry.get(notificationType)?.icon ?? null)
+        : null;
   }
 };
 
@@ -168,11 +182,11 @@ export const handleNotifyRow = ({
     if (resourceId && !isNaN(Number(resourceId))) {
       router.push(ROUTES.SIGN.INBOX_INFO.ID(Number(resourceId)));
     }
-  } else if (
-    notificationType === NotificationItemsTypes.GOOGLE_WORKSPACE_USER_REMOVED ||
-    notificationType === NotificationItemsTypes.EXTERNAL_SYNC_COMPLETED
-  ) {
-    router.push(SYNC_CHANGES);
+  } else if (notificationType) {
+    const handler = notificationTypeHandlerRegistry.get(notificationType);
+    if (handler) {
+      router.push(handler.getRoute());
+    }
   }
   mutate(id);
 };
