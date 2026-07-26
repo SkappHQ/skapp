@@ -275,3 +275,21 @@ export const reportsQueryKeys = {
     ];
   }
 };
+
+export const leavePolicyQueryKeys = {
+  ALL: ["leave-policies"],
+  POLICY_LEAVE_TYPES: ["policy-leave-types"],
+  LEAVE_POLICIES_INFINITE: function (
+    searchKeyword: string,
+    leaveTypeId: string,
+    size: number
+  ) {
+    return [
+      ...(this?.ALL || []),
+      "leave-policies-infinite",
+      searchKeyword,
+      leaveTypeId,
+      size
+    ];
+  }
+};

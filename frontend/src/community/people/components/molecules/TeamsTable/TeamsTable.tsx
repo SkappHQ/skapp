@@ -243,15 +243,14 @@ const TeamsTable: FC<Props> = ({
         }}
         tableBody={{
           emptyState: {
+            isSearching: Boolean(teamSearchTerm),
+            noSearchResults: {
+              title: translateText(["emptySearchResult", "title"]),
+              description: translateText(["emptySearchResult", "description"])
+            },
             noData: {
-              title:
-                allTeams && allTeams?.length > 0
-                  ? translateText(["emptyScreen", "title"])
-                  : translateText(["emptySearchResult", "title"]),
-              description:
-                allTeams && allTeams?.length > 0
-                  ? translateText(["emptyScreen", "description"])
-                  : translateText(["emptySearchResult", "description"]),
+              title: translateText(["emptyScreen", "title"]),
+              description: translateText(["emptyScreen", "description"]),
               button: addTeamsButton
             }
           },

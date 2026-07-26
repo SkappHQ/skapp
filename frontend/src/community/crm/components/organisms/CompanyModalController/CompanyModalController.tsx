@@ -29,9 +29,9 @@ const CompanyModalController = () => {
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
-        return translateText(["addCompanyModal", "title"]);
+        return translateText(["companyModal", "title", "add"]);
       case CrmModalTypes.EDIT_COMPANY_MODAL:
-        return translateText(["editCompanyModal", "title"]);
+        return translateText(["companyModal", "title", "edit"]);
       case CrmModalTypes.DELETE_COMPANY_MODAL:
         return translateText(["deleteCompanyModal", "title"]);
       default:

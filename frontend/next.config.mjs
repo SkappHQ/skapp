@@ -184,6 +184,14 @@ const nextConfig = {
         destination: "/community/leave/analytics/reports"
       },
       {
+        source: "/leave/policies",
+        destination: "/community/leave/policies"
+      },
+      {
+        source: "/leave/policies/create",
+        destination: "/community/leave/policies/create"
+      },
+      {
         source: "/configurations",
         destination: "/community/configurations"
       },

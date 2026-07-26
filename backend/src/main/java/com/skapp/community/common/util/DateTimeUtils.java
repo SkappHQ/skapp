@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.MonthDay;
 import java.time.Year;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -71,6 +72,8 @@ public class DateTimeUtils {
 	private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
+
+	private static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
 
 	public static final String TIMESTAMP_POSTFIX = "_";
 
@@ -577,6 +580,24 @@ public class DateTimeUtils {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
 		}
 		return Instant.ofEpochMilli(epochDateTime).atZone(ZoneOffset.UTC).toLocalDate();
+	}
+
+	/**
+	 * Checks whether the given string is a valid month-day value in "MM-dd" format.
+	 * @param monthDay The month-day string to validate.
+	 * @return true if the string can be parsed as a valid MonthDay, otherwise false.
+	 */
+	public static boolean isValidMonthDay(String monthDay) {
+		if (monthDay == null || monthDay.isBlank()) {
+			return false;
+		}
+		try {
+			MonthDay.parse(monthDay, MONTH_DAY_FORMATTER);
+			return true;
+		}
+		catch (DateTimeParseException e) {
+			return false;
+		}
 	}
 
 	public static boolean isValidDate(String dateStr) {

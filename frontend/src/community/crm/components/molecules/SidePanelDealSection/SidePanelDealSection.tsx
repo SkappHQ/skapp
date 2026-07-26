@@ -100,7 +100,7 @@ const SidePanelDealSection: FC<Props> = ({
   const renderDealsContent = () => {
     if (hasDeals) {
       return (
-        <div ref={loadingRef} className="flex flex-col w-full gap-2">
+        <div className="flex flex-col w-full gap-2">
           <AdvancedAccordion
             items={accordionItems}
             allowMultiple={true}
@@ -110,6 +110,7 @@ const SidePanelDealSection: FC<Props> = ({
           {showAddDealAction && (
             <div className="mt-2">{renderAddDealAction()}</div>
           )}
+          <div ref={loadingRef} />
         </div>
       );
     }
