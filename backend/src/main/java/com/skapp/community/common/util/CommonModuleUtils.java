@@ -283,10 +283,6 @@ public class CommonModuleUtils {
 		}
 	}
 
-	public static boolean isExternalAuthPicUrl(String authPic) {
-		return authPic != null && (authPic.startsWith("https://"));
-	}
-
 	/**
 	 * Safely extracts and sets a value from a nested structure only if not null. Combines
 	 * safeGet and setIfNotNull for cleaner syntax.
@@ -342,6 +338,14 @@ public class CommonModuleUtils {
 	public static boolean isGuestEmployee(Employee employee) {
 		return employee != null && employee.getEmployeeRole() != null
 				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();
+	}
+
+	public static boolean isExternalAuthPicUrl(String authPic) {
+		return authPic != null && authPic.startsWith("https://");
+	}
+
+	public static boolean shouldReplaceAuthPic(String existing, String incoming) {
+		return incoming != null && !incoming.equals(existing) && (existing == null || isExternalAuthPicUrl(existing));
 	}
 
 }
