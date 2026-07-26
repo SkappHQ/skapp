@@ -3,6 +3,8 @@ package com.skapp.community.peopleplanner.repository.impl;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
+import com.skapp.community.common.model.WorkLocation;
+import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
@@ -38,8 +40,7 @@ import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
-import com.skapp.community.common.model.WorkLocation;
-import com.skapp.community.common.model.WorkLocation_;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
@@ -70,8 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.skapp.community.peopleplanner.util.PeopleUtil.getSearchString;
 
 @Repository
 @RequiredArgsConstructor
@@ -175,11 +174,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			List<Order> orderList = new ArrayList<>();
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 1)
+						PeopleUtil.getSearchString(employeeFilterDto.getSearchKeyword())), 1)
 				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 2)
+						PeopleUtil.getSearchString(employeeFilterDto.getSearchKeyword())), 2)
 				.when(criteriaBuilder.like(userJoin.get(User_.EMAIL),
-						getSearchString(employeeFilterDto.getSearchKeyword())), 3)
+						PeopleUtil.getSearchString(employeeFilterDto.getSearchKeyword())), 3)
 				.otherwise(4));
 			orderList.add(sortingOrder);
 			orderList.addAll(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
@@ -365,11 +364,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				&& !employeeExportFilterDto.getSearchKeyword().isEmpty()) {
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(root.get(Employee_.FIRST_NAME),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 1)
+						PeopleUtil.getSearchString(employeeExportFilterDto.getSearchKeyword())), 1)
 				.when(criteriaBuilder.like(root.get(Employee_.LAST_NAME),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 2)
+						PeopleUtil.getSearchString(employeeExportFilterDto.getSearchKeyword())), 2)
 				.when(criteriaBuilder.like(userJoin.get(User_.EMAIL),
-						getSearchString(employeeExportFilterDto.getSearchKeyword())), 3)
+						PeopleUtil.getSearchString(employeeExportFilterDto.getSearchKeyword())), 3)
 				.otherwise(4));
 			orderList.add(sortingOrder);
 		}
@@ -475,10 +474,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		Join<Employee, User> userJoin = root.join(Employee_.user);
-		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.EMPLOYEE_ROLE, JoinType.LEFT);
 
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
-		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			predicates.add(findByEmailName(keyword, criteriaBuilder, root, userJoin));
@@ -539,9 +538,9 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		List<Order> orderList = new ArrayList<>();
 		if (keyword != null && !keyword.trim().isEmpty()) {
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
-				.when(criteriaBuilder.like(root.get("firstName"), getSearchString(keyword)), 1)
-				.when(criteriaBuilder.like(root.get("lastName"), getSearchString(keyword)), 2)
-				.when(criteriaBuilder.like(userJoin.get("email"), getSearchString(keyword)), 3)
+				.when(criteriaBuilder.like(root.get("firstName"), PeopleUtil.getSearchString(keyword)), 1)
+				.when(criteriaBuilder.like(root.get("lastName"), PeopleUtil.getSearchString(keyword)), 2)
+				.when(criteriaBuilder.like(userJoin.get("email"), PeopleUtil.getSearchString(keyword)), 3)
 				.otherwise(4));
 			orderList.add(sortingOrder);
 		}
@@ -1140,7 +1139,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), isActive));
 
 		if (employeeName != null) {
-			employeeName = getSearchString(employeeName);
+			employeeName = PeopleUtil.getSearchString(employeeName);
 			String lowerEmployeeName = employeeName.toLowerCase();
 
 			predicates.add(criteriaBuilder.or(
@@ -1221,7 +1220,10 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, User> userJoin = root.join(Employee_.user);
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
-		String searchString = getSearchString(keyword);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+
+		String searchString = PeopleUtil.getSearchString(keyword);
 		predicates.add(criteriaBuilder.or(
 				criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.FIRST_NAME)), searchString),
 				criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.LAST_NAME)), searchString),
@@ -1344,7 +1346,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		String searchKeyword = employeeFilterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isEmpty()) {
-			String searchPattern = getSearchString(searchKeyword);
+			String searchPattern = PeopleUtil.getSearchString(searchKeyword);
 			Order sortingOrder = criteriaBuilder.asc(criteriaBuilder.selectCase()
 				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.FIRST_NAME)), searchPattern), 1)
 				.when(criteriaBuilder.like(criteriaBuilder.lower(root.get(Employee_.LAST_NAME)), searchPattern), 2)
@@ -1484,7 +1486,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,
 			Join<Employee, User> userJoin) {
-		keyword = getSearchString(keyword);
+		keyword = PeopleUtil.getSearchString(keyword);
 		return criteriaBuilder.or(
 				criteriaBuilder.like(criteriaBuilder
 					.lower(criteriaBuilder.concat(criteriaBuilder.concat(employee.get(Employee_.FIRST_NAME), " "),
