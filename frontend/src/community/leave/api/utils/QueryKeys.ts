@@ -293,3 +293,10 @@ export const leavePolicyQueryKeys = {
     ];
   }
 };
+
+export const leavePolicyAssignmentQueryKeys = {
+  ALL: ["employee-leave-policies"],
+  EMPLOYEE_LEAVE_POLICIES: function (employeeId: number) {
+    return [...(this?.ALL || []), employeeId];
+  }
+};

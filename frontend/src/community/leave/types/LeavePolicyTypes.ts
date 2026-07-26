@@ -153,3 +153,43 @@ export interface LeavePolicyResponseDto {
 export interface LeavePolicyMutationResponse {
   results: LeavePolicyResponseDto[];
 }
+
+export enum EffectiveDateType {
+  HIRE_DATE = "HIRE_DATE",
+  SPECIFIC = "SPECIFIC"
+}
+
+export enum EmployeeLeavePolicyStatus {
+  ACTIVE = "ACTIVE",
+  ENDED = "ENDED"
+}
+
+export interface EmployeeLeavePolicyType {
+  id: number;
+  employeeId: number;
+  policyId: number;
+  policyName: string;
+  leaveTypeId: number;
+  leaveTypeName: string;
+  leaveTypeEmojiCode: string | null;
+  policyType: PolicyType;
+  effectiveDateType: EffectiveDateType;
+  effectiveFrom: string;
+  status: EmployeeLeavePolicyStatus;
+}
+
+export interface EmployeeLeavePoliciesResponse {
+  results: EmployeeLeavePolicyType[];
+}
+
+export interface AssignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
+  effectiveDateType: EffectiveDateType;
+  specificDate?: string;
+}
+
+export interface UnassignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
+}

@@ -5,7 +5,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAssignedLeaveTypes/UserAssignedLeaveTypes";
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
+import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePolicies";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
+import useIsLeavePoliciesEnabled from "~community/leave/hooks/useIsLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
@@ -33,6 +35,8 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
   );
 
   const { isAtLeastCoreTier } = useTier();
+
+  const isLeavePoliciesEnabled = useIsLeavePoliciesEnabled();
 
   const { resetLeaveRequestParams } = useLeaveStore((state) => state);
 
@@ -66,7 +70,11 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     >
       <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
         <>
-          <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
+          {isLeavePoliciesEnabled ? (
+            <UserLeavePolicies employeeId={selectedUser} />
+          ) : (
+            <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
+          )}
 
           {leaveTypesList?.length > 0 && (
             <UserLeaveUtilization

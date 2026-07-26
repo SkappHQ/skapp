@@ -342,6 +342,37 @@
     "noSearchResultsTitle": "No policies found. Try a different search term.",
     "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
   },
+  "leavePolicyAssignment": {
+    "sectionTitle": "Leave policies",
+    "assignPolicyBtnTxt": "Assign policy",
+    "menuUnassign": "Unassign",
+    "emptyStateTitle": "No policies assigned yet. Click Assign Policy to get started.",
+    "assignModal": {
+      "title": "Assign Leave Policy",
+      "policyLabel": "Policy",
+      "policyPlaceholder": "Select a policy",
+      "effectiveDateLabel": "Policy becomes effective on",
+      "hireDateOption": "Hire Date",
+      "specificDateOption": "Specific Date",
+      "specificDatePlaceholder": "Select a date",
+      "specificDateRequired": "Please select an effective date",
+      "saveBtnTxt": "Save",
+      "cancelBtnTxt": "Cancel"
+    },
+    "unassignModal": {
+      "title": "Unassign Policy?",
+      "description": "This policy will no longer apply to this employee.",
+      "unassignBtnTxt": "Unassign",
+      "cancelBtnTxt": "Cancel"
+    },
+    "assignSuccessTitle": "Policy Assigned",
+    "assignSuccessDescription": "\"{{policyName}}\" has been assigned to the employee.",
+    "unassignSuccessTitle": "Policy Unassigned",
+    "unassignSuccessDescription": "\"{{policyName}}\" has been unassigned from the employee.",
+    "errorTitle": "Oops! Something went wrong",
+    "assignErrorDescription": "Failed to assign the policy. Please try again or contact support.",
+    "unassignErrorDescription": "Failed to unassign the policy. Please try again or contact support."
+  },
   "leaveTypes": {
     "title": "Leave Types",
     "pageHead": "Leave Types | Skapp",
