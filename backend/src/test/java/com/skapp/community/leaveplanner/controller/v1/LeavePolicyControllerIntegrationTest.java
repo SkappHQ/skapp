@@ -53,6 +53,9 @@ class LeavePolicyControllerIntegrationTest {
 	private static final String SEED_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Existing Policy', 100, 'ACCRUAL', 'ACTIVE', false)";
 
+	private static final String SEED_INACTIVE_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
+			+ "VALUES (501, 'Inactive Policy', 100, 'ACCRUAL', 'INACTIVE', false)";
+
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
 
 	private static final String USER2_PEOPLE_ADMIN_ONLY = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_ADMIN', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -257,6 +260,14 @@ class LeavePolicyControllerIntegrationTest {
 				.with(SecurityTestUtils.bearerToken(user2Token()))).andDo(print()).andExpect(status().isForbidden());
 		}
 
+		@Test
+		@DisplayName("Non-admin user cannot activate a leave policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_POLICY, DOWNGRADE_USER2_TO_EMPLOYEE })
+		void activateLeavePolicy_LeaveEmployee_ReturnsForbidden() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/501/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(user2Token()))).andDo(print()).andExpect(status().isForbidden());
+		}
+
 	}
 
 	@Nested
@@ -299,6 +310,56 @@ class LeavePolicyControllerIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results[0].status").value("INACTIVE"));
+		}
+
+		@Test
+		@DisplayName("Leave admin cannot deactivate an already inactive leave policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_POLICY })
+		void deactivateLeavePolicy_AlreadyInactive_ReturnsBadRequest() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/501/deactivate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leave admin can activate an inactive leave policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_POLICY })
+		void activateLeavePolicy_LeaveAdmin_MarksActive() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/501/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"));
+		}
+
+		@Test
+		@DisplayName("Leave admin cannot activate an already active leave policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
+		void activateLeavePolicy_AlreadyActive_ReturnsBadRequest() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/500/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leave admin gets not found when activating an unknown policy")
+		void activateLeavePolicy_UnknownPolicy_ReturnsNotFound() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/9999/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("Leave admin gets not found when deactivating an unknown policy")
+		void deactivateLeavePolicy_UnknownPolicy_ReturnsNotFound() throws Exception {
+			mvc.perform(patch(ENDPOINT + "/9999/deactivate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isNotFound());
 		}
 
 	}
