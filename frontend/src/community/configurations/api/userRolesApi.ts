@@ -7,7 +7,8 @@ import { userRolesQueryKeys } from "~community/configurations/api/utils/QueryKey
 import {
   AllUserRolesResponseType,
   AllowedGrantableRolesType,
-  UserRoleRestrictionsType
+  UserRoleRestrictionsType,
+  UserRoleRestrictionsUpdateType
 } from "~community/configurations/types/UserRolesTypes";
 
 import { transformRolesToDropdownFormat } from "../utils/userRoles/apiUtils";
@@ -26,7 +27,9 @@ export const useGetAllUserRoles = (): UseQueryResult<
   });
 };
 
-export const getUserRoleRestrictions = async (module: Modules) => {
+export const getUserRoleRestrictions = async (
+  module: Modules
+): Promise<UserRoleRestrictionsType> => {
   const data = await authFetch.get(
     userRolesEndPoints.GET_USER_ROLE_RESTRICTIONS(module)
   );
@@ -34,22 +37,12 @@ export const getUserRoleRestrictions = async (module: Modules) => {
   return data.data.results[0];
 };
 
-export const useGetUserRoleRestrictions = (
-  module: Modules
-): UseQueryResult<UserRoleRestrictionsType> => {
-  return useQuery({
-    queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(module),
-    queryFn: () => getUserRoleRestrictions(module),
-    select: (data) => data
-  });
-};
-
 export const useUpdateUserRoleRestrictions = (
   onSuccess: () => void,
   onError: () => void
 ) => {
   return useMutation({
-    mutationFn: (payload: UserRoleRestrictionsType) => {
+    mutationFn: (payload: UserRoleRestrictionsUpdateType) => {
       return authFetch.patch(
         userRolesEndPoints.UPDATE_USER_ROLE_RESTRICTIONS,
         payload
