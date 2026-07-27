@@ -43,4 +43,8 @@ public class PeopleConstants {
 
 	public static final int MAX_EMPLOYEE_NUMBER_LENGTH = 10;
 
+	public static final int MAX_PAYROLL_ID_LENGTH = 50;
+
+	public static final int MAX_TIN_LENGTH = 50;
+
 }

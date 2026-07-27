@@ -414,6 +414,12 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setJoinDate);
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getWorkTimeZone(),
 				employee::setTimeZone);
+		CommonModuleUtils.setIfExists(
+				() -> normalizeIdentifier(requestDto.getEmployment().getEmploymentDetails().getPayrollId()),
+				employee::setPayrollId);
+		CommonModuleUtils.setIfExists(
+				() -> normalizeIdentifier(requestDto.getEmployment().getEmploymentDetails().getTin()),
+				employee::setTin);
 
 		// Work Location
 		if (requestDto != null && requestDto.getEmployment() != null
@@ -493,6 +499,10 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		return employee;
+	}
+
+	private static String normalizeIdentifier(String value) {
+		return (value == null || value.isBlank()) ? null : value;
 	}
 
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {

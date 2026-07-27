@@ -33,4 +33,8 @@ public class EmployeeEmploymentBasicDetailsDto {
 
 	private Long workLocationId;
 
+	private String payrollId;
+
+	private String tin;
+
 }

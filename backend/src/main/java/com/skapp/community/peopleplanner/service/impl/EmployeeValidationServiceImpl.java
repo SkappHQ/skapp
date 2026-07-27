@@ -14,6 +14,7 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -54,6 +55,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 			User user) {
 		if (employmentDetailsDto != null) {
 			if (employmentDetailsDto.getEmploymentDetails() != null) {
+				validatePayrollId(employmentDetailsDto.getEmploymentDetails(), user);
+				validateTin(employmentDetailsDto.getEmploymentDetails(), user);
+
 				if (employmentDetailsDto.getEmploymentDetails().getEmployeeNumber() != null
 						&& !employmentDetailsDto.getEmploymentDetails().getEmployeeNumber().isEmpty()) {
 					Validations.validateEmployeeNumber(employmentDetailsDto.getEmploymentDetails().getEmployeeNumber());
@@ -348,6 +352,48 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 					}
 				});
 			}
+		}
+	}
+
+	private void validatePayrollId(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
+		String payrollId = employmentDetails.getPayrollId();
+		if (payrollId == null || payrollId.isBlank()) {
+			return;
+		}
+
+		Validations.validatePayrollId(payrollId);
+
+		boolean isDuplicate;
+		if (user.getEmployee() != null) {
+			isDuplicate = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, user.getEmployee().getEmployeeId());
+		}
+		else {
+			isDuplicate = employeeDao.existsByPayrollId(payrollId);
+		}
+
+		if (isDuplicate) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST);
+		}
+	}
+
+	private void validateTin(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
+		String tin = employmentDetails.getTin();
+		if (tin == null || tin.isBlank()) {
+			return;
+		}
+
+		Validations.validateTin(tin);
+
+		boolean isDuplicate;
+		if (user.getEmployee() != null) {
+			isDuplicate = employeeDao.existsByTinAndEmployeeIdNot(tin, user.getEmployee().getEmployeeId());
+		}
+		else {
+			isDuplicate = employeeDao.existsByTin(tin);
+		}
+
+		if (isDuplicate) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST);
 		}
 	}
 

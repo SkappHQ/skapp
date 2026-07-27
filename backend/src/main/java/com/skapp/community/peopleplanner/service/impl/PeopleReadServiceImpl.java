@@ -295,6 +295,8 @@ public class PeopleReadServiceImpl implements PeopleReadService {
 
 		if (accessLevel.canSeeSensitiveData()) {
 			dto.setJoinedDate(employee.getJoinDate());
+			dto.setPayrollId(employee.getPayrollId());
+			dto.setTin(employee.getTin());
 		}
 
 		Optional.ofNullable(employee.getUser()).ifPresent(user -> {
