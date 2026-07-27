@@ -1,13 +1,11 @@
 import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
-import { formatEmptyString } from "~community/common/utils/commonUtil";
 import {
   CrmContactFormValues,
   CrmDealResponseType,
   CrmDealStageCreatePayload,
-  CrmDealStageFormTypes,
-  EditContactPayload
+  CrmDealStageFormTypes
 } from "~community/crm/types/CommonTypes";
 
 import { STAGE_COLOR_MAP } from "../constants/stageConstants";
@@ -32,14 +30,14 @@ export const mergeDealUpdate = (
 export const getChangedContactFields = (
   newValues: CrmContactFormValues,
   originalValues: CrmContactFormValues
-): Partial<EditContactPayload> => {
-  const changedFields: Partial<EditContactPayload> = {};
+): Partial<CrmContactFormValues> => {
+  const changedFields: Partial<CrmContactFormValues> = {};
 
   if (newValues.firstName !== originalValues.firstName) {
     changedFields.firstName = newValues.firstName;
   }
   if (newValues.lastName !== originalValues.lastName) {
-    changedFields.lastName = formatEmptyString(newValues.lastName);
+    changedFields.lastName = newValues.lastName;
   }
   if (newValues.email !== originalValues.email) {
     changedFields.email = newValues.email;

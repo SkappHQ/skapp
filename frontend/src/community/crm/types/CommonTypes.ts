@@ -158,7 +158,7 @@ export interface CrmContactCreatePayload {
 export interface EditContactPayload {
   id?: number;
   firstName?: string;
-  lastName?: string | null;
+  lastName?: string;
   email?: string;
   contactNumber?: string;
   companyId?: number | null;
