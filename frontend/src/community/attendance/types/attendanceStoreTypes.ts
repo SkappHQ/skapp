@@ -18,8 +18,6 @@ interface actionsTypes {
     selectedFilters: Record<string, string[]>
   ) => void;
   resetTimesheetRequestParams: () => void;
-  resetTimesheetRequestParamsToDefault: () => void;
-  setTimesheetSelectedFilterLabels: (value: string[]) => void;
   setTimesheetRequestSelectedDates: (value: string[]) => void;
   setTimesheetRequestPagination: (page: number) => void;
   setTimesheetAnalyticsSelectedDates: (value: string[]) => void;
@@ -36,7 +34,6 @@ interface actionsTypes {
     selectedFilters: Record<string, string[]>
   ) => void;
   setEmployeeTimesheetRequestSelectedDates: (value: string[]) => void;
-  setEmployeeTimesheetSelectedFilterLabels: (value: string[]) => void;
   setEmployeeTimesheetRequestPagination: (page: number) => void;
   resetEmployeeTimesheetRequestParams: () => void;
   setTimeAvailabilityForPeriod: (value: TimeAvailabilityType) => void;
@@ -51,7 +48,6 @@ export interface AttendanceStore extends actionsTypes {
   timesheetRequestsFilters: {
     status: string[];
   };
-  selectedTimesheetFilterLabels: string[];
   timesheetRequestSelectedDates: string[];
   timesheetRequestParams: {
     status: string;
@@ -90,7 +86,6 @@ export interface AttendanceStore extends actionsTypes {
     status: string[];
   };
   employeeTimesheetRequestSelectedDates: string[];
-  employeeSelectedTimesheetFilterLabels: string[];
   employeeTimesheetRequestsFilterValues: {
     status: { label: string; value: string }[];
   };
