@@ -1,6 +1,6 @@
 import {
+  CircleMinusIcon,
   CloseIcon,
-  DeleteButtonIcon,
   SmallModal,
   YellowWarningIcon
 } from "@rootcodelabs/skapp-ui";
@@ -34,12 +34,17 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
       modalHeader={translateText(["title"])}
       content={
         <div className="flex flex-col gap-4">
-          <div className="flex justify-center">
-            <YellowWarningIcon aria-hidden="true" className="size-8" />
+          <div className="flex items-center gap-3 rounded-lg bg-semantic-amber-background px-4 py-3">
+            <YellowWarningIcon aria-hidden="true" className="size-4 shrink-0" />
+            <div>
+              <p className="subtitle3 text-black">
+                {translateText(["irreversibleNotice"])}
+              </p>
+              <p className="body2 text-black">
+                {translateText(["recommendationNotice"])}
+              </p>
+            </div>
           </div>
-          <p className="body1 font-semibold text-black">
-            {translateText(["irreversibleNotice"])}
-          </p>
           <div className="body1 text-black">
             <p>{translateText(["consequencesTitle"])}</p>
             <ul className="list-disc pl-6">
@@ -48,12 +53,6 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
               <li>{translateText(["consequenceRemoveBulkUpload"])}</li>
               <li>{translateText(["consequenceRetainRecords"])}</li>
             </ul>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg bg-semantic-amber-background px-4 py-3">
-            <YellowWarningIcon aria-hidden="true" className="size-4 shrink-0" />
-            <p className="body2 text-black">
-              {translateText(["recommendationNotice"])}
-            </p>
           </div>
         </div>
       }
@@ -71,7 +70,11 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
           onClick: onConfirm,
           disabled: isEnabling,
           isLoading: isEnabling,
-          icon: <DeleteButtonIcon fill="var(--color-semantic-red-text)" />,
+          icon: (
+            <CircleMinusIcon
+              fill="var(--color-semantic-red-text)"
+            />
+          ),
           iconPosition: "end",
           title: isEnabling ? translateText(["confirmingTooltip"]) : undefined,
           children: isEnabling
