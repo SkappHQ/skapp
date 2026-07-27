@@ -363,6 +363,14 @@
       "colDays": "Days",
       "colBalance": "Balance",
       "actionAccrued": "Accrued",
+      "setHireDateBtnTxt": "Set a hire date",
+      "saveBtnTxt": "Save",
+      "cancelBtnTxt": "Cancel"
+    },
+    "setHireDateModal": {
+      "title": "Set Hire Date",
+      "dateLabel": "Hire date",
+      "datePlaceholder": "Select a date",
       "saveBtnTxt": "Save",
       "cancelBtnTxt": "Cancel"
     },

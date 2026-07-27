@@ -16,6 +16,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetLeavePoliciesInfinite } from "~community/leave/api/LeavePolicyApi";
 import { useAssignLeavePolicy } from "~community/leave/api/LeavePolicyAssignmentApi";
+import SetHireDateModal from "~community/leave/components/molecules/SetHireDateModal/SetHireDateModal";
 import {
   EffectiveDateType,
   LeavePolicyStatus,
@@ -23,6 +24,7 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import { buildAccrualPreview } from "~community/leave/utils/accrualPreviewUtils";
+import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 
 interface Props {
   employeeId: number;
@@ -50,6 +52,17 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   );
   const [specificDate, setSpecificDate] = useState<string>("");
   const [specificDateError, setSpecificDateError] = useState<string>("");
+  const [isSetHireDateOpen, setIsSetHireDateOpen] = useState<boolean>(false);
+
+  const { data: employee, isLoading: isEmployeeLoading } =
+    useGetEmployeeById(employeeId);
+
+  // With HIRE_DATE selected, the employee must have a hire date on record;
+  // otherwise the primary action becomes "Set a hire date" first.
+  const needsHireDate =
+    effectiveDateType === EffectiveDateType.HIRE_DATE &&
+    !isEmployeeLoading &&
+    !employee?.joinDate;
 
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
@@ -211,6 +224,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const isSaveDisabled = !selectedPolicyId || isPending;
 
   return (
+    <>
     <SmallModal
       isOpen={isOpen}
       onClose={handleClose}
@@ -324,15 +338,28 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
           disabled: isPending,
           children: translateText(["cancelBtnTxt"])
         },
-        buttonRight: {
-          variant: "primary",
-          onClick: handleSave,
-          disabled: isSaveDisabled,
-          isLoading: isPending,
-          children: translateText(["saveBtnTxt"])
-        }
+        buttonRight: needsHireDate
+          ? {
+              variant: "primary",
+              onClick: () => setIsSetHireDateOpen(true),
+              disabled: isEmployeeLoading,
+              children: translateText(["setHireDateBtnTxt"])
+            }
+          : {
+              variant: "primary",
+              onClick: handleSave,
+              disabled: isSaveDisabled,
+              isLoading: isPending,
+              children: translateText(["saveBtnTxt"])
+            }
       }}
     />
+    <SetHireDateModal
+      employeeId={employeeId}
+      isOpen={isSetHireDateOpen}
+      onClose={() => setIsSetHireDateOpen(false)}
+    />
+    </>
   );
 };
 
