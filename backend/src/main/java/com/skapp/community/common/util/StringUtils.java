@@ -1,7 +1,6 @@
 package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.ValidationConstant;
-import com.skapp.enterprise.common.constant.EpCommonConstants;
 import lombok.experimental.UtilityClass;
 
 import java.util.Arrays;
@@ -28,18 +27,20 @@ public class StringUtils {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
+	private static final String COMMA_DELIMITER = ",";
+
 	public static String convertToCommaSeperatedString(Set<String> values) {
 		if (values == null || values.isEmpty()) {
 			return null;
 		}
-		return values.stream().filter(Objects::nonNull).collect(Collectors.joining(EpCommonConstants.COMMA_DELIMITER));
+		return values.stream().filter(Objects::nonNull).collect(Collectors.joining(COMMA_DELIMITER));
 	}
 
 	public static Set<String> convertToList(String value) {
-		if (value == null || value.isBlank()) {
+		if (isNullOrBlank(value)) {
 			return new LinkedHashSet<>();
 		}
-		return Arrays.stream(value.split(EpCommonConstants.COMMA_DELIMITER))
+		return Arrays.stream(value.split(COMMA_DELIMITER))
 			.map(String::trim)
 			.filter(s -> !s.isEmpty())
 			.collect(Collectors.toCollection(LinkedHashSet::new));
