@@ -146,11 +146,13 @@ const getLeavePolicyConfig = async (): Promise<LeavePolicyConfigResult> => {
   return response.data.results[0];
 };
 
-export const useGetLeavePolicyConfig =
-  (): UseQueryResult<LeavePolicyConfigResult> => {
+export const useGetLeavePolicyConfig = (
+  enabled = true
+): UseQueryResult<LeavePolicyConfigResult> => {
   return useQuery({
     queryKey: leavePolicyQueryKeys.LEAVE_POLICY_CONFIG,
     queryFn: getLeavePolicyConfig,
+    enabled,
     refetchOnWindowFocus: false
   });
 };

@@ -36,9 +36,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import {
-  AdminTypes,
-  EmployeeTypes,
-  ManagerTypes
+  AdminTypes
 } from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
@@ -47,6 +45,7 @@ import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
@@ -131,6 +130,20 @@ const Drawer = (): JSX.Element => {
 
   const isEnterprise = environment === appModes.ENTERPRISE;
 
+  const canViewLeavePolicies = Boolean(
+    user?.roles?.some((role) =>
+      [
+        AdminTypes.SUPER_ADMIN,
+        AdminTypes.LEAVE_ADMIN,
+        AdminTypes.PEOPLE_ADMIN
+      ].includes(role as AdminTypes)
+    )
+  );
+
+  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled({
+    enabled: canViewLeavePolicies
+  });
+
   const drawerRoutes = useMemo(
     () =>
       getDrawerRoutes({
@@ -145,7 +158,8 @@ const Drawer = (): JSX.Element => {
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
         notificationLeaveCount,
         notificationTimesheetCount,
-        notificationSignCount
+        notificationSignCount,
+        isLeavePoliciesEnabled
       }),
     [
       user,
@@ -154,7 +168,8 @@ const Drawer = (): JSX.Element => {
       organizationCalendarStatusData,
       notificationLeaveCount,
       notificationTimesheetCount,
-      notificationSignCount
+      notificationSignCount,
+      isLeavePoliciesEnabled
     ]
   );
 
