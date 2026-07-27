@@ -124,7 +124,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_HireDate_ReturnsCreatedWindowOnJoinDate() throws Exception {
 			performAssign(leaveAdminToken(), assignBody(1, 500, "HIRE_DATE", null)).andDo(print())
-				.andExpect(status().isCreated())
+				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results[0].employeeId").value(1))
 				.andExpect(jsonPath("$.results[0].policyId").value(500))
@@ -141,7 +141,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_SpecificDate_ReturnsCreatedWindowOnChosenDate() throws Exception {
 			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01")).andDo(print())
-				.andExpect(status().isCreated())
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].effectiveDateType").value("SPECIFIC"))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value("2024-03-01"))
 				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"));
@@ -154,7 +154,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			// Employee 1 already has an open window on policy 500 (leave type 100).
 			// Assigning policy 501 (also leave type 100) must close 500 and open 501.
 			performAssign(leaveAdminToken(), assignBody(1, 501, "SPECIFIC", "2024-06-01")).andDo(print())
-				.andExpect(status().isCreated())
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].policyId").value(501));
 
 			performGet(leaveAdminToken(), 1).andDo(print())
@@ -168,7 +168,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
 		void assign_DifferentLeaveType_KeepsBothWindows() throws Exception {
 			performAssign(leaveAdminToken(), assignBody(1, 600, "SPECIFIC", "2024-06-01")).andDo(print())
-				.andExpect(status().isCreated());
+				.andExpect(status().isOk());
 
 			performGet(leaveAdminToken(), 1).andDo(print())
 				.andExpect(status().isOk())
@@ -211,8 +211,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@DisplayName("Re-assigning the same policy on the same date is idempotent (no duplicate active window)")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_IdenticalReassign_IsNoOp() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01"))
-				.andExpect(status().isCreated());
+			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01")).andExpect(status().isOk());
 			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01")).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].policyId").value(500))
@@ -342,7 +341,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results", hasSize(0)));
 
 			// 2. Assign policy 500 (leave type 100) on the hire date.
-			performAssign(token, assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isCreated())
+			performAssign(token, assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].policyId").value(500))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 
@@ -352,14 +351,14 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].policyId").value(500));
 
 			// 4. Assign policy 600 (leave type 200) - different type, so it coexists.
-			performAssign(token, assignBody(1, 600, "SPECIFIC", "2024-06-01")).andExpect(status().isCreated());
+			performAssign(token, assignBody(1, 600, "SPECIFIC", "2024-06-01")).andExpect(status().isOk());
 			performGet(token, 1).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results", hasSize(2)))
 				.andExpect(jsonPath("$.results[*].policyId", containsInAnyOrder(500, 600)));
 
 			// 5. Assign policy 501 (leave type 100) - same type as 500, so it supersedes
 			// 500.
-			performAssign(token, assignBody(1, 501, "SPECIFIC", "2024-09-01")).andExpect(status().isCreated());
+			performAssign(token, assignBody(1, 501, "SPECIFIC", "2024-09-01")).andExpect(status().isOk());
 			performGet(token, 1).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results", hasSize(2)))
 				.andExpect(jsonPath("$.results[*].policyId", containsInAnyOrder(501, 600)));

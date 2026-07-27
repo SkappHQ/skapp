@@ -3,7 +3,6 @@ package com.skapp.community.leaveplanner.controller.v1;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
-import com.skapp.community.leaveplanner.payload.response.AssignLeavePolicyResultDto;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,8 +34,8 @@ public class EmployeeLeavePolicyController {
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> assignLeavePolicy(
 			@Valid @RequestBody AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
-		AssignLeavePolicyResultDto result = employeeLeavePolicyService.assignLeavePolicy(assignLeavePolicyRequestDto);
-		return new ResponseEntity<>(result.response(), result.created() ? HttpStatus.CREATED : HttpStatus.OK);
+		ResponseEntityDto response = employeeLeavePolicyService.assignLeavePolicy(assignLeavePolicyRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@Operation(summary = "Unassign a leave policy from an employee",
