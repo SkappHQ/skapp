@@ -3,7 +3,9 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
@@ -13,11 +15,18 @@ import com.skapp.community.peopleplanner.model.Team;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 public class PeopleUtil {
+
+	private static final String RESTRICTION_SEPARATOR = ",";
 
 	private PeopleUtil() {
 		throw new IllegalStateException("Illegal instantiate");
@@ -89,6 +98,47 @@ public class PeopleUtil {
 
 	public static List<EmployeeManager> filterManagersByAttendanceRoles(List<EmployeeManager> managers) {
 		return filterManagersByRoles(managers, List.of(Role.ATTENDANCE_ADMIN, Role.ATTENDANCE_MANAGER));
+	}
+
+	public static RoleLevel getSecondaryRestrictionRole(ModuleType module) {
+		return switch (module) {
+			case ESIGN -> RoleLevel.SENDER;
+			case CRM -> RoleLevel.SALES_MANAGER;
+			default -> RoleLevel.MANAGER;
+		};
+	}
+
+	public static Set<RoleLevel> parseRestrictions(String restrictions) {
+		Set<RoleLevel> roleLevels = EnumSet.noneOf(RoleLevel.class);
+		if (restrictions == null || restrictions.isBlank()) {
+			return roleLevels;
+		}
+
+		for (String restriction : restrictions.split(RESTRICTION_SEPARATOR)) {
+			String roleLevel = restriction.trim();
+			if (roleLevel.isEmpty()) {
+				continue;
+			}
+			try {
+				roleLevels.add(RoleLevel.valueOf(roleLevel));
+			}
+			catch (IllegalArgumentException e) {
+				log.warn("parseRestrictions: skipping unknown role level {}", roleLevel);
+			}
+		}
+
+		return roleLevels;
+	}
+
+	public static String toRestrictionsString(Set<RoleLevel> roleLevels) {
+		if (roleLevels == null || roleLevels.isEmpty()) {
+			return null;
+		}
+
+		return EnumSet.copyOf(roleLevels)
+			.stream()
+			.map(RoleLevel::name)
+			.collect(Collectors.joining(RESTRICTION_SEPARATOR));
 	}
 
 	public static boolean isPermissionsChanged(EmployeeRole oldRole, EmployeeRole newRole) {
