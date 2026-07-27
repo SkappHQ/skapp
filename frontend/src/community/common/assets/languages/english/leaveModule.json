@@ -363,7 +363,6 @@
       "colDays": "Days",
       "colBalance": "Balance",
       "actionAccrued": "Accrued",
-      "accrualPreviewNote": "Projected on the frontend from the selected effective date; actual accrual dates may vary.",
       "saveBtnTxt": "Save",
       "cancelBtnTxt": "Cancel"
     },

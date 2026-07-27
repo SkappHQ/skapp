@@ -1,4 +1,5 @@
-import { Dropdown, SmallModal } from "@rootcodelabs/skapp-ui";
+import { Dropdown, SmallModal, Table } from "@rootcodelabs/skapp-ui";
+import type { TableColumn } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { DateTime } from "luxon";
 import { FC, useMemo, useState } from "react";
@@ -108,6 +109,51 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
         : [],
     [selectedPolicy, previewStartISO]
   );
+
+  const accrualTableData = useMemo(
+    () =>
+      accrualPreview.map((row, index) => ({
+        id: index,
+        date: row.date,
+        action: translateText(["actionAccrued"]),
+        days: row.days,
+        balance: row.balance
+      })),
+    [accrualPreview, translateText]
+  );
+
+  type AccrualTableRow = (typeof accrualTableData)[number];
+
+  const accrualColumns: TableColumn<AccrualTableRow>[] = [
+    {
+      key: "date",
+      header: translateText(["colDate"]),
+      render: (value) => (
+        <span className="body2 text-black">{String(value)}</span>
+      )
+    },
+    {
+      key: "action",
+      header: translateText(["colAction"]),
+      render: (value) => (
+        <span className="body2 text-black">{String(value)}</span>
+      )
+    },
+    {
+      key: "days",
+      header: translateText(["colDays"]),
+      render: (value) => (
+        <span className="body2 text-black">{String(value)}</span>
+      )
+    },
+    {
+      key: "balance",
+      header: translateText(["colBalance"]),
+      render: (value) => (
+        <span className="body2 text-black">{String(value)}</span>
+      )
+    }
+  ];
 
   const onAssignSuccess = (): void => {
     setToastMessage({
@@ -236,50 +282,12 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
               <p className="body2 text-secondary-text">
                 {translateText(["accrualPreviewTitle"])}
               </p>
-              <div className="max-h-56 overflow-y-auto rounded-lg border border-grey-100">
-                <table className="w-full border-collapse text-left">
-                  <thead className="sticky top-0 bg-tertiary-background">
-                    <tr>
-                      <th className="caption px-3 py-2 font-medium text-secondary-text">
-                        {translateText(["colDate"])}
-                      </th>
-                      <th className="caption px-3 py-2 font-medium text-secondary-text">
-                        {translateText(["colAction"])}
-                      </th>
-                      <th className="caption px-3 py-2 text-right font-medium text-secondary-text">
-                        {translateText(["colDays"])}
-                      </th>
-                      <th className="caption px-3 py-2 text-right font-medium text-secondary-text">
-                        {translateText(["colBalance"])}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {accrualPreview.map((row, index) => (
-                      <tr
-                        key={index}
-                        className="border-t border-grey-100"
-                      >
-                        <td className="body2 px-3 py-2 text-black">
-                          {row.date}
-                        </td>
-                        <td className="body2 px-3 py-2 text-black">
-                          {translateText(["actionAccrued"])}
-                        </td>
-                        <td className="body2 px-3 py-2 text-right text-black">
-                          {row.days}
-                        </td>
-                        <td className="body2 px-3 py-2 text-right text-black">
-                          {row.balance}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="caption text-secondary-text">
-                {translateText(["accrualPreviewNote"])}
-              </p>
+              <Table<AccrualTableRow>
+                columns={accrualColumns}
+                data={accrualTableData}
+                tableAriaLabel={translateText(["accrualPreviewTitle"])}
+                height="14rem"
+              />
             </div>
           )}
         </div>
