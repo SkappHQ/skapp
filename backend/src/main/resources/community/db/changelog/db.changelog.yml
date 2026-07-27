@@ -50,3 +50,7 @@ databaseChangeLog:
 
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-leave-policy-tables.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-payroll-id-column.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-tin-column.sql
