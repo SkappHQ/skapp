@@ -419,7 +419,10 @@
         "save": "Save",
         "discard": "Discard"
       },
+      "emptyTasksDescription": "No tasks yet. Create a task to follow up with this deal",
       "toastMessages": {
+        "editSuccessTitle": "Deal Updated",
+        "editSuccessDescription": "Deal details have been updated successfully.",
         "editErrorTitle": "Failed to update deal",
         "editErrorDescription": "Something went wrong. Please try again"
       },

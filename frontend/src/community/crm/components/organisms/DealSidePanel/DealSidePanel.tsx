@@ -95,6 +95,13 @@ const DealSidePanel: FC = () => {
     } else {
       updateDealInStage(mapCreatedDealToSlice(updatedDeal));
     }
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["toastMessages", "editSuccessTitle"]),
+      description: translateText(["toastMessages", "editSuccessDescription"])
+    });
   };
 
   const handleError = (): void => {
@@ -199,6 +206,7 @@ const DealSidePanel: FC = () => {
                   <hr className="border-secondary-accent" />
                   <SidePanelTasksSection
                     tasks={relatedTasks}
+                    emptyDescription={translateText(["emptyTasksDescription"])}
                     hasNextPage={hasNextPage}
                     isFetchingNextPage={isFetchingNextPage}
                     onFetchNextPage={fetchNextPage}
