@@ -1356,6 +1356,13 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto terminateUser(Long userId) {
 		log.info("terminateUser: execution started");
 
+		Employee employee = employeeDao.findById(userId)
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+
+		if (employee.getAccountStatus() == AccountStatus.PENDING) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_TERMINATE_PENDING_EMPLOYEE);
+		}
+
 		updateUserStatus(userId, AccountStatus.TERMINATED, false);
 
 		log.info("terminateUser: execution ended");
