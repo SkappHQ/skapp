@@ -81,7 +81,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
       )}
 
       {hasPolicies && (
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {employeeLeavePolicies.map((policy) => {
             const usage = usageByLeaveType.get(policy.leaveTypeName);
             const taken = usage?.taken === 0 ? 1 : usage?.taken;
@@ -91,9 +91,9 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                 key={policy.id}
                 className="flex flex-row items-center justify-between gap-4 rounded-xl border border-grey-100 bg-white px-4 py-3"
               >
-                <div className="flex flex-row items-center gap-4">
+                <div className="flex min-w-0 flex-row items-center gap-4">
                   {usage && (
-                    <div className="flex items-baseline gap-0.5">
+                    <div className="flex shrink-0 items-baseline gap-0.5">
                       <span className="text-2xl font-semibold text-black">
                         {formatDays(taken as number)}
                       </span>
@@ -102,8 +102,8 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                       </span>
                     </div>
                   )}
-                  <div className="flex flex-col">
-                    <span className="body1 inline-flex items-center gap-2 text-black">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="body1 inline-flex items-center gap-2 truncate text-black">
                       {policy.leaveTypeEmojiCode && (
                         <span role="img" aria-hidden="true">
                           {getEmoji(policy.leaveTypeEmojiCode)}
@@ -111,7 +111,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                       )}
                       {policy.leaveTypeName}
                     </span>
-                    <span className="body2 text-secondary-text">
+                    <span className="body2 truncate text-secondary-text">
                       {policy.policyName}
                     </span>
                   </div>
