@@ -64,8 +64,9 @@ public class LeavePolicyController {
 	}
 
 	@Operation(summary = "Enable leave policies",
-			description = "Enables the leave policies feature for an existing tenant. Permanently deletes all custom "
-					+ "leave allocations and switches leave management to policies. This action is irreversible.")
+			description = "Enables the leave policies feature for an existing tenant. Removes all existing leave "
+					+ "allocations, cancels pending leave requests and revokes approved leave requests that start in "
+					+ "the future. This action is irreversible.")
 	@PostMapping("/enable")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> enableLeavePolicies() {

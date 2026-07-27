@@ -21,6 +21,6 @@ public interface LeaveEntitlementDao extends JpaRepository<LeaveEntitlement, Lon
 
 	List<LeaveEntitlement> findAllByLeaveType(LeaveType leaveType);
 
-	List<LeaveEntitlement> findByIsManualTrue();
+	List<LeaveEntitlement> findByIsActiveTrue();
 
 }
