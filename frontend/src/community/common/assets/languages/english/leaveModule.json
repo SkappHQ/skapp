@@ -346,6 +346,7 @@
     "sectionTitle": "Leave policies",
     "assignPolicyBtnTxt": "Assign policy",
     "menuUnassign": "Unassign",
+    "leavesTakenLabel": "{{taken}} / {{total}} days taken",
     "emptyStateTitle": "No policies assigned yet. Click Assign Policy to get started.",
     "assignModal": {
       "title": "Assign Leave Policy",

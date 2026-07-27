@@ -1,17 +1,23 @@
 import { ButtonV2, KebabMenu } from "@rootcodelabs/skapp-ui";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetEmployeeLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyModal from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyModal";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
+import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
+import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
 }
+
+const formatDays = (value: number): string =>
+  Number.isInteger(value) ? String(value) : value.toFixed(2);
 
 const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
   const translateText = useTranslator(
@@ -19,6 +25,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
     "leavePolicyAssignment"
   );
   const canManagePolicies = useCanManageLeavePolicies();
+  const { isAtLeastCoreTier } = useTier();
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState<boolean>(false);
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
@@ -27,6 +34,24 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
 
   const { data: employeeLeavePolicies = [], isLoading } =
     useGetEmployeeLeavePolicies(employeeId);
+
+  const { data: entitlementData } = useGetEmployeeEntitlements(
+    employeeId,
+    isAtLeastCoreTier
+  );
+
+  // Leave usage (taken vs total) is keyed by leave-type name, which is unique
+  // and shared between the entitlement and the assigned policy.
+  const usageByLeaveType = useMemo(() => {
+    const map = new Map<string, { taken: number; total: number }>();
+    (entitlementData ?? []).forEach((entitlement: LeaveEntitlementsCardType) => {
+      map.set(entitlement.leaveType.name, {
+        taken: entitlement.totalDaysAllocated - entitlement.balanceInDays,
+        total: entitlement.totalDaysAllocated
+      });
+    });
+    return map;
+  }, [entitlementData]);
 
   const hasPolicies = employeeLeavePolicies.length > 0;
 
@@ -57,36 +82,47 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
 
       {hasPolicies && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {employeeLeavePolicies.map((policy) => (
-            <div
-              key={policy.id}
-              className="flex flex-row items-start justify-between rounded-lg border border-grey-100 px-4 py-3"
-            >
-              <div className="flex flex-col gap-1.5">
-                <LeaveTypeChip
-                  name={policy.leaveTypeName}
-                  emojiCode={policy.leaveTypeEmojiCode}
-                />
-                <span className="body1 text-black">{policy.policyName}</span>
-              </div>
-              {canManagePolicies && (
-                <KebabMenu
-                  id={`employee-leave-policy-kebab-menu-${policy.id}`}
-                  isOpen={openKebabMenuId === policy.id}
-                  onToggle={(isOpen: boolean) =>
-                    setOpenKebabMenuId(isOpen ? policy.id : null)
-                  }
-                  menuItems={[
-                    {
-                      id: `employee-leave-policy-unassign-${policy.id}`,
-                      label: translateText(["menuUnassign"]),
-                      onClick: () => setUnassigningPolicy(policy)
+          {employeeLeavePolicies.map((policy) => {
+            const usage = usageByLeaveType.get(policy.leaveTypeName);
+            return (
+              <div
+                key={policy.id}
+                className="flex flex-row items-start justify-between rounded-lg border border-grey-100 px-4 py-3"
+              >
+                <div className="flex flex-col gap-1.5">
+                  <LeaveTypeChip
+                    name={policy.leaveTypeName}
+                    emojiCode={policy.leaveTypeEmojiCode}
+                  />
+                  <span className="body1 text-black">{policy.policyName}</span>
+                  {usage && (
+                    <span className="caption text-secondary-text">
+                      {translateText(["leavesTakenLabel"], {
+                        taken: formatDays(usage.taken),
+                        total: formatDays(usage.total)
+                      })}
+                    </span>
+                  )}
+                </div>
+                {canManagePolicies && (
+                  <KebabMenu
+                    id={`employee-leave-policy-kebab-menu-${policy.id}`}
+                    isOpen={openKebabMenuId === policy.id}
+                    onToggle={(isOpen: boolean) =>
+                      setOpenKebabMenuId(isOpen ? policy.id : null)
                     }
-                  ]}
-                />
-              )}
-            </div>
-          ))}
+                    menuItems={[
+                      {
+                        id: `employee-leave-policy-unassign-${policy.id}`,
+                        label: translateText(["menuUnassign"]),
+                        onClick: () => setUnassigningPolicy(policy)
+                      }
+                    ]}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
