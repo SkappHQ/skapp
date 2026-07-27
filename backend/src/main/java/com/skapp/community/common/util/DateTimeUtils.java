@@ -62,9 +62,6 @@ public class DateTimeUtils {
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 		.withZone(ZoneId.of("UTC"));
 
-	public static final DateTimeFormatter DD_MMM_YYYY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy",
-			Locale.ENGLISH);
-
 	// Default UTC ZoneId
 	private static final ZoneId UTC_ZONE_ID = ZoneOffset.UTC;
 
