@@ -124,9 +124,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		predicates.add(cb.isFalse(root.get(CrmCompany_.isDeleted)));
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
-
-			String likePattern = "%" + escapedKeyword + "%";
+			String likePattern = "%" + escapedLowerKeyword(searchKeyword) + "%";
 			predicates.add(cb.like(cb.lower(root.get(CrmCompany_.name)), likePattern));
 		}
 
@@ -138,12 +136,11 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String normalizedKeyword = searchKeyword.toLowerCase();
-			String escapedKeyword = StringUtils.escapeLikePattern(normalizedKeyword);
 			Expression<String> lowerName = cb.lower(company.get(CrmCompany_.name));
 
 			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
 				.when(cb.equal(lowerName, normalizedKeyword), 0)
-				.when(cb.like(lowerName, escapedKeyword + "%"), 1)
+				.when(cb.like(lowerName, escapedLowerKeyword(searchKeyword) + "%"), 1)
 				.otherwise(2);
 
 			orders.add(cb.asc(relevanceRank));
@@ -152,6 +149,10 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		orders.add(cb.asc(cb.lower(company.get(CrmCompany_.name))));
 
 		return orders;
+	}
+
+	private String escapedLowerKeyword(String searchKeyword) {
+		return StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
 	}
 
 	private List<Long> getClosedStageIds() {
