@@ -9,6 +9,7 @@ import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.response.AssignLeavePolicyResultDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
@@ -42,7 +43,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 	@Override
 	@Transactional
-	public ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
+	public AssignLeavePolicyResultDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		log.info("assignLeavePolicy: execution started for employee {} policy {}",
 				assignLeavePolicyRequestDto.getEmployeeId(), assignLeavePolicyRequestDto.getPolicyId());
 
@@ -71,8 +72,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			if (activeEmployeeLeavePolicy.getPolicy().getId().equals(policy.getId())
 					&& effectiveFrom.equals(activeEmployeeLeavePolicy.getEffectiveFrom()) && activeEmployeeLeavePolicy
 						.getEffectiveDateType() == assignLeavePolicyRequestDto.getEffectiveDateType()) {
-				return new ResponseEntityDto(false,
-						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeEmployeeLeavePolicy));
+				return new AssignLeavePolicyResultDto(false, new ResponseEntityDto(false,
+						leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeEmployeeLeavePolicy)));
 			}
 			markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 		}
@@ -86,8 +87,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		employeeLeavePolicy = employeeLeavePolicyDao.save(employeeLeavePolicy);
 
 		log.info("assignLeavePolicy: execution ended");
-		return new ResponseEntityDto(false,
-				leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(employeeLeavePolicy));
+		return new AssignLeavePolicyResultDto(true, new ResponseEntityDto(false,
+				leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(employeeLeavePolicy)));
 	}
 
 	@Override

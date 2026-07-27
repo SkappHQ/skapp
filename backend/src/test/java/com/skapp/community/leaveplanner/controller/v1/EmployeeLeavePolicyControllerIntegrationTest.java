@@ -214,7 +214,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01"))
 				.andExpect(status().isCreated());
 			performAssign(leaveAdminToken(), assignBody(1, 500, "SPECIFIC", "2024-03-01")).andDo(print())
-				.andExpect(status().isCreated())
+				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].policyId").value(500))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value("2024-03-01"));
 
