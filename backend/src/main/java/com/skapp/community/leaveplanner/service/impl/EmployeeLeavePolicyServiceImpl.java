@@ -13,7 +13,7 @@ import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResp
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
-import com.skapp.community.leaveplanner.type.EffectiveDateType;
+import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.PolicyType;
@@ -45,7 +45,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		log.info("assignLeavePolicy: execution started");
 
-		Employee employee = getEmployeeOrThrow(assignLeavePolicyRequestDto.getEmployeeId());
+		Employee employee = employeeDao.findByEmployeeId(assignLeavePolicyRequestDto.getEmployeeId())
+			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
 
 		LeavePolicy policy = leavePolicyDao.findById(assignLeavePolicyRequestDto.getPolicyId())
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND));
@@ -58,7 +59,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL);
 		}
 
-		LocalDate effectiveFrom = resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
+		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 
 		Long leaveTypeId = policy.getLeaveType().getId();
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
@@ -121,25 +122,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {
 		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ENDED);
 		employeeLeavePolicyDao.save(employeeLeavePolicy);
-	}
-
-	private LocalDate resolveEffectiveFrom(AssignLeavePolicyRequestDto dto, Employee employee) {
-		if (dto.getEffectiveDateType() == EffectiveDateType.SPECIFIC) {
-			if (dto.getSpecificDate() == null) {
-				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_SPECIFIC_DATE_REQUIRED);
-			}
-			return dto.getSpecificDate();
-		}
-
-		if (employee.getJoinDate() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_HIRE_DATE_UNAVAILABLE);
-		}
-		return employee.getJoinDate();
-	}
-
-	private Employee getEmployeeOrThrow(Long employeeId) {
-		return employeeDao.findByEmployeeId(employeeId)
-			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
 	}
 
 }
