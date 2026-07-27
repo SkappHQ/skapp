@@ -8,12 +8,12 @@ export const useUpdateEmployeeStatusWithLocation = () => {
 };
 
 export interface UserGeofenceStatus {
-  geofenceConfigured: boolean;
+  isGeofenceConfigured: boolean;
 }
 
 export const useGetUserGeofenceStatus = (_enabled: boolean = true) => {
   return {
-    data: { geofenceConfigured: false } as UserGeofenceStatus,
+    data: { isGeofenceConfigured: false } as UserGeofenceStatus,
     isLoading: false,
     isError: false
   };

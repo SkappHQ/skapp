@@ -33,7 +33,7 @@ export const useRecordAttendance = (
     isLoading: isGeofenceStatusLoading,
     isError: isGeofenceStatusError
   } = useGetUserGeofenceStatus(isGeoFencingEnabled && isEnterprise);
-  const isGeofenceConfigured = geofenceStatus?.geofenceConfigured;
+  const isGeofenceConfigured = geofenceStatus?.isGeofenceConfigured;
 
   const recordAttendance = useCallback(
     (slotType: AttendanceSlotType) => {
