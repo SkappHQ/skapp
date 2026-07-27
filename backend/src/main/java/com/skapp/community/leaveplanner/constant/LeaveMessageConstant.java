@@ -85,7 +85,9 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_LEAVE_POLICY_SPECIFIC_DATE_REQUIRED("api.error.leave.leave-policy-specific-date-required"),
 	LEAVE_ERROR_LEAVE_POLICY_HIRE_DATE_UNAVAILABLE("api.error.leave.leave-policy-hire-date-unavailable"),
 	LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL("api.error.leave.leave-policy-not-accrual"),
-	LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND("api.error.leave.employee-leave-policy-not-found");
+	LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND("api.error.leave.employee-leave-policy-not-found"),
+	LEAVE_ERROR_LEAVE_POLICY_ALREADY_INACTIVE("api.error.leave.leave-policy-already-inactive"),
+	LEAVE_ERROR_LEAVE_POLICY_ALREADY_ACTIVE("api.error.leave.leave-policy-already-active");
 
 	private final String messageKey;
 
