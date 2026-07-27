@@ -5,6 +5,7 @@ import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContact } from "~community/crm/types/CommonTypes";
 import { formatCurrencyValue } from "~community/crm/utils/commonHelpers";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 
 interface Props {
   contacts: CrmContact[];
@@ -32,7 +33,7 @@ const SidePanelCompanyContacts: FC<Props> = ({
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="truncate">{row.name}</div>
+            <div className="truncate">{getContactFullName(row)}</div>
             <div className="body2 text-secondary-text truncate">
               {row.company?.name}
             </div>

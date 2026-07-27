@@ -8,7 +8,8 @@ interface TestOwner {
 
 interface TestContact {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string | null;
   company?: {
     id: number;
     name: string;
@@ -61,8 +62,13 @@ describe("buildOwnerOptions", () => {
 
 describe("buildContactOptions", () => {
   const contacts: TestContact[] = [
-    { id: 10, name: "Acme Buyer", company: { id: 1, name: "Acme" } },
-    { id: 20, name: "Beta Lead", company: null }
+    {
+      id: 10,
+      firstName: "Acme",
+      lastName: "Buyer",
+      company: { id: 1, name: "Acme" }
+    },
+    { id: 20, firstName: "Beta", lastName: "Lead", company: null }
   ];
 
   it("should build contact dropdown options with company name in the label", () => {

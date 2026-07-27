@@ -69,7 +69,8 @@ const AddContactModalContent = () => {
   );
 
   const initialValues: CrmContactFormValues = {
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     contactNumber: "",
     companyId: null,
@@ -78,7 +79,8 @@ const AddContactModalContent = () => {
 
   const createContact = (values: CrmContactFormValues) => {
     const payload: CrmContactCreatePayload = {
-      name: values.name.trim(),
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim() || undefined,
       email: values.email.trim(),
       contactNumber: values.contactNumber.trim() || undefined,
       companyId: values.companyId ?? undefined,

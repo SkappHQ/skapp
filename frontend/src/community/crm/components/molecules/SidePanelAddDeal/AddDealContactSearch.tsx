@@ -6,6 +6,7 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContactLookup } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { findById } from "~community/crm/utils/crmUtil";
 
 interface Props {
@@ -60,7 +61,7 @@ const AddDealContactSearch: FC<Props> = ({
     return (
       <InputField
         variant="sm"
-        value={selectedContact.name}
+        value={getContactFullName(selectedContact)}
         readOnly
         fullWidth
         aria-label={ariaLabel}
@@ -79,7 +80,7 @@ const AddDealContactSearch: FC<Props> = ({
 
   const contactItems: SearchableDropdownItem[] = contacts.map((contact) => ({
     id: String(contact.id),
-    content: contact.name
+    content: getContactFullName(contact)
   }));
 
   return (

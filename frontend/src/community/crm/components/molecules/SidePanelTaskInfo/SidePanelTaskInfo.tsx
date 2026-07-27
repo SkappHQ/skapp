@@ -8,6 +8,7 @@ import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUti
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/components/molecules/PropertyRow/PropertyRow";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { getPriorityConfig } from "~community/crm/utils/taskUtil";
 
 interface Props {
@@ -75,7 +76,9 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
 
         <PropertyRow label={translateText(["contactName"])}>
           <span className="body2">
-            {task.contact?.name ?? translateText(["noContact"])}
+            {task.contact
+              ? getContactFullName(task.contact)
+              : translateText(["noContact"])}
           </span>
         </PropertyRow>
       </div>

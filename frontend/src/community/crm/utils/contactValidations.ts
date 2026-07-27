@@ -14,14 +14,29 @@ type TranslatorFunctionType = (suffixes: string[]) => string;
 
 export const addContactValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
-    name: Yup.string()
+    firstName: Yup.string()
       .trim()
-      .max(CONTACT_NAME_MAX_LENGTH, translator(["validations", "nameLength"]))
+      .max(
+        CONTACT_NAME_MAX_LENGTH,
+        translator(["validations", "firstNameLength"])
+      )
       .matches(isContactNameValid(), {
-        message: translator(["validations", "nameInvalidCharacters"]),
+        message: translator(["validations", "firstNameInvalidCharacters"]),
         excludeEmptyString: true
       })
-      .required(translator(["validations", "name"])),
+      .required(translator(["validations", "firstName"])),
+    lastName: Yup.string()
+      .trim()
+      .nullable()
+      .optional()
+      .max(
+        CONTACT_NAME_MAX_LENGTH,
+        translator(["validations", "lastNameLength"])
+      )
+      .matches(isContactNameValid(), {
+        message: translator(["validations", "lastNameInvalidCharacters"]),
+        excludeEmptyString: true
+      }),
     email: Yup.string()
       .trim()
       .max(CONTACT_EMAIL_MAX_LENGTH, translator(["validations", "emailLength"]))

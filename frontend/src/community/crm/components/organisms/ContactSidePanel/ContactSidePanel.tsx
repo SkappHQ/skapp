@@ -23,7 +23,10 @@ import { SidePanelTabEnum } from "~community/crm/enums/TabTypesEnum";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { mapContactToMetricItems } from "~community/crm/utils/contactUtil";
+import {
+  getContactFullName,
+  mapContactToMetricItems
+} from "~community/crm/utils/contactUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
@@ -172,7 +175,7 @@ const ContactSidePanel: FC = () => {
           <SidePanelHeaderSkeleton isShowLastUpdate={true} />
         ) : (
           <SidePanelContactHeader
-            name={contact?.name}
+            name={getContactFullName(contact)}
             lastModifiedDate={contact?.lastModifiedDate}
           />
         )

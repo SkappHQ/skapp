@@ -14,6 +14,7 @@ import type {
   CrmDealResponseType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 
 export const resolveBoardDeal = (
   deal: CrmBoardDealResponseType,
@@ -23,7 +24,7 @@ export const resolveBoardDeal = (
 ): CrmBoardDealSliceType => ({
   id: deal.id,
   name: deal.name,
-  contactName: contact?.name ?? "",
+  contactName: getContactFullName(contact),
   companyName: contact?.company?.name ?? null,
   owner,
   amount: deal.amount,
