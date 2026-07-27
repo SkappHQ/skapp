@@ -357,6 +357,13 @@
       "specificDateOption": "Specific Date",
       "specificDatePlaceholder": "Select a date",
       "specificDateRequired": "Please select an effective date",
+      "accrualPreviewTitle": "Accrual schedule",
+      "colDate": "Date",
+      "colAction": "Action",
+      "colDays": "Days",
+      "colBalance": "Balance",
+      "actionAccrued": "Accrued",
+      "accrualPreviewNote": "Projected on the frontend from the selected effective date; actual accrual dates may vary.",
       "saveBtnTxt": "Save",
       "cancelBtnTxt": "Cancel"
     },
