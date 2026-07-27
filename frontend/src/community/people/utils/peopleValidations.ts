@@ -316,7 +316,18 @@ export const employeeIdentificationDetailsValidation = (
   Yup.object({
     ssn: Yup.string().max(20, translator(["maxSSNCharacterLimitError"])),
     ethnicity: Yup.string(),
-    eeoJobCategory: Yup.string()
+    eeoJobCategory: Yup.string(),
+    payrollId: Yup.string()
+      .trim()
+      .max(
+        characterLengths.CHARACTER_LENGTH,
+        translator(["payrollIdMaxLengthError"])
+      )
+      .nullable(),
+    tin: Yup.string()
+      .trim()
+      .max(characterLengths.CHARACTER_LENGTH, translator(["tinMaxLengthError"]))
+      .nullable()
   });
 
 export const employeePreviousEmploymentDetailsValidation = (

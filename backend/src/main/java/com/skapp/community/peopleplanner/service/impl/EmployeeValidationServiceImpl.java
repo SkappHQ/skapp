@@ -14,9 +14,9 @@ import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploymentDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
-import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
@@ -54,10 +54,12 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	public void validateCreateEmployeeRequestEmploymentDetails(EmployeeEmploymentDetailsDto employmentDetailsDto,
 			User user) {
 		if (employmentDetailsDto != null) {
-			if (employmentDetailsDto.getEmploymentDetails() != null) {
-				validatePayrollId(employmentDetailsDto.getEmploymentDetails(), user);
-				validateTin(employmentDetailsDto.getEmploymentDetails(), user);
+			if (employmentDetailsDto.getIdentificationAndDiversityDetails() != null) {
+				validatePayrollId(employmentDetailsDto.getIdentificationAndDiversityDetails(), user);
+				validateTin(employmentDetailsDto.getIdentificationAndDiversityDetails(), user);
+			}
 
+			if (employmentDetailsDto.getEmploymentDetails() != null) {
 				if (employmentDetailsDto.getEmploymentDetails().getEmployeeNumber() != null
 						&& !employmentDetailsDto.getEmploymentDetails().getEmployeeNumber().isEmpty()) {
 					Validations.validateEmployeeNumber(employmentDetailsDto.getEmploymentDetails().getEmployeeNumber());
@@ -355,8 +357,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 		}
 	}
 
-	private void validatePayrollId(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
-		String payrollId = employmentDetails.getPayrollId();
+	private void validatePayrollId(EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails,
+			User user) {
+		String payrollId = identificationDetails.getPayrollId();
 		if (payrollId == null || payrollId.isBlank()) {
 			return;
 		}
@@ -376,8 +379,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 		}
 	}
 
-	private void validateTin(EmployeeEmploymentBasicDetailsDto employmentDetails, User user) {
-		String tin = employmentDetails.getTin();
+	private void validateTin(EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails, User user) {
+		String tin = identificationDetails.getTin();
 		if (tin == null || tin.isBlank()) {
 			return;
 		}

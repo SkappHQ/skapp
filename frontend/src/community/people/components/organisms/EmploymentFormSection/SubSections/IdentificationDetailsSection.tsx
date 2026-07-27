@@ -165,6 +165,46 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
                 ariaLabel={translateAria(["selectEEOJobCategory"])}
               />
             </Grid>
+
+            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+              <InputField
+                label={translateText(["payrollId"])}
+                inputType="text"
+                value={values?.payrollId ?? ""}
+                placeHolder={translateText(["enterPayrollId"])}
+                onChange={handleInput}
+                inputName="payrollId"
+                error={errors.payrollId ?? ""}
+                maxLength={50}
+                componentStyle={{
+                  flex: 1,
+                  mt: "0rem"
+                }}
+                isDisabled={isInputsDisabled}
+                readOnly={isReadOnly}
+                tooltip={translateText(["payrollIdTooltip"])}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+              <InputField
+                label={translateText(["tin"])}
+                inputType="text"
+                value={values?.tin ?? ""}
+                placeHolder={translateText(["enterTin"])}
+                onChange={handleInput}
+                inputName="tin"
+                error={errors.tin ?? ""}
+                maxLength={50}
+                componentStyle={{
+                  flex: 1,
+                  mt: "0rem"
+                }}
+                isDisabled={isInputsDisabled}
+                readOnly={isReadOnly}
+                tooltip={translateText(["tinTooltip"])}
+              />
+            </Grid>
           </Grid>
         </form>
       </PeopleFormSectionWrapper>

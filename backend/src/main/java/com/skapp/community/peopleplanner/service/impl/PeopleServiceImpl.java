@@ -414,13 +414,6 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setJoinDate);
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getWorkTimeZone(),
 				employee::setTimeZone);
-		CommonModuleUtils.setIfExists(
-				() -> normalizeIdentifier(requestDto.getEmployment().getEmploymentDetails().getPayrollId()),
-				employee::setPayrollId);
-		CommonModuleUtils.setIfExists(
-				() -> normalizeIdentifier(requestDto.getEmployment().getEmploymentDetails().getTin()),
-				employee::setTin);
-
 		// Work Location
 		if (requestDto != null && requestDto.getEmployment() != null
 				&& requestDto.getEmployment().getEmploymentDetails() != null
@@ -435,6 +428,13 @@ public class PeopleServiceImpl implements PeopleService {
 		CommonModuleUtils.setIfExists(
 				() -> requestDto.getEmployment().getIdentificationAndDiversityDetails().getEeoJobCategory(),
 				employee::setEeo);
+		CommonModuleUtils.setIfExists(
+				() -> normalizeIdentifier(
+						requestDto.getEmployment().getIdentificationAndDiversityDetails().getPayrollId()),
+				employee::setPayrollId);
+		CommonModuleUtils.setIfExists(
+				() -> normalizeIdentifier(requestDto.getEmployment().getIdentificationAndDiversityDetails().getTin()),
+				employee::setTin);
 
 		// Common Information
 		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), value -> {
