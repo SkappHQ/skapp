@@ -27,9 +27,7 @@ export const useGetAllUserRoles = (): UseQueryResult<
   });
 };
 
-export const getUserRoleRestrictions = async (
-  module: Modules
-): Promise<UserRoleRestrictionsType> => {
+export const getUserRoleRestrictions = async (module: Modules) => {
   const data = await authFetch.get(
     userRolesEndPoints.GET_USER_ROLE_RESTRICTIONS(module)
   );
