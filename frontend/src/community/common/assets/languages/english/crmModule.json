@@ -15,7 +15,8 @@
     "addContactModal": {
       "title": "Add Contact",
       "labels": {
-        "name": "Name",
+        "firstName": "First name",
+        "lastName": "Last name",
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
@@ -23,7 +24,8 @@
         "suggested": "Suggested"
       },
       "placeholders": {
-        "name": "Enter name",
+        "firstName": "Enter first name",
+        "lastName": "Enter last name",
         "email": "Enter email",
         "contactNumber": "Enter contact no.",
         "company": "Search company",
@@ -37,7 +39,8 @@
         "cancel": "Cancel"
       },
       "ariaLabels": {
-        "name": "Name",
+        "firstName": "First name",
+        "lastName": "Last name",
         "email": "Email",
         "contactNumber": "Contact Number",
         "company": "Company",
@@ -48,9 +51,11 @@
         "cancel": "Cancel Add Contact"
       },
       "validations": {
-        "name": "Contact name is required",
-        "nameLength": "Contact name is too long",
-        "nameInvalidCharacters": "Contact name contains invalid characters",
+        "firstName": "First name is required",
+        "firstNameLength": "First name must be 50 characters or less",
+        "firstNameInvalidCharacters": "First name can only contain letters, spaces, hyphens, apostrophes and periods",
+        "lastNameLength": "Last name must be 50 characters or less",
+        "lastNameInvalidCharacters": "Last name can only contain letters, spaces, hyphens, apostrophes and periods",
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",
@@ -86,7 +91,8 @@
     "editContactModal": {
       "title": "Edit Contact",
       "labels": {
-        "name": "Name",
+        "firstName": "First name",
+        "lastName": "Last name",
         "email": "Email",
         "contactNumber": "Contact no.",
         "company": "Company",
@@ -94,7 +100,8 @@
         "suggested": "Suggested"
       },
       "placeholders": {
-        "name": "Enter name",
+        "firstName": "Enter first name",
+        "lastName": "Enter last name",
         "email": "Enter email",
         "contactNumber": "Enter contact no.",
         "company": "Search company",
@@ -108,7 +115,8 @@
         "cancel": "Cancel"
       },
       "ariaLabels": {
-        "name": "Name",
+        "firstName": "First name",
+        "lastName": "Last name",
         "email": "Email",
         "contactNumber": "Contact Number",
         "company": "Company",
@@ -119,9 +127,11 @@
         "cancel": "Cancel Edit Contact"
       },
       "validations": {
-        "name": "Contact name is required",
-        "nameLength": "Contact name is too long",
-        "nameInvalidCharacters": "Contact name contains invalid characters",
+        "firstName": "First name is required",
+        "firstNameLength": "First name must be 50 characters or less",
+        "firstNameInvalidCharacters": "First name can only contain letters, spaces, hyphens, apostrophes and periods",
+        "lastNameLength": "Last name must be 50 characters or less",
+        "lastNameInvalidCharacters": "Last name can only contain letters, spaces, hyphens, apostrophes and periods",
         "email": "Email is required",
         "invalidEmail": "Invalid email address",
         "emailLength": "Email is too long",

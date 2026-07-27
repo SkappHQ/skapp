@@ -23,7 +23,8 @@ const toCompanyLookup = (id: number, name: string): CompanyLookup => ({
 
 const baseContact: CrmContact = {
   id: 1,
-  name: "Test Contact",
+  firstName: "Test",
+  lastName: "Contact",
   email: "test@example.com",
   contactNumber: "0711234567",
   lastContactAt: null,
@@ -107,10 +108,7 @@ describe("mapContactToMetricItems", () => {
 });
 
 describe("updateContactTaskCompletion", () => {
-  const makeTask = (
-    id: number,
-    isCompleted: boolean
-  ): TaskRowResponseType => ({
+  const makeTask = (id: number, isCompleted: boolean): TaskRowResponseType => ({
     id,
     name: `Task ${id}`,
     typeName: "Call",

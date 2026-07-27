@@ -89,7 +89,8 @@ export interface EditCompanyPayload extends CrmCompanyCreatePayload {
 
 export interface CrmContactType {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string | null;
   email: string;
   contactNumber: string | null;
   lastContactAt: string | null;
@@ -106,7 +107,8 @@ export interface CompanyLookup {
 
 export interface CrmContactLookup {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string | null;
   company?: CompanyLookup | null;
 }
 
@@ -136,7 +138,8 @@ export interface CrmCompanyDomainSearchResponseType {
 }
 
 export interface CrmContactFormValues {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   contactNumber: string;
   companyId: number | null;
@@ -144,7 +147,8 @@ export interface CrmContactFormValues {
 }
 
 export interface CrmContactCreatePayload {
-  name: string;
+  firstName: string;
+  lastName?: string;
   email: string;
   contactNumber?: string;
   companyId?: number;
@@ -153,7 +157,8 @@ export interface CrmContactCreatePayload {
 
 export interface EditContactPayload {
   id?: number;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   contactNumber?: string;
   companyId?: number | null;
@@ -409,7 +414,8 @@ export interface DetailPanelDealResponseType {
 
 export interface CrmContact {
   id: number;
-  name: string;
+  firstName: string;
+  lastName: string | null;
   email: string;
   contactNumber: string | null;
   company: CompanyLookup | null;

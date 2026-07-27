@@ -26,6 +26,7 @@ import {
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContact } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import {
   formatPhoneNumber,
@@ -89,12 +90,13 @@ export const ContactTable: FC = () => {
     {
       columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
       header: translateText(["table", "columns", "nameHeader"]),
-      key: "name",
-      render(value, row) {
+      key: "firstName",
+      render(_value, row) {
+        const contactFullName = getContactFullName(row);
         return (
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="w-full truncate" title={value}>
-              {value}
+            <div className="w-full truncate" title={contactFullName}>
+              {contactFullName}
             </div>
             <div
               className="subtitle4 text-secondary-text w-full truncate"

@@ -6,6 +6,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteContact } from "~community/crm/api/ContactApi";
 import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStore } from "~community/crm/store/store";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 
 const DeleteContactModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -46,7 +47,7 @@ const DeleteContactModalContent: FC = () => {
       toastType: ToastType.SUCCESS,
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"], {
-        contactName: selectedContact?.name
+        contactName: getContactFullName(selectedContact)
       })
     });
 
@@ -76,7 +77,7 @@ const DeleteContactModalContent: FC = () => {
   return (
     <CrmDeleteModalContent
       description={translateText(["description"], {
-        contactName: selectedContact?.name
+        contactName: getContactFullName(selectedContact)
       })}
       isPending={isPending}
       confirmLabel={translateText(["buttons", "confirm"])}

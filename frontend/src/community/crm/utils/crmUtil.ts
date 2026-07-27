@@ -33,8 +33,11 @@ export const getChangedContactFields = (
 ): Partial<CrmContactFormValues> => {
   const changedFields: Partial<CrmContactFormValues> = {};
 
-  if (newValues.name !== originalValues.name) {
-    changedFields.name = newValues.name;
+  if (newValues.firstName !== originalValues.firstName) {
+    changedFields.firstName = newValues.firstName;
+  }
+  if (newValues.lastName !== originalValues.lastName) {
+    changedFields.lastName = newValues.lastName;
   }
   if (newValues.email !== originalValues.email) {
     changedFields.email = newValues.email;
