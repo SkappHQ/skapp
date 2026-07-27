@@ -211,16 +211,23 @@ export const useGetCrmContacts = (
   searchKeyword: string,
   size: number,
   enabled: boolean,
-  dealId?: number | null
+  dealId?: number | null,
+  companyId?: number | null
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
-    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size, dealId),
+    queryKey: contactQueryKeys.CONTACT_LOOKUP(
+      searchKeyword,
+      size,
+      dealId,
+      companyId
+    ),
     queryFn: async (): Promise<CrmContactLookupResponseType> => {
       const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
         params: {
           searchKeyword,
           size,
-          ...(dealId != null && { dealId })
+          ...(dealId != null && { dealId }),
+          ...(companyId != null && { companyId })
         }
       });
       return response?.data?.results?.[0];

@@ -51,12 +51,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
     setIsTaskModalOpen,
     selectedTaskId,
     selectedContactId,
+    selectedCompanyId,
     getContactById,
     getTaskById
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTaskId: store.selectedTaskId,
     selectedContactId: store.selectedContactId,
+    selectedCompanyId: store.selectedCompanyId,
     getContactById: store.getContactById,
     getTaskById: store.getTaskById
   }));
@@ -122,21 +124,27 @@ const TaskModalForm: FC<TaskFormProps> = ({
   );
 
   const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 || !!formik.values.dealId;
+    debouncedContactSearchText.length > 0 ||
+    !!formik.values.dealId ||
+    selectedCompanyId != null;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isContactSearchEnabled,
-    formik.values.dealId
+    formik.values.dealId,
+    selectedCompanyId
   );
 
   const isDealSearchEnabled =
-    debouncedDealSearchText.length > 0 || !!formik.values.contactId;
+    debouncedDealSearchText.length > 0 ||
+    !!formik.values.contactId ||
+    selectedCompanyId != null;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isDealSearchEnabled,
-    formik.values.contactId
+    formik.values.contactId,
+    selectedCompanyId
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(

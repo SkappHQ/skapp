@@ -125,13 +125,15 @@ export const useCheckDealNameExists = (
 const fetchDealLookup = async (
   searchKeyword: string,
   size: number,
-  contactId?: number | null
+  contactId?: number | null,
+  companyId?: number | null
 ): Promise<CrmDealPaginatedResponse> => {
   const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
     params: {
       size,
       searchKeyword,
-      ...(contactId != null && { contactId })
+      ...(contactId != null && { contactId }),
+      ...(companyId != null && { companyId })
     }
   });
   return response?.data?.results?.[0];
@@ -141,11 +143,17 @@ export const useGetDealLookup = (
   searchKeyword: string,
   size: number,
   enabled: boolean = true,
-  contactId?: number | null
+  contactId?: number | null,
+  companyId?: number | null
 ): UseQueryResult<CrmDealPaginatedResponse> => {
   return useQuery({
-    queryKey: crmDealQueryKeys.DEAL_LOOKUP(searchKeyword, contactId, size),
-    queryFn: () => fetchDealLookup(searchKeyword, size, contactId),
+    queryKey: crmDealQueryKeys.DEAL_LOOKUP(
+      searchKeyword,
+      contactId,
+      size,
+      companyId
+    ),
+    queryFn: () => fetchDealLookup(searchKeyword, size, contactId, companyId),
     enabled
   });
 };
