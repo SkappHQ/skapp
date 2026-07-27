@@ -1,4 +1,11 @@
-import { Dropdown, SmallModal, Table } from "@rootcodelabs/skapp-ui";
+import {
+  CalendarIcon,
+  DatePicker,
+  Dropdown,
+  InputField,
+  SmallModal,
+  Table
+} from "@rootcodelabs/skapp-ui";
 import type { TableColumn } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { DateTime } from "luxon";
@@ -259,21 +266,39 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
               </span>
             </label>
             {effectiveDateType === EffectiveDateType.SPECIFIC && (
-              <div className="flex flex-col gap-1">
-                <input
-                  type="date"
-                  aria-label={translateText(["specificDatePlaceholder"])}
-                  value={specificDate}
-                  onChange={(event) => {
-                    setSpecificDate(event.target.value);
-                    setSpecificDateError("");
-                  }}
-                  className="rounded-lg border border-grey-300 px-3 py-2"
-                />
-                {specificDateError && (
-                  <p className="caption text-error-text">{specificDateError}</p>
-                )}
-              </div>
+              <DatePicker
+                mode="single"
+                selected={
+                  specificDate
+                    ? DateTime.fromISO(specificDate).toJSDate()
+                    : undefined
+                }
+                onSelect={(date?: Date) => {
+                  setSpecificDate(
+                    date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
+                  );
+                  setSpecificDateError("");
+                }}
+                popperProps={{ position: "bottom-start" }}
+              >
+                <div>
+                  <InputField
+                    name="specificDate"
+                    value={
+                      specificDate
+                        ? DateTime.fromISO(specificDate).toJSDate().toLocaleDateString()
+                        : ""
+                    }
+                    placeholder={translateText(["specificDatePlaceholder"])}
+                    aria-label={translateText(["specificDatePlaceholder"])}
+                    rightIcon={<CalendarIcon />}
+                    state={specificDateError ? "error" : "default"}
+                    errorMessage={specificDateError}
+                    fullWidth
+                    readOnly
+                  />
+                </div>
+              </DatePicker>
             )}
           </div>
 

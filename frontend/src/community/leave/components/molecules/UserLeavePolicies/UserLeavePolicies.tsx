@@ -1,4 +1,4 @@
-import { ButtonV2, KebabMenu } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -81,32 +81,40 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
       )}
 
       {hasPolicies && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-3">
           {employeeLeavePolicies.map((policy) => {
             const usage = usageByLeaveType.get(policy.leaveTypeName);
+            const taken = usage?.taken === 0 ? 1 : usage?.taken;
+            const total = usage?.taken === 0 ? 1 : usage?.total;
             return (
-              <div
+              <Card
                 key={policy.id}
-                className="flex flex-row items-start justify-between rounded-lg border border-grey-100 px-4 py-3"
+                className="flex flex-row items-center justify-between gap-4 rounded-xl border border-grey-100 bg-white px-4 py-3"
               >
-                <div className="flex flex-col gap-1.5">
-                  <span className="body2 inline-flex items-center gap-2 text-secondary-text">
-                    {policy.leaveTypeEmojiCode && (
-                      <span role="img" aria-hidden="true">
-                        {getEmoji(policy.leaveTypeEmojiCode)}
-                      </span>
-                    )}
-                    {policy.leaveTypeName}
-                  </span>
-                  <span className="body1 text-black">{policy.policyName}</span>
+                <div className="flex flex-row items-center gap-4">
                   {usage && (
-                    <span className="caption text-secondary-text">
-                      {translateText(["leavesTakenLabel"], {
-                        taken: formatDays(usage.taken === 0 ? 1 : usage.taken),
-                        total: formatDays(usage.taken === 0 ? 1 : usage.total)
-                      })}
-                    </span>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-2xl font-semibold text-black">
+                        {formatDays(taken as number)}
+                      </span>
+                      <span className="body2 text-secondary-text">
+                        /{formatDays(total as number)}
+                      </span>
+                    </div>
                   )}
+                  <div className="flex flex-col">
+                    <span className="body1 inline-flex items-center gap-2 text-black">
+                      {policy.leaveTypeEmojiCode && (
+                        <span role="img" aria-hidden="true">
+                          {getEmoji(policy.leaveTypeEmojiCode)}
+                        </span>
+                      )}
+                      {policy.leaveTypeName}
+                    </span>
+                    <span className="body2 text-secondary-text">
+                      {policy.policyName}
+                    </span>
+                  </div>
                 </div>
                 {canManagePolicies && (
                   <KebabMenu
@@ -124,7 +132,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                     ]}
                   />
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>
