@@ -80,17 +80,11 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID("api.error.leave.leave-policy-carryover-date-invalid"),
 	LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID("api.error.leave.leave-policy-max-carryover-days-invalid"),
 	LEAVE_ERROR_LEAVE_POLICY_NOT_FOUND("api.error.leave.leave-policy-not-found"),
-
 	LEAVE_ERROR_LEAVE_POLICY_NOT_ACTIVE("api.error.leave.leave-policy-not-active"),
-
 	LEAVE_ERROR_EMPLOYEE_NOT_FOUND("api.error.leave.employee-not-found"),
-
 	LEAVE_ERROR_LEAVE_POLICY_SPECIFIC_DATE_REQUIRED("api.error.leave.leave-policy-specific-date-required"),
-
 	LEAVE_ERROR_LEAVE_POLICY_HIRE_DATE_UNAVAILABLE("api.error.leave.leave-policy-hire-date-unavailable"),
-
 	LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL("api.error.leave.leave-policy-not-accrual"),
-
 	LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND("api.error.leave.employee-leave-policy-not-found");
 
 	private final String messageKey;
