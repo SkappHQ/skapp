@@ -1,4 +1,9 @@
-import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2,
+  CloseIcon,
+  InputField,
+  PopperProps
+} from "@rootcodelabs/skapp-ui";
 import { ChangeEvent } from "react";
 
 import SearchableDropdown, {
@@ -19,7 +24,7 @@ interface Props {
   items: SearchableDropdownItem[];
   onSelect: (item: SearchableDropdownItem) => void;
   emptyMessage?: string;
-  positionStrategy?: "absolute" | "fixed";
+  positionStrategy?: PopperProps["positionStrategy"];
 }
 
 const SelectableSearchField: React.FC<Props> = ({
