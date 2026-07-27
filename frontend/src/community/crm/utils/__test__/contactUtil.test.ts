@@ -9,6 +9,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 
 import {
+  getContactFullName,
   mapContactToMetricItems,
   mergeAndPrioritizeCompanyDropdownItems,
   updateContactTaskCompletion
@@ -46,6 +47,46 @@ const baseContact: CrmContact = {
   tasks: [],
   deals: []
 };
+
+describe("getContactFullName", () => {
+  it("returns an empty string for an undefined contact", () => {
+    expect(getContactFullName(undefined)).toBe("");
+  });
+
+  it("returns an empty string for a null contact", () => {
+    expect(getContactFullName(null)).toBe("");
+  });
+
+  it("returns an empty string when firstName and lastName are both empty", () => {
+    expect(getContactFullName({ firstName: "", lastName: "" })).toBe("");
+  });
+
+  it("joins firstName and lastName with a single space when both are present", () => {
+    expect(getContactFullName({ firstName: "John", lastName: "Smith" })).toBe(
+      "John Smith"
+    );
+  });
+
+  it("returns firstName only, with no trailing space, when lastName is null", () => {
+    expect(getContactFullName({ firstName: "John", lastName: null })).toBe(
+      "John"
+    );
+  });
+
+  it("returns firstName only, with no trailing space, when lastName is undefined", () => {
+    expect(getContactFullName({ firstName: "John" })).toBe("John");
+  });
+
+  it("returns lastName only, with no leading space, when firstName is empty", () => {
+    expect(getContactFullName({ firstName: "", lastName: "Smith" })).toBe(
+      "Smith"
+    );
+  });
+
+  it("returns lastName only, with no leading space, when firstName is undefined", () => {
+    expect(getContactFullName({ lastName: "Smith" })).toBe("Smith");
+  });
+});
 
 describe("mapContactToMetricItems", () => {
   it("should return 4 metric items in the correct order", () => {
