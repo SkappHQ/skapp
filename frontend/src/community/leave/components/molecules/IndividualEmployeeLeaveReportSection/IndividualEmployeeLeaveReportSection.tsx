@@ -70,6 +70,8 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     >
       <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
         <>
+          <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
+
           {isLeavePoliciesEnabled ? (
             <UserLeavePolicies employeeId={selectedUser} />
           ) : (

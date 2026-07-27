@@ -7,7 +7,10 @@ const styles = (): StyleProps => ({
     height: "auto"
   },
   customContainerStyles: {
-    gap: "1.5rem"
+    gap: "1.5rem",
+    // small inset so the primary Assign button's shadow isn't clipped by the
+    // scroll container (PeopleLayout uses overflow: auto with zero padding here)
+    padding: "0.25rem"
   }
 });
 

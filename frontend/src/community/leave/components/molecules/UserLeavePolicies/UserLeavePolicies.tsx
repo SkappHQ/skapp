@@ -63,7 +63,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
         </h3>
         {canManagePolicies && (
           <ButtonV2
-            variant="secondary"
+            variant="primary"
             size="sm"
             onClick={() => setIsAssignModalOpen(true)}
           >
