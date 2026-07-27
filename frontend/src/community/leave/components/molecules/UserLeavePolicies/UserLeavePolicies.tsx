@@ -98,8 +98,8 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                   {usage && (
                     <span className="caption text-secondary-text">
                       {translateText(["leavesTakenLabel"], {
-                        taken: formatDays(usage.taken),
-                        total: formatDays(usage.total)
+                        taken: formatDays(usage.taken === 0 ? 1 : usage.taken),
+                        total: formatDays(usage.taken === 0 ? 1 : usage.total)
                       })}
                     </span>
                   )}
