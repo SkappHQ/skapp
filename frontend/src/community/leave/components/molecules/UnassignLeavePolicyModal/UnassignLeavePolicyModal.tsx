@@ -5,8 +5,8 @@ import { FC } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import { useUnassignLeavePolicy } from "~community/leave/api/LeavePolicyAssignmentApi";
-import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 
 interface Props {
@@ -80,10 +80,14 @@ const UnassignLeavePolicyModal: FC<Props> = ({
       modalHeader={translateText(["title"])}
       content={
         <div className="flex flex-col gap-3">
-          <LeaveTypeChip
-            name={employeeLeavePolicy.leaveTypeName}
-            emojiCode={employeeLeavePolicy.leaveTypeEmojiCode}
-          />
+          <span className="body2 inline-flex items-center gap-2 text-secondary-text">
+            {employeeLeavePolicy.leaveTypeEmojiCode && (
+              <span role="img" aria-hidden="true">
+                {getEmoji(employeeLeavePolicy.leaveTypeEmojiCode)}
+              </span>
+            )}
+            {employeeLeavePolicy.leaveTypeName}
+          </span>
           <p className="body1 text-secondary-text">
             {translateText(["description"])}
           </p>

@@ -2,10 +2,10 @@ import { ButtonV2, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetEmployeeLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyModal from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyModal";
-import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
@@ -90,10 +90,14 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                 className="flex flex-row items-start justify-between rounded-lg border border-grey-100 px-4 py-3"
               >
                 <div className="flex flex-col gap-1.5">
-                  <LeaveTypeChip
-                    name={policy.leaveTypeName}
-                    emojiCode={policy.leaveTypeEmojiCode}
-                  />
+                  <span className="body2 inline-flex items-center gap-2 text-secondary-text">
+                    {policy.leaveTypeEmojiCode && (
+                      <span role="img" aria-hidden="true">
+                        {getEmoji(policy.leaveTypeEmojiCode)}
+                      </span>
+                    )}
+                    {policy.leaveTypeName}
+                  </span>
                   <span className="body1 text-black">{policy.policyName}</span>
                   {usage && (
                     <span className="caption text-secondary-text">
