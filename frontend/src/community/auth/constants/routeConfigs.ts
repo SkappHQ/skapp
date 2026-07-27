@@ -1,8 +1,3 @@
-import {
-  GOOGLE_IMPORT_REVIEW,
-  GOOGLE_IMPORT_SYNCING
-} from "~enterprise/people/constants/routes";
-
 import ROUTES from "../../common/constants/routes";
 
 export const drawerHiddenProtectedRoutes = [
@@ -30,6 +25,6 @@ export const drawerHiddenProtectedRoutes = [
   ROUTES.INVOICE.CREATE.BASE,
   ROUTES.INVOICE.VIEW.BASE,
   ROUTES.INVOICE.CUSTOMERS.PROJECTS.BASE,
-  GOOGLE_IMPORT_SYNCING,
-  GOOGLE_IMPORT_REVIEW
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
 ];

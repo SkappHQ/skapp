@@ -11,7 +11,8 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   getConfigurationTabs,
-  getFallbackTabId
+  getFallbackTabId,
+  hasRequiredRole
 } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
@@ -40,8 +41,7 @@ const Configurations: NextPage = () => {
   const visibleTabs = useMemo(() => {
     const userRoles = user?.roles || [];
     return allTabs.filter((tab) => {
-      if (!tab.requiredRoles.some((role) => userRoles.includes(role)))
-        return false;
+      if (!hasRequiredRole(tab, userRoles)) return false;
       if (tab.id === "people") return !!googleConnectionStatus?.connected;
       return true;
     });

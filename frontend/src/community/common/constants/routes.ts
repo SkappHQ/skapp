@@ -1,9 +1,3 @@
-import {
-  GOOGLE_IMPORT_REVIEW,
-  GOOGLE_IMPORT_SYNCING,
-  SYNC_CHANGES
-} from "~enterprise/people/constants/routes";
-
 const ROUTES = {
   AUTH: {
     SIGNUP: "/signup",
@@ -75,7 +69,10 @@ const ROUTES = {
     PENDING: "/people/directory/pending",
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
-    ADD: "/people/directory/add"
+    ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
+    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
     BASE: "/configurations",
@@ -190,9 +187,9 @@ export const employeeRestrictedRoutes = [
 ];
 
 export const nonSuperAdminRestrictedRoutes = [
-  GOOGLE_IMPORT_SYNCING,
-  GOOGLE_IMPORT_REVIEW,
-  SYNC_CHANGES
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.SYNC_CHANGES
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
