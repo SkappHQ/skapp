@@ -99,10 +99,34 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		LeavePolicy leavePolicy = getLeavePolicyById(id);
 
+		if (leavePolicy.getStatus() == LeavePolicyStatus.INACTIVE) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_INACTIVE);
+		}
+
 		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
 		log.info("deactivateLeavePolicy: policy deactivated successfully");
+
+		return new ResponseEntityDto(false,
+				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto activateLeavePolicy(Long id) {
+		log.info("activateLeavePolicy: execution started");
+
+		LeavePolicy leavePolicy = getLeavePolicyById(id);
+
+		if (leavePolicy.getStatus() == LeavePolicyStatus.ACTIVE) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_ACTIVE);
+		}
+
+		leavePolicy.setStatus(LeavePolicyStatus.ACTIVE);
+		leavePolicy = leavePolicyDao.save(leavePolicy);
+
+		log.info("activateLeavePolicy: policy activated successfully");
 
 		return new ResponseEntityDto(false,
 				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
