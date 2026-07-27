@@ -6,7 +6,6 @@ import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyReque
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,9 +30,9 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "Assign a leave policy to an employee",
 			description = "Opens an effective-dated assignment window; supersedes any open window of the same leave type")
 	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> assignLeavePolicy(
-			@Valid @RequestBody AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
+			@RequestBody AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.assignLeavePolicy(assignLeavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -41,9 +40,9 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "Unassign a leave policy from an employee",
 			description = "Closes the employee's open window for the policy; 404 if no active assignment exists")
 	@DeleteMapping
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> unassignLeavePolicy(
-			@Valid @RequestBody UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
+			@RequestBody UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.unassignLeavePolicy(unassignLeavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -51,7 +50,7 @@ public class EmployeeLeavePolicyController {
 	@Operation(summary = "List an employee's active leave policy assignments",
 			description = "Returns the currently active (open) policy assignment windows for the employee")
 	@GetMapping("/employee/{employeeId}")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId) {
 		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);

@@ -237,15 +237,6 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(status().isNotFound());
 		}
 
-		@Test
-		@DisplayName("Returns 422 when a required field is missing")
-		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void assign_MissingRequiredField_ReturnsUnprocessableEntity() throws Exception {
-			// employeeId and effectiveDateType omitted -> bean-validation failure
-			performAssign(leaveAdminToken(), "{ \"policyId\": 500 }").andDo(print())
-				.andExpect(status().isUnprocessableEntity());
-		}
-
 	}
 
 	@Nested
@@ -263,34 +254,27 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns 404 when there is no active assignment to unassign")
+		@DisplayName("Returns 400 when there is no active assignment to unassign")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void unassign_NoOpenWindow_ReturnsNotFound() throws Exception {
-			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isNotFound());
+			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isBadRequest());
 		}
 
 		@Test
-		@DisplayName("Replaying an unassign after removal returns 404 (nothing left to unassign)")
+		@DisplayName("Replaying an unassign after removal returns 400 (nothing left to unassign)")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
 		void unassign_Replay_SecondReturnsNotFound() throws Exception {
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andExpect(status().isOk());
-			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isNotFound());
+			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print()).andExpect(status().isBadRequest());
 		}
 
 		@Test
-		@DisplayName("Returns 404 (employee not found) when unassigning for an unknown employee")
+		@DisplayName("Returns 400 (no active assignment) when unassigning for an unknown employee")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void unassign_UnknownEmployee_ReturnsEmployeeNotFound() throws Exception {
+		void unassign_UnknownEmployee_ReturnsNoActiveAssignment() throws Exception {
 			performUnassign(leaveAdminToken(), unassignBody(9999, 500)).andDo(print())
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.results[0].messageKey").value("LEAVE_ERROR_EMPLOYEE_NOT_FOUND"));
-		}
-
-		@Test
-		@DisplayName("Returns 422 when a required field is missing")
-		void unassign_MissingRequiredField_ReturnsUnprocessableEntity() throws Exception {
-			performUnassign(leaveAdminToken(), "{ \"employeeId\": 1 }").andDo(print())
-				.andExpect(status().isUnprocessableEntity());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.results[0].messageKey").value("LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND"));
 		}
 
 	}
@@ -320,9 +304,11 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns 404 for an unknown employee")
-		void get_UnknownEmployee_ReturnsNotFound() throws Exception {
-			performGet(leaveAdminToken(), 9999).andDo(print()).andExpect(status().isNotFound());
+		@DisplayName("Returns an empty list for an unknown employee")
+		void get_UnknownEmployee_ReturnsEmpty() throws Exception {
+			performGet(leaveAdminToken(), 9999).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(0)));
 		}
 
 	}

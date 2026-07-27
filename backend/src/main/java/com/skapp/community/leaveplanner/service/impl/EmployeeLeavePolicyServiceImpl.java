@@ -43,8 +43,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	@Override
 	@Transactional
 	public ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
-		log.info("assignLeavePolicy: execution started for employee {} policy {}",
-				assignLeavePolicyRequestDto.getEmployeeId(), assignLeavePolicyRequestDto.getPolicyId());
+		log.info("assignLeavePolicy: execution started");
 
 		Employee employee = getEmployeeOrThrow(assignLeavePolicyRequestDto.getEmployeeId());
 
@@ -93,16 +92,12 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	@Override
 	@Transactional
 	public ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
-		log.info("unassignLeavePolicy: execution started for employee {} policy {}",
-				unassignLeavePolicyRequestDto.getEmployeeId(), unassignLeavePolicyRequestDto.getPolicyId());
-
-		getEmployeeOrThrow(unassignLeavePolicyRequestDto.getEmployeeId());
+		log.info("unassignLeavePolicy: execution started");
 
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
-			.orElseThrow(() -> new EntityNotFoundException(
-					LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
@@ -113,9 +108,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId) {
-		log.info("getEmployeeLeavePolicies: execution started for employee {}", employeeId);
-
-		getEmployeeOrThrow(employeeId);
+		log.info("getEmployeeLeavePolicies: execution started");
 
 		List<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE);
