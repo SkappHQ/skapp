@@ -25,18 +25,12 @@ export interface UserRoleTableType {
 
 export interface UserRoleRestrictionsType {
   module: Modules;
-  /** @deprecated derived from restrictions, removed once the backend drops it */
   isAdmin: boolean;
-  /** @deprecated derived from restrictions, removed once the backend drops it */
   isManager: boolean;
   restrictions: RoleLevel[];
   restrictableRoles: RoleLevel[];
 }
 
-/**
- * @deprecated the endpoint still takes the boolean pair, where isManager stands
- * for whichever manager level role the module has. Becomes an add/remove delta.
- */
 export interface UserRoleRestrictionsUpdateType {
   module: Modules;
   isAdmin: boolean;

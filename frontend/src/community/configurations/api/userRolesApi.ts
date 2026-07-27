@@ -37,6 +37,16 @@ export const getUserRoleRestrictions = async (
   return data.data.results[0];
 };
 
+export const useGetUserRoleRestrictions = (
+  module: Modules
+): UseQueryResult<UserRoleRestrictionsType> => {
+  return useQuery({
+    queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(module),
+    queryFn: () => getUserRoleRestrictions(module),
+    select: (data) => data
+  });
+};
+
 export const useUpdateUserRoleRestrictions = (
   onSuccess: () => void,
   onError: () => void
