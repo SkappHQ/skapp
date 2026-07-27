@@ -111,8 +111,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
-		// predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE),
-		// Role.PM_GUEST_EMPLOYEE));
 		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
 				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
 
