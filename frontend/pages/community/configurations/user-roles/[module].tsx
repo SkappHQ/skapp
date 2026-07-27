@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -32,14 +33,19 @@ const Module: NextPage = () => {
   >();
 
   const onPrimaryButtonClick = async () => {
+    if (formattedModule === Modules.NONE) return;
+
     setIsPending(true);
 
-    const data = await getUserRoleRestrictions(formattedModule);
+    try {
+      const data = await getUserRoleRestrictions(formattedModule);
 
-    setInitialData(data);
-    setIsPending(false);
-    setIsUserRoleModalOpen(true);
-    setModuleType(formattedModule);
+      setInitialData(data);
+      setIsUserRoleModalOpen(true);
+      setModuleType(formattedModule);
+    } finally {
+      setIsPending(false);
+    }
   };
   const onBackClick = () => {
     router.push(ROUTES.CONFIGURATIONS.USER_ROLES_TAB);
