@@ -40,7 +40,8 @@ const LeaveEntitlements: NextPage = () => {
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading: isLeavePoliciesConfigLoading } =
+    useLeavePoliciesEnabled();
 
   useEffect(() => {
     setLeaveTypes(leaveTypesList ?? []);
@@ -73,6 +74,7 @@ const LeaveEntitlements: NextPage = () => {
       isDividerVisible
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryButtonText={
+        !isLeavePoliciesConfigLoading &&
         !isLeavePoliciesEnabled &&
         leaveEntitlementTableData &&
         leaveEntitlementTableData?.items.length > 0 &&
@@ -111,7 +113,7 @@ const LeaveEntitlements: NextPage = () => {
         </Stack>
         <Divider sx={{ my: "1.5rem" }} />
         <LeaveCarryForward />
-        {!isLeavePoliciesEnabled && (
+        {!isLeavePoliciesConfigLoading && !isLeavePoliciesEnabled && (
           <>
             <Divider sx={{ my: "1.5rem" }} />
             <CustomLeaveAllocationContent />
