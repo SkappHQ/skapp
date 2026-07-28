@@ -197,8 +197,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
 
 		if (existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get())) {
-			log.info("AUDIT action=ENABLE_LEAVE_POLICIES adminUserId={} outcome=REJECTED errorCode=ALREADY_ENABLED",
-					currentUser.getUserId());
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_ENABLED);
 		}
 
@@ -213,10 +211,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		organizationConfig.setOrganizationConfigValue(jsonValue);
 		organizationConfigDao.save(organizationConfig);
 
-		log.info(
-				"AUDIT action=ENABLE_LEAVE_POLICIES adminUserId={} outcome=SUCCESS removedAllocations={} "
-						+ "cancelledPendingRequests={} revokedApprovedRequests={}",
-				currentUser.getUserId(), removedAllocations, cancelledPendingRequests, revokedApprovedRequests);
 		log.info("enableLeavePolicies: execution ended");
 
 		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(true));

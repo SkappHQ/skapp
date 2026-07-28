@@ -77,7 +77,7 @@ public class LeavePolicyController {
 					+ "allocations, cancels pending leave requests and revokes approved leave requests that start in "
 					+ "the future. This action is irreversible.")
 	@PostMapping("/enable")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> enableLeavePolicies() {
 		ResponseEntityDto response = leavePolicyService.enableLeavePolicies();
 		return new ResponseEntity<>(response, HttpStatus.OK);
