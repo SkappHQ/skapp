@@ -5,7 +5,10 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
+import com.skapp.community.common.repository.UserDao;
+import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
@@ -114,6 +117,10 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmContactService contactService;
 
 	private final CrmDealService dealService;
+
+	private final AuthorityService authorityService;
+
+	private final UserDao userDao;
 
 	private String authToken;
 
@@ -328,7 +335,7 @@ class CrmCompanyControllerIntegrationTest {
 		task.setCompany(crmCompanyDao.getReferenceById(companyId));
 		Long taskId = crmTaskDao.save(task).getId();
 
-		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), PageRequest.of(0, 100)).getContent())
+		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDeal::getId)
 			.contains(dealId);
 		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
@@ -358,6 +365,11 @@ class CrmCompanyControllerIntegrationTest {
 			.as("contact remains visible after its company is deleted")
 			.singleElement()
 			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
+
+		// dealService.getDeals resolves the current user, but the MockMvc delete request
+		// above clears the security context, so re-establish it for this direct call
+		User currentUser = userDao.findByEmail("user1@gmail.com").orElseThrow();
+		SecurityTestUtils.setupSecurityContext(authorityService, currentUser);
 
 		CrmDealFilterDto dealFilter = new CrmDealFilterDto();
 		dealFilter.setSize(100);
@@ -582,6 +594,21 @@ class CrmCompanyControllerIntegrationTest {
 			.isEqualByComparingTo("0");
 		assertThat(metrics.getClosedDeals()).as("LOST deals are not WON, so closed deal count is zero").isEqualTo(0L);
 		assertThat(metrics.getOpenDeals()).as("LOST deals are not open, so open deal count is zero").isEqualTo(0L);
+	}
+
+	@Test
+	@DisplayName("Company metrics search ranks exact match, then prefix match, then contains match")
+	void getCompanyMetrics_RanksByRelevance() {
+		createMetricsCompany("Global Rankacme Partners");
+		createMetricsCompany("Rankacme Corp");
+		createMetricsCompany("Rankacme");
+
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanyMetrics(PageRequest.of(0, 100), "rankacme")
+			.getContent();
+
+		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
+			.as("exact match first, then prefix match, then contains match")
+			.containsExactly("Rankacme", "Rankacme Corp", "Global Rankacme Partners");
 	}
 
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
