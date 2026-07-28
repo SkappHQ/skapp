@@ -1,9 +1,12 @@
-import { Box } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
+import { EditIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
-import Table from "~community/common/components/molecules/Table/Table";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow
+} from "~community/common/components/organisms/TableView/types";
 import ROUTES from "~community/common/constants/routes";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -14,18 +17,18 @@ import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 import { getLeaveTypeDurationTableContent } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 
-import styles from "./styles";
+const chipClassName =
+  "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
 
 const LeaveTypesTable = () => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
-
   const translateText = useTranslator("leaveModule", "leaveTypes");
 
   const router = useRouter();
 
-  const { allLeaveTypes, setEditingLeaveType, setAllLeaveTypes } =
-    useLeaveStore((state) => state);
+  const setEditingLeaveType = useLeaveStore(
+    (state) => state.setEditingLeaveType
+  );
+  const setAllLeaveTypes = useLeaveStore((state) => state.setAllLeaveTypes);
 
   const { data: leaveTypes, isFetching: isLeaveTypesFetching } =
     useGetLeaveTypes();
@@ -39,86 +42,65 @@ const LeaveTypesTable = () => {
     }
   ];
 
-  const tableHeaders = columns.map((col) => ({
-    id: col.field,
-    label: col.headerName
-  }));
+  const tableHeaders: GridHeader[] = [
+    ...columns.map((col) => ({
+      id: col.field,
+      label: col.headerName
+    })),
+    {
+      id: "actions",
+      label: translateText(["actionsHeader"]),
+      width: "6rem",
+      align: "right" as const
+    }
+  ];
 
-  const transformToTableRows = () => {
-    return (
-      (leaveTypes as LeaveTypeType[])?.map((leaveType: LeaveTypeType) => ({
-        id: (
-          <div
-            style={{
-              backgroundColor: theme.palette.common.white,
-              borderRadius: "9.375rem",
-              padding: "0.5rem 1rem"
-            }}
-          >
-            {leaveType?.typeId}
-          </div>
-        ),
+  const handleEditLeaveType = (leaveType: LeaveTypeType): void => {
+    setEditingLeaveType(leaveType);
+    router.push(ROUTES.LEAVE.ADD_EDIT_LEAVE_TYPES(LeaveTypeFormTypes.EDIT));
+  };
+
+  const transformToTableRows = (): GridRow[] => {
+    return ((leaveTypes as LeaveTypeType[]) ?? []).map(
+      (leaveType: LeaveTypeType) => ({
+        id: leaveType?.typeId,
         leaveTypeName: (
-          <div
-            style={{
-              backgroundColor: theme.palette.common.white,
-              borderRadius: "9.375rem",
-              padding: "0.5rem 1rem"
-            }}
-          >
+          <div className={chipClassName}>
             <span role="img" aria-hidden="true">
               {getEmoji(leaveType?.emojiCode || "")}
             </span>
-            &nbsp;
             {leaveType?.name}
           </div>
         ),
-        durations: getLeaveTypeDurationTableContent(
-          leaveType?.leaveDuration
-        ).map((duration: string, index: number) => (
-          <div
-            key={index}
-            style={{
-              backgroundColor: theme.palette.common.white,
-              borderRadius: "9.375rem",
-              padding: "0.5rem 1rem",
-              marginRight: "0.5rem"
-            }}
-          >
-            {duration}
+        durations: (
+          <div className="flex flex-row flex-wrap items-center gap-2">
+            {getLeaveTypeDurationTableContent(leaveType?.leaveDuration).map(
+              (duration: string) => (
+                <div key={duration} className={chipClassName}>
+                  {duration}
+                </div>
+              )
+            )}
           </div>
-        )),
+        ),
         carriedForward: (
-          <div
-            style={{
-              backgroundColor: theme.palette.common.white,
-              borderRadius: "9.375rem",
-              padding: "0.5rem 1rem"
-            }}
-          >
+          <div className={chipClassName}>
             {leaveType?.isCarryForwardEnabled
               ? translateText(["enabled"])
               : translateText(["disabled"])}
           </div>
         ),
-        actionData: leaveType,
-        ariaLabel: {
-          editButton: translateText(["editButton.label"], {
-            recordName: leaveType?.name
-          })
-        },
-        ariaDescription: {
-          editButton: translateText(["editButton.description"], {
-            recordName: leaveType?.name
-          })
-        }
-      })) || []
+        actions: (
+          <IconButton
+            icon={<EditIcon />}
+            onClick={() => handleEditLeaveType(leaveType)}
+            aria-label={translateText(["editButton.label"], {
+              recordName: leaveType?.name
+            })}
+          />
+        )
+      })
     );
-  };
-
-  const handleEditTeam = (leaveType: LeaveTypeType): void => {
-    setEditingLeaveType(leaveType);
-    router.push(ROUTES.LEAVE.ADD_EDIT_LEAVE_TYPES(LeaveTypeFormTypes.EDIT));
   };
 
   useEffect(() => {
@@ -126,43 +108,15 @@ const LeaveTypesTable = () => {
   }, [leaveTypes, setAllLeaveTypes]);
 
   return (
-    <Box sx={classes.tableWrapper}>
-      <Table
-        tableName={TableNames.LEAVE_TYPES}
-        headers={tableHeaders}
-        rows={transformToTableRows()}
-        tableHead={{
-          customStyles: {
-            row: classes.tableHead,
-            cell: classes.tableHeaderCell
-          }
-        }}
-        tableBody={{
-          loadingState: {
-            skeleton: {
-              rows: 6
-            }
-          },
-          actionColumn: {
-            isEnabled: true,
-            actionBtns: {
-              left: {
-                onClick: (leaveType) => handleEditTeam(leaveType)
-              }
-            }
-          }
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: false
-          }
-        }}
-        customStyles={{
-          container: classes.tableContainer
-        }}
-        isLoading={isLeaveTypesFetching}
-      />
-    </Box>
+    <TableView
+      className="body2"
+      tableName={TableNames.LEAVE_TYPES}
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isLeaveTypesFetching}
+      skeletonRows={6}
+      height="27.5rem"
+    />
   );
 };
 
