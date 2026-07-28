@@ -1,56 +1,21 @@
 import { DateTime, DurationLike } from "luxon";
 
 import {
-  AccrualFrequency,
+  ACCRUAL_PREVIEW_ROW_LIMIT,
+  CALENDAR_UNIT,
+  INTERVAL_STEP
+} from "~community/leave/constants/leavePolicyConstants";
+import {
+  AccrualEvent,
+  AccrualPreviewRow,
   AccrualTiming,
+  CalendarUnit,
   FirstAccrualType,
-  LeavePolicyType
+  LeavePolicyType,
+  ScheduleConfig
 } from "~community/leave/types/LeavePolicyTypes";
 
-export interface AccrualPreviewRow {
-  date: string;
-  days: number;
-  balance: number;
-}
-
-// Cap the projection to a readable window inside the modal.
-const PREVIEW_ROW_LIMIT = 12;
-
 const round2 = (value: number): number => Math.round(value * 100) / 100;
-
-type CalendarUnit = "day" | "week" | "month" | "quarter" | "year";
-
-// Frequencies that align onto a luxon calendar unit, so the first partial
-// period can be prorated against real calendar boundaries.
-const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
-  DAILY: "day",
-  WEEKLY: "week",
-  MONTHLY: "month",
-  QUARTERLY: "quarter",
-  YEARLY: "year",
-  ON_ANNIVERSARY: "year"
-};
-
-// Frequencies without a native calendar unit fall back to fixed intervals.
-const INTERVAL_STEP: Partial<Record<AccrualFrequency, DurationLike>> = {
-  EVERY_OTHER_WEEK: { weeks: 2 },
-  TWICE_A_MONTH: { days: 15 },
-  TWICE_A_YEAR: { months: 6 }
-};
-
-interface AccrualEvent {
-  date: DateTime;
-  days: number;
-}
-
-interface ScheduleConfig {
-  base: DateTime;
-  perPeriod: number;
-  prorateFirst: boolean;
-  atPeriodStart: boolean;
-  // When set (carry-over disabled), stop projecting after this year.
-  lastYear: number | null;
-}
 
 const eventDateFor = (
   atPeriodStart: boolean,
@@ -88,7 +53,7 @@ const calendarEvents = (
   let periodStart = base;
   let periodEnd = base.endOf(unit);
 
-  for (let i = 0; i < PREVIEW_ROW_LIMIT; i++) {
+  for (let i = 0; i < ACCRUAL_PREVIEW_ROW_LIMIT; i++) {
     const eventDate = eventDateFor(
       atPeriodStart,
       i === 0,
@@ -117,7 +82,7 @@ const intervalEvents = (
   const events: AccrualEvent[] = [];
   let cursor = base;
 
-  for (let i = 0; i < PREVIEW_ROW_LIMIT; i++) {
+  for (let i = 0; i < ACCRUAL_PREVIEW_ROW_LIMIT; i++) {
     const next = cursor.plus(interval);
     const eventDate = atPeriodStart ? cursor : next.minus({ days: 1 });
     if (lastYear != null && eventDate.year > lastYear) break;

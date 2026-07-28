@@ -1,14 +1,4 @@
-import {
-  CalendarIcon,
-  DatePicker,
-  Dropdown,
-  InputField,
-  RadioButton,
-  SmallModal,
-  Table
-} from "@rootcodelabs/skapp-ui";
-import type { TableColumn } from "@rootcodelabs/skapp-ui";
-import { DateTime } from "luxon";
+import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -16,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetLeavePoliciesInfinite } from "~community/leave/api/LeavePolicyApi";
 import { useAssignLeavePolicy } from "~community/leave/api/LeavePolicyAssignmentApi";
+import AssignLeavePolicyForm from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetHireDateModal from "~community/leave/components/molecules/SetHireDateModal/SetHireDateModal";
 import {
   EffectiveDateType,
@@ -33,14 +24,6 @@ interface Props {
 }
 
 const ASSIGNABLE_POLICIES_PAGE_SIZE = 100;
-
-type AccrualTableRow = {
-  id: number;
-  date: string;
-  action: string;
-  days: number;
-  balance: number;
-};
 
 const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -130,48 +113,15 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     [selectedPolicy, previewStartISO]
   );
 
-  const accrualTableData: AccrualTableRow[] = useMemo(
-    () =>
-      accrualPreview.map((row, index) => ({
-        id: index,
-        date: row.date,
-        action: translateText(["assignModal", "actionAccrued"]),
-        days: row.days,
-        balance: row.balance
-      })),
-    [accrualPreview, translateText]
-  );
+  const handleEffectiveDateTypeChange = (type: EffectiveDateType): void => {
+    setEffectiveDateType(type);
+    setSpecificDateError("");
+  };
 
-  const accrualColumns: TableColumn<AccrualTableRow>[] = [
-    {
-      key: "date",
-      header: translateText(["assignModal", "colDate"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "action",
-      header: translateText(["assignModal", "colAction"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "days",
-      header: translateText(["assignModal", "colDays"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "balance",
-      header: translateText(["assignModal", "colBalance"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    }
-  ];
+  const handleSpecificDateChange = (isoDate: string): void => {
+    setSpecificDate(isoDate);
+    setSpecificDateError("");
+  };
 
   const onAssignSuccess = (): void => {
     setToastMessage({
@@ -230,137 +180,17 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
         onClose={handleClose}
         modalHeader={translateText(["assignModal", "title"])}
         content={
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <p className="body2 text-secondary-text">
-                {translateText(["assignModal", "policyLabel"])}
-              </p>
-              <Dropdown
-                id="assign-leave-policy-dropdown"
-                ariaLabel={translateText(["assignModal", "policyLabel"])}
-                value={selectedPolicyId}
-                options={policyOptions}
-                placeholder={translateText(["assignModal", "policyPlaceholder"])}
-                onChange={(value: string) => setSelectedPolicyId(value)}
-                width="100%"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <p className="body2 text-secondary-text">
-                {translateText(["assignModal", "effectiveDateLabel"])}
-              </p>
-              <div
-                role="radiogroup"
-                aria-label={translateText(["assignModal", "effectiveDateLabel"])}
-                className="flex flex-col gap-2"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={
-                    effectiveDateType === EffectiveDateType.HIRE_DATE
-                  }
-                  onClick={() => {
-                    setEffectiveDateType(EffectiveDateType.HIRE_DATE);
-                    setSpecificDateError("");
-                  }}
-                  className="flex w-fit cursor-pointer items-center gap-3"
-                >
-                  <RadioButton
-                    isSelected={
-                      effectiveDateType === EffectiveDateType.HIRE_DATE
-                    }
-                    variant="dot"
-                  />
-                  <span className="body1 text-black">
-                    {translateText(["assignModal", "hireDateOption"])}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={
-                    effectiveDateType === EffectiveDateType.SPECIFIC
-                  }
-                  onClick={() =>
-                    setEffectiveDateType(EffectiveDateType.SPECIFIC)
-                  }
-                  className="flex w-fit cursor-pointer items-center gap-3"
-                >
-                  <RadioButton
-                    isSelected={
-                      effectiveDateType === EffectiveDateType.SPECIFIC
-                    }
-                    variant="dot"
-                  />
-                  <span className="body1 text-black">
-                    {translateText(["assignModal", "specificDateOption"])}
-                  </span>
-                </button>
-              </div>
-              {effectiveDateType === EffectiveDateType.SPECIFIC && (
-                <DatePicker
-                  mode="single"
-                  selected={
-                    specificDate
-                      ? DateTime.fromISO(specificDate).toJSDate()
-                      : undefined
-                  }
-                  onSelect={(date?: Date) => {
-                    setSpecificDate(
-                      date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
-                    );
-                    setSpecificDateError("");
-                  }}
-                  popperProps={{ position: "bottom-start" }}
-                >
-                  <div>
-                    <InputField
-                      name="specificDate"
-                      value={
-                        specificDate
-                          ? DateTime.fromISO(specificDate)
-                              .toJSDate()
-                              .toLocaleDateString()
-                          : ""
-                      }
-                      placeholder={translateText([
-                        "assignModal",
-                        "specificDatePlaceholder"
-                      ])}
-                      aria-label={translateText([
-                        "assignModal",
-                        "specificDatePlaceholder"
-                      ])}
-                      rightIcon={<CalendarIcon />}
-                      state={specificDateError ? "error" : "default"}
-                      errorMessage={specificDateError}
-                      fullWidth
-                      readOnly
-                    />
-                  </div>
-                </DatePicker>
-              )}
-            </div>
-
-            {accrualPreview.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="body2 text-secondary-text">
-                  {translateText(["assignModal", "accrualPreviewTitle"])}
-                </p>
-                <Table<AccrualTableRow>
-                  columns={accrualColumns}
-                  data={accrualTableData}
-                  tableAriaLabel={translateText([
-                    "assignModal",
-                    "accrualPreviewTitle"
-                  ])}
-                  height="14rem"
-                />
-              </div>
-            )}
-          </div>
+          <AssignLeavePolicyForm
+            selectedPolicyId={selectedPolicyId}
+            policyOptions={policyOptions}
+            onPolicyChange={setSelectedPolicyId}
+            effectiveDateType={effectiveDateType}
+            onEffectiveDateTypeChange={handleEffectiveDateTypeChange}
+            specificDate={specificDate}
+            specificDateError={specificDateError}
+            onSpecificDateChange={handleSpecificDateChange}
+            accrualPreview={accrualPreview}
+          />
         }
         buttons={{
           buttonLeft: {
