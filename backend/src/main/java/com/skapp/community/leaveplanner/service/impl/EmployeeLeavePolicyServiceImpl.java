@@ -9,6 +9,7 @@ import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
@@ -42,8 +43,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	private final EmployeeDao employeeDao;
 
 	private final LeaveMapper leaveMapper;
-
-	private static final int DEFAULT_PAGE_SIZE = 6;
 
 	@Override
 	@Transactional
@@ -108,15 +107,16 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
 		log.info("unassignLeavePolicy: execution ended");
-		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId(), 0, DEFAULT_PAGE_SIZE);
+		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId(),
+				new EmployeeLeavePolicyFilterDto());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, int page, int size) {
+	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		Pageable pageable = PageRequest.of(page, size);
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
 					pageable);
