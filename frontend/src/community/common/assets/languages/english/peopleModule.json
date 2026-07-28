@@ -309,7 +309,7 @@
     },
     "addPeople": "Add People",
     "addBulkPeople": "Bulk Upload",
-    "importPeople": "Import",
+    "import": "Import",
     "exportPeopleDirectory": "Export",
     "DateDesc": "New to Old",
     "DateAsc": "Old to New",

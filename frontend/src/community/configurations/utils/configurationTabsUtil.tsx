@@ -1,5 +1,4 @@
 import AttendanceConfiguration from "~community/attendance/components/organisms/AttendanceConfiguration/AttendanceConfiguration";
-import { User } from "~community/auth/utils/authUtils";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
 import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
@@ -7,11 +6,6 @@ import LeaveConfigurations from "~community/configurations/components/organisms/
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import WorkLocationsTable from "~community/configurations/components/organisms/WorkLocationsTable/WorkLocationsTable";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
-
-export const hasRequiredRole = (
-  tab: ConfigurationTab,
-  userRoles: NonNullable<User["roles"]>
-): boolean => tab.requiredRoles.some((role) => userRoles.includes(role));
 
 export const getFallbackTabId = (
   visibleTabs: ConfigurationTab[],
