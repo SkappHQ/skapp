@@ -15,99 +15,110 @@ import {
   ScheduleConfig
 } from "~community/leave/types/LeavePolicyTypes";
 
-const round2 = (value: number): number => Math.round(value * 100) / 100;
+const roundToTwoDecimals = (value: number): number =>
+  Math.round(value * 100) / 100;
 
 const eventDateFor = (
   atPeriodStart: boolean,
-  isFirst: boolean,
+  isFirstPeriod: boolean,
   base: DateTime,
   periodStart: DateTime,
   periodEnd: DateTime
 ): DateTime => {
   if (!atPeriodStart) return periodEnd;
-  return isFirst ? base : periodStart;
+  return isFirstPeriod ? base : periodStart;
 };
 
-// Prorated days for the first (partial) calendar period.
 const firstPeriodDays = (
   perPeriod: number,
   base: DateTime,
   periodStart: DateTime,
   periodEnd: DateTime,
-  unit: CalendarUnit
+  calendarUnit: CalendarUnit
 ): number => {
-  const fullLength = periodEnd.diff(periodStart.startOf(unit), "days").days + 1;
-  const covered = periodEnd.diff(base, "days").days + 1;
-  const fraction =
-    fullLength > 0 ? Math.min(1, Math.max(0, covered / fullLength)) : 1;
-  return round2(perPeriod * fraction);
+  const fullPeriodDays =
+    periodEnd.diff(periodStart.startOf(calendarUnit), "days").days + 1;
+  const coveredDays = periodEnd.diff(base, "days").days + 1;
+  const coverageFraction =
+    fullPeriodDays > 0
+      ? Math.min(1, Math.max(0, coveredDays / fullPeriodDays))
+      : 1;
+  return roundToTwoDecimals(perPeriod * coverageFraction);
 };
 
-// One "Accrued" event per calendar period, prorating the first partial one.
 const calendarEvents = (
-  unit: CalendarUnit,
+  calendarUnit: CalendarUnit,
   config: ScheduleConfig
 ): AccrualEvent[] => {
   const { base, perPeriod, prorateFirst, atPeriodStart, lastYear } = config;
   const events: AccrualEvent[] = [];
   let periodStart = base;
-  let periodEnd = base.endOf(unit);
+  let periodEnd = base.endOf(calendarUnit);
 
-  for (let i = 0; i < ACCRUAL_PREVIEW_ROW_LIMIT; i++) {
+  for (
+    let periodIndex = 0;
+    periodIndex < ACCRUAL_PREVIEW_ROW_LIMIT;
+    periodIndex++
+  ) {
+    const isFirstPeriod = periodIndex === 0;
     const eventDate = eventDateFor(
       atPeriodStart,
-      i === 0,
+      isFirstPeriod,
       base,
       periodStart,
       periodEnd
     );
     if (lastYear != null && eventDate.year > lastYear) break;
-    const days =
-      i === 0 && prorateFirst
-        ? firstPeriodDays(perPeriod, base, periodStart, periodEnd, unit)
+    const eventDays =
+      isFirstPeriod && prorateFirst
+        ? firstPeriodDays(perPeriod, base, periodStart, periodEnd, calendarUnit)
         : perPeriod;
-    events.push({ date: eventDate, days });
-    periodStart = periodEnd.plus({ days: 1 }).startOf(unit);
-    periodEnd = periodStart.endOf(unit);
+    events.push({ date: eventDate, days: eventDays });
+    periodStart = periodEnd.plus({ days: 1 }).startOf(calendarUnit);
+    periodEnd = periodStart.endOf(calendarUnit);
   }
   return events;
 };
 
-// One "Accrued" event per fixed interval from the effective date.
 const intervalEvents = (
   interval: DurationLike,
   config: ScheduleConfig
 ): AccrualEvent[] => {
   const { base, perPeriod, atPeriodStart, lastYear } = config;
   const events: AccrualEvent[] = [];
-  let cursor = base;
+  let periodStart = base;
 
-  for (let i = 0; i < ACCRUAL_PREVIEW_ROW_LIMIT; i++) {
-    const next = cursor.plus(interval);
-    const eventDate = atPeriodStart ? cursor : next.minus({ days: 1 });
+  for (
+    let periodIndex = 0;
+    periodIndex < ACCRUAL_PREVIEW_ROW_LIMIT;
+    periodIndex++
+  ) {
+    const nextPeriodStart = periodStart.plus(interval);
+    const eventDate = atPeriodStart
+      ? periodStart
+      : nextPeriodStart.minus({ days: 1 });
     if (lastYear != null && eventDate.year > lastYear) break;
     events.push({ date: eventDate, days: perPeriod });
-    cursor = next;
+    periodStart = nextPeriodStart;
   }
   return events;
 };
 
-// Accumulate a running balance, capped at accrualCapDays.
 const toRows = (
   events: AccrualEvent[],
-  cap: number | null
+  capDays: number | null
 ): AccrualPreviewRow[] => {
   const rows: AccrualPreviewRow[] = [];
   let balance = 0;
   for (const event of events) {
-    balance = round2(balance + event.days);
-    if (cap != null) balance = Math.min(balance, cap);
+    balance = roundToTwoDecimals(balance + event.days);
+    if (capDays != null) balance = Math.min(balance, capDays);
     rows.push({
       date: event.date.toFormat("dd MMM yyyy"),
-      days: round2(event.days),
+      days: roundToTwoDecimals(event.days),
       balance
     });
-    if (cap != null && balance >= cap) break;
+    if (capDays != null && balance >= capDays) break;
   }
   return rows;
 };
@@ -128,31 +139,31 @@ export const buildAccrualPreview = (
   const frequency = policy.frequency ?? null;
   if (!frequency || perPeriod <= 0) return [];
 
-  const start = (
+  const startDate = (
     startISO ? DateTime.fromISO(startISO) : DateTime.now()
   ).startOf("day");
-  if (!start.isValid) return [];
+  if (!startDate.isValid) return [];
 
   const config: ScheduleConfig = {
     base:
       policy.waitingPeriodDays && policy.waitingPeriodDays > 0
-        ? start.plus({ days: policy.waitingPeriodDays })
-        : start,
+        ? startDate.plus({ days: policy.waitingPeriodDays })
+        : startDate,
     perPeriod,
     prorateFirst: policy.firstAccrual === FirstAccrualType.PRORATED,
     atPeriodStart: policy.accrualTiming === AccrualTiming.PERIOD_START,
-    lastYear: policy.isCarryoverEnabled ? null : start.year
+    lastYear: policy.isCarryoverEnabled ? null : startDate.year
   };
 
-  const cap =
+  const capDays =
     policy.accrualCapDays && policy.accrualCapDays > 0
       ? policy.accrualCapDays
       : null;
 
-  const unit = CALENDAR_UNIT[frequency];
-  const events = unit
-    ? calendarEvents(unit, config)
+  const calendarUnit = CALENDAR_UNIT[frequency];
+  const events = calendarUnit
+    ? calendarEvents(calendarUnit, config)
     : intervalEvents(INTERVAL_STEP[frequency] ?? { months: 1 }, config);
 
-  return toRows(events, cap);
+  return toRows(events, capDays);
 };
