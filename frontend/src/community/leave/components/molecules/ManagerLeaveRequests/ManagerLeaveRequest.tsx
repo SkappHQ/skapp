@@ -32,11 +32,6 @@ import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/acc
 const chipClassName =
   "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
 
-/**
- * AvatarChip is styled through MUI's `sx`, so it can't take Tailwind classes.
- * Its base style is `display: flex`, which stretches the chip to the full cell
- * width; `fit-content` makes it hug the avatar and name instead.
- */
 const nameChipStyles = {
   width: "fit-content",
   maxWidth: "15.625rem",
