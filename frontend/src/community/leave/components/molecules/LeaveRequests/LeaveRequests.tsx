@@ -15,7 +15,7 @@ import {
   useGetEmployeeLeaveRequests
 } from "~community/leave/api/MyRequestApi";
 import MyLeaveRequestFilterBody from "~community/leave/components/molecules/MyLeaveRequestFilterBody/MyLeaveRequestFilterBody";
-import { useMyLeaveRequestFilterState } from "~community/leave/hooks/useMyLeaveRequestFilterState";
+import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
@@ -48,7 +48,7 @@ const LeaveRequests: FC = () => {
     data: leaveData
   } = useGetEmployeeLeaveRequestData(newLeaveId as number);
 
-  const { filterCount } = useMyLeaveRequestFilterState();
+  const { filterCount } = useAppliedLeaveRequestFilters();
 
   const translateText = useTranslator("leaveModule", "myRequests");
   const translateAria = useTranslator("leaveAria", "myRequests");

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
+import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveAllocationDataTypes } from "~community/leave/types/MyRequests";
 
@@ -16,9 +17,6 @@ interface AppliedFilters {
 
 export const useMyLeaveRequestFilterState = () => {
   const selectedYear = useLeaveStore((state) => state.selectedYear);
-  const leaveRequestsFilter = useLeaveStore(
-    (state) => state.leaveRequestsFilter
-  );
   const setLeaveRequestParams = useLeaveStore(
     (state) => state.setLeaveRequestParams
   );
@@ -40,10 +38,7 @@ export const useMyLeaveRequestFilterState = () => {
     [leaveAllocations]
   );
 
-  const appliedStatus = leaveRequestsFilter.status;
-  const appliedTypes = leaveRequestsFilter.type;
-
-  const filterCount = appliedStatus.length + appliedTypes.length;
+  const { appliedStatus, appliedTypes } = useAppliedLeaveRequestFilters();
 
   const applyFilters = ({ status, types }: AppliedFilters) => {
     setLeaveRequestParams("status", status);
@@ -56,7 +51,6 @@ export const useMyLeaveRequestFilterState = () => {
     leaveTypeOptions,
     appliedStatus,
     appliedTypes,
-    filterCount,
     applyFilters,
     resetFilters: resetLeaveRequestParams
   };

@@ -20,7 +20,7 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
 import ManagerLeaveRequestFilterBody from "~community/leave/components/molecules/ManagerLeaveRequestFilterBody/ManagerLeaveRequestFilterBody";
-import { useManagerLeaveRequestFilterState } from "~community/leave/hooks/useManagerLeaveRequestFilterState";
+import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequestItemsType,
@@ -96,7 +96,7 @@ const ManagerLeaveRequest: FC<Props> = ({
     appliedStatus,
     appliedTypes,
     filterCount: appliedFilterCount
-  } = useManagerLeaveRequestFilterState();
+  } = useAppliedLeaveRequestFilters();
 
   const isDateRangeApplied = Boolean(
     selectedDateRange?.from && selectedDateRange?.to

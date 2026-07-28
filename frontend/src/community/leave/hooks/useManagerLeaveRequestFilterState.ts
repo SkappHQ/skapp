@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
+import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 
 export interface LeaveTypeFilterOption {
@@ -14,9 +15,6 @@ interface AppliedFilters {
 }
 
 export const useManagerLeaveRequestFilterState = () => {
-  const leaveRequestsFilter = useLeaveStore(
-    (state) => state.leaveRequestsFilter
-  );
   const setLeaveRequestParams = useLeaveStore(
     (state) => state.setLeaveRequestParams
   );
@@ -38,8 +36,7 @@ export const useManagerLeaveRequestFilterState = () => {
     [leaveTypes]
   );
 
-  const appliedStatus = leaveRequestsFilter.status;
-  const appliedTypes = leaveRequestsFilter.type;
+  const { appliedStatus, appliedTypes } = useAppliedLeaveRequestFilters();
 
   const applyFilters = ({ status, types }: AppliedFilters) => {
     setLeaveRequestParams("status", status);
@@ -52,7 +49,6 @@ export const useManagerLeaveRequestFilterState = () => {
     leaveTypeOptions,
     appliedStatus,
     appliedTypes,
-    filterCount: appliedStatus.length + appliedTypes.length,
     applyFilters,
     resetFilters: resetLeaveRequestParams
   };
