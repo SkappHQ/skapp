@@ -26,7 +26,9 @@ public class CrmDealResponseDto {
 
 	private Long contactId;
 
-	private String contactName;
+	private String contactFirstName;
+
+	private String contactLastName;
 
 	private CrmOwnerResponseDto owner;
 

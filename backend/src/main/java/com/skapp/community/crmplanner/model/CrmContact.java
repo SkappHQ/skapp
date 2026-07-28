@@ -14,7 +14,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -55,9 +54,5 @@ public class CrmContact extends Auditable<String> {
 
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
-
-	public String getFullName() {
-		return StringUtils.hasText(lastName) ? firstName + " " + lastName : firstName;
-	}
 
 }

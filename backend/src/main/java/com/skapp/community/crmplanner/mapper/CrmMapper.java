@@ -39,7 +39,8 @@ public interface CrmMapper {
 
 	@Mapping(target = "companyName", source = "company.name")
 	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "contactName", source = "contact.fullName")
+	@Mapping(target = "contactFirstName", source = "contact.firstName")
+	@Mapping(target = "contactLastName", source = "contact.lastName")
 	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 
