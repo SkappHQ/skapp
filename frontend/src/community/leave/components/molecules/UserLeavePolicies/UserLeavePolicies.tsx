@@ -107,7 +107,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
             return (
               <Card
                 key={policy.id}
-                className="flex flex-row items-center justify-between gap-4"
+                className="flex flex-row items-center justify-between gap-4 bg-white"
               >
                 <div className="flex min-w-0 flex-row items-center gap-4">
                   {usage && (
