@@ -6,7 +6,7 @@ import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   managerRestrictedRoutes,
-  nonSuperAdminRestrictedRoutes
+  nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
