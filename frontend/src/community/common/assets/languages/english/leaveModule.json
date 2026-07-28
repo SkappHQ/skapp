@@ -375,8 +375,10 @@
       "cancelBtnTxt": "Cancel"
     },
     "unassignModal": {
-      "title": "Unassign Policy?",
-      "description": "This policy will no longer apply to this employee.",
+      "title": "Are you sure?",
+      "descriptionIntro": "Unassigning this policy will:",
+      "descriptionEntitlement": "Remove {{employeeName}}'s entitlement for {{leaveType}} immediately",
+      "descriptionBalance": "Any unused leave balance for this policy will be lost",
       "unassignBtnTxt": "Unassign",
       "cancelBtnTxt": "Cancel"
     },

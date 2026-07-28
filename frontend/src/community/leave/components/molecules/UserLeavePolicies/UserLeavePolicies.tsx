@@ -15,6 +15,7 @@ import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
+  employeeName?: string;
 }
 
 const POLICIES_PER_PAGE = 6;
@@ -22,7 +23,7 @@ const POLICIES_PER_PAGE = 6;
 const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
 
-const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
+const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicyAssignment"
@@ -177,6 +178,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
       />
       <UnassignLeavePolicyModal
         employeeLeavePolicy={unassigningPolicy}
+        employeeName={employeeName}
         isOpen={!!unassigningPolicy}
         onClose={() => setUnassigningPolicy(null)}
       />

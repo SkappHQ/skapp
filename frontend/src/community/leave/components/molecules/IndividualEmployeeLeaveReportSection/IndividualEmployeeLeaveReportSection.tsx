@@ -73,7 +73,12 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
           <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
 
           {isLeavePoliciesEnabled ? (
-            <UserLeavePolicies employeeId={selectedUser} />
+            <UserLeavePolicies
+              employeeId={selectedUser}
+              employeeName={`${employeeFirstName ?? ""} ${
+                employeeLastName ?? ""
+              }`.trim()}
+            />
           ) : (
             <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
           )}
