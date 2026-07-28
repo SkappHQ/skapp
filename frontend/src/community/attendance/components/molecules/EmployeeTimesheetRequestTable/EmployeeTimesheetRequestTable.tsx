@@ -1,23 +1,28 @@
 import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { ChangeEvent, FC, JSX } from "react";
+import { FC, JSX } from "react";
 
 import { useCancelTimeRequest } from "~community/attendance/api/AttendanceEmployeeApi";
-import TimesheetRequestsFilters from "~community/attendance/components/molecules/TimesheetRequestsFilters/TimesheetRequestsFilters";
+import TimesheetRequestFilterBody from "~community/attendance/components/molecules/TimesheetRequestFilterBody/TimesheetRequestFilterBody";
 import {
   TimeSheetRequestStates,
   TimeSheetRequestTypes
 } from "~community/attendance/enums/timesheetEnums";
+import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRequestDataResponseType,
   TimeRequestDataType
 } from "~community/attendance/types/timeSheetTypes";
 import { formatDuration } from "~community/attendance/utils/TimeUtils";
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import Table from "~community/common/components/molecules/Table/Table";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow,
+  TableViewFilterContentArgs
+} from "~community/common/components/organisms/TableView/types";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -42,12 +47,19 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
   const theme: Theme = useTheme();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const translateAria = useTranslator(
+    "attendanceAria",
+    "timesheet",
+    "timeEntryRequestTable"
+  );
   const classes = styles(theme);
 
   const {
     employeeTimesheetRequestParams,
     setEmployeeTimesheetRequestPagination
   } = useAttendanceStore((state) => state);
+
+  const { filterCount } = useTimesheetRequestFilterState(false);
 
   const onSuccess = () => {
     setToastMessage({
@@ -66,6 +78,14 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
       toastType: ToastType.ERROR
     });
   };
+
+  const handlePageChange = (page: number) => {
+    setEmployeeTimesheetRequestPagination(page);
+  };
+
+  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody close={close} />
+  );
 
   const getKebabMenuOptions = (timeRequestId: number) => [
     {
@@ -110,157 +130,141 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
     { field: "status", headerName: translateText(["statusHeaderTxt"]) }
   ];
 
-  const tableHeaders = columns.map((col) => ({
+  const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
-    label: col.headerName
+    label: col.headerName,
+    align: "center"
   }));
-  const transformToTableRows = () => {
-    return requestData?.items.map((timesheetRequest: TimeRequestDataType) => ({
-      id: timesheetRequest.timeRequestId,
-      date: (
-        <Box sx={classes.boxDateContainer}>
-          <Typography variant="body2" sx={classes.textDateStyles}>
-            {formatDateWithOrdinalIndicator(
-              new Date(timesheetRequest?.date ?? "")
-            ).slice(0, 8)}
-          </Typography>
-        </Box>
-      ),
-      from: (
-        <Box sx={classes.outerBoxWrapper}>
-          <Box sx={classes.innerBoxWrapper}>
-            {timesheetRequest?.initialClockIn &&
-              timesheetRequest.requestType ===
-                TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
-                <Typography
-                  variant="body2"
-                  sx={classes.startTimeTextStyles(timesheetRequest)}
-                >
-                  {timesheetRequest?.initialClockIn}
-                </Typography>
-              )}
-            {timesheetRequest?.requestedStartTime &&
-              timesheetRequest?.requestedStartTime !==
-                timesheetRequest?.initialClockIn && (
-                <Typography variant="body2" sx={classes.errorTextStyles}>
-                  {timesheetRequest?.requestedStartTime}
-                </Typography>
-              )}
+  const transformToTableRows = (): GridRow[] => {
+    return (requestData?.items ?? []).map(
+      (timesheetRequest: TimeRequestDataType) => ({
+        id: timesheetRequest.timeRequestId,
+        date: (
+          <Box sx={classes.boxDateContainer}>
+            <Typography variant="body2" sx={classes.textDateStyles}>
+              {formatDateWithOrdinalIndicator(
+                new Date(timesheetRequest?.date ?? "")
+              ).slice(0, 8)}
+            </Typography>
           </Box>
-        </Box>
-      ),
-      to: (
-        <Box sx={classes.outerBoxWrapper}>
-          <Box sx={classes.innerBoxWrapper}>
-            {timesheetRequest?.initialClockOut &&
-              timesheetRequest.requestType ===
-                TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
-                <Typography
-                  variant="body2"
-                  sx={classes.endTimeTextStyles(timesheetRequest)}
-                >
-                  {timesheetRequest?.initialClockOut}
-                </Typography>
-              )}
-            {timesheetRequest?.requestedEndTime &&
-              timesheetRequest?.requestedEndTime !==
-                timesheetRequest?.initialClockOut && (
-                <Typography variant="body2" sx={classes.errorTextStyles}>
-                  {timesheetRequest?.requestedEndTime}
-                </Typography>
-              )}
+        ),
+        from: (
+          <Box sx={classes.outerBoxWrapper}>
+            <Box sx={classes.innerBoxWrapper}>
+              {timesheetRequest?.initialClockIn &&
+                timesheetRequest.requestType ===
+                  TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
+                  <Typography
+                    variant="body2"
+                    sx={classes.startTimeTextStyles(timesheetRequest)}
+                  >
+                    {timesheetRequest?.initialClockIn}
+                  </Typography>
+                )}
+              {timesheetRequest?.requestedStartTime &&
+                timesheetRequest?.requestedStartTime !==
+                  timesheetRequest?.initialClockIn && (
+                  <Typography variant="body2" sx={classes.errorTextStyles}>
+                    {timesheetRequest?.requestedStartTime}
+                  </Typography>
+                )}
+            </Box>
           </Box>
-        </Box>
-      ),
-      workedHours: (
-        <Box sx={classes.workHoursBoxStyle}>
-          <Typography
-            variant="body2"
-            sx={classes.workHoursTextStyle(timesheetRequest, totalHours)}
-          >
-            {formatDuration(timesheetRequest?.workHours)}
-          </Typography>
-        </Box>
-      ),
-      status: (
-        <Box sx={classes.statusOuterBoxStyles}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: theme.palette.common.white,
-              borderRadius: "9.375rem",
-              padding: "0.5rem 1rem",
-              gap: "0.5rem"
-            }}
-          >
-            <span>{pascalCaseFormatter(timesheetRequest?.status)}</span>
-            {requestTypeSelector(timesheetRequest?.status)}
-          </div>
-          <Box sx={classes.kebabMenuBoxStyle}>
-            {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
-              <KebabMenu
-                ariaLabel={translateText(["kebabMenu.label"], {
-                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
-                })}
-                ariaDescription={translateText(["kebabMenu.description"], {
-                  recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
-                })}
-                id={timesheetRequest?.employee?.employeeId ?? 0}
-                menuItems={getKebabMenuOptions(timesheetRequest.timeRequestId)}
-              />
-            )}
+        ),
+        to: (
+          <Box sx={classes.outerBoxWrapper}>
+            <Box sx={classes.innerBoxWrapper}>
+              {timesheetRequest?.initialClockOut &&
+                timesheetRequest.requestType ===
+                  TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
+                  <Typography
+                    variant="body2"
+                    sx={classes.endTimeTextStyles(timesheetRequest)}
+                  >
+                    {timesheetRequest?.initialClockOut}
+                  </Typography>
+                )}
+              {timesheetRequest?.requestedEndTime &&
+                timesheetRequest?.requestedEndTime !==
+                  timesheetRequest?.initialClockOut && (
+                  <Typography variant="body2" sx={classes.errorTextStyles}>
+                    {timesheetRequest?.requestedEndTime}
+                  </Typography>
+                )}
+            </Box>
           </Box>
-        </Box>
-      )
-    }));
+        ),
+        workedHours: (
+          <Box sx={classes.workHoursBoxStyle}>
+            <Typography
+              variant="body2"
+              sx={classes.workHoursTextStyle(timesheetRequest, totalHours)}
+            >
+              {formatDuration(timesheetRequest?.workHours)}
+            </Typography>
+          </Box>
+        ),
+        status: (
+          <Box sx={classes.statusOuterBoxStyles}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: theme.palette.common.white,
+                borderRadius: "9.375rem",
+                padding: "0.5rem 1rem",
+                gap: "0.5rem"
+              }}
+            >
+              <span>{pascalCaseFormatter(timesheetRequest?.status)}</span>
+              {requestTypeSelector(timesheetRequest?.status)}
+            </div>
+            <Box sx={classes.kebabMenuBoxStyle}>
+              {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
+                <KebabMenu
+                  ariaLabel={translateText(["kebabMenu.label"], {
+                    recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                  })}
+                  ariaDescription={translateText(["kebabMenu.description"], {
+                    recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
+                  })}
+                  id={timesheetRequest?.employee?.employeeId ?? 0}
+                  menuItems={getKebabMenuOptions(
+                    timesheetRequest.timeRequestId
+                  )}
+                />
+              )}
+            </Box>
+          </Box>
+        )
+      })
+    );
   };
 
   return (
-    <>
-      <Typography variant="h2" mb={"1.5rem"}>
-        {translateText(["requestTableEmployeeTitle"])}
-      </Typography>
-      <TimesheetRequestsFilters />
-      <Table
-        tableName={TableNames.TIME_ENTRY_REQUEST}
-        headers={tableHeaders}
-        rows={transformToTableRows() || []}
-        isLoading={isRequestLoading}
-        tableHead={{
-          customStyles: {
-            cell: classes.tableHeaderStyles
-          }
-        }}
-        tableBody={{
-          emptyState: {
-            noData: {
-              title: translateText(["emptyRequestTitle"]),
-              description: translateText(["emptyRequestDesEmployee"])
-            }
-          },
-          loadingState: {
-            skeleton: {
-              rows: 3
-            }
-          }
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: true,
-            totalPages: requestData?.totalPages,
-            currentPage: employeeTimesheetRequestParams?.page,
-            onChange: (_event: ChangeEvent<unknown>, value: number) => {
-              setEmployeeTimesheetRequestPagination(value - 1);
-            }
-          }
-        }}
-        customStyles={{
-          container: classes.tableContainerStyles
-        }}
-      />
-    </>
+    <TableView
+      heading={translateText(["requestTableEmployeeTitle"])}
+      tableName={TableNames.TIME_ENTRY_REQUEST}
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isRequestLoading}
+      emptyState={{
+        title: translateText(["emptyRequestTitle"]),
+        description: translateText(["emptyRequestDesEmployee"])
+      }}
+      pagination={{
+        totalPages: requestData?.totalPages,
+        currentPage: employeeTimesheetRequestParams?.page,
+        onPageChange: handlePageChange
+      }}
+      filter={{
+        filterCount,
+        filterButtonAriaLabel: translateAria(["filterButton"]),
+        popoverId: "employee-timesheet-request-filter",
+        filterContent: renderFilterContent
+      }}
+    />
   );
 };
 

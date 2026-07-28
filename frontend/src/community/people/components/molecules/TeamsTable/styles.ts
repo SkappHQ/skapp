@@ -22,7 +22,8 @@ const styles = (theme: Theme): StyleProps => ({
     mb: ".1875rem",
     display: "flex",
     justifyContent: "start",
-    maxWidth: "fit-content"
+    maxWidth: "fit-content",
+    minWidth: 0
   },
   avatarGroup: {
     ".MuiAvatarGroup-avatar": {

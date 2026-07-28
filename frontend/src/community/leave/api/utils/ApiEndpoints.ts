@@ -40,6 +40,8 @@ export const leavePolicyEndPoints = {
     `${moduleAPIPath.LEAVE}/policies/${id}`,
   DEACTIVATE_LEAVE_POLICY: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policies/${id}/deactivate`,
+  ACTIVATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}/activate`,
   GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
   GET_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies`
 };
