@@ -50,11 +50,11 @@ public class CrmValidations {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED);
 		}
 
-		if (firstName.trim().length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
+		if (firstName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_TOO_LONG);
 		}
 
-		if (!firstName.trim().matches(CrmConstants.CONTACT_NAME_REGEX)) {
+		if (!firstName.matches(CrmConstants.CONTACT_NAME_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID);
 		}
 	}
@@ -64,11 +64,11 @@ public class CrmValidations {
 			return;
 		}
 
-		if (lastName.trim().length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
+		if (lastName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_TOO_LONG);
 		}
 
-		if (!lastName.trim().matches(CrmConstants.CONTACT_NAME_REGEX)) {
+		if (!lastName.matches(CrmConstants.CONTACT_NAME_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID);
 		}
 	}
