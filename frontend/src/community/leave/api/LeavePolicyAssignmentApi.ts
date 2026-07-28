@@ -34,7 +34,7 @@ export const useGetEmployeeLeavePolicies = (
     queryKey:
       leavePolicyAssignmentQueryKeys.EMPLOYEE_LEAVE_POLICIES(employeeId),
     queryFn: () => getEmployeeLeavePolicies(employeeId),
-    enabled: enabled && !!employeeId
+    enabled
   });
 };
 

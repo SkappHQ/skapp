@@ -34,6 +34,14 @@ interface Props {
 
 const ASSIGNABLE_POLICIES_PAGE_SIZE = 100;
 
+type AccrualTableRow = {
+  id: number;
+  date: string;
+  action: string;
+  days: number;
+  balance: number;
+};
+
 const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const { setToastMessage } = useToast();
@@ -122,7 +130,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     [selectedPolicy, previewStartISO]
   );
 
-  const accrualTableData = useMemo(
+  const accrualTableData: AccrualTableRow[] = useMemo(
     () =>
       accrualPreview.map((row, index) => ({
         id: index,
@@ -133,8 +141,6 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
       })),
     [accrualPreview, translateText]
   );
-
-  type AccrualTableRow = (typeof accrualTableData)[number];
 
   const accrualColumns: TableColumn<AccrualTableRow>[] = [
     {
