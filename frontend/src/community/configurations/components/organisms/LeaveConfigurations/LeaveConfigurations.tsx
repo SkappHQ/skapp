@@ -56,9 +56,6 @@ const LeaveConfigurations: FC = () => {
     onEnableError
   );
 
-  // Toggle section is shown only to Super/Leave Admins on existing tenants where
-  // leave policies are still disabled. New tenants (flag enabled by default) and
-  // tenants that have already enabled it never see the toggle (irreversible).
   if (!canManageLeavePolicies || isLoading || isError || isLeavePoliciesEnabled) {
     return null;
   }
