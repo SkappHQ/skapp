@@ -1369,7 +1369,7 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("reactivateTerminatedUser: execution started");
 
 		Employee employee = employeeDao.findById(userId)
-			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
+			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
 
 		if (employee.getAccountStatus() != AccountStatus.TERMINATED) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED);
