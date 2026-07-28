@@ -125,7 +125,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
 
   const accrualPreview = useMemo(
     () =>
-      selectedPolicy && selectedPolicy.policyType === PolicyType.ACCRUAL
+      selectedPolicy?.policyType === PolicyType.ACCRUAL
         ? buildAccrualPreview(selectedPolicy, previewStartISO)
         : [],
     [selectedPolicy, previewStartISO]
