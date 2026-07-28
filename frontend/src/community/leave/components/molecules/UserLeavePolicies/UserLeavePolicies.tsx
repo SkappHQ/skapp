@@ -37,15 +37,15 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     useState<EmployeeLeavePolicyType | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
-  const { data: employeeLeavePolicies = [], isLoading } =
-    useGetEmployeeLeavePolicies(employeeId);
-
-  const totalPages = Math.ceil(employeeLeavePolicies.length / POLICIES_PER_PAGE);
-
-  const paginatedPolicies = employeeLeavePolicies.slice(
-    currentPage * POLICIES_PER_PAGE,
-    currentPage * POLICIES_PER_PAGE + POLICIES_PER_PAGE
+  const { data: policiesPage, isLoading } = useGetEmployeeLeavePolicies(
+    employeeId,
+    currentPage,
+    POLICIES_PER_PAGE
   );
+
+  const policies = policiesPage?.items ?? [];
+  const totalPages = policiesPage?.totalPages ?? 0;
+  const totalItems = policiesPage?.totalItems ?? 0;
 
   // Keep the page in range when the list shrinks (e.g. after an unassign).
   useEffect(() => {
@@ -72,7 +72,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     return map;
   }, [entitlementData]);
 
-  const hasPolicies = employeeLeavePolicies.length > 0;
+  const hasPolicies = totalItems > 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,10 +101,8 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
 
       {hasPolicies && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {paginatedPolicies.map((policy) => {
+          {policies.map((policy) => {
             const usage = usageByLeaveType.get(policy.leaveTypeName);
-            const taken = usage?.taken === 0 ? 1 : usage?.taken;
-            const total = usage?.taken === 0 ? 1 : usage?.total;
             return (
               <Card
                 key={policy.id}
@@ -114,10 +112,10 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
                   {usage && (
                     <div className="flex shrink-0 items-baseline gap-0.5">
                       <span className="text-2xl font-semibold text-black">
-                        {formatDays(taken as number)}
+                        {formatDays(usage.taken === 0 ? 1 : usage.taken)}
                       </span>
                       <span className="body2 text-secondary-text">
-                        /{formatDays(total as number)}
+                        /{formatDays(usage.taken === 0 ? 1 : usage.total)}
                       </span>
                     </div>
                   )}
@@ -157,7 +155,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
         </div>
       )}
 
-      {hasPolicies && employeeLeavePolicies.length > POLICIES_PER_PAGE && (
+      {hasPolicies && totalPages > 1 && (
         <div className="flex justify-end">
           <Pagination
             totalPages={totalPages}

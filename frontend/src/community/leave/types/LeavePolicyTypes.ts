@@ -188,8 +188,15 @@ export interface EmployeeLeavePolicyType {
   status: EmployeeLeavePolicyStatus;
 }
 
+export interface EmployeeLeavePoliciesPage {
+  items: EmployeeLeavePolicyType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface EmployeeLeavePoliciesResponse {
-  results: EmployeeLeavePolicyType[];
+  results: EmployeeLeavePoliciesPage[];
 }
 
 export interface AssignLeavePolicyPayload {

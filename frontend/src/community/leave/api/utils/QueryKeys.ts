@@ -296,8 +296,10 @@ export const leavePolicyQueryKeys = {
 
 export const leavePolicyAssignmentQueryKeys = {
   ALL: ["employee-leave-policies"],
-  EMPLOYEE_LEAVE_POLICIES: (employeeId: number) => [
+  EMPLOYEE_LEAVE_POLICIES: (employeeId: number, page: number, size: number) => [
     "employee-leave-policies",
-    employeeId
+    employeeId,
+    page,
+    size
   ]
 };

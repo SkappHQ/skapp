@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -21,11 +22,13 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -39,6 +42,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	private final EmployeeDao employeeDao;
 
 	private final LeaveMapper leaveMapper;
+
+	private static final int DEFAULT_PAGE_SIZE = 6;
 
 	@Override
 	@Transactional
@@ -103,20 +108,28 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
 		log.info("unassignLeavePolicy: execution ended");
-		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
+		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId(), 0, DEFAULT_PAGE_SIZE);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId) {
+	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, int page, int size) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		List<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE);
+		Pageable pageable = PageRequest.of(page, size);
+		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
+			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
+					pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(leaveMapper
+			.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeEmployeeLeavePolicies.getContent()));
+		pageDto.setCurrentPage(activeEmployeeLeavePolicies.getNumber());
+		pageDto.setTotalItems(activeEmployeeLeavePolicies.getTotalElements());
+		pageDto.setTotalPages(activeEmployeeLeavePolicies.getTotalPages());
 
 		log.info("getEmployeeLeavePolicies: execution ended");
-		return new ResponseEntityDto(false,
-				leaveMapper.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeEmployeeLeavePolicies));
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {

@@ -10,6 +10,6 @@ public interface EmployeeLeavePolicyService {
 
 	ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto);
 
-	ResponseEntityDto getEmployeeLeavePolicies(Long employeeId);
+	ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, int page, int size);
 
 }

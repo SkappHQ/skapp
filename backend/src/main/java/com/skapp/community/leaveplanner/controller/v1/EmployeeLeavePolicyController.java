@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -51,8 +52,9 @@ public class EmployeeLeavePolicyController {
 			description = "Returns the currently active (open) policy assignment windows for the employee")
 	@GetMapping("/employee/{employeeId}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId) {
-		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId);
+	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "6") int size) {
+		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId, page, size);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

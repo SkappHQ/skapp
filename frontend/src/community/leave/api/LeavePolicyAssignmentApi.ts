@@ -12,28 +12,39 @@ import { leavePolicyAssignmentEndPoints } from "~community/leave/api/utils/ApiEn
 import { leavePolicyAssignmentQueryKeys } from "~community/leave/api/utils/QueryKeys";
 import {
   AssignLeavePolicyPayload,
+  EmployeeLeavePoliciesPage,
   EmployeeLeavePoliciesResponse,
-  EmployeeLeavePolicyType,
   UnassignLeavePolicyPayload
 } from "~community/leave/types/LeavePolicyTypes";
 
 const getEmployeeLeavePolicies = async (
-  employeeId: number
-): Promise<EmployeeLeavePolicyType[]> => {
+  employeeId: number,
+  page: number,
+  size: number
+): Promise<EmployeeLeavePoliciesPage> => {
   const response = await authFetch.get<EmployeeLeavePoliciesResponse>(
-    leavePolicyAssignmentEndPoints.GET_EMPLOYEE_LEAVE_POLICIES(employeeId)
+    leavePolicyAssignmentEndPoints.GET_EMPLOYEE_LEAVE_POLICIES(
+      employeeId,
+      page,
+      size
+    )
   );
-  return response.data.results;
+  return response.data.results[0];
 };
 
 export const useGetEmployeeLeavePolicies = (
   employeeId: number,
+  page: number,
+  size: number,
   enabled: boolean = true
-): UseQueryResult<EmployeeLeavePolicyType[]> => {
+): UseQueryResult<EmployeeLeavePoliciesPage> => {
   return useQuery({
-    queryKey:
-      leavePolicyAssignmentQueryKeys.EMPLOYEE_LEAVE_POLICIES(employeeId),
-    queryFn: () => getEmployeeLeavePolicies(employeeId),
+    queryKey: leavePolicyAssignmentQueryKeys.EMPLOYEE_LEAVE_POLICIES(
+      employeeId,
+      page,
+      size
+    ),
+    queryFn: () => getEmployeeLeavePolicies(employeeId, page, size),
     enabled
   });
 };

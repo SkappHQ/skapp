@@ -159,8 +159,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 			performGet(leaveAdminToken(), 1).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(501));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(501));
 		}
 
 		@Test
@@ -172,7 +172,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 			performGet(leaveAdminToken(), 1).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(2)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(2)));
 		}
 
 		@Test
@@ -218,8 +218,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value("2024-03-01"));
 
 			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(500));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(500));
 		}
 
 		@Test
@@ -250,7 +250,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
 		@Test
@@ -290,9 +290,9 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performGet(leaveAdminToken(), 1).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(500))
-				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(500))
+				.andExpect(jsonPath("$.results[0].items[0].status").value("ACTIVE"));
 		}
 
 		@Test
@@ -300,7 +300,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		void get_NoAssignments_ReturnsEmpty() throws Exception {
 			performGet(leaveAdminToken(), 3).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
 		@Test
@@ -308,7 +308,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		void get_UnknownEmployee_ReturnsEmpty() throws Exception {
 			performGet(leaveAdminToken(), 9999).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
 	}
@@ -324,7 +324,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			String token = leaveAdminToken();
 
 			// 1. Starts with no assignments.
-			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results", hasSize(0)));
+			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results[0].items", hasSize(0)));
 
 			// 2. Assign policy 500 (leave type 100) on the hire date.
 			performAssign(token, assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isOk())
@@ -333,32 +333,32 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 			// 3. It is now the single active assignment.
 			performGet(token, 1).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(500));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(500));
 
 			// 4. Assign policy 600 (leave type 200) - different type, so it coexists.
 			performAssign(token, assignBody(1, 600, "SPECIFIC", "2024-06-01")).andExpect(status().isOk());
 			performGet(token, 1).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(2)))
-				.andExpect(jsonPath("$.results[*].policyId", containsInAnyOrder(500, 600)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
+				.andExpect(jsonPath("$.results[0].items[*].policyId", containsInAnyOrder(500, 600)));
 
 			// 5. Assign policy 501 (leave type 100) - same type as 500, so it supersedes
 			// 500.
 			performAssign(token, assignBody(1, 501, "SPECIFIC", "2024-09-01")).andExpect(status().isOk());
 			performGet(token, 1).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(2)))
-				.andExpect(jsonPath("$.results[*].policyId", containsInAnyOrder(501, 600)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
+				.andExpect(jsonPath("$.results[0].items[*].policyId", containsInAnyOrder(501, 600)));
 
 			// 6. Unassign 501 - only the leave type 200 assignment remains.
 			performUnassign(token, unassignBody(1, 501)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].policyId").value(600));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(600));
 
 			// 7. Unassign the last one - back to empty.
 			performUnassign(token, unassignBody(1, 600)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 
-			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results", hasSize(0)));
+			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
 	}
