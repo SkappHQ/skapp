@@ -109,7 +109,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
                 key={policy.id}
                 className="flex flex-row items-center justify-between gap-4 bg-white p-6!"
               >
-                <div className="flex min-w-0 flex-row items-center gap-4">
+                <div className="flex min-w-0 flex-row items-center gap-6">
                   {usage && (
                     <div className="flex shrink-0 items-baseline gap-0.5">
                       <span className="text-2xl font-semibold text-black">
