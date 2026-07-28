@@ -1,6 +1,7 @@
 import { ButtonV2, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
+import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
@@ -15,6 +16,8 @@ import useTier from "~enterprise/common/hooks/useTier";
 interface Props {
   employeeId: number;
 }
+
+const POLICIES_PER_PAGE = 6;
 
 const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
@@ -31,9 +34,24 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
   const [unassigningPolicy, setUnassigningPolicy] =
     useState<EmployeeLeavePolicyType | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(0);
 
   const { data: employeeLeavePolicies = [], isLoading } =
     useGetEmployeeLeavePolicies(employeeId);
+
+  const totalPages = Math.ceil(employeeLeavePolicies.length / POLICIES_PER_PAGE);
+
+  const paginatedPolicies = employeeLeavePolicies.slice(
+    currentPage * POLICIES_PER_PAGE,
+    currentPage * POLICIES_PER_PAGE + POLICIES_PER_PAGE
+  );
+
+  // Keep the page in range when the list shrinks (e.g. after an unassign).
+  useEffect(() => {
+    if (currentPage > 0 && currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [totalPages, currentPage]);
 
   const { data: entitlementData } = useGetEmployeeEntitlements(
     employeeId,
@@ -82,7 +100,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
 
       {hasPolicies && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {employeeLeavePolicies.map((policy) => {
+          {paginatedPolicies.map((policy) => {
             const usage = usageByLeaveType.get(policy.leaveTypeName);
             const taken = usage?.taken === 0 ? 1 : usage?.taken;
             const total = usage?.taken === 0 ? 1 : usage?.total;
@@ -135,6 +153,20 @@ const UserLeavePolicies: FC<Props> = ({ employeeId }) => {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {hasPolicies && employeeLeavePolicies.length > POLICIES_PER_PAGE && (
+        <div className="flex justify-end">
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onChange={(_event: ChangeEvent<unknown>, value: number) =>
+              setCurrentPage(value - 1)
+            }
+            isNumbersVisible={false}
+            tableName={translateText(["sectionTitle"])}
+          />
         </div>
       )}
 
