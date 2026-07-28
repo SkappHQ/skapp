@@ -26,7 +26,7 @@
         "name": "Enter name",
         "email": "Enter email",
         "contactNumber": "Enter contact no.",
-        "company": "Search company",
+        "company": "Search by company name",
         "owner": "Search contact owner"
       },
       "emptyStates": {
