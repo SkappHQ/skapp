@@ -2,7 +2,8 @@ import { Theme } from "@mui/material";
 
 const styles = (theme: Theme) => ({
   iconStyles: {
-    display: "flex",
+    display: "inline-flex",
+    width: "fit-content",
     alignItems: "center",
     gap: "0.5rem",
     backgroundColor: theme.palette.common.white,

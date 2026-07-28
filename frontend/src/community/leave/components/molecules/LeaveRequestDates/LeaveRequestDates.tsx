@@ -21,12 +21,10 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
       sx={{
         color: "common.black",
         display: "flex",
-        flex: 1,
         flexDirection: "row",
         justifyContent: "flex-start",
         alignItems: "center",
-        gap: "0.625rem",
-        paddingLeft: "1.25rem"
+        gap: "0.625rem"
       }}
     >
       <Typography
