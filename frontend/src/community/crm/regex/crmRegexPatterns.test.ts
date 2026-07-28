@@ -1,6 +1,7 @@
 import {
   isContactNameValid,
   isDealNameValid,
+  isDealStageNameValid,
   isValidCompanyWebsiteUrl
 } from "./crmRegexPatterns";
 
@@ -32,6 +33,28 @@ describe("isDealNameValid", () => {
   it("should reject disallowed special characters", () => {
     expect(isDealNameValid().test("Deal <script>")).toBe(false);
     expect(isDealNameValid().test("Deal!")).toBe(false);
+  });
+});
+
+describe("isDealStageNameValid", () => {
+  it("should accept letters, numbers, spaces, hyphens, periods and apostrophes", () => {
+    expect(isDealStageNameValid().test("Negotiation")).toBe(true);
+    expect(isDealStageNameValid().test("Stage 2")).toBe(true);
+    expect(isDealStageNameValid().test("Won't-Close v2.1")).toBe(true);
+  });
+
+  it("should reject numeric-only input", () => {
+    expect(isDealStageNameValid().test("12345")).toBe(false);
+  });
+
+  it("should reject disallowed special characters", () => {
+    expect(isDealStageNameValid().test("Won & Lost")).toBe(false);
+    expect(isDealStageNameValid().test("Stage, 2")).toBe(false);
+    expect(isDealStageNameValid().test("Bad<Name>")).toBe(false);
+  });
+
+  it("should reject emoji", () => {
+    expect(isDealStageNameValid().test("Closed 😀")).toBe(false);
   });
 });
 

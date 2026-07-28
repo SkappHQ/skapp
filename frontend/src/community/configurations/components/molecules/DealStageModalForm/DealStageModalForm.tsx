@@ -137,7 +137,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
       dealStages,
       selectedDealStage?.id
     ),
-    validateOnChange: true,
+    validateOnChange: false,
     validateOnBlur: true,
     enableReinitialize: true
   });
