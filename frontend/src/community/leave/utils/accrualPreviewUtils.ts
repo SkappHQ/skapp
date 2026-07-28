@@ -71,6 +71,9 @@ export const buildAccrualPreview = (
       : null;
   const prorateFirst = policy.firstAccrual === FirstAccrualType.PRORATED;
   const atPeriodStart = policy.accrualTiming === AccrualTiming.PERIOD_START;
+  // Without carry-over the balance resets at the cycle end, so don't project
+  // accruals into the next year (relative to the effective date).
+  const lastYear = policy.isCarryoverEnabled ? null : start.year;
 
   const rows: AccrualPreviewRow[] = [];
   let balance = 0;
@@ -106,6 +109,7 @@ export const buildAccrualPreview = (
           ? base
           : periodStart
         : periodEnd;
+      if (lastYear != null && eventDate.year > lastYear) break;
       if (!addRow(eventDate, days)) break;
       periodStart = periodEnd.plus({ days: 1 }).startOf(unit);
       periodEnd = periodStart.endOf(unit);
@@ -118,6 +122,7 @@ export const buildAccrualPreview = (
   for (let i = 0; i < PREVIEW_ROW_LIMIT; i++) {
     const next = cursor.plus(interval);
     const eventDate = atPeriodStart ? cursor : next.minus({ days: 1 });
+    if (lastYear != null && eventDate.year > lastYear) break;
     if (!addRow(eventDate, perPeriod)) break;
     cursor = next;
   }
