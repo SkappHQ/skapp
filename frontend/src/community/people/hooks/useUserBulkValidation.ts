@@ -67,7 +67,10 @@ const useUserBulkValidation = () => {
       (!user?.careerProgressionStartDate ||
         dateValidation(user?.careerProgressionStartDate)) &&
       validateCareerProgressionFields(user) &&
-      user?.passportNo
+      user?.passportNo &&
+      (!user?.payrollId ||
+        user?.payrollId?.length <= characterLengths.CHARACTER_LENGTH) &&
+      (!user?.tin || user?.tin?.length <= characterLengths.CHARACTER_LENGTH)
     );
   };
 

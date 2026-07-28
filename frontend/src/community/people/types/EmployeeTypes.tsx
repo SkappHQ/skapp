@@ -175,6 +175,8 @@ export interface BulkEmployeeDetails {
     startDate: string | null;
     endDate: string | null;
   };
+  payrollId?: string | null;
+  tin?: string | null;
 }
 
 export interface EmployeePersonalInfoResponseType {
