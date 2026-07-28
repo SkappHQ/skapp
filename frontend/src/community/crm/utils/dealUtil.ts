@@ -30,14 +30,13 @@ export const buildOwnerOptions = <T extends OptionSource>(
 export const buildContactOptions = (
   items: CrmContactLookup[]
 ): DropdownOption[] => {
-  const toOption = (item: CrmContactLookup): DropdownOption => {
-    const fullName = getContactFullName(item);
-    return {
-      id: item.id,
-      value: item.id,
-      label: item.company?.name ? `${fullName} ${item.company.name}` : fullName
-    };
-  };
+  const toOption = (item: CrmContactLookup): DropdownOption => ({
+    id: item.id,
+    value: item.id,
+    label: item.company?.name
+      ? `${getContactFullName(item)} ${item.company.name}`
+      : getContactFullName(item)
+  });
 
   return items.map(toOption);
 };
