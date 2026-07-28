@@ -334,10 +334,6 @@
     }
   },
   "leave": {
-    "buttons": {
-      "cancel": "Cancel",
-      "save": "Save changes"
-    },
     "leavePoliciesSection": {
       "title": "Leave policies",
       "description": "Automate leave entitlements using policies. This replaces manual bulk uploads and custom allocations.",
