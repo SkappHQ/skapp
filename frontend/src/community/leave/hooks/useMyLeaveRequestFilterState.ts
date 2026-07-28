@@ -16,16 +16,12 @@ interface AppliedFilters {
 }
 
 export const useMyLeaveRequestFilterState = () => {
-  const selectedYear = useLeaveStore((state) => state.selectedYear);
-  const setLeaveRequestParams = useLeaveStore(
-    (state) => state.setLeaveRequestParams
-  );
-  const setLeaveRequestsFilter = useLeaveStore(
-    (state) => state.setLeaveRequestsFilter
-  );
-  const resetLeaveRequestParams = useLeaveStore(
-    (state) => state.resetLeaveRequestParams
-  );
+  const {
+    selectedYear,
+    setLeaveRequestParams,
+    setLeaveRequestsFilter,
+    resetLeaveRequestParams
+  } = useLeaveStore();
 
   const { data: leaveAllocations } = useGetLeaveAllocation(selectedYear);
 

@@ -25,10 +25,7 @@ const LeaveTypesTable = () => {
 
   const router = useRouter();
 
-  const setEditingLeaveType = useLeaveStore(
-    (state) => state.setEditingLeaveType
-  );
-  const setAllLeaveTypes = useLeaveStore((state) => state.setAllLeaveTypes);
+  const { setEditingLeaveType, setAllLeaveTypes } = useLeaveStore();
 
   const { data: leaveTypes, isFetching: isLeaveTypesFetching } =
     useGetLeaveTypes();

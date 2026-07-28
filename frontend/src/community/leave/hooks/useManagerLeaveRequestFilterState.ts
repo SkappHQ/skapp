@@ -15,15 +15,11 @@ interface AppliedFilters {
 }
 
 export const useManagerLeaveRequestFilterState = () => {
-  const setLeaveRequestParams = useLeaveStore(
-    (state) => state.setLeaveRequestParams
-  );
-  const setLeaveRequestsFilter = useLeaveStore(
-    (state) => state.setLeaveRequestsFilter
-  );
-  const resetLeaveRequestParams = useLeaveStore(
-    (state) => state.resetLeaveRequestParams
-  );
+  const {
+    setLeaveRequestParams,
+    setLeaveRequestsFilter,
+    resetLeaveRequestParams
+  } = useLeaveStore();
 
   const { data: leaveTypes } = useGetLeaveTypes();
 

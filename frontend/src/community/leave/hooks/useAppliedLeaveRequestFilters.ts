@@ -6,10 +6,10 @@ import { useLeaveStore } from "~community/leave/store/store";
  * instead of the full filter state hooks, which also fetch leave types.
  */
 export const useAppliedLeaveRequestFilters = () => {
-  const appliedStatus = useLeaveStore(
-    (state) => state.leaveRequestsFilter.status
-  );
-  const appliedTypes = useLeaveStore((state) => state.leaveRequestsFilter.type);
+  const { leaveRequestsFilter } = useLeaveStore();
+
+  const appliedStatus = leaveRequestsFilter.status;
+  const appliedTypes = leaveRequestsFilter.type;
 
   return {
     appliedStatus,
