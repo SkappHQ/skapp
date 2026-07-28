@@ -1,5 +1,4 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
-import { AxiosError } from "axios";
 import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -21,23 +20,15 @@ const UnassignLeavePolicyModal: FC<Props> = ({
   isOpen,
   onClose
 }) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "leavePolicyAssignment",
-    "unassignModal"
-  );
-  const translateSectionText = useTranslator(
-    "leaveModule",
-    "leavePolicyAssignment"
-  );
+  const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const { setToastMessage } = useToast();
 
   const onUnassignSuccess = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateSectionText(["unassignSuccessTitle"]),
-      description: translateSectionText(["unassignSuccessDescription"], {
+      title: translateText(["unassignSuccessTitle"]),
+      description: translateText(["unassignSuccessDescription"], {
         policyName: employeeLeavePolicy?.policyName ?? ""
       }),
       isIcon: true
@@ -45,12 +36,12 @@ const UnassignLeavePolicyModal: FC<Props> = ({
     onClose();
   };
 
-  const onUnassignError = (_error: AxiosError): void => {
+  const onUnassignError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateSectionText(["errorTitle"]),
-      description: translateSectionText(["unassignErrorDescription"]),
+      title: translateText(["errorTitle"]),
+      description: translateText(["unassignErrorDescription"]),
       isIcon: true
     });
   };
@@ -78,21 +69,21 @@ const UnassignLeavePolicyModal: FC<Props> = ({
     <SmallModal
       isOpen={isOpen}
       onClose={onClose}
-      modalHeader={translateText(["title"])}
+      modalHeader={translateText(["unassignModal", "title"])}
       content={
         <div className="flex flex-col gap-3">
           <p className="body1 text-black">
-            {translateText(["descriptionIntro"])}
+            {translateText(["unassignModal", "descriptionIntro"])}
           </p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li className="body1 text-secondary-text">
-              {translateText(["descriptionEntitlement"], {
+              {translateText(["unassignModal", "descriptionEntitlement"], {
                 employeeName: employeeName ?? "",
                 leaveType: employeeLeavePolicy.leaveTypeName
               })}
             </li>
             <li className="body1 text-secondary-text">
-              {translateText(["descriptionBalance"])}
+              {translateText(["unassignModal", "descriptionBalance"])}
             </li>
           </ul>
         </div>
@@ -102,14 +93,14 @@ const UnassignLeavePolicyModal: FC<Props> = ({
           variant: "tertiary",
           onClick: onClose,
           disabled: isPending,
-          children: translateText(["cancelBtnTxt"])
+          children: translateText(["unassignModal", "cancelBtnTxt"])
         },
         buttonRight: {
           variant: "error",
           onClick: handleUnassign,
           disabled: isPending,
           isLoading: isPending,
-          children: translateText(["unassignBtnTxt"])
+          children: translateText(["unassignModal", "unassignBtnTxt"])
         }
       }}
     />
