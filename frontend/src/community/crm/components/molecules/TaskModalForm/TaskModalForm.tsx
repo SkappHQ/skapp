@@ -123,28 +123,33 @@ const TaskModalForm: FC<TaskFormProps> = ({
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
+  // Contacts stay company scoped. Selecting a deal fills the contact in
+  // rather than narrowing this list, so the deal is not used as a filter.
   const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 ||
-    !!formik.values.dealId ||
-    selectedCompanyId != null;
+    debouncedContactSearchText.length > 0 || selectedCompanyId != null;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isContactSearchEnabled,
-    formik.values.dealId,
+    null,
     selectedCompanyId
   );
+
+  // A selected contact already scopes deals to that contact, so it takes
+  // precedence over the company scope instead of narrowing it further.
+  const dealLookupCompanyId =
+    formik.values.contactId != null ? null : selectedCompanyId;
 
   const isDealSearchEnabled =
     debouncedDealSearchText.length > 0 ||
     !!formik.values.contactId ||
-    selectedCompanyId != null;
+    dealLookupCompanyId != null;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isDealSearchEnabled,
     formik.values.contactId,
-    selectedCompanyId
+    dealLookupCompanyId
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
@@ -213,6 +218,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
     formik.setFieldValue("dealId", Number(item.id));
     setSelectedDealName(deal?.name ?? String(item.content));
     setDealSearchText("");
+
+    if (deal?.contactId != null) {
+      formik.setFieldValue("contactId", deal.contactId);
+      setSelectedContactName(
+        deal.contactName ?? getContactById(deal.contactId)?.name ?? ""
+      );
+      setContactSearchText("");
+    }
   };
 
   const handleClearOwner = () => {
