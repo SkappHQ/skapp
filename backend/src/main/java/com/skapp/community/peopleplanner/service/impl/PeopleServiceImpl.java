@@ -1356,13 +1356,6 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto terminateUser(Long userId) {
 		log.info("terminateUser: execution started");
 
-		Employee employee = employeeDao.findById(userId)
-			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
-
-		if (employee.getAccountStatus() == AccountStatus.PENDING) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_TERMINATE_PENDING_EMPLOYEE);
-		}
-
 		updateUserStatus(userId, AccountStatus.TERMINATED, false);
 
 		log.info("terminateUser: execution ended");
@@ -1376,7 +1369,7 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("reactivateTerminatedUser: execution started");
 
 		Employee employee = employeeDao.findById(userId)
-			.orElseThrow(() -> new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 
 		if (employee.getAccountStatus() != AccountStatus.TERMINATED) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED);
@@ -2661,6 +2654,10 @@ public class PeopleServiceImpl implements PeopleService {
 		User user = userDao.findById(userId)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 		Employee employee = user.getEmployee();
+
+		if (status.equals(AccountStatus.TERMINATED) && employee.getAccountStatus() == AccountStatus.PENDING) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_TERMINATE_PENDING_EMPLOYEE);
+		}
 
 		if (status.equals(AccountStatus.ACTIVE) && Boolean.FALSE.equals(user.getIsActive())) {
 			employee.setAccountStatus(status);
