@@ -279,7 +279,7 @@ export const reportsQueryKeys = {
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
   POLICY_LEAVE_TYPES: ["policy-leave-types"],
-  LEAVE_POLICY_CONFIG: ["leave-policies", "config"],
+  LEAVE_POLICY_CONFIG: ["leave-policies-config"],
   LEAVE_POLICIES_INFINITE: function (
     searchKeyword: string,
     leaveTypeId: string,
