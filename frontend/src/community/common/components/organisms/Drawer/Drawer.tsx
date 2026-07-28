@@ -131,9 +131,7 @@ const Drawer = (): JSX.Element => {
   const canViewLeavePolicies = useCanViewLeavePolicies();
 
   const { isLeavePoliciesEnabled, isError: isLeavePoliciesConfigError } =
-    useLeavePoliciesEnabled({
-      enabled: canViewLeavePolicies
-    });
+    useLeavePoliciesEnabled(canViewLeavePolicies);
 
   const drawerRoutes = useMemo(
     () =>

@@ -1,9 +1,5 @@
 import { useGetLeavePolicyConfig } from "~community/leave/api/LeavePolicyApi";
 
-interface UseLeavePoliciesEnabledOptions {
-  enabled?: boolean;
-}
-
 interface UseLeavePoliciesEnabledResult {
   isLeavePoliciesEnabled: boolean;
   isLoading: boolean;
@@ -11,11 +7,9 @@ interface UseLeavePoliciesEnabledResult {
 }
 
 const useLeavePoliciesEnabled = (
-  options?: UseLeavePoliciesEnabledOptions
+  enabled = true
 ): UseLeavePoliciesEnabledResult => {
-  const { data, isLoading, isError } = useGetLeavePolicyConfig(
-    options?.enabled ?? true
-  );
+  const { data, isLoading, isError } = useGetLeavePolicyConfig(enabled);
 
   return {
     isLeavePoliciesEnabled: Boolean(data?.enabled),
