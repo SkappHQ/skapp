@@ -21,4 +21,6 @@ public interface LeavePolicyService {
 
 	ResponseEntityDto getLeavePolicyConfig();
 
+	void setDefaultLeavePolicyConfig();
+
 }

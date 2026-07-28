@@ -206,9 +206,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		int revokedApprovedRequests = revokeFutureApprovedLeaveRequests();
 		int removedAllocations = removeExistingLeaveAllocations();
 
-		ObjectNode configValue = jsonMapper.createObjectNode();
-		configValue.put(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED, true);
-		String jsonValue = jsonMapper.writeValueAsString(configValue);
+		String jsonValue = buildLeavePolicyConfigValue(true);
 
 		OrganizationConfig organizationConfig = existingConfig
 			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), jsonValue));
@@ -236,6 +234,23 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getLeavePolicyConfig: execution ended");
 		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(enabled));
+	}
+
+	@Override
+	public void setDefaultLeavePolicyConfig() {
+		log.info("setDefaultLeavePolicyConfig: execution started");
+
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+		if (existingConfig.isPresent()) {
+			log.info("setDefaultLeavePolicyConfig: config already exists, skipping");
+			return;
+		}
+
+		organizationConfigDao.save(
+				new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue(true)));
+
+		log.info("setDefaultLeavePolicyConfig: execution ended");
 	}
 
 	private int removeExistingLeaveAllocations() {
@@ -298,6 +313,12 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		leaveEntitlementDao.saveAll(affectedEntitlements.values());
 		leaveRequestEntitlementDao.deleteAllInBatch(leaveRequestEntitlements);
+	}
+
+	private String buildLeavePolicyConfigValue(boolean enabled) {
+		ObjectNode configValue = jsonMapper.createObjectNode();
+		configValue.put(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED, enabled);
+		return jsonMapper.writeValueAsString(configValue);
 	}
 
 	private boolean isLeavePolicyEnabled(OrganizationConfig organizationConfig) {
