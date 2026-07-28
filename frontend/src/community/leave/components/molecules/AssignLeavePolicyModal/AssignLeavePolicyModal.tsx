@@ -112,14 +112,14 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
 
   const selectedPolicyName = selectedPolicy?.name ?? "";
 
-  // Anchor the projection at the chosen effective date. HIRE_DATE is resolved
-  // server-side, so we illustrate it from today.
+  // Anchor the projection at the policy's actual effective date: the chosen
+  // specific date, or the employee's hire date (fetched from the backend).
   const previewStartISO = useMemo(
     () =>
       effectiveDateType === EffectiveDateType.SPECIFIC
         ? specificDate || null
-        : DateTime.now().toISODate(),
-    [effectiveDateType, specificDate]
+        : (employee?.joinDate ?? null),
+    [effectiveDateType, specificDate, employee?.joinDate]
   );
 
   const accrualPreview = useMemo(
