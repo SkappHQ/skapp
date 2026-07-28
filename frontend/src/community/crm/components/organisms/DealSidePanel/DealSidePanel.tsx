@@ -184,7 +184,7 @@ const DealSidePanel: FC = () => {
                   "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
               }}
             />
-          ) 
+          )
         }
       >
         {!selectedDeal ? (
@@ -202,11 +202,14 @@ const DealSidePanel: FC = () => {
                   onSave={(description) => updateDeal({ description })}
                 />
                 <div className="flex flex-col gap-3">
-                  <h2 className="h2">{translateText(["tasks"])}</h2>
+                  <h2 className="h2">{translateText(["tasks", "title"])}</h2>
                   <hr className="border-secondary-accent" />
                   <SidePanelTasksSection
                     tasks={relatedTasks}
-                    emptyDescription={translateText(["emptyTasksDescription"])}
+                    emptyDescription={translateText([
+                      "tasks",
+                      "emptyDescription"
+                    ])}
                     hasNextPage={hasNextPage}
                     isFetchingNextPage={isFetchingNextPage}
                     onFetchNextPage={fetchNextPage}
