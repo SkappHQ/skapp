@@ -1,4 +1,3 @@
-import { Theme, useTheme } from "@mui/material";
 import { FC, useEffect } from "react";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
@@ -26,8 +25,7 @@ import LeaveRequestDates from "../LeaveRequestDates/LeaveRequestDates";
 import styles from "./styles";
 
 const LeaveRequests: FC = () => {
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
+  const classes = styles();
 
   const currentPage = useLeaveStore((state) => state.leaveRequestParams.page);
   const leaveRequestSort = useLeaveStore(

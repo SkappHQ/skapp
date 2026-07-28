@@ -1,4 +1,4 @@
-import { Box, Theme, Typography, useTheme } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -13,8 +13,6 @@ interface Props {
 
 const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
   const translateText = useTranslator("leaveModule", "myRequests");
-
-  const theme: Theme = useTheme();
 
   return (
     <Box
@@ -38,7 +36,7 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
       </Typography>
       <div
         style={{
-          backgroundColor: theme.palette.common.white,
+          backgroundColor: "var(--color-tertiary-background)",
           borderRadius: "9.375rem",
           padding: "0.5rem 1rem"
         }}
