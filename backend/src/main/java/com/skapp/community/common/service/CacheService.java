@@ -9,8 +9,6 @@ public interface CacheService {
 
 	void put(String cacheKey, String value, long ttl, TimeUnit timeUnit);
 
-	boolean putIfAbsent(String cacheKey, String value, long ttl, TimeUnit timeUnit);
-
 	void invalidate(String cacheKey);
 
 	List<String> getValuesByPattern(String pattern);

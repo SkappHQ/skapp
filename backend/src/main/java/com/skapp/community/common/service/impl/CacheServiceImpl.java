@@ -28,11 +28,6 @@ public class CacheServiceImpl implements CacheService {
 	}
 
 	@Override
-	public boolean putIfAbsent(String cacheKey, String value, long ttl, TimeUnit timeUnit) {
-		return cache.asMap().putIfAbsent(cacheKey, value) == null;
-	}
-
-	@Override
 	public void invalidate(String cacheKey) {
 		cache.invalidate(cacheKey);
 	}
