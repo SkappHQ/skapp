@@ -1,6 +1,5 @@
 import { Tooltip } from "@mui/material";
 import { Toggle } from "@rootcodelabs/skapp-ui";
-import { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import { FC, useState } from "react";
 
@@ -14,8 +13,6 @@ import EnableLeavePoliciesConfirmModal from "~community/configurations/component
 import { useEnableLeavePolicies } from "~community/leave/api/LeavePolicyApi";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-
-const SESSION_EXPIRED_REDIRECT_DELAY = 2000;
 
 const LeaveConfigurations: FC = () => {
   const translateText = useTranslator("configurations", "leave");
@@ -41,23 +38,9 @@ const LeaveConfigurations: FC = () => {
     router.push(ROUTES.LEAVE.LEAVE_POLICIES);
   };
 
-  const onEnableError = (error: AxiosError): void => {
+  const onEnableError = (): void => {
     setIsConfirmModalOpen(false);
     setIsToggleOn(false);
-
-    if (error?.response?.status === 401) {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["toasts", "sessionExpiredTitle"]),
-        description: translateText(["toasts", "sessionExpiredDescription"]),
-        isIcon: true
-      });
-      setTimeout(() => {
-        router.push(ROUTES.AUTH.SIGNIN);
-      }, SESSION_EXPIRED_REDIRECT_DELAY);
-      return;
-    }
 
     setToastMessage({
       open: true,

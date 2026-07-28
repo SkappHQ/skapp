@@ -359,9 +359,7 @@
       "successTitle": "Leave Policies Enabled",
       "successDescription": "Leave policies have been enabled successfully. You can now create and assign policies.",
       "errorTitle": "Oops! Something went wrong",
-      "errorDescription": "Failed to enable Leave Policies. Please try again or contact support.",
-      "sessionExpiredTitle": "Oops! Something went wrong",
-      "sessionExpiredDescription": "Your session has expired. Please log in again."
+      "errorDescription": "Failed to enable Leave Policies. Please try again or contact support."
     }
   }
 }
