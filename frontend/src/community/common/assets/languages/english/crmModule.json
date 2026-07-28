@@ -423,8 +423,6 @@
         "discard": "Discard"
       },
       "toastMessages": {
-        "editSuccessTitle": "Deal Updated",
-        "editSuccessDescription": "Deal details have been updated successfully.",
         "editErrorTitle": "Failed to update deal",
         "editErrorDescription": "Something went wrong. Please try again"
       },
