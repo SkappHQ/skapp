@@ -7,16 +7,20 @@ interface UseLeavePoliciesEnabledOptions {
 interface UseLeavePoliciesEnabledResult {
   isLeavePoliciesEnabled: boolean;
   isLoading: boolean;
+  isError: boolean;
 }
 
 const useLeavePoliciesEnabled = (
   options?: UseLeavePoliciesEnabledOptions
 ): UseLeavePoliciesEnabledResult => {
-  const { data, isLoading } = useGetLeavePolicyConfig(options?.enabled ?? true);
+  const { data, isLoading, isError } = useGetLeavePolicyConfig(
+    options?.enabled ?? true
+  );
 
   return {
     isLeavePoliciesEnabled: Boolean(data?.enabled),
-    isLoading
+    isLoading,
+    isError
   };
 };
 

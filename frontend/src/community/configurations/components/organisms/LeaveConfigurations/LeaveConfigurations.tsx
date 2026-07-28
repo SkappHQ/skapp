@@ -23,7 +23,8 @@ const LeaveConfigurations: FC = () => {
   const { setToastMessage } = useToast();
 
   const canManageLeavePolicies = useCanManageLeavePolicies();
-  const { isLeavePoliciesEnabled, isLoading } = useLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading, isError } =
+    useLeavePoliciesEnabled();
 
   const [isToggleOn, setIsToggleOn] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -75,7 +76,7 @@ const LeaveConfigurations: FC = () => {
   // Toggle section is shown only to Super/Leave Admins on existing tenants where
   // leave policies are still disabled. New tenants (flag enabled by default) and
   // tenants that have already enabled it never see the toggle (irreversible).
-  if (!canManageLeavePolicies || isLoading || isLeavePoliciesEnabled) {
+  if (!canManageLeavePolicies || isLoading || isError || isLeavePoliciesEnabled) {
     return null;
   }
 

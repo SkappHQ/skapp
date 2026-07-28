@@ -140,9 +140,10 @@ const Drawer = (): JSX.Element => {
     )
   );
 
-  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled({
-    enabled: canViewLeavePolicies
-  });
+  const { isLeavePoliciesEnabled, isError: isLeavePoliciesConfigError } =
+    useLeavePoliciesEnabled({
+      enabled: canViewLeavePolicies
+    });
 
   const drawerRoutes = useMemo(
     () =>
@@ -159,7 +160,8 @@ const Drawer = (): JSX.Element => {
         notificationLeaveCount,
         notificationTimesheetCount,
         notificationSignCount,
-        isLeavePoliciesEnabled
+        isLeavePoliciesEnabled,
+        isLeavePoliciesConfigError
       }),
     [
       user,
@@ -169,7 +171,8 @@ const Drawer = (): JSX.Element => {
       notificationLeaveCount,
       notificationTimesheetCount,
       notificationSignCount,
-      isLeavePoliciesEnabled
+      isLeavePoliciesEnabled,
+      isLeavePoliciesConfigError
     ]
   );
 

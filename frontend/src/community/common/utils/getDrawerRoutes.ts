@@ -33,6 +33,7 @@ interface Props {
   notificationTimesheetCount?: number;
   notificationSignCount?: number;
   isLeavePoliciesEnabled?: boolean;
+  isLeavePoliciesConfigError?: boolean;
 }
 
 const getDrawerRoutes = ({
@@ -46,7 +47,8 @@ const getDrawerRoutes = ({
   notificationLeaveCount = 0,
   notificationTimesheetCount = 0,
   notificationSignCount = 0,
-  isLeavePoliciesEnabled = false
+  isLeavePoliciesEnabled = false,
+  isLeavePoliciesConfigError = false
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -326,7 +328,11 @@ const getDrawerRoutes = ({
 
             if (!isSubRouteAuthorized) return null;
 
-            if (subRoute.id === "2E" && !isLeavePoliciesEnabled) {
+            if (
+              subRoute.id === "2E" &&
+              !isLeavePoliciesEnabled &&
+              !isLeavePoliciesConfigError
+            ) {
               return null;
             }
 
