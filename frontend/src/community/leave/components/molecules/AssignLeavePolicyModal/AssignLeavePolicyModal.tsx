@@ -3,6 +3,7 @@ import {
   DatePicker,
   Dropdown,
   InputField,
+  RadioButton,
   SmallModal,
   Table
 } from "@rootcodelabs/skapp-ui";
@@ -250,35 +251,47 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
             <p className="body2 text-secondary-text">
               {translateText(["effectiveDateLabel"])}
             </p>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="effectiveDateType"
-                value={EffectiveDateType.HIRE_DATE}
-                checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
-                onChange={() => {
+            <div
+              role="radiogroup"
+              aria-label={translateText(["effectiveDateLabel"])}
+              className="flex flex-col gap-2"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
+                onClick={() => {
                   setEffectiveDateType(EffectiveDateType.HIRE_DATE);
                   setSpecificDateError("");
                 }}
-              />
-              <span className="body1 text-black">
-                {translateText(["hireDateOption"])}
-              </span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="effectiveDateType"
-                value={EffectiveDateType.SPECIFIC}
-                checked={effectiveDateType === EffectiveDateType.SPECIFIC}
-                onChange={() =>
+                className="flex w-fit cursor-pointer items-center gap-3"
+              >
+                <RadioButton
+                  isSelected={effectiveDateType === EffectiveDateType.HIRE_DATE}
+                  variant="dot"
+                />
+                <span className="body1 text-black">
+                  {translateText(["hireDateOption"])}
+                </span>
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={effectiveDateType === EffectiveDateType.SPECIFIC}
+                onClick={() =>
                   setEffectiveDateType(EffectiveDateType.SPECIFIC)
                 }
-              />
-              <span className="body1 text-black">
-                {translateText(["specificDateOption"])}
-              </span>
-            </label>
+                className="flex w-fit cursor-pointer items-center gap-3"
+              >
+                <RadioButton
+                  isSelected={effectiveDateType === EffectiveDateType.SPECIFIC}
+                  variant="dot"
+                />
+                <span className="body1 text-black">
+                  {translateText(["specificDateOption"])}
+                </span>
+              </button>
+            </div>
             {effectiveDateType === EffectiveDateType.SPECIFIC && (
               <DatePicker
                 mode="single"
