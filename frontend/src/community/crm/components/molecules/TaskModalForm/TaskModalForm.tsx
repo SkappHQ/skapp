@@ -123,8 +123,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
-  // Contacts stay company scoped. Selecting a deal fills the contact in
-  // rather than narrowing this list, so the deal is not used as a filter.
   const isContactSearchEnabled =
     debouncedContactSearchText.length > 0 || selectedCompanyId != null;
   const { data: contactLookupData } = useGetCrmContacts(
@@ -135,8 +133,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     selectedCompanyId
   );
 
-  // A selected contact already scopes deals to that contact, so it takes
-  // precedence over the company scope instead of narrowing it further.
   const dealLookupCompanyId =
     formik.values.contactId != null ? null : selectedCompanyId;
 
