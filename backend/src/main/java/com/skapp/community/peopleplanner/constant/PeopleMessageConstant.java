@@ -234,7 +234,9 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH("api.error.people.validation.payroll-id-length"),
 	PEOPLE_ERROR_VALIDATION_TIN_LENGTH("api.error.people.validation.tin-length"),
 	PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST("api.error.people.employee.payroll-id.exist"),
-	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist");
+	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist"),
+	PEOPLE_ERROR_PAYROLL_ID_ALREADY_IN_FILE("api.error.people.employee.payroll-id.exist-in-file"),
+	PEOPLE_ERROR_TIN_ALREADY_IN_FILE("api.error.people.employee.tin.exist-in-file");
 
 	private final String messageKey;
 
