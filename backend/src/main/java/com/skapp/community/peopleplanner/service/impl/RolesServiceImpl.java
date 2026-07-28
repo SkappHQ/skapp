@@ -151,16 +151,6 @@ public class RolesServiceImpl implements RolesService {
 		return moduleRolesRestriction;
 	}
 
-	protected Map<ModuleType, Set<RoleLevel>> getRestrictedRoleLevels() {
-		Map<ModuleType, Set<RoleLevel>> restrictedRoleLevels = new EnumMap<>(ModuleType.class);
-
-		moduleRolesRestrictionDao.findAll()
-			.forEach(moduleRolesRestriction -> restrictedRoleLevels.put(moduleRolesRestriction.getModule(),
-					PeopleUtil.parseRestrictions(moduleRolesRestriction.getRestrictions())));
-
-		return restrictedRoleLevels;
-	}
-
 	protected Set<RoleLevel> getRestrictedRoleLevels(ModuleType module) {
 		return moduleRolesRestrictionDao.findById(module)
 			.map(moduleRolesRestriction -> PeopleUtil.parseRestrictions(moduleRolesRestriction.getRestrictions()))
