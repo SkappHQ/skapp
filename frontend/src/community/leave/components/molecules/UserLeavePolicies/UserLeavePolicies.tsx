@@ -57,7 +57,6 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const totalPages = policiesPage?.totalPages ?? 0;
   const totalItems = policiesPage?.totalItems ?? 0;
 
-  // Keep the page in range when the list shrinks (e.g. after an unassign).
   useEffect(() => {
     if (currentPage > 0 && currentPage >= totalPages) {
       setCurrentPage(Math.max(0, totalPages - 1));
@@ -69,8 +68,6 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     isAtLeastCoreTier
   );
 
-  // Leave usage (taken vs total) is keyed by leave-type name, which is unique
-  // and shared between the entitlement and the assigned policy.
   const usageByLeaveType = useMemo(() => {
     const map = new Map<string, LeaveUsage>();
     (entitlementData ?? []).forEach(

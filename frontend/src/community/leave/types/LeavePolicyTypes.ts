@@ -58,30 +58,24 @@ export interface LeavePolicyType {
   accrualTiming?: AccrualTiming | null;
 }
 
-// Calendar units that a luxon DateTime can align to, used when prorating the
-// first partial accrual period against real calendar boundaries.
 export type CalendarUnit = "day" | "week" | "month" | "quarter" | "year";
 
-// A single row in the accrual schedule preview shown in the assign modal.
 export interface AccrualPreviewRow {
   date: string;
   days: number;
   balance: number;
 }
 
-// One accrual event (a date on which days are granted) in the projection.
 export interface AccrualEvent {
   date: DateTime;
   days: number;
 }
 
-// Resolved inputs that drive the accrual projection.
 export interface ScheduleConfig {
   accrualStartDate: DateTime;
   perPeriod: number;
   prorateFirst: boolean;
   atPeriodStart: boolean;
-  // When set (carry-over disabled), stop projecting after this year.
   lastYear: number | null;
 }
 

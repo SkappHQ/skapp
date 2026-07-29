@@ -62,8 +62,6 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
 			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', 'ACTIVE')";
 
-	// Seven leave types, one accrual policy each, and seven ACTIVE assignments for
-	// employee 1 - enough to span two pages at the default size of 6.
 	private static final String SEED_PAGINATION_TYPES = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) VALUES "
 			+ "(800, 'PageType0', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
 			+ "(801, 'PageType1', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "

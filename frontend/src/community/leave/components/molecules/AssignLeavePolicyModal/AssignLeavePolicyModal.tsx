@@ -40,8 +40,6 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const { data: employee, isLoading: isEmployeeLoading } =
     useGetEmployeeById(employeeId);
 
-  // With HIRE_DATE selected, the employee must have a hire date on record;
-  // otherwise the primary action becomes "Set a hire date" first.
   const needsHireDate =
     effectiveDateType === EffectiveDateType.HIRE_DATE &&
     !isEmployeeLoading &&
@@ -96,8 +94,6 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
 
   const selectedPolicyName = selectedPolicy?.name ?? "";
 
-  // Anchor the projection at the policy's actual effective date: the chosen
-  // specific date, or the employee's hire date (fetched from the backend).
   const previewStartISO = useMemo(
     () =>
       effectiveDateType === EffectiveDateType.SPECIFIC

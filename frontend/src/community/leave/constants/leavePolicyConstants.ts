@@ -10,11 +10,8 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
-// Cap the accrual schedule preview to a readable window inside the modal.
 export const ACCRUAL_PREVIEW_ROW_LIMIT = 12;
 
-// Frequencies that align onto a luxon calendar unit, so the first partial
-// period can be prorated against real calendar boundaries.
 export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
   DAILY: "day",
   WEEKLY: "week",
@@ -24,7 +21,6 @@ export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
   ON_ANNIVERSARY: "year"
 };
 
-// Frequencies without a native calendar unit fall back to fixed intervals.
 export const INTERVAL_STEP: Partial<Record<AccrualFrequency, DurationLike>> = {
   EVERY_OTHER_WEEK: { weeks: 2 },
   TWICE_A_MONTH: { days: 15 },
