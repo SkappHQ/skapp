@@ -613,3 +613,7 @@ export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
+
+// Whole numbers render plainly; fractional values get two decimals.
+export const formatDays = (value: number): string =>
+  Number.isInteger(value) ? String(value) : value.toFixed(2);

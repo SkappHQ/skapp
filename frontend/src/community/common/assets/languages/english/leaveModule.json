@@ -358,8 +358,10 @@
     "assignPolicyBtnTxt": "Assign policy",
     "menuUnassign": "Unassign",
     "leavesTakenLabel": "{{taken}} / {{total}} days taken",
-    "emptyStateTitle": "No policies assigned yet. Click Assign Policy to get started.",
-    "errorStateTitle": "Couldn't load leave policies. Please try again.",
+    "emptyStateTitle": "No policies assigned yet",
+    "emptyStateDescription": "Assign a policy to get started.",
+    "errorStateTitle": "Couldn't load leave policies",
+    "errorStateDescription": "Please try again.",
     "assignModal": {
       "title": "Assign Leave Policy",
       "policyLabel": "Policy",

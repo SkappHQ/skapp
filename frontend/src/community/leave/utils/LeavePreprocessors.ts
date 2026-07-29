@@ -149,7 +149,3 @@ export const getPercentage = (total: number, part: number) => {
     return 0;
   }
 };
-
-// Whole numbers render plainly; fractional day counts get two decimals.
-export const formatDays = (value: number): string =>
-  Number.isInteger(value) ? String(value) : value.toFixed(2);

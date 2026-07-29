@@ -1,9 +1,15 @@
-import { ButtonV2, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
+import {
+  ButtonV2,
+  Card,
+  EmptyDataView,
+  KebabMenu
+} from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
+import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetEmployeeLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyModal from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyModal";
@@ -11,7 +17,6 @@ import UnassignLeavePolicyModal from "~community/leave/components/molecules/Unas
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
-import { formatDays } from "~community/leave/utils/LeavePreprocessors";
 import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
@@ -110,19 +115,18 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
       )}
 
       {isError && (
-        <div className="rounded-lg bg-tertiary-background px-4 py-6">
-          <p className="body1 text-secondary-text">
-            {translateText(["errorStateTitle"])}
-          </p>
-        </div>
+        <EmptyDataView
+          title={translateText(["errorStateTitle"])}
+          description={translateText(["errorStateDescription"])}
+        />
       )}
 
       {!isLoading && !isError && !hasPolicies && (
-        <div className="rounded-lg bg-tertiary-background px-4 py-6">
-          <p className="body1 text-secondary-text">
-            {translateText(["emptyStateTitle"])}
-          </p>
-        </div>
+        <EmptyDataView
+          icon={<NoDataIcon />}
+          title={translateText(["emptyStateTitle"])}
+          description={translateText(["emptyStateDescription"])}
+        />
       )}
 
       {hasPolicies && (
