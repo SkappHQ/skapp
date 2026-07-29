@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.BulkAssignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,17 @@ public class EmployeeLeavePolicyController {
 	public ResponseEntity<ResponseEntityDto> assignLeavePolicy(
 			@RequestBody AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		ResponseEntityDto response = employeeLeavePolicyService.assignLeavePolicy(assignLeavePolicyRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Bulk assign leave policies to employees",
+			description = "Assigns policies to many employees from CSV-derived rows; each row is validated and processed independently")
+	@PostMapping("/bulk")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> bulkAssignLeavePolicies(
+			@RequestBody BulkAssignLeavePolicyRequestDto bulkAssignLeavePolicyRequestDto) {
+		ResponseEntityDto response = employeeLeavePolicyService
+			.bulkAssignLeavePolicies(bulkAssignLeavePolicyRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

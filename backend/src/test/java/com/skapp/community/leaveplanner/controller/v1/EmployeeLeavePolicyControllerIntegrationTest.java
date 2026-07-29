@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -43,6 +44,10 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	 * 2021-12-20.
 	 */
 	private static final String EMPLOYEE_1_JOIN_DATE = "2022-05-17";
+
+	private static final String EMPLOYEE_1_NAME = "Employee User One Lastname One";
+
+	private static final String EMPLOYEE_2_NAME = "Employee User Two Lastname Two";
 
 	private static final String SEED_LEAVE_TYPES = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
 			+ "VALUES (100, 'AssignAnnual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true), "
@@ -113,6 +118,22 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 	private static String unassignBody(long employeeId, long policyId) {
 		return "{ \"employeeId\": " + employeeId + ", \"policyId\": " + policyId + " }";
+	}
+
+	private ResultActions performBulk(String authToken, String body) throws Exception {
+		return mvc.perform(post(ENDPOINT + "/bulk").contentType(MediaType.APPLICATION_JSON)
+			.accept(MediaType.APPLICATION_JSON)
+			.content(body)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private static String bulkRow(String employeeName, String policyName, String effectiveDate) {
+		return "{ \"employeeName\": \"" + employeeName + "\", \"policyName\": \"" + policyName
+				+ "\", \"effectiveDate\": \"" + effectiveDate + "\" }";
+	}
+
+	private static String bulkBody(String... rows) {
+		return "{ \"assignments\": [" + String.join(", ", rows) + "] }";
 	}
 
 	@Nested
@@ -391,6 +412,108 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			mvc.perform(post(ENDPOINT).contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
 				.content(assignBody(1, 500, "HIRE_DATE", null))).andDo(print()).andExpect(status().isUnauthorized());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Bulk Assign Leave Policies")
+	class BulkAssignPolicyTests {
+
+		@Test
+		@DisplayName("All valid rows are assigned and summarised")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_AllValid_AssignsEveryRow() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"),
+					bulkRow(EMPLOYEE_2_NAME, "Casual Basic", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(2))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs", hasSize(0)));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].policyId").value(500));
+		}
+
+		@Test
+		@DisplayName("Valid rows are assigned and invalid rows are skipped with per-row errors")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_MixedRows_ProcessesValidSkipsInvalid() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"),
+					bulkRow("Ghost Person", "Annual Standard", "01/06/2024"),
+					bulkRow(EMPLOYEE_2_NAME, "Missing Policy", "01/06/2024"),
+					bulkRow(EMPLOYEE_2_NAME, "Annual Flexible", "01/06/2024"),
+					bulkRow(EMPLOYEE_2_NAME, "Casual Basic", "32/13/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(4))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs", hasSize(4)))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs[0].error", containsString("Employee not found")));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].policyId").value(500));
+		}
+
+		@Test
+		@DisplayName("A flexible policy row is rejected as not an accrual policy")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_FlexiblePolicy_Rejected() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Flexible", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(1))
+				.andExpect(
+						jsonPath("$.results[0].bulkRecordErrorLogs[0].error", containsString("not an accrual policy")));
+		}
+
+		@Test
+		@DisplayName("Duplicate employee and leave type in the file processes the first row only")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_DuplicateLeaveType_ProcessesFirstOnly() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"),
+					bulkRow(EMPLOYEE_1_NAME, "Annual Senior", "01/07/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs[0].error", containsString("Duplicate entry")));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].policyId").value(500));
+		}
+
+		@Test
+		@DisplayName("A conflicting active policy for the same leave type is silently superseded")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
+		void bulkAssign_ConflictingLeaveType_Supersedes() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Senior", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].policyId").value(501));
+		}
+
+		@Test
+		@DisplayName("People admin cannot bulk assign")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_PEOPLE_ADMIN_ONLY })
+		void bulkAssign_PeopleAdmin_Forbidden() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+			performBulk(user2Token(), body).andDo(print()).andExpect(status().isForbidden());
 		}
 
 	}

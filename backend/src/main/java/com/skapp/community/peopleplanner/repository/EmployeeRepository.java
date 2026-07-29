@@ -91,6 +91,8 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployeeByName(String keyword);
 
+	List<Employee> findActiveEmployeesByExactName(String name);
+
 	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
 			Long currentEmployeeId);
 
