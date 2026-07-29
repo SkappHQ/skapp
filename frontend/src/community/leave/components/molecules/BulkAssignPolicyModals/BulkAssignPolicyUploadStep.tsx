@@ -110,13 +110,13 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-secondary-text">
+      <p className="body2 text-secondary-text">
         {translateText(["uploadInstruction"])}
       </p>
 
       <button
         type="button"
-        className="w-fit text-sm font-medium text-primary-accent underline"
+        className="w-fit body2 text-primary-accent underline"
         onClick={downloadBulkAssignPolicyTemplate}
         title={translateText(["downloadTemplateTooltip"])}
       >
@@ -144,7 +144,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
 
       {!!fileError && (
         <div role="alert">
-          <p className="mt-1 text-sm text-semantic-red-text">{fileError}</p>
+          <p className="body2 mt-1 text-semantic-red-text">{fileError}</p>
         </div>
       )}
 

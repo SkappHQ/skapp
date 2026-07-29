@@ -37,8 +37,8 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({ response, onDone }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm font-semibold">{translateText(["summaryTitle"])}</p>
-      <p className="text-sm text-secondary-text" aria-live="polite">
+      <p className="subtitle2 text-black">{translateText(["summaryTitle"])}</p>
+      <p className="body2 text-secondary-text" aria-live="polite">
         {getSummaryText()}
       </p>
 
