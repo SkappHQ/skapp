@@ -1,6 +1,31 @@
+import { BulkStatusSummary } from "~community/common/types/BulkUploadTypes";
+
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FLEXIBLE = "FLEXIBLE"
+}
+
+export interface BulkAssignPolicyRow {
+  employeeName: string;
+  policyName: string;
+  effectiveDate: string;
+}
+
+export interface BulkAssignPolicyPayload {
+  assignments: BulkAssignPolicyRow[];
+}
+
+export interface BulkAssignPolicyErrorLog extends BulkAssignPolicyRow {
+  error: string;
+}
+
+export interface BulkAssignPolicyResponse {
+  bulkStatusSummary: BulkStatusSummary;
+  bulkRecordErrorLogs: BulkAssignPolicyErrorLog[];
+}
+
+export interface BulkAssignPolicyApiResponse {
+  results: BulkAssignPolicyResponse[];
 }
 
 export enum LeavePolicyStatus {
