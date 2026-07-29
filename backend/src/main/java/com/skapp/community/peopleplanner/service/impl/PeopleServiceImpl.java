@@ -1487,7 +1487,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getTodayBirthdayNotifications() {
 		log.info("getTodayBirthdayNotifications: execution started");
 
@@ -1515,11 +1515,8 @@ public class PeopleServiceImpl implements PeopleService {
 				birthdayNotificationScope);
 
 		if (employeesWithBirthdays.isEmpty()) {
-			log.info("getTodayBirthdayNotifications: no birthdays today for employee {}, marking as viewed",
-					currentEmployeeId);
-			specialNotificationService.markNotificationViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY,
-					today);
-			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(today, List.of()));
+			log.info("getTodayBirthdayNotifications: no birthdays today for employee {}", currentEmployeeId);
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
 		List<EmployeeBirthdayResponseDto> response = peopleMapper
