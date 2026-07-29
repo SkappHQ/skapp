@@ -20,6 +20,11 @@ interface Props {
 
 const POLICIES_PER_PAGE = 6;
 
+const SKELETON_CARD_KEYS = Array.from(
+  { length: POLICIES_PER_PAGE },
+  (_, index) => `policy-skeleton-${index}`
+);
+
 const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
 
@@ -92,9 +97,9 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
 
       {isLoading && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: POLICIES_PER_PAGE }).map((_, index) => (
+          {SKELETON_CARD_KEYS.map((key) => (
             <div
-              key={index}
+              key={key}
               className="h-20 animate-pulse rounded-lg bg-tertiary-background"
             />
           ))}

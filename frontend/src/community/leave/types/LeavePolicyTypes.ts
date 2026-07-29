@@ -77,7 +77,7 @@ export interface AccrualEvent {
 
 // Resolved inputs that drive the accrual projection.
 export interface ScheduleConfig {
-  base: DateTime;
+  accrualStartDate: DateTime;
   perPeriod: number;
   prorateFirst: boolean;
   atPeriodStart: boolean;
