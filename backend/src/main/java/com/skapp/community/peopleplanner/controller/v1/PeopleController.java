@@ -229,6 +229,24 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get today's birthday notifications",
+			description = "Returns the birthdays the current employee should be notified about today, if not already viewed.")
+	@GetMapping(value = "/birthday-notifications/today")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getTodayBirthdayNotifications() {
+		ResponseEntityDto response = peopleService.getTodayBirthdayNotifications();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Mark today's birthday notifications as viewed",
+			description = "Marks today's birthday notifications as viewed for the current employee.")
+	@PatchMapping(value = "/birthday-notifications/mark-viewed-today")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> markTodayBirthdayNotificationsAsViewed() {
+		ResponseEntityDto response = peopleService.markTodayBirthdayNotificationsAsViewed();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PreAuthorize("hasAnyRole('ROLE_ATTENDANCE_MANAGER', 'ROLE_LEAVE_MANAGER')")
 	@GetMapping(value = "/search/employee-team", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> searchEmployeesAndTeamsBySearchKeyword(@RequestParam String keyword) {
