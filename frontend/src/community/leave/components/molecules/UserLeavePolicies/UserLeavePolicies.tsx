@@ -11,11 +11,17 @@ import UnassignLeavePolicyModal from "~community/leave/components/molecules/Unas
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
+import { formatDays } from "~community/leave/utils/LeavePreprocessors";
 import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
   employeeName?: string;
+}
+
+interface LeaveUsage {
+  taken: number;
+  total: number;
 }
 
 const POLICIES_PER_PAGE = 6;
@@ -24,9 +30,6 @@ const SKELETON_CARD_KEYS = Array.from(
   { length: POLICIES_PER_PAGE },
   (_, index) => `policy-skeleton-${index}`
 );
-
-const formatDays = (value: number): string =>
-  Number.isInteger(value) ? String(value) : value.toFixed(2);
 
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -64,7 +67,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   // Leave usage (taken vs total) is keyed by leave-type name, which is unique
   // and shared between the entitlement and the assigned policy.
   const usageByLeaveType = useMemo(() => {
-    const map = new Map<string, { taken: number; total: number }>();
+    const map = new Map<string, LeaveUsage>();
     (entitlementData ?? []).forEach(
       (entitlement: LeaveEntitlementsCardType) => {
         map.set(entitlement.leaveType.name, {
