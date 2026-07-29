@@ -65,6 +65,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1237,7 +1238,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findActiveEmployeesByExactName(String name) {
+	public List<Employee> findActiveEmployeesByExactNames(Collection<String> names) {
+		if (names == null || names.isEmpty()) {
+			return List.of();
+		}
+
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
@@ -1251,11 +1256,14 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
-		String normalizedName = name == null ? "" : name.trim().toLowerCase();
-		predicates.add(criteriaBuilder.equal(
-				criteriaBuilder.lower(criteriaBuilder.concat(
-						criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "), root.get(Employee_.LAST_NAME))),
-				normalizedName));
+		List<String> normalizedNames = names.stream()
+			.map(name -> name == null ? "" : name.trim().toLowerCase())
+			.toList();
+		predicates.add(
+				criteriaBuilder
+					.lower(criteriaBuilder.concat(criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "),
+							root.get(Employee_.LAST_NAME)))
+					.in(normalizedNames));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

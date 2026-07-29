@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -91,7 +92,7 @@ public interface EmployeeRepository {
 
 	List<Employee> findEmployeeByName(String keyword);
 
-	List<Employee> findActiveEmployeesByExactName(String name);
+	List<Employee> findActiveEmployeesByExactNames(Collection<String> names);
 
 	PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
 			Long currentEmployeeId);
