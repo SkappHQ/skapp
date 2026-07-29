@@ -26,6 +26,8 @@ interface Props {
   onComplete: (response: BulkAssignPolicyResponse) => void;
 }
 
+const MAX_CSV_FILE_SIZE = { inBytes: 5_000_000, inReadableSize: "5MB" };
+
 const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
   const translateText = useTranslator(
     "leaveModule",
@@ -114,7 +116,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
 
       <button
         type="button"
-        className="w-fit text-sm font-medium text-blue-600 underline"
+        className="w-fit text-sm font-medium text-primary-accent underline"
         onClick={downloadBulkAssignPolicyTemplate}
         title={translateText(["downloadTemplateTooltip"])}
       >
@@ -135,14 +137,14 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
         uploadableFiles={attachment}
         supportedFiles=".csv"
         maxFileSize={1}
-        maxSizeOfFile={{ inBytes: 5000000, inReadableSize: "5MB" }}
+        maxSizeOfFile={MAX_CSV_FILE_SIZE}
         isZeroFilesErrorRequired={false}
         accessibility={{ componentName: translateText(["title"]) }}
       />
 
       {!!fileError && (
         <div role="alert">
-          <p className="mt-1 text-sm text-red-500">{fileError}</p>
+          <p className="mt-1 text-sm text-semantic-red-text">{fileError}</p>
         </div>
       )}
 
