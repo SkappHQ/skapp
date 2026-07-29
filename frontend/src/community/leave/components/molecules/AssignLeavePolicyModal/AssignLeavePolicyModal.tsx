@@ -37,10 +37,8 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const [specificDateError, setSpecificDateError] = useState<string>("");
   const [isSetHireDateOpen, setIsSetHireDateOpen] = useState<boolean>(false);
 
-  const { data: employee, isLoading: isEmployeeLoading } = useGetEmployeeById(
-    employeeId,
-    isOpen
-  );
+  const { data: employee, isLoading: isEmployeeLoading } =
+    useGetEmployeeById(employeeId);
 
   // With HIRE_DATE selected, the employee must have a hire date on record;
   // otherwise the primary action becomes "Set a hire date" first.

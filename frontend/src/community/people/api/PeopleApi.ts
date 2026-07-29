@@ -403,8 +403,7 @@ export const useResetSharePassword = () => {
 };
 
 export const useGetEmployeeById = (
-  memberId: number | undefined = undefined,
-  enabled: boolean = true
+  memberId: number | undefined = undefined
 ): UseQueryResult<EmployeeDetails> => {
   return useQuery({
     queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(memberId),
@@ -432,7 +431,7 @@ export const useGetEmployeeById = (
         };
       }
     },
-    enabled: memberId !== 0 && enabled
+    enabled: memberId !== 0
   });
 };
 
