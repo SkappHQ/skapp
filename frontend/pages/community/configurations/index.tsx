@@ -9,10 +9,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  getConfigurationTabs,
-  getFallbackTabId
-} from "~community/configurations/utils/configurationTabsUtil";
+import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
 import { useGetGoogleConnectionStatus } from "~enterprise/people/api/GoogleWorkspaceSyncApi";
@@ -68,14 +65,6 @@ const Configurations: NextPage = () => {
       { shallow: true, scroll: false }
     );
   };
-
-  useEffect(() => {
-    if (!router.isReady || visibleTabs.length === 0) return;
-    const fallbackTabId = getFallbackTabId(visibleTabs, activeTab);
-    if (fallbackTabId) {
-      handleTabChange(fallbackTabId);
-    }
-  }, [visibleTabs, activeTab, router.isReady]);
 
   return (
     <ContentLayout

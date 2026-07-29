@@ -56,6 +56,8 @@ const DirectoryPopupController = () => {
       case DirectoryModalTypes.ADD_NEW_RESOURCE:
         return "Add people";
       case DirectoryModalTypes.UPLOAD_TYPE_SELECT:
+        return translatedTexts(["uploadTypeSelectorModalTitle"]);
+      case DirectoryModalTypes.IMPORT_TYPE_SELECT:
         return translateGoogleWorkspace(["chooserTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
@@ -128,41 +130,44 @@ const DirectoryPopupController = () => {
         DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
         <GuestToInternalUserConfirmationModal />
       )}
-      {directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT && (
+      {directoryModalType === DirectoryModalTypes.IMPORT_TYPE_SELECT && (
         <UploadTypeSelectModal />
       )}
     </>
   );
 
-  if (directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE) {
-    return (
-      <ConnectGoogleWorkspaceModal
-        isOpen={isDirectoryModalOpen}
-        onClose={onClose}
-      />
-    );
-  }
+  const isConnectGoogleWorkspaceEnabled =
+    directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE;
 
-  if (directoryModalType === DirectoryModalTypes.UPLOAD_TYPE_SELECT) {
-    return (
-      <LargeModal
-        id="import-people-modal"
-        isOpen={isDirectoryModalOpen}
-        onClose={onClose}
-        modalHeader={getModalTitle()}
-        className="relative w-[831px] h-fit max-h-[85vh] overflow-hidden"
-        content={modalContent}
-      />
-    );
-  }
+  const isImportTypeSelectEnabled =
+    directoryModalType === DirectoryModalTypes.IMPORT_TYPE_SELECT;
 
   return (
-    <SmallModal
-      isOpen={isDirectoryModalOpen}
-      onClose={onClose}
-      modalHeader={getModalTitle()}
-      content={modalContent}
-    />
+    <>
+      <ConnectGoogleWorkspaceModal
+        isEnabled={isConnectGoogleWorkspaceEnabled}
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+      />
+      {isImportTypeSelectEnabled && (
+        <LargeModal
+          id="import-people-modal"
+          isOpen={isDirectoryModalOpen}
+          onClose={onClose}
+          modalHeader={getModalTitle()}
+          className="relative w-[831px] h-fit max-h-[85vh] overflow-hidden"
+          content={modalContent}
+        />
+      )}
+      {!isConnectGoogleWorkspaceEnabled && !isImportTypeSelectEnabled && (
+        <SmallModal
+          isOpen={isDirectoryModalOpen}
+          onClose={onClose}
+          modalHeader={getModalTitle()}
+          content={modalContent}
+        />
+      )}
+    </>
   );
 };
 
