@@ -43,4 +43,10 @@ public class PeopleConstants {
 
 	public static final int MAX_EMPLOYEE_NUMBER_LENGTH = 10;
 
+	public static final int FEBRUARY_MONTH_VALUE = 2;
+
+	public static final int SHORT_FEBRUARY_LAST_DAY = 28;
+
+	public static final int LEAP_DAY_OF_FEBRUARY = 29;
+
 }
