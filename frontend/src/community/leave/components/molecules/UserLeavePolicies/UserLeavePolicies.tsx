@@ -24,10 +24,7 @@ const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
 
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "leavePolicyAssignment"
-  );
+  const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const canManagePolicies = useCanManageLeavePolicies();
   const { isAtLeastCoreTier } = useTier();
 
@@ -37,11 +34,11 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     useState<EmployeeLeavePolicyType | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
 
-  const { data: policiesPage, isLoading } = useGetEmployeeLeavePolicies(
-    employeeId,
-    currentPage,
-    POLICIES_PER_PAGE
-  );
+  const {
+    data: policiesPage,
+    isLoading,
+    isError
+  } = useGetEmployeeLeavePolicies(employeeId, currentPage, POLICIES_PER_PAGE);
 
   const policies = policiesPage?.items ?? [];
   const totalPages = policiesPage?.totalPages ?? 0;
@@ -63,12 +60,14 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   // and shared between the entitlement and the assigned policy.
   const usageByLeaveType = useMemo(() => {
     const map = new Map<string, { taken: number; total: number }>();
-    (entitlementData ?? []).forEach((entitlement: LeaveEntitlementsCardType) => {
-      map.set(entitlement.leaveType.name, {
-        taken: entitlement.totalDaysAllocated - entitlement.balanceInDays,
-        total: entitlement.totalDaysAllocated
-      });
-    });
+    (entitlementData ?? []).forEach(
+      (entitlement: LeaveEntitlementsCardType) => {
+        map.set(entitlement.leaveType.name, {
+          taken: entitlement.totalDaysAllocated - entitlement.balanceInDays,
+          total: entitlement.totalDaysAllocated
+        });
+      }
+    );
     return map;
   }, [entitlementData]);
 
@@ -91,7 +90,26 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
         )}
       </div>
 
-      {!isLoading && !hasPolicies && (
+      {isLoading && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: POLICIES_PER_PAGE }).map((_, index) => (
+            <div
+              key={index}
+              className="h-20 animate-pulse rounded-lg bg-tertiary-background"
+            />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <div className="rounded-lg bg-tertiary-background px-4 py-6">
+          <p className="body1 text-secondary-text">
+            {translateText(["errorStateTitle"])}
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !isError && !hasPolicies && (
         <div className="rounded-lg bg-tertiary-background px-4 py-6">
           <p className="body1 text-secondary-text">
             {translateText(["emptyStateTitle"])}
@@ -110,12 +128,18 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
               >
                 <div className="flex min-w-0 flex-row items-center gap-6">
                   {usage && (
-                    <div className="flex shrink-0 items-baseline gap-0.5">
+                    <div
+                      className="flex shrink-0 items-baseline gap-0.5"
+                      aria-label={translateText(["leavesTakenLabel"], {
+                        taken: usage.taken,
+                        total: usage.total
+                      })}
+                    >
                       <span className="text-2xl font-semibold text-black">
-                        {formatDays(usage.taken === 0 ? 1 : usage.taken)}
+                        {formatDays(usage.taken)}
                       </span>
                       <span className="body2 text-secondary-text">
-                        /{formatDays(usage.taken === 0 ? 1 : usage.total)}
+                        /{formatDays(usage.total)}
                       </span>
                     </div>
                   )}

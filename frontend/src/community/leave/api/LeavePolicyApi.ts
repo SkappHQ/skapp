@@ -31,11 +31,11 @@ const getPolicyLeaveTypes = async (): Promise<PolicyLeaveTypesResult> => {
 
 export const useGetPolicyLeaveTypes =
   (): UseQueryResult<PolicyLeaveTypesResult> => {
-  return useQuery({
-    queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES,
-    queryFn: getPolicyLeaveTypes
-  });
-};
+    return useQuery({
+      queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES,
+      queryFn: getPolicyLeaveTypes
+    });
+  };
 
 const getLeavePolicies = async (params: GetLeavePoliciesParams) => {
   const response = await authFetch.get<LeavePoliciesResponse>(
@@ -48,9 +48,11 @@ const getLeavePolicies = async (params: GetLeavePoliciesParams) => {
 export const useGetLeavePoliciesInfinite = ({
   searchKeyword,
   leaveTypeId,
-  size
+  size,
+  enabled = true
 }: GetLeavePoliciesInfiniteArgs) => {
   return useInfiniteQuery({
+    enabled,
     queryKey: leavePolicyQueryKeys.LEAVE_POLICIES_INFINITE(
       searchKeyword,
       leaveTypeId,

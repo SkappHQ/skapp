@@ -62,6 +62,35 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
 			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', 'ACTIVE')";
 
+	// Seven leave types, one accrual policy each, and seven ACTIVE assignments for
+	// employee 1 - enough to span two pages at the default size of 6.
+	private static final String SEED_PAGINATION_TYPES = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) VALUES "
+			+ "(800, 'PageType0', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(801, 'PageType1', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(802, 'PageType2', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(803, 'PageType3', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(804, 'PageType4', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(805, 'PageType5', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true), "
+			+ "(806, 'PageType6', 'U+1F3D6', '#111111', 'FULL_DAY', false, false, false, false, true)";
+
+	private static final String SEED_PAGINATION_POLICIES = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) VALUES "
+			+ "(810, 'PagePolicy0', 800, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(811, 'PagePolicy1', 801, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(812, 'PagePolicy2', 802, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(813, 'PagePolicy3', 803, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(814, 'PagePolicy4', 804, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(815, 'PagePolicy5', 805, 'ACCRUAL', 'ACTIVE', false), "
+			+ "(816, 'PagePolicy6', 806, 'ACCRUAL', 'ACTIVE', false)";
+
+	private static final String SEED_PAGINATION_ASSIGNMENTS = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) VALUES "
+			+ "(910, 1, 810, 'SPECIFIC', '2024-01-01', 'ACTIVE'), "
+			+ "(911, 1, 811, 'SPECIFIC', '2024-01-02', 'ACTIVE'), "
+			+ "(912, 1, 812, 'SPECIFIC', '2024-01-03', 'ACTIVE'), "
+			+ "(913, 1, 813, 'SPECIFIC', '2024-01-04', 'ACTIVE'), "
+			+ "(914, 1, 814, 'SPECIFIC', '2024-01-05', 'ACTIVE'), "
+			+ "(915, 1, 815, 'SPECIFIC', '2024-01-06', 'ACTIVE'), "
+			+ "(916, 1, 816, 'SPECIFIC', '2024-01-07', 'ACTIVE')";
+
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -102,6 +131,12 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 	private ResultActions performGet(String authToken, long employeeId) throws Exception {
 		return mvc.perform(get(ENDPOINT + "/employee/" + employeeId).accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performGetPaged(String authToken, long employeeId, int page, int size) throws Exception {
+		return mvc.perform(get(ENDPOINT + "/employee/" + employeeId + "?page=" + page + "&size=" + size)
+			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
@@ -250,6 +285,10 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performUnassign(leaveAdminToken(), unassignBody(1, 500)).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].policyId").value(500))
+				.andExpect(jsonPath("$.results[0].status").value("ENDED"));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
@@ -311,6 +350,26 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}
 
+		@Test
+		@DisplayName("page and size drive the returned items and the PageDto metadata")
+		@Sql(statements = { SEED_PAGINATION_TYPES, SEED_PAGINATION_POLICIES, SEED_PAGINATION_ASSIGNMENTS })
+		void get_Paginated_DrivesItemsAndMetadata() throws Exception {
+			// First page: 6 of the 7 active assignments.
+			performGetPaged(leaveAdminToken(), 1, 0, 6).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(6)))
+				.andExpect(jsonPath("$.results[0].totalItems").value(7))
+				.andExpect(jsonPath("$.results[0].totalPages").value(2))
+				.andExpect(jsonPath("$.results[0].currentPage").value(0));
+
+			// Second page: the remaining 1.
+			performGetPaged(leaveAdminToken(), 1, 1, 6).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].totalItems").value(7))
+				.andExpect(jsonPath("$.results[0].totalPages").value(2))
+				.andExpect(jsonPath("$.results[0].currentPage").value(1));
+		}
+
 	}
 
 	@Nested
@@ -349,14 +408,19 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
 				.andExpect(jsonPath("$.results[0].items[*].policyId", containsInAnyOrder(501, 600)));
 
-			// 6. Unassign 501 - only the leave type 200 assignment remains.
+			// 6. Unassign 501 - it is returned ended; only the leave type 200 assignment
+			// remains active.
 			performUnassign(token, unassignBody(1, 501)).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].policyId").value(501))
+				.andExpect(jsonPath("$.results[0].status").value("ENDED"));
+			performGet(token, 1).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].items[0].policyId").value(600));
 
 			// 7. Unassign the last one - back to empty.
 			performUnassign(token, unassignBody(1, 600)).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].policyId").value(600))
+				.andExpect(jsonPath("$.results[0].status").value("ENDED"));
 
 			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results[0].items", hasSize(0)));
 		}

@@ -107,8 +107,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
 		log.info("unassignLeavePolicy: execution ended");
-		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId(),
-				new EmployeeLeavePolicyFilterDto());
+		return new ResponseEntityDto(false,
+				leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeEmployeeLeavePolicy));
 	}
 
 	@Override

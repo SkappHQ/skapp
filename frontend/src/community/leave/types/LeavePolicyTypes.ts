@@ -96,6 +96,7 @@ export interface GetLeavePoliciesInfiniteArgs {
   searchKeyword: string;
   leaveTypeId: string;
   size: number;
+  enabled?: boolean;
 }
 
 export interface GetLeavePoliciesParams {

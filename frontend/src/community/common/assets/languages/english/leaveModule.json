@@ -359,6 +359,7 @@
     "menuUnassign": "Unassign",
     "leavesTakenLabel": "{{taken}} / {{total}} days taken",
     "emptyStateTitle": "No policies assigned yet. Click Assign Policy to get started.",
+    "errorStateTitle": "Couldn't load leave policies. Please try again.",
     "assignModal": {
       "title": "Assign Leave Policy",
       "policyLabel": "Policy",

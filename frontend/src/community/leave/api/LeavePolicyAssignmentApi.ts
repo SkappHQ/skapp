@@ -9,7 +9,10 @@ import { AxiosError, AxiosResponse } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { leavePolicyAssignmentEndPoints } from "~community/leave/api/utils/ApiEndpoints";
-import { leavePolicyAssignmentQueryKeys } from "~community/leave/api/utils/QueryKeys";
+import {
+  leaveAnalyticsQueryKeys,
+  leavePolicyAssignmentQueryKeys
+} from "~community/leave/api/utils/QueryKeys";
 import {
   AssignLeavePolicyPayload,
   EmployeeLeavePoliciesPage,
@@ -58,6 +61,7 @@ const assignLeavePolicy = (
   );
 
 export const useAssignLeavePolicy = (
+  employeeId: number,
   onSuccess: () => void,
   onError: (error: AxiosError) => void
 ): UseMutationResult<
@@ -72,6 +76,12 @@ export const useAssignLeavePolicy = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey:
+          leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS(
+            employeeId
+          )
       });
       onSuccess();
     },
@@ -88,6 +98,7 @@ const unassignLeavePolicy = (
   );
 
 export const useUnassignLeavePolicy = (
+  employeeId: number,
   onSuccess: () => void,
   onError: (error: AxiosError) => void
 ): UseMutationResult<
@@ -102,6 +113,12 @@ export const useUnassignLeavePolicy = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey:
+          leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS(
+            employeeId
+          )
       });
       onSuccess();
     },
