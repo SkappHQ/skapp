@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
+import com.skapp.community.common.type.CriteriaBuilderSqlFunction;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
@@ -13,6 +14,7 @@ import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.ManagerType;
+import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -36,6 +38,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeRepository;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.community.peopleplanner.type.EmployeeSort;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
@@ -1629,6 +1632,82 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		update.where(cb.equal(root.get(Employee_.employeeId), employeeId));
 
 		entityManager.createQuery(update).executeUpdate();
+	}
+
+	@Override
+	public List<Employee> findEmployeesWithBirthdayOn(LocalDate date, Long currentEmployeeId,
+			BirthdayNotificationScope scope) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Employee> criteriaQuery = cb.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isTrue(root.get(Employee_.user).get(User_.isActive)));
+		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(cb, roleJoin));
+
+		predicates.add(cb.isNotNull(personalInfoJoin.get(EmployeePersonalInfo_.birthDate)));
+		predicates.add(buildBirthdayOnDatePredicate(cb, personalInfoJoin, date));
+		predicates.add(buildBirthdayScopePredicate(cb, criteriaQuery, root, currentEmployeeId, scope));
+
+		criteriaQuery.select(root)
+			.where(predicates.toArray(new Predicate[0]))
+			.distinct(true)
+			.orderBy(cb.asc(cb.lower(root.get(Employee_.firstName))), cb.asc(cb.lower(root.get(Employee_.lastName))));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	private Predicate buildBirthdayOnDatePredicate(CriteriaBuilder cb,
+			Join<Employee, EmployeePersonalInfo> personalInfoJoin, LocalDate date) {
+		Expression<Integer> month = cb.function(CriteriaBuilderSqlFunction.MONTH.getFunctionName(), Integer.class,
+				personalInfoJoin.get(EmployeePersonalInfo_.birthDate));
+		Expression<Integer> day = cb.function(CriteriaBuilderSqlFunction.DAY.getFunctionName(), Integer.class,
+				personalInfoJoin.get(EmployeePersonalInfo_.birthDate));
+
+		Predicate onDate = cb.and(cb.equal(month, date.getMonthValue()), cb.equal(day, date.getDayOfMonth()));
+
+		boolean isFallbackForLeapBirthday = date.getMonthValue() == PeopleConstants.FEBRUARY_MONTH_VALUE
+				&& date.getDayOfMonth() == PeopleConstants.SHORT_FEBRUARY_LAST_DAY && !date.isLeapYear();
+
+		if (isFallbackForLeapBirthday) {
+			Predicate onLeapDay = cb.and(cb.equal(month, PeopleConstants.FEBRUARY_MONTH_VALUE),
+					cb.equal(day, PeopleConstants.LEAP_DAY_OF_FEBRUARY));
+			return cb.or(onDate, onLeapDay);
+		}
+
+		return onDate;
+	}
+
+	private Predicate buildBirthdayScopePredicate(CriteriaBuilder cb, CriteriaQuery<Employee> criteriaQuery,
+			Root<Employee> root, Long currentEmployeeId, BirthdayNotificationScope scope) {
+		Predicate selfPredicate = cb.equal(root.get(Employee_.employeeId), currentEmployeeId);
+
+		if (scope == BirthdayNotificationScope.ORGANIZATION) {
+			return cb.conjunction();
+		}
+
+		if (scope == BirthdayNotificationScope.SELF) {
+			return selfPredicate;
+		}
+
+		Subquery<Long> currentEmployeeTeamIdsSubquery = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> currentEmployeeTeamRoot = currentEmployeeTeamIdsSubquery.from(EmployeeTeam.class);
+		currentEmployeeTeamIdsSubquery.select(currentEmployeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
+			.where(cb.equal(currentEmployeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
+					currentEmployeeId), cb.isTrue(currentEmployeeTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
+
+		Subquery<Long> sharedTeamSubquery = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> sharedTeamRoot = sharedTeamSubquery.from(EmployeeTeam.class);
+		sharedTeamSubquery.select(cb.literal(1L))
+			.where(cb.equal(sharedTeamRoot.get(EmployeeTeam_.employee), root),
+					sharedTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(currentEmployeeTeamIdsSubquery));
+
+		return cb.or(selfPredicate, cb.exists(sharedTeamSubquery));
 	}
 
 }
