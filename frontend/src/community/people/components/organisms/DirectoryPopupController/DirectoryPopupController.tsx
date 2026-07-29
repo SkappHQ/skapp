@@ -15,7 +15,7 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
-import ConnectGoogleWorkspaceModal from "~enterprise/people/components/molecules/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
+import ConnectGoogleWorkspaceModal from "~enterprise/people/components/organisms/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
 import UploadTypeSelectModal from "~enterprise/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
 
 const DirectoryPopupController = () => {
