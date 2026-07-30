@@ -298,7 +298,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		});
 
 		leaveEntitlementDao.saveAll(affectedEntitlements.values());
-		leaveRequestEntitlementDao.deleteAllInBatch(leaveRequestEntitlements);
 	}
 
 	private String buildLeavePolicyConfigValue() {
