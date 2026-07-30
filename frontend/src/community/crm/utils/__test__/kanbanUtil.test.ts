@@ -25,7 +25,7 @@ import {
   replaceStagesInStageMap,
   resolveBoardDeal,
   updateDealInStageMap
-} from "./kanbanUtil";
+} from "../kanbanUtil";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
