@@ -26,6 +26,7 @@ export interface DealStageLaneProps {
   searchKeyword?: string;
   onDealClick: (dealId: number) => void;
   onAddDeal: (stageId: number) => void;
+  isAddDealDisabled?: boolean;
 }
 
 const DealStageLane: FC<DealStageLaneProps> = ({
@@ -38,7 +39,8 @@ const DealStageLane: FC<DealStageLaneProps> = ({
   isOver = false,
   searchKeyword,
   onDealClick,
-  onAddDeal
+  onAddDeal,
+  isAddDealDisabled = false
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
 
@@ -98,6 +100,8 @@ const DealStageLane: FC<DealStageLaneProps> = ({
               icon={<PlusIcon />}
               iconPosition="end"
               onClick={() => onAddDeal(stage.id)}
+              disabled={isAddDealDisabled}
+              isLoading={isAddDealDisabled}
             >
               {translateText(["addDealBtn"])}
             </ButtonV2>

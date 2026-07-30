@@ -671,7 +671,6 @@ public class RolesServiceImpl implements RolesService {
 		if (moduleType == ModuleType.CRM) {
 			roles.add(RoleLevel.SALES_MANAGER.getDisplayName());
 			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
-			roles.add(RoleLevel.NONE.getDisplayName());
 			return roles;
 		}
 		roles.add(RoleLevel.MANAGER.getDisplayName());

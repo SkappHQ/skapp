@@ -50,7 +50,7 @@
     "noOfSupervisorsExceedingToastMessageDescription": "Only 3 supervisors are allowed per team.",
     "emptySearchResult": {
       "title": "No results found",
-      "description": "No results found for the requested search query. Please retry."
+      "description": "We couldn't find any matches for your search. Please try using a different term."
     },
     "emptyScreen": {
       "title": "No teams available",

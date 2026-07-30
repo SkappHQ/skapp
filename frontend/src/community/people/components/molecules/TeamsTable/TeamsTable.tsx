@@ -1,4 +1,4 @@
-import { Box, Stack } from "@mui/material";
+import { Box } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
@@ -75,21 +75,20 @@ const TeamsTable: FC<Props> = ({
         teamId: teamDetails?.teamId,
         teamName: teamDetails?.teamName,
         supervisors:
-          (teamDetails?.supervisors?.length < 3 ? (
-            teamDetails?.supervisors?.map((supervisor: EmployeeType) => {
-              return (
-                <Stack key={supervisor?.employeeId} width="100%">
+          teamDetails?.supervisors?.length < 3 ? (
+            <div className="flex w-full items-center gap-2">
+              {teamDetails?.supervisors?.map((supervisor: EmployeeType) => (
+                <div key={supervisor?.employeeId} className="min-w-0 flex-1">
                   <AvatarChip
-                    key={supervisor?.employeeId}
                     firstName={supervisor?.firstName}
                     lastName={supervisor?.lastName}
                     avatarUrl={supervisor?.authPic}
                     isResponsiveLayout={true}
                     chipStyles={classes.avatarChip}
                   />
-                </Stack>
-              );
-            })
+                </div>
+              ))}
+            </div>
           ) : (
             <AvatarGroup
               componentStyles={classes.avatarGroup}
@@ -107,14 +106,13 @@ const TeamsTable: FC<Props> = ({
               }
               max={6}
             />
-          )) || [],
+          ),
         teamMembers:
           (teamDetails?.teamMembers?.length < 2 ? (
             teamDetails?.teamMembers?.map((teamMember: EmployeeType) => {
               return (
                 <Box key={teamMember?.employeeId} width="100%">
                   <AvatarChip
-                    key={teamMember?.employeeId}
                     firstName={teamMember?.firstName}
                     lastName={teamMember?.lastName}
                     avatarUrl={teamMember?.authPic}
@@ -243,15 +241,14 @@ const TeamsTable: FC<Props> = ({
         }}
         tableBody={{
           emptyState: {
+            isSearching: Boolean(teamSearchTerm),
+            noSearchResults: {
+              title: translateText(["emptySearchResult", "title"]),
+              description: translateText(["emptySearchResult", "description"])
+            },
             noData: {
-              title:
-                allTeams && allTeams?.length > 0
-                  ? translateText(["emptyScreen", "title"])
-                  : translateText(["emptySearchResult", "title"]),
-              description:
-                allTeams && allTeams?.length > 0
-                  ? translateText(["emptyScreen", "description"])
-                  : translateText(["emptySearchResult", "description"]),
+              title: translateText(["emptyScreen", "title"]),
+              description: translateText(["emptyScreen", "description"]),
               button: addTeamsButton
             }
           },

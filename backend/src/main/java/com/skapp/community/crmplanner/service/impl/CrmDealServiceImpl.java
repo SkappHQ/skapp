@@ -22,7 +22,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmNameExistsResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -88,7 +88,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmValidations.validateDealName(name);
 		boolean exists = crmDealDao.existsByNameAndIsDeletedFalse(name);
 
-		CrmNameExistsResponseDto responseDto = new CrmNameExistsResponseDto();
+		CrmExistsResponseDto responseDto = new CrmExistsResponseDto();
 		responseDto.setIsExists(exists);
 
 		log.info("checkDealNameExists: execution ended");
@@ -158,7 +158,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
 		log.info("getDeals: execution started");
 
-		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto,
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
+		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
 		List<CrmDealResponseDto> deals = dealsPage.getContent().stream().map(this::toDealResponseDto).toList();
@@ -193,12 +196,16 @@ public class CrmDealServiceImpl implements CrmDealService {
 		int page = (requestedPage != null && requestedPage >= 0 && uniqueStageIds.size() == 1) ? requestedPage : 0;
 		PageRequest pageRequest = PageRequest.of(page, limit);
 
-		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto);
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
+		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto, ownerId);
 
 		Map<Long, Page<CrmDeal>> dealPagesByStage = new LinkedHashMap<>();
 		for (Long stageId : uniqueStageIds) {
 			long totalCount = stageCounts.getOrDefault(stageId, 0L);
-			dealPagesByStage.put(stageId, crmDealDao.findDealsByStageId(stageId, requestDto, pageRequest, totalCount));
+			dealPagesByStage.put(stageId,
+					crmDealDao.findDealsByStageId(stageId, requestDto, ownerId, pageRequest, totalCount));
 		}
 
 		List<Long> allDealIds = dealPagesByStage.values()
@@ -355,6 +362,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
 		if (deal == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+		}
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 		}
 
 		log.info("getDealById: execution ended", id);

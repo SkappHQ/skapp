@@ -622,6 +622,8 @@ CREATE TABLE IF NOT EXISTS `crm_contact`
     `last_modified_by`   text             DEFAULT NULL,
     `last_modified_date` datetime(6)      DEFAULT NULL,
     `name`               text    NOT NULL,
+    `first_name`         text             DEFAULT NULL,
+    `last_name`          text             DEFAULT NULL,
     `email`              text    NOT NULL,
     `contact_number`     text             DEFAULT NULL,
     `last_contact_at`    datetime(6)      DEFAULT NULL,

@@ -13,14 +13,14 @@ import java.util.Map;
 
 public interface CrmDealRepository {
 
-	Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable);
+	Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable);
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
-	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable,
-			long preComputedTotal);
+	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Long ownerId,
+			Pageable pageable, long preComputedTotal);
 
-	Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto);
+	Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto, Long ownerId);
 
 	String findMaxOrderIndexByStageId(Long stageId);
 

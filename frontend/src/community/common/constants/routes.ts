@@ -50,6 +50,8 @@ const ROUTES = {
     ADD_EDIT_TYPES: "/leave/types/add-edit",
     LEAVE_TYPES: "/leave/types",
     ADD_EDIT_LEAVE_TYPES: (slug: string) => `/leave/types/${slug}`,
+    LEAVE_POLICIES: "/leave/policies",
+    CREATE_LEAVE_POLICY: "/leave/policies/create",
     TEAM_TIME_SHEET_ANALYTICS: `/leave/analytics`,
     CARRY_FORWARD: "/leave/carry-forward-balances"
   },
@@ -182,3 +184,5 @@ export const employeeRestrictedRoutes = [
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+
+export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];

@@ -1,9 +1,12 @@
 package com.skapp.community.leaveplanner.mapper;
 
 import com.skapp.community.leaveplanner.model.CarryForwardInfo;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
+import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveType;
+import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.CarryForwardDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.CarryForwardEntitlementDto;
 import com.skapp.community.leaveplanner.payload.CustomEntitlementDto;
@@ -21,11 +24,14 @@ import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponse
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeRequestDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveEntitlementReportExportDto;
+import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestManagerResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -146,5 +152,30 @@ public interface LeaveMapper {
 	LeaveTypeBasicDetailsResponseDto leaveTypeToLeaveTypeBasicDetailsResponseDto(LeaveType leaveType);
 
 	LeaveRequestManagerResponseDto leaveRequestToLeaveRequestManagerResponseDto(LeaveRequest leaveRequest);
+
+	@Mapping(target = "leaveTypeId", source = "leaveType.id")
+	@Mapping(target = "leaveTypeName", source = "leaveType.name")
+	@Mapping(target = "leaveTypeEmoji", source = "leaveType.emojiCode")
+	LeavePolicyResponseDto leavePolicyToLeavePolicyResponseDto(LeavePolicy leavePolicy);
+
+	List<LeavePolicyResponseDto> leavePolicyListToLeavePolicyResponseDtoList(List<LeavePolicy> leavePolicies);
+
+	@Mapping(target = "employeeId", source = "employee.employeeId")
+	@Mapping(target = "policyId", source = "policy.id")
+	@Mapping(target = "policyName", source = "policy.name")
+	@Mapping(target = "policyType", source = "policy.policyType")
+	@Mapping(target = "leaveTypeId", source = "policy.leaveType.id")
+	@Mapping(target = "leaveTypeName", source = "policy.leaveType.name")
+	@Mapping(target = "leaveTypeEmojiCode", source = "policy.leaveType.emojiCode")
+	EmployeeLeavePolicyResponseDto employeeLeavePolicyToEmployeeLeavePolicyResponseDto(
+			EmployeeLeavePolicy employeeLeavePolicy);
+
+	List<EmployeeLeavePolicyResponseDto> employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(
+			List<EmployeeLeavePolicy> employeeLeavePolicies);
+
+	PolicyLeaveTypeResponseDto policyLeaveTypeToPolicyLeaveTypeResponseDto(PolicyLeaveType policyLeaveType);
+
+	List<PolicyLeaveTypeResponseDto> policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(
+			List<PolicyLeaveType> policyLeaveTypes);
 
 }

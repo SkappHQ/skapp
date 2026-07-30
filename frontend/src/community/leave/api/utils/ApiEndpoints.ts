@@ -34,6 +34,18 @@ export const leaveTypeEndPoints = {
   EDIT_LEAVE_TYPE: (id: number) => `${moduleAPIPath.LEAVE}/types/${id}`
 };
 
+export const leavePolicyEndPoints = {
+  ADD_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policies`,
+  UPDATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}`,
+  DEACTIVATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}/deactivate`,
+  ACTIVATE_LEAVE_POLICY: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policies/${id}/activate`,
+  GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
+  GET_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies`
+};
+
 export const leaveEntitlementEndPoints = {
   GET_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement`,
   ADD_BULK_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement/bulk`,

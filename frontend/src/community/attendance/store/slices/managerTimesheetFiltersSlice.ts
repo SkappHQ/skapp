@@ -17,7 +17,6 @@ const managerTimesheetFiltersSlice = (
     status: []
   },
   timesheetRequestSelectedDates: [],
-  selectedTimesheetFilterLabels: [],
   timesheetRequestParams: {
     status: TimeSheetRequestStates.PENDING,
     startDate: "",
@@ -68,37 +67,11 @@ const managerTimesheetFiltersSlice = (
       timesheetRequestsFilters: {
         status: [] as string[]
       },
-      selectedTimesheetFilterLabels: [] as string[],
       timesheetRequestParams: {
         ...state.timesheetRequestParams,
         status: "",
         page: 1
       }
-    }));
-  },
-
-  resetTimesheetRequestParamsToDefault: () => {
-    set((state) => ({
-      timesheetRequestsFilters: {
-        status: []
-      },
-      selectedTimesheetFilterLabels: [],
-      timesheetRequestSelectedDates: [],
-      timesheetRequestParams: {
-        ...state.timesheetRequestParams,
-        status: "",
-        startDate: "",
-        endDate: "",
-        page: 1,
-        size: 4
-      }
-    }));
-  },
-
-  setTimesheetSelectedFilterLabels: (value: string[]) => {
-    set((state) => ({
-      ...state,
-      selectedTimesheetFilterLabels: value
     }));
   },
 

@@ -4,6 +4,7 @@ import { ReactNode, useEffect, useMemo, useState } from "react";
 import { IsAProtectedUrlWithDrawer } from "~community/auth/utils/authUtils";
 import SkipToContentPopup from "~community/common/components/atoms/SkipToContentPopup/SkipToContentPopup";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
+import CommonModalController from "~community/common/components/organisms/CommonModalController/CommonModalController";
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
@@ -104,7 +105,12 @@ const BaseLayout = ({ children }: Props) => {
     isProtectedRouteWithDrawer
   ]);
 
-  return renderComponent;
+  return (
+    <>
+      {renderComponent}
+      <CommonModalController />
+    </>
+  );
 };
 
 export default BaseLayout;

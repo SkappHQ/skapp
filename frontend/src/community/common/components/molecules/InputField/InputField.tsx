@@ -192,6 +192,7 @@ const InputField = ({
           component="label"
           sx={mergeSx([
             {
+              fontWeight: 400,
               color: isDisabled
                 ? theme.palette.grey[700]
                 : error
@@ -201,7 +202,7 @@ const InputField = ({
             labelStyles
           ])}
         >
-          {label}{" "}
+          {label}
           {required && showAsterisk && !isDisabled && (
             <Typography
               component="span"
