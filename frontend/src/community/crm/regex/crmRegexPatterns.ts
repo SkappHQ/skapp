@@ -7,5 +7,5 @@ export function isValidCompanyWebsiteUrl(): RegExp {
 }
 
 export function isContactNameValid(): RegExp {
-  return /^[\p{L} \-.']+$/u;
+  return /^[\p{L} \-.,']+$/u;
 }

@@ -107,9 +107,15 @@ describe("mapContactToMetricItems", () => {
 
   it("should include a RED chip with interpolated count when overdueTasksCount > 0", () => {
     const contact = { ...baseContact, overdueTasksCount: 2 };
-    const translateWithTemplate = (keys: string[]): string =>
+    const translateWithTemplate = (
+      keys: string[],
+      interpolationValues?: Record<string, unknown>
+    ): string =>
       keys.join(".") === "metrics.overdueChipLabel"
-        ? "{{count}} Overdue"
+        ? "{{count}} Overdue".replace(
+            "{{count}}",
+            String(interpolationValues?.count)
+          )
         : keys.join(".");
     const result = mapContactToMetricItems(contact, translateWithTemplate);
 
