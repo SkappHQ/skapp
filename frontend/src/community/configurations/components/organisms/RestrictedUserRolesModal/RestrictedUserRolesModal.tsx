@@ -15,6 +15,10 @@ import {
   UserRoleRestrictionsType,
   UserRoleRestrictionsUpdateType
 } from "~community/configurations/types/UserRolesTypes";
+import {
+  hasSelectionChanged,
+  toggleRoleLevel
+} from "~community/configurations/utils/userRoles/roleRestrictionUtils";
 
 import styles from "./styles";
 
@@ -29,7 +33,7 @@ const ROLE_LEVEL_LABEL_KEYS: Record<RoleLevel, string> = {
   [RoleLevel.SALES_REPRESENTATIVE]: "salesRepresentativeRoleLabel"
 };
 
-/** Role levels the backend reports through the deprecated isManager flag. and will be removed in the future */
+/** Role levels the backend reports through the deprecated isManager flag, and will be removed in the future */
 const SECONDARY_ROLE_LEVELS = new Set<RoleLevel>([
   RoleLevel.MANAGER,
   RoleLevel.SENDER,
@@ -99,7 +103,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
     updateUserRoleRestrictions(payload);
   };
 
-  const { values, dirty, setFieldValue, resetForm } = useFormik<{
+  const { values, setFieldValue, resetForm } = useFormik<{
     selected: RoleLevel[];
   }>({
     initialValues: {
@@ -111,12 +115,13 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
 
   const restrictableRoles = initialData?.restrictableRoles ?? [];
 
-  const toggleRoleLevel = (roleLevel: RoleLevel) => {
-    const selected = values.selected.includes(roleLevel)
-      ? values.selected.filter((selectedRole) => selectedRole !== roleLevel)
-      : [...values.selected, roleLevel];
+  const isSelectionChanged = hasSelectionChanged(
+    values.selected,
+    initialData?.restrictions ?? []
+  );
 
-    setFieldValue("selected", selected);
+  const onRoleLevelChange = (roleLevel: RoleLevel) => {
+    setFieldValue("selected", toggleRoleLevel(values.selected, roleLevel));
   };
 
   return (
@@ -143,7 +148,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
                 label={translateText([ROLE_LEVEL_LABEL_KEYS[roleLevel]])}
                 name={roleLevel}
                 checked={values.selected.includes(roleLevel)}
-                onChange={() => toggleRoleLevel(roleLevel)}
+                onChange={() => onRoleLevelChange(roleLevel)}
               />
             ))}
           </Stack>
@@ -159,7 +164,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             <ButtonV2
               variant={"primary"}
               onClick={handleSubmit}
-              disabled={!dirty}
+              disabled={!isSelectionChanged}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >
