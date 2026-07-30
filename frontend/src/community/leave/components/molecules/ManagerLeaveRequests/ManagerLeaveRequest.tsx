@@ -1,3 +1,4 @@
+import { Box } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
@@ -32,12 +33,6 @@ import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/acc
 
 const chipClassName =
   "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
-
-const nameChipStyles = {
-  width: "fit-content",
-  maxWidth: "15.625rem",
-  backgroundColor: "var(--color-tertiary-background)"
-};
 
 interface Props {
   employeeLeaveRequests: LeaveRequestItemsType[];
@@ -136,13 +131,23 @@ const ManagerLeaveRequest: FC<Props> = ({
         employeeLeaveRequest
       ),
       name: (
-        <AvatarChip
-          firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
-          lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
-          avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
-          isResponsiveLayout
-          chipStyles={nameChipStyles}
-        />
+        <Box
+          role="group"
+          aria-label={`${employeeLeaveRequest?.employee?.firstName} ${employeeLeaveRequest?.employee?.lastName}`}
+        >
+          <Box aria-hidden={true}>
+            <AvatarChip
+              firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
+              lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
+              avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
+              isResponsiveLayout
+              chipStyles={{
+                maxWidth: "15.625rem",
+                backgroundColor: "var(--color-tertiary-background)"
+              }}
+            />
+          </Box>
+        </Box>
       ),
       duration: (
         <RequestDates

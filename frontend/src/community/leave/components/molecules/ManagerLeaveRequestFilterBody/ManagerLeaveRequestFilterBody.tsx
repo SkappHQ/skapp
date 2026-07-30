@@ -102,9 +102,9 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
       />
       <SelectableItemList
         title={translateText(["leaveTypeTitle"])}
-        items={leaveTypeOptions.map(({ id, name }) => ({
-          label: name,
-          value: id
+        items={leaveTypeOptions.map((option) => ({
+          label: option.name,
+          value: option.id
         }))}
         selectedValues={selectedTypes}
         onChipClick={(leaveTypeId) =>
