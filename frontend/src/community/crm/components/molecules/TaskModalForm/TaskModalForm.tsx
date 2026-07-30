@@ -59,9 +59,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     submitForm
   } = formik;
 
-  const clearError = (field: keyof CrmTaskFormTypes) =>
-    setFieldError(field, undefined);
-
   const {
     setIsTaskModalOpen,
     selectedTaskId,
@@ -188,6 +185,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
       })) ?? [],
     [dealLookupData]
   );
+
+  const clearError = (field: keyof CrmTaskFormTypes) =>
+    setFieldError(field, undefined);
 
   const handleTypeSelect = (value: string) => {
     setFieldValue("type", getCategoryById(Number(value)) ?? null);
