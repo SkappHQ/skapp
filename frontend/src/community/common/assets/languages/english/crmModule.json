@@ -277,7 +277,7 @@
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "filterButtonAriaLabel": "Filter companies",
-      "search": "Search company",
+      "search": "Search by company name",
       "infiniteScrollLoadingMessage": "Loading companies...",
       "closedDealsLabel": "Deals closed",
       "overdueLabel": "overdue",
