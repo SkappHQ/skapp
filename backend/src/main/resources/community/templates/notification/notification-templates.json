@@ -320,11 +320,25 @@
     ],
 
     "people_sync": [
-      { "id": "people-module-external-sync-completed", "title": "Google Workspace Sync", "message": "{{message}}" },
       {
-        "id": "people-module-google-workspace-user-removed",
+        "id": "people-module-google-workspace-sync-pending-review",
+        "title": "Google Workspace Sync",
+        "message": "A new Google Workspace sync has completed and users are pending your review"
+      },
+      {
+        "id": "people-module-google-workspace-sync-failed",
+        "title": "Google Workspace Sync Failed",
+        "message": "Google Workspace sync failed: {{error}}"
+      },
+      {
+        "id": "people-module-google-workspace-user-removed-singular",
         "title": "Google Workspace User Removed",
-        "message": "{{message}}"
+        "message": "{{removedEmails}} was removed from Google Workspace and is awaiting your review to remove from Skapp"
+      },
+      {
+        "id": "people-module-google-workspace-users-removed-plural",
+        "title": "Google Workspace Users Removed",
+        "message": "{{removedCount}} users ({{removedEmails}}) were removed from Google Workspace and are awaiting your review to remove from Skapp"
       }
     ]
   }
