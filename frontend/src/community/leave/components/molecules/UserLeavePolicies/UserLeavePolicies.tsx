@@ -1,19 +1,17 @@
-import {
-  ButtonV2,
-  Card,
-  EmptyDataView,
-  KebabMenu
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, EmptyDataView } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetEmployeeLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyModal from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyModal";
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
+import LeavePolicyCard, {
+  LeaveUsage
+} from "~community/leave/components/molecules/UserLeavePolicies/LeavePolicyCard";
+import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
@@ -24,17 +22,7 @@ interface Props {
   employeeName?: string;
 }
 
-interface LeaveUsage {
-  taken: number;
-  total: number;
-}
-
 const POLICIES_PER_PAGE = 6;
-
-const SKELETON_CARD_KEYS = Array.from(
-  { length: POLICIES_PER_PAGE },
-  (_, index) => `policy-skeleton-${index}`
-);
 
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -98,16 +86,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
         )}
       </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {SKELETON_CARD_KEYS.map((key) => (
-            <div
-              key={key}
-              className="h-20 animate-pulse rounded-lg bg-tertiary-background"
-            />
-          ))}
-        </div>
-      )}
+      {isLoading && <UserLeavePoliciesSkeleton />}
 
       {isError && (
         <EmptyDataView
@@ -126,63 +105,19 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
 
       {hasPolicies && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {policies.map((policy) => {
-            const usage = usageByLeaveType.get(policy.leaveTypeName);
-            return (
-              <Card
-                key={policy.id}
-                className="flex flex-row items-center justify-between gap-4 bg-white p-6!"
-              >
-                <div className="flex min-w-0 flex-row items-center gap-6">
-                  {usage && (
-                    <div
-                      className="flex shrink-0 items-baseline gap-0.5"
-                      aria-label={translateText(["leavesTakenLabel"], {
-                        taken: usage.taken,
-                        total: usage.total
-                      })}
-                    >
-                      <span className="text-2xl text-black">
-                        {formatDays(usage.taken)}
-                      </span>
-                      <span className="body2 text-secondary-text">
-                        /{formatDays(usage.total)}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex min-w-0 flex-col">
-                    <span className="body1 inline-flex items-center gap-2 truncate text-black">
-                      {policy.leaveTypeEmojiCode && (
-                        <span role="img" aria-hidden="true">
-                          {getEmoji(policy.leaveTypeEmojiCode)}
-                        </span>
-                      )}
-                      {policy.leaveTypeName}
-                    </span>
-                    <span className="body2 truncate text-secondary-text">
-                      {policy.policyName}
-                    </span>
-                  </div>
-                </div>
-                {canManagePolicies && (
-                  <KebabMenu
-                    id={`employee-leave-policy-kebab-menu-${policy.id}`}
-                    isOpen={openKebabMenuId === policy.id}
-                    onToggle={(isOpen: boolean) =>
-                      setOpenKebabMenuId(isOpen ? policy.id : null)
-                    }
-                    menuItems={[
-                      {
-                        id: `employee-leave-policy-unassign-${policy.id}`,
-                        label: translateText(["menuUnassign"]),
-                        onClick: () => setUnassigningPolicy(policy)
-                      }
-                    ]}
-                  />
-                )}
-              </Card>
-            );
-          })}
+          {policies.map((policy) => (
+            <LeavePolicyCard
+              key={policy.id}
+              policy={policy}
+              usage={usageByLeaveType.get(policy.leaveTypeName)}
+              canManagePolicies={canManagePolicies}
+              isKebabMenuOpen={openKebabMenuId === policy.id}
+              onKebabToggle={(isOpen: boolean) =>
+                setOpenKebabMenuId(isOpen ? policy.id : null)
+              }
+              onUnassign={() => setUnassigningPolicy(policy)}
+            />
+          ))}
         </div>
       )}
 

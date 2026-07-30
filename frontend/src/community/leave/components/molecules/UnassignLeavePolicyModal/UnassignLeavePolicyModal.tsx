@@ -47,7 +47,7 @@ const UnassignLeavePolicyModal: FC<Props> = ({
   };
 
   const { mutate: unassignLeavePolicy, isPending } = useUnassignLeavePolicy(
-    employeeLeavePolicy?.employeeId ?? 0,
+    employeeLeavePolicy?.employeeId,
     onUnassignSuccess,
     onUnassignError
   );
