@@ -299,7 +299,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
               mode="single"
               selected={parsedDueDate}
               onSelect={handleDueDateSelect}
-              popperProps={{ position: "bottom-start", isFlip: true }}
             >
               <div>
                 <InputField
