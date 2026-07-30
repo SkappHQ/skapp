@@ -1,23 +1,18 @@
 import { useMemo } from "react";
 
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
-import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 import { LeaveAllocationDataTypes } from "~community/leave/types/MyRequests";
+import {
+  AppliedLeaveRequestFilters,
+  LeaveTypeFilterOption
+} from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
 
-export interface LeaveTypeFilterOption {
-  id: string;
-  name: string;
-}
-
-interface AppliedFilters {
-  status: string[];
-  types: string[];
-}
-
-export const useMyLeaveRequestFilterState = () => {
+export const useMyLeaveRequestFilters = () => {
   const {
     selectedYear,
+    leaveRequestsFilter,
     setLeaveRequestParams,
     setLeaveRequestsFilter,
     resetLeaveRequestParams
@@ -34,13 +29,17 @@ export const useMyLeaveRequestFilterState = () => {
     [leaveAllocations]
   );
 
-  const { appliedStatus, appliedTypes } = useAppliedLeaveRequestFilters();
+  const appliedStatus = leaveRequestsFilter.status as LeaveStatusTypes[];
+  const appliedTypes = leaveRequestsFilter.type;
 
-  const applyFilters = ({ status, types }: AppliedFilters) => {
+  const applyFilters = ({
+    status,
+    leaveTypesIds
+  }: AppliedLeaveRequestFilters) => {
     setLeaveRequestParams("status", status);
-    setLeaveRequestParams("leaveType", types);
+    setLeaveRequestParams("leaveType", leaveTypesIds);
     setLeaveRequestsFilter("status", status);
-    setLeaveRequestsFilter("type", types);
+    setLeaveRequestsFilter("type", leaveTypesIds);
   };
 
   return {

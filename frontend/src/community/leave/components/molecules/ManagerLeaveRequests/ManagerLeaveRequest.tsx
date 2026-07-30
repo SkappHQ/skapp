@@ -19,13 +19,14 @@ import {
   getDateForPeriod
 } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
+import RequestDates from "~community/leave/components/molecules/LeaveRequestRow/RequestDates";
 import ManagerLeaveRequestFilterBody from "~community/leave/components/molecules/ManagerLeaveRequestFilterBody/ManagerLeaveRequestFilterBody";
-import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequestItemsType,
   leaveRequestRowDataTypes
 } from "~community/leave/types/LeaveRequestTypes";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 import { requestTypeSelector } from "~community/leave/utils/LeaveRequestFilterActions";
 import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 
@@ -73,8 +74,21 @@ const ManagerLeaveRequest: FC<Props> = ({
     setLeaveRequestData,
     setNewLeaveId,
     newLeaveId,
-    leaveRequestParams
-  } = useLeaveStore((state) => state);
+    leaveRequestParams,
+    leaveRequestsFilter
+  } = useLeaveStore((state) => ({
+    resetLeaveRequestParams: state.resetLeaveRequestParams,
+    leaveRequestFilterOrder: state.leaveRequestFilterOrder,
+    setLeaveRequestParams: state.setLeaveRequestParams,
+    setPagination: state.setPagination,
+    handleLeaveRequestsSort: state.handleLeaveRequestsSort,
+    setIsManagerModal: state.setIsManagerModal,
+    setLeaveRequestData: state.setLeaveRequestData,
+    setNewLeaveId: state.setNewLeaveId,
+    newLeaveId: state.newLeaveId,
+    leaveRequestParams: state.leaveRequestParams,
+    leaveRequestsFilter: state.leaveRequestsFilter
+  }));
 
   const currentPage: number = useLeaveStore(
     (state) => state.leaveRequestParams.page
@@ -86,11 +100,9 @@ const ManagerLeaveRequest: FC<Props> = ({
     DateRange | undefined
   >(undefined);
 
-  const {
-    appliedStatus,
-    appliedTypes,
-    filterCount: appliedFilterCount
-  } = useAppliedLeaveRequestFilters();
+  const appliedStatus = leaveRequestsFilter.status as LeaveStatusTypes[];
+  const appliedTypes = leaveRequestsFilter.type;
+  const appliedFilterCount = appliedStatus.length + appliedTypes.length;
 
   const isDateRangeApplied = Boolean(
     selectedDateRange?.from && selectedDateRange?.to
@@ -133,14 +145,10 @@ const ManagerLeaveRequest: FC<Props> = ({
         />
       ),
       duration: (
-        <div className="flex flex-row items-center gap-2.5">
-          <span className="whitespace-nowrap">
-            {employeeLeaveRequest?.leaveRequestDates}
-          </span>
-          <div className={chipClassName}>
-            {getAsDaysString(employeeLeaveRequest?.durationDays ?? "")}
-          </div>
-        </div>
+        <RequestDates
+          days={getAsDaysString(employeeLeaveRequest?.durationDays ?? "")}
+          dates={employeeLeaveRequest?.leaveRequestDates}
+        />
       ),
       type: (
         <div className={chipClassName}>
@@ -198,9 +206,11 @@ const ManagerLeaveRequest: FC<Props> = ({
     setNewLeaveId(Number(row.id));
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
+  const renderFilterContent = ({
+    close: onClose
+  }: TableViewFilterContentArgs) => (
     <ManagerLeaveRequestFilterBody
-      onClose={close}
+      onClose={onClose}
       selectedDateRange={selectedDateRange}
       onDateRangeChange={setSelectedDateRange}
     />

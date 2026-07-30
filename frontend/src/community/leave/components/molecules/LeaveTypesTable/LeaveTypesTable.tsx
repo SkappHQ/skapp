@@ -48,11 +48,11 @@ const LeaveTypesTable = () => {
       id: "actions",
       label: translateText(["actionsHeader"]),
       width: "6rem",
-      align: "right" as const
+      align: "right"
     }
   ];
 
-  const handleEditLeaveType = (leaveType: LeaveTypeType): void => {
+  const handleEditLeaveType = (leaveType: LeaveTypeType) => (): void => {
     setEditingLeaveType(leaveType);
     router.push(ROUTES.LEAVE.ADD_EDIT_LEAVE_TYPES(LeaveTypeFormTypes.EDIT));
   };
@@ -90,7 +90,7 @@ const LeaveTypesTable = () => {
         actions: (
           <IconButton
             icon={<EditIcon />}
-            onClick={() => handleEditLeaveType(leaveType)}
+            onClick={handleEditLeaveType(leaveType)}
             aria-label={translateText(["editButton.label"], {
               recordName: leaveType?.name
             })}

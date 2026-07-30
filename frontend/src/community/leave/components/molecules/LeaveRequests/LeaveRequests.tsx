@@ -15,7 +15,6 @@ import {
   useGetEmployeeLeaveRequests
 } from "~community/leave/api/MyRequestApi";
 import MyLeaveRequestFilterBody from "~community/leave/components/molecules/MyLeaveRequestFilterBody/MyLeaveRequestFilterBody";
-import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
@@ -37,7 +36,8 @@ const LeaveRequests: FC = () => {
     setIsEmployeeModal,
     setEmployeeLeaveRequestData,
     newLeaveId,
-    setNewLeaveId
+    setNewLeaveId,
+    leaveRequestsFilter
   } = useLeaveStore((state) => state);
 
   const { data: leaveRequests, isLoading } = useGetEmployeeLeaveRequests();
@@ -48,7 +48,8 @@ const LeaveRequests: FC = () => {
     data: leaveData
   } = useGetEmployeeLeaveRequestData(newLeaveId as number);
 
-  const { filterCount } = useAppliedLeaveRequestFilters();
+  const filterCount =
+    leaveRequestsFilter.status.length + leaveRequestsFilter.type.length;
 
   const translateText = useTranslator("leaveModule", "myRequests");
   const translateAria = useTranslator("leaveAria", "myRequests");
@@ -153,7 +154,7 @@ const LeaveRequests: FC = () => {
   };
 
   const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
-    <MyLeaveRequestFilterBody close={close} />
+    <MyLeaveRequestFilterBody onClose={close} />
   );
 
   useEffect(() => {

@@ -11,27 +11,10 @@ import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { clampToCurrentYear } from "~community/common/utils/dateTimeUtils";
 import { useManagerLeaveRequestFilters } from "~community/leave/hooks/useManagerLeaveRequestFilters";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
-
-const leaveStatusFilters: LeaveStatusTypes[] = [
-  LeaveStatusTypes.PENDING,
-  LeaveStatusTypes.APPROVED,
-  LeaveStatusTypes.DENIED,
-  LeaveStatusTypes.CANCELLED,
-  LeaveStatusTypes.REVOKED
-];
-
-const toggleLeaveStatus = (
-  values: LeaveStatusTypes[],
-  value: LeaveStatusTypes
-): LeaveStatusTypes[] =>
-  values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
-
-const toggleLeaveTypeId = (values: string[], value: string): string[] =>
-  values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
+import {
+  leaveStatusFilters,
+  toggleFilterValue
+} from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
 
 interface Props {
   onClose: () => void;
@@ -72,7 +55,7 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
     !dateRange?.to;
 
   const handleApply = () => {
-    applyFilters({ status: selectedStatus, types: selectedTypes });
+    applyFilters({ status: selectedStatus, leaveTypesIds: selectedTypes });
     onDateRangeChange(dateRange);
     onClose();
   };
@@ -113,7 +96,7 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
         selectedValues={selectedStatus}
         onChipClick={(leaveStatus) =>
           setSelectedStatus((previous) =>
-            toggleLeaveStatus(previous, leaveStatus)
+            toggleFilterValue(previous, leaveStatus)
           )
         }
       />
@@ -126,7 +109,7 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
         selectedValues={selectedTypes}
         onChipClick={(leaveTypeId) =>
           setSelectedTypes((previous) =>
-            toggleLeaveTypeId(previous, leaveTypeId)
+            toggleFilterValue(previous, leaveTypeId)
           )
         }
         className="max-h-full"

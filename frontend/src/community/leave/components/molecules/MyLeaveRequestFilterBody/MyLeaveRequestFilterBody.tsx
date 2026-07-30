@@ -6,27 +6,18 @@ import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
-import { useMyLeaveRequestFilterState } from "~community/leave/hooks/useMyLeaveRequestFilterState";
+import { useMyLeaveRequestFilters } from "~community/leave/hooks/useMyLeaveRequestFilters";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
-
-const leaveStatusFilters: string[] = [
-  LeaveStatusTypes.PENDING,
-  LeaveStatusTypes.APPROVED,
-  LeaveStatusTypes.DENIED,
-  LeaveStatusTypes.REVOKED,
-  LeaveStatusTypes.CANCELLED
-];
-
-const toggleValue = (values: string[], value: string): string[] =>
-  values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
+import {
+  leaveStatusFilters,
+  toggleFilterValue
+} from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
 
 interface Props {
-  close: () => void;
+  onClose: () => void;
 }
 
-const MyLeaveRequestFilterBody: FC<Props> = ({ close }) => {
+const MyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator(
     "leaveModule",
     "myRequests",
@@ -45,21 +36,22 @@ const MyLeaveRequestFilterBody: FC<Props> = ({ close }) => {
     appliedTypes,
     applyFilters,
     resetFilters
-  } = useMyLeaveRequestFilterState();
+  } = useMyLeaveRequestFilters();
 
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(appliedStatus);
+  const [selectedStatus, setSelectedStatus] =
+    useState<LeaveStatusTypes[]>(appliedStatus);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(appliedTypes);
 
   const isEmpty = selectedStatus.length === 0 && selectedTypes.length === 0;
 
   const handleApply = () => {
-    applyFilters({ status: selectedStatus, types: selectedTypes });
-    close();
+    applyFilters({ status: selectedStatus, leaveTypesIds: selectedTypes });
+    onClose();
   };
 
   const handleReset = () => {
     resetFilters();
-    close();
+    onClose();
   };
 
   return (
@@ -85,20 +77,24 @@ const MyLeaveRequestFilterBody: FC<Props> = ({ close }) => {
           }))}
           selectedValues={selectedStatus}
           onChipClick={(leaveStatus) =>
-            setSelectedStatus((previous) => toggleValue(previous, leaveStatus))
+            setSelectedStatus((previous) =>
+              toggleFilterValue(previous, leaveStatus)
+            )
           }
         />
       </section>
       <section aria-label={translateAria(["typeFilterSection"])}>
         <SelectableItemList
           title={translateText(["filterButtonType"])}
-          items={leaveTypeOptions.map(({ id, name }) => ({
-            label: name,
-            value: id
+          items={leaveTypeOptions.map((option) => ({
+            label: option.name,
+            value: option.id
           }))}
           selectedValues={selectedTypes}
           onChipClick={(leaveTypeId) =>
-            setSelectedTypes((previous) => toggleValue(previous, leaveTypeId))
+            setSelectedTypes((previous) =>
+              toggleFilterValue(previous, leaveTypeId)
+            )
           }
           className="max-h-full"
         />
