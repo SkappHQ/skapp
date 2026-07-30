@@ -6,7 +6,11 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { scrollToFirstError } from "~community/common/utils/commonUtil";
-import { useCheckEmailAndIdentificationNo } from "~community/people/api/PeopleApi";
+import {
+  useCheckEmailAndIdentificationNo,
+  useCheckPayrollIdUniqueness,
+  useCheckTinUniqueness
+} from "~community/people/api/PeopleApi";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
@@ -87,6 +91,20 @@ const EmploymentDetailsForm = ({
     employeeNumber
   );
 
+  const employeeIdForUniquenessCheck = employee?.common?.employeeId;
+  const payrollId =
+    employee?.employment?.identificationAndDiversityDetails?.payrollId || "";
+  const tin = employee?.employment?.identificationAndDiversityDetails?.tin || "";
+
+  const { refetch: refetchPayrollIdUniqueness } = useCheckPayrollIdUniqueness(
+    employeeIdForUniquenessCheck,
+    payrollId
+  );
+  const { refetch: refetchTinUniqueness } = useCheckTinUniqueness(
+    employeeIdForUniquenessCheck,
+    tin
+  );
+
   const isTerminatedEmployee =
     employee?.common?.accountStatus === AccountStatusTypes.TERMINATED;
 
@@ -135,6 +153,44 @@ const EmploymentDetailsForm = ({
       Object.keys(identificationFormErrors).length === 0;
 
     if (employmentFormIsValid && identificationFormIsValid) {
+      let hasIdentificationUniquenessError = false;
+
+      if (payrollId) {
+        const { data: payrollIdCheckResult } =
+          await refetchPayrollIdUniqueness();
+        if (payrollIdCheckResult?.isPayrollIdExists) {
+          identificationDetailsRef.current?.setFieldError?.(
+            "payrollId",
+            translateText([
+              "addResource",
+              "divesityDetails",
+              "payrollIdAlreadyExistsError"
+            ])
+          );
+          hasIdentificationUniquenessError = true;
+        }
+      }
+
+      if (tin) {
+        const { data: tinCheckResult } = await refetchTinUniqueness();
+        if (tinCheckResult?.isTinExists) {
+          identificationDetailsRef.current?.setFieldError?.(
+            "tin",
+            translateText([
+              "addResource",
+              "divesityDetails",
+              "tinAlreadyExistsError"
+            ])
+          );
+          hasIdentificationUniquenessError = true;
+        }
+      }
+
+      if (hasIdentificationUniquenessError) {
+        scrollToFirstError(theme);
+        return;
+      }
+
       employmentDetailsRef?.current?.submitForm();
       identificationDetailsRef?.current?.submitForm();
       if (isAddFlow) {

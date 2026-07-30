@@ -299,6 +299,40 @@ export const useCheckEmailAndIdentificationNo = (
   });
 };
 
+export const useCheckPayrollIdUniqueness = (
+  employeeId: string | undefined,
+  payrollId: string
+): UseQueryResult<Partial<EmployeeDataExists>> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.PAYROLL_ID_UNIQUENESS_KEYS(employeeId, payrollId),
+    queryFn: async () => {
+      const url = peoplesEndpoints.CHECK_PAYROLL_ID_UNIQUENESS;
+      const params = { employeeId, payrollId };
+      const response = await authFetch.get(url, { params });
+
+      return response?.data?.results[0];
+    },
+    enabled: false
+  });
+};
+
+export const useCheckTinUniqueness = (
+  employeeId: string | undefined,
+  tin: string
+): UseQueryResult<Partial<EmployeeDataExists>> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.TIN_UNIQUENESS_KEYS(employeeId, tin),
+    queryFn: async () => {
+      const url = peoplesEndpoints.CHECK_TIN_UNIQUENESS;
+      const params = { employeeId, tin };
+      const response = await authFetch.get(url, { params });
+
+      return response?.data?.results[0];
+    },
+    enabled: false
+  });
+};
+
 const getJobRoles = async (): Promise<JobFamilies[]> => {
   const url: string = peoplesEndpoints.JOB_ROLES;
   const result = await authFetch.get(url);

@@ -851,6 +851,8 @@
       "maxSSNCharacterLimitError": "SSN should not exceed 20 characters",
       "payrollIdMaxLengthError": "Payroll ID cannot exceed 50 characters",
       "tinMaxLengthError": "TIN cannot exceed 50 characters",
+      "payrollIdAlreadyExistsError": "This Payroll ID is already assigned to another employee",
+      "tinAlreadyExistsError": "This TIN is already assigned to another employee",
       "head": "Directory | Skapp"
     },
     "previousEmploymentDetails": {

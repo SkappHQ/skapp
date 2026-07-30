@@ -30,6 +30,25 @@ export const peopleQueryKeys = {
       identificationNo
     ].filter((val) => val !== undefined);
   },
+  PAYROLL_ID_UNIQUENESS_KEYS: function (
+    employeeId?: string,
+    payrollId?: string
+  ) {
+    return [
+      ...(this?.all || []),
+      "payroll-id-uniqueness-keys",
+      employeeId,
+      payrollId
+    ].filter((val) => val !== undefined);
+  },
+  TIN_UNIQUENESS_KEYS: function (employeeId?: string, tin?: string) {
+    return [
+      ...(this?.all || []),
+      "tin-uniqueness-keys",
+      employeeId,
+      tin
+    ].filter((val) => val !== undefined);
+  },
   PRE_PROCESSED_ROLES: function () {
     return ["job-role", "preprocess-job-roles"];
   },

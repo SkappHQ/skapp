@@ -448,6 +448,8 @@ export interface EmployeeDataExists {
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
   isGuestUser: boolean;
+  isPayrollIdExists?: boolean;
+  isTinExists?: boolean;
 }
 
 export interface QuickAddEmployeePayload {

@@ -8,8 +8,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdUniquenessCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.TinUniquenessCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
@@ -169,6 +171,21 @@ public class PeopleController {
 	public ResponseEntity<ResponseEntityDto> getEmployeeByIdOrEmail(
 			@Valid EmployeeDataValidationDto employeeDataValidationDto) {
 		ResponseEntityDto response = peopleService.getEmployeeByIdOrEmail(employeeDataValidationDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/check-payroll-id-uniqueness")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> checkPayrollIdUniqueness(
+			PayrollIdUniquenessCheckDto payrollIdUniquenessCheckDto) {
+		ResponseEntityDto response = peopleService.checkPayrollIdUniqueness(payrollIdUniquenessCheckDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/check-tin-uniqueness")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> checkTinUniqueness(TinUniquenessCheckDto tinUniquenessCheckDto) {
+		ResponseEntityDto response = peopleService.checkTinUniqueness(tinUniquenessCheckDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -1,6 +1,6 @@
 import { Grid2 as Grid, SelectChangeEvent } from "@mui/material";
 import { useFormik } from "formik";
-import { forwardRef, useMemo } from "react";
+import { forwardRef, useImperativeHandle, useMemo } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -55,6 +55,22 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
 
     const { values, errors, handleChange, setFieldError, setFieldValue } =
       formik;
+
+    useImperativeHandle(ref, () => ({
+      validateForm: async () => {
+        const validationErrors = await formik.validateForm();
+        return validationErrors;
+      },
+      submitForm: async () => {
+        await formik.submitForm();
+      },
+      resetForm: () => {
+        formik.resetForm();
+      },
+      setFieldError: (field: string, message: string) => {
+        formik.setFieldError(field, message);
+      }
+    }));
 
     const handleInput = async (e: SelectChangeEvent) => {
       const { name, value } = e.target;

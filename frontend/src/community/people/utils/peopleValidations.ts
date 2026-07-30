@@ -3,7 +3,6 @@ import * as Yup from "yup";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import {
   allowsAlphaNumericWithHyphenAndUnderscore,
-  allowsLettersAndSpecialCharactersForNames,
   allowsOnlyNumbersAndOptionalDecimal,
   datePatternReverse,
   isValidAlphaNumericString,
@@ -314,9 +313,11 @@ export const employeeIdentificationDetailsValidation = (
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    ssn: Yup.string().max(20, translator(["maxSSNCharacterLimitError"])),
-    ethnicity: Yup.string(),
-    eeoJobCategory: Yup.string(),
+    ssn: Yup.string()
+      .max(20, translator(["maxSSNCharacterLimitError"]))
+      .nullable(),
+    ethnicity: Yup.string().nullable(),
+    eeoJobCategory: Yup.string().nullable(),
     payrollId: Yup.string()
       .trim()
       .max(
