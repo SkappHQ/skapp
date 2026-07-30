@@ -853,6 +853,7 @@
       "tinMaxLengthError": "TIN cannot exceed 50 characters",
       "payrollIdAlreadyExistsError": "This Payroll ID is already assigned to another employee",
       "tinAlreadyExistsError": "This TIN is already assigned to another employee",
+      "fieldEditRestrictedTooltip": "Only Admins can edit this field",
       "head": "Directory | Skapp"
     },
     "previousEmploymentDetails": {

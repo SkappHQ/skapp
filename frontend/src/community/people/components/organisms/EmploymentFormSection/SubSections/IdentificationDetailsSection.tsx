@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useMemo } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
 import { usePeopleStore } from "~community/people/store/store";
@@ -36,6 +37,8 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
     );
 
     const { employee, setEmploymentDetails } = usePeopleStore((state) => state);
+
+    const { isPeopleAdmin } = useSessionData();
 
     const initialValues = useMemo<L3IdentificationAndDiversityDetailsType>(
       () =>
@@ -105,7 +108,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
         title={translateText(["title"])}
         containerStyles={{
           padding: "0",
-          margin: "0 auto",
+          margin: "0 auto"
         }}
         dividerStyles={{
           mt: "0.5rem"
@@ -182,45 +185,57 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
               />
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-              <InputField
-                label={translateText(["payrollId"])}
-                inputType="text"
-                value={values?.payrollId ?? ""}
-                placeHolder={translateText(["enterPayrollId"])}
-                onChange={handleInput}
-                inputName="payrollId"
-                error={errors.payrollId ?? ""}
-                maxLength={50}
-                componentStyle={{
-                  flex: 1,
-                  mt: "0rem"
-                }}
-                isDisabled={isInputsDisabled}
-                readOnly={isReadOnly}
-                tooltip={translateText(["payrollIdTooltip"])}
-              />
-            </Grid>
+            {!isReadOnly && (
+              <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <InputField
+                  label={translateText(["payrollId"])}
+                  inputType="text"
+                  value={values?.payrollId ?? ""}
+                  placeHolder={translateText(["enterPayrollId"])}
+                  onChange={handleInput}
+                  inputName="payrollId"
+                  error={errors.payrollId ?? ""}
+                  maxLength={50}
+                  componentStyle={{
+                    flex: 1,
+                    mt: "0rem"
+                  }}
+                  readOnly={!isPeopleAdmin || isInputsDisabled}
+                  isDisabled={isInputsDisabled}
+                  tooltip={
+                    isPeopleAdmin
+                      ? translateText(["payrollIdTooltip"])
+                      : translateText(["fieldEditRestrictedTooltip"])
+                  }
+                />
+              </Grid>
+            )}
 
-            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
-              <InputField
-                label={translateText(["tin"])}
-                inputType="text"
-                value={values?.tin ?? ""}
-                placeHolder={translateText(["enterTin"])}
-                onChange={handleInput}
-                inputName="tin"
-                error={errors.tin ?? ""}
-                maxLength={50}
-                componentStyle={{
-                  flex: 1,
-                  mt: "0rem"
-                }}
-                isDisabled={isInputsDisabled}
-                readOnly={isReadOnly}
-                tooltip={translateText(["tinTooltip"])}
-              />
-            </Grid>
+            {!isReadOnly && (
+              <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <InputField
+                  label={translateText(["tin"])}
+                  inputType="text"
+                  value={values?.tin ?? ""}
+                  placeHolder={translateText(["enterTin"])}
+                  onChange={handleInput}
+                  inputName="tin"
+                  error={errors.tin ?? ""}
+                  maxLength={50}
+                  componentStyle={{
+                    flex: 1,
+                    mt: "0rem"
+                  }}
+                  readOnly={!isPeopleAdmin || isInputsDisabled}
+                  isDisabled={isInputsDisabled}
+                  tooltip={
+                    isPeopleAdmin
+                      ? translateText(["tinTooltip"])
+                      : translateText(["fieldEditRestrictedTooltip"])
+                  }
+                />
+              </Grid>
+            )}
           </Grid>
         </form>
       </PeopleFormSectionWrapper>
