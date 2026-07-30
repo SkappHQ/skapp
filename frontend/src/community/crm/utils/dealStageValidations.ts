@@ -14,7 +14,10 @@ export const dealStageValidations = (
     name: Yup.string()
       .trim()
       .required(translator(["dealStageModal", "validations", "nameRequired"]))
-      .min(2, translator(["dealStageModal", "validations", "nameInvalid"]))
+      .min(
+        characterLengths.DEAL_STAGE_NAME_MIN_LENGTH,
+        translator(["dealStageModal", "validations", "nameInvalid"])
+      )
       .max(
         characterLengths.DEAL_STAGE_NAME_LENGTH,
         translator(["dealStageModal", "validations", "nameLength"])
