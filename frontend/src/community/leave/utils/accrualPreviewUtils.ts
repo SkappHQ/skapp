@@ -6,14 +6,25 @@ import {
   INTERVAL_STEP
 } from "~community/leave/constants/leavePolicyConstants";
 import {
-  AccrualEvent,
   AccrualPreviewRow,
   AccrualTiming,
   CalendarUnit,
   FirstAccrualType,
-  LeavePolicyType,
-  ScheduleConfig
+  LeavePolicyType
 } from "~community/leave/types/LeavePolicyTypes";
+
+interface AccrualEvent {
+  date: DateTime;
+  days: number;
+}
+
+interface ScheduleConfig {
+  accrualStartDate: DateTime;
+  perPeriod: number;
+  prorateFirst: boolean;
+  atPeriodStart: boolean;
+  lastYear: number | null;
+}
 
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;

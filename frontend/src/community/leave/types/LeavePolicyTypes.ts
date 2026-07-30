@@ -1,5 +1,3 @@
-import { DateTime } from "luxon";
-
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FLEXIBLE = "FLEXIBLE"
@@ -64,19 +62,6 @@ export interface AccrualPreviewRow {
   date: string;
   days: number;
   balance: number;
-}
-
-export interface AccrualEvent {
-  date: DateTime;
-  days: number;
-}
-
-export interface ScheduleConfig {
-  accrualStartDate: DateTime;
-  perPeriod: number;
-  prorateFirst: boolean;
-  atPeriodStart: boolean;
-  lastYear: number | null;
 }
 
 export interface LeavePoliciesPage {

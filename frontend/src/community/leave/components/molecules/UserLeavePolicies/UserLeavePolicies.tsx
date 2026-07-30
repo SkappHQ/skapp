@@ -86,9 +86,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-row items-center justify-between gap-3">
-        <h3 className="header3 text-black">
-          {translateText(["sectionTitle"])}
-        </h3>
+        <h3 className="h3 text-black">{translateText(["sectionTitle"])}</h3>
         {canManagePolicies && (
           <ButtonV2
             variant="primary"
@@ -144,7 +142,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
                         total: usage.total
                       })}
                     >
-                      <span className="text-2xl font-semibold text-black">
+                      <span className="text-2xl text-black">
                         {formatDays(usage.taken)}
                       </span>
                       <span className="body2 text-secondary-text">

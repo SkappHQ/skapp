@@ -26,13 +26,17 @@ const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
 
   const [hireDate, setHireDate] = useState<string>("");
 
-  // Partial employee PATCH — the backend applies each field with setIfExists,
-  // so sending only joinedDate updates the hire date and leaves the rest intact.
-  const { mutate: editEmployee, isPending } = useEditEmployee(String(employeeId));
+  const { mutate: editEmployee, isPending } = useEditEmployee(
+    String(employeeId)
+  );
 
   const handleClose = (): void => {
     setHireDate("");
     onClose();
+  };
+
+  const handleDateSelect = (date?: Date): void => {
+    setHireDate(date ? (DateTime.fromJSDate(date).toISODate() ?? "") : "");
   };
 
   const handleSave = (): void => {
@@ -60,11 +64,7 @@ const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
             selected={
               hireDate ? DateTime.fromISO(hireDate).toJSDate() : undefined
             }
-            onSelect={(date?: Date) =>
-              setHireDate(
-                date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
-              )
-            }
+            onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start" }}
           >
             <div>
