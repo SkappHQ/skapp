@@ -9,10 +9,10 @@ import type { DateRange } from "react-day-picker";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { clampToCurrentYear } from "~community/common/utils/dateTimeUtils";
-import { useManagerLeaveRequestFilterState } from "~community/leave/hooks/useManagerLeaveRequestFilterState";
+import { useManagerLeaveRequestFilters } from "~community/leave/hooks/useManagerLeaveRequestFilters";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 
-const leaveStatusFilters: string[] = [
+const leaveStatusFilters: LeaveStatusTypes[] = [
   LeaveStatusTypes.PENDING,
   LeaveStatusTypes.APPROVED,
   LeaveStatusTypes.DENIED,
@@ -20,19 +20,27 @@ const leaveStatusFilters: string[] = [
   LeaveStatusTypes.REVOKED
 ];
 
-const toggleValue = (values: string[], value: string): string[] =>
+const toggleLeaveStatus = (
+  values: LeaveStatusTypes[],
+  value: LeaveStatusTypes
+): LeaveStatusTypes[] =>
+  values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+
+const toggleLeaveTypeId = (values: string[], value: string): string[] =>
   values.includes(value)
     ? values.filter((item) => item !== value)
     : [...values, value];
 
 interface Props {
-  close: () => void;
+  onClose: () => void;
   selectedDateRange?: DateRange;
   onDateRangeChange: (range?: DateRange) => void;
 }
 
 const ManagerLeaveRequestFilterBody: FC<Props> = ({
-  close,
+  onClose,
   selectedDateRange,
   onDateRangeChange
 }) => {
@@ -48,9 +56,10 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
     appliedTypes,
     applyFilters,
     resetFilters
-  } = useManagerLeaveRequestFilterState();
+  } = useManagerLeaveRequestFilters();
 
-  const [selectedStatus, setSelectedStatus] = useState<string[]>(appliedStatus);
+  const [selectedStatus, setSelectedStatus] =
+    useState<LeaveStatusTypes[]>(appliedStatus);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(appliedTypes);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     selectedDateRange
@@ -65,13 +74,13 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
   const handleApply = () => {
     applyFilters({ status: selectedStatus, types: selectedTypes });
     onDateRangeChange(dateRange);
-    close();
+    onClose();
   };
 
   const handleReset = () => {
     resetFilters();
     onDateRangeChange(undefined);
-    close();
+    onClose();
   };
 
   return (
@@ -103,7 +112,9 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
         }))}
         selectedValues={selectedStatus}
         onChipClick={(leaveStatus) =>
-          setSelectedStatus((previous) => toggleValue(previous, leaveStatus))
+          setSelectedStatus((previous) =>
+            toggleLeaveStatus(previous, leaveStatus)
+          )
         }
       />
       <SelectableItemList
@@ -114,7 +125,9 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
         }))}
         selectedValues={selectedTypes}
         onChipClick={(leaveTypeId) =>
-          setSelectedTypes((previous) => toggleValue(previous, leaveTypeId))
+          setSelectedTypes((previous) =>
+            toggleLeaveTypeId(previous, leaveTypeId)
+          )
         }
         className="max-h-full"
       />

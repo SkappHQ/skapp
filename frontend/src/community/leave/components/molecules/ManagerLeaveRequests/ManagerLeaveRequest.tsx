@@ -72,16 +72,15 @@ const ManagerLeaveRequest: FC<Props> = ({
     setIsManagerModal,
     setLeaveRequestData,
     setNewLeaveId,
-    newLeaveId
+    newLeaveId,
+    leaveRequestParams
   } = useLeaveStore((state) => state);
 
   const currentPage: number = useLeaveStore(
     (state) => state.leaveRequestParams.page
   ) as number;
 
-  const leaveRequestSort = useLeaveStore(
-    (state) => state.leaveRequestParams.sortKey
-  );
+  const leaveRequestSort = leaveRequestParams.sortKey;
 
   const [selectedDateRange, setSelectedDateRange] = useState<
     DateRange | undefined
@@ -201,7 +200,7 @@ const ManagerLeaveRequest: FC<Props> = ({
 
   const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
     <ManagerLeaveRequestFilterBody
-      close={close}
+      onClose={close}
       selectedDateRange={selectedDateRange}
       onDateRangeChange={setSelectedDateRange}
     />

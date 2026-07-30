@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import { useAppliedLeaveRequestFilters } from "~community/leave/hooks/useAppliedLeaveRequestFilters";
 import { useLeaveStore } from "~community/leave/store/store";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 
 export interface LeaveTypeFilterOption {
   id: string;
@@ -10,11 +11,11 @@ export interface LeaveTypeFilterOption {
 }
 
 interface AppliedFilters {
-  status: string[];
+  status: LeaveStatusTypes[];
   types: string[];
 }
 
-export const useManagerLeaveRequestFilterState = () => {
+export const useManagerLeaveRequestFilters = () => {
   const {
     setLeaveRequestParams,
     setLeaveRequestsFilter,

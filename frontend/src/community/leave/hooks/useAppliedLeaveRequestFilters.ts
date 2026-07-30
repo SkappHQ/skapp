@@ -1,14 +1,12 @@
 import { useLeaveStore } from "~community/leave/store/store";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 
-/**
- * Store-only view of the applied leave request filters. Components that just
- * need the applied values (e.g. the filter button badge count) should use this
- * instead of the full filter state hooks, which also fetch leave types.
- */
 export const useAppliedLeaveRequestFilters = () => {
   const { leaveRequestsFilter } = useLeaveStore();
 
-  const appliedStatus = leaveRequestsFilter.status;
+  // The store types status as string[], but only LeaveStatusTypes members are
+  // ever written to it (seeded with PENDING, updated from the filter bodies).
+  const appliedStatus = leaveRequestsFilter.status as LeaveStatusTypes[];
   const appliedTypes = leaveRequestsFilter.type;
 
   return {
