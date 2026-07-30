@@ -58,7 +58,7 @@ const AddTaskModalContent: FC = () => {
     onSubmit: (values) => createTask(values),
     validationSchema: taskValidations(translateText),
     validateOnChange: false,
-    validateOnBlur: true,
+    validateOnBlur: false,
     enableReinitialize: true
   });
 
