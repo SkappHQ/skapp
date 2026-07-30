@@ -17,11 +17,3 @@ export interface AppliedLeaveRequestFilters {
   status: LeaveStatusTypes[];
   leaveTypesIds: string[];
 }
-
-export const toggleFilterValue = <T>(
-  selectedValues: T[],
-  toggledValue: T
-): T[] =>
-  selectedValues.includes(toggledValue)
-    ? selectedValues.filter((selectedValue) => selectedValue !== toggledValue)
-    : [...selectedValues, toggledValue];

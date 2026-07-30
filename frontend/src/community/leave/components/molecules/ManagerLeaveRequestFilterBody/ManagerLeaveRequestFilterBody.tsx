@@ -7,14 +7,14 @@ import { FC, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
+import {
+  pascalCaseFormatter,
+  toggleFilterValue
+} from "~community/common/utils/commonUtil";
 import { clampToCurrentYear } from "~community/common/utils/dateTimeUtils";
 import { useManagerLeaveRequestFilters } from "~community/leave/hooks/useManagerLeaveRequestFilters";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
-import {
-  leaveStatusFilters,
-  toggleFilterValue
-} from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
+import { leaveStatusFilters } from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
 
 interface Props {
   onClose: () => void;

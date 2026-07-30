@@ -5,13 +5,13 @@ import {
 import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
+import {
+  pascalCaseFormatter,
+  toggleFilterValue
+} from "~community/common/utils/commonUtil";
 import { useMyLeaveRequestFilters } from "~community/leave/hooks/useMyLeaveRequestFilters";
 import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
-import {
-  leaveStatusFilters,
-  toggleFilterValue
-} from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
+import { leaveStatusFilters } from "~community/leave/utils/leaveRequest/leaveRequestFilterUtils";
 
 interface Props {
   onClose: () => void;
