@@ -55,6 +55,13 @@ const Configurations: NextPage = () => {
     }
   }, [router.isReady, router.query.tab, visibleTabs]);
 
+  useEffect(() => {
+    if (visibleTabs.length === 0) return;
+    if (!visibleTabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(visibleTabs[0].id);
+    }
+  }, [visibleTabs, activeTab]);
+
   const handleTabChange = (id: string) => {
     setActiveTab(id);
     const basePath = router.asPath.split("?")[0];
