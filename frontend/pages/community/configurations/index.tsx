@@ -22,9 +22,8 @@ const Configurations: NextPage = () => {
   const isEnterprise = environment === appModes.ENTERPRISE;
   const { isSuperAdmin } = useSessionData();
 
-  const { data: googleConnectionStatus } = useGetGoogleConnectionStatus(
-    isEnterprise && isSuperAdmin
-  );
+  const { connectionStatus: googleConnectionStatus } =
+    useGetGoogleConnectionStatus(isEnterprise && isSuperAdmin);
 
   const allTabs = useMemo(
     () =>
@@ -39,7 +38,7 @@ const Configurations: NextPage = () => {
     return allTabs.filter((tab) => {
       if (!tab.requiredRoles.some((role) => userRoles.includes(role)))
         return false;
-      if (tab.id === "people") return !!googleConnectionStatus?.connected;
+      if (tab.id === "people") return googleConnectionStatus.connected;
       return true;
     });
   }, [allTabs, user?.roles, googleConnectionStatus]);
