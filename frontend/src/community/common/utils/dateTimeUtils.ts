@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import type { DateRange } from "react-day-picker";
 
 import {
   DATE_FORMAT,
@@ -676,4 +677,31 @@ export const getLocaleDateString = (date: Date) => {
     month: "long",
     day: "numeric"
   });
+};
+
+export const convertDateRangeArrayToDateRange = (
+  dates: string[]
+): DateRange | undefined => {
+  const [from, to] = dates;
+  if (!(from || to)) return undefined;
+  return {
+    from: convertYYYYMMDDToDateTime(from).toJSDate(),
+    to: convertYYYYMMDDToDateTime(to).toJSDate()
+  };
+};
+
+export const convertDateRangeToDateRangeArray = (
+  range?: DateRange
+): string[] => [
+  range?.from ? convertDateToFormat(range.from, DATE_FORMAT) : "",
+  range?.to ? convertDateToFormat(range.to, DATE_FORMAT) : ""
+];
+
+export const clampToCurrentYear = (
+  range?: DateRange
+): DateRange | undefined => {
+  if (!range) return range;
+  const yearStart = getFirstDateOfYear(new Date().getFullYear()).toJSDate();
+  const clamp = (date?: Date) => (date && date < yearStart ? yearStart : date);
+  return { from: clamp(range.from), to: clamp(range.to) };
 };

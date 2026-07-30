@@ -293,6 +293,7 @@
         "nameRequired": "Stage name is required",
         "nameExists": "A stage with this name already exists",
         "nameLength": "Stage name must be 50 characters or fewer",
+        "nameInvalid": "Please enter a valid stage name",
         "descriptionLength": "Description must be 255 characters or fewer"
       }
     },

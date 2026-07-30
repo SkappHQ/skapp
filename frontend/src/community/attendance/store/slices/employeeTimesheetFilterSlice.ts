@@ -8,7 +8,6 @@ const employeeTimesheetFilterSlice = (
     status: []
   },
   employeeTimesheetRequestSelectedDates: [],
-  employeeSelectedTimesheetFilterLabels: [],
   employeeTimesheetRequestParams: {
     status: "",
     startDate: "",
@@ -49,20 +48,12 @@ const employeeTimesheetFilterSlice = (
       employeeTimesheetRequestsFilters: {
         status: [] as string[]
       },
-      employeeSelectedTimesheetFilterLabels: [] as string[],
       employeeTimesheetRequestParams: {
         ...state.employeeTimesheetRequestParams,
         status: "",
         page: 0,
         size: 4
       }
-    }));
-  },
-
-  setEmployeeTimesheetSelectedFilterLabels: (value: string[]) => {
-    set((state) => ({
-      ...state,
-      employeeSelectedTimesheetFilterLabels: value
     }));
   },
 

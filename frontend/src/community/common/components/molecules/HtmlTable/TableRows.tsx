@@ -13,7 +13,7 @@ const TableRows: FC<CommonTableProps> = ({ headers, rows }) => {
       style={{
         height: "4.9375rem",
         maxHeight: "4.9375rem",
-        background: theme.palette.grey[50]
+        background: theme.palette.common.white
       }}
     >
       {headers.map((header) => {

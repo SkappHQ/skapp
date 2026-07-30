@@ -28,7 +28,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -99,7 +101,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 				accountValueSubquery.cast(String.class), closedCountSubquery, openCountSubquery));
 
 		query.where(buildPredicates(cb, company, searchKeyword));
-		query.orderBy(cb.asc(company.get(CrmCompany_.name)), cb.asc(company.get(CrmCompany_.id)));
+		query.orderBy(buildOrderBy(cb, company, searchKeyword));
 
 		List<CrmCompanyMetricsResponseDto> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
@@ -122,13 +124,35 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		predicates.add(cb.isFalse(root.get(CrmCompany_.isDeleted)));
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escapedKeyword = StringUtils.escapeLikePattern(searchKeyword);
-
-			String likePattern = "%" + escapedKeyword + "%";
+			String likePattern = "%" + escapedLowerKeyword(searchKeyword) + "%";
 			predicates.add(cb.like(cb.lower(root.get(CrmCompany_.name)), likePattern));
 		}
 
 		return predicates.toArray(new Predicate[0]);
+	}
+
+	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmCompany> company, String searchKeyword) {
+		List<Order> orders = new ArrayList<>();
+
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String normalizedKeyword = searchKeyword.toLowerCase();
+			Expression<String> lowerName = cb.lower(company.get(CrmCompany_.name));
+
+			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
+				.when(cb.equal(lowerName, normalizedKeyword), 0)
+				.when(cb.like(lowerName, escapedLowerKeyword(searchKeyword) + "%"), 1)
+				.otherwise(2);
+
+			orders.add(cb.asc(relevanceRank));
+		}
+
+		orders.add(cb.asc(cb.lower(company.get(CrmCompany_.name))));
+
+		return orders;
+	}
+
+	private String escapedLowerKeyword(String searchKeyword) {
+		return StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
 	}
 
 	private List<Long> getClosedStageIds() {
