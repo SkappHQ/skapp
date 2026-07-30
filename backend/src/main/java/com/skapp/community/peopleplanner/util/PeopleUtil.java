@@ -15,7 +15,6 @@ import com.skapp.community.peopleplanner.model.Team;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Slf4j
 public class PeopleUtil {
 
 	private static final String RESTRICTION_SEPARATOR = ",";
@@ -119,12 +117,7 @@ public class PeopleUtil {
 			if (roleLevel.isEmpty()) {
 				continue;
 			}
-			try {
-				roleLevels.add(RoleLevel.valueOf(roleLevel));
-			}
-			catch (IllegalArgumentException e) {
-				log.warn("parseRestrictions: skipping unknown role level {}", roleLevel);
-			}
+			roleLevels.add(RoleLevel.valueOf(roleLevel));
 		}
 
 		return roleLevels;

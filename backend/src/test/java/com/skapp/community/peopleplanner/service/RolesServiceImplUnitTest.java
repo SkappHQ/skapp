@@ -214,21 +214,6 @@ class RolesServiceImplUnitTest {
 	}
 
 	/**
-	 * A stale role level left behind by a rename must not fail the whole read.
-	 */
-	@Test
-	void getRestrictedRoleByModule_unknownStoredRoleLevel_skipsUnknownAndKeepsRest() {
-		when(moduleRolesRestrictionDao.findById(ModuleType.PEOPLE))
-			.thenReturn(Optional.of(moduleRolesRestriction(ModuleType.PEOPLE, "ADMIN,SOMETHING_ELSE")));
-
-		ModuleRoleRestrictionResponseDto response = rolesService.getRestrictedRoleByModule(ModuleType.PEOPLE);
-
-		Assertions.assertEquals(List.of(RoleLevel.ADMIN), response.getRestrictions());
-		Assertions.assertTrue(response.getIsAdmin());
-		Assertions.assertFalse(response.getIsManager());
-	}
-
-	/**
 	 * The same set of restricted roles always has to be written the same way, so the
 	 * stored value stays comparable.
 	 */
