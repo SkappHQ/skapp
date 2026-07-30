@@ -45,6 +45,7 @@ const LeavePolicies: NextPage = () => {
       secondaryBtnText={
         canManagePolicies ? translateText(["bulkUploadBtnTxt"]) : undefined
       }
+      secondaryBtnVariant="tertiary"
       secondaryBtnIconName={IconName.UP_ARROW_ICON}
       onPrimaryButtonClick={() => setIsPolicyTypeModalOpen(true)}
       onSecondaryButtonClick={() => setIsBulkAssignModalOpen(true)}
