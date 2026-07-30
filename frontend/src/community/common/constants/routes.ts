@@ -15,7 +15,8 @@ const ROUTES = {
     VERIFY_GUEST: "/verify/guest",
     VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
-    SYSTEM_UPDATE: "/system-update"
+    SYSTEM_UPDATE: "/system-update",
+    OAUTH_SESSION_LOGIN: "/v1/auth/oauth/session-login"
   },
   ORGANIZATION: {
     SETUP: "/setup-organization",
