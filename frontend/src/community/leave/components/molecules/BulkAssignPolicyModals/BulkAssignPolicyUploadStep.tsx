@@ -22,13 +22,12 @@ import {
 } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
-  onCancel: () => void;
   onComplete: (response: BulkAssignPolicyResponse) => void;
 }
 
 const MAX_CSV_FILE_SIZE = { inBytes: 5_000_000, inReadableSize: "5MB" };
 
-const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
+const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
@@ -114,15 +113,6 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
         {translateText(["uploadInstruction"])}
       </p>
 
-      <button
-        type="button"
-        className="w-fit body2 text-primary-accent underline"
-        onClick={downloadBulkAssignPolicyTemplate}
-        title={translateText(["downloadTemplateTooltip"])}
-      >
-        {translateText(["downloadTemplateLink"])}
-      </button>
-
       <DragAndDropField
         setAttachments={(files: FileUploadType[]) => {
           setAttachment(files);
@@ -149,8 +139,12 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onCancel, onComplete }) => {
       )}
 
       <div className="flex flex-row justify-end gap-3">
-        <ButtonV2 variant="tertiary" onClick={onCancel} disabled={isPending}>
-          {translateText(["cancelBtnTxt"])}
+        <ButtonV2
+          variant="tertiary"
+          onClick={downloadBulkAssignPolicyTemplate}
+          disabled={isPending}
+        >
+          {translateText(["downloadTemplateLink"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"

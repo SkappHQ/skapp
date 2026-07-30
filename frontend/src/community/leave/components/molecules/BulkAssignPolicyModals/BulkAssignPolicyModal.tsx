@@ -46,10 +46,7 @@ const BulkAssignPolicyModal: FC<Props> = ({ isOpen, onClose }) => {
       modalHeader={translateText(["title"])}
       content={
         step === BulkAssignStep.UPLOAD ? (
-          <BulkAssignPolicyUploadStep
-            onCancel={handleClose}
-            onComplete={handleComplete}
-          />
+          <BulkAssignPolicyUploadStep onComplete={handleComplete} />
         ) : (
           <BulkAssignPolicySummaryStep
             response={response}
