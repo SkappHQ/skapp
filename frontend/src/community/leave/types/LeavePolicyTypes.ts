@@ -155,7 +155,7 @@ export interface LeavePolicyMutationResponse {
 }
 
 export interface LeavePolicyConfigResult {
-  enabled: boolean;
+  isEnabled: boolean;
 }
 
 export interface LeavePolicyConfigResponse {

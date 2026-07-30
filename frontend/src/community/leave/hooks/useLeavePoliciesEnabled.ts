@@ -12,7 +12,7 @@ const useLeavePoliciesEnabled = (
   const { data, isLoading, isError } = useGetLeavePolicyConfig(enabled);
 
   return {
-    isLeavePoliciesEnabled: Boolean(data?.enabled),
+    isLeavePoliciesEnabled: Boolean(data?.isEnabled),
     isLoading,
     isError
   };
