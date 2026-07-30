@@ -15,10 +15,13 @@ export interface LeaveTypeFilterOption {
 
 export interface AppliedLeaveRequestFilters {
   status: LeaveStatusTypes[];
-  leaveTypesIds: LeaveTypeFilterOption["id"][];
+  leaveTypesIds: string[];
 }
 
-export const toggleFilterValue = <T>(values: T[], value: T): T[] =>
-  values.includes(value)
-    ? values.filter((item) => item !== value)
-    : [...values, value];
+export const toggleFilterValue = <T>(
+  selectedValues: T[],
+  toggledValue: T
+): T[] =>
+  selectedValues.includes(toggledValue)
+    ? selectedValues.filter((selectedValue) => selectedValue !== toggledValue)
+    : [...selectedValues, toggledValue];
