@@ -303,11 +303,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(birthdayFieldPath(0, "authPic")).value("auth-pic-one.png"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "isCurrentUser")).value(true))
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()));
-
-			// Documents current behaviour: when birthdays are found the endpoint
-			// deliberately does
-			// not mark them viewed - advancing lastViewedDate is the client's job via
-			// mark-viewed.
 			assertThat(specialNotificationDao.count()).isZero();
 		}
 
@@ -318,10 +313,11 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
 			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
 
-			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), today)
+			assertSuccessful(performGetTodayRequest(currentUserToken))
+				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(today);
+			assertThat(specialNotificationDao.count()).isZero();
 		}
 
 		@Test
@@ -394,19 +390,31 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays when nobody has a birthday today - Marks viewed and returns today")
-		void getTodayBirthdayNotifications_WithNoBirthdaysToday_MarksViewedAndReturnsToday() throws Exception {
-			// Documents current behaviour: this GET mutates state, but only on the
-			// empty-result
-			// path, so that the client stops polling for the rest of the day.
+		@DisplayName("Get today's birthdays when nobody has a birthday today - Returns empty list and writes no row")
+		void getTodayBirthdayNotifications_WithNoBirthdaysToday_ReturnsEmptyListAndWritesNothing() throws Exception {
 			seedConfig(true, true, false);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today.plusDays(1));
 
-			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), today)
+			assertSuccessful(performGetTodayRequest(currentUserToken))
+				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(today);
-			assertThat(specialNotificationDao.count()).isEqualTo(1);
+			assertThat(specialNotificationDao.count()).isZero();
+		}
+
+		@Test
+		@DisplayName("Get today's birthdays with an earlier last viewed date and no birthdays today - Returns the earlier date")
+		void getTodayBirthdayNotifications_WithStoredLastViewedDateAndNoBirthdaysToday_ReturnsStoredDate()
+				throws Exception {
+			LocalDate previouslyViewedDate = today.minusDays(2);
+			seedConfig(true, true, false);
+			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today.plusDays(1));
+			seedLastViewed(CURRENT_EMPLOYEE_ID, previouslyViewedDate);
+
+			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), previouslyViewedDate)
+				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
+
+			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(previouslyViewedDate);
 		}
 
 		@Test
@@ -426,9 +434,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@DisplayName("Get today's birthdays with an older last viewed date and birthdays found - Returns the older date")
 		void getTodayBirthdayNotifications_WithStaleLastViewedDateAndBirthdaysFound_ReturnsStaleDate()
 				throws Exception {
-			// Documents current behaviour: lastViewedDate echoes the stored value, not
-			// today, when
-			// there is something to show.
 			LocalDate staleDate = today.minusDays(3);
 			seedConfig(true, false, false);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
