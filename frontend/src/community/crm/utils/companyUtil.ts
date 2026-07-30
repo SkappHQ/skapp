@@ -6,16 +6,26 @@ import {
   CrmCompanyFormTypes,
   MetricItem
 } from "../types/CommonTypes";
+import { splitContactNumber } from "./crmUtil";
 
 export const getCompanyFormInitialValues = (
+  defaultCountryCode: string,
   company?: CrmCompany
-): CrmCompanyFormTypes => ({
-  name: company?.name || "",
-  industry: company?.industry || CrmIndustryEnum.NONE,
-  website: company?.website || "",
-  address: company?.address || "",
-  contactNumber: company?.contactNumber || ""
-});
+): CrmCompanyFormTypes => {
+  const { countryCode, number } = splitContactNumber(
+    company?.contactNumber ?? "",
+    defaultCountryCode
+  );
+
+  return {
+    name: company?.name || "",
+    industry: company?.industry || CrmIndustryEnum.NONE,
+    website: company?.website || "",
+    address: company?.address || "",
+    countryCode,
+    contactNumber: number
+  };
+};
 
 export const mergeCompanyUpdate = (
   companies: CrmCompany[],

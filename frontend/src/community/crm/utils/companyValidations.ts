@@ -17,22 +17,18 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
     contactNumber: Yup.string()
       .nullable()
       .optional()
-      .test(
-        "valid-contact-number",
-        translator(["validations", "contactNumber"]),
-        function (inputContactNumber) {
-          if (!inputContactNumber || inputContactNumber === "") {
-            return true;
-          }
-
-          return isValidPhoneNumber().test(inputContactNumber);
-        }
-      ),
+      .matches(isValidPhoneNumber(), {
+        message: translator(["validations", "contactNumber"]),
+        excludeEmptyString: true
+      }),
     website: Yup.string()
       .nullable()
       .optional()
       .transform((v) => (v === "" ? null : v))
-      .matches(isValidCompanyWebsiteUrl(), translator(["validations", "website"]))
+      .matches(
+        isValidCompanyWebsiteUrl(),
+        translator(["validations", "website"])
+      )
       .max(
         characterLengths.CHARACTER_LENGTH,
         translator(["validations", "characterLength"])

@@ -72,6 +72,7 @@ export interface CrmCompanyFormTypes {
   industry: CrmIndustryEnum;
   website: string;
   address: string;
+  countryCode: string;
   contactNumber: string;
 }
 
@@ -138,6 +139,7 @@ export interface CrmCompanyDomainSearchResponseType {
 export interface CrmContactFormValues {
   name: string;
   email: string;
+  countryCode: string;
   contactNumber: string;
   companyId: number | null;
   ownerId: number | null;

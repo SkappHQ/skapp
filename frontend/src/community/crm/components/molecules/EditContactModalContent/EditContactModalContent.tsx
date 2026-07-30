@@ -5,7 +5,11 @@ import { useEditContact } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
-import { getChangedContactFields } from "~community/crm/utils/crmUtil";
+import {
+  getChangedContactFields,
+  splitContactNumber
+} from "~community/crm/utils/crmUtil";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const EditContactModalContent = () => {
   const { setToastMessage } = useToast();
@@ -14,6 +18,7 @@ const EditContactModalContent = () => {
     "contacts",
     "editContactModal"
   );
+  const defaultCountryCode = useGetDefaultCountryCode();
   const {
     setIsContactModalOpen,
     selectedContactId,
@@ -59,10 +64,17 @@ const EditContactModalContent = () => {
     }
   );
 
+  const { countryCode: originalCountryCode, number: originalContactNumber } =
+    splitContactNumber(
+      selectedContact?.contactNumber ?? "",
+      defaultCountryCode
+    );
+
   const initialValues: CrmContactFormValues = {
     name: selectedContact?.name,
     email: selectedContact?.email,
-    contactNumber: selectedContact?.contactNumber ?? "",
+    countryCode: originalCountryCode,
+    contactNumber: originalContactNumber,
     companyId: selectedContact?.company?.id ?? null,
     ownerId: selectedContact?.owner?.employeeId ?? null
   };
@@ -71,6 +83,7 @@ const EditContactModalContent = () => {
     const normalizedValues: CrmContactFormValues = {
       name: values.name.trim(),
       email: values.email.trim(),
+      countryCode: values.countryCode,
       contactNumber: values.contactNumber.trim(),
       companyId: values.companyId,
       ownerId: values.ownerId
@@ -78,7 +91,8 @@ const EditContactModalContent = () => {
     const originalValues: CrmContactFormValues = {
       name: selectedContact?.name.trim() ?? "",
       email: selectedContact?.email.trim() ?? "",
-      contactNumber: selectedContact?.contactNumber?.trim() ?? "",
+      countryCode: originalCountryCode,
+      contactNumber: originalContactNumber,
       companyId: selectedContact?.company?.id ?? null,
       ownerId: selectedContact?.owner?.employeeId ?? null
     };

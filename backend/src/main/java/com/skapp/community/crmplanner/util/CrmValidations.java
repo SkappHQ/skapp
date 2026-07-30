@@ -87,7 +87,7 @@ public class CrmValidations {
 			return;
 		}
 
-		if (contactNumber.length() > CrmConstants.PHONE_MAX_LENGTH) {
+		if (!contactNumber.matches(CrmConstants.CONTACT_NUMBER_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID);
 		}
 	}

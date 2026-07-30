@@ -11,7 +11,9 @@ import {
   CrmContactFormValues,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { combineContactNumber } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const AddContactModalContent = () => {
   const { setToastMessage } = useToast();
@@ -20,6 +22,7 @@ const AddContactModalContent = () => {
     "contacts",
     "addContactModal"
   );
+  const defaultCountryCode = useGetDefaultCountryCode();
   const { data: currentUser } = useGetUserPersonalDetails();
   const { setIsContactModalOpen } = useCrmStore((store) => ({
     setIsContactModalOpen: store.setIsContactModalOpen
@@ -71,6 +74,7 @@ const AddContactModalContent = () => {
   const initialValues: CrmContactFormValues = {
     name: "",
     email: "",
+    countryCode: defaultCountryCode,
     contactNumber: "",
     companyId: null,
     ownerId: initialOwner?.employeeId ?? null
@@ -80,7 +84,9 @@ const AddContactModalContent = () => {
     const payload: CrmContactCreatePayload = {
       name: values.name.trim(),
       email: values.email.trim(),
-      contactNumber: values.contactNumber.trim() || undefined,
+      contactNumber:
+        combineContactNumber(values.countryCode, values.contactNumber.trim()) ||
+        undefined,
       companyId: values.companyId ?? undefined,
       ownerId: values.ownerId ?? undefined
     };

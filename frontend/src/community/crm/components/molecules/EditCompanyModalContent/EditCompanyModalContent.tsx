@@ -14,11 +14,14 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { getCompanyFormInitialValues } from "~community/crm/utils/companyUtil";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
+import { combineContactNumber } from "~community/crm/utils/crmUtil";
+import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const EditCompanyModalContent: React.FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "companies", "companyModal");
+  const defaultCountryCode = useGetDefaultCountryCode();
 
   const {
     setIsCompanyModalOpen,
@@ -35,8 +38,8 @@ const EditCompanyModalContent: React.FC = () => {
   const selectedCompany = getCompanyById(selectedCompanyId!);
 
   const initialValues = useMemo(
-    () => getCompanyFormInitialValues(selectedCompany),
-    [selectedCompany]
+    () => getCompanyFormInitialValues(defaultCountryCode, selectedCompany),
+    [selectedCompany, defaultCountryCode]
   );
 
   const formik = useFormik<CrmCompanyFormTypes>({
@@ -94,7 +97,9 @@ const EditCompanyModalContent: React.FC = () => {
       industry: values.industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
-      contactNumber: values.contactNumber?.trim() || null
+      contactNumber:
+        combineContactNumber(values.countryCode, values.contactNumber.trim()) ||
+        null
     };
 
     editCompany(payload);

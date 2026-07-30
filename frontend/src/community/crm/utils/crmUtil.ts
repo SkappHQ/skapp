@@ -1,6 +1,7 @@
 import { ColorOption, DropdownOption } from "@rootcodelabs/skapp-ui";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import { formatPhoneNumber } from "~community/common/utils/commonUtil";
 import {
   CrmContactFormValues,
   CrmDealResponseType,
@@ -39,8 +40,14 @@ export const getChangedContactFields = (
   if (newValues.email !== originalValues.email) {
     changedFields.email = newValues.email;
   }
-  if (newValues.contactNumber !== originalValues.contactNumber) {
-    changedFields.contactNumber = newValues.contactNumber;
+  if (
+    newValues.contactNumber !== originalValues.contactNumber ||
+    newValues.countryCode !== originalValues.countryCode
+  ) {
+    changedFields.contactNumber = combineContactNumber(
+      newValues.countryCode,
+      newValues.contactNumber
+    );
   }
   if (newValues.companyId !== originalValues.companyId) {
     changedFields.companyId = newValues.companyId;
@@ -123,6 +130,33 @@ export const groupItemsByPriority = <T extends Id>(
   );
 
   return { prioritized, deprioritized };
+};
+
+export const splitContactNumber = (
+  contactNumber: string,
+  defaultCountryCode: string
+): { countryCode: string; number: string } => {
+  if (!contactNumber) {
+    return { countryCode: defaultCountryCode, number: "" };
+  }
+
+  const spaceIndex = contactNumber.indexOf(" ");
+  if (spaceIndex <= 0) {
+    return { countryCode: defaultCountryCode, number: contactNumber };
+  }
+
+  return {
+    countryCode: contactNumber.slice(0, spaceIndex),
+    number: contactNumber.slice(spaceIndex + 1)
+  };
+};
+
+export const combineContactNumber = (
+  countryCode: string,
+  number: string
+): string => {
+  if (!number) return "";
+  return formatPhoneNumber(countryCode, number);
 };
 
 export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
