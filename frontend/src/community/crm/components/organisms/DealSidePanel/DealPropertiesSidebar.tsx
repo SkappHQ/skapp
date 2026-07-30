@@ -23,6 +23,7 @@ import {
   CrmDealContactType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
@@ -52,10 +53,14 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = String(deal.stage.id);
   const selectedOwner = deal.owner;
+  const fullName = getContactFullName({
+    firstName: deal.contactFirstName,
+    lastName: deal.contactLastName
+  });
   const selectedContact: CrmDealContactType | null = deal.contactId
     ? {
         id: deal.contactId,
-        name: deal.contactName ?? "",
+        name: fullName,
         companyName: deal.companyName ?? null
       }
     : null;

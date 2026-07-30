@@ -197,7 +197,8 @@ export interface CrmDealResponseType {
   amount: string | null;
   companyName: string | null;
   contactId: number | null;
-  contactName: string | null;
+  contactFirstName: string | null;
+  contactLastName: string | null;
   owner: CrmOwner;
 }
 

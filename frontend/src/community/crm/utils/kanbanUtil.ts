@@ -51,17 +51,24 @@ export const mapStageDealsToSlice = (
 
 export const mapCreatedDealToSlice = (
   deal: CrmDealResponseType
-): CrmBoardDealSliceType => ({
-  id: deal.id,
-  name: deal.name,
-  contactName: deal.contactName ?? "",
-  companyName: deal.companyName,
-  owner: deal.owner,
-  amount: deal.amount,
-  priority: deal.priority,
-  taskCount: 0,
-  stageId: deal.stage.id
-});
+): CrmBoardDealSliceType => {
+  const fullName = getContactFullName({
+    firstName: deal.contactFirstName,
+    lastName: deal.contactLastName
+  });
+
+  return {
+    id: deal.id,
+    name: deal.name,
+    contactName: fullName,
+    companyName: deal.companyName,
+    owner: deal.owner,
+    amount: deal.amount,
+    priority: deal.priority,
+    taskCount: 0,
+    stageId: deal.stage.id
+  };
+};
 
 export const findDealById = (
   stageMap: CrmBoardStageDealsType[],

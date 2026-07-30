@@ -347,7 +347,8 @@ describe("mapCreatedDealToSlice", () => {
     amount: "1500",
     companyName: "Acme Corp",
     contactId: 21,
-    contactName: "Acme Lead",
+    contactFirstName: "Acme",
+    contactLastName: "Lead",
     owner: OWNER
   };
 
@@ -377,7 +378,11 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should default contactName to an empty string when absent", () => {
-    const result = mapCreatedDealToSlice({ ...response, contactName: null });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      contactFirstName: null,
+      contactLastName: null
+    });
 
     expect(result.contactName).toBe("");
   });
