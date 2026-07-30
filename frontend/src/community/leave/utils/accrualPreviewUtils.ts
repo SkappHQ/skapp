@@ -21,22 +21,24 @@ interface AccrualEvent {
 interface ScheduleConfig {
   accrualStartDate: DateTime;
   perPeriod: number;
-  prorateFirst: boolean;
-  atPeriodStart: boolean;
+  isFirstPeriodProrated: boolean;
+  isAtPeriodStart: boolean;
   lastYear: number | null;
 }
+
+const PREVIEW_DATE_FORMAT = "dd MMM yyyy";
 
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;
 
 const eventDateFor = (
-  atPeriodStart: boolean,
+  isAtPeriodStart: boolean,
   isFirstPeriod: boolean,
   accrualStartDate: DateTime,
   periodStart: DateTime,
   periodEnd: DateTime
 ): DateTime => {
-  if (!atPeriodStart) return periodEnd;
+  if (!isAtPeriodStart) return periodEnd;
   return isFirstPeriod ? accrualStartDate : periodStart;
 };
 
@@ -61,8 +63,13 @@ const calendarEvents = (
   calendarUnit: CalendarUnit,
   config: ScheduleConfig
 ): AccrualEvent[] => {
-  const { accrualStartDate, perPeriod, prorateFirst, atPeriodStart, lastYear } =
-    config;
+  const {
+    accrualStartDate,
+    perPeriod,
+    isFirstPeriodProrated,
+    isAtPeriodStart,
+    lastYear
+  } = config;
   const accrualEvents: AccrualEvent[] = [];
   let periodStart = accrualStartDate;
   let periodEnd = accrualStartDate.endOf(calendarUnit);
@@ -74,7 +81,7 @@ const calendarEvents = (
   ) {
     const isFirstPeriod = periodIndex === 0;
     const eventDate = eventDateFor(
-      atPeriodStart,
+      isAtPeriodStart,
       isFirstPeriod,
       accrualStartDate,
       periodStart,
@@ -82,7 +89,7 @@ const calendarEvents = (
     );
     if (lastYear != null && eventDate.year > lastYear) break;
     const eventDays =
-      isFirstPeriod && prorateFirst
+      isFirstPeriod && isFirstPeriodProrated
         ? firstPeriodDays(
             perPeriod,
             accrualStartDate,
@@ -102,7 +109,7 @@ const intervalEvents = (
   interval: DurationLike,
   config: ScheduleConfig
 ): AccrualEvent[] => {
-  const { accrualStartDate, perPeriod, atPeriodStart, lastYear } = config;
+  const { accrualStartDate, perPeriod, isAtPeriodStart, lastYear } = config;
   const accrualEvents: AccrualEvent[] = [];
   let periodStart = accrualStartDate;
 
@@ -112,7 +119,7 @@ const intervalEvents = (
     periodIndex++
   ) {
     const nextPeriodStart = periodStart.plus(interval);
-    const eventDate = atPeriodStart
+    const eventDate = isAtPeriodStart
       ? periodStart
       : nextPeriodStart.minus({ days: 1 });
     if (lastYear != null && eventDate.year > lastYear) break;
@@ -132,7 +139,7 @@ const toPreviewRows = (
     balance = roundToTwoDecimals(balance + event.days);
     if (capDays != null) balance = Math.min(balance, capDays);
     rows.push({
-      date: event.date.toFormat("dd MMM yyyy"),
+      date: event.date.toFormat(PREVIEW_DATE_FORMAT),
       days: roundToTwoDecimals(event.days),
       balance
     });
@@ -153,11 +160,11 @@ const toPreviewRows = (
  */
 export const buildAccrualPreview = (
   policy: LeavePolicyType,
-  startISO: string | null
+  startISO: string | null | undefined
 ): AccrualPreviewRow[] => {
-  const perPeriod = policy.accrualDays ?? 0;
-  const frequency = policy.frequency ?? null;
-  if (!frequency || perPeriod <= 0) return [];
+  const perPeriod = policy.accrualDays;
+  const frequency = policy.frequency;
+  if (!frequency || !perPeriod || perPeriod <= 0) return [];
 
   const startDate = (
     startISO ? DateTime.fromISO(startISO) : DateTime.now()
@@ -172,8 +179,8 @@ export const buildAccrualPreview = (
   const config: ScheduleConfig = {
     accrualStartDate,
     perPeriod,
-    prorateFirst: policy.firstAccrual === FirstAccrualType.PRORATED,
-    atPeriodStart: policy.accrualTiming === AccrualTiming.PERIOD_START,
+    isFirstPeriodProrated: policy.firstAccrual === FirstAccrualType.PRORATED,
+    isAtPeriodStart: policy.accrualTiming === AccrualTiming.PERIOD_START,
     lastYear: policy.isCarryoverEnabled ? null : accrualStartDate.year
   };
 

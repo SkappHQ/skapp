@@ -23,7 +23,9 @@ interface Props {
   onClose: () => void;
 }
 
-const ASSIGNABLE_POLICIES_PAGE_SIZE = 100;
+// A negative size tells the backend to return every matching policy in a
+// single page, so the assign dropdown lists all active policies (never capped).
+const ASSIGNABLE_POLICIES_PAGE_SIZE = -1;
 
 const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -88,7 +90,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     () =>
       assignablePolicies.find(
         (policy) => String(policy.id) === selectedPolicyId
-      ) ?? null,
+      ),
     [assignablePolicies, selectedPolicyId]
   );
 
@@ -97,8 +99,8 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const previewStartISO = useMemo(
     () =>
       effectiveDateType === EffectiveDateType.SPECIFIC
-        ? specificDate || null
-        : (employee?.joinDate ?? null),
+        ? specificDate
+        : employee?.joinDate,
     [effectiveDateType, specificDate, employee?.joinDate]
   );
 
@@ -144,7 +146,6 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   };
 
   const { mutate: assignLeavePolicy, isPending } = useAssignLeavePolicy(
-    employeeId,
     onAssignSuccess,
     onAssignError
   );

@@ -77,8 +77,8 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
             <UserLeavePolicies
               employeeId={selectedUser}
               employeeName={concatStrings([
-                employeeFirstName ?? "",
-                employeeLastName ?? ""
+                employeeFirstName,
+                employeeLastName
               ])}
             />
           ) : (

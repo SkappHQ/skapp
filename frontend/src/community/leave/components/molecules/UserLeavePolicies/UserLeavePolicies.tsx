@@ -41,9 +41,11 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     isError
   } = useGetEmployeeLeavePolicies(employeeId, currentPage, POLICIES_PER_PAGE);
 
-  const policies = policiesPage?.items ?? [];
-  const totalPages = policiesPage?.totalPages ?? 0;
-  const totalItems = policiesPage?.totalItems ?? 0;
+  const {
+    items: policies = [],
+    totalPages = 0,
+    totalItems = 0
+  } = policiesPage ?? {};
 
   useEffect(() => {
     if (currentPage > 0 && currentPage >= totalPages) {

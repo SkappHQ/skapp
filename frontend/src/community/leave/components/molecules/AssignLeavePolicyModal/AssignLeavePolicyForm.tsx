@@ -3,13 +3,16 @@ import {
   DatePicker,
   Dropdown,
   InputField,
-  RadioButton,
-  Table
+  RadioButton
 } from "@rootcodelabs/skapp-ui";
-import type { TableColumn } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
 
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow
+} from "~community/common/components/organisms/TableView/types";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   AccrualPreviewRow,
@@ -21,14 +24,6 @@ interface PolicyOption {
   label: string;
   value: string;
 }
-
-type AccrualTableRow = {
-  id: number;
-  date: string;
-  action: string;
-  days: number;
-  balance: number;
-};
 
 interface Props {
   selectedPolicyId: string;
@@ -55,48 +50,28 @@ const AssignLeavePolicyForm: FC<Props> = ({
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
-  const accrualTableData: AccrualTableRow[] = useMemo(
+  const accrualHeaders: GridHeader[] = [
+    { id: "date", label: translateText(["assignModal", "colDate"]) },
+    { id: "action", label: translateText(["assignModal", "colAction"]) },
+    { id: "days", label: translateText(["assignModal", "colDays"]) },
+    { id: "balance", label: translateText(["assignModal", "colBalance"]) }
+  ];
+
+  const accrualRows: GridRow[] = useMemo(
     () =>
       accrualPreview.map((row, index) => ({
         id: index,
-        date: row.date,
-        action: translateText(["assignModal", "actionAccrued"]),
-        days: row.days,
-        balance: row.balance
+        date: <span className="body2 text-black">{row.date}</span>,
+        action: (
+          <span className="body2 text-black">
+            {translateText(["assignModal", "actionAccrued"])}
+          </span>
+        ),
+        days: <span className="body2 text-black">{row.days}</span>,
+        balance: <span className="body2 text-black">{row.balance}</span>
       })),
     [accrualPreview, translateText]
   );
-
-  const accrualColumns: TableColumn<AccrualTableRow>[] = [
-    {
-      key: "date",
-      header: translateText(["assignModal", "colDate"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "action",
-      header: translateText(["assignModal", "colAction"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "days",
-      header: translateText(["assignModal", "colDays"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    },
-    {
-      key: "balance",
-      header: translateText(["assignModal", "colBalance"]),
-      render: (value) => (
-        <span className="body2 text-black">{String(value)}</span>
-      )
-    }
-  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -128,7 +103,9 @@ const AssignLeavePolicyForm: FC<Props> = ({
             type="button"
             role="radio"
             aria-checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
-            onClick={() => onEffectiveDateTypeChange(EffectiveDateType.HIRE_DATE)}
+            onClick={() =>
+              onEffectiveDateTypeChange(EffectiveDateType.HIRE_DATE)
+            }
             className="flex w-fit cursor-pointer items-center gap-3"
           >
             <RadioButton
@@ -143,7 +120,9 @@ const AssignLeavePolicyForm: FC<Props> = ({
             type="button"
             role="radio"
             aria-checked={effectiveDateType === EffectiveDateType.SPECIFIC}
-            onClick={() => onEffectiveDateTypeChange(EffectiveDateType.SPECIFIC)}
+            onClick={() =>
+              onEffectiveDateTypeChange(EffectiveDateType.SPECIFIC)
+            }
             className="flex w-fit cursor-pointer items-center gap-3"
           >
             <RadioButton
@@ -204,13 +183,15 @@ const AssignLeavePolicyForm: FC<Props> = ({
           <p className="body2 text-secondary-text">
             {translateText(["assignModal", "accrualPreviewTitle"])}
           </p>
-          <Table<AccrualTableRow>
-            columns={accrualColumns}
-            data={accrualTableData}
-            tableAriaLabel={translateText([
-              "assignModal",
-              "accrualPreviewTitle"
-            ])}
+          <TableView
+            ariaLabel={{
+              regionAriaLabel: translateText([
+                "assignModal",
+                "accrualPreviewTitle"
+              ])
+            }}
+            headers={accrualHeaders}
+            rows={accrualRows}
             height="14rem"
           />
         </div>

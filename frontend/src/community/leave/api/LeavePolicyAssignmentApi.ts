@@ -61,7 +61,6 @@ const assignLeavePolicy = (
   );
 
 export const useAssignLeavePolicy = (
-  employeeId: number,
   onSuccess: () => void,
   onError: (error: AxiosError) => void
 ): UseMutationResult<
@@ -79,9 +78,7 @@ export const useAssignLeavePolicy = (
       });
       queryClient.invalidateQueries({
         queryKey:
-          leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS(
-            employeeId
-          )
+          leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL
       });
       onSuccess();
     },
@@ -98,7 +95,6 @@ const unassignLeavePolicy = (
   );
 
 export const useUnassignLeavePolicy = (
-  employeeId: number | undefined,
   onSuccess: () => void,
   onError: (error: AxiosError) => void
 ): UseMutationResult<
@@ -114,14 +110,10 @@ export const useUnassignLeavePolicy = (
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
       });
-      if (employeeId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey:
-            leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS(
-              employeeId
-            )
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey:
+          leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL
+      });
       onSuccess();
     },
     onError

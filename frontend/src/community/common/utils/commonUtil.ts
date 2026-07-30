@@ -611,8 +611,10 @@ export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
   return characterLengths.PHONE_NUMBER_LENGTH_MAX - countryCodeValue.length;
 };
 
-export const concatStrings = (args: string[], separator: string = " ") =>
-  args.join(separator);
+export const concatStrings = (
+  args: (string | undefined | null)[],
+  separator: string = " "
+) => args.join(separator);
 
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
