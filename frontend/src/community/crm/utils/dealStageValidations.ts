@@ -2,6 +2,7 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { isDealStageNameValid } from "~community/crm/regex/crmRegexPatterns";
 import { CrmDealStageType } from "~community/crm/types/CommonTypes";
 
 export const dealStageValidations = (
@@ -13,9 +14,17 @@ export const dealStageValidations = (
     name: Yup.string()
       .trim()
       .required(translator(["dealStageModal", "validations", "nameRequired"]))
+      .min(
+        characterLengths.DEAL_STAGE_NAME_MIN_LENGTH,
+        translator(["dealStageModal", "validations", "nameInvalid"])
+      )
       .max(
         characterLengths.DEAL_STAGE_NAME_LENGTH,
         translator(["dealStageModal", "validations", "nameLength"])
+      )
+      .matches(
+        isDealStageNameValid(),
+        translator(["dealStageModal", "validations", "nameInvalid"])
       )
       .test(
         "is-deal-stage-name-unique",
