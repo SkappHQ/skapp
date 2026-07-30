@@ -175,7 +175,7 @@ public class PeopleController {
 	}
 
 	@GetMapping(value = "/check-payroll-id-uniqueness")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> checkPayrollIdUniqueness(
 			PayrollIdUniquenessCheckDto payrollIdUniquenessCheckDto) {
 		ResponseEntityDto response = peopleService.checkPayrollIdUniqueness(payrollIdUniquenessCheckDto);
@@ -183,7 +183,7 @@ public class PeopleController {
 	}
 
 	@GetMapping(value = "/check-tin-uniqueness")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_EMPLOYEE')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> checkTinUniqueness(TinUniquenessCheckDto tinUniquenessCheckDto) {
 		ResponseEntityDto response = peopleService.checkTinUniqueness(tinUniquenessCheckDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
