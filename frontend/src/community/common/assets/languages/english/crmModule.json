@@ -392,7 +392,10 @@
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions",
       "description": "Description",
-      "tasks": "Tasks",
+      "tasks": {
+        "title": "Tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this deal"
+      },
       "addTask": "Add task",
       "value": "Value",
       "priority": "Priority",
