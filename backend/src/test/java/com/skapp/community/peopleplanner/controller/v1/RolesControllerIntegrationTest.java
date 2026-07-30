@@ -102,23 +102,6 @@ class RolesControllerIntegrationTest {
 		return request;
 	}
 
-	@SuppressWarnings("removal")
-	private ModuleRoleRestrictionRequestDto restrictionRequest(ModuleType module, List<RoleLevel> restrictions) {
-		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
-		request.setModule(module);
-		request.setRestrictions(restrictions);
-		return request;
-	}
-
-	@SuppressWarnings("removal")
-	private ModuleRoleRestrictionRequestDto legacyRequest(ModuleType module, boolean isAdmin, boolean isManager) {
-		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
-		request.setModule(module);
-		request.setIsAdmin(isAdmin);
-		request.setIsManager(isManager);
-		return request;
-	}
-
 	/**
 	 * Stores a raw restrictions value, which the update endpoint cannot produce, so the
 	 * read path can be exercised against values already sitting in the table.
@@ -330,10 +313,6 @@ class RolesControllerIntegrationTest {
 			Assertions.assertEquals("MANAGER", storedRestrictions(ModuleType.PEOPLE));
 		}
 
-		/**
-		 * Remove runs before add, so the two directions cannot cancel each other out
-		 * depending on payload order.
-		 */
 		@Test
 		@DisplayName("Update restrictions with add and remove - Applies remove before add")
 		void updateRestrictions_AddAndRemove_AppliesRemoveBeforeAdd() throws Exception {
@@ -387,11 +366,6 @@ class RolesControllerIntegrationTest {
 			Assertions.assertEquals("MANAGER", storedRestrictions(ModuleType.LEAVE));
 		}
 
-		/**
-		 * Removal is deliberately not validated against the module's restrictable roles,
-		 * so a value stored before this endpoint validated its input can still be
-		 * cleared.
-		 */
 		@Test
 		@DisplayName("Update restrictions removing an unrestrictable stored level - Clears it")
 		void updateRestrictions_RemoveUnrestrictableStoredLevel_ClearsIt() throws Exception {
@@ -410,6 +384,19 @@ class RolesControllerIntegrationTest {
 				.andExpect(status().isOk());
 
 			Assertions.assertTrue(moduleRoleRestrictionDao.findById(ModuleType.PEOPLE).isEmpty());
+		}
+
+		@Test
+		@DisplayName("Update restrictions then read back - Returns persisted restrictions")
+		void updateRestrictions_ThenRead_ReturnsPersistedRestrictions() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.MANAGER), null))
+				.andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()))
+				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
+				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
 		}
 
 	}
@@ -432,10 +419,6 @@ class RolesControllerIntegrationTest {
 				.andExpect(status().isBadRequest());
 		}
 
-		/**
-		 * PEOPLE can restrict Admin and Manager, but never Employee, so a stored Employee
-		 * restriction could never be enforced.
-		 */
 		@Test
 		@DisplayName("Update restrictions adding a non manager level role - Returns Bad Request")
 		void updateRestrictions_AddNonManagerLevelRole_ReturnsBadRequest() throws Exception {
@@ -477,95 +460,6 @@ class RolesControllerIntegrationTest {
 
 			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN), null))
 				.andExpect(status().isForbidden());
-		}
-
-	}
-
-	/**
-	 * The delta payload ships with a frontend change, so until both are deployed the
-	 * endpoint still has to honour the boolean pair rather than silently save nothing.
-	 */
-	@Nested
-	@DisplayName("Update Role Restrictions Backwards Compatibility Tests")
-	class UpdateRoleRestrictionsBackwardsCompatibilityTests {
-
-		/**
-		 * The same set of restricted roles always has to be written the same way, so the
-		 * stored value stays comparable.
-		 */
-		@Test
-		@DisplayName("Update restrictions with unordered restrictions - Persists declaration order")
-		void updateRestrictions_UnorderedRestrictions_PersistsDeclarationOrder() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.CRM, List.of(RoleLevel.SALES_MANAGER, RoleLevel.ADMIN)))
-				.andExpect(status().isOk());
-
-			Assertions.assertEquals("ADMIN,SALES_MANAGER", storedRestrictions(ModuleType.CRM));
-		}
-
-		@Test
-		@DisplayName("Update restrictions with no restrictions - Persists null")
-		void updateRestrictions_NoRestrictions_PersistsNull() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of())).andExpect(status().isOk());
-
-			Assertions.assertNull(storedRestrictions(ModuleType.PEOPLE));
-		}
-
-		/**
-		 * Legacy clients send the boolean pair instead of a role list, and the module's
-		 * manager level role is what that pair means.
-		 */
-		@Test
-		@DisplayName("Update restrictions with legacy booleans for CRM - Persists sales manager")
-		void updateRestrictions_LegacyBooleansForCrm_PersistsSalesManager() throws Exception {
-			updateRestrictions(legacyRequest(ModuleType.CRM, false, true)).andExpect(status().isOk());
-
-			Assertions.assertEquals("SALES_MANAGER", storedRestrictions(ModuleType.CRM));
-		}
-
-		/**
-		 * The boolean pair cannot express a module whose manager level role is not
-		 * restrictable, so PM's isManager has nothing to map onto.
-		 */
-		@Test
-		@DisplayName("Update restrictions with legacy booleans for a module without a manager level - Ignores isManager")
-		void updateRestrictions_LegacyBooleansForModuleWithoutManagerLevel_IgnoresIsManager() throws Exception {
-			updateRestrictions(legacyRequest(ModuleType.PM, false, true)).andExpect(status().isOk());
-
-			Assertions.assertNull(storedRestrictions(ModuleType.PM));
-		}
-
-		/**
-		 * A legacy payload replaces the whole set rather than being merged into it, which
-		 * is what the boolean pair has always meant.
-		 */
-		@Test
-		@DisplayName("Update restrictions with legacy booleans over existing restrictions - Replaces them")
-		void updateRestrictions_LegacyBooleansOverExistingRestrictions_ReplacesThem() throws Exception {
-			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
-
-			updateRestrictions(legacyRequest(ModuleType.PEOPLE, true, false)).andExpect(status().isOk());
-
-			Assertions.assertEquals("ADMIN", storedRestrictions(ModuleType.PEOPLE));
-		}
-
-		@Test
-		@DisplayName("Update restrictions then read back - Returns persisted restrictions")
-		void updateRestrictions_ThenRead_ReturnsPersistedRestrictions() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.MANAGER)))
-				.andExpect(status().isOk());
-
-			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
-		}
-
-		@Test
-		@DisplayName("Update restrictions with a legacy restrictions list the module cannot restrict - Returns Bad Request")
-		void updateRestrictions_LegacyRestrictionsNotRestrictable_ReturnsBadRequest() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.EMPLOYEE)))
-				.andExpect(status().isBadRequest());
 		}
 
 	}

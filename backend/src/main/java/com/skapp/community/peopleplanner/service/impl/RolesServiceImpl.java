@@ -67,8 +67,6 @@ public class RolesServiceImpl implements RolesService {
 
 	private final TeamDao teamDao;
 
-	// unused since module_role_restriction stopped being written; both are kept only so
-	// the enterprise subclass constructor keeps compiling, and go with the legacy table
 	private final PeopleMapper peopleMapper;
 
 	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
@@ -122,17 +120,7 @@ public class RolesServiceImpl implements RolesService {
 		return new ResponseEntityDto(false, messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT));
 	}
 
-	/**
-	 * Read-modify-write, so it relies on the caller's transaction. {@code remove} is
-	 * applied before {@code add}, matching the delta semantics already used for employee
-	 * skills, which makes a level present in both lists a no-op rather than a removal -
-	 * {@link #validateRoleRestrictionRequest} rejects that case instead.
-	 */
 	private Set<RoleLevel> resolveRestrictedRoles(ModuleRoleRestrictionRequestDto requestDto) {
-		if (!isDeltaRequest(requestDto)) {
-			return resolveReplacementRestrictedRoles(requestDto);
-		}
-
 		Set<RoleLevel> restrictedRoles = EnumSet.noneOf(RoleLevel.class);
 		restrictedRoles.addAll(getRestrictedRoleLevels(requestDto.getModule()));
 
@@ -146,49 +134,13 @@ public class RolesServiceImpl implements RolesService {
 		return restrictedRoles;
 	}
 
-	private boolean isDeltaRequest(ModuleRoleRestrictionRequestDto requestDto) {
-		return requestDto.getAdd() != null || requestDto.getRemove() != null;
-	}
-
-	/**
-	 * Full-replacement fallback for a client that has not moved to the delta payload.
-	 * Without it a split backend/frontend deploy would accept the old payload, save
-	 * nothing and still report success. Removed with the deprecated fields themselves.
-	 */
-	@SuppressWarnings("removal")
-	private Set<RoleLevel> resolveReplacementRestrictedRoles(ModuleRoleRestrictionRequestDto requestDto) {
-		Set<RoleLevel> restrictedRoles = EnumSet.noneOf(RoleLevel.class);
-
-		if (requestDto.getRestrictions() != null && !requestDto.getRestrictions().isEmpty()) {
-			restrictedRoles.addAll(requestDto.getRestrictions());
-			return restrictedRoles;
-		}
-
-		if (Boolean.TRUE.equals(requestDto.getIsAdmin())) {
-			restrictedRoles.add(RoleLevel.ADMIN);
-		}
-		if (Boolean.TRUE.equals(requestDto.getIsManager())) {
-			restrictedRoles.add(PeopleUtil.getSecondaryRestrictionRole(requestDto.getModule()));
-		}
-
-		// the boolean pair cannot express a module whose secondary role is not
-		// restrictable, so drop anything the module does not support
-		restrictedRoles.retainAll(getRestrictableRoles(requestDto.getModule()));
-		return restrictedRoles;
-	}
-
-	@SuppressWarnings("removal")
 	private void validateRoleRestrictionRequest(ModuleRoleRestrictionRequestDto requestDto) {
 		ModuleType module = requestDto.getModule();
 		if (module == null || module == ModuleType.COMMON) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_MODULE);
 		}
 
-		List<RoleLevel> restrictableRoles = getRestrictableRoles(module);
-		validateRestrictionRoleLevels(requestDto.getAdd(), module, restrictableRoles);
-		validateRestrictionRoleLevels(requestDto.getRestrictions(), module, restrictableRoles);
-		// removal is not checked against restrictableRoles, so a value stored before it
-		// became unrestrictable can still be cleared
+		validateRestrictionRoleLevels(requestDto.getAdd(), module, getRestrictableRoles(module));
 		validateRestrictionRoleLevels(requestDto.getRemove(), module, null);
 
 		if (requestDto.getAdd() == null || requestDto.getRemove() == null) {
