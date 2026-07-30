@@ -184,3 +184,5 @@ export const employeeRestrictedRoutes = [
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+
+export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];

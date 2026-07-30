@@ -24,7 +24,7 @@ const styles = (theme: Theme) => ({
   stackContainerStyle: {
     width: "max-content",
     height: "4rem",
-    background: theme.palette.grey[50],
+    background: theme.palette.common.white,
     borderWidth: "0.063rem 0rem",
     borderStyle: "solid",
     borderColor: theme.palette.grey[100],
@@ -63,7 +63,7 @@ const styles = (theme: Theme) => ({
     ...(isDrawerToggled && {
       [theme.breakpoints.up("xl")]: { flex: 1.5 }
     }),
-    background: theme.palette.grey[50],
+    background: theme.palette.common.white,
     borderRight: "0.063rem solid",
     borderColor: theme.palette.grey[200]
   }),
