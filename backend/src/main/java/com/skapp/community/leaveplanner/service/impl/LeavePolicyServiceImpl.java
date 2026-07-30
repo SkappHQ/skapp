@@ -3,21 +3,19 @@ package com.skapp.community.leaveplanner.service.impl;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
-import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
-import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
-import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
+import com.skapp.community.leaveplanner.payload.LeavePolicyConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
@@ -44,9 +42,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,8 +67,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final LeaveRequestDao leaveRequestDao;
 
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
-
-	private final UserService userService;
 
 	private final JsonMapper jsonMapper;
 
@@ -191,8 +185,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto enableLeavePolicies() {
 		log.info("enableLeavePolicies: execution started");
 
-		User currentUser = userService.getCurrentUser();
-
 		Optional<OrganizationConfig> existingConfig = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
 
@@ -200,11 +192,11 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_ENABLED);
 		}
 
-		int cancelledPendingRequests = cancelPendingLeaveRequests();
-		int revokedApprovedRequests = revokeFutureApprovedLeaveRequests();
-		int removedAllocations = removeExistingLeaveAllocations();
+		cancelPendingLeaveRequests();
+		revokeFutureApprovedLeaveRequests();
+		removeExistingLeaveAllocations();
 
-		String jsonValue = buildLeavePolicyConfigValue(true);
+		String jsonValue = buildLeavePolicyConfigValue();
 
 		OrganizationConfig organizationConfig = existingConfig
 			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), jsonValue));
@@ -241,25 +233,25 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			return;
 		}
 
-		organizationConfigDao.save(
-				new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue(true)));
+		organizationConfigDao
+			.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue()));
 
 		log.info("setDefaultLeavePolicyConfig: execution ended");
 	}
 
 	private int removeExistingLeaveAllocations() {
-		List<LeaveEntitlement> allocations = leaveEntitlementDao.findByIsActiveTrue();
-		if (allocations.isEmpty()) {
+		List<LeaveEntitlement> entitlements = leaveEntitlementDao.findByIsActiveTrue();
+		if (entitlements.isEmpty()) {
 			return 0;
 		}
 
-		allocations.forEach(allocation -> {
-			allocation.setTotalDaysAllocated(0F);
-			allocation.setActive(false);
+		entitlements.forEach(entitlement -> {
+			entitlement.setTotalDaysAllocated(0F);
+			entitlement.setActive(false);
 		});
-		leaveEntitlementDao.saveAll(allocations);
+		leaveEntitlementDao.saveAll(entitlements);
 
-		return allocations.size();
+		return entitlements.size();
 	}
 
 	private int cancelPendingLeaveRequests() {
@@ -309,16 +301,14 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leaveRequestEntitlementDao.deleteAllInBatch(leaveRequestEntitlements);
 	}
 
-	private String buildLeavePolicyConfigValue(boolean enabled) {
-		ObjectNode configValue = jsonMapper.createObjectNode();
-		configValue.put(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED, enabled);
-		return jsonMapper.writeValueAsString(configValue);
+	private String buildLeavePolicyConfigValue() {
+		return jsonMapper.writeValueAsString(new LeavePolicyConfigDto(true));
 	}
 
 	private boolean isLeavePolicyEnabled(OrganizationConfig organizationConfig) {
-		JsonNode configNode = jsonMapper.readTree(organizationConfig.getOrganizationConfigValue());
-		JsonNode enabledNode = configNode.get(LeaveModuleConstant.LEAVE_POLICY_IS_ENABLED);
-		return enabledNode != null && enabledNode.asBoolean();
+		LeavePolicyConfigDto config = jsonMapper.readValue(organizationConfig.getOrganizationConfigValue(),
+				LeavePolicyConfigDto.class);
+		return Boolean.TRUE.equals(config.getIsEnabled());
 	}
 
 	private LeavePolicy getLeavePolicyById(Long id) {

@@ -1,4 +1,4 @@
-package com.skapp.community.leaveplanner.payload.response;
+package com.skapp.community.leaveplanner.payload;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LeavePolicyConfigResponseDto {
+public class LeavePolicyConfigDto {
 
-	private Boolean enabled;
+	private Boolean isEnabled;
 
 }
