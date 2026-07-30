@@ -86,7 +86,7 @@ public class LeavePolicyController {
 	@Operation(summary = "Get leave policy configuration",
 			description = "Returns whether the leave policies feature is enabled for the tenant")
 	@GetMapping("/config")
-	@PreAuthorize("isAuthenticated()")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getLeavePolicyConfig() {
 		ResponseEntityDto response = leavePolicyService.getLeavePolicyConfig();
 		return new ResponseEntity<>(response, HttpStatus.OK);
