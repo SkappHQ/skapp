@@ -8,7 +8,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -189,6 +189,16 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const clearError = (field: keyof CrmTaskFormTypes) =>
     setFieldError(field, undefined);
 
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    handleChange(e);
+    clearError("name");
+  };
+
+  const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    handleChange(e);
+    clearError("notes");
+  };
+
   const handleTypeSelect = (value: string) => {
     setFieldValue("type", getCategoryById(Number(value)) ?? null);
     clearError("type");
@@ -262,10 +272,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
-          onChange={(e) => {
-            handleChange(e);
-            clearError("name");
-          }}
+          onChange={handleNameChange}
           onBlur={handleBlur}
           aria-label={translateText(["ariaLabels", "task"])}
           fullWidth
@@ -396,10 +403,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           label={translateText(["labels", "notes"])}
           errorMessage={errors.notes}
           state={errors.notes ? "error" : "default"}
-          onChange={(e) => {
-            handleChange(e);
-            clearError("notes");
-          }}
+          onChange={handleNotesChange}
           onBlur={handleBlur}
           rows={3}
           aria-label={translateText(["ariaLabels", "notes"])}
