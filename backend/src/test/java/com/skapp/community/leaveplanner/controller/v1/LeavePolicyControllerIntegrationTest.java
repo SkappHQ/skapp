@@ -373,16 +373,16 @@ class LeavePolicyControllerIntegrationTest {
 		void enableLeavePolicies_LeaveAdmin_ReturnsEnabled() throws Exception {
 			performGetConfig(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].enabled").value(false));
+				.andExpect(jsonPath("$.results[0].isEnabled").value(false));
 
 			performEnable(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results[0].enabled").value(true));
+				.andExpect(jsonPath("$.results[0].isEnabled").value(true));
 
 			performGetConfig(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].enabled").value(true));
+				.andExpect(jsonPath("$.results[0].isEnabled").value(true));
 		}
 
 		@Test

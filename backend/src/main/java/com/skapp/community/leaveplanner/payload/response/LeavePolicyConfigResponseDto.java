@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LeavePolicyConfigResponseDto {
 
-	private Boolean enabled;
+	private Boolean isEnabled;
 
 }
