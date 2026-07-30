@@ -1,9 +1,4 @@
-import {
-  InputField,
-  Popper,
-  PopperProps,
-  SearchIcon
-} from "@rootcodelabs/skapp-ui";
+import { InputField, Popper, SearchIcon } from "@rootcodelabs/skapp-ui";
 import React, {
   ChangeEvent,
   FC,
@@ -59,7 +54,7 @@ export interface SearchableDropdownProps {
   state?: "default" | "error";
   errorMessage?: string;
   variant?: "sm" | "md" | "lg";
-  positionStrategy?: PopperProps["positionStrategy"];
+  positionStrategy?: "absolute" | "fixed";
   onClose?: () => void;
   isOpenOnFocus?: boolean;
 }

@@ -299,7 +299,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
               mode="single"
               selected={parsedDueDate}
               onSelect={handleDueDateSelect}
-              popperProps={{ position: "bottom-end", positionStrategy: "fixed" }}
             >
               <div>
                 <InputField
@@ -341,7 +340,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
                 state={errors.owner ? "error" : "default"}
                 errorMessage={errors.owner}
                 emptyMessage={translateText(["emptyStates", "noOwners"])}
-                positionStrategy="fixed"
                 required
               />
             )}
@@ -362,7 +360,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
           onSelect={handleContactSelect}
           emptyMessage={translateText(["emptyStates", "noContacts"])}
           isOpenOnFocus={isContactSearchEnabled}
-          positionStrategy="fixed"
         />
 
         <SelectableSearchField
@@ -379,7 +376,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
           onSelect={handleDealSelect}
           emptyMessage={translateText(["emptyStates", "noDeals"])}
           isOpenOnFocus={isDealSearchEnabled}
-          positionStrategy="fixed"
         />
 
         <TextArea
