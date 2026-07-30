@@ -93,10 +93,29 @@ class RolesControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ModuleRoleRestrictionRequestDto deltaRequest(ModuleType module, List<RoleLevel> add,
+			List<RoleLevel> remove) {
+		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
+		request.setModule(module);
+		request.setAdd(add);
+		request.setRemove(remove);
+		return request;
+	}
+
+	@SuppressWarnings("removal")
 	private ModuleRoleRestrictionRequestDto restrictionRequest(ModuleType module, List<RoleLevel> restrictions) {
 		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
 		request.setModule(module);
 		request.setRestrictions(restrictions);
+		return request;
+	}
+
+	@SuppressWarnings("removal")
+	private ModuleRoleRestrictionRequestDto legacyRequest(ModuleType module, boolean isAdmin, boolean isManager) {
+		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
+		request.setModule(module);
+		request.setIsAdmin(isAdmin);
+		request.setIsManager(isManager);
 		return request;
 	}
 
@@ -283,8 +302,192 @@ class RolesControllerIntegrationTest {
 	}
 
 	@Nested
-	@DisplayName("Update Role Restrictions Tests")
-	class UpdateRoleRestrictionsTests {
+	@DisplayName("Update Role Restrictions Delta Tests")
+	class UpdateRoleRestrictionsDeltaTests {
+
+		@Test
+		@DisplayName("Update restrictions with add only - Adds to the existing restrictions")
+		void updateRestrictions_AddOnly_AddsToExistingRestrictions() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, RoleLevel.ADMIN.name());
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.MANAGER), null)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH)
+					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT)));
+
+			Assertions.assertEquals("ADMIN,MANAGER", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions with remove only - Removes from the existing restrictions")
+		void updateRestrictions_RemoveOnly_RemovesFromExistingRestrictions() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, null, List.of(RoleLevel.ADMIN)))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("MANAGER", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		/**
+		 * Remove runs before add, so the two directions cannot cancel each other out
+		 * depending on payload order.
+		 */
+		@Test
+		@DisplayName("Update restrictions with add and remove - Applies remove before add")
+		void updateRestrictions_AddAndRemove_AppliesRemoveBeforeAdd() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, RoleLevel.ADMIN.name());
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.MANAGER), List.of(RoleLevel.ADMIN)))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("MANAGER", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions adding an already restricted level - Is a no-op")
+		void updateRestrictions_AddExistingLevel_IsNoOp() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, RoleLevel.ADMIN.name());
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN), null))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("ADMIN", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions removing a level that is not restricted - Is a no-op")
+		void updateRestrictions_RemoveMissingLevel_IsNoOp() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, RoleLevel.ADMIN.name());
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, null, List.of(RoleLevel.MANAGER)))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("ADMIN", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions with a delta emptying the set - Persists null")
+		void updateRestrictions_DeltaEmptyingTheSet_PersistsNull() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, RoleLevel.ADMIN.name());
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, null, List.of(RoleLevel.ADMIN)))
+				.andExpect(status().isOk());
+
+			Assertions.assertNull(storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions on a module with no stored row - Adds against an empty set")
+		void updateRestrictions_NoStoredRow_AddsAgainstEmptySet() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.LEAVE, List.of(RoleLevel.MANAGER), null))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("MANAGER", storedRestrictions(ModuleType.LEAVE));
+		}
+
+		/**
+		 * Removal is deliberately not validated against the module's restrictable roles,
+		 * so a value stored before this endpoint validated its input can still be
+		 * cleared.
+		 */
+		@Test
+		@DisplayName("Update restrictions removing an unrestrictable stored level - Clears it")
+		void updateRestrictions_RemoveUnrestrictableStoredLevel_ClearsIt() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN,EMPLOYEE");
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, null, List.of(RoleLevel.EMPLOYEE)))
+				.andExpect(status().isOk());
+
+			Assertions.assertEquals("ADMIN", storedRestrictions(ModuleType.PEOPLE));
+		}
+
+		@Test
+		@DisplayName("Update restrictions no longer writes the legacy table")
+		void updateRestrictions_DeltaRequest_DoesNotWriteLegacyTable() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN), null))
+				.andExpect(status().isOk());
+
+			Assertions.assertTrue(moduleRoleRestrictionDao.findById(ModuleType.PEOPLE).isEmpty());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Update Role Restrictions Validation Tests")
+	class UpdateRoleRestrictionsValidationTests {
+
+		@Test
+		@DisplayName("Update restrictions with the same level in add and remove - Returns Bad Request")
+		void updateRestrictions_OverlappingAddAndRemove_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN), List.of(RoleLevel.ADMIN)))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions adding a level the module cannot restrict - Returns Bad Request")
+		void updateRestrictions_LevelNotRestrictableForModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.SALES_MANAGER), null))
+				.andExpect(status().isBadRequest());
+		}
+
+		/**
+		 * PEOPLE can restrict Admin and Manager, but never Employee, so a stored Employee
+		 * restriction could never be enforced.
+		 */
+		@Test
+		@DisplayName("Update restrictions adding a non manager level role - Returns Bad Request")
+		void updateRestrictions_AddNonManagerLevelRole_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.EMPLOYEE), null))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions with a duplicate level in add - Returns Bad Request")
+		void updateRestrictions_DuplicateLevelInAdd_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN, RoleLevel.ADMIN), null))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions for a module with no restrictable roles - Returns Bad Request")
+		void updateRestrictions_ModuleWithNoRestrictableRoles_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.ESIGN, List.of(RoleLevel.ADMIN), null))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions for the COMMON module - Returns Bad Request")
+		void updateRestrictions_CommonModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(ModuleType.COMMON, List.of(RoleLevel.ADMIN), null))
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions without a module - Returns Bad Request")
+		void updateRestrictions_NoModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions(deltaRequest(null, List.of(RoleLevel.ADMIN), null)).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update restrictions without super admin role - Returns Forbidden")
+		void updateRestrictions_WithoutSuperAdminRole_ReturnsForbidden() throws Exception {
+			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
+
+			updateRestrictions(deltaRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN), null))
+				.andExpect(status().isForbidden());
+		}
+
+	}
+
+	/**
+	 * The delta payload ships with a frontend change, so until both are deployed the
+	 * endpoint still has to honour the boolean pair rather than silently save nothing.
+	 */
+	@Nested
+	@DisplayName("Update Role Restrictions Backwards Compatibility Tests")
+	class UpdateRoleRestrictionsBackwardsCompatibilityTests {
 
 		/**
 		 * The same set of restricted roles always has to be written the same way, so the
@@ -293,13 +496,8 @@ class RolesControllerIntegrationTest {
 		@Test
 		@DisplayName("Update restrictions with unordered restrictions - Persists declaration order")
 		void updateRestrictions_UnorderedRestrictions_PersistsDeclarationOrder() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.CRM,
-					List.of(RoleLevel.SALES_MANAGER, RoleLevel.ADMIN, RoleLevel.ADMIN)))
-				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH)
-					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT)));
+			updateRestrictions(restrictionRequest(ModuleType.CRM, List.of(RoleLevel.SALES_MANAGER, RoleLevel.ADMIN)))
+				.andExpect(status().isOk());
 
 			Assertions.assertEquals("ADMIN,SALES_MANAGER", storedRestrictions(ModuleType.CRM));
 		}
@@ -319,13 +517,35 @@ class RolesControllerIntegrationTest {
 		@Test
 		@DisplayName("Update restrictions with legacy booleans for CRM - Persists sales manager")
 		void updateRestrictions_LegacyBooleansForCrm_PersistsSalesManager() throws Exception {
-			ModuleRoleRestrictionRequestDto request = restrictionRequest(ModuleType.CRM, null);
-			request.setIsAdmin(false);
-			request.setIsManager(true);
-
-			updateRestrictions(request).andExpect(status().isOk());
+			updateRestrictions(legacyRequest(ModuleType.CRM, false, true)).andExpect(status().isOk());
 
 			Assertions.assertEquals("SALES_MANAGER", storedRestrictions(ModuleType.CRM));
+		}
+
+		/**
+		 * The boolean pair cannot express a module whose manager level role is not
+		 * restrictable, so PM's isManager has nothing to map onto.
+		 */
+		@Test
+		@DisplayName("Update restrictions with legacy booleans for a module without a manager level - Ignores isManager")
+		void updateRestrictions_LegacyBooleansForModuleWithoutManagerLevel_IgnoresIsManager() throws Exception {
+			updateRestrictions(legacyRequest(ModuleType.PM, false, true)).andExpect(status().isOk());
+
+			Assertions.assertNull(storedRestrictions(ModuleType.PM));
+		}
+
+		/**
+		 * A legacy payload replaces the whole set rather than being merged into it, which
+		 * is what the boolean pair has always meant.
+		 */
+		@Test
+		@DisplayName("Update restrictions with legacy booleans over existing restrictions - Replaces them")
+		void updateRestrictions_LegacyBooleansOverExistingRestrictions_ReplacesThem() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
+
+			updateRestrictions(legacyRequest(ModuleType.PEOPLE, true, false)).andExpect(status().isOk());
+
+			Assertions.assertEquals("ADMIN", storedRestrictions(ModuleType.PEOPLE));
 		}
 
 		@Test
@@ -342,12 +562,10 @@ class RolesControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Update restrictions without super admin role - Returns Forbidden")
-		void updateRestrictions_WithoutSuperAdminRole_ReturnsForbidden() throws Exception {
-			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
-
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN)))
-				.andExpect(status().isForbidden());
+		@DisplayName("Update restrictions with a legacy restrictions list the module cannot restrict - Returns Bad Request")
+		void updateRestrictions_LegacyRestrictionsNotRestrictable_ReturnsBadRequest() throws Exception {
+			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.EMPLOYEE)))
+				.andExpect(status().isBadRequest());
 		}
 
 	}
