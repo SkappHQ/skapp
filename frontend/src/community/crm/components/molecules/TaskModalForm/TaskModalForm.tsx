@@ -55,8 +55,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
     dirty,
     isSubmitting,
     setFieldValue,
+    setFieldError,
     submitForm
   } = formik;
+
+  const clearError = (field: keyof CrmTaskFormTypes) =>
+    setFieldError(field, undefined);
 
   const {
     setIsTaskModalOpen,
@@ -187,10 +191,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const handleTypeSelect = (value: string) => {
     setFieldValue("type", getCategoryById(Number(value)) ?? null);
+    clearError("type");
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
     setFieldValue("dueDate", date?.toISOString() ?? null);
+    clearError("dueDate");
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
@@ -198,6 +204,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     setFieldValue("owner", owner?.employeeId);
+    clearError("owner");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -255,7 +262,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
           state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e);
+            clearError("name");
+          }}
           onBlur={handleBlur}
           aria-label={translateText(["ariaLabels", "task"])}
           fullWidth
@@ -299,6 +309,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
               mode="single"
               selected={parsedDueDate}
               onSelect={handleDueDateSelect}
+              popperProps={{ position: "bottom-start", isFlip: true }}
             >
               <div>
                 <InputField
@@ -385,7 +396,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
           label={translateText(["labels", "notes"])}
           errorMessage={errors.notes}
           state={errors.notes ? "error" : "default"}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e);
+            clearError("notes");
+          }}
           onBlur={handleBlur}
           rows={3}
           aria-label={translateText(["ariaLabels", "notes"])}
