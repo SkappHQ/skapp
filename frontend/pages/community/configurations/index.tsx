@@ -38,7 +38,7 @@ const Configurations: NextPage = () => {
     return allTabs.filter((tab) => {
       if (!tab.requiredRoles.some((role) => userRoles.includes(role)))
         return false;
-      if (tab.id === "people") return googleConnectionStatus.connected;
+      if (tab.id === "people") return Boolean(googleConnectionStatus.isConnected);
       return true;
     });
   }, [allTabs, user?.roles, googleConnectionStatus]);
