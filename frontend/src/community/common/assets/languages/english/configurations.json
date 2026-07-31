@@ -241,6 +241,18 @@
       "cancelButton": "Cancel"
     }
   },
+  "businessUnit": {
+    "title": "Business Unit",
+    "addButton": "Add unit",
+    "emptyState": {
+      "title": "No Business Units",
+      "description": "No business units created yet"
+    },
+    "card": {
+      "editAction": "Edit unit",
+      "deleteAction": "Delete unit"
+    }
+  },
   "crm": {
     "pageHead": "CRM Configurations | Skapp",
     "title": "CRM Configurations",

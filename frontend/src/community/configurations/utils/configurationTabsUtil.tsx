@@ -3,8 +3,8 @@ import { AdminTypes } from "~community/common/types/AuthTypes";
 import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
 import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
 import LeaveConfigurations from "~community/configurations/components/organisms/LeaveConfigurations/LeaveConfigurations";
+import OrganizationConfigurations from "~community/configurations/components/organisms/OrganizationConfigurations/OrganizationConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
-import WorkLocationsTable from "~community/configurations/components/organisms/WorkLocationsTable/WorkLocationsTable";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
 
 export const getConfigurationTabs = (
@@ -19,7 +19,7 @@ export const getConfigurationTabs = (
         AdminTypes.ATTENDANCE_ADMIN,
         AdminTypes.PEOPLE_ADMIN
       ],
-      component: <WorkLocationsTable />,
+      component: <OrganizationConfigurations />,
       position: 2
     },
     {

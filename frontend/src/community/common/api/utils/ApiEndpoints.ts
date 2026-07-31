@@ -67,3 +67,7 @@ export const storageAvailabilityEndpoints = {
 export const workLocationEndpoints = {
   ALL_WORK_LOCATIONS: `${moduleAPIPath.COMMON}/work-location/all`
 };
+
+export const businessUnitEndpoints = {
+  GET_BUSINESS_UNITS: `${moduleAPIPath.COMMON}/business-unit`
+};

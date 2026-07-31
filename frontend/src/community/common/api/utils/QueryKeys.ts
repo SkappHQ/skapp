@@ -36,3 +36,7 @@ export const storageAvailabilityQueryKeys = {
 export const workLocationQueryKeys = {
   ALL_WORK_LOCATIONS: ["all-work-locations"]
 };
+
+export const businessUnitQueryKeys = {
+  ALL: ["business-unit"]
+};
