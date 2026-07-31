@@ -37,16 +37,6 @@ public class PolicyLeaveTypeController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Create a new policy leave type",
-			description = "Creates a new leave type that can be used when creating leave policies")
-	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> addPolicyLeaveType(
-			@RequestBody PolicyLeaveTypeRequestDto policyLeaveTypeRequestDto) {
-		ResponseEntityDto response = policyLeaveTypeService.addPolicyLeaveType(policyLeaveTypeRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
 	@Operation(summary = "Search policy leave types",
 			description = "Returns a paginated list of leave types with optional search and active status filter")
 	@GetMapping("/search")
@@ -63,6 +53,16 @@ public class PolicyLeaveTypeController {
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypeById(@PathVariable Long id) {
 		ResponseEntityDto response = policyLeaveTypeService.getPolicyLeaveTypeById(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Create a new policy leave type",
+			description = "Creates a new leave type that can be used when creating leave policies")
+	@PostMapping
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> addPolicyLeaveType(
+			@RequestBody PolicyLeaveTypeRequestDto policyLeaveTypeRequestDto) {
+		ResponseEntityDto response = policyLeaveTypeService.addPolicyLeaveType(policyLeaveTypeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@Operation(summary = "Update a policy leave type",

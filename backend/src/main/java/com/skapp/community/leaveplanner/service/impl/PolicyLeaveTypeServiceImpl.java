@@ -67,7 +67,7 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 		PolicyLeaveType policyLeaveType = buildPolicyLeaveType(policyLeaveTypeRequestDto);
 		policyLeaveType = policyLeaveTypeDao.save(policyLeaveType);
 
-		log.info("addPolicyLeaveType: leave type created successfully");
+		log.info("addPolicyLeaveType: execution ended");
 
 		return new ResponseEntityDto(false,
 				leaveMapper.policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(policyLeaveType));
@@ -158,7 +158,7 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 
 		policyLeaveType = policyLeaveTypeDao.save(policyLeaveType);
 
-		log.info("updatePolicyLeaveType: leave type updated successfully");
+		log.info("updatePolicyLeaveType: execution ended");
 
 		return new ResponseEntityDto(false,
 				leaveMapper.policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(policyLeaveType));
@@ -175,10 +175,10 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE);
 		}
 
-		policyLeaveType.setIsActive(false);
+		policyLeaveType.setIsActive(Boolean.FALSE);
 		policyLeaveType = policyLeaveTypeDao.save(policyLeaveType);
 
-		log.info("deactivatePolicyLeaveType: leave type deactivated successfully");
+		log.info("deactivatePolicyLeaveType: execution ended");
 
 		return new ResponseEntityDto(false,
 				new PolicyLeaveTypeStatusResponseDto(policyLeaveType.getId(), policyLeaveType.getIsActive()));
@@ -195,10 +195,10 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE);
 		}
 
-		policyLeaveType.setIsActive(true);
+		policyLeaveType.setIsActive(Boolean.TRUE);
 		policyLeaveType = policyLeaveTypeDao.save(policyLeaveType);
 
-		log.info("activatePolicyLeaveType: leave type activated successfully");
+		log.info("activatePolicyLeaveType: execution ended");
 
 		return new ResponseEntityDto(false,
 				new PolicyLeaveTypeStatusResponseDto(policyLeaveType.getId(), policyLeaveType.getIsActive()));
@@ -220,7 +220,7 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 		policyLeaveType.setIsAttachmentMust(Boolean.TRUE.equals(dto.getIsAttachmentMust()));
 		policyLeaveType.setIsCommentMust(Boolean.TRUE.equals(dto.getIsCommentMust()));
 		policyLeaveType.setIsAutoApproval(Boolean.TRUE.equals(dto.getIsAutoApproval()));
-		policyLeaveType.setIsActive(true);
+		policyLeaveType.setIsActive(Boolean.TRUE);
 
 		return policyLeaveType;
 	}
