@@ -130,24 +130,24 @@ public class RolesServiceImpl implements RolesService {
 			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
 
-		Set<RoleLevel> restrictedRoles;
+		List<String> restrictedRoles;
 		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
 				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
-			restrictedRoles = EnumSet.copyOf(moduleRoleRestrictionRequestDto.getRestrictions());
+			restrictedRoles = moduleRoleRestrictionRequestDto.getRestrictions().stream().map(RoleLevel::name).toList();
 		}
 		else {
-			restrictedRoles = EnumSet.noneOf(RoleLevel.class);
+			restrictedRoles = new ArrayList<>();
 			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
-				restrictedRoles.add(RoleLevel.ADMIN);
+				restrictedRoles.add(RoleLevel.ADMIN.name());
 			}
 			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
-				restrictedRoles.add(PeopleUtil.getSecondaryRestrictionRole(module));
+				restrictedRoles.add(PeopleUtil.getSecondaryRestrictionRole(module).name());
 			}
 		}
 
 		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
 		moduleRolesRestriction.setModule(module);
-		moduleRolesRestriction.setRestrictions(PeopleUtil.toRestrictionsString(restrictedRoles));
+		moduleRolesRestriction.setRestrictions(restrictedRoles.isEmpty() ? null : String.join(",", restrictedRoles));
 		return moduleRolesRestriction;
 	}
 

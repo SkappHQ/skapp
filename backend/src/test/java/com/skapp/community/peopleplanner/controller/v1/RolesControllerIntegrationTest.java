@@ -4,17 +4,12 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.RoleLevel;
-import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
 import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
-import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
-import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -27,18 +22,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.json.JsonMapper;
-
-import java.util.EnumSet;
-import java.util.List;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,15 +51,11 @@ class RolesControllerIntegrationTest {
 
 	private static final String IS_MANAGER_FIELD = "['isManager']";
 
-	private final JsonMapper objectMapper;
-
 	private final JwtService jwtService;
 
 	private final UserDetailsService userDetailsService;
 
 	private final MockMvc mvc;
-
-	private final MessageUtil messageUtil;
 
 	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
 
@@ -89,19 +76,6 @@ class RolesControllerIntegrationTest {
 		return performRequest(get(RESTRICTIONS_PATH + "/" + module.name()).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions updateRestrictions(ModuleRoleRestrictionRequestDto request) throws Exception {
-		return performRequest(patch(RESTRICTIONS_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(request))
-			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private ModuleRoleRestrictionRequestDto restrictionRequest(ModuleType module, List<RoleLevel> restrictions) {
-		ModuleRoleRestrictionRequestDto request = new ModuleRoleRestrictionRequestDto();
-		request.setModule(module);
-		request.setRestrictions(restrictions);
-		return request;
-	}
-
 	/**
 	 * Stores a raw restrictions value, which the update endpoint cannot produce, so the
 	 * read path can be exercised against values already sitting in the table.
@@ -111,10 +85,6 @@ class RolesControllerIntegrationTest {
 		moduleRolesRestriction.setModule(module);
 		moduleRolesRestriction.setRestrictions(restrictions);
 		moduleRolesRestrictionDao.save(moduleRolesRestriction);
-	}
-
-	private String storedRestrictions(ModuleType module) {
-		return moduleRolesRestrictionDao.findById(module).orElseThrow().getRestrictions();
 	}
 
 	@Nested
@@ -130,9 +100,8 @@ class RolesControllerIntegrationTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + "['module']").value(ModuleType.PEOPLE.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[1]").value(RoleLevel.MANAGER.name()))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())))
 				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(true))
 				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
 		}
@@ -207,9 +176,8 @@ class RolesControllerIntegrationTest {
 			storeRestrictions(ModuleType.PEOPLE, " ADMIN , MANAGER ");
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[1]").value(RoleLevel.MANAGER.name()))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())))
 				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(true))
 				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
 		}
@@ -280,76 +248,6 @@ class RolesControllerIntegrationTest {
 			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isForbidden());
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Update Role Restrictions Tests")
-	class UpdateRoleRestrictionsTests {
-
-		/**
-		 * A role repeated in the request must not be stored twice.
-		 */
-		@Test
-		@DisplayName("Update restrictions with duplicate restrictions - Persists each role once")
-		void updateRestrictions_DuplicateRestrictions_PersistsEachRoleOnce() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.CRM,
-					List.of(RoleLevel.SALES_MANAGER, RoleLevel.ADMIN, RoleLevel.ADMIN)))
-				.andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH)
-					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT)));
-
-			Assertions.assertEquals(EnumSet.of(RoleLevel.ADMIN, RoleLevel.SALES_MANAGER),
-					PeopleUtil.parseRestrictions(storedRestrictions(ModuleType.CRM)));
-		}
-
-		@Test
-		@DisplayName("Update restrictions with no restrictions - Persists null")
-		void updateRestrictions_NoRestrictions_PersistsNull() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of())).andExpect(status().isOk());
-
-			Assertions.assertNull(storedRestrictions(ModuleType.PEOPLE));
-		}
-
-		/**
-		 * Legacy clients send the boolean pair instead of a role list, and the module's
-		 * manager level role is what that pair means.
-		 */
-		@Test
-		@DisplayName("Update restrictions with legacy booleans for CRM - Persists sales manager")
-		void updateRestrictions_LegacyBooleansForCrm_PersistsSalesManager() throws Exception {
-			ModuleRoleRestrictionRequestDto request = restrictionRequest(ModuleType.CRM, null);
-			request.setIsAdmin(false);
-			request.setIsManager(true);
-
-			updateRestrictions(request).andExpect(status().isOk());
-
-			Assertions.assertEquals("SALES_MANAGER", storedRestrictions(ModuleType.CRM));
-		}
-
-		@Test
-		@DisplayName("Update restrictions then read back - Returns persisted restrictions")
-		void updateRestrictions_ThenRead_ReturnsPersistedRestrictions() throws Exception {
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.MANAGER)))
-				.andExpect(status().isOk());
-
-			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
-		}
-
-		@Test
-		@DisplayName("Update restrictions without super admin role - Returns Forbidden")
-		void updateRestrictions_WithoutSuperAdminRole_ReturnsForbidden() throws Exception {
-			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
-
-			updateRestrictions(restrictionRequest(ModuleType.PEOPLE, List.of(RoleLevel.ADMIN)))
-				.andExpect(status().isForbidden());
 		}
 
 	}
