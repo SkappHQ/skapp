@@ -11,11 +11,11 @@ import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
 import com.skapp.community.peopleplanner.model.Team;
+import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.payload.request.TeamPatchRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamsRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TransferTeamMembersDto;
-import com.skapp.community.peopleplanner.payload.EmployeeTeamIdDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTransferableTeamsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamResponseDto;
@@ -99,6 +99,7 @@ public class TeamServiceImpl implements TeamService {
 		setEmployeeTeam(employeeTeamSet, teamMembers, team, false);
 		team.setEmployees(employeeTeamSet);
 		teamDao.save(team);
+		invalidateTeamsCache();
 
 		log.info("addNewTeam: execution successfully finished by saving team : {}", team.getTeamId());
 		return new ResponseEntityDto(false, peopleMapper.teamToTeamResponseDto(team));
@@ -177,6 +178,7 @@ public class TeamServiceImpl implements TeamService {
 			team.setEmployees(employeeTeamSet);
 			employeeTeamDao.deleteAllInBatch(employeeTeamsTobeRemoved);
 			teamDao.save(team);
+			invalidateTeamsCache();
 
 			log.info("updateTeam: execution successfully finished by updating team : {}", team.getTeamId());
 			return new ResponseEntityDto(false, peopleMapper.teamToTeamResponseDto(team));
@@ -221,8 +223,10 @@ public class TeamServiceImpl implements TeamService {
 			})
 			.toList();
 
-		if (!teams.isEmpty())
+		if (!teams.isEmpty()) {
 			teamDao.saveAll(teams);
+			invalidateTeamsCache();
+		}
 
 		log.info("addTeams: execution successfully finished by saving teams by adding {} team(s)", teams.size());
 		return new ResponseEntityDto(false, peopleMapper.teamListToTeamResponseDtoList(teams));
@@ -276,6 +280,7 @@ public class TeamServiceImpl implements TeamService {
 
 			employeeTeamDao.deleteEmployeeTeamByTeamId(id);
 			teamDao.deleteTeamById(id);
+			invalidateTeamsCache();
 		}
 		else {
 			throw new EntityNotFoundException(PeopleMessageConstant.PEOPLE_ERROR_TEAM_NOT_FOUND);
@@ -317,6 +322,10 @@ public class TeamServiceImpl implements TeamService {
 
 		log.info("getTeamsForCurrentUser: Successfully finished");
 		return new ResponseEntityDto(false, response);
+	}
+
+	protected void invalidateTeamsCache() {
+		// This method is a placeholder for enterprise cache invalidation logic
 	}
 
 	private void setUpNewTeam(List<EmployeeTeam> employeeTeamList, TransferTeamMembersDto transfer) {
