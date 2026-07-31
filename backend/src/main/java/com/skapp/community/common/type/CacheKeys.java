@@ -14,7 +14,9 @@ public enum CacheKeys implements CacheKey {
 	ESIGN_MIGRATION_REPAIR_JOB_CACHE_KEY("esign_migration_repair_job_cache:%s", 1, TimeUnit.DAYS), // jobId
 	CHANNEL_EXPIRATION_KEY("gws:watch:expiry", 8, TimeUnit.DAYS),
 	LAST_SYNC_COMPLETED_KEY("gws:sync:last-completed", 1, TimeUnit.DAYS),
-	SYNC_LOCK_KEY("gws:sync:lock", 15, TimeUnit.MINUTES);
+	SYNC_LOCK_KEY("gws:sync:lock", 15, TimeUnit.MINUTES),
+	SYNC_PROGRESS_PROCESSED_KEY("gws:sync:progress:processed", 30, TimeUnit.MINUTES),
+	SYNC_LAST_TOTAL_KEY("gws:sync:progress:last-total", 30, TimeUnit.DAYS);
 
 	private final String key;
 
