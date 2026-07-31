@@ -40,8 +40,6 @@ public class StringUtils {
 			return new LinkedHashSet<>();
 		}
 		return Arrays.stream(value.split(COMMA_DELIMITER))
-			.map(String::trim)
-			.filter(s -> !s.isEmpty())
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
