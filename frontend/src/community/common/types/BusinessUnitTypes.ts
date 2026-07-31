@@ -8,3 +8,8 @@ export interface BusinessUnitRequestPayload {
   name: string;
   description: string | null;
 }
+
+export interface BusinessUnitUpdateVariables {
+  id: number;
+  payload: BusinessUnitRequestPayload;
+}

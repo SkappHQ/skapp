@@ -70,5 +70,7 @@ export const workLocationEndpoints = {
 
 export const businessUnitEndpoints = {
   GET_BUSINESS_UNITS: `${moduleAPIPath.COMMON}/business-unit`,
-  CREATE_BUSINESS_UNIT: `${moduleAPIPath.COMMON}/business-unit`
+  CREATE_BUSINESS_UNIT: `${moduleAPIPath.COMMON}/business-unit`,
+  UPDATE_BUSINESS_UNIT: (id: number) =>
+    `${moduleAPIPath.COMMON}/business-unit/${id}`
 };

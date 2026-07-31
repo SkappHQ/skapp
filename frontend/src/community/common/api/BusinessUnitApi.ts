@@ -11,7 +11,8 @@ import { businessUnitEndpoints } from "~community/common/api/utils/ApiEndpoints"
 import { businessUnitQueryKeys } from "~community/common/api/utils/QueryKeys";
 import {
   BusinessUnit,
-  BusinessUnitRequestPayload
+  BusinessUnitRequestPayload,
+  BusinessUnitUpdateVariables
 } from "~community/common/types/BusinessUnitTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
@@ -46,6 +47,32 @@ export const useCreateBusinessUnit = (
 
   return useMutation({
     mutationFn: createBusinessUnit,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: businessUnitQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const updateBusinessUnit = ({
+  id,
+  payload
+}: BusinessUnitUpdateVariables): Promise<AxiosResponse<BusinessUnit>> =>
+  authFetch.patch(businessUnitEndpoints.UPDATE_BUSINESS_UNIT(id), payload);
+
+export const useUpdateBusinessUnit = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BusinessUnit>,
+  AxiosError,
+  BusinessUnitUpdateVariables
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateBusinessUnit,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: businessUnitQueryKeys.ALL });
       onSuccess();

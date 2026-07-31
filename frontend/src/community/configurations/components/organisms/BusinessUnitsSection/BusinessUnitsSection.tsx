@@ -5,6 +5,7 @@ import { useGetBusinessUnits } from "~community/common/api/BusinessUnitApi";
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
+import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import BusinessUnitCard from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCard";
 import BusinessUnitCardSkeleton from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCardSkeleton";
 
@@ -23,6 +24,10 @@ const BusinessUnitsSection: FC = () => {
 
   const handleAddUnit = () => {
     openCommonModal(CommonModalType.ADD_BUSINESS_UNIT);
+  };
+
+  const handleEditUnit = (businessUnit: BusinessUnit) => {
+    openCommonModal(CommonModalType.EDIT_BUSINESS_UNIT, { businessUnit });
   };
 
   if (isLoading) {
@@ -81,6 +86,7 @@ const BusinessUnitsSection: FC = () => {
             <BusinessUnitCard
               key={businessUnit.businessUnitId}
               businessUnit={businessUnit}
+              onEdit={handleEditUnit}
             />
           ))}
         </div>

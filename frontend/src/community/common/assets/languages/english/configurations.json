@@ -254,6 +254,7 @@
     },
     "form": {
       "addModalTitle": "Add Business Unit",
+      "editModalTitle": "Edit Business Unit",
       "nameLabel": "Name",
       "namePlaceholder": "Enter business unit name",
       "descriptionLabel": "Description",
@@ -271,6 +272,10 @@
       "createSuccess": {
         "title": "Business Unit Created",
         "description": "\"{{name}}\" has been created successfully."
+      },
+      "updateSuccess": {
+        "title": "Business Unit Updated",
+        "description": "\"{{name}}\" has been updated successfully."
       },
       "error": {
         "title": "Oops! Something went wrong",

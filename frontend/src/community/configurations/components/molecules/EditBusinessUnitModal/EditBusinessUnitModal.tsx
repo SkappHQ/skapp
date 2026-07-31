@@ -9,17 +9,19 @@ import { useFormik } from "formik";
 import { FC } from "react";
 
 import {
-  useCreateBusinessUnit,
-  useGetBusinessUnits
+  useGetBusinessUnits,
+  useUpdateBusinessUnit
 } from "~community/common/api/BusinessUnitApi";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import { businessUnitValidation } from "~community/configurations/utils/businessUnitValidations";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  businessUnit: BusinessUnit;
 }
 
 interface BusinessUnitFormValues {
@@ -27,18 +29,22 @@ interface BusinessUnitFormValues {
   description: string;
 }
 
-const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
+const EditBusinessUnitModal: FC<Props> = ({
+  isOpen,
+  onClose,
+  businessUnit
+}) => {
   const translateText = useTranslator("configurations", "businessUnit");
   const { setToastMessage } = useToast();
 
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const handleCreateSuccess = () => {
+  const handleUpdateSuccess = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toasts", "createSuccess", "title"]),
-      description: translateText(["toasts", "createSuccess", "description"], {
+      title: translateText(["toasts", "updateSuccess", "title"]),
+      description: translateText(["toasts", "updateSuccess", "description"], {
         name: formik.values.name.trim()
       })
     });
@@ -46,7 +52,7 @@ const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  const handleCreateError = () => {
+  const handleUpdateError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -55,21 +61,40 @@ const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
     });
   };
 
-  const { mutate: createBusinessUnit, isPending } = useCreateBusinessUnit(
-    handleCreateSuccess,
-    handleCreateError
+  const { mutate: updateBusinessUnit, isPending } = useUpdateBusinessUnit(
+    handleUpdateSuccess,
+    handleUpdateError
   );
 
   const handleSubmit = (values: BusinessUnitFormValues) => {
-    createBusinessUnit({
-      name: values.name.trim(),
-      description: values.description.trim() || null
+    const name = values.name.trim();
+    const description = values.description.trim();
+
+    const isUnchanged =
+      name === businessUnit.name.trim() &&
+      description === (businessUnit.description ?? "").trim();
+    if (isUnchanged) {
+      onClose();
+      return;
+    }
+
+    updateBusinessUnit({
+      id: businessUnit.businessUnitId,
+      payload: { name, description }
     });
   };
 
   const formik = useFormik<BusinessUnitFormValues>({
-    initialValues: { name: "", description: "" },
-    validationSchema: businessUnitValidation(translateText, businessUnits),
+    initialValues: {
+      name: businessUnit.name,
+      description: businessUnit.description ?? ""
+    },
+    enableReinitialize: true,
+    validationSchema: businessUnitValidation(
+      translateText,
+      businessUnits,
+      businessUnit.businessUnitId
+    ),
     validateOnChange: false,
     validateOnBlur: false,
     onSubmit: handleSubmit
@@ -85,7 +110,7 @@ const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
     <SmallModal
       isOpen={isOpen}
       onClose={handleClose}
-      modalHeader={translateText(["form", "addModalTitle"])}
+      modalHeader={translateText(["form", "editModalTitle"])}
       content={
         <div className="flex flex-col gap-4">
           <InputField
@@ -136,4 +161,4 @@ const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
   );
 };
 
-export default AddBusinessUnitModal;
+export default EditBusinessUnitModal;
