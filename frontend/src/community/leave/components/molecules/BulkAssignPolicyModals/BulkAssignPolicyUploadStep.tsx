@@ -2,6 +2,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { FC, useState } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -10,6 +11,7 @@ import {
   FileRejectionType,
   FileUploadType
 } from "~community/common/types/CommonTypes";
+import { IconName } from "~community/common/types/IconTypes";
 import { useBulkAssignLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import {
   BulkAssignPolicyPayload,
@@ -17,17 +19,17 @@ import {
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   buildBulkAssignPayload,
-  downloadBulkAssignPolicyTemplate,
   getMissingBulkAssignHeaders
 } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
   onComplete: (response: BulkAssignPolicyResponse) => void;
+  onBack: () => void;
 }
 
 const MAX_CSV_FILE_SIZE = { inBytes: 5_000_000, inReadableSize: "5MB" };
 
-const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete }) => {
+const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
@@ -141,16 +143,20 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete }) => {
       <div className="flex flex-row justify-end gap-3">
         <ButtonV2
           variant="tertiary"
-          onClick={downloadBulkAssignPolicyTemplate}
+          onClick={onBack}
           disabled={isPending}
+          icon={<Icon name={IconName.LEFT_ARROW_ICON} />}
+          iconPosition="start"
         >
-          {translateText(["downloadTemplateLink"])}
+          {translateText(["goBackBtnTxt"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
           onClick={handleConfirm}
           isLoading={isPending}
           disabled={!payload || isPending}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
         >
           {translateText(["confirmBtnTxt"])}
         </ButtonV2>

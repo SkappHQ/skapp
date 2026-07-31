@@ -158,8 +158,12 @@
     "bulkUploadBtnTxt": "Bulk upload",
     "bulkAssignModal": {
       "title": "Bulk Assign Leave Policies",
+      "addPoliciesTitle": "Add policies",
+      "addPoliciesDescription": "Download the template and add one row per employee. Keep the column headers as they are so the policies map correctly.",
       "uploadInstruction": "Upload your CSV file to assign policies to multiple employees.",
       "downloadTemplateLink": "Download CSV Template",
+      "continueBtnTxt": "Continue",
+      "goBackBtnTxt": "Go back",
       "confirmBtnTxt": "Confirm & Assign",
       "doneBtnTxt": "Done",
       "downloadErrorReportBtnTxt": "Download Error Report",
