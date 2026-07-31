@@ -53,12 +53,8 @@ const DurationOptionCard: FC<Props> = ({
       <div className="inline-flex w-full items-center justify-start gap-3">
         <RadioButton isSelected={isSelected} />
         <div className="inline-flex flex-1 flex-col items-start justify-start gap-2">
-          <div className="text-base font-semibold text-black">
-            {title}
-          </div>
-          <div className="w-full text-sm font-normal text-black">
-            {description}
-          </div>
+          <div className="subtitle2 text-black">{title}</div>
+          <div className="body1 w-full text-black">{description}</div>
         </div>
       </div>
     </Card>

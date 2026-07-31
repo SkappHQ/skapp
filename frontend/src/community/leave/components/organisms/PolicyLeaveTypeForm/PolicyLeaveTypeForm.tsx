@@ -258,7 +258,7 @@ const PolicyLeaveTypeForm: FC = () => {
 
         <div className="flex flex-row items-center gap-4">
           <h3
-            className={`h3 ${
+            className={`subtitle2 ${
               hasMinDurationError ? "text-semantic-red-text" : "text-black"
             }`}
           >
@@ -307,7 +307,7 @@ const PolicyLeaveTypeForm: FC = () => {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-row items-center gap-4">
-            <h3 className="h3 text-black">
+            <h3 className="subtitle2 text-black">
               {translateText(["leaveTypeSettings"])}
             </h3>
             <Tooltip
@@ -341,7 +341,7 @@ const PolicyLeaveTypeForm: FC = () => {
         <hr className="my-6 border-secondary-accent" />
 
         <div className="flex flex-col gap-6">
-          <h3 className="h3 text-black">
+          <h3 className="subtitle2 text-black">
             {translateText(["leaveApprovalSettings"])}
           </h3>
 
