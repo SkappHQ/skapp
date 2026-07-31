@@ -31,7 +31,7 @@
     "fingerprintDevicesError": "Couldn't load fingerprint devices. Please try again.",
     "fingerprintDeviceAvailable": "Available",
     "fingerprintDeviceOffline": "Offline",
-    "fingerprintDeviceLastSynced": "Last synced",
+    "fingerprintDeviceLastSynced": "Last synced ",
     "fingerprintDeviceNeverSynced": "never",
     "fingerprintDeviceAddButton": "Add device",
     "fingerprintDeviceEditAriaLabel": "Edit device",
@@ -41,12 +41,24 @@
       "editTitle": "Edit Fingerprint Device",
       "nameLabel": "Device name",
       "serialLabel": "Serial number",
+      "vendorLabel": "Device type",
+      "webhookUsernameLabel": "Webhook username",
+      "webhookPasswordLabel": "Webhook password",
+      "webhookPasswordUnchangedPlaceholder": "Leave blank to keep the current password",
+      "webhookHelperText": "Set these as the HTTP listening host credentials on the device so it can send events to SKAPP.",
       "saveButton": "Save",
       "cancelButton": "Cancel",
+      "vendors": {
+        "zkteco": "ZKTeco",
+        "hikvision": "Hikvision"
+      },
       "validations": {
         "nameRequired": "Device name is required",
         "serialRequired": "Serial number is required",
-        "serialExists": "A device with this serial number already exists"
+        "serialExists": "A device with this serial number already exists",
+        "webhookUsernameRequired": "Webhook username is required",
+        "webhookUsernameExists": "A device with this webhook username already exists",
+        "webhookPasswordRequired": "Webhook password is required"
       },
       "toasts": {
         "addSuccessTitle": "Device Added",
