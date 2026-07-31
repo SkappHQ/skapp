@@ -276,6 +276,28 @@ export const reportsQueryKeys = {
   }
 };
 
+export const policyLeaveTypeQueryKeys = {
+  ALL: ["policy-leave-type-settings"],
+  SEARCH: function (
+    searchKeyword: string,
+    isActive: boolean | undefined,
+    page: number,
+    size: number
+  ) {
+    return [
+      ...(this?.ALL || []),
+      "search-policy-leave-types",
+      searchKeyword,
+      isActive,
+      page,
+      size
+    ];
+  },
+  DETAIL: function (id: number) {
+    return [...(this?.ALL || []), "policy-leave-type", id];
+  }
+};
+
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
   POLICY_LEAVE_TYPES: ["policy-leave-types"],

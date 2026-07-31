@@ -5,7 +5,9 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypesTable from "~community/leave/components/molecules/LeaveTypesTable/LeaveTypesTable";
+import PolicyLeaveTypesTable from "~community/leave/components/molecules/PolicyLeaveTypesTable/PolicyLeaveTypesTable";
 import { LeaveTypeFormTypes } from "~community/leave/enums/LeaveTypeEnums";
+import useIsLeavePoliciesEnabled from "~community/leave/hooks/useIsLeavePoliciesEnabled";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import useProductTour from "~enterprise/common/hooks/useProductTour";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -21,6 +23,8 @@ const LeaveTypes: NextPage = () => {
   }));
 
   const { destroyDriverObj } = useProductTour();
+
+  const isLeavePoliciesEnabled = useIsLeavePoliciesEnabled();
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_TYPE_PAGE_VISITED,
@@ -55,7 +59,11 @@ const LeaveTypes: NextPage = () => {
           primaryBtn: ongoingQuickSetup.SETUP_LEAVE_TYPES
         }}
       >
-        <LeaveTypesTable />
+        {isLeavePoliciesEnabled ? (
+          <PolicyLeaveTypesTable />
+        ) : (
+          <LeaveTypesTable />
+        )}
       </ContentLayout>
     </>
   );

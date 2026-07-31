@@ -6,12 +6,15 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypeActivationToggleButton from "~community/leave/components/molecules/LeaveTypeActivationToggleButton/LeaveTypeActivationToggleButton";
+import PolicyLeaveTypeActivationToggleButton from "~community/leave/components/molecules/PolicyLeaveTypeActivationToggleButton/PolicyLeaveTypeActivationToggleButton";
 import UnsavedChangesModal from "~community/leave/components/molecules/UserPromptModals/UnsavedChangesModal/UnsavedChangesModal";
 import LeaveTypeForm from "~community/leave/components/organisms/LeaveTypeForm/LeaveTypeForm";
+import PolicyLeaveTypeForm from "~community/leave/components/organisms/PolicyLeaveTypeForm/PolicyLeaveTypeForm";
 import {
   LeaveTypeFormTypes,
   LeaveTypeModalEnums
 } from "~community/leave/enums/LeaveTypeEnums";
+import useIsLeavePoliciesEnabled from "~community/leave/hooks/useIsLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -19,6 +22,8 @@ const LeaveType: NextPage = () => {
   const translateText = useTranslator("leaveModule");
   const router = useRouter();
   const { slug } = router.query;
+
+  const isLeavePoliciesEnabled = useIsLeavePoliciesEnabled();
 
   const {
     isLeaveTypeFormDirty,
@@ -104,14 +109,18 @@ const LeaveType: NextPage = () => {
       onBackClick={handleBackBtnClick}
       customRightContent={
         slug === LeaveTypeFormTypes.EDIT ? (
-          <LeaveTypeActivationToggleButton />
+          isLeavePoliciesEnabled ? (
+            <PolicyLeaveTypeActivationToggleButton />
+          ) : (
+            <LeaveTypeActivationToggleButton />
+          )
         ) : (
           <></>
         )
       }
     >
       <>
-        <LeaveTypeForm />
+        {isLeavePoliciesEnabled ? <PolicyLeaveTypeForm /> : <LeaveTypeForm />}
         <UnsavedChangesModal />
       </>
     </ContentLayout>
