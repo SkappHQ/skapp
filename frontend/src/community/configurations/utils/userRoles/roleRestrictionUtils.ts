@@ -14,3 +14,11 @@ export const hasSelectionChanged = (
 ): boolean =>
   selected.length !== initialSelected.length ||
   selected.some((roleLevel) => !initialSelected.includes(roleLevel));
+
+export const getRestrictionChanges = (
+  selected: RoleLevel[],
+  initialSelected: RoleLevel[]
+): { add: RoleLevel[]; remove: RoleLevel[] } => ({
+  add: selected.filter((roleLevel) => !initialSelected.includes(roleLevel)),
+  remove: initialSelected.filter((roleLevel) => !selected.includes(roleLevel))
+});

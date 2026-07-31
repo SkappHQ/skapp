@@ -1,6 +1,10 @@
 import { RoleLevel } from "~community/common/enums/CommonEnums";
 
-import { hasSelectionChanged, toggleRoleLevel } from "./roleRestrictionUtils";
+import {
+  getRestrictionChanges,
+  hasSelectionChanged,
+  toggleRoleLevel
+} from "./roleRestrictionUtils";
 
 describe("toggleRoleLevel", () => {
   it("should add a role that is not selected", () => {
@@ -82,5 +86,48 @@ describe("hasSelectionChanged", () => {
 
   it("should report a change when everything is cleared", () => {
     expect(hasSelectionChanged([], [RoleLevel.ADMIN])).toBe(true);
+  });
+});
+
+describe("getRestrictionChanges", () => {
+  it("should report a newly selected role in add", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.ADMIN, RoleLevel.MANAGER], [RoleLevel.ADMIN])
+    ).toEqual({ add: [RoleLevel.MANAGER], remove: [] });
+  });
+
+  it("should report a newly cleared role in remove", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.ADMIN], [RoleLevel.ADMIN, RoleLevel.MANAGER])
+    ).toEqual({ add: [], remove: [RoleLevel.MANAGER] });
+  });
+
+  it("should report a swapped role in both add and remove", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.MANAGER], [RoleLevel.ADMIN])
+    ).toEqual({ add: [RoleLevel.MANAGER], remove: [RoleLevel.ADMIN] });
+  });
+
+  it("should report empty add and remove when nothing changed", () => {
+    expect(
+      getRestrictionChanges(
+        [RoleLevel.ADMIN, RoleLevel.MANAGER],
+        [RoleLevel.MANAGER, RoleLevel.ADMIN]
+      )
+    ).toEqual({ add: [], remove: [] });
+  });
+
+  it("should report all roles in add when starting from an empty selection", () => {
+    expect(getRestrictionChanges([RoleLevel.ADMIN], [])).toEqual({
+      add: [RoleLevel.ADMIN],
+      remove: []
+    });
+  });
+
+  it("should report all roles in remove when everything is cleared", () => {
+    expect(getRestrictionChanges([], [RoleLevel.ADMIN])).toEqual({
+      add: [],
+      remove: [RoleLevel.ADMIN]
+    });
   });
 });

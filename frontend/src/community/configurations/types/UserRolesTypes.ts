@@ -33,8 +33,8 @@ export interface UserRoleRestrictionsType {
 
 export interface UserRoleRestrictionsUpdateType {
   module: Modules;
-  isAdmin: boolean;
-  isManager: boolean;
+  add: RoleLevel[];
+  remove: RoleLevel[];
 }
 
 export interface GrantableRoleTypes {
