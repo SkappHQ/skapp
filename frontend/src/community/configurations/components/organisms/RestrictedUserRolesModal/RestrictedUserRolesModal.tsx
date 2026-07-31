@@ -41,7 +41,7 @@ const SECONDARY_ROLE_LEVELS = new Set<RoleLevel>([
 ]);
 
 interface Props {
-  initialData: UserRoleRestrictionsType | undefined;
+  initialData: UserRoleRestrictionsType;
 }
 
 const RestrictedUserRolesModal = ({ initialData }: Props) => {
@@ -107,17 +107,17 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
     selected: RoleLevel[];
   }>({
     initialValues: {
-      selected: initialData?.restrictions ?? []
+      selected: initialData.restrictions
     },
     enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
-  const restrictableRoles = initialData?.restrictableRoles ?? [];
+  const restrictableRoles = initialData.restrictableRoles;
 
   const isSelectionChanged = hasSelectionChanged(
     values.selected,
-    initialData?.restrictions ?? []
+    initialData.restrictions
   );
 
   const onRoleLevelChange = (roleLevel: RoleLevel) => {
