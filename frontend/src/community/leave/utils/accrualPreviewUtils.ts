@@ -1,5 +1,6 @@
 import { DateTime, DurationLike } from "luxon";
 
+import { MEDIUM_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
   ACCRUAL_PREVIEW_ROW_LIMIT,
   CALENDAR_UNIT,
@@ -25,8 +26,6 @@ interface ScheduleConfig {
   isAtPeriodStart: boolean;
   lastYear: number | null;
 }
-
-const PREVIEW_DATE_FORMAT = "dd MMM yyyy";
 
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;
@@ -139,7 +138,7 @@ const toPreviewRows = (
     balance = roundToTwoDecimals(balance + event.days);
     if (capDays != null) balance = Math.min(balance, capDays);
     rows.push({
-      date: event.date.toFormat(PREVIEW_DATE_FORMAT),
+      date: event.date.toFormat(MEDIUM_DATE_FORMAT),
       days: roundToTwoDecimals(event.days),
       balance
     });
@@ -160,7 +159,7 @@ const toPreviewRows = (
  */
 export const buildAccrualPreview = (
   policy: LeavePolicyType,
-  startISO: string | null | undefined
+  startISO?: string
 ): AccrualPreviewRow[] => {
   const perPeriod = policy.accrualDays;
   const frequency = policy.frequency;

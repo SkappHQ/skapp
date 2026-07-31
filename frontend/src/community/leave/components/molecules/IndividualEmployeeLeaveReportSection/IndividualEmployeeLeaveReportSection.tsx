@@ -2,7 +2,6 @@ import { FC, useEffect, useMemo, useState } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAssignedLeaveTypes/UserAssignedLeaveTypes";
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
@@ -76,10 +75,9 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
           {isLeavePoliciesEnabled ? (
             <UserLeavePolicies
               employeeId={selectedUser}
-              employeeName={concatStrings([
-                employeeFirstName,
-                employeeLastName
-              ])}
+              employeeName={`${employeeFirstName ?? ""} ${
+                employeeLastName ?? ""
+              }`}
             />
           ) : (
             <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />

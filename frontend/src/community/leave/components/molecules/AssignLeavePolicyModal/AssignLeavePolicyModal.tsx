@@ -25,7 +25,7 @@ interface Props {
 
 // A negative size tells the backend to return every matching policy in a
 // single page, so the assign dropdown lists all active policies (never capped).
-const ASSIGNABLE_POLICIES_PAGE_SIZE = -1;
+const ASSIGNABLE_POLICIES_PAGE = -1;
 
 const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -52,7 +52,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
     leaveTypeId: "",
-    size: ASSIGNABLE_POLICIES_PAGE_SIZE,
+    size: ASSIGNABLE_POLICIES_PAGE,
     enabled: isOpen
   });
 
