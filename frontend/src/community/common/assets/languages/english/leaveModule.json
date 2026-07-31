@@ -357,7 +357,7 @@
     "sectionTitle": "Leave policies",
     "assignPolicyBtnTxt": "Assign policy",
     "menuUnassign": "Unassign",
-    "leavesTakenLabel": "{{taken}} / {{total}} days taken",
+    "leavesRemainingLabel": "{{remaining}} / {{total}} days remaining",
     "emptyStateTitle": "No policies assigned yet",
     "emptyStateDescription": "Assign a policy to get started.",
     "errorStateTitle": "Couldn't load leave policies",

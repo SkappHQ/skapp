@@ -6,7 +6,7 @@ import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 
 export interface LeaveUsage {
-  taken: number;
+  remaining: number;
   total: number;
 }
 
@@ -35,13 +35,13 @@ const LeavePolicyCard: FC<Props> = ({
         {usage && (
           <div
             className="flex shrink-0 items-baseline gap-0.5"
-            aria-label={translateText(["leavesTakenLabel"], {
-              taken: usage.taken,
+            aria-label={translateText(["leavesRemainingLabel"], {
+              remaining: usage.remaining,
               total: usage.total
             })}
           >
             <span className="text-2xl text-black">
-              {formatDays(usage.taken)}
+              {formatDays(usage.remaining)}
             </span>
             <span className="body2 text-secondary-text">
               /{formatDays(usage.total)}

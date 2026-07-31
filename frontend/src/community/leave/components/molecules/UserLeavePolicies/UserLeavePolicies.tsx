@@ -1,7 +1,6 @@
-import { ButtonV2, EmptyDataView } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
-import NoDataIcon from "~community/common/assets/Icons/NoDataIcon";
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
@@ -63,7 +62,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     (entitlementData ?? []).forEach(
       (entitlement: LeaveEntitlementsCardType) => {
         map.set(entitlement.leaveType.name, {
-          taken: entitlement.totalDaysAllocated - entitlement.balanceInDays,
+          remaining: entitlement.balanceInDays,
           total: entitlement.totalDaysAllocated
         });
       }
@@ -99,7 +98,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
 
       {!isLoading && !isError && !hasPolicies && (
         <EmptyDataView
-          icon={<NoDataIcon />}
+          icon={<SearchIcon />}
           title={translateText(["emptyStateTitle"])}
           description={translateText(["emptyStateDescription"])}
         />

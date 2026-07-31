@@ -42,10 +42,12 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const { data: employee, isLoading: isEmployeeLoading } =
     useGetEmployeeById(employeeId);
 
+  const joinedDate = employee?.employment?.employmentDetails?.joinedDate;
+
   const needsHireDate =
     effectiveDateType === EffectiveDateType.HIRE_DATE &&
     !isEmployeeLoading &&
-    !employee?.joinDate;
+    !joinedDate;
 
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
@@ -100,8 +102,8 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     () =>
       effectiveDateType === EffectiveDateType.SPECIFIC
         ? specificDate
-        : employee?.joinDate,
-    [effectiveDateType, specificDate, employee?.joinDate]
+        : joinedDate,
+    [effectiveDateType, specificDate, joinedDate]
   );
 
   const accrualPreview = useMemo(
@@ -175,7 +177,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   return (
     <>
       <SmallModal
-        isOpen={isOpen}
+        isOpen={isOpen && !isSetHireDateOpen}
         onClose={handleClose}
         modalHeader={translateText(["assignModal", "title"])}
         content={

@@ -60,14 +60,12 @@ export const leaveEntitlementQueryKeys = {
   }
 };
 
-const EMPLOYEE_LEAVE_ENTITLEMENTS_KEY = "employee-leave-entitlements";
-
 export const leaveAnalyticsQueryKeys = {
   EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL: [
-    EMPLOYEE_LEAVE_ENTITLEMENTS_KEY
+    "employee-leave-entitlements"
   ],
   EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS: function (employeeId: number) {
-    return [EMPLOYEE_LEAVE_ENTITLEMENTS_KEY, employeeId];
+    return ["employee-leave-entitlements", employeeId];
   },
   EMPLOYEE_LEAVE_HISTORY: function (
     employeeId: number,
