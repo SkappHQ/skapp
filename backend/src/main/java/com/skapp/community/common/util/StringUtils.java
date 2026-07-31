@@ -39,8 +39,7 @@ public class StringUtils {
 		if (isNullOrBlank(value)) {
 			return new LinkedHashSet<>();
 		}
-		return Arrays.stream(value.split(COMMA_DELIMITER))
-			.collect(Collectors.toCollection(LinkedHashSet::new));
+		return Arrays.stream(value.split(COMMA_DELIMITER)).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 }

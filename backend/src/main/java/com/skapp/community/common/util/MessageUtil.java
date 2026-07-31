@@ -21,7 +21,7 @@ public class MessageUtil {
 		return messageSource.getMessage(messageConstant.getMessageKey(), null, Locale.getDefault());
 	}
 
-	public String getMessage(String code, Object... args) {
+	public String getMessage(String code, Object[] args) {
 		return messageSource.getMessage(code, args, Locale.getDefault());
 	}
 
