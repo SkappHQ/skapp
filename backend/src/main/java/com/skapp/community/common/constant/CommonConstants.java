@@ -29,4 +29,8 @@ public class CommonConstants {
 
 	public static final long WORK_LOCATION_NAME_MAX_LENGTH = 50;
 
+	public static final long BUSINESS_UNIT_NAME_MAX_LENGTH = 100;
+
+	public static final long BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH = 250;
+
 }
