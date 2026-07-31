@@ -42,6 +42,13 @@ export interface SearchPolicyLeaveTypesParams {
   size: number;
 }
 
+export interface UseSearchPolicyLeaveTypesArgs {
+  searchKeyword: string;
+  isActive?: boolean;
+  page: number;
+  size: number;
+}
+
 export interface SearchPolicyLeaveTypesResponse {
   results: PolicyLeaveTypesPage[];
 }
@@ -50,11 +57,21 @@ export interface PolicyLeaveTypeMutationResponse {
   results: PolicyLeaveTypeSettingsType[];
 }
 
+export interface PolicyLeaveTypeStatus {
+  id: number;
+  isActive: boolean;
+}
+
 export interface PolicyLeaveTypeStatusResponse {
-  results: { id: number; isActive: boolean }[];
+  results: PolicyLeaveTypeStatus[];
 }
 
 export interface UpdatePolicyLeaveTypeVariables {
   id: number;
   payload: PolicyLeaveTypePayloadType;
+}
+
+export interface ChangePolicyLeaveTypeStatusVariables {
+  id: number;
+  isActive: boolean;
 }

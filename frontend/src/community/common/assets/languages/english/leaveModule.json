@@ -352,6 +352,7 @@
     "statusHeader": "STATUS",
     "active": "Active",
     "inactive": "Inactive",
+    "noLeaveTypesTitle": "No leave types yet",
     "actionsHeader": "ACTIONS",
     "editButton": {
       "label": "Edit {{recordName}} leave type",

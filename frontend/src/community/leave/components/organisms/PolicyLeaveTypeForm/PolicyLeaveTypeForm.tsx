@@ -1,26 +1,24 @@
-import { Divider, Stack, Theme, Typography, useTheme } from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import {
+  ArrowRightIcon,
+  ButtonV2,
+  CloseIcon,
+  InfoIcon,
+  InputField,
+  Tooltip
+} from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
-import DescribedSelection from "~community/common/components/atoms/DescribedSelection/DescribedSelection";
-import Icon from "~community/common/components/atoms/Icon/Icon";
-import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
-import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import ColorPalette from "~community/common/components/molecules/ColorPalette/ColorPalette";
 import EmojiPicker from "~community/common/components/molecules/EmojiPicker/EmojiPicker";
-import Form from "~community/common/components/molecules/Form/Form";
-import InputField from "~community/common/components/molecules/InputField/InputField";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
-import { IconName } from "~community/common/types/IconTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   useAddPolicyLeaveType,
@@ -44,13 +42,11 @@ import {
 } from "~community/leave/utils/policyLeaveTypes/policyLeaveTypeUtils";
 import { policyLeaveTypeValidationSchema } from "~community/leave/utils/validations";
 
-import { styles } from "./styles";
+import DurationOptionCard from "./DurationOptionCard";
+import SettingToggleRow from "./SettingToggleRow";
 
-const PolicyLeaveTypeForm = () => {
+const PolicyLeaveTypeForm: FC = () => {
   const translateText = useTranslator("leaveModule", "leaveTypes");
-
-  const theme: Theme = useTheme();
-  const classes = styles(theme);
 
   const router = useRouter();
   const { slug, id } = router.query;
@@ -166,220 +162,202 @@ const PolicyLeaveTypeForm = () => {
     setFieldError("minDuration", "");
   };
 
+  const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    await setFieldValue(
+      "name",
+      event.target.value.replace(specialCharacters(), "")
+    );
+    setFieldError("name", "");
+  };
+
+  const handleColorSelect = (color: string) => {
+    handleColorClick({
+      color,
+      colors,
+      setColors,
+      setFieldValue,
+      setFieldError
+    });
+  };
+
+  const handleAttachmentToggle = async (checked: boolean) => {
+    await setFieldValue("isAttachment", checked);
+    await setFieldValue(
+      "isAttachmentMust",
+      checked ? values?.isAttachmentMust : false
+    );
+  };
+
+  const handleAttachmentMustToggle = async (checked: boolean) => {
+    await setFieldValue("isAttachmentMust", checked);
+  };
+
+  const handleCommentMustToggle = async (checked: boolean) => {
+    await setFieldValue("isCommentMust", checked);
+  };
+
+  const handleAutoApprovalToggle = async (checked: boolean) => {
+    await setFieldValue("isAutoApproval", checked);
+  };
+
+  const handleEmojiChange = (value: string): void => {
+    setFieldValue("emojiCode", value);
+  };
+
   const handleCancelBtnClick = async () => {
     await router.push(ROUTES.LEAVE.LEAVE_TYPES);
   };
 
   const isSaveBtnDisabled = isEditMode ? !dirty : false;
+  const hasMinDurationError = Boolean(errors.minDuration);
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Stack sx={classes.wrapper}>
-        <Stack sx={classes.containerOne}>
+    <form onSubmit={handleSubmit} autoComplete="off">
+      <div className="flex w-full max-w-146.5 flex-col">
+        <div className="flex flex-col gap-4 pb-10">
           <InputField
-            required
-            inputType="text"
             label={translateText(["name"])}
-            inputName="name"
-            error={errors?.name}
+            name="name"
+            type="text"
+            required
             value={values?.name}
             maxLength={MAX_POLICY_LEAVE_TYPE_NAME_LENGTH}
-            placeHolder={translateText(["leaveTypeNamePlaceholder"])}
-            onChange={(event) => {
-              setFieldValue(
-                "name",
-                event.target.value.replace(specialCharacters(), "")
-              );
-              setFieldError("name", "");
-            }}
-            inputStyle={{
-              width: "100%"
-            }}
+            placeholder={translateText(["leaveTypeNamePlaceholder"])}
+            state={errors?.name ? "error" : "default"}
+            errorMessage={errors?.name}
+            onChange={handleNameChange}
+            fullWidth
           />
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <EmojiPicker
-                label={translateText(["emoji"])}
-                inputName="emoji"
-                value={values?.emoji}
-                onChange={handleChange}
-                error={errors?.emoji}
-                formik={formik}
-                tooltip={translateText(["emojiTooltipText"])}
-                setUnicode={(value: string) =>
-                  setFieldValue("emojiCode", value)
-                }
-                placeholder={translateText(["emojiPlaceholder"])}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <EmojiPicker
+              label={translateText(["emoji"])}
+              inputName="emoji"
+              value={values?.emoji}
+              onChange={handleChange}
+              error={errors?.emoji}
+              formik={formik}
+              tooltip={translateText(["emojiTooltipText"])}
+              setUnicode={handleEmojiChange}
+              placeholder={translateText(["emojiPlaceholder"])}
+              required
+            />
+            {isPolicyLeaveTypeLoading ? (
+              <ColorPaletteSkeleton label={translateText(["color"])} />
+            ) : (
+              <ColorPalette
+                label={translateText(["color"])}
+                colors={colors}
+                onClick={handleColorSelect}
+                selectedColor={values?.colorCode}
+                error={errors?.colorCode}
                 required
               />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              {isPolicyLeaveTypeLoading ? (
-                <ColorPaletteSkeleton label={translateText(["color"])} />
-              ) : (
-                <ColorPalette
-                  label={translateText(["color"])}
-                  colors={colors}
-                  onClick={(color: string) =>
-                    handleColorClick({
-                      color,
-                      colors,
-                      setColors,
-                      setFieldValue,
-                      setFieldError
-                    })
-                  }
-                  selectedColor={values?.colorCode}
-                  error={errors?.colorCode}
-                  required
-                />
-              )}
-            </Grid>
-          </Grid>
-        </Stack>
+            )}
+          </div>
+        </div>
 
-        <Stack sx={classes.title}>
-          <Typography
-            variant="h4"
-            sx={{
-              color: errors.minDuration
-                ? theme.palette.error.contrastText
-                : theme.palette.common.black
-            }}
+        <div className="flex flex-row items-center gap-4">
+          <h3
+            className={`h3 ${
+              hasMinDurationError ? "text-semantic-red-text" : "text-black"
+            }`}
           >
             {translateText(["leaveDurationPreferences"])}
             &nbsp;
-            <Typography component="span" sx={classes.asterisk}>
-              *
-            </Typography>
-          </Typography>
+            <span className="text-semantic-red-text">*</span>
+          </h3>
           <Tooltip
             id="leave-duration-preferences-section"
-            title={translateText(["leaveDurationPreferencesTooltip"])}
-            error={Boolean(errors.minDuration)}
-            ariaLabel={translateText(["leaveDurationPreferencesTooltip"])}
-          />
-        </Stack>
+            content={translateText(["leaveDurationPreferencesTooltip"])}
+          >
+            <InfoIcon className="size-4 text-secondary-icon" />
+          </Tooltip>
+        </div>
 
-        <Stack sx={classes.cardContainer}>
-          <DescribedSelection
+        <div className="mt-4 flex flex-col gap-5">
+          <DurationOptionCard
             title={translateText(["halfDay"])}
             description={translateText(["halfDayDescription"])}
-            selected={isMinDurationSelected(
+            isSelected={isMinDurationSelected(
               values?.minDuration,
               LeaveDurationTypes.HALF_DAY
             )}
-            onClick={() => handleMinDurationClick(LeaveDurationTypes.HALF_DAY)}
-            isError={Boolean(errors.minDuration)}
-            typographyStyles={{
-              variant: {
-                title: "h4",
-                description: "body1"
-              },
-              color: {
-                title: theme.palette.common.black,
-                description: theme.palette.common.black
-              }
-            }}
+            isError={hasMinDurationError}
+            onSelect={() => handleMinDurationClick(LeaveDurationTypes.HALF_DAY)}
           />
-          <DescribedSelection
+          <DurationOptionCard
             title={translateText(["fullDay"])}
             description={translateText(["fullDayDescription"])}
-            selected={isMinDurationSelected(
+            isSelected={isMinDurationSelected(
               values?.minDuration,
               LeaveDurationTypes.FULL_DAY
             )}
-            onClick={() => handleMinDurationClick(LeaveDurationTypes.FULL_DAY)}
-            isError={Boolean(errors.minDuration)}
-            typographyStyles={{
-              variant: {
-                title: "h4",
-                description: "body1"
-              },
-              color: {
-                title: theme.palette.common.black,
-                description: theme.palette.common.black
-              }
-            }}
+            isError={hasMinDurationError}
+            onSelect={() => handleMinDurationClick(LeaveDurationTypes.FULL_DAY)}
           />
-        </Stack>
+        </div>
 
         {errors.minDuration && touched.minDuration && (
-          <Typography variant="body2" sx={classes.error}>
+          <p role="alert" className="body2 mt-1.5 text-semantic-red-text">
             {errors.minDuration}
-          </Typography>
+          </p>
         )}
 
-        <Divider sx={classes.divider} />
+        <hr className="my-6 border-secondary-accent" />
 
-        <Stack sx={classes.switchRowWrapper}>
-          <Stack sx={classes.title}>
-            <Typography variant="h4">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-row items-center gap-4">
+            <h3 className="h3 text-black">
               {translateText(["leaveTypeSettings"])}
-            </Typography>
+            </h3>
             <Tooltip
               id="leave-type-settings-tooltip"
-              title={translateText(["leaveTypeSettingsTooltip"])}
-              ariaLabel={translateText(["leaveTypeSettingsTooltip"])}
-            />
-          </Stack>
+              content={translateText(["leaveTypeSettingsTooltip"])}
+            >
+              <InfoIcon className="size-4 text-secondary-icon" />
+            </Tooltip>
+          </div>
 
-          <SwitchRow
-            labelId="enable-attachment"
+          <SettingToggleRow
             label={translateText(["enableAttachment"])}
             checked={values?.isAttachment}
-            onChange={async (checked: boolean) => {
-              await setFieldValue("isAttachment", checked);
-              await setFieldValue(
-                "isAttachmentMust",
-                checked ? values?.isAttachmentMust : false
-              );
-            }}
+            onChange={handleAttachmentToggle}
           />
 
-          <SwitchRow
-            labelId="attachment-mandatory"
+          <SettingToggleRow
             label={translateText(["attachmentMandatory"])}
             checked={values?.isAttachmentMust}
-            onChange={async (checked: boolean) =>
-              await setFieldValue("isAttachmentMust", checked)
-            }
+            onChange={handleAttachmentMustToggle}
             disabled={!values?.isAttachment}
           />
 
-          <SwitchRow
-            labelId="requires-comment"
+          <SettingToggleRow
             label={translateText(["requiresComment"])}
             checked={values?.isCommentMust}
-            onChange={async (checked: boolean) =>
-              await setFieldValue("isCommentMust", checked)
-            }
+            onChange={handleCommentMustToggle}
           />
-        </Stack>
+        </div>
 
-        <Divider sx={classes.divider} />
+        <hr className="my-6 border-secondary-accent" />
 
-        <Stack sx={classes.switchRowWrapper}>
-          <Typography variant="h4">
+        <div className="flex flex-col gap-6">
+          <h3 className="h3 text-black">
             {translateText(["leaveApprovalSettings"])}
-          </Typography>
+          </h3>
 
-          <SwitchRow
-            labelId="allow-auto-approval"
+          <SettingToggleRow
             label={translateText(["allowAutoApproval"])}
             checked={values?.isAutoApproval}
-            onChange={async (checked: boolean) =>
-              await setFieldValue("isAutoApproval", checked)
-            }
+            onChange={handleAutoApprovalToggle}
           />
-        </Stack>
+        </div>
 
-        <Stack sx={classes.buttonWrapper}>
+        <div className="my-8 flex flex-col-reverse gap-3 sm:flex-row">
           <ButtonV2
             variant="tertiary"
             type="button"
             onClick={handleCancelBtnClick}
-            icon={<Icon name={IconName.CLOSE_ICON} />}
+            icon={<CloseIcon />}
             iconPosition="end"
           >
             {translateText(["cancelBtn"])}
@@ -389,14 +367,14 @@ const PolicyLeaveTypeForm = () => {
             type="submit"
             disabled={isSaveBtnDisabled}
             isLoading={isAddPending || isUpdatePending}
-            icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+            icon={<ArrowRightIcon />}
             iconPosition="end"
           >
             {translateText(["saveBtn"])}
           </ButtonV2>
-        </Stack>
-      </Stack>
-    </Form>
+        </div>
+      </div>
+    </form>
   );
 };
 

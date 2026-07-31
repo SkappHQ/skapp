@@ -1,12 +1,15 @@
-import { Stack } from "@mui/material";
+import {
+  CheckIcon,
+  CloseIcon,
+  InfoIcon,
+  SmallModal,
+  Toggle,
+  Tooltip
+} from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { FC, useState } from "react";
 
-import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
-import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
-import Modal from "~community/common/components/organisms/Modal/Modal";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -16,11 +19,7 @@ import {
 } from "~community/leave/api/PolicyLeaveTypeApi";
 import { getPolicyLeaveTypeErrorToastKeys } from "~community/leave/utils/policyLeaveTypes/policyLeaveTypeUtils";
 
-import styles from "./styles";
-
-const PolicyLeaveTypeActivationToggleButton = () => {
-  const classes = styles();
-
+const PolicyLeaveTypeActivationToggleButton: FC = () => {
   const translateText = useTranslator("leaveModule", "leaveTypes");
 
   const router = useRouter();
@@ -61,7 +60,15 @@ const PolicyLeaveTypeActivationToggleButton = () => {
     }
   );
 
-  const handleConfirm = () => {
+  const handleOpenConfirmModal = (): void => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleCloseConfirmModal = (): void => {
+    setIsConfirmModalOpen(false);
+  };
+
+  const handleConfirm = (): void => {
     if (isPending || !policyLeaveTypeId) {
       return;
     }
@@ -71,52 +78,58 @@ const PolicyLeaveTypeActivationToggleButton = () => {
 
   return (
     <>
-      <Stack sx={classes.wrapper}>
-        <SwitchRow
-          labelId="activate"
-          label={translateText(["activate"])}
+      <div className="flex w-full flex-row items-center justify-end gap-2.5">
+        <p className="body1 text-secondary-text">
+          {translateText(["activate"])}
+        </p>
+        <Toggle
           checked={isActive}
           disabled={!policyLeaveType || isPending}
-          onChange={() => setIsConfirmModalOpen(true)}
+          onChange={handleOpenConfirmModal}
+          ariaLabel={translateText(["activate"])}
         />
         <Tooltip
           id="activate-leave-tooltip"
-          title={`${translateText(["activateLeaveTooltipText"])}`}
-        />
-      </Stack>
-      <Modal
-        isModalOpen={isConfirmModalOpen}
-        onCloseModal={() => setIsConfirmModalOpen(false)}
-        title={
+          content={translateText(["activateLeaveTooltipText"])}
+        >
+          <InfoIcon className="size-4 text-secondary-icon" />
+        </Tooltip>
+      </div>
+      <SmallModal
+        isOpen={isConfirmModalOpen}
+        onClose={handleCloseConfirmModal}
+        modalHeader={
           isActive
             ? translateText(["inactivateLeaveTypeModalTitle"])
             : translateText(["activateLeaveTypeModalTitle"])
         }
-        isClosable={false}
-        isDividerVisible
-        ids={{
-          title: "user-prompt-modal-title",
-          description: "user-prompt-modal-description",
-          closeButton: "user-prompt-modal-close-button"
-        }}
-      >
-        <UserPromptModal
-          description={
-            isActive
+        content={
+          <p className="body1 text-black">
+            {isActive
               ? translateText(["inactivatePolicyLeaveTypeModalDescription"])
-              : translateText(["activatePolicyLeaveTypeModalDescription"])
-          }
-          primaryBtn={{
-            label: translateText(["confirmAndSaveBtn"]),
+              : translateText(["activatePolicyLeaveTypeModalDescription"])}
+          </p>
+        }
+        buttons={{
+          buttonLeft: {
+            variant: "tertiary",
+            onClick: handleCloseConfirmModal,
+            disabled: isPending,
+            icon: <CloseIcon />,
+            iconPosition: "end",
+            children: translateText(["cancelBtn"])
+          },
+          buttonRight: {
+            variant: isActive ? "error" : "primary",
             onClick: handleConfirm,
-            isDisabled: isPending
-          }}
-          secondaryBtn={{
-            label: translateText(["cancelBtn"]),
-            onClick: () => setIsConfirmModalOpen(false)
-          }}
-        />
-      </Modal>
+            disabled: isPending,
+            isLoading: isPending,
+            icon: <CheckIcon />,
+            iconPosition: "end",
+            children: translateText(["confirmAndSaveBtn"])
+          }
+        }}
+      />
     </>
   );
 };

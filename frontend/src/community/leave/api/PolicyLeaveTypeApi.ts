@@ -14,6 +14,7 @@ import {
   policyLeaveTypeQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
 import {
+  ChangePolicyLeaveTypeStatusVariables,
   PolicyLeaveTypeMutationResponse,
   PolicyLeaveTypePayloadType,
   PolicyLeaveTypeSettingsType,
@@ -21,7 +22,8 @@ import {
   PolicyLeaveTypesPage,
   SearchPolicyLeaveTypesParams,
   SearchPolicyLeaveTypesResponse,
-  UpdatePolicyLeaveTypeVariables
+  UpdatePolicyLeaveTypeVariables,
+  UseSearchPolicyLeaveTypesArgs
 } from "~community/leave/types/PolicyLeaveTypeTypes";
 
 const searchPolicyLeaveTypes = async (
@@ -40,12 +42,7 @@ export const useSearchPolicyLeaveTypes = ({
   isActive,
   page,
   size
-}: {
-  searchKeyword: string;
-  isActive?: boolean;
-  page: number;
-  size: number;
-}): UseQueryResult<PolicyLeaveTypesPage> => {
+}: UseSearchPolicyLeaveTypesArgs): UseQueryResult<PolicyLeaveTypesPage> => {
   return useQuery({
     queryKey: policyLeaveTypeQueryKeys.SEARCH(
       searchKeyword,
@@ -155,10 +152,9 @@ export const useUpdatePolicyLeaveType = (
 const changePolicyLeaveTypeStatus = ({
   id,
   isActive
-}: {
-  id: number;
-  isActive: boolean;
-}): Promise<AxiosResponse<PolicyLeaveTypeStatusResponse>> =>
+}: ChangePolicyLeaveTypeStatusVariables): Promise<
+  AxiosResponse<PolicyLeaveTypeStatusResponse>
+> =>
   authFetch.patch<PolicyLeaveTypeStatusResponse>(
     isActive
       ? policyLeaveTypeEndPoints.ACTIVATE_POLICY_LEAVE_TYPE(id)
@@ -171,7 +167,7 @@ export const useChangePolicyLeaveTypeStatus = (
 ): UseMutationResult<
   AxiosResponse<PolicyLeaveTypeStatusResponse>,
   AxiosError,
-  { id: number; isActive: boolean }
+  ChangePolicyLeaveTypeStatusVariables
 > => {
   const queryClient = useQueryClient();
 
