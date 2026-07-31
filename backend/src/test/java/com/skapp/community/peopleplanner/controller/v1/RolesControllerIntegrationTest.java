@@ -11,6 +11,7 @@ import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
 import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
@@ -28,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -287,12 +289,11 @@ class RolesControllerIntegrationTest {
 	class UpdateRoleRestrictionsTests {
 
 		/**
-		 * The same set of restricted roles always has to be written the same way, so the
-		 * stored value stays comparable.
+		 * A role repeated in the request must not be stored twice.
 		 */
 		@Test
-		@DisplayName("Update restrictions with unordered restrictions - Persists declaration order")
-		void updateRestrictions_UnorderedRestrictions_PersistsDeclarationOrder() throws Exception {
+		@DisplayName("Update restrictions with duplicate restrictions - Persists each role once")
+		void updateRestrictions_DuplicateRestrictions_PersistsEachRoleOnce() throws Exception {
 			updateRestrictions(restrictionRequest(ModuleType.CRM,
 					List.of(RoleLevel.SALES_MANAGER, RoleLevel.ADMIN, RoleLevel.ADMIN)))
 				.andDo(print())
@@ -301,7 +302,8 @@ class RolesControllerIntegrationTest {
 				.andExpect(jsonPath(RESULTS_0_PATH)
 					.value(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT)));
 
-			Assertions.assertEquals("ADMIN,SALES_MANAGER", storedRestrictions(ModuleType.CRM));
+			Assertions.assertEquals(EnumSet.of(RoleLevel.ADMIN, RoleLevel.SALES_MANAGER),
+					PeopleUtil.parseRestrictions(storedRestrictions(ModuleType.CRM)));
 		}
 
 		@Test

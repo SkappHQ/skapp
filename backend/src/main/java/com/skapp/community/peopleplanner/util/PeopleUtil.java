@@ -128,10 +128,7 @@ public class PeopleUtil {
 			return null;
 		}
 
-		return EnumSet.copyOf(roleLevels)
-			.stream()
-			.map(RoleLevel::name)
-			.collect(Collectors.joining(RESTRICTION_SEPARATOR));
+		return roleLevels.stream().map(RoleLevel::name).collect(Collectors.joining(RESTRICTION_SEPARATOR));
 	}
 
 	public static boolean isPermissionsChanged(EmployeeRole oldRole, EmployeeRole newRole) {
