@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,6 +75,10 @@ class RolesControllerIntegrationTest {
 
 	private ResultActions getRestrictionsByModule(ModuleType module) throws Exception {
 		return performRequest(get(RESTRICTIONS_PATH + "/" + module.name()).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions updateRestrictions(String body) throws Exception {
+		return performRequest(patch(RESTRICTIONS_PATH).contentType(MediaType.APPLICATION_JSON).content(body));
 	}
 
 	/**
@@ -248,6 +253,145 @@ class RolesControllerIntegrationTest {
 			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isForbidden());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Update Role Restrictions Tests")
+	class UpdateRoleRestrictionsTests {
+
+		@Test
+		@DisplayName("Add to empty baseline - Restricts the added role")
+		void update_AddToEmptyBaseline_RestrictsAddedRole() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"ADMIN\"]}").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Add on top of existing restriction - Merges with baseline")
+		void update_AddOnTopOfExisting_MergesWithBaseline() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"MANAGER\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
+		}
+
+		@Test
+		@DisplayName("Remove from baseline - Clears only the removed role")
+		void update_RemoveFromBaseline_ClearsRemovedRole() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"remove\":[\"ADMIN\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()));
+		}
+
+		@Test
+		@DisplayName("Add and remove together - Remove applies before add")
+		void update_AddAndRemoveTogether_RemoveAppliesBeforeAdd() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"MANAGER\"],\"remove\":[\"ADMIN\"]}")
+				.andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()));
+		}
+
+		@Test
+		@DisplayName("Add an already restricted role - Idempotent")
+		void update_AddAlreadyRestrictedRole_Idempotent() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"ADMIN\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Remove a role that is not restricted - Idempotent")
+		void update_RemoveNotRestrictedRole_Idempotent() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"remove\":[\"MANAGER\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		/**
+		 * Removal is not validated against restrictable roles, so a value stored by the
+		 * lossy sync job can always be cleared.
+		 */
+		@Test
+		@DisplayName("Remove a non-restrictable stored role - Clears it")
+		void update_RemoveNonRestrictableStoredRole_ClearsIt() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "EMPLOYEE");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"remove\":[\"EMPLOYEE\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()));
+		}
+
+		@Test
+		@DisplayName("Update with no module - Returns Bad Request")
+		void update_NoModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"add\":[\"ADMIN\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update with COMMON module - Returns Bad Request")
+		void update_CommonModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"COMMON\",\"add\":[\"ADMIN\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Add a non-restrictable role - Returns Bad Request")
+		void update_AddNonRestrictableRole_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"EMPLOYEE\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Add with a null entry - Returns Bad Request")
+		void update_AddWithNullEntry_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[null]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Add with duplicate entries - Returns Bad Request")
+		void update_AddWithDuplicateEntries_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"ADMIN\",\"ADMIN\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Same role in add and remove - Returns Bad Request")
+		void update_SameRoleInAddAndRemove_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"ADMIN\"],\"remove\":[\"ADMIN\"]}")
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update without super admin role - Returns Forbidden")
+		void update_WithoutSuperAdminRole_ReturnsForbidden() throws Exception {
+			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"add\":[\"ADMIN\"]}").andExpect(status().isForbidden());
 		}
 
 	}

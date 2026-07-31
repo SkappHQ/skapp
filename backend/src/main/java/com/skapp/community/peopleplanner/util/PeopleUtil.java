@@ -20,6 +20,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PeopleUtil {
 
@@ -120,6 +121,14 @@ public class PeopleUtil {
 		}
 
 		return roleLevels;
+	}
+
+	public static String toRestrictionsString(Set<RoleLevel> roleLevels) {
+		if (roleLevels == null || roleLevels.isEmpty()) {
+			return null;
+		}
+
+		return roleLevels.stream().map(RoleLevel::name).collect(Collectors.joining(RESTRICTION_SEPARATOR));
 	}
 
 	public static boolean isPermissionsChanged(EmployeeRole oldRole, EmployeeRole newRole) {

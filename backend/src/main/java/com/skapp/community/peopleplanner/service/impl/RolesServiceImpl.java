@@ -17,7 +17,6 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
-import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
 import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
@@ -107,48 +106,73 @@ public class RolesServiceImpl implements RolesService {
 	public ResponseEntityDto updateRoleRestrictions(ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
 		log.info("updateRoleRestrictions: execution started");
 
-		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
-				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
-			List<RoleLevel> restrictions = moduleRoleRestrictionRequestDto.getRestrictions();
-			moduleRoleRestrictionRequestDto.setIsAdmin(restrictions.contains(RoleLevel.ADMIN));
-			moduleRoleRestrictionRequestDto.setIsManager(restrictions
-				.contains(PeopleUtil.getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
-		}
+		validateRoleRestrictionRequest(moduleRoleRestrictionRequestDto);
 
-		ModuleRoleRestriction moduleRoleRestriction = peopleMapper
-			.roleRestrictionRequestDtoToRestrictRole(moduleRoleRestrictionRequestDto);
-		moduleRoleRestrictionDao.save(moduleRoleRestriction);
+		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
+		Set<RoleLevel> restrictedRoles = resolveRestrictedRoles(moduleRoleRestrictionRequestDto);
 
-		ModuleRolesRestriction moduleRolesRestriction = buildModuleRolesRestriction(moduleRoleRestrictionRequestDto);
+		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
+		moduleRolesRestriction.setModule(module);
+		moduleRolesRestriction.setRestrictions(PeopleUtil.toRestrictionsString(restrictedRoles));
 		moduleRolesRestrictionDao.save(moduleRolesRestriction);
 
 		log.info("updateRoleRestrictions: execution ended");
 		return new ResponseEntityDto(false, messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_ROLE_RESTRICT));
 	}
 
-	private ModuleRolesRestriction buildModuleRolesRestriction(
-			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto) {
-		ModuleType module = moduleRoleRestrictionRequestDto.getModule();
+	private Set<RoleLevel> resolveRestrictedRoles(ModuleRoleRestrictionRequestDto requestDto) {
+		Set<RoleLevel> restrictedRoles = EnumSet.noneOf(RoleLevel.class);
+		restrictedRoles.addAll(getRestrictedRoleLevels(requestDto.getModule()));
 
-		List<String> restrictedRoles;
-		if (moduleRoleRestrictionRequestDto.getRestrictions() != null
-				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
-			restrictedRoles = moduleRoleRestrictionRequestDto.getRestrictions().stream().map(RoleLevel::name).toList();
+		if (requestDto.getRemove() != null) {
+			requestDto.getRemove().forEach(restrictedRoles::remove);
 		}
-		else {
-			restrictedRoles = new ArrayList<>();
-			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsAdmin())) {
-				restrictedRoles.add(RoleLevel.ADMIN.name());
-			}
-			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
-				restrictedRoles.add(PeopleUtil.getSecondaryRestrictionRole(module).name());
-			}
+		if (requestDto.getAdd() != null) {
+			restrictedRoles.addAll(requestDto.getAdd());
 		}
 
-		ModuleRolesRestriction moduleRolesRestriction = new ModuleRolesRestriction();
-		moduleRolesRestriction.setModule(module);
-		moduleRolesRestriction.setRestrictions(restrictedRoles.isEmpty() ? null : String.join(",", restrictedRoles));
-		return moduleRolesRestriction;
+		return restrictedRoles;
+	}
+
+	private void validateRoleRestrictionRequest(ModuleRoleRestrictionRequestDto requestDto) {
+		ModuleType module = requestDto.getModule();
+		if (module == null || module == ModuleType.COMMON) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_MODULE);
+		}
+
+		validateRestrictionRoleLevels(requestDto.getAdd(), module, getRestrictableRoles(module));
+		validateRestrictionRoleLevels(requestDto.getRemove(), module, null);
+
+		if (requestDto.getAdd() == null || requestDto.getRemove() == null) {
+			return;
+		}
+
+		Set<RoleLevel> overlap = EnumSet.noneOf(RoleLevel.class);
+		overlap.addAll(requestDto.getAdd());
+		overlap.retainAll(requestDto.getRemove());
+		if (!overlap.isEmpty()) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ADD_REMOVE_OVERLAP,
+					new String[] { overlap.toString() });
+		}
+	}
+
+	private void validateRestrictionRoleLevels(List<RoleLevel> roleLevels, ModuleType module,
+			List<RoleLevel> restrictableRoles) {
+		if (roleLevels == null) {
+			return;
+		}
+
+		Set<RoleLevel> seen = EnumSet.noneOf(RoleLevel.class);
+		for (RoleLevel roleLevel : roleLevels) {
+			if (roleLevel == null || (restrictableRoles != null && !restrictableRoles.contains(roleLevel))) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL,
+						new String[] { String.valueOf(roleLevel), module.name() });
+			}
+			if (!seen.add(roleLevel)) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_DUPLICATE_RESTRICTION_ROLE_LEVEL,
+						new String[] { roleLevel.name() });
+			}
+		}
 	}
 
 	protected Set<RoleLevel> getRestrictedRoleLevels(ModuleType module) {
