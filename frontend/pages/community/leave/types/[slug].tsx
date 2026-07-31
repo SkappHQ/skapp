@@ -81,6 +81,12 @@ const LeaveType: NextPage = () => {
     router.push(ROUTES.LEAVE.LEAVE_TYPES);
   };
 
+  const activationToggleButton = isLeavePoliciesEnabled ? (
+    <PolicyLeaveTypeActivationToggleButton />
+  ) : (
+    <LeaveTypeActivationToggleButton />
+  );
+
   return (
     <ContentLayout
       breadcrumbs={[
@@ -108,15 +114,7 @@ const LeaveType: NextPage = () => {
       isBackButtonVisible
       onBackClick={handleBackBtnClick}
       customRightContent={
-        slug === LeaveTypeFormTypes.EDIT ? (
-          isLeavePoliciesEnabled ? (
-            <PolicyLeaveTypeActivationToggleButton />
-          ) : (
-            <LeaveTypeActivationToggleButton />
-          )
-        ) : (
-          <></>
-        )
+        slug === LeaveTypeFormTypes.EDIT ? activationToggleButton : <></>
       }
     >
       <>
