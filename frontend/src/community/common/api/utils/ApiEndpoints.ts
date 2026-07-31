@@ -69,5 +69,6 @@ export const workLocationEndpoints = {
 };
 
 export const businessUnitEndpoints = {
-  GET_BUSINESS_UNITS: `${moduleAPIPath.COMMON}/business-unit`
+  GET_BUSINESS_UNITS: `${moduleAPIPath.COMMON}/business-unit`,
+  CREATE_BUSINESS_UNIT: `${moduleAPIPath.COMMON}/business-unit`
 };

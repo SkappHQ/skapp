@@ -1,8 +1,18 @@
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
+import {
+  UseMutationResult,
+  UseQueryResult,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
 
 import { businessUnitEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { businessUnitQueryKeys } from "~community/common/api/utils/QueryKeys";
-import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
+import {
+  BusinessUnit,
+  BusinessUnitRequestPayload
+} from "~community/common/types/BusinessUnitTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 const getBusinessUnits = async (): Promise<BusinessUnit[]> => {
@@ -16,5 +26,30 @@ export const useGetBusinessUnits = (): UseQueryResult<BusinessUnit[]> => {
   return useQuery({
     queryKey: businessUnitQueryKeys.ALL,
     queryFn: getBusinessUnits
+  });
+};
+
+const createBusinessUnit = (
+  payload: BusinessUnitRequestPayload
+): Promise<AxiosResponse<BusinessUnit>> =>
+  authFetch.post(businessUnitEndpoints.CREATE_BUSINESS_UNIT, payload);
+
+export const useCreateBusinessUnit = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BusinessUnit>,
+  AxiosError,
+  BusinessUnitRequestPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createBusinessUnit,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: businessUnitQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
   });
 };

@@ -2,7 +2,9 @@ import { ButtonV2, EmptyDataView, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useGetBusinessUnits } from "~community/common/api/BusinessUnitApi";
+import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import BusinessUnitCard from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCard";
 import BusinessUnitCardSkeleton from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCardSkeleton";
 
@@ -17,7 +19,11 @@ const BusinessUnitsSection: FC = () => {
 
   const { data: businessUnits, isLoading } = useGetBusinessUnits();
 
-  const handleAddUnit = () => {};
+  const openCommonModal = useCommonStore((state) => state.openCommonModal);
+
+  const handleAddUnit = () => {
+    openCommonModal(CommonModalType.ADD_BUSINESS_UNIT);
+  };
 
   if (isLoading) {
     return (

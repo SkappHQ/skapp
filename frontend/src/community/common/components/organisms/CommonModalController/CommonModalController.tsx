@@ -2,6 +2,7 @@ import { JSX, memo } from "react";
 
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useCommonStore } from "~community/common/stores/commonStore";
+import AddBusinessUnitModal from "~community/configurations/components/molecules/AddBusinessUnitModal/AddBusinessUnitModal";
 import ConfirmDeleteModal from "~enterprise/common/components/molecules/ConfirmDeleteModal/ConfirmDeleteModal";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
 import FolderNotEmptyModal from "~enterprise/common/components/molecules/FolderNotEmptyModal/FolderNotEmptyModal";
@@ -66,6 +67,13 @@ const CommonModalController = (): JSX.Element => {
           onClose={closeCommonModal}
           document={commonModalData?.document!}
           count={commonModalData?.documentCount ?? 0}
+        />
+      );
+    case CommonModalType.ADD_BUSINESS_UNIT:
+      return (
+        <AddBusinessUnitModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
         />
       );
     default:

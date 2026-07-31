@@ -251,6 +251,31 @@
     "card": {
       "editAction": "Edit unit",
       "deleteAction": "Delete unit"
+    },
+    "form": {
+      "addModalTitle": "Add Business Unit",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter business unit name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add a description (optional)",
+      "saveButton": "Save",
+      "cancelButton": "Cancel"
+    },
+    "validations": {
+      "nameRequired": "Please enter a business unit name",
+      "nameTooLong": "Business unit name must be 100 characters or fewer",
+      "nameExists": "A business unit with this name already exists",
+      "descriptionTooLong": "Description must be 250 characters or fewer"
+    },
+    "toasts": {
+      "createSuccess": {
+        "title": "Business Unit Created",
+        "description": "\"{{name}}\" has been created successfully."
+      },
+      "error": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to save business unit. Please try again."
+      }
     }
   },
   "crm": {

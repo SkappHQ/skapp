@@ -3,3 +3,8 @@ export interface BusinessUnit {
   name: string;
   description: string | null;
 }
+
+export interface BusinessUnitRequestPayload {
+  name: string;
+  description: string | null;
+}
