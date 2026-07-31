@@ -45,7 +45,11 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
         <div className="min-w-0">
-          <h2 id={String(stage.id)} className="subtitle1 truncate capitalize">
+          <h2
+            id={String(stage.id)}
+            className="subtitle1 truncate capitalize"
+            title={getStageByName(stage.name)}
+          >
             {getStageByName(stage.name)}
           </h2>
           <p

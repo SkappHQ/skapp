@@ -4,7 +4,7 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
@@ -64,15 +64,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
       dealStages.map((s) => ({
         id: String(s.id),
         value: String(s.id),
-        label: (
-          <div className="inline-flex items-center gap-2.5">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
-            />
-            <span className="body2">{s.name}</span>
-          </div>
-        )
+        label: <StageLabel name={s.name} color={s.color} />
       })),
     [dealStages]
   );
