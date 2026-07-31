@@ -21,6 +21,7 @@ import {
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import {
   CrmContactLookup,
+  CrmContactLookupParams,
   CrmCreateDealPayload,
   CrmInlineDealAddFormTypes
 } from "~community/crm/types/CommonTypes";
@@ -34,9 +35,10 @@ import AddDealContactSearch from "./AddDealContactSearch";
 interface Props {
   onClose: () => void;
   defaultContact?: CrmContactLookup;
+  companyId?: number | null;
 }
 
-const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
+const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact, companyId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
@@ -48,9 +50,13 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE,
+    companyId
+  };
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupParams,
     true
   );
   const contacts = contactLookupData?.items ?? [];
@@ -129,8 +135,8 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
   const formik = useFormik<CrmInlineDealAddFormTypes>({
     initialValues,
     validationSchema: inlineAddDealValidations(translateText),
-    validateOnChange: true,
-    validateOnBlur: false,
+    validateOnChange: false,
+    validateOnBlur: true,
     onSubmit: handleSubmit
   });
 

@@ -20,6 +20,7 @@ import {
   CrmCompaniesResponseType,
   CrmContact,
   CrmContactCreatePayload,
+  CrmContactLookupParams,
   CrmContactLookupResponseType,
   CrmContactMetricsResponseType,
   CrmExistsResponse,
@@ -207,24 +208,28 @@ export const useGetOwnerLookup = (
   });
 };
 
+const fetchContactsLookup = async (
+  params: CrmContactLookupParams
+): Promise<CrmContactLookupResponseType> => {
+  const { searchKeyword, size, dealId, companyId } = params;
+  const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
+    params: {
+      searchKeyword,
+      size,
+      ...(dealId != null && { dealId }),
+      ...(companyId != null && { companyId })
+    }
+  });
+  return response?.data?.results?.[0];
+};
+
 export const useGetCrmContacts = (
-  searchKeyword: string,
-  size: number,
-  enabled: boolean,
-  dealId?: number | null
+  params: CrmContactLookupParams,
+  enabled: boolean
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
-    queryKey: contactQueryKeys.CONTACT_LOOKUP(searchKeyword, size, dealId),
-    queryFn: async (): Promise<CrmContactLookupResponseType> => {
-      const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-        params: {
-          searchKeyword,
-          size,
-          ...(dealId != null && { dealId })
-        }
-      });
-      return response?.data?.results?.[0];
-    },
+    queryKey: contactQueryKeys.CONTACT_LOOKUP(params),
+    queryFn: () => fetchContactsLookup(params),
     enabled
   });
 };

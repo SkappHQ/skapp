@@ -32,7 +32,11 @@ import {
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookupParams,
+  CrmOwner,
+  CrmTaskFormTypes
+} from "~community/crm/types/CommonTypes";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskFormTypes>;
@@ -123,11 +127,14 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const isContactSearchEnabled =
     debouncedContactSearchText.length > 0 || !!formik.values.dealId;
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearchText,
+    size: DEFAULT_LOOKUP_PAGE_SIZE,
+    dealId: formik.values.dealId
+  };
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearchText,
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    isContactSearchEnabled,
-    formik.values.dealId
+    contactLookupParams,
+    isContactSearchEnabled
   );
 
   const isDealSearchEnabled =

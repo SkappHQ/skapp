@@ -49,7 +49,7 @@ public class CrmContactController {
 	}
 
 	@Operation(summary = "Get CRM contacts for lookup",
-			description = "Retrieves a paginated list of CRM contacts for use in dropdowns and deal forms. Supports searching by contact name or company name.")
+			description = "Retrieves a paginated list of CRM contacts for use in dropdowns and deal forms. Supports searching by contact name or company name, and filtering by companyId.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/lookup")
 	public ResponseEntity<ResponseEntityDto> getContactsLookup(CrmContactFilterDto filterDto) {

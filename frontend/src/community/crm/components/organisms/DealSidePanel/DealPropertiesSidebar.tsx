@@ -20,6 +20,7 @@ import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages"
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
+  CrmContactLookupParams,
   CrmDealContactType,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
@@ -67,9 +68,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     SEARCH_DEBOUNCE_DELAY
   );
 
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearchTerm,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearchTerm,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupParams,
     debouncedContactSearchTerm.length > 0
   );
   const contacts = contactLookupData?.items ?? [];
