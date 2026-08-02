@@ -198,6 +198,7 @@ public interface PeopleMapper {
 
 	EmployeeBasicDetailsResponseDto employeeToEmployeeBasicDetailsResponseDto(Employee employee);
 
+	@Mapping(target = "email", source = "user.email")
 	@Mapping(target = "isCurrentUser", ignore = true)
 	EmployeeBirthdayResponseDto employeeToEmployeeBirthdayResponseDto(Employee employee);
 

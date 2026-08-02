@@ -15,6 +15,8 @@ public class EmployeeBirthdayResponseDto {
 
 	private String authPic;
 
+	private String email;
+
 	private Boolean isCurrentUser;
 
 }
