@@ -3,12 +3,12 @@ package com.skapp.community.peopleplanner.controller.v1;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.OrganizationConfig;
-import com.skapp.community.common.model.SpecialNotification;
+import com.skapp.community.common.model.SpecialNotificationStatus;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.BirthdayNotificationConfigResponseDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
-import com.skapp.community.common.repository.SpecialNotificationDao;
+import com.skapp.community.common.repository.SpecialNotificationStatusDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.OrganizationConfigType;
@@ -113,7 +113,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final SpecialNotificationDao specialNotificationDao;
+	private final SpecialNotificationStatusDao specialNotificationStatusDao;
 
 	private String currentUserToken;
 
@@ -167,11 +167,11 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	}
 
 	private void seedLastViewed(Long employeeId, LocalDate lastViewedDate) {
-		SpecialNotification specialNotification = new SpecialNotification();
-		specialNotification.setEmployee(loadEmployee(employeeId));
-		specialNotification.setSpecialNotificationType(SpecialNotificationType.BIRTHDAY);
-		specialNotification.setLastViewedDate(lastViewedDate);
-		specialNotificationDao.saveAndFlush(specialNotification);
+		SpecialNotificationStatus specialNotificationStatus = new SpecialNotificationStatus();
+		specialNotificationStatus.setEmployee(loadEmployee(employeeId));
+		specialNotificationStatus.setSpecialNotificationType(SpecialNotificationType.BIRTHDAY);
+		specialNotificationStatus.setLastViewedDate(lastViewedDate);
+		specialNotificationStatusDao.saveAndFlush(specialNotificationStatus);
 	}
 
 	private void giveBirthdayOn(Long employeeId, LocalDate monthDaySource) {
@@ -225,9 +225,9 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	}
 
 	private LocalDate storedLastViewedDate(Long employeeId) {
-		return specialNotificationDao
+		return specialNotificationStatusDao
 			.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, SpecialNotificationType.BIRTHDAY)
-			.map(SpecialNotification::getLastViewedDate)
+			.map(SpecialNotificationStatus::getLastViewedDate)
 			.orElse(null);
 	}
 
@@ -258,7 +258,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -272,7 +272,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -301,9 +301,10 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(birthdayFieldPath(0, "firstName")).value("Employee User One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "lastName")).value("Lastname One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "authPic")).value("auth-pic-one.png"))
+				.andExpect(jsonPath(birthdayFieldPath(0, "email")).value(CURRENT_USER_EMAIL))
 				.andExpect(jsonPath(birthdayFieldPath(0, "isCurrentUser")).value(true))
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()));
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -317,7 +318,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -399,7 +400,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -427,7 +428,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), today)
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
-			assertThat(specialNotificationDao.count()).isEqualTo(1);
+			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
 		}
 
 		@Test
@@ -529,13 +530,13 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		void markTodayBirthdayNotificationsAsViewed_WithNoExistingRow_CreatesRowWithToday() throws Exception {
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
 
-			SpecialNotification persisted = specialNotificationDao
+			SpecialNotificationStatus persisted = specialNotificationStatusDao
 				.findByEmployeeEmployeeIdAndSpecialNotificationType(CURRENT_EMPLOYEE_ID,
 						SpecialNotificationType.BIRTHDAY)
 				.orElseThrow();
 			assertThat(persisted.getLastViewedDate()).isEqualTo(today);
 			assertThat(persisted.getCreatedBy()).isEqualTo(TOKEN_USER_ID.toString());
-			assertThat(specialNotificationDao.count()).isEqualTo(1);
+			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
 		}
 
 		@Test
@@ -546,7 +547,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
 
 			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(today);
-			assertThat(specialNotificationDao.count()).isEqualTo(1);
+			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
 		}
 
 		@Test
@@ -555,7 +556,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			assertSuccessful(performMarkViewedRequest(currentUserToken));
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
 
-			assertThat(specialNotificationDao.count()).isEqualTo(1);
+			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
 		}
 
 		@Test
@@ -575,7 +576,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		void markTodayBirthdayNotificationsAsViewed_WithoutPeopleRole_ReturnsForbidden() throws Exception {
 			performMarkViewedRequest(tokenWithoutPeopleRole()).andDo(print()).andExpect(status().isForbidden());
 
-			assertThat(specialNotificationDao.count()).isZero();
+			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 	}

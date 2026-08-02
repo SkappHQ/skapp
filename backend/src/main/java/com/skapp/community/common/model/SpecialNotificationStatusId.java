@@ -13,7 +13,7 @@ import java.util.Objects;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SpecialNotificationId implements Serializable {
+public class SpecialNotificationStatusId implements Serializable {
 
 	private Long employee;
 
@@ -23,7 +23,7 @@ public class SpecialNotificationId implements Serializable {
 	public boolean equals(Object object) {
 		if (this == object)
 			return true;
-		if (!(object instanceof SpecialNotificationId that))
+		if (!(object instanceof SpecialNotificationStatusId that))
 			return false;
 		return Objects.equals(getEmployee(), that.getEmployee())
 				&& getSpecialNotificationType() == that.getSpecialNotificationType();

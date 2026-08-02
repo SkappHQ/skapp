@@ -1,10 +1,10 @@
 package com.skapp.community.common.service.impl;
 
 import com.skapp.community.common.model.OrganizationConfig;
-import com.skapp.community.common.model.SpecialNotification;
+import com.skapp.community.common.model.SpecialNotificationStatus;
 import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.repository.OrganizationConfigDao;
-import com.skapp.community.common.repository.SpecialNotificationDao;
+import com.skapp.community.common.repository.SpecialNotificationStatusDao;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
@@ -25,7 +25,7 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 
 	private final OrganizationConfigDao organizationConfigDao;
 
-	private final SpecialNotificationDao specialNotificationDao;
+	private final SpecialNotificationStatusDao specialNotificationStatusDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -62,8 +62,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<LocalDate> getLastViewedDate(Long employeeId, SpecialNotificationType type) {
-		return specialNotificationDao.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, type)
-			.map(SpecialNotification::getLastViewedDate);
+		return specialNotificationStatusDao.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, type)
+			.map(SpecialNotificationStatus::getLastViewedDate);
 	}
 
 	@Override
@@ -71,18 +71,18 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 	public void markNotificationViewed(Long employeeId, SpecialNotificationType type, LocalDate viewedDate) {
 		log.info("markNotificationViewed: execution started for employee {} and type {}", employeeId, type);
 
-		SpecialNotification specialNotification = specialNotificationDao
+		SpecialNotificationStatus specialNotificationStatus = specialNotificationStatusDao
 			.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, type)
 			.orElseGet(() -> {
-				SpecialNotification newNotification = new SpecialNotification();
-				newNotification.setEmployee(employeeDao.getReferenceById(employeeId));
-				newNotification.setSpecialNotificationType(type);
-				return newNotification;
+				SpecialNotificationStatus newStatus = new SpecialNotificationStatus();
+				newStatus.setEmployee(employeeDao.getReferenceById(employeeId));
+				newStatus.setSpecialNotificationType(type);
+				return newStatus;
 			});
-		specialNotification.setLastViewedDate(viewedDate);
+		specialNotificationStatus.setLastViewedDate(viewedDate);
 
 		try {
-			specialNotificationDao.saveAndFlush(specialNotification);
+			specialNotificationStatusDao.saveAndFlush(specialNotificationStatus);
 		}
 		catch (DataIntegrityViolationException e) {
 			log.warn(

@@ -22,9 +22,9 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-@IdClass(SpecialNotificationId.class)
-@Table(name = "com_special_notification")
-public class SpecialNotification extends Auditable<String> {
+@IdClass(SpecialNotificationStatusId.class)
+@Table(name = "com_special_notification_status")
+public class SpecialNotificationStatus extends Auditable<String> {
 
 	@Id
 	@ManyToOne(fetch = FetchType.LAZY)
