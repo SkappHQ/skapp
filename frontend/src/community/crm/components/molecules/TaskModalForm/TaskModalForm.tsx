@@ -229,9 +229,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
     if (deal?.contactId != null) {
       formik.setFieldValue("contactId", deal.contactId);
-      setSelectedContactName(
-        deal.contactName ?? getContactById(deal.contactId)?.name ?? ""
-      );
+      setSelectedContactName(deal.contactName ?? "");
       setContactSearchText("");
     }
   };
