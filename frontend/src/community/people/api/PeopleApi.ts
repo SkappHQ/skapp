@@ -10,6 +10,7 @@ import { rejects } from "assert";
 import { AxiosResponse } from "axios";
 
 import { appModes } from "~community/common/constants/configs";
+import { SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS } from "~community/common/constants/specialNotificationConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -32,12 +33,20 @@ import {
 } from "~community/people/actions/PeopleDataPreprocessor";
 import {
   authEndpoints,
+  peopleConfigEndpoints,
   peoplesEndpoints
 } from "~community/people/api/utils/ApiEndpoints";
-import { peopleQueryKeys } from "~community/people/api/utils/QueryKeys";
+import {
+  peopleConfigQueryKeys,
+  peopleQueryKeys
+} from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  BirthdayNotificationPayloadType,
+  EmployeeBirthdayType
+} from "~community/people/types/BirthdayNotificationTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
 import {
   BulkEmployeeDetails,
@@ -52,6 +61,10 @@ import {
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
+import {
+  BirthdayNotificationConfigPatchType,
+  BirthdayNotificationConfigType
+} from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
@@ -922,6 +935,109 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
         peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
+    },
+    onError
+  });
+};
+
+export const useGetTodaysBirthdayNotifications = (
+  enabled: boolean
+): UseQueryResult<BirthdayNotificationPayloadType> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.BIRTHDAY_NOTIFICATIONS_TODAY,
+    queryFn: async ({ signal }) => {
+      const result = await authFetch.get(
+        peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
+        { timeout: SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS, signal }
+      );
+
+      const payload = result?.data?.results?.[0];
+
+      if (!payload) {
+        throw new Error("Birthday notifications response was empty");
+      }
+
+      return {
+        lastViewedDate: (payload.lastViewedDate ?? null) as string | null,
+        employeeBirthdays: (payload.employeeBirthdays ??
+          []) as EmployeeBirthdayType[]
+      };
+    },
+    enabled,
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    networkMode: "online"
+  });
+};
+
+export const useMarkBirthdayNotificationsViewedToday = (
+  onViewedDatePersisted: (lastViewedDate: string) => void
+) => {
+  return useMutation({
+    mutationFn: async (): Promise<string | null> => {
+      const result = await authFetch.patch(
+        peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY,
+        undefined,
+        { timeout: SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS }
+      );
+
+      return (result?.data?.results?.[0]?.lastViewedDate ?? null) as
+        | string
+        | null;
+    },
+    retry: 1,
+    onSuccess: (lastViewedDate) => {
+      if (lastViewedDate) onViewedDatePersisted(lastViewedDate);
+    }
+  });
+};
+
+const getBirthdayNotificationConfig =
+  async (): Promise<BirthdayNotificationConfigType | null> => {
+    const result = await authFetch.get(
+      peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG
+    );
+
+    return result?.data?.results?.[0] ?? null;
+  };
+
+export const useGetBirthdayNotificationConfig = () => {
+  return useQuery({
+    queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG(),
+    queryFn: getBirthdayNotificationConfig,
+    retry: false,
+    refetchOnWindowFocus: false
+  });
+};
+
+const updateBirthdayNotificationConfig = async (
+  config: BirthdayNotificationConfigPatchType
+): Promise<void> => {
+  await authFetch.patch(
+    peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG,
+    config
+  );
+};
+
+export const useUpdateBirthdayNotificationConfig = (
+  onSuccess: (config: BirthdayNotificationConfigPatchType) => void,
+  onError: () => void
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateBirthdayNotificationConfig,
+    onSuccess: (_data, config) => {
+      queryClient
+        .invalidateQueries({
+          queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG()
+        })
+        .catch(() => {});
+      onSuccess(config);
     },
     onError
   });
