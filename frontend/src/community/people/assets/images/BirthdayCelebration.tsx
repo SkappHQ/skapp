@@ -1,4 +1,6 @@
-const BirthdayCelebration = () => {
+import { JSX } from "react";
+
+const BirthdayCelebration = (): JSX.Element => {
   return (
     <svg
       width="100%"

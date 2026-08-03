@@ -1,5 +1,6 @@
-import { BirthdayModalVariant } from "../enums/BirthdayNotificationEnums";
-import { EmployeeBirthdayType } from "../types/BirthdayNotificationTypes";
+import { BirthdayModalVariant } from "~community/people/enums/BirthdayNotificationEnums";
+import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
+
 import {
   buildBirthdayQueue,
   getFullName,

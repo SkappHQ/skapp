@@ -3,6 +3,7 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import BirthdayModalShell from "~community/people/components/molecules/BirthdayModalShell/BirthdayModalShell";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
+import { getFullName } from "~community/people/utils/birthdayNotificationUtils";
 
 const MODAL_ID = "birthday-colleague";
 
@@ -26,7 +27,7 @@ const ColleagueBirthdayModal: FC<Props> = ({
       id={MODAL_ID}
       employee={employee}
       heading={translateText(["colleague", "heading"], {
-        name: employee.firstName.trim()
+        name: getFullName(employee)
       })}
       body={translateText(["colleague", "body"])}
       position={position}

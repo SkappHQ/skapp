@@ -371,7 +371,7 @@
     },
     "birthdayNotificationSection": {
       "title": "Birthday Notification",
-      "description": "Control whether birthday notification are sent across the organisation",
+      "description": "Control whether birthday notifications are sent across the organisation",
       "mainToggleLabel": "Birthday notification",
       "teamToggleLabel": "Send notification to team only",
       "organizationToggleLabel": "Send notification to entire organisation",

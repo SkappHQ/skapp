@@ -1149,7 +1149,6 @@
     "crmSalesRepresentativeLimitationTitle": "CRM Sales Representative Limit Reached",
     "crmSalesRepresentativeLimitationDescription": "Only one CRM Sales Representative account is allowed."
   },
-
   "birthdayNotifications": {
     "self": {
       "heading": "Happy birthday, {{name}}!",
