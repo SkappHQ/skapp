@@ -244,6 +244,10 @@ const nextConfig = {
         destination: "/enterprise/redirect"
       },
       {
+        source: "/oauth-consent",
+        destination: "/enterprise/oauth-consent"
+      },
+      {
         source: "/verify/reset-password",
         destination: "/enterprise/verify/reset-password"
       },
