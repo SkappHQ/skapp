@@ -290,6 +290,7 @@
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "filterButtonAriaLabel": "Filter companies",
+      "searchAriaLabel": "Search companies by name",
       "search": "Search by company name",
       "infiniteScrollLoadingMessage": "Loading companies...",
       "closedDealsLabel": "Deals closed",
