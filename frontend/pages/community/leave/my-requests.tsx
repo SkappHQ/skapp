@@ -7,9 +7,11 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
-import LeaveAllocation from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocation";
+import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
 import LeaveRequests from "~community/leave/components/molecules/LeaveRequests/LeaveRequests";
 import EmployeeLeaveStatusPopupController from "~community/leave/components/organisms/EmployeeLeaveStatusPopupController/EmployeeLeaveStatusPopupController";
+import MyLeaveAllocationSection from "~community/leave/components/organisms/MyLeaveAllocationSection/MyLeaveAllocationSection";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -26,9 +28,24 @@ const MyRequests: NextPage = () => {
 
   const now = DateTime.now();
   const nextYear = now.plus({ years: 1 }).year;
+
+  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
+
   const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
-    nextYear.toString()
+    nextYear.toString(),
+    !isLeavePoliciesEnabled
   );
+
+  const { data: nextYearPolicyBalances } = useGetMyPolicyBalances(
+    nextYear.toString(),
+    isLeavePoliciesEnabled
+  );
+
+  // Policy tenants have no leave_entitlement rows, so the legacy check would hide the
+  // year dropdown from them entirely and freeze the balances view on the current year.
+  const isNextYearAvailable = isLeavePoliciesEnabled
+    ? (nextYearPolicyBalances?.length ?? 0) > 0
+    : (isEntitlementAvailableNextYear?.length ?? 0) > 0;
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_PAGE_VIEWED,
@@ -49,8 +66,7 @@ const MyRequests: NextPage = () => {
       title={translateText(["myRequests.title"])}
       isDividerVisible={true}
       customRightContent={
-        isEntitlementAvailableNextYear &&
-        isEntitlementAvailableNextYear.length !== 0 ? (
+        isNextYearAvailable ? (
           <RoundedSelect
             id="leave-allocations-year-dropdown"
             value={selectedYear}
@@ -75,7 +91,7 @@ const MyRequests: NextPage = () => {
       }
     >
       <>
-        <LeaveAllocation />
+        <MyLeaveAllocationSection />
         <LeaveRequests />
         <EmployeeLeaveStatusPopupController />
       </>

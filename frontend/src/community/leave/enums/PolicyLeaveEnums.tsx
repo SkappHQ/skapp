@@ -1,0 +1,21 @@
+export enum PolicyLeaveModalEnums {
+  NONE = "NONE",
+  /** Picker listing individual policies — two policies of one leave type = two rows. */
+  POLICY_SELECTION = "POLICY_SELECTION",
+  APPLY_POLICY_LEAVE = "APPLY_POLICY_LEAVE",
+  TEAM_AVAILABILITY = "TEAM_AVAILABILITY",
+  ADD_ATTACHMENT = "ADD_ATTACHMENT",
+  /** Confirmation shown before discarding a part-filled apply form. */
+  DISCARD_CHANGES = "DISCARD_CHANGES"
+}
+
+export enum PolicyLeaveToastEnums {
+  APPLY_SUCCESS = "APPLY_SUCCESS",
+  APPLY_ERROR = "APPLY_ERROR",
+  SESSION_EXPIRED = "SESSION_EXPIRED",
+  POLICY_NOT_ASSIGNED = "POLICY_NOT_ASSIGNED",
+  INSUFFICIENT_BALANCE = "INSUFFICIENT_BALANCE",
+  NOT_APPLICABLE = "NOT_APPLICABLE",
+  REQUEST_OVERLAP = "REQUEST_OVERLAP",
+  OUTSIDE_POLICY_PERIOD = "OUTSIDE_POLICY_PERIOD"
+}
