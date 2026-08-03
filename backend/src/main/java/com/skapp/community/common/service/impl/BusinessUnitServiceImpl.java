@@ -5,6 +5,7 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.BusinessUnit;
 import com.skapp.community.common.payload.request.BusinessUnitRequestDto;
+import com.skapp.community.common.payload.response.BusinessUnitDeletionImpactResponseDto;
 import com.skapp.community.common.payload.response.BusinessUnitResponseDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.BusinessUnitDao;
@@ -22,6 +23,10 @@ import java.util.List;
 public class BusinessUnitServiceImpl implements BusinessUnitService {
 
 	private final BusinessUnitDao businessUnitDao;
+
+	// TODO: Mock value. Replace with the real assigned-employee count once the
+	// employee-to-business-unit assignment feature is implemented.
+	private static final long MOCK_ASSIGNED_EMPLOYEE_COUNT = 24L;
 
 	@Override
 	@Transactional
@@ -72,12 +77,43 @@ public class BusinessUnitServiceImpl implements BusinessUnitService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getBusinessUnitDeletionImpact(Long id) {
+		log.info("getBusinessUnitDeletionImpact: execution started");
+
+		businessUnitDao.findById(id)
+			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND));
+
+		BusinessUnitDeletionImpactResponseDto responseDto = new BusinessUnitDeletionImpactResponseDto();
+		// TODO: Replace with the real assigned-employee count once the
+		// employee-to-business-unit assignment feature is implemented.
+		responseDto.setAssignedEmployeeCount(MOCK_ASSIGNED_EMPLOYEE_COUNT);
+		responseDto.setIsOtherBusinessUnitsExist(businessUnitDao.count() > 1);
+
+		log.info("getBusinessUnitDeletionImpact: execution ended");
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
 	@Transactional
-	public ResponseEntityDto deleteBusinessUnit(Long id) {
+	public ResponseEntityDto deleteBusinessUnit(Long id, Long transferToBusinessUnitId) {
 		log.info("deleteBusinessUnit: execution started");
 
 		BusinessUnit businessUnit = businessUnitDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND));
+
+		if (transferToBusinessUnitId != null) {
+			businessUnitDao.findById(transferToBusinessUnitId)
+				.orElseThrow(() -> new ModuleException(
+						CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_TRANSFER_TARGET_NOT_FOUND));
+			// TODO: Reassign employees from this business unit to the transfer target
+			// once the employee-to-business-unit assignment feature is implemented.
+		}
+		else {
+			// TODO: Unassign employees from this business unit once the
+			// employee-to-business-unit assignment feature is implemented.
+		}
 
 		BusinessUnitResponseDto responseDto = mapToResponseDto(businessUnit);
 		businessUnitDao.delete(businessUnit);

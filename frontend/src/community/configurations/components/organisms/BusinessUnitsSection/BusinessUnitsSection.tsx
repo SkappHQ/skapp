@@ -30,6 +30,10 @@ const BusinessUnitsSection: FC = () => {
     openCommonModal(CommonModalType.EDIT_BUSINESS_UNIT, { businessUnit });
   };
 
+  const handleDeleteUnit = (businessUnit: BusinessUnit) => {
+    openCommonModal(CommonModalType.DELETE_BUSINESS_UNIT, { businessUnit });
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-4">
@@ -87,6 +91,7 @@ const BusinessUnitsSection: FC = () => {
               key={businessUnit.businessUnitId}
               businessUnit={businessUnit}
               onEdit={handleEditUnit}
+              onDelete={handleDeleteUnit}
             />
           ))}
         </div>

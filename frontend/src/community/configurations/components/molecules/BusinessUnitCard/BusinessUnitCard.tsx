@@ -1,16 +1,15 @@
 import {
   Card,
   DeleteButtonIcon,
-  EditIcon,
+  EditSquareIcon,
   KebabMenu,
-  MenuItemProps
+  MenuItemProps,
+  UsersIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, MouseEvent } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
-import { IconName } from "~community/common/types/IconTypes";
 
 interface BusinessUnitCardProps {
   businessUnit: BusinessUnit;
@@ -29,7 +28,7 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
     {
       id: `${businessUnit.businessUnitId}-edit`,
       label: translateText(["card", "editAction"]),
-      icon: { start: <EditIcon /> },
+      icon: { start: <EditSquareIcon /> },
       onClick: () => onEdit?.(businessUnit)
     },
     {
@@ -46,7 +45,7 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
       className="flex w-full h-[84px] mb-0 items-center gap-8 bg-white border-secondary-accent"
     >
       <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-tertiary-background text-secondary-icon">
-        <Icon name={IconName.PEOPLE_ICON} />
+        <UsersIcon />
       </span>
 
       <span

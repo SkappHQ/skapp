@@ -9,7 +9,9 @@ public interface BusinessUnitService {
 
 	ResponseEntityDto updateBusinessUnit(Long id, BusinessUnitRequestDto businessUnitRequestDto);
 
-	ResponseEntityDto deleteBusinessUnit(Long id);
+	ResponseEntityDto getBusinessUnitDeletionImpact(Long id);
+
+	ResponseEntityDto deleteBusinessUnit(Long id, Long transferToBusinessUnitId);
 
 	ResponseEntityDto getAllBusinessUnits();
 

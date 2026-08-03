@@ -268,6 +268,16 @@
       "nameExists": "A business unit with this name already exists",
       "descriptionTooLong": "Description must be 250 characters or fewer"
     },
+    "deleteModal": {
+      "title": "Delete Business Unit",
+      "confirmDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+      "assignedDescription": "{{count}} employees are currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
+      "noOtherUnitsDescription": "{{count}} employees are currently assigned to \"{{name}}\". Since no other business units exist, these employees will be unassigned if you continue.",
+      "transferToLabel": "Transfer to:",
+      "unassignOption": "Don't transfer (unassign)",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel"
+    },
     "toasts": {
       "createSuccess": {
         "title": "Business Unit Created",
@@ -277,9 +287,25 @@
         "title": "Business Unit Updated",
         "description": "\"{{name}}\" has been updated successfully."
       },
+      "deleteSuccess": {
+        "title": "Business Unit Deleted",
+        "description": "'{{name}}' has been deleted successfully."
+      },
+      "deleteAndTransferSuccess": {
+        "title": "Business Unit Deleted",
+        "description": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
+      },
+      "deleteAndUnassignSuccess": {
+        "title": "Business Unit Deleted",
+        "description": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
+      },
       "error": {
         "title": "Oops! Something went wrong",
         "description": "Failed to save business unit. Please try again."
+      },
+      "deleteError": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to delete business unit. Please try again."
       }
     }
   },

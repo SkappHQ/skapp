@@ -11,6 +11,8 @@ import { businessUnitEndpoints } from "~community/common/api/utils/ApiEndpoints"
 import { businessUnitQueryKeys } from "~community/common/api/utils/QueryKeys";
 import {
   BusinessUnit,
+  BusinessUnitDeleteVariables,
+  BusinessUnitDeletionImpact,
   BusinessUnitRequestPayload,
   BusinessUnitUpdateVariables
 } from "~community/common/types/BusinessUnitTypes";
@@ -73,6 +75,55 @@ export const useUpdateBusinessUnit = (
 
   return useMutation({
     mutationFn: updateBusinessUnit,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: businessUnitQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const getBusinessUnitDeletionImpact = async (
+  id: number
+): Promise<BusinessUnitDeletionImpact> => {
+  const response = await authFetch.get(
+    businessUnitEndpoints.GET_BUSINESS_UNIT_DELETION_IMPACT(id)
+  );
+  return response.data.results[0];
+};
+
+export const useGetBusinessUnitDeletionImpact = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<BusinessUnitDeletionImpact> => {
+  return useQuery({
+    queryKey: businessUnitQueryKeys.DELETION_IMPACT(id),
+    queryFn: () => getBusinessUnitDeletionImpact(id),
+    enabled
+  });
+};
+
+const deleteBusinessUnit = ({
+  id,
+  transferToBusinessUnitId
+}: BusinessUnitDeleteVariables): Promise<AxiosResponse<BusinessUnit>> =>
+  authFetch.delete(businessUnitEndpoints.DELETE_BUSINESS_UNIT(id), {
+    params:
+      transferToBusinessUnitId != null ? { transferToBusinessUnitId } : undefined
+  });
+
+export const useDeleteBusinessUnit = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BusinessUnit>,
+  AxiosError,
+  BusinessUnitDeleteVariables
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteBusinessUnit,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: businessUnitQueryKeys.ALL });
       onSuccess();

@@ -3,6 +3,7 @@ import { JSX, memo } from "react";
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import AddBusinessUnitModal from "~community/configurations/components/molecules/AddBusinessUnitModal/AddBusinessUnitModal";
+import DeleteBusinessUnitModal from "~community/configurations/components/molecules/DeleteBusinessUnitModal/DeleteBusinessUnitModal";
 import EditBusinessUnitModal from "~community/configurations/components/molecules/EditBusinessUnitModal/EditBusinessUnitModal";
 import ConfirmDeleteModal from "~enterprise/common/components/molecules/ConfirmDeleteModal/ConfirmDeleteModal";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
@@ -80,6 +81,14 @@ const CommonModalController = (): JSX.Element => {
     case CommonModalType.EDIT_BUSINESS_UNIT:
       return (
         <EditBusinessUnitModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          businessUnit={commonModalData?.businessUnit!}
+        />
+      );
+    case CommonModalType.DELETE_BUSINESS_UNIT:
+      return (
+        <DeleteBusinessUnitModal
           isOpen={isCommonModalOpen}
           onClose={closeCommonModal}
           businessUnit={commonModalData?.businessUnit!}

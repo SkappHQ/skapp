@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,11 +60,22 @@ public class BusinessUnitController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Delete a business unit")
+	@Operation(summary = "Get the impact of deleting a business unit",
+			description = "Returns the number of employees assigned to the business unit and whether other business units exist, used to determine the delete confirmation flow.")
+	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@GetMapping(value = "/{id}/deletion-impact")
+	public ResponseEntity<ResponseEntityDto> getBusinessUnitDeletionImpact(@PathVariable Long id) {
+		ResponseEntityDto response = businessUnitService.getBusinessUnitDeletionImpact(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Delete a business unit",
+			description = "Deletes the business unit. Optionally transfers its assigned employees to another business unit via transferToBusinessUnitId; otherwise they are unassigned.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<ResponseEntityDto> deleteBusinessUnit(@PathVariable Long id) {
-		ResponseEntityDto response = businessUnitService.deleteBusinessUnit(id);
+	public ResponseEntity<ResponseEntityDto> deleteBusinessUnit(@PathVariable Long id,
+			@RequestParam(required = false) Long transferToBusinessUnitId) {
+		ResponseEntityDto response = businessUnitService.deleteBusinessUnit(id, transferToBusinessUnitId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
