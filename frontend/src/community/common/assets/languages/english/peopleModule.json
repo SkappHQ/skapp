@@ -1148,5 +1148,16 @@
     "crmSalesManagerLimitationDescription": "Only one CRM Sales Manager account is allowed.",
     "crmSalesRepresentativeLimitationTitle": "CRM Sales Representative Limit Reached",
     "crmSalesRepresentativeLimitationDescription": "Only one CRM Sales Representative account is allowed."
+  },
+
+  "birthdayNotifications": {
+    "self": {
+      "heading": "Happy birthday, {{name}}!",
+      "body": "Wishing you a fantastic year ahead, filled with success and happiness. You make this team brighter every single day."
+    },
+    "colleague": {
+      "heading": "Today is {{name}}'s birthday!",
+      "body": "Take a moment to send your birthday wishes and help make their day a little more special."
+    }
   }
 }
