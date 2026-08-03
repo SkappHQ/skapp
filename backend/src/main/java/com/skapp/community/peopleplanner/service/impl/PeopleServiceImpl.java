@@ -21,6 +21,7 @@ import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.VersionType;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -506,6 +507,13 @@ public class PeopleServiceImpl implements PeopleService {
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
 		if (requestDto == null || requestDto.getEmployment() == null
 				|| requestDto.getEmployment().getIdentificationAndDiversityDetails() == null || employee == null) {
+			return;
+		}
+
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		boolean canModifyAdminOnlyIdentifiers = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		if (!canModifyAdminOnlyIdentifiers) {
 			return;
 		}
 
