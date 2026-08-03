@@ -31,7 +31,7 @@ import {
 import { useLeaveStore } from "../store/store";
 import { LeaveRequestItemsType } from "../types/LeaveRequestTypes";
 
-export const useGetLeaveAllocation = (selectedYear: string) => {
+export const useGetLeaveAllocation = (selectedYear: string, enabled = true) => {
   return useQuery({
     queryKey: [leaveEntitlementQueryKeys.MY_LEAVE_ALLOCATION, selectedYear],
     queryFn: async () => {
@@ -47,7 +47,7 @@ export const useGetLeaveAllocation = (selectedYear: string) => {
     select: (response) => {
       return response?.data?.results;
     },
-    enabled: true
+    enabled
   });
 };
 

@@ -147,6 +147,106 @@
       "deniedLeaveStatus": "Leave request denied",
       "attachments": "Attachments : ",
       "uploadedAttachment": "Uploaded Attachment"
+    },
+    "leavePolicyAllocation": {
+      "available": "Available",
+      "applyBtn": "Apply",
+      "cardAriaLabel": "{{policyName}}, {{leaveType}}, {{balance}} of {{allocated}} days available",
+      "balanceUnavailableTooltip": "Balance unavailable, please refresh",
+      "daysRemainingTooltip": "{{days}} day(s) remaining",
+      "emptyScreen": {
+        "title": "No leave policies assigned",
+        "description": "You don't have any leave policies assigned yet. Contact your Admin for assistance"
+      },
+      "errorState": {
+        "message": "Unable to load your leave balances. Please refresh the page",
+        "retry": "Retry"
+      },
+      "fullyUtilizedError": {
+        "title": "Insufficient Balance",
+        "description": "You have no available balance remaining on this leave policy"
+      },
+      "expiredError": {
+        "title": "Allocation Expired",
+        "description": "The allocation period for this leave policy has expired"
+      },
+      "noSupervisorError": {
+        "title": "No supervisor has been assigned",
+        "description": "Please contact the administrator regarding your request"
+      },
+      "unlimited": "Unlimited",
+      "policyInactiveError": {
+        "title": "Policy no longer active",
+        "description": "This leave policy has been deactivated. Contact your Admin for assistance"
+      }
+    },
+    "policySelectionModal": {
+      "cancelBtn": "Cancel"
+    },
+    "policyBalanceCard": {
+      "ariaLabel": "My {{policyName}} Balance",
+      "available": "Available Balance",
+      "effectiveFrom": "Effective From Date",
+      "expiryDate": "Expiry Date"
+    },
+    "applyPolicyLeaveModal": {
+      "title": "Apply Leave",
+      "myPolicyBalance": "My {{policyName}} Balance",
+      "selectDuration": "Select Leave Duration",
+      "comment": "Comment",
+      "addComment": "Add a comment",
+      "cancelBtn": "Cancel",
+      "submitBtn": "Confirm and Apply",
+      "errors": {
+        "datesRequired": "Please select at least one date",
+        "commentRequired": "A comment is required for this leave policy",
+        "attachmentRequired": "An attachment is required for this leave policy",
+        "insufficientBalance": "You only have {{days}} day(s) remaining on {{policyName}}. Please adjust your dates or choose a different policy",
+        "outsidePolicyPeriod": "The selected dates fall outside the allocation period of {{policyName}}",
+        "overlappingRequest": "You already have a leave request that overlaps these dates",
+        "noWorkingDays": "The selected dates contain no working days",
+        "invalidDateRange": "The end date cannot be before the start date"
+      },
+      "toastMessages": {
+        "applySuccess": {
+          "title": "Leave Request Submitted",
+          "description": "Your leave request has been submitted successfully."
+        },
+        "applyError": {
+          "title": "Oops! Something went wrong",
+          "description": "Failed to submit your leave request. Please try again."
+        },
+        "sessionExpired": {
+          "title": "Oops! Something went wrong",
+          "description": "Your session has expired. Please log in again."
+        },
+        "policyNotAssigned": {
+          "title": "Oops! Something went wrong",
+          "description": "This leave policy is no longer assigned to you. Please refresh and select another policy."
+        },
+        "insufficientBalance": {
+          "title": "Insufficient Balance",
+          "description": "You do not have enough balance remaining on this leave policy."
+        },
+        "notApplicable": {
+          "title": "Oops! Something went wrong",
+          "description": "The selected dates contain no working days for this leave policy."
+        },
+        "requestOverlap": {
+          "title": "Oops! Something went wrong",
+          "description": "You already have a leave request that overlaps these dates."
+        },
+        "outsidePolicyPeriod": {
+          "title": "Oops! Something went wrong",
+          "description": "The selected dates fall outside this policy's allocation period."
+        }
+      }
+    },
+    "discardPolicyLeaveModal": {
+      "title": "Discard leave request?",
+      "description": "You have unsaved changes in this leave request. If you leave now, they will be lost.",
+      "resumeBtn": "Resume editing",
+      "discardBtn": "Discard"
     }
   },
   "leavePolicies": {
