@@ -62,6 +62,7 @@ export const peopleQueryKeys = {
   SUPERVISED_BY_ME: ["supervised-by-me"],
   HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"],
   EXPORT_PEOPLE_DIRECTORY: ["export-people-directory"],
+  BIRTHDAY_NOTIFICATIONS_TODAY: ["birthday-notifications-today"],
   SUPERVISOR_ROLES: (userId: number) => ["supervised-employees-teams", userId],
   GET_SKILLS: ["get-skills"]
 };
@@ -131,5 +132,12 @@ export const getPeopleDashboardQueryKeys = {
     return ["peopleDashboardAnalyticsData", teams].filter(
       (val) => val !== undefined
     );
+  }
+};
+
+export const peopleConfigQueryKeys = {
+  ALL: ["people-config"],
+  BIRTHDAY_NOTIFICATION_CONFIG: function () {
+    return [...(this?.ALL || []), "birthday-notification-config"];
   }
 };

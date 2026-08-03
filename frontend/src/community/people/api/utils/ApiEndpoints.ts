@@ -38,7 +38,9 @@ export const peoplesEndpoints = {
   REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`,
   GET_SKILLS: `${moduleAPIPath.PEOPLE}/skills`,
-  CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`
+  CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`,
+  GET_TODAYS_BIRTHDAY_NOTIFICATIONS: `${moduleAPIPath.PEOPLE}/birthday-notifications/today`,
+  MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY: `${moduleAPIPath.PEOPLE}/birthday-notifications/mark-viewed-today`
 };
 
 export const authEndpoints = {
@@ -93,4 +95,8 @@ export const peopleDashboardEndpoints = {
     `/people/analytics/job-family-overview`,
   GET_PEOPLE_DASHBOARD_ANALYTICS_DATA: (): string =>
     `/people/analytics/dashboard-summary`
+};
+
+export const peopleConfigEndpoints = {
+  BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`
 };
