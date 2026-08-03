@@ -1,3 +1,6 @@
+export const parseOAuthScopes = (scope?: string): string[] =>
+  scope ? scope.split(" ").filter(Boolean) : [];
+
 export const isSafeOAuthAuthorizeCallback = (rawCallback: string): boolean => {
   if (typeof window === "undefined") {
     return false;
