@@ -634,6 +634,14 @@ public class DateTimeUtils {
 		return time.format(AM_PM_FORMATTER);
 	}
 
+	public static String epochMillisToAmPmString(Long epochMillis, ZoneId zoneId) {
+		if (epochMillis == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
+		}
+		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalTime();
+		return time.format(AM_PM_FORMATTER);
+	}
+
 	public static String formatDateWithSuffix(LocalDate date) {
 		int dayOfMonth = date.getDayOfMonth();
 		DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.ENGLISH);
