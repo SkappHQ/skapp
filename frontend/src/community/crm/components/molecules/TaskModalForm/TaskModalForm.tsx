@@ -33,6 +33,7 @@ import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskFormTypes>;
@@ -52,6 +53,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
     selectedTaskId,
     selectedContactId,
     selectedCompanyId,
+    isCrmSidePanelOpen,
+    crmSidePanelType,
     getContactById,
     getTaskById
   } = useCrmStore((store) => ({
@@ -59,6 +62,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
     selectedTaskId: store.selectedTaskId,
     selectedContactId: store.selectedContactId,
     selectedCompanyId: store.selectedCompanyId,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
     getContactById: store.getContactById,
     getTaskById: store.getTaskById
   }));
@@ -123,22 +128,29 @@ const TaskModalForm: FC<TaskFormProps> = ({
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
+  const companyScopeId =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL
+      ? selectedCompanyId
+      : null;
+
+  const hasSelectedContact = formik.values.contactId != null;
+
   const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 || selectedCompanyId != null;
+    debouncedContactSearchText.length > 0 || companyScopeId != null;
   const { data: contactLookupData } = useGetCrmContacts(
     debouncedContactSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isContactSearchEnabled,
     null,
-    selectedCompanyId
+    companyScopeId
   );
 
-  const dealLookupCompanyId =
-    formik.values.contactId != null ? null : selectedCompanyId;
+  const dealLookupCompanyId = hasSelectedContact ? null : companyScopeId;
 
   const isDealSearchEnabled =
     debouncedDealSearchText.length > 0 ||
-    !!formik.values.contactId ||
+    hasSelectedContact ||
     dealLookupCompanyId != null;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
