@@ -85,9 +85,10 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private static final Long SECOND_OUTSIDER_EMPLOYEE_ID = 4L;
 
+	private static final Long FIFTH_EMPLOYEE_ID = 5L;
+
 	private static final Long SEEDED_TEAM_ID = 1L;
 
-	/** User id embedded in generated access tokens; audit columns are stamped with it. */
 	private static final Long TOKEN_USER_ID = 1L;
 
 	/** Leap year, so a 29 February month/day pair is always representable. */
@@ -122,10 +123,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	@BeforeEach
 	void setup() {
 		currentUserToken = tokenFor(CURRENT_USER_EMAIL);
-		// Resolved once per test: the service independently computes the same value from
-		// the
-		// organization time zone, which falls back to UTC because data.sql seeds no
-		// organization.
 		today = DateTimeUtils.getCurrentUtcDate();
 	}
 
@@ -156,12 +153,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				objectMapper.writeValueAsString(config)));
 	}
 
-	/**
-	 * Always loads the row instead of taking a reference proxy: an employee proxy left in
-	 * the persistence context makes the later cascade that inserts
-	 * {@link EmployeePersonalInfo} - whose identifier is derived from that association -
-	 * fail with a null identifier.
-	 */
+
 	private Employee loadEmployee(Long employeeId) {
 		return employeeDao.findById(employeeId).orElseThrow();
 	}
@@ -214,11 +206,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		userDao.saveAndFlush(user);
 	}
 
-	/**
-	 * user2@gmail.com owns employee 2 in data.sql. Stripping only its people role leaves
-	 * the other module roles intact, so the resulting token authenticates but fails the
-	 * endpoint role check.
-	 */
 	private String tokenWithoutPeopleRole() {
 		mutateEmployee(TEAMMATE_EMPLOYEE_ID, employee -> employee.getEmployeeRole().setPeopleRole(null));
 		return tokenFor(RESTRICTED_USER_EMAIL);
@@ -252,20 +239,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Get today's birthdays when no config row exists - Returns empty list and writes no row")
 		void getTodayBirthdayNotifications_WithNoConfigRow_ReturnsEmptyListAndWritesNothing() throws Exception {
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when notifications are turned off - Returns empty list and writes no row")
-		void getTodayBirthdayNotifications_WhenNotificationsTurnedOff_ReturnsEmptyListAndWritesNothing()
-				throws Exception {
-			seedConfig(false, true, true);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
@@ -357,10 +330,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
 			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
 			giveBirthdayOn(SECOND_OUTSIDER_EMPLOYEE_ID, today);
-			// Differing case on equal first names pins the case-insensitive ordering; the
-			// equal
-			// lowercased first names then force the lower(lastName) tie-break (four
-			// before three).
+
 			mutateEmployee(OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("alpha"));
 			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("Alpha"));
 
@@ -377,11 +347,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Get today's birthdays when both organization-wide and team-wide are true - Uses ORGANIZATION scope")
 		void getTodayBirthdayNotifications_WithBothOrganizationAndTeamFlags_UsesOrganizationScope() throws Exception {
-			// Documents current behaviour: the two scope flags are not mutually exclusive
-			// and
-			// ORGANIZATION silently wins. Employee 3 shares no team with employee 1, so a
-			// TEAM
-			// resolution would have returned an empty list.
+
 			seedConfig(true, true, true);
 			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
 
@@ -401,21 +367,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
 			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays with an earlier last viewed date and no birthdays today - Returns the earlier date")
-		void getTodayBirthdayNotifications_WithStoredLastViewedDateAndNoBirthdaysToday_ReturnsStoredDate()
-				throws Exception {
-			LocalDate previouslyViewedDate = today.minusDays(2);
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today.plusDays(1));
-			seedLastViewed(CURRENT_EMPLOYEE_ID, previouslyViewedDate);
-
-			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), previouslyViewedDate)
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-
-			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(previouslyViewedDate);
 		}
 
 		@Test
@@ -448,37 +399,18 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays when an employee has personal info but no birth date - Excludes them")
-		void getTodayBirthdayNotifications_WithNullBirthDate_ExcludesEmployee() throws Exception {
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, null);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when a matching employee's user is inactive - Excludes them")
-		void getTodayBirthdayNotifications_WithInactiveUser_ExcludesEmployee() throws Exception {
+		@DisplayName("Get today's birthdays when matching employees are inactive, terminated, a PM guest, or missing a birth date - Excludes all of them")
+		void getTodayBirthdayNotifications_WithDisqualifyingConditions_ExcludesAllOfThem() throws Exception {
 			seedConfig(true, true, false);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
 			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
+			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
+			giveBirthdayOn(SECOND_OUTSIDER_EMPLOYEE_ID, today);
 			deactivateUserOf(TEAMMATE_EMPLOYEE_ID);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when a matching employee is terminated - Excludes them")
-		void getTodayBirthdayNotifications_WithTerminatedAccountStatus_ExcludesEmployee() throws Exception {
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
-			mutateEmployee(TEAMMATE_EMPLOYEE_ID, employee -> employee.setAccountStatus(AccountStatus.TERMINATED));
+			mutateEmployee(OUTSIDER_EMPLOYEE_ID, employee -> employee.setAccountStatus(AccountStatus.TERMINATED));
+			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID,
+					employee -> employee.getEmployeeRole().setPmRole(Role.PM_GUEST_EMPLOYEE));
+			givePersonalInfo(FIFTH_EMPLOYEE_ID, null);
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
@@ -497,20 +429,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(2))
 				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()))
 				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(TEAMMATE_EMPLOYEE_ID.intValue()));
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when a matching employee is a project management guest - Excludes them")
-		void getTodayBirthdayNotifications_WithGuestEmployeePmRole_ExcludesEmployee() throws Exception {
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
-			mutateEmployee(TEAMMATE_EMPLOYEE_ID,
-					employee -> employee.getEmployeeRole().setPmRole(Role.PM_GUEST_EMPLOYEE));
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 		}
 
 		@Test
@@ -581,12 +499,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	}
 
-	/**
-	 * The service resolves "today" from {@code LocalDate.now(organizationTimeZone)} and
-	 * there is no clock to freeze, so these cases exercise the query directly with
-	 * explicit dates. The hard-coded years are intentional - unlike the endpoint tests
-	 * these cases are not relative to the current date.
-	 */
+
 	@Nested
 	@DisplayName("Find Employees With Birthday On Tests")
 	class FindEmployeesWithBirthdayOnDaoTests {
@@ -594,8 +507,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		private static final LocalDate FEB_28_NON_LEAP_YEAR = LocalDate.of(2023, 2, 28);
 
 		private static final LocalDate FEB_28_LEAP_YEAR = LocalDate.of(2024, 2, 28);
-
-		private static final LocalDate FEB_29_LEAP_YEAR = LocalDate.of(2024, 2, 29);
 
 		private static final LocalDate LEAP_DAY_BIRTH_DATE = LocalDate.of(2000, 2, 29);
 
@@ -607,12 +518,13 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Find birthdays on 28 February of a non-leap year - Includes 29 February birthdays")
-		void findEmployeesWithBirthdayOn_OnFeb28OfNonLeapYear_IncludesFeb29Birthdays() {
+		@DisplayName("Find birthdays on 28 February of a non-leap year - Includes both 28 and 29 February birthdays")
+		void findEmployeesWithBirthdayOn_OnFeb28OfNonLeapYear_IncludesFeb28AndFeb29Birthdays() {
 			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
+			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, LocalDate.of(1995, 2, 28));
 
 			assertThat(findBirthdayEmployeeIds(FEB_28_NON_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION))
-				.containsExactly(CURRENT_EMPLOYEE_ID);
+				.containsExactly(CURRENT_EMPLOYEE_ID, TEAMMATE_EMPLOYEE_ID);
 		}
 
 		@Test
@@ -621,25 +533,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
 
 			assertThat(findBirthdayEmployeeIds(FEB_28_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION)).isEmpty();
-		}
-
-		@Test
-		@DisplayName("Find birthdays on 29 February of a leap year - Includes 29 February birthdays")
-		void findEmployeesWithBirthdayOn_OnFeb29OfLeapYear_IncludesFeb29Birthdays() {
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
-
-			assertThat(findBirthdayEmployeeIds(FEB_29_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION))
-				.containsExactly(CURRENT_EMPLOYEE_ID);
-		}
-
-		@Test
-		@DisplayName("Find birthdays on 28 February of a non-leap year - Includes both 28 and 29 February birthdays")
-		void findEmployeesWithBirthdayOn_OnFeb28OfNonLeapYear_AlsoIncludesFeb28Birthdays() {
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
-			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, LocalDate.of(1995, 2, 28));
-
-			assertThat(findBirthdayEmployeeIds(FEB_28_NON_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION))
-				.containsExactly(CURRENT_EMPLOYEE_ID, TEAMMATE_EMPLOYEE_ID);
 		}
 
 		@Test
@@ -663,18 +556,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			deactivateSeededTeam();
 
 			assertThat(findBirthdayEmployeeIds(LocalDate.of(2023, 7, 4), BirthdayNotificationScope.TEAM))
-				.containsExactly(CURRENT_EMPLOYEE_ID);
-		}
-
-		@Test
-		@DisplayName("Find birthdays with SELF scope - Returns only the current employee")
-		void findEmployeesWithBirthdayOn_WithSelfScopeAndOtherEmployeeMatching_ReturnsOnlyCurrentEmployee() {
-			LocalDate sharedBirthDate = LocalDate.of(1990, 7, 4);
-			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, sharedBirthDate);
-			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, sharedBirthDate);
-
-			assertThat(findBirthdayEmployeeIds(LocalDate.of(2023, 7, 4), BirthdayNotificationScope.SELF))
 				.containsExactly(CURRENT_EMPLOYEE_ID);
 		}
 

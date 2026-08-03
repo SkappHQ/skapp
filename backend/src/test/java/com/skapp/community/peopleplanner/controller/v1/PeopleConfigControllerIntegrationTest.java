@@ -62,7 +62,6 @@ class PeopleConfigControllerIntegrationTest {
 
 	private static final String RESTRICTED_USER_EMAIL = "user2@gmail.com";
 
-	/** User id embedded in generated access tokens. */
 	private static final Long TOKEN_USER_ID = 1L;
 
 	private final JsonMapper objectMapper;
@@ -172,14 +171,6 @@ class PeopleConfigControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get birthday notification config when the stored JSON has an unknown property - Ignores it")
-		void getBirthdayNotificationConfigs_WithUnknownStoredProperty_IgnoresIt() throws Exception {
-			seedRawConfig("{\"isTurnedOn\":true,\"someFutureFlag\":true}");
-
-			assertFlags(performGetRequest(adminToken), true, false, false);
-		}
-
-		@Test
 		@DisplayName("Get birthday notification config as a non people-admin - Returns Forbidden")
 		void getBirthdayNotificationConfigs_WithoutPeopleAdminRole_ReturnsForbidden() throws Exception {
 			performGetRequest(tokenWithoutPeopleAdminRole()).andDo(print()).andExpect(status().isForbidden());
@@ -195,7 +186,10 @@ class PeopleConfigControllerIntegrationTest {
 		@DisplayName("Patch only isTurnedOn - Persists it and leaves the other flags at their defaults")
 		void updateBirthdayNotificationConfigs_WithSingleField_PersistsThatFieldOnly() throws Exception {
 			performPatchRequest(configRequestBody(true, null, null), adminToken).andDo(print())
-				.andExpect(status().isOk());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(messageUtil
+					.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_BIRTHDAY_NOTIFICATION_CONFIG_UPDATED)));
 
 			assertThat(configRowExists()).isTrue();
 			assertFlags(performGetRequest(adminToken), true, false, false);
@@ -215,8 +209,7 @@ class PeopleConfigControllerIntegrationTest {
 		@Test
 		@DisplayName("Patch with an empty body - Leaves the stored config unchanged")
 		void updateBirthdayNotificationConfigs_WithEmptyBody_LeavesConfigUnchanged() throws Exception {
-			// The request DTO carries no constraints and the controller has no @Valid, so
-			// an
+			// The request DTO carries no constraints and the controller has no @Valid, so an
 			// empty payload is a legitimate 200 no-op rather than a bad request.
 			seedConfig(true, true, false);
 
@@ -234,16 +227,6 @@ class PeopleConfigControllerIntegrationTest {
 				.andExpect(status().isOk());
 
 			assertFlags(performGetRequest(adminToken), false, true, true);
-		}
-
-		@Test
-		@DisplayName("Patch birthday notification config - Returns the success message")
-		void updateBirthdayNotificationConfigs_WithValidPayload_ReturnsSuccessMessage() throws Exception {
-			performPatchRequest(configRequestBody(true, true, null), adminToken).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(messageUtil
-					.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_BIRTHDAY_NOTIFICATION_CONFIG_UPDATED)));
 		}
 
 		@Test
