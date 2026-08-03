@@ -190,7 +190,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact }) => {
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
         errorMessage={formik.errors.name}
-        hasPrefixError={!!formik.errors.contactId}
+        hasError={!!formik.errors.name || !!formik.errors.contactId}
         ariaLabels={{
           group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
           saveButton: translateText([
