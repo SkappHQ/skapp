@@ -8,7 +8,7 @@ import { BulkAssignPolicyResponse } from "~community/leave/types/LeavePolicyType
 import { downloadBulkAssignErrorReport } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
-  response: BulkAssignPolicyResponse | null;
+  response: BulkAssignPolicyResponse;
   onDone: () => void;
 }
 
@@ -18,10 +18,6 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({ response, onDone }) => {
     "leavePolicies",
     "bulkAssignModal"
   );
-
-  if (!response) {
-    return null;
-  }
 
   const { successCount, failedCount } = response.bulkStatusSummary;
 

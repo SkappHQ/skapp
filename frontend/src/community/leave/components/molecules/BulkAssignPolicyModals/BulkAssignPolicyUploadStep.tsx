@@ -7,10 +7,7 @@ import DragAndDropField from "~community/common/components/molecules/DragAndDrop
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  FileRejectionType,
-  FileUploadType
-} from "~community/common/types/CommonTypes";
+import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { useBulkAssignLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import {
@@ -29,6 +26,8 @@ interface Props {
 
 const MAX_CSV_FILE_SIZE = { inBytes: 5_000_000, inReadableSize: "5MB" };
 
+const MAX_CSV_ROWS = 1000;
+
 const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   const translateText = useTranslator(
     "leaveModule",
@@ -44,18 +43,31 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
 
   const onSuccess = (response: BulkAssignPolicyResponse): void => {
     const { successCount, failedCount } = response.bulkStatusSummary;
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText(["successToastTitle"]),
-      description:
-        failedCount === 0
-          ? translateText(["successToastAllDescription"], { successCount })
-          : translateText(["successToastPartialDescription"], {
-              successCount,
-              failedCount
-            })
-    });
+
+    if (successCount === 0 && failedCount > 0) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["errorToastTitle"]),
+        description: translateText(["errorToastAllFailedDescription"], {
+          failedCount
+        })
+      });
+    } else {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.SUCCESS,
+        title: translateText(["successToastTitle"]),
+        description:
+          failedCount === 0
+            ? translateText(["successToastAllDescription"], { successCount })
+            : translateText(["successToastPartialDescription"], {
+                successCount,
+                failedCount
+              })
+      });
+    }
+
     onComplete(response);
   };
 
@@ -94,12 +106,23 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
           );
           return;
         }
-        if (!results.data || results.data.length === 0) {
+        if (results.errors.length > 0) {
+          setFileError(translateText(["malformedRowsError"]));
+          return;
+        }
+        if (results.data.length === 0) {
           setFileError(translateText(["emptyFileError"]));
           return;
         }
+        if (results.data.length > MAX_CSV_ROWS) {
+          setFileError(
+            translateText(["tooManyRowsError"], { maxRows: MAX_CSV_ROWS })
+          );
+          return;
+        }
         setPayload(buildBulkAssignPayload(results.data));
-      }
+      },
+      error: () => setFileError(translateText(["unreadableFileError"]))
     });
   };
 
@@ -120,25 +143,15 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
           setAttachment(files);
           handleFile(files);
         }}
-        setAttachmentErrors={(errors: FileRejectionType[]) => {
-          if (errors?.length) {
-            setFileError(translateText(["invalidFileTypeError"]));
-          }
-        }}
         accept={{ "text/csv": [".csv"] }}
         uploadableFiles={attachment}
         supportedFiles=".csv"
         maxFileSize={1}
         maxSizeOfFile={MAX_CSV_FILE_SIZE}
         isZeroFilesErrorRequired={false}
+        customError={fileError}
         accessibility={{ componentName: translateText(["title"]) }}
       />
-
-      {!!fileError && (
-        <div role="alert">
-          <p className="body2 mt-1 text-semantic-red-text">{fileError}</p>
-        </div>
-      )}
 
       <div className="flex flex-row justify-end gap-3">
         <ButtonV2

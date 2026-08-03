@@ -4,31 +4,57 @@ import {
   BulkAssignPolicyResponse
 } from "~community/leave/types/LeavePolicyTypes";
 
+const EMPLOYEE_NAME_HEADER = "Employee Name";
+const POLICY_NAME_HEADER = "Policy Name";
+const EFFECTIVE_DATE_HEADER = "Effective Date";
+
 export const BULK_ASSIGN_TEMPLATE_HEADERS = [
-  "Employee Name",
-  "Policy Name",
-  "Effective Date"
+  EMPLOYEE_NAME_HEADER,
+  POLICY_NAME_HEADER,
+  EFFECTIVE_DATE_HEADER
 ];
 
-const toCsvRow = (values: string[]): string =>
-  values.map((value) => `"${(value ?? "").replace(/"/g, '""')}"`).join(",");
+// Spreadsheets evaluate a leading =, +, - or @ as a formula even inside a quoted
+// field, so any value starting with one is prefixed with a single quote.
+const FORMULA_TRIGGER_PATTERN = /^[=+\-@\t\r]/;
+
+export const toCsvRow = (values: string[]): string =>
+  values
+    .map((value) => {
+      const escaped = FORMULA_TRIGGER_PATTERN.test(value) ? `'${value}` : value;
+      return `"${escaped.replace(/"/g, '""')}"`;
+    })
+    .join(",");
+
+const normalizeHeader = (header: string): string =>
+  header.trim().toLowerCase().replace(/\s+/g, " ");
+
+const getCell = (
+  row: Record<string, string | undefined>,
+  header: string
+): string => {
+  const entry = Object.entries(row).find(
+    ([rowHeader]) => normalizeHeader(rowHeader) === normalizeHeader(header)
+  );
+  return (entry?.[1] ?? "").trim();
+};
 
 export const getMissingBulkAssignHeaders = (
   fields: string[] = []
 ): string[] => {
-  const present = fields.map((field) => field.trim());
+  const present = fields.map(normalizeHeader);
   return BULK_ASSIGN_TEMPLATE_HEADERS.filter(
-    (header) => !present.includes(header)
+    (header) => !present.includes(normalizeHeader(header))
   );
 };
 
 export const buildBulkAssignPayload = (
-  rows: Record<string, string>[]
+  rows: Record<string, string | undefined>[]
 ): BulkAssignPolicyPayload => ({
   assignments: rows.map((row) => ({
-    employeeName: (row["Employee Name"] ?? "").trim(),
-    policyName: (row["Policy Name"] ?? "").trim(),
-    effectiveDate: (row["Effective Date"] ?? "").trim()
+    employeeName: getCell(row, EMPLOYEE_NAME_HEADER),
+    policyName: getCell(row, POLICY_NAME_HEADER),
+    effectiveDate: getCell(row, EFFECTIVE_DATE_HEADER)
   }))
 });
 
@@ -51,7 +77,7 @@ export const downloadBulkAssignErrorReport = (
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(headers.join(",") + "\n");
-      for (const log of response?.bulkRecordErrorLogs ?? []) {
+      for (const log of response.bulkRecordErrorLogs) {
         controller.enqueue(
           toCsvRow([
             log.employeeName,

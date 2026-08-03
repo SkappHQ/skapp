@@ -61,12 +61,12 @@ const BulkAssignPolicyModal: FC<Props> = ({ isOpen, onClose }) => {
             onComplete={handleComplete}
             onBack={() => setStep(BulkAssignStep.INSTRUCTIONS)}
           />
-        ) : (
+        ) : response ? (
           <BulkAssignPolicySummaryStep
             response={response}
             onDone={handleClose}
           />
-        )
+        ) : null
       }
     />
   );

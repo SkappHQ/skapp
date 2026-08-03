@@ -43,7 +43,7 @@ const LeavePolicies: NextPage = () => {
         canManagePolicies ? translateText(["createPolicyBtnTxt"]) : undefined
       }
       secondaryBtnText={
-        canManagePolicies ? translateText(["bulkUploadBtnTxt"]) : undefined
+        canManagePolicies ? translateText(["bulkAssignBtnTxt"]) : undefined
       }
       secondaryBtnVariant="tertiary"
       secondaryBtnIconName={IconName.UP_ARROW_ICON}
@@ -51,7 +51,7 @@ const LeavePolicies: NextPage = () => {
       onSecondaryButtonClick={() => setIsBulkAssignModalOpen(true)}
       id={{
         primaryBtn: "create-leave-policy-btn",
-        secondaryBtn: "bulk-upload-leave-policy-btn"
+        secondaryBtn: "bulk-assign-leave-policy-btn"
       }}
     >
       <>
