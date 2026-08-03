@@ -1272,11 +1272,8 @@ public class PeopleServiceImpl implements PeopleService {
 		ExecutorService executorService = Executors.newFixedThreadPool(6);
 		List<EmployeeBulkResponseDto> results = Collections.synchronizedList(new ArrayList<>());
 		AtomicReference<ResponseEntityDto> outValues = new AtomicReference<>(new ResponseEntityDto());
-		Set<String> seenPayrollIds = Collections.synchronizedSet(new HashSet<>());
-		Set<String> seenTins = Collections.synchronizedSet(new HashSet<>());
 
-		List<CompletableFuture<Void>> tasks = createEmployeeTasks(validEmployeeBulkDtoList, executorService, results,
-				seenPayrollIds, seenTins);
+		List<CompletableFuture<Void>> tasks = createEmployeeTasks(validEmployeeBulkDtoList, executorService, results);
 		waitForTaskCompletion(tasks, executorService);
 
 		asyncEmailServiceImpl.sendEmailsInBackground(results);
@@ -1948,7 +1945,7 @@ public class PeopleServiceImpl implements PeopleService {
 					new Object[] { PeopleConstants.MAX_SSN_LENGTH, "First Name" }));
 	}
 
-	public void validatePayrollIdInBulk(String payrollId, List<String> errors, Set<String> seenPayrollIds) {
+	public void validatePayrollIdInBulk(String payrollId, List<String> errors) {
 		if (payrollId == null || payrollId.isBlank()) {
 			return;
 		}
@@ -1961,13 +1958,9 @@ public class PeopleServiceImpl implements PeopleService {
 		if (employeeDao.existsByPayrollId(payrollId)) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST));
 		}
-
-		if (!seenPayrollIds.add(payrollId)) {
-			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_IN_FILE));
-		}
 	}
 
-	public void validateTinInBulk(String tin, List<String> errors, Set<String> seenTins) {
+	public void validateTinInBulk(String tin, List<String> errors) {
 		if (tin == null || tin.isBlank()) {
 			return;
 		}
@@ -1979,10 +1972,6 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (employeeDao.existsByTin(tin)) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST));
-		}
-
-		if (!seenTins.add(tin)) {
-			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_IN_FILE));
 		}
 	}
 
@@ -2213,9 +2202,8 @@ public class PeopleServiceImpl implements PeopleService {
 		return successCount;
 	}
 
-	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto, String tempPassword,
-			Set<String> seenPayrollIds, Set<String> seenTins) {
-		List<String> validationErrors = validateEmployeeBulkDto(employeeBulkDto, seenPayrollIds, seenTins);
+	private void createNewEmployeeFromBulk(EmployeeBulkDto employeeBulkDto, String tempPassword) {
+		List<String> validationErrors = validateEmployeeBulkDto(employeeBulkDto);
 		if (!validationErrors.isEmpty()) {
 			throw new ValidationException(
 					PeopleMessageConstant.PEOPLE_ERROR_USER_ENTITLEMENT_BULK_UPLOAD_VALIDATION_FAILED,
@@ -2625,8 +2613,7 @@ public class PeopleServiceImpl implements PeopleService {
 		return employeeTeams;
 	}
 
-	private List<String> validateEmployeeBulkDto(EmployeeBulkDto employeeBulkDto, Set<String> seenPayrollIds,
-			Set<String> seenTins) {
+	private List<String> validateEmployeeBulkDto(EmployeeBulkDto employeeBulkDto) {
 		List<String> errors = new ArrayList<>();
 
 		validateMandatoryFields(employeeBulkDto);
@@ -2668,8 +2655,8 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
-		validatePayrollIdInBulk(employeeBulkDto.getPayrollId(), errors, seenPayrollIds);
-		validateTinInBulk(employeeBulkDto.getTin(), errors, seenTins);
+		validatePayrollIdInBulk(employeeBulkDto.getPayrollId(), errors);
+		validateTinInBulk(employeeBulkDto.getTin(), errors);
 
 		return errors;
 	}
@@ -2680,8 +2667,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private List<CompletableFuture<Void>> createEmployeeTasks(List<EmployeeBulkDto> employeeBulkDtoList,
-			ExecutorService executorService, List<EmployeeBulkResponseDto> results, Set<String> seenPayrollIds,
-			Set<String> seenTins) {
+			ExecutorService executorService, List<EmployeeBulkResponseDto> results) {
 		List<CompletableFuture<Void>> tasks = new ArrayList<>();
 		List<List<EmployeeBulkDto>> chunkedEmployeeBulkData = CommonModuleUtils.chunkData(employeeBulkDtoList);
 		TransactionTemplate transactionTemplate = getTransactionManagerTemplate();
@@ -2690,8 +2676,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 		for (List<EmployeeBulkDto> employeeBulkChunkDtoList : chunkedEmployeeBulkData) {
 			for (EmployeeBulkDto employeeBulkDto : employeeBulkChunkDtoList) {
-				tasks.add(createEmployeeTask(employeeBulkDto, transactionTemplate, results, executorService, tenant,
-						seenPayrollIds, seenTins));
+				tasks.add(createEmployeeTask(employeeBulkDto, transactionTemplate, results, executorService, tenant));
 			}
 		}
 
@@ -2700,12 +2685,12 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private CompletableFuture<Void> createEmployeeTask(EmployeeBulkDto employeeBulkDto,
 			TransactionTemplate transactionTemplate, List<EmployeeBulkResponseDto> results,
-			ExecutorService executorService, String tenant, Set<String> seenPayrollIds, Set<String> seenTins) {
+			ExecutorService executorService, String tenant) {
 		return CompletableFuture.runAsync(() -> {
 			try {
 				bulkContextService.setContext(tenant);
 				String tempPassword = CommonModuleUtils.generateSecureRandomPassword();
-				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate, tempPassword, seenPayrollIds, seenTins);
+				saveEmployeeInTransaction(employeeBulkDto, transactionTemplate, tempPassword);
 				EmployeeBulkResponseDto bulkResponseDto = createSuccessResponse(employeeBulkDto,
 						messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_EMPLOYEE_ADDED));
 				bulkResponseDto.setTempPassword(tempPassword);
@@ -2721,11 +2706,11 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private void saveEmployeeInTransaction(EmployeeBulkDto employeeBulkDto, TransactionTemplate transactionTemplate,
-			String tempPassword, Set<String> seenPayrollIds, Set<String> seenTins) {
+			String tempPassword) {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(@NonNull TransactionStatus status) {
-				createNewEmployeeFromBulk(employeeBulkDto, tempPassword, seenPayrollIds, seenTins);
+				createNewEmployeeFromBulk(employeeBulkDto, tempPassword);
 			}
 		});
 	}
