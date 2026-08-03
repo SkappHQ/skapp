@@ -8,6 +8,7 @@ import CommonModalController from "~community/common/components/organisms/Common
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
+import useModuleAccessGuard from "~community/common/hooks/useModuleAccessGuard";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
@@ -25,6 +26,8 @@ const BaseLayout = ({ children }: Props) => {
   const { asPath } = useRouter();
 
   const { sessionStatus } = useSessionData();
+
+  useModuleAccessGuard();
 
   const { token } = useFcmToken();
 

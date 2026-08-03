@@ -22,7 +22,7 @@ import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { getShortDayName } from "~community/people/utils/holidayUtils/commonUtils";
 
 import { appModes } from "../constants/configs";
-import ROUTES from "../constants/routes";
+import ROUTES, { moduleGuardedRoutes } from "../constants/routes";
 
 export const getBlinkClass = (shouldBlink: boolean): string =>
   shouldBlink ? "animate-pulse" : "";
@@ -520,6 +520,16 @@ export const checkRestrictedRoutesAndRedirect = (
   }
   return null;
 };
+
+export const isModuleRouteRestricted = (
+  pathname: string,
+  roles: string[]
+): boolean =>
+  moduleGuardedRoutes.some(
+    ({ routes, requiredRole }) =>
+      routes.some((url) => pathname.startsWith(url)) &&
+      !roles.includes(requiredRole)
+  );
 
 export const getLabelForReadOnlyChip = (
   isBelow1024?: boolean,
