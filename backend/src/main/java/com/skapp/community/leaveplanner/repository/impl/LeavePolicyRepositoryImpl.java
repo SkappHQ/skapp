@@ -68,8 +68,8 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		Root<LeavePolicy> root = query.from(LeavePolicy.class);
 		root.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
 
-		List<String> loweredNames = names.stream().map(String::toLowerCase).toList();
-		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(loweredNames);
+		List<String> normalizedNames = names.stream().map(StringUtils::normalizeName).toList();
+		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(normalizedNames);
 		Predicate statusPredicate = cb.equal(root.get(LeavePolicy_.status), status);
 
 		query.select(root).where(cb.and(namePredicate, statusPredicate)).distinct(true);

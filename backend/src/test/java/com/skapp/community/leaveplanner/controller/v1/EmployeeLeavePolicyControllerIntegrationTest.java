@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -66,6 +68,13 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	// An open (ACTIVE) window for employee 1 on policy 500 (leave type 100).
 	private static final String SEED_EXISTING_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
 			+ "VALUES (900, 1, 500, 'SPECIFIC', '2023-01-01', 'ACTIVE')";
+
+	// A second ACTIVE policy named 'Annual Standard' on leave type 200, so the name alone
+	// no longer identifies a single policy.
+	private static final String SEED_AMBIGUOUS_POLICY_NAME = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
+			+ "VALUES (601, 'Annual Standard', 200, 'ACCRUAL', 'ACTIVE', false)";
+
+	private static final String RENAME_EMPLOYEE_2_TO_EMPLOYEE_1 = "UPDATE employee SET first_name = 'Employee User One', last_name = 'Lastname One' WHERE employee_id = 2";
 
 	private static final String NULL_JOIN_DATE_EMPLOYEE_2 = "UPDATE employee SET join_date = NULL WHERE employee_id = 2";
 
@@ -506,6 +515,99 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].policyId").value(501));
+		}
+
+		@Test
+		@DisplayName("An ambiguous policy name is rejected instead of resolving to an arbitrary policy")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_AMBIGUOUS_POLICY_NAME })
+		void bulkAssign_AmbiguousPolicyName_Rejected() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs[0].error",
+						containsString("Multiple active policies found with the name: Annual Standard")));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk()).andExpect(jsonPath("$.results", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("An ambiguous employee name is rejected and names the offending value")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, RENAME_EMPLOYEE_2_TO_EMPLOYEE_1 })
+		void bulkAssign_AmbiguousEmployeeName_Rejected() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs[0].error",
+						containsString("Multiple employees found with the name: " + EMPLOYEE_1_NAME)));
+		}
+
+		@Test
+		@DisplayName("An employee name that differs only by case, spacing and accents still matches")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_LooselyFormattedEmployeeName_Matches() throws Exception {
+			String body = bulkBody(bulkRow("  employee user one   lastname one ", "annual standard", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0));
+		}
+
+		@Test
+		@DisplayName("A blank effective date falls back to the employee's hire date")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_BlankEffectiveDate_UsesHireDate() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_1_NAME, "Annual Standard", ""));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0));
+
+			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].effectiveDateType").value("HIRE_DATE"))
+				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
+		}
+
+		@Test
+		@DisplayName("A blank effective date is rejected when the employee has no hire date")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, NULL_JOIN_DATE_EMPLOYEE_2 })
+		void bulkAssign_BlankEffectiveDateWithoutHireDate_Rejected() throws Exception {
+			String body = bulkBody(bulkRow(EMPLOYEE_2_NAME, "Annual Standard", ""));
+
+			performBulk(leaveAdminToken(), body).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(1))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs[0].error",
+						containsString("has no hire date on record")));
+		}
+
+		@Test
+		@DisplayName("A request without an assignments field summarises zero rows")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_MissingAssignments_ReturnsEmptySummary() throws Exception {
+			performBulk(leaveAdminToken(), "{}").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.successCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0))
+				.andExpect(jsonPath("$.results[0].bulkRecordErrorLogs", hasSize(0)));
+		}
+
+		@Test
+		@DisplayName("A file above the supported row count is rejected")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void bulkAssign_TooManyRows_ReturnsBadRequest() throws Exception {
+			String[] rows = new String[1001];
+			Arrays.fill(rows, bulkRow(EMPLOYEE_1_NAME, "Annual Standard", "01/06/2024"));
+
+			performBulk(leaveAdminToken(), bulkBody(rows)).andDo(print()).andExpect(status().isBadRequest());
 		}
 
 		@Test

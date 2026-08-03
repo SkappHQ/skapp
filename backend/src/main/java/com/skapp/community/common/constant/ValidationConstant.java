@@ -10,6 +10,18 @@ public class ValidationConstant {
 	public static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
 	/**
+	 * Matches any run of whitespace, including the non-breaking space that spreadsheet
+	 * exports frequently introduce, so it can be collapsed into a single space.
+	 */
+	public static final Pattern WHITESPACE_RUN_PATTERN = Pattern.compile("[\\s\\u00A0]+");
+
+	/**
+	 * Matches Unicode combining marks, used to strip the diacritics left behind by NFD
+	 * normalisation.
+	 */
+	public static final Pattern COMBINING_MARK_PATTERN = Pattern.compile("\\p{M}+");
+
+	/**
 	 * This pattern validates the hexadecimal color code should consist of letters A-F and
 	 * a-f and numbers 0-9 with length 6 to 8
 	 */

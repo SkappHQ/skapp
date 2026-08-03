@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,7 @@ public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolic
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(Long employeeId,
 			Long leaveTypeId, EmployeeLeavePolicyStatus status);
 
+	@EntityGraph(attributePaths = { "employee", "policy", "policy.leaveType" })
 	List<EmployeeLeavePolicy> findByEmployee_EmployeeIdInAndStatus(Collection<Long> employeeIds,
 			EmployeeLeavePolicyStatus status);
 

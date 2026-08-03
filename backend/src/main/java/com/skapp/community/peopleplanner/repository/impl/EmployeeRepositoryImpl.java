@@ -6,6 +6,7 @@ import com.skapp.community.common.model.User_;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
 import com.skapp.community.leaveplanner.payload.AdminOnLeaveDto;
@@ -1256,9 +1257,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
-		List<String> normalizedNames = names.stream()
-			.map(name -> name == null ? "" : name.trim().toLowerCase())
-			.toList();
+		List<String> normalizedNames = names.stream().map(StringUtils::normalizeName).toList();
 		predicates.add(
 				criteriaBuilder
 					.lower(criteriaBuilder.concat(criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "),

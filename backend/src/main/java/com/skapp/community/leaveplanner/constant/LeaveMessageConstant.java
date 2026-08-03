@@ -91,9 +91,12 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_BULK_EMPLOYEE_NOT_FOUND("api.error.leave.bulk-employee-not-found"),
 	LEAVE_ERROR_BULK_EMPLOYEE_MULTIPLE_FOUND("api.error.leave.bulk-employee-multiple-found"),
 	LEAVE_ERROR_BULK_POLICY_NOT_FOUND("api.error.leave.bulk-policy-not-found"),
+	LEAVE_ERROR_BULK_POLICY_MULTIPLE_FOUND("api.error.leave.bulk-policy-multiple-found"),
 	LEAVE_ERROR_BULK_POLICY_NOT_ACCRUAL("api.error.leave.bulk-policy-not-accrual"),
 	LEAVE_ERROR_BULK_INVALID_DATE("api.error.leave.bulk-invalid-date"),
+	LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE("api.error.leave.bulk-hire-date-unavailable"),
 	LEAVE_ERROR_BULK_DUPLICATE_ROW("api.error.leave.bulk-duplicate-row"),
+	LEAVE_ERROR_BULK_ROW_LIMIT_EXCEEDED("api.error.leave.bulk-row-limit-exceeded"),
 	LEAVE_ERROR_BULK_ROW_FAILED("api.error.leave.bulk-row-failed");
 
 	private final String messageKey;

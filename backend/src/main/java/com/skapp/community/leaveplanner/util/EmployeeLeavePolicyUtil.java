@@ -44,15 +44,4 @@ public class EmployeeLeavePolicyUtil {
 		}
 	}
 
-	public static String sanitizeCsvCell(String value) {
-		if (value == null) {
-			return "";
-		}
-		String sanitized = value.trim();
-		while (!sanitized.isEmpty() && "=+-@".indexOf(sanitized.charAt(0)) >= 0) {
-			sanitized = sanitized.substring(1).trim();
-		}
-		return sanitized;
-	}
-
 }
