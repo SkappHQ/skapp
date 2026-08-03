@@ -276,6 +276,8 @@
       "noOtherUnitsDescription_one": "{{count}} employee is currently assigned to \"{{name}}\". Since no other business units exist, this employee will be unassigned if you continue.",
       "noOtherUnitsDescription_other": "{{count}} employees are currently assigned to \"{{name}}\". Since no other business units exist, these employees will be unassigned if you continue.",
       "transferToLabel": "Transfer to:",
+      "transferTooltip": "Choose another business unit to move these employees to, or leave them unassigned.",
+      "transferTooltipAriaLabel": "Transfer target information",
       "unassignOption": "Don't transfer (unassign)",
       "deleteButton": "Delete",
       "cancelButton": "Cancel"

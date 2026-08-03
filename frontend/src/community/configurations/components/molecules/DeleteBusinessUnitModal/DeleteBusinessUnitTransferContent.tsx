@@ -52,6 +52,11 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
       <Dropdown
         id="business-unit-transfer-target"
         label={translateText(["deleteModal", "transferToLabel"])}
+        tooltipContent={translateText(["deleteModal", "transferTooltip"])}
+        ariaLabelTooltipButton={translateText([
+          "deleteModal",
+          "transferTooltipAriaLabel"
+        ])}
         options={transferOptions}
         value={value}
         onChange={(newValue) => onChange(newValue)}
