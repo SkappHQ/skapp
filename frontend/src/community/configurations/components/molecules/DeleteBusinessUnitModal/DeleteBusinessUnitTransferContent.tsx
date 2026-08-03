@@ -45,7 +45,7 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
     <div className="flex flex-col gap-4">
       <p className="body1">
         {translateText(["deleteModal", "assignedDescription"], {
-          count: String(assignedEmployeeCount),
+          count: assignedEmployeeCount,
           name: businessUnitName
         })}
       </p>

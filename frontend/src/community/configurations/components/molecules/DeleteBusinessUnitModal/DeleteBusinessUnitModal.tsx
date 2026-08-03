@@ -59,12 +59,12 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       )?.name;
       description = translateText(
         ["toasts", "deleteAndTransferSuccess", "description"],
-        { name: businessUnit.name, count: String(count), target: targetName }
+        { name: businessUnit.name, count, target: targetName }
       );
     } else {
       description = translateText(
         ["toasts", "deleteAndUnassignSuccess", "description"],
-        { name: businessUnit.name, count: String(count) }
+        { name: businessUnit.name, count }
       );
     }
 
@@ -142,7 +142,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     return (
       <p className="body1">
         {translateText(["deleteModal", "noOtherUnitsDescription"], {
-          count: String(count),
+          count,
           name: businessUnit.name
         })}
       </p>

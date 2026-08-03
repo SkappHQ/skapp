@@ -271,8 +271,10 @@
     "deleteModal": {
       "title": "Delete Business Unit",
       "confirmDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
-      "assignedDescription": "{{count}} employees are currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
-      "noOtherUnitsDescription": "{{count}} employees are currently assigned to \"{{name}}\". Since no other business units exist, these employees will be unassigned if you continue.",
+      "assignedDescription_one": "{{count}} employee is currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
+      "assignedDescription_other": "{{count}} employees are currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
+      "noOtherUnitsDescription_one": "{{count}} employee is currently assigned to \"{{name}}\". Since no other business units exist, this employee will be unassigned if you continue.",
+      "noOtherUnitsDescription_other": "{{count}} employees are currently assigned to \"{{name}}\". Since no other business units exist, these employees will be unassigned if you continue.",
       "transferToLabel": "Transfer to:",
       "unassignOption": "Don't transfer (unassign)",
       "deleteButton": "Delete",
@@ -293,11 +295,13 @@
       },
       "deleteAndTransferSuccess": {
         "title": "Business Unit Deleted",
-        "description": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
+        "description_one": "'{{name}}' has been deleted and {{count}} employee transferred to '{{target}}'.",
+        "description_other": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
       },
       "deleteAndUnassignSuccess": {
         "title": "Business Unit Deleted",
-        "description": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
+        "description_one": "'{{name}}' has been deleted. {{count}} employee is now unassigned.",
+        "description_other": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
       },
       "error": {
         "title": "Oops! Something went wrong",

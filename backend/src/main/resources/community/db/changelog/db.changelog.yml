@@ -54,3 +54,5 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-employee-leave-policy-add-effective-date-type.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-business-unit.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-business-unit-id.sql
