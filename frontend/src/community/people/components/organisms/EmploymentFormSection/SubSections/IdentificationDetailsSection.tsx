@@ -4,6 +4,7 @@ import { forwardRef, useImperativeHandle, useMemo } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import { characterLengths } from "~community/common/constants/stringConstants";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
@@ -195,7 +196,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
                   onChange={handleInput}
                   inputName="payrollId"
                   error={errors.payrollId ?? ""}
-                  maxLength={50}
+                  maxLength={characterLengths.PAYROLL_ID_LENGTH}
                   componentStyle={{
                     flex: 1,
                     mt: "0rem"
@@ -221,7 +222,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
                   onChange={handleInput}
                   inputName="tin"
                   error={errors.tin ?? ""}
-                  maxLength={50}
+                  maxLength={characterLengths.TIN_LENGTH}
                   componentStyle={{
                     flex: 1,
                     mt: "0rem"

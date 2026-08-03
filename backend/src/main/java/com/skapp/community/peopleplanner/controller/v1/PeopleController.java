@@ -174,6 +174,8 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Check if a Payroll ID is unique",
+			description = "This endpoint checks whether the provided Payroll ID is already assigned to another employee.")
 	@GetMapping(value = "/check-payroll-id-uniqueness")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> checkPayrollIdUniqueness(
@@ -182,6 +184,8 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Check if a TIN is unique",
+			description = "This endpoint checks whether the provided TIN is already assigned to another employee.")
 	@GetMapping(value = "/check-tin-uniqueness")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> checkTinUniqueness(TinUniquenessCheckDto tinUniquenessCheckDto) {

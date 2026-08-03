@@ -321,13 +321,20 @@ export const employeeIdentificationDetailsValidation = (
     payrollId: Yup.string()
       .trim()
       .max(
-        characterLengths.CHARACTER_LENGTH,
-        translator(["payrollIdMaxLengthError"])
+        characterLengths.PAYROLL_ID_LENGTH,
+        translator(["payrollIdMaxLengthError"], {
+          max: String(characterLengths.PAYROLL_ID_LENGTH)
+        })
       )
       .nullable(),
     tin: Yup.string()
       .trim()
-      .max(characterLengths.CHARACTER_LENGTH, translator(["tinMaxLengthError"]))
+      .max(
+        characterLengths.TIN_LENGTH,
+        translator(["tinMaxLengthError"], {
+          max: String(characterLengths.TIN_LENGTH)
+        })
+      )
       .nullable()
   });
 

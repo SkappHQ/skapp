@@ -73,6 +73,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeePerson
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentVisaDetailsDto;
@@ -418,6 +419,7 @@ public class PeopleServiceImpl implements PeopleService {
 				employee::setJoinDate);
 		CommonModuleUtils.setIfExists(() -> requestDto.getEmployment().getEmploymentDetails().getWorkTimeZone(),
 				employee::setTimeZone);
+
 		// Work Location
 		if (requestDto != null && requestDto.getEmployment() != null
 				&& requestDto.getEmployment().getEmploymentDetails() != null
@@ -432,13 +434,9 @@ public class PeopleServiceImpl implements PeopleService {
 		CommonModuleUtils.setIfExists(
 				() -> requestDto.getEmployment().getIdentificationAndDiversityDetails().getEeoJobCategory(),
 				employee::setEeo);
-		CommonModuleUtils.setIfExists(
-				() -> normalizeIdentifier(
-						requestDto.getEmployment().getIdentificationAndDiversityDetails().getPayrollId()),
-				employee::setPayrollId);
-		CommonModuleUtils.setIfExists(
-				() -> normalizeIdentifier(requestDto.getEmployment().getIdentificationAndDiversityDetails().getTin()),
-				employee::setTin);
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processPayrollIdAndTin(requestDto, employee);
+		}
 
 		// Common Information
 		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), value -> {
@@ -505,8 +503,24 @@ public class PeopleServiceImpl implements PeopleService {
 		return employee;
 	}
 
-	private static String normalizeIdentifier(String value) {
-		return (value == null || value.isBlank()) ? null : value;
+	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
+		if (requestDto == null || requestDto.getEmployment() == null
+				|| requestDto.getEmployment().getIdentificationAndDiversityDetails() == null || employee == null) {
+			return;
+		}
+
+		EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails = requestDto.getEmployment()
+			.getIdentificationAndDiversityDetails();
+
+		String payrollId = identificationDetails.getPayrollId();
+		if (payrollId != null) {
+			employee.setPayrollId(payrollId.isBlank() ? null : payrollId.trim());
+		}
+
+		String tin = identificationDetails.getTin();
+		if (tin != null) {
+			employee.setTin(tin.isBlank() ? null : tin.trim());
+		}
 	}
 
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
@@ -1399,6 +1413,9 @@ public class PeopleServiceImpl implements PeopleService {
 				exists = employeeDao.existsByTin(tin);
 			}
 			responseDto.setIsTinExists(exists);
+		}
+		else {
+			responseDto.setIsTinExists(false);
 		}
 
 		return new ResponseEntityDto(false, responseDto);

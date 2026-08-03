@@ -75,7 +75,7 @@ const EmploymentDetailsForm = ({
   const env = useGetEnvironment();
   const isEnterpriseMode = env === appModes.ENTERPRISE;
 
-  const { tenantID } = useSessionData();
+  const { tenantID, isPeopleAdmin } = useSessionData();
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
@@ -94,7 +94,8 @@ const EmploymentDetailsForm = ({
   const employeeIdForUniquenessCheck = employee?.common?.employeeId;
   const payrollId =
     employee?.employment?.identificationAndDiversityDetails?.payrollId || "";
-  const tin = employee?.employment?.identificationAndDiversityDetails?.tin || "";
+  const tin =
+    employee?.employment?.identificationAndDiversityDetails?.tin || "";
 
   const { refetch: refetchPayrollIdUniqueness } = useCheckPayrollIdUniqueness(
     employeeIdForUniquenessCheck,
@@ -155,7 +156,7 @@ const EmploymentDetailsForm = ({
     if (employmentFormIsValid && identificationFormIsValid) {
       let hasIdentificationUniquenessError = false;
 
-      if (payrollId) {
+      if (isPeopleAdmin && payrollId) {
         const { data: payrollIdCheckResult } =
           await refetchPayrollIdUniqueness();
         if (payrollIdCheckResult?.isPayrollIdExists) {
@@ -171,7 +172,7 @@ const EmploymentDetailsForm = ({
         }
       }
 
-      if (tin) {
+      if (isPeopleAdmin && tin) {
         const { data: tinCheckResult } = await refetchTinUniqueness();
         if (tinCheckResult?.isTinExists) {
           identificationDetailsRef.current?.setFieldError?.(

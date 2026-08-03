@@ -47,8 +47,10 @@ import {
   EmployeeDetails,
   EmployeeManagerType,
   MyManagersType,
+  PayrollIdUniquenessResponse,
   QuickAddEmployeePayload,
-  QuickAddEmployeeResponse
+  QuickAddEmployeeResponse,
+  TinUniquenessResponse
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
@@ -302,7 +304,7 @@ export const useCheckEmailAndIdentificationNo = (
 export const useCheckPayrollIdUniqueness = (
   employeeId: string | undefined,
   payrollId: string
-): UseQueryResult<Partial<EmployeeDataExists>> => {
+): UseQueryResult<PayrollIdUniquenessResponse> => {
   return useQuery({
     queryKey: peopleQueryKeys.PAYROLL_ID_UNIQUENESS_KEYS(employeeId, payrollId),
     queryFn: async () => {
@@ -319,7 +321,7 @@ export const useCheckPayrollIdUniqueness = (
 export const useCheckTinUniqueness = (
   employeeId: string | undefined,
   tin: string
-): UseQueryResult<Partial<EmployeeDataExists>> => {
+): UseQueryResult<TinUniquenessResponse> => {
   return useQuery({
     queryKey: peopleQueryKeys.TIN_UNIQUENESS_KEYS(employeeId, tin),
     queryFn: async () => {

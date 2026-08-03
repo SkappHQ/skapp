@@ -60,8 +60,8 @@ export interface BulkUploadUser {
   contractState: string | null;
   employmentStatus: string | null;
   passportNo: string | null;
-  payrollId?: string | null;
-  tin?: string | null;
+  payrollId: string | null;
+  tin: string | null;
 }
 
 export interface bulkUploadResponce {

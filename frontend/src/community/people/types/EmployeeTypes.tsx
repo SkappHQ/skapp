@@ -175,8 +175,8 @@ export interface BulkEmployeeDetails {
     startDate: string | null;
     endDate: string | null;
   };
-  payrollId?: string | null;
-  tin?: string | null;
+  payrollId: string | null;
+  tin: string | null;
 }
 
 export interface EmployeePersonalInfoResponseType {
@@ -448,8 +448,14 @@ export interface EmployeeDataExists {
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
   isGuestUser: boolean;
-  isPayrollIdExists?: boolean;
-  isTinExists?: boolean;
+}
+
+export interface PayrollIdUniquenessResponse {
+  isPayrollIdExists: boolean;
+}
+
+export interface TinUniquenessResponse {
+  isTinExists: boolean;
 }
 
 export interface QuickAddEmployeePayload {
