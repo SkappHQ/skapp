@@ -36,6 +36,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.time.DayOfWeek;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -225,6 +226,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 		return organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
 			.orElse("UTC");
+	}
+
+	@Override
+	public ZoneId getOrganizationTimeZoneInZoneId() {
+		return ZoneId.of(getOrganizationTimeZone());
 	}
 
 	public void getDefaultTimeConfigs() {

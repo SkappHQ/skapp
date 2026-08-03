@@ -627,11 +627,7 @@ public class DateTimeUtils {
 	}
 
 	public static String epochMillisToAmPmString(Long epochMillis) {
-		if (epochMillis == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
-		}
-		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalTime();
-		return time.format(AM_PM_FORMATTER);
+		return epochMillisToAmPmString(epochMillis, UTC_ZONE_ID);
 	}
 
 	public static String epochMillisToAmPmString(Long epochMillis, ZoneId zoneId) {
