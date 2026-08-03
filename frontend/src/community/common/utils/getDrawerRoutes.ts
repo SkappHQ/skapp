@@ -32,6 +32,8 @@ interface Props {
   notificationLeaveCount?: number;
   notificationTimesheetCount?: number;
   notificationSignCount?: number;
+  isLeavePoliciesEnabled?: boolean;
+  isLeavePoliciesConfigError?: boolean;
 }
 
 const getDrawerRoutes = ({
@@ -44,7 +46,9 @@ const getDrawerRoutes = ({
   organizationCalendarMicrosoftStatus,
   notificationLeaveCount = 0,
   notificationTimesheetCount = 0,
-  notificationSignCount = 0
+  notificationSignCount = 0,
+  isLeavePoliciesEnabled = false,
+  isLeavePoliciesConfigError = false
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -323,6 +327,14 @@ const getDrawerRoutes = ({
             );
 
             if (!isSubRouteAuthorized) return null;
+
+            if (
+              subRoute.id === "2E" &&
+              !isLeavePoliciesEnabled &&
+              !isLeavePoliciesConfigError
+            ) {
+              return null;
+            }
 
             // Add notification count to "All Requests" if there are pending requests
             if (subRoute.id === "2B" && notificationLeaveCount > 0) {
