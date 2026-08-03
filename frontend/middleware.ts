@@ -369,7 +369,6 @@ export const config = {
     "/unauthorized",
     "/verify/email",
     "/verify/success",
-    "/oauth-consent",
     // Module routes
     "/leave/:path*",
     "/people/:path*",
