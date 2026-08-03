@@ -138,7 +138,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
       selectedDealStage?.id
     ),
     validateOnChange: false,
-    validateOnBlur: false,
+    validateOnBlur: true,
     enableReinitialize: true
   });
 
@@ -146,6 +146,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
     values,
     errors,
     handleChange,
+    handleBlur,
     setSubmitting,
     setFieldValue,
     submitForm
@@ -164,6 +165,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         errorMessage={errors?.name}
         className="w-full"
         onChange={handleChange}
+        onBlur={handleBlur}
         required
       />
 
@@ -175,6 +177,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         state={errors?.description ? "error" : "default"}
         errorMessage={errors?.description}
         onChange={handleChange}
+        onBlur={handleBlur}
       />
 
       <ColorSelector
