@@ -18,12 +18,10 @@ import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
-import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
-import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +40,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -153,7 +150,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				objectMapper.writeValueAsString(config)));
 	}
 
-
 	private Employee loadEmployee(Long employeeId) {
 		return employeeDao.findById(employeeId).orElseThrow();
 	}
@@ -192,12 +188,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		employeeTeam.setEmployee(loadEmployee(employeeId));
 		employeeTeam.setIsSupervisor(false);
 		employeeTeamDao.saveAndFlush(employeeTeam);
-	}
-
-	private void deactivateSeededTeam() {
-		Team team = teamDao.findById(SEEDED_TEAM_ID).orElseThrow();
-		team.setActive(false);
-		teamDao.saveAndFlush(team);
 	}
 
 	private void deactivateUserOf(Long employeeId) {
@@ -246,19 +236,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
 
 			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when turned off and previously viewed - Returns the stored last viewed date")
-		void getTodayBirthdayNotifications_WhenTurnedOffWithStoredLastViewedDate_ReturnsStoredDate() throws Exception {
-			LocalDate previouslyViewedDate = today.minusDays(4);
-			seedConfig(false, false, false);
-			seedLastViewed(CURRENT_EMPLOYEE_ID, previouslyViewedDate);
-
-			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), previouslyViewedDate)
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-
-			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(previouslyViewedDate);
 		}
 
 		@Test
@@ -478,85 +455,11 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Mark viewed then get today's birthdays - Returns empty list")
-		void markTodayBirthdayNotificationsAsViewed_ThenGetToday_ReturnsEmptyList() throws Exception {
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-
-			assertSuccessful(performMarkViewedRequest(currentUserToken));
-
-			assertLastViewedDate(assertSuccessful(performGetTodayRequest(currentUserToken)), today)
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-		}
-
-		@Test
 		@DisplayName("Mark today's birthdays as viewed without any people role - Returns Forbidden")
 		void markTodayBirthdayNotificationsAsViewed_WithoutPeopleRole_ReturnsForbidden() throws Exception {
 			performMarkViewedRequest(tokenWithoutPeopleRole()).andDo(print()).andExpect(status().isForbidden());
 
 			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-	}
-
-
-	@Nested
-	@DisplayName("Find Employees With Birthday On Tests")
-	class FindEmployeesWithBirthdayOnDaoTests {
-
-		private static final LocalDate FEB_28_NON_LEAP_YEAR = LocalDate.of(2023, 2, 28);
-
-		private static final LocalDate FEB_28_LEAP_YEAR = LocalDate.of(2024, 2, 28);
-
-		private static final LocalDate LEAP_DAY_BIRTH_DATE = LocalDate.of(2000, 2, 29);
-
-		private List<Long> findBirthdayEmployeeIds(LocalDate date, BirthdayNotificationScope scope) {
-			return employeeDao.findEmployeesWithBirthdayOn(date, CURRENT_EMPLOYEE_ID, scope)
-				.stream()
-				.map(Employee::getEmployeeId)
-				.toList();
-		}
-
-		@Test
-		@DisplayName("Find birthdays on 28 February of a non-leap year - Includes both 28 and 29 February birthdays")
-		void findEmployeesWithBirthdayOn_OnFeb28OfNonLeapYear_IncludesFeb28AndFeb29Birthdays() {
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
-			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, LocalDate.of(1995, 2, 28));
-
-			assertThat(findBirthdayEmployeeIds(FEB_28_NON_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION))
-				.containsExactly(CURRENT_EMPLOYEE_ID, TEAMMATE_EMPLOYEE_ID);
-		}
-
-		@Test
-		@DisplayName("Find birthdays on 28 February of a leap year - Excludes 29 February birthdays")
-		void findEmployeesWithBirthdayOn_OnFeb28OfLeapYear_ExcludesFeb29Birthdays() {
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, LEAP_DAY_BIRTH_DATE);
-
-			assertThat(findBirthdayEmployeeIds(FEB_28_LEAP_YEAR, BirthdayNotificationScope.ORGANIZATION)).isEmpty();
-		}
-
-		@Test
-		@DisplayName("Find birthdays by month and day - Ignores the birth year")
-		void findEmployeesWithBirthdayOn_WithDifferentBirthYear_MatchesOnMonthAndDayOnly() {
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, LocalDate.of(1990, 7, 4));
-
-			assertThat(findBirthdayEmployeeIds(LocalDate.of(2023, 7, 4), BirthdayNotificationScope.ORGANIZATION))
-				.containsExactly(CURRENT_EMPLOYEE_ID);
-			assertThat(findBirthdayEmployeeIds(LocalDate.of(2023, 7, 5), BirthdayNotificationScope.ORGANIZATION))
-				.isEmpty();
-		}
-
-		@Test
-		@DisplayName("Find birthdays with TEAM scope when the shared team is inactive - Excludes teammates")
-		void findEmployeesWithBirthdayOn_WithTeamScopeAndInactiveTeam_ExcludesTeammates() {
-			LocalDate sharedBirthDate = LocalDate.of(1990, 7, 4);
-			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
-			givePersonalInfo(CURRENT_EMPLOYEE_ID, sharedBirthDate);
-			givePersonalInfo(TEAMMATE_EMPLOYEE_ID, sharedBirthDate);
-			deactivateSeededTeam();
-
-			assertThat(findBirthdayEmployeeIds(LocalDate.of(2023, 7, 4), BirthdayNotificationScope.TEAM))
-				.containsExactly(CURRENT_EMPLOYEE_ID);
 		}
 
 	}

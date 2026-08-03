@@ -130,11 +130,6 @@ class PeopleConfigControllerIntegrationTest {
 			.isPresent();
 	}
 
-	/**
-	 * user2@gmail.com owns employee 2 in data.sql, seeded as PEOPLE_ADMIN like every
-	 * other employee. Downgrading it to PEOPLE_EMPLOYEE yields a token that authenticates
-	 * but fails the ROLE_PEOPLE_ADMIN check on this controller.
-	 */
 	private String tokenWithoutPeopleAdminRole() {
 		Employee employee = employeeDao.findById(RESTRICTED_EMPLOYEE_ID).orElseThrow();
 		employee.getEmployeeRole().setPeopleRole(Role.PEOPLE_EMPLOYEE);
@@ -209,8 +204,7 @@ class PeopleConfigControllerIntegrationTest {
 		@Test
 		@DisplayName("Patch with an empty body - Leaves the stored config unchanged")
 		void updateBirthdayNotificationConfigs_WithEmptyBody_LeavesConfigUnchanged() throws Exception {
-			// The request DTO carries no constraints and the controller has no @Valid, so an
-			// empty payload is a legitimate 200 no-op rather than a bad request.
+
 			seedConfig(true, true, false);
 
 			performPatchRequest(EMPTY_JSON_BODY, adminToken).andDo(print()).andExpect(status().isOk());
