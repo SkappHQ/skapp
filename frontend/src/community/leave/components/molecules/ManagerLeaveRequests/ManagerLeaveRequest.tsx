@@ -142,7 +142,9 @@ const ManagerLeaveRequest: FC<Props> = ({
               avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
               isResponsiveLayout
               chipStyles={{
+                width: "fit-content",
                 maxWidth: "15.625rem",
+                justifyContent: "flex-start",
                 backgroundColor: "var(--color-tertiary-background)"
               }}
             />

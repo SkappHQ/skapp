@@ -10,7 +10,6 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import CustomLeaveAllocationsTable from "~community/leave/components/molecules/CustomLeaveAllocationsTable/CustomLeaveAllocationsTable";
@@ -34,8 +33,6 @@ const CustomLeaveAllocationContent: FC = () => {
   const [customLeaveAllocationSearchTerm, setCustomLeaveAllocationSearchTerm] =
     useState<string | undefined>(undefined);
   const [showAddButton, setShowAddButton] = useState(false);
-  const [showSearchBox, setShowSearchBox] = useState(false);
-  const [hasFilteredData, setHasFilteredData] = useState(true);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [hasEmptyFilterResults, setHasEmptyFilterResults] = useState(false);
 
@@ -46,26 +43,21 @@ const CustomLeaveAllocationContent: FC = () => {
       customLeaveAllocationSearchTerm.trim() !== "";
 
     if (hasEmptyFilterResults) {
-      setShowSearchBox(true);
       setShowAddButton(false);
       return;
     }
 
     if (!hasData && !hasSearchTerm && !isFilterActive) {
-      setShowSearchBox(false);
       setShowAddButton(true);
       return;
     }
 
-    setShowSearchBox(true);
     setShowAddButton(!hasData);
-    setHasFilteredData(hasData);
   }, [
     customLeaveAllocations,
     customLeaveAllocationSearchTerm,
     isFilterActive,
-    hasEmptyFilterResults,
-    customLeaveAllocations.length > 0
+    hasEmptyFilterResults
   ]);
 
   const handleAddAllocation = () => {
@@ -112,22 +104,11 @@ const CustomLeaveAllocationContent: FC = () => {
       </Stack>
 
       <Box>
-        {showSearchBox && (
-          <SearchBox
-            value={customLeaveAllocationSearchTerm}
-            setSearchTerm={handleSearchTermChange}
-            placeHolder={translateText([
-              "CustomLeaveAllocationsSectionSearchBarPlaceholder"
-            ])}
-          />
-        )}
-        <Box sx={{ marginTop: 2 }}>
-          <CustomLeaveAllocationsTable
-            searchTerm={customLeaveAllocationSearchTerm}
-            setHasFilteredData={setHasFilteredData}
-            setHasEmptyFilterResults={setHasEmptyFilterResults}
-          />
-        </Box>
+        <CustomLeaveAllocationsTable
+          searchTerm={customLeaveAllocationSearchTerm}
+          onSearchTermChange={handleSearchTermChange}
+          setHasEmptyFilterResults={setHasEmptyFilterResults}
+        />
         <CustomLeaveModalController />
       </Box>
     </Container>
