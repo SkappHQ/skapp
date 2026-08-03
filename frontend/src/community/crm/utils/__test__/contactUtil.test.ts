@@ -82,10 +82,6 @@ describe("getContactFullName", () => {
       "Smith"
     );
   });
-
-  it("returns lastName only, with no leading space, when firstName is undefined", () => {
-    expect(getContactFullName({ lastName: "Smith" })).toBe("Smith");
-  });
 });
 
 describe("mapContactToMetricItems", () => {

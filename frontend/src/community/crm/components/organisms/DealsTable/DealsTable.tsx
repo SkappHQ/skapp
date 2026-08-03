@@ -131,10 +131,7 @@ const DealsTable: FC<Props> = ({
     (): DealRow[] =>
       allDeals.map((deal: CrmDealResponseType) => {
         const formattedAmount = formatValue(deal.amount);
-        const fullName = getContactFullName({
-          firstName: deal.contactFirstName,
-          lastName: deal.contactLastName
-        });
+        const fullName = getContactFullName(deal.contact);
 
         return {
           id: String(deal.id),

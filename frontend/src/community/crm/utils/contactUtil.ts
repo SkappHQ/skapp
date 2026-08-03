@@ -8,7 +8,7 @@ import {
 import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
 interface ContactNameParts {
-  firstName?: string | null;
+  firstName: string;
   lastName?: string | null;
 }
 

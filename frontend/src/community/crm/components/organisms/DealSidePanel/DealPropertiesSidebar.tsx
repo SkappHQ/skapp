@@ -53,14 +53,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = String(deal.stage.id);
   const selectedOwner = deal.owner;
-  const fullName = getContactFullName({
-    firstName: deal.contactFirstName,
-    lastName: deal.contactLastName
-  });
-  const selectedContact: CrmDealContactType | null = deal.contactId
+  const selectedContact: CrmDealContactType | null = deal.contact
     ? {
-        id: deal.contactId,
-        name: fullName,
+        id: deal.contact.id,
+        name: getContactFullName(deal.contact),
         companyName: deal.companyName ?? null
       }
     : null;
@@ -106,7 +102,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   };
 
   const handleContactChange = (contact: CrmContactLookup | null): void => {
-    if (contact && contact.id !== deal.contactId) {
+    if (contact && contact.id !== deal.contact?.id) {
       onContactChange(contact);
     }
   };
