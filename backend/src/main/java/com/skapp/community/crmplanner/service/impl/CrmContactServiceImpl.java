@@ -40,12 +40,12 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -118,7 +118,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact contact = new CrmContact();
 		contact.setFirstName(requestDto.getFirstName());
-		contact.setLastName(requestDto.getLastName());
+		contact.setLastName(StringUtils.trimToNull(requestDto.getLastName()));
 		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(requestDto.getContactNumber());
 		contact.setCompany(company);
@@ -153,10 +153,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 			contact.setFirstName(requestDto.getFirstName());
 		}
 
-		if (requestDto.getLastName() != null) {
-			String lastName = requestDto.getLastName();
+		if (requestDto.getLastName().isPresent()) {
+			String lastName = requestDto.getLastName().get();
 			CrmValidations.validateContactLastName(lastName);
-			contact.setLastName(StringUtils.hasText(lastName) ? lastName : null);
+			contact.setLastName(StringUtils.trimToNull(lastName));
 		}
 
 		if (requestDto.getEmail() != null) {

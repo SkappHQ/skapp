@@ -10,7 +10,7 @@ public class CrmContactEditRequestDto {
 
 	private String firstName;
 
-	private String lastName;
+	private JsonNullable<String> lastName = JsonNullable.undefined();
 
 	private String email;
 

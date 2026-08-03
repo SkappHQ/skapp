@@ -38,9 +38,7 @@ import java.util.List;
 public interface CrmMapper {
 
 	@Mapping(target = "companyName", source = "company.name")
-	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "contactFirstName", source = "contact.firstName")
-	@Mapping(target = "contactLastName", source = "contact.lastName")
+	@Mapping(target = "contact", source = "contact")
 	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
 

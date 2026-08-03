@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -244,7 +245,7 @@ class CrmContactControllerIntegrationTest {
 	private CrmContactEditRequestDto editValidPayload(Long companyId) {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setFirstName("Jane");
-		dto.setLastName("Smith Updated");
+		dto.setLastName(JsonNullable.of("Smith Updated"));
 		dto.setEmail("jane.smith.updated@example.com");
 		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("94779999999");
@@ -510,6 +511,51 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Edit contact with explicit null lastName - Clears the last name")
+	void editContact_NullLastName_ClearsLastName() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "clear.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setLastName(JsonNullable.of(null));
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Test"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit contact with blank lastName - Clears the last name")
+	void editContact_BlankLastName_ClearsLastName() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "blank.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setLastName(JsonNullable.of(""));
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit contact omitting lastName - Leaves the existing last name unchanged")
+	void editContact_AbsentLastName_LeavesLastNameUnchanged() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "keep.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setFirstName("Renamed");
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Renamed"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Contact"));
+	}
+
+	@Test
 	@DisplayName("Edit contact with leading/trailing spaces - Spaces trimmed")
 	void editContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
 		Long companyId = savedCompany().getId();
@@ -517,7 +563,7 @@ class CrmContactControllerIntegrationTest {
 
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
 		dto.setFirstName("  Updated  ");
-		dto.setLastName("  Name  ");
+		dto.setLastName(JsonNullable.of("  Name  "));
 		dto.setEmail("  updated.email@example.com  ");
 		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("  5551234567  ");
