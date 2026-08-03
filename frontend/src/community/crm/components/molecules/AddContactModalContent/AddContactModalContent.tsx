@@ -80,7 +80,7 @@ const AddContactModalContent = () => {
   const createContact = (values: CrmContactFormValues) => {
     const payload: CrmContactCreatePayload = {
       firstName: values.firstName.trim(),
-      lastName: values.lastName.trim() || undefined,
+      lastName: values.lastName.trim() || null,
       email: values.email.trim(),
       contactNumber: values.contactNumber.trim() || undefined,
       companyId: values.companyId ?? undefined,
