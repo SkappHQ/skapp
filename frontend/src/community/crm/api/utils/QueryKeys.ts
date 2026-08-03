@@ -12,10 +12,10 @@ export const crmDealQueryKeys = {
 
   DEAL_LOOKUP: (
     searchKeyword: string,
+    size: number,
     contactId?: number | null,
-    size?: number,
     companyId?: number | null
-  ) => ["crm-deal-lookup", searchKeyword, contactId, size, companyId],
+  ) => ["crm-deal-lookup", searchKeyword, size, contactId, companyId],
   GET_DEALS_BY_COMPANY: (params: CrmDealsByCompanyParams) => [
     "crm-deals",
     "company",

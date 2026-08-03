@@ -149,8 +149,8 @@ export const useGetDealLookup = (
   return useQuery({
     queryKey: crmDealQueryKeys.DEAL_LOOKUP(
       searchKeyword,
-      contactId,
       size,
+      contactId,
       companyId
     ),
     queryFn: () => fetchDealLookup(searchKeyword, size, contactId, companyId),
