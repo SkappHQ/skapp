@@ -69,4 +69,6 @@ public class EmployeeBulkDto {
 
 	private String workLocation;
 
+	private String businessUnit;
+
 }
