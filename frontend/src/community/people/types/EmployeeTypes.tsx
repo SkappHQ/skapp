@@ -154,6 +154,7 @@ export interface BulkEmployeeDetails {
   primaryManager: string | null;
   timeZone: string | null;
   workLocation: string | null;
+  businessUnit: string | null;
   employmentAllocation: string | null;
   accountStatus: AccountStatus;
   eeo: string | null;

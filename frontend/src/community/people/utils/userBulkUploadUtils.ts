@@ -128,6 +128,7 @@ export const convertUserBulkCsvHeaders = (header: string) => {
     "Probation End Date": "probationEndDate",
     "Work Time Zone": "timeZone",
     "Work Location": "workLocation",
+    "Business Unit": "businessUnit",
     "Employment Type": "employeeType",
     "Job Family": "jobFamily",
     "Job Title": "jobTitle",

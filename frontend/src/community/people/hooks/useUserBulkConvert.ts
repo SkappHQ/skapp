@@ -48,6 +48,7 @@ const useUserBulkConvert = () => {
           permission: SystemPermissionTypes.EMPLOYEES,
           timeZone: String(user?.timeZone?.split("-")[0])?.trim(),
           workLocation: user?.workLocation ?? null,
+          businessUnit: user?.businessUnit ?? null,
           primaryManager: user?.primaryManager,
           joinedDate: user?.joinedDate,
           accountStatus: AccountStatus.PENDING,

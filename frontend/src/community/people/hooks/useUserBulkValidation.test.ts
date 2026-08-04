@@ -46,6 +46,7 @@ describe("useUserBulkValidation", () => {
     probationEndDate: "2023-01-01",
     timeZone: null,
     workLocation: null,
+    businessUnit: null,
     employeeType: "PERMANENT",
     jobFamily: "Engineering",
     jobTitle: "Software Engineer",
