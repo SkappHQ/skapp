@@ -127,7 +127,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.map(Employee::getEmployeeId)
 			.toList();
 		Map<String, List<EmployeeLeavePolicy>> activeByEmployeeLeaveType = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdInAndStatus(employeeIds, EmployeeLeavePolicyStatus.ACTIVE)
+			.findByEmployeeIdsAndStatus(employeeIds, EmployeeLeavePolicyStatus.ACTIVE)
 			.stream()
 			.collect(Collectors.groupingBy(assignment -> assignment.getEmployee().getEmployeeId() + ":"
 					+ assignment.getPolicy().getLeaveType().getId()));

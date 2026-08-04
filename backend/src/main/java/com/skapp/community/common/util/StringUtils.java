@@ -24,25 +24,10 @@ public class StringUtils {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
-	/**
-	 * Trims the provided string, treating null as an empty string.
-	 * @param value the string to trim
-	 * @return the trimmed string, never null
-	 */
 	public static String trimToEmpty(String value) {
 		return value == null ? "" : value.trim();
 	}
 
-	/**
-	 * Normalises a human name so it can be matched against a name stored in the database.
-	 * Internal whitespace runs are collapsed, diacritics are stripped and the result is
-	 * lowercased with {@link Locale#ROOT}. The same normalisation must be applied to both
-	 * sides of a comparison; it is intentionally at least as lenient as the database
-	 * collation so an in-memory re-match can never be stricter than the SQL predicate
-	 * that produced the candidates.
-	 * @param value the name to normalise
-	 * @return the normalised name, never null
-	 */
 	public static String normalizeName(String value) {
 		String trimmed = trimToEmpty(value);
 		if (trimmed.isEmpty()) {
