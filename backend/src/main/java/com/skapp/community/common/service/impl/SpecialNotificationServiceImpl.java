@@ -10,7 +10,6 @@ import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
@@ -80,15 +79,7 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 				return newStatus;
 			});
 		specialNotificationStatus.setLastViewedDate(viewedDate);
-
-		try {
-			specialNotificationStatusDao.saveAndFlush(specialNotificationStatus);
-		}
-		catch (DataIntegrityViolationException e) {
-			log.warn(
-					"markNotificationViewed: concurrent write detected for employee {} and type {}, treating as success",
-					employeeId, type);
-		}
+		specialNotificationStatusDao.save(specialNotificationStatus);
 
 		log.info("markNotificationViewed: execution ended");
 	}
