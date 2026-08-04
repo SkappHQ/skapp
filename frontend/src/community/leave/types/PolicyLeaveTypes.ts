@@ -82,13 +82,28 @@ export interface PolicyLeaveAvailabilityType {
   failureReason: PolicyLeaveValidationFailure | null;
 }
 
+/**
+ * One uploaded file. `fileUrl` is the storage handle the upload returned — a bare
+ * filename on community, an S3 key on enterprise — and is not directly browsable;
+ * `originalFileName` is what the employee called it, kept so downloads and chips can
+ * show a real name instead of a UUID.
+ */
+export interface PolicyLeaveAttachmentPayload {
+  fileUrl: string;
+  originalFileName: string;
+}
+
+export interface PolicyLeaveAttachmentType extends PolicyLeaveAttachmentPayload {
+  id: number;
+}
+
 export interface PolicyLeaveRequestPayload {
   policyId: number;
   startDate: string;
   endDate: string;
   leaveState: LeaveStates;
   requestDesc: string;
-  attachments: string[];
+  attachments: PolicyLeaveAttachmentPayload[];
 }
 
 export interface PolicyLeaveRequestType {
@@ -107,6 +122,13 @@ export interface PolicyLeaveRequestType {
   isViewed: boolean;
   isAutoApproved: boolean;
   createdDate: string;
-  attachments: { url: string }[];
+  attachments: PolicyLeaveAttachmentType[];
   remainingBalance: number | null;
+}
+
+export interface PolicyLeaveRequestPageType {
+  items: PolicyLeaveRequestType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }

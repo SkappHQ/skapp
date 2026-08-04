@@ -279,7 +279,15 @@ export const reportsQueryKeys = {
 export const policyLeaveQueryKeys = {
   ALL: ["policy-leave"],
   MY_POLICY_BALANCES: (year: string) => ["my-policy-balances", year],
-  MY_POLICY_LEAVE_REQUESTS: (year: string) => ["my-policy-leave-requests", year]
+  MY_POLICY_LEAVE_REQUESTS: (year: string) => [
+    "my-policy-leave-requests",
+    year
+  ],
+  MY_POLICY_LEAVE_REQUESTS_SEARCH: (year: string, params: unknown) => [
+    "my-policy-leave-requests-search",
+    year,
+    params
+  ]
 };
 
 export const leavePolicyQueryKeys = {

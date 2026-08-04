@@ -8,9 +8,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
-import LeaveRequests from "~community/leave/components/molecules/LeaveRequests/LeaveRequests";
 import EmployeeLeaveStatusPopupController from "~community/leave/components/organisms/EmployeeLeaveStatusPopupController/EmployeeLeaveStatusPopupController";
 import MyLeaveAllocationSection from "~community/leave/components/organisms/MyLeaveAllocationSection/MyLeaveAllocationSection";
+import MyLeaveRequestsSection from "~community/leave/components/organisms/MyLeaveRequestsSection/MyLeaveRequestsSection";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
@@ -92,7 +92,7 @@ const MyRequests: NextPage = () => {
     >
       <>
         <MyLeaveAllocationSection />
-        <LeaveRequests />
+        <MyLeaveRequestsSection />
         <EmployeeLeaveStatusPopupController />
       </>
     </ContentLayout>
