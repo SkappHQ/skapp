@@ -32,11 +32,12 @@ export interface TableViewFilterContentArgs {
 
 export interface TableViewFilter {
   filterCount: number;
-  filterContent: (args: TableViewFilterContentArgs) => ReactNode;
+  filterContent?: (args: TableViewFilterContentArgs) => ReactNode;
+  isDisabled?: boolean;
   filterButtonAriaLabel?: string;
   popoverAriaLabel?: string;
   popoverAriaLabelledBy?: string;
-  popoverId: string;
+  popoverId?: string;
 }
 
 export interface TableViewAriaLabels {

@@ -31,6 +31,9 @@ const TableView: FC<TableViewProps> = ({
 
   const isOpen = anchorEl !== null;
   const isFilterEnabled = filter;
+  const isFilterInteractive = Boolean(
+    filter?.filterContent && !filter?.isDisabled
+  );
   const isToolbarVisible = toolbar !== undefined || isFilterEnabled;
   const isInfiniteScroll = infiniteScroll?.isEnabled;
   const isPaginated = !isInfiniteScroll && pagination;
@@ -48,8 +51,10 @@ const TableView: FC<TableViewProps> = ({
     ariaLabelledBy: filter?.popoverAriaLabelledBy
   };
 
-  const togglePopover = (event: MouseEvent<HTMLElement>) =>
+  const togglePopover = (event: MouseEvent<HTMLElement>) => {
+    if (!isFilterInteractive) return;
     setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
 
   const mergedAriaLabel = {
     regionAriaLabel: ariaLabel?.regionAriaLabel,
@@ -70,9 +75,10 @@ const TableView: FC<TableViewProps> = ({
             isFilterEnabled
               ? {
                   onClick: togglePopover,
+                  disabled: filter?.isDisabled,
                   "aria-label": filter?.filterButtonAriaLabel,
-                  "aria-expanded": isOpen,
-                  "aria-haspopup": "dialog",
+                  "aria-expanded": isFilterInteractive ? isOpen : undefined,
+                  "aria-haspopup": isFilterInteractive ? "dialog" : undefined,
                   badge: {
                     count: filter?.filterCount ?? 0,
                     show: (filter?.filterCount ?? 0) > 0
@@ -108,7 +114,7 @@ const TableView: FC<TableViewProps> = ({
         onPageChange={isPaginated ? pagination?.onPageChange : undefined}
       />
 
-      {isFilterEnabled && (
+      {isFilterInteractive && (
         <Popper
           open={isOpen}
           anchorEl={anchorEl}
@@ -117,7 +123,7 @@ const TableView: FC<TableViewProps> = ({
           containerClassName="rounded-4 shadow-lg"
           {...popperProps}
         >
-          {filter?.filterContent({ close: closePopover })}
+          {filter?.filterContent?.({ close: closePopover })}
         </Popper>
       )}
     </div>
