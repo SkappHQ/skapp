@@ -1,5 +1,7 @@
+import { Theme, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useCallback, useEffect, useMemo } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
@@ -8,10 +10,14 @@ import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
+import ROUTES from "~community/common/constants/routes";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { LeaveStates } from "~community/common/types/CommonTypes";
+import {
+  FileUploadType,
+  LeaveStates
+} from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   convertToYYYYMMDDFromDateTime,
@@ -39,7 +45,10 @@ import {
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  PolicyLeaveAttachmentPayload,
+  PolicyLeaveRequestStatus
+} from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -61,14 +70,22 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
 
+/** Story spec: the user is sent to the login page 2 seconds after the toast appears. */
+const SESSION_EXPIRED_REDIRECT_DELAY_MS = 2000;
+
+const HTTP_UNAUTHORIZED = 401;
+
 /**
  * Apply-leave modal scoped to exactly one policy. Every balance, effective-from and
  * expiry check in here reads from the scoped policy — a sibling policy of the same leave
  * type is never consulted and never deducted from.
  */
 const ApplyPolicyLeaveModal = () => {
+  const theme: Theme = useTheme();
+  const router = useRouter();
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
+  const dateFieldRef = useRef<HTMLDivElement>(null);
 
   const translateStorageText = useTranslator("StorageToastMessage");
   const translateText = useTranslator(
@@ -148,7 +165,24 @@ const ApplyPolicyLeaveModal = () => {
     setModalType(PolicyLeaveModalEnums.NONE);
   };
 
-  const onApplyError = (messageKey: string) => {
+  /**
+   * The modal deliberately stays open on failure so nothing the user typed is lost —
+   * except on an expired session, where staying put would only let them retry into the
+   * same 401.
+   */
+  const onApplyError = (messageKey: string, statusCode?: number) => {
+    if (statusCode === HTTP_UNAUTHORIZED) {
+      handlePolicyLeaveToast({
+        type: PolicyLeaveToastEnums.SESSION_EXPIRED,
+        setToastMessage,
+        translateText
+      });
+      setTimeout(() => {
+        void router.push(ROUTES.AUTH.SIGNIN);
+      }, SESSION_EXPIRED_REDIRECT_DELAY_MS);
+      return;
+    }
+
     handlePolicyLeaveToast({
       type: mapApplyErrorKeyToToastType(messageKey),
       setToastMessage,
@@ -225,23 +259,6 @@ const ApplyPolicyLeaveModal = () => {
     }
   }, [myTeams, selectedTeam, setSelectedTeam]);
 
-  // Default to Full Day per the field spec, falling back to whatever the policy's
-  // leave type actually permits.
-  useEffect(() => {
-    setSelectedDuration(
-      getDurationInitialValue({
-        allowedDurations:
-          selectedPolicyBalance?.leaveType?.minDuration ??
-          LeaveDurationTypes.NONE,
-        disabledOptions: disabledDurationSelectorOptions
-      })
-    );
-  }, [
-    selectedPolicyBalance?.leaveType?.minDuration,
-    disabledDurationSelectorOptions,
-    setSelectedDuration
-  ]);
-
   const { data: resourceAvailability } = useGetResourceAvailability({
     teams: selectedTeam !== null ? (selectedTeam.teamId as number) : null,
     startDate: startAndEndDates.start,
@@ -265,6 +282,24 @@ const ApplyPolicyLeaveModal = () => {
       allHolidays
     ]
   );
+
+  // Default to Full Day per the field spec, falling back to whatever the policy's
+  // leave type actually permits. Must stay below disabledDurationSelectorOptions —
+  // referencing it from a dep array declared above its useMemo is a TDZ error.
+  useEffect(() => {
+    setSelectedDuration(
+      getDurationInitialValue({
+        allowedDurations:
+          selectedPolicyBalance?.leaveType?.minDuration ??
+          LeaveDurationTypes.NONE,
+        disabledOptions: disabledDurationSelectorOptions
+      })
+    );
+  }, [
+    selectedPolicyBalance?.leaveType?.minDuration,
+    disabledDurationSelectorOptions,
+    setSelectedDuration
+  ]);
 
   /**
    * Re-validate against the server whenever dates or duration change, matching the
@@ -308,6 +343,17 @@ const ApplyPolicyLeaveModal = () => {
     setFormError("selectedDates", availabilityError);
   }, [availabilityError, setFormError]);
 
+  const hasDateError = Boolean(formErrors?.selectedDates);
+
+  // Pull the user back to the field they have to change. Only on the transition into
+  // an error state, so re-renders while the error persists don't steal focus from
+  // whatever they moved on to.
+  useEffect(() => {
+    if (hasDateError) {
+      dateFieldRef.current?.focus();
+    }
+  }, [hasDateError]);
+
   const validate = useCallback(() => {
     const errors = getPolicyLeaveFormErrors({
       selectedDatesLength: selectedDates.length,
@@ -329,40 +375,49 @@ const ApplyPolicyLeaveModal = () => {
     translateText
   ]);
 
-  const uploadAttachmentsAndGetNames = async (): Promise<string[]> => {
+  /**
+   * Uploads each file and pairs the storage handle with the name the employee gave it.
+   * The community handle is a server-generated UUID, so without carrying
+   * `originalFileName` the user would later download `3f9a….pdf` — which is exactly
+   * what the legacy flow does today.
+   */
+  const uploadAttachmentsAndGetRefs = async (): Promise<
+    PolicyLeaveAttachmentPayload[]
+  > => {
     if (attachments.length === 0) {
       return [];
     }
 
-    if (environment === appModes.COMMUNITY) {
-      const uploaded = await Promise.all(
-        attachments.map((attachment) => {
-          if (!attachment.file) return Promise.resolve(null);
-          const formData = new FormData();
-          formData.append("file", attachment.file);
-          formData.append("type", FileTypes.LEAVE_ATTACHMENTS);
-          return uploadAttachments(formData).then((response) => {
-            const filePath = response.message?.split(
-              "File uploaded successfully: "
-            )[1];
-            return filePath?.split("/").pop() ?? null;
-          });
-        })
-      );
-      return uploaded.filter((name): name is string => name !== null);
-    }
+    const uploadOne = async (
+      attachment: FileUploadType
+    ): Promise<PolicyLeaveAttachmentPayload | null> => {
+      if (!attachment.file) {
+        return null;
+      }
 
-    const uploaded = await Promise.all(
-      attachments.map((attachment) =>
-        attachment.file
-          ? uploadFileToS3ByUrl(
-              attachment.file as File,
-              FileCategories.LEAVE_REQUEST
-            )
-          : Promise.resolve(null)
-      )
+      if (environment === appModes.COMMUNITY) {
+        const formData = new FormData();
+        formData.append("file", attachment.file);
+        formData.append("type", FileTypes.LEAVE_ATTACHMENTS);
+        const response = await uploadAttachments(formData);
+        const filePath = response.message?.split(
+          "File uploaded successfully: "
+        )[1];
+        const fileUrl = filePath?.split("/").pop();
+        return fileUrl ? { fileUrl, originalFileName: attachment.name } : null;
+      }
+
+      const fileUrl = await uploadFileToS3ByUrl(
+        attachment.file as File,
+        FileCategories.LEAVE_REQUEST
+      );
+      return fileUrl ? { fileUrl, originalFileName: attachment.name } : null;
+    };
+
+    const uploaded = await Promise.all(attachments.map(uploadOne));
+    return uploaded.filter(
+      (ref): ref is PolicyLeaveAttachmentPayload => ref !== null
     );
-    return uploaded.filter((url): url is string => url !== null);
   };
 
   const onSubmit = async () => {
@@ -371,7 +426,7 @@ const ApplyPolicyLeaveModal = () => {
     }
 
     try {
-      const attachmentRefs = await uploadAttachmentsAndGetNames();
+      const attachmentRefs = await uploadAttachmentsAndGetRefs();
 
       applyPolicyLeave({
         policyId: selectedPolicyBalance.policyId,
@@ -409,18 +464,40 @@ const ApplyPolicyLeaveModal = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 md:gap-7">
         <div className="flex flex-col gap-3">
-          <CalendarDateRangePicker
-            selectedDates={selectedDates}
-            setSelectedDates={setSelectedDates}
-            setSelectedMonth={setSelectedMonth}
-            allowedDuration={selectedPolicyBalance.leaveType.minDuration}
-            allHolidays={allHolidays}
-            minDate={minDate}
-            maxDate={maxDate}
-            workingDays={workingDays}
-            myLeaveRequests={blockingLeaveRequests}
-            error={formErrors?.selectedDates}
-          />
+          {/*
+            The story wants the date field outlined in red and focused when a date error
+            appears. CalendarDateRangePicker only recolours its message text, so the
+            outline and focus target live on this wrapper rather than in the shared
+            component, which the legacy flow also renders.
+          */}
+          <div
+            ref={dateFieldRef}
+            tabIndex={-1}
+            role="group"
+            aria-invalid={hasDateError}
+            aria-label={translateAria(["calendar", "selectDateForLeave"])}
+            style={
+              hasDateError
+                ? {
+                    border: `0.0625rem solid ${theme.palette.error.main}`,
+                    borderRadius: "0.5rem"
+                  }
+                : undefined
+            }
+          >
+            <CalendarDateRangePicker
+              selectedDates={selectedDates}
+              setSelectedDates={setSelectedDates}
+              setSelectedMonth={setSelectedMonth}
+              allowedDuration={selectedPolicyBalance.leaveType.minDuration}
+              allHolidays={allHolidays}
+              minDate={minDate}
+              maxDate={maxDate}
+              workingDays={workingDays}
+              myLeaveRequests={blockingLeaveRequests}
+              error={formErrors?.selectedDates}
+            />
+          </div>
           <div className="flex flex-row items-center gap-2">
             <p>
               {translateText(["myPolicyBalance"], {

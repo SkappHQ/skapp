@@ -10,10 +10,12 @@ import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { policyLeaveQueryKeys } from "~community/leave/api/utils/QueryKeys";
+import { PolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
 import {
   EmployeePolicyBalanceType,
   PolicyLeaveAvailabilityPayload,
   PolicyLeaveAvailabilityType,
+  PolicyLeaveRequestPageType,
   PolicyLeaveRequestPayload,
   PolicyLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
@@ -58,6 +60,33 @@ export const useGetMyPolicyLeaveRequests = (
 };
 
 /**
+ * Paged feed for the My Requests table. Separate from
+ * {@link useGetMyPolicyLeaveRequests}, which stays unpaged because the apply modal needs
+ * the whole year at once to grey out already-requested dates.
+ */
+export const useSearchMyPolicyLeaveRequests = (
+  year: string,
+  params: PolicyLeaveRequestParams,
+  enabled = true
+): UseQueryResult<PolicyLeaveRequestPageType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(
+      year,
+      params
+    ),
+    queryFn: async () => {
+      const response = await authFetch.get(
+        policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
+        { params: { ...params, year } }
+      );
+      return response.data.results[0] as PolicyLeaveRequestPageType;
+    },
+    enabled,
+    refetchOnWindowFocus: false
+  });
+};
+
+/**
  * Real-time balance check fired while the user edits dates. Failures come back on the
  * payload rather than as errors, so the modal can render them inline.
  */
@@ -83,7 +112,7 @@ export const useCheckPolicyLeaveAvailability = (
 export const useApplyPolicyLeave = (
   year: string,
   onSuccess: (data: PolicyLeaveRequestType) => void,
-  onError: (messageKey: string) => void
+  onError: (messageKey: string, statusCode?: number) => void
 ): UseMutationResult<
   PolicyLeaveRequestType,
   ErrorResponse,
@@ -106,10 +135,18 @@ export const useApplyPolicyLeave = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
       });
+      // Prefix match — the search key carries the table's filter/sort params, so the
+      // exact key is unknown here.
+      queryClient.invalidateQueries({
+        queryKey: ["my-policy-leave-requests-search", year]
+      });
       onSuccess(data);
     },
     onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
+      onError(
+        error?.response?.data?.results?.[0]?.messageKey ?? "",
+        error?.response?.status
+      );
     }
   });
 };

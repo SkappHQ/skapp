@@ -12,6 +12,7 @@ import {
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
+  PolicyLeaveRequestStatus,
   PolicyLeaveValidationFailure
 } from "~community/leave/types/PolicyLeaveTypes";
 
@@ -21,6 +22,15 @@ const SUCCESS_TOAST_DURATION_MS = 4000;
 
 /** MUI Snackbar treats a very large duration as "stays until dismissed". */
 const ERROR_TOAST_NO_AUTO_DISMISS_MS = 24 * 60 * 60 * 1000;
+
+/** Status chips offered by the policy My Requests filter, in display order. */
+export const policyLeaveStatusFilters: PolicyLeaveRequestStatus[] = [
+  PolicyLeaveRequestStatus.PENDING,
+  PolicyLeaveRequestStatus.APPROVED,
+  PolicyLeaveRequestStatus.DENIED,
+  PolicyLeaveRequestStatus.CANCELLED,
+  PolicyLeaveRequestStatus.REVOKED
+];
 
 /**
  * Copy for the disabled-card toast. Mirrors the three reasons an entitlement card is

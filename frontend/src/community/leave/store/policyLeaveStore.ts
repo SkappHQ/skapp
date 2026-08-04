@@ -4,14 +4,17 @@ import { devtools } from "zustand/middleware";
 
 import {
   FileUploadType,
-  LeaveStates
+  LeaveStates,
+  SortKeyTypes,
+  SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { getCurrentMonth } from "~community/common/utils/dateTimeUtils";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
 import {
   EmployeePolicyBalanceType,
-  PolicyLeaveAvailabilityType
+  PolicyLeaveAvailabilityType,
+  PolicyLeaveRequestStatus
 } from "~community/leave/types/PolicyLeaveTypes";
 import { TeamNamesType } from "~community/people/types/TeamTypes";
 
@@ -27,10 +30,33 @@ export const initialPolicyLeaveFormErrors: PolicyLeaveFormErrors = {
   attachment: ""
 };
 
+/**
+ * Query params for the policy My Requests table. Filtering is by policy id rather than
+ * leave type id, so two policies sharing a leave type stay independently filterable.
+ */
+export interface PolicyLeaveRequestParams {
+  page: number;
+  size: number;
+  sortKey: SortKeyTypes;
+  sortOrder: SortOrderTypes;
+  status: PolicyLeaveRequestStatus[];
+  policyId: number[];
+}
+
+export const initialPolicyLeaveRequestParams: PolicyLeaveRequestParams = {
+  page: 0,
+  size: 10,
+  sortKey: SortKeyTypes.CREATED_DATE,
+  sortOrder: SortOrderTypes.DESC,
+  status: [],
+  policyId: []
+};
+
 export interface PolicyLeaveStore {
   modalType: PolicyLeaveModalEnums;
   isModalOpen: boolean;
   selectedYear: string;
+  requestParams: PolicyLeaveRequestParams;
   /**
    * The one policy every check in the apply modal is scoped to. Re-set in full on each
    * open so no state leaks from a previously selected policy.
@@ -48,6 +74,13 @@ export interface PolicyLeaveStore {
 
   setModalType: (modalType: PolicyLeaveModalEnums) => void;
   setSelectedYear: (year: string) => void;
+  setRequestPage: (page: number) => void;
+  setRequestSortKey: (sortKey: SortKeyTypes) => void;
+  setRequestFilters: (filters: {
+    status: PolicyLeaveRequestStatus[];
+    policyId: number[];
+  }) => void;
+  resetRequestFilters: () => void;
   openApplyModalForPolicy: (policyBalance: EmployeePolicyBalanceType) => void;
   setSelectedDates: (dates: DateTime[]) => void;
   setSelectedMonth: (month: number) => void;
@@ -85,6 +118,7 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
       modalType: PolicyLeaveModalEnums.NONE,
       isModalOpen: false,
       selectedYear: DateTime.now().year.toString(),
+      requestParams: initialPolicyLeaveRequestParams,
       ...emptyForm(),
 
       setModalType: (modalType) =>
@@ -99,7 +133,32 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
           }
           return { ...state, modalType, isModalOpen: true };
         }),
-      setSelectedYear: (selectedYear) => set({ selectedYear }),
+      setSelectedYear: (selectedYear) =>
+        set((state) => ({
+          selectedYear,
+          // A year switch must not keep the previous year's page cursor, which may not
+          // exist in the new year's result set.
+          requestParams: { ...state.requestParams, page: 0 }
+        })),
+      setRequestPage: (page) =>
+        set((state) => ({ requestParams: { ...state.requestParams, page } })),
+      setRequestSortKey: (sortKey) =>
+        set((state) => ({
+          requestParams: { ...state.requestParams, sortKey, page: 0 }
+        })),
+      setRequestFilters: ({ status, policyId }) =>
+        set((state) => ({
+          requestParams: { ...state.requestParams, status, policyId, page: 0 }
+        })),
+      resetRequestFilters: () =>
+        set((state) => ({
+          requestParams: {
+            ...state.requestParams,
+            status: [],
+            policyId: [],
+            page: 0
+          }
+        })),
       openApplyModalForPolicy: (policyBalance) =>
         set((state) => ({
           ...state,
