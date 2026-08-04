@@ -9,6 +9,10 @@ import {
   dateValidation,
   isEmailInputValid
 } from "~community/common/utils/validation";
+import {
+  PAYROLL_ID_LENGTH,
+  TIN_LENGTH
+} from "~community/people/constants/stringConstants";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 
 import { USER_BULK_HEADERS } from "../utils/constants/constants";
@@ -68,9 +72,8 @@ const useUserBulkValidation = () => {
         dateValidation(user?.careerProgressionStartDate)) &&
       validateCareerProgressionFields(user) &&
       user?.passportNo &&
-      (!user?.payrollId ||
-        user?.payrollId?.length <= characterLengths.CHARACTER_LENGTH) &&
-      (!user?.tin || user?.tin?.length <= characterLengths.CHARACTER_LENGTH)
+      (!user?.payrollId || user?.payrollId?.length <= PAYROLL_ID_LENGTH) &&
+      (!user?.tin || user?.tin?.length <= TIN_LENGTH)
     );
   };
 

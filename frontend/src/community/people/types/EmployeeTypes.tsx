@@ -450,6 +450,16 @@ export interface EmployeeDataExists {
   isGuestUser: boolean;
 }
 
+export interface PayrollIdExistCheckParams {
+  payrollId?: string;
+  employeeId?: string;
+}
+
+export interface TinExistCheckParams {
+  tin?: string;
+  employeeId?: string;
+}
+
 export interface PayrollIdUniquenessResponse {
   isPayrollIdExists: boolean;
 }

@@ -4,10 +4,13 @@ import { forwardRef, useImperativeHandle, useMemo } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import { characterLengths } from "~community/common/constants/stringConstants";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
+import {
+  PAYROLL_ID_LENGTH,
+  TIN_LENGTH
+} from "~community/people/constants/stringConstants";
 import { usePeopleStore } from "~community/people/store/store";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { L3IdentificationAndDiversityDetailsType } from "~community/people/types/PeopleTypes";
@@ -196,7 +199,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
                   onChange={handleInput}
                   inputName="payrollId"
                   error={errors.payrollId ?? ""}
-                  maxLength={characterLengths.PAYROLL_ID_LENGTH}
+                  maxLength={PAYROLL_ID_LENGTH}
                   componentStyle={{
                     flex: 1,
                     mt: "0rem"
@@ -222,7 +225,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
                   onChange={handleInput}
                   inputName="tin"
                   error={errors.tin ?? ""}
-                  maxLength={characterLengths.TIN_LENGTH}
+                  maxLength={TIN_LENGTH}
                   componentStyle={{
                     flex: 1,
                     mt: "0rem"

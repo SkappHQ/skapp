@@ -18,7 +18,11 @@ import { LeaveEntitlementDropdownListType } from "~community/leave/types/LeaveTy
 import { EmployeeEmploymentContextType } from "~community/people/types/EmployeeTypes";
 
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "../constants/configs";
-import { EMAIL_MAX_LENGTH } from "../constants/stringConstants";
+import {
+  EMAIL_MAX_LENGTH,
+  PAYROLL_ID_LENGTH,
+  TIN_LENGTH
+} from "../constants/stringConstants";
 
 type TranslatorFunctionType = (
   suffixes: string[],
@@ -321,18 +325,18 @@ export const employeeIdentificationDetailsValidation = (
     payrollId: Yup.string()
       .trim()
       .max(
-        characterLengths.PAYROLL_ID_LENGTH,
+        PAYROLL_ID_LENGTH,
         translator(["payrollIdMaxLengthError"], {
-          max: String(characterLengths.PAYROLL_ID_LENGTH)
+          max: String(PAYROLL_ID_LENGTH)
         })
       )
       .nullable(),
     tin: Yup.string()
       .trim()
       .max(
-        characterLengths.TIN_LENGTH,
+        TIN_LENGTH,
         translator(["tinMaxLengthError"], {
-          max: String(characterLengths.TIN_LENGTH)
+          max: String(TIN_LENGTH)
         })
       )
       .nullable()

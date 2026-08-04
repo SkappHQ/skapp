@@ -91,19 +91,18 @@ const EmploymentDetailsForm = ({
     employeeNumber
   );
 
-  const employeeIdForUniquenessCheck = employee?.common?.employeeId;
+  const employeeIdForExistCheck = employee?.common?.employeeId;
   const payrollId =
-    employee?.employment?.identificationAndDiversityDetails?.payrollId || "";
-  const tin =
-    employee?.employment?.identificationAndDiversityDetails?.tin || "";
+    employee?.employment?.identificationAndDiversityDetails?.payrollId;
+  const tin = employee?.employment?.identificationAndDiversityDetails?.tin;
 
   const { refetch: refetchPayrollIdUniqueness } = useCheckPayrollIdUniqueness(
-    employeeIdForUniquenessCheck,
-    payrollId
+    payrollId,
+    employeeIdForExistCheck
   );
   const { refetch: refetchTinUniqueness } = useCheckTinUniqueness(
-    employeeIdForUniquenessCheck,
-    tin
+    tin,
+    employeeIdForExistCheck
   );
 
   const isTerminatedEmployee =

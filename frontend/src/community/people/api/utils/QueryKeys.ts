@@ -30,25 +30,16 @@ export const peopleQueryKeys = {
       identificationNo
     ].filter((val) => val !== undefined);
   },
-  PAYROLL_ID_UNIQUENESS_KEYS: function (
-    employeeId?: string,
-    payrollId?: string
-  ) {
-    return [
-      ...(this?.all || []),
-      "payroll-id-uniqueness-keys",
-      employeeId,
-      payrollId
-    ].filter((val) => val !== undefined);
-  },
-  TIN_UNIQUENESS_KEYS: function (employeeId?: string, tin?: string) {
-    return [
-      ...(this?.all || []),
-      "tin-uniqueness-keys",
-      employeeId,
-      tin
-    ].filter((val) => val !== undefined);
-  },
+  PAYROLL_ID_UNIQUENESS_KEYS: (employeeId?: string, payrollId?: string) => [
+    "payroll-id-uniqueness-keys",
+    employeeId,
+    payrollId
+  ],
+  TIN_UNIQUENESS_KEYS: (employeeId?: string, tin?: string) => [
+    "tin-uniqueness-keys",
+    employeeId,
+    tin
+  ],
   PRE_PROCESSED_ROLES: function () {
     return ["job-role", "preprocess-job-roles"];
   },
@@ -90,7 +81,10 @@ export const teamQueryKeys = {
   MY_TEAMS: ["my-teams"],
   GET_ALL_TEAMS: ["get-all-teams"],
   GET_TEAM_BY_ID: ["get-team-by-id"],
-  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => ["get-employee-transferable-teams", teamId],
+  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => [
+    "get-employee-transferable-teams",
+    teamId
+  ],
   teams: function () {
     return [...(this?.ALL_TEAMS || []), "get-teams"];
   },

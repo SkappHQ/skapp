@@ -47,9 +47,11 @@ import {
   EmployeeDetails,
   EmployeeManagerType,
   MyManagersType,
+  PayrollIdExistCheckParams,
   PayrollIdUniquenessResponse,
   QuickAddEmployeePayload,
   QuickAddEmployeeResponse,
+  TinExistCheckParams,
   TinUniquenessResponse
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
@@ -301,36 +303,43 @@ export const useCheckEmailAndIdentificationNo = (
   });
 };
 
+const checkPayrollIdExists = async (
+  params: PayrollIdExistCheckParams
+): Promise<PayrollIdUniquenessResponse> => {
+  const response = await authFetch.get(
+    peoplesEndpoints.CHECK_PAYROLL_ID_EXISTS,
+    { params }
+  );
+  return response?.data?.results[0];
+};
+
 export const useCheckPayrollIdUniqueness = (
-  employeeId: string | undefined,
-  payrollId: string
+  payrollId?: string,
+  employeeId?: string
 ): UseQueryResult<PayrollIdUniquenessResponse> => {
   return useQuery({
     queryKey: peopleQueryKeys.PAYROLL_ID_UNIQUENESS_KEYS(employeeId, payrollId),
-    queryFn: async () => {
-      const url = peoplesEndpoints.CHECK_PAYROLL_ID_UNIQUENESS;
-      const params = { employeeId, payrollId };
-      const response = await authFetch.get(url, { params });
-
-      return response?.data?.results[0];
-    },
+    queryFn: () => checkPayrollIdExists({ payrollId, employeeId }),
     enabled: false
   });
 };
 
+const checkTinExists = async (
+  params: TinExistCheckParams
+): Promise<TinUniquenessResponse> => {
+  const response = await authFetch.get(peoplesEndpoints.CHECK_TIN_EXISTS, {
+    params
+  });
+  return response?.data?.results[0];
+};
+
 export const useCheckTinUniqueness = (
-  employeeId: string | undefined,
-  tin: string
+  tin?: string,
+  employeeId?: string
 ): UseQueryResult<TinUniquenessResponse> => {
   return useQuery({
     queryKey: peopleQueryKeys.TIN_UNIQUENESS_KEYS(employeeId, tin),
-    queryFn: async () => {
-      const url = peoplesEndpoints.CHECK_TIN_UNIQUENESS;
-      const params = { employeeId, tin };
-      const response = await authFetch.get(url, { params });
-
-      return response?.data?.results[0];
-    },
+    queryFn: () => checkTinExists({ tin, employeeId }),
     enabled: false
   });
 };
