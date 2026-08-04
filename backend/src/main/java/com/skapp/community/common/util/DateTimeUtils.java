@@ -28,10 +28,8 @@ import java.util.Set;
 import static org.aspectj.bridge.Version.SIMPLE_DATE_FORMAT;
 
 /**
- * Utility class for handling date and time operations, including both UTC-based and
- * zone-parameterised formatting/conversion.
+ * Utility class for handling UTC date and time operations.
  */
-@Slf4j
 public class DateTimeUtils {
 
 	public static final int JANUARY = 1;
@@ -462,8 +460,8 @@ public class DateTimeUtils {
 	}
 
 	/**
-	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is
-	 * null, blank, or not a valid zone ID.
+	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is null,
+	 * blank, or not a valid zone ID.
 	 * @param timezone The time zone ID string to resolve.
 	 * @return The resolved ZoneId, or UTC if the input is invalid.
 	 */
@@ -475,7 +473,6 @@ public class DateTimeUtils {
 			return ZoneId.of(timezone);
 		}
 		catch (DateTimeException e) {
-			log.warn("resolveZoneId: Invalid time zone '{}', falling back to UTC", timezone);
 			return UTC_ZONE_ID;
 		}
 	}

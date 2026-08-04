@@ -316,8 +316,9 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 	private void setTimeEntryFields(AttendanceEmailDynamicFields fields, TimeRequest request) {
 		ZoneId zoneId = organizationService.getOrganizationZoneId();
-		fields.setTimeEntryDate(
-				DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId).toLocalDate().toString());
+		fields.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId)
+			.toLocalDate()
+			.toString());
 		fields.setStartTime(DateTimeUtils.epochMillisToAmPmString(request.getRequestedStartTime(), zoneId));
 		fields.setEndTime(DateTimeUtils.epochMillisToAmPmString(request.getRequestedEndTime(), zoneId));
 	}

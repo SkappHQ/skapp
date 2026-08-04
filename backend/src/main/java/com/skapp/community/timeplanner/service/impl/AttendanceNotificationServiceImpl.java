@@ -279,8 +279,9 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 
 	private void setTimeEntryDate(AttendanceEmailDynamicFields fields, TimeRequest request) {
 		ZoneId zoneId = organizationService.getOrganizationZoneId();
-		fields.setTimeEntryDate(
-				DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId).toLocalDate().toString());
+		fields.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId)
+			.toLocalDate()
+			.toString());
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {
