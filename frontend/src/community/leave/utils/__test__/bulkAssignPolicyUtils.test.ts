@@ -52,7 +52,7 @@ describe("validateBulkAssignCsv", () => {
   });
 
   it("reads cells from headers that differ only by case and spacing", () => {
-    const result = validateBulkAssignCsv(
+    const validation = validateBulkAssignCsv(
       buildParseResult(
         [
           {
@@ -66,8 +66,8 @@ describe("validateBulkAssignCsv", () => {
       translateText
     );
 
-    expect(result.error).toBe("");
-    expect(result.payload).toEqual({
+    expect(validation.error).toBe("");
+    expect(validation.payload).toEqual({
       assignments: [
         {
           employeeName: "John Doe",
@@ -87,23 +87,23 @@ describe("validateBulkAssignCsv", () => {
   });
 
   it("rejects a file that is missing required columns", () => {
-    const result = validateBulkAssignCsv(
+    const validation = validateBulkAssignCsv(
       buildParseResult([validRow], ["Employee Name"]),
       translateText
     );
 
-    expect(result).toEqual({ error: "missingColumnsError", payload: null });
+    expect(validation).toEqual({ error: "missingColumnsError", payload: null });
   });
 
   it("rejects a file with rows that could not be parsed", () => {
-    const result = validateBulkAssignCsv(
+    const validation = validateBulkAssignCsv(
       buildParseResult([validRow], undefined, [
         { type: "Quotes", code: "InvalidQuotes", message: "", row: 0 }
       ]),
       translateText
     );
 
-    expect(result).toEqual({ error: "malformedRowsError", payload: null });
+    expect(validation).toEqual({ error: "malformedRowsError", payload: null });
   });
 
   it("rejects a file with no data rows", () => {
@@ -124,12 +124,12 @@ describe("validateBulkAssignCsv", () => {
   });
 
   it("reports missing columns before any other problem", () => {
-    const result = validateBulkAssignCsv(
+    const validation = validateBulkAssignCsv(
       buildParseResult([], ["Employee Name"]),
       translateText
     );
 
-    expect(result.error).toBe("missingColumnsError");
+    expect(validation.error).toBe("missingColumnsError");
   });
 });
 

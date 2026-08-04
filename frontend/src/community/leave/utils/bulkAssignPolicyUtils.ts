@@ -69,11 +69,11 @@ const buildBulkAssignPayload = (
 };
 
 export const validateBulkAssignCsv = (
-  results: ParseResult<Record<string, string>>,
+  parseResult: ParseResult<Record<string, string>>,
   translateText: TranslatorFunctionType
 ): BulkAssignCsvValidation => {
   const missingHeaders = getMissingBulkAssignHeaders(
-    results.meta.fields ?? [],
+    parseResult.meta.fields ?? [],
     translateText
   );
   if (missingHeaders.length > 0) {
@@ -85,15 +85,15 @@ export const validateBulkAssignCsv = (
     };
   }
 
-  if (results.errors.length > 0) {
+  if (parseResult.errors.length > 0) {
     return { error: translateText(["malformedRowsError"]), payload: null };
   }
 
-  if (results.data.length === 0) {
+  if (parseResult.data.length === 0) {
     return { error: translateText(["emptyFileError"]), payload: null };
   }
 
-  if (results.data.length > MAX_BULK_ASSIGN_ROWS) {
+  if (parseResult.data.length > MAX_BULK_ASSIGN_ROWS) {
     return {
       error: translateText(["tooManyRowsError"], {
         maxRows: MAX_BULK_ASSIGN_ROWS.toString()
@@ -104,7 +104,7 @@ export const validateBulkAssignCsv = (
 
   return {
     error: "",
-    payload: buildBulkAssignPayload(results.data, translateText)
+    payload: buildBulkAssignPayload(parseResult.data, translateText)
   };
 };
 
@@ -129,7 +129,7 @@ export const downloadBulkAssignPolicyTemplate = (
 };
 
 export const downloadBulkAssignErrorReport = (
-  response: BulkAssignPolicyResponse,
+  assignmentResult: BulkAssignPolicyResponse,
   translateText: TranslatorFunctionType
 ): void => {
   const headers = [
@@ -140,13 +140,13 @@ export const downloadBulkAssignErrorReport = (
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(headers.join(",") + "\n");
-      for (const log of response.bulkRecordErrorLogs) {
+      for (const errorLog of assignmentResult.bulkRecordErrorLogs) {
         controller.enqueue(
           toCsvRow([
-            log.employeeName,
-            log.policyName,
-            log.effectiveDate,
-            log.error
+            errorLog.employeeName,
+            errorLog.policyName,
+            errorLog.effectiveDate,
+            errorLog.error
           ]) + "\n"
         );
       }

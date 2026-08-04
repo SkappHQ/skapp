@@ -17,7 +17,7 @@ import {
 import { validateBulkAssignCsv } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
-  onComplete: (response: BulkAssignPolicyResponse) => void;
+  onComplete: (assignmentResult: BulkAssignPolicyResponse) => void;
   onBack: () => void;
 }
 
@@ -30,15 +30,18 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
 
   const { setToastMessage } = useToast();
 
-  const [attachment, setAttachment] = useState<FileUploadType[]>([]);
+  const [attachments, setAttachments] = useState<FileUploadType[]>([]);
   const [fileError, setFileError] = useState<string>("");
-  const [payload, setPayload] = useState<BulkAssignPolicyPayload | null>(null);
+  const [assignmentPayload, setAssignmentPayload] =
+    useState<BulkAssignPolicyPayload | null>(null);
 
   const { mutateAsync: bulkAssignLeavePolicies, isPending } =
     useBulkAssignLeavePolicies();
 
-  const showResultToast = (response: BulkAssignPolicyResponse): void => {
-    const { successCount, failedCount } = response.bulkStatusSummary;
+  const showAssignmentResultToast = (
+    assignmentResult: BulkAssignPolicyResponse
+  ): void => {
+    const { successCount, failedCount } = assignmentResult.bulkStatusSummary;
 
     if (successCount === 0 && failedCount > 0) {
       setToastMessage({
@@ -65,7 +68,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     }
   };
 
-  const showErrorToast = (): void => {
+  const showRequestFailedToast = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -75,19 +78,22 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   };
 
   const handleParseComplete = (
-    results: ParseResult<Record<string, string>>
+    parseResult: ParseResult<Record<string, string>>
   ): void => {
-    const { error, payload } = validateBulkAssignCsv(results, translateText);
+    const { error, payload } = validateBulkAssignCsv(
+      parseResult,
+      translateText
+    );
 
     setFileError(error);
-    setPayload(payload);
+    setAssignmentPayload(payload);
   };
 
-  const handleFile = (files: FileUploadType[]): void => {
+  const handleFileSelection = (selectedFiles: FileUploadType[]): void => {
     setFileError("");
-    setPayload(null);
+    setAssignmentPayload(null);
 
-    const file = files?.[0]?.file;
+    const file = selectedFiles?.[0]?.file;
     if (!file) {
       return;
     }
@@ -101,16 +107,16 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   };
 
   const handleConfirm = async (): Promise<void> => {
-    if (!payload) {
+    if (!assignmentPayload) {
       return;
     }
 
     try {
-      const response = await bulkAssignLeavePolicies(payload);
-      showResultToast(response);
-      onComplete(response);
+      const assignmentResult = await bulkAssignLeavePolicies(assignmentPayload);
+      showAssignmentResultToast(assignmentResult);
+      onComplete(assignmentResult);
     } catch {
-      showErrorToast();
+      showRequestFailedToast();
     }
   };
 
@@ -121,12 +127,12 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
       </p>
 
       <DragAndDropField
-        setAttachments={(files: FileUploadType[]) => {
-          setAttachment(files);
-          handleFile(files);
+        setAttachments={(selectedFiles: FileUploadType[]) => {
+          setAttachments(selectedFiles);
+          handleFileSelection(selectedFiles);
         }}
         accept={{ "text/csv": [".csv"] }}
-        uploadableFiles={attachment}
+        uploadableFiles={attachments}
         supportedFiles=".csv"
         maxFileSize={1}
         isZeroFilesErrorRequired={false}
@@ -148,7 +154,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
           variant="primary"
           onClick={handleConfirm}
           isLoading={isPending}
-          disabled={!payload || isPending}
+          disabled={!assignmentPayload || isPending}
           icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
           iconPosition="end"
         >

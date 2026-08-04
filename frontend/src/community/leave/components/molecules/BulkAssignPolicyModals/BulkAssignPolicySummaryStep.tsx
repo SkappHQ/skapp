@@ -8,18 +8,21 @@ import { BulkAssignPolicyResponse } from "~community/leave/types/LeavePolicyType
 import { downloadBulkAssignErrorReport } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
-  response: BulkAssignPolicyResponse;
+  assignmentResult: BulkAssignPolicyResponse;
   onDone: () => void;
 }
 
-const BulkAssignPolicySummaryStep: FC<Props> = ({ response, onDone }) => {
+const BulkAssignPolicySummaryStep: FC<Props> = ({
+  assignmentResult,
+  onDone
+}) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
     "bulkAssignModal"
   );
 
-  const { successCount, failedCount } = response.bulkStatusSummary;
+  const { successCount, failedCount } = assignmentResult.bulkStatusSummary;
 
   const getSummaryText = (): string => {
     if (failedCount === 0) {
@@ -43,7 +46,7 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({ response, onDone }) => {
           <ButtonV2
             variant="tertiary"
             onClick={() =>
-              downloadBulkAssignErrorReport(response, translateText)
+              downloadBulkAssignErrorReport(assignmentResult, translateText)
             }
             icon={<Icon name={IconName.DOWNLOAD_ICON} />}
             iconPosition="end"

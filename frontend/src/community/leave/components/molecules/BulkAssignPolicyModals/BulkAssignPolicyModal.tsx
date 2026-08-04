@@ -25,18 +25,17 @@ const BulkAssignPolicyModal: FC<Props> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState<BulkAssignPolicySteps>(
     BulkAssignPolicySteps.INSTRUCTIONS
   );
-  const [response, setResponse] = useState<BulkAssignPolicyResponse | null>(
-    null
-  );
+  const [assignmentResult, setAssignmentResult] =
+    useState<BulkAssignPolicyResponse | null>(null);
 
   const handleClose = (): void => {
     setStep(BulkAssignPolicySteps.INSTRUCTIONS);
-    setResponse(null);
+    setAssignmentResult(null);
     onClose();
   };
 
-  const handleComplete = (result: BulkAssignPolicyResponse): void => {
-    setResponse(result);
+  const handleAssignmentComplete = (result: BulkAssignPolicyResponse): void => {
+    setAssignmentResult(result);
     setStep(BulkAssignPolicySteps.SUMMARY);
   };
 
@@ -51,14 +50,14 @@ const BulkAssignPolicyModal: FC<Props> = ({ isOpen, onClose }) => {
       case BulkAssignPolicySteps.UPLOAD:
         return (
           <BulkAssignPolicyUploadStep
-            onComplete={handleComplete}
+            onComplete={handleAssignmentComplete}
             onBack={() => setStep(BulkAssignPolicySteps.INSTRUCTIONS)}
           />
         );
       default:
-        return response ? (
+        return assignmentResult ? (
           <BulkAssignPolicySummaryStep
-            response={response}
+            assignmentResult={assignmentResult}
             onDone={handleClose}
           />
         ) : null;
