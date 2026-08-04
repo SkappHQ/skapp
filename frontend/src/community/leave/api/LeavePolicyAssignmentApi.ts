@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient
 } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { leavePolicyEndPoints } from "~community/leave/api/utils/ApiEndpoints";
@@ -17,19 +17,18 @@ import {
   BulkAssignPolicyResponse
 } from "~community/leave/types/LeavePolicyTypes";
 
-const bulkAssignLeavePolicies = (
+const bulkAssignLeavePolicies = async (
   payload: BulkAssignPolicyPayload
-): Promise<AxiosResponse<BulkAssignPolicyApiResponse>> =>
-  authFetch.post<BulkAssignPolicyApiResponse>(
+): Promise<BulkAssignPolicyResponse> => {
+  const response = await authFetch.post<BulkAssignPolicyApiResponse>(
     leavePolicyEndPoints.BULK_ASSIGN_LEAVE_POLICIES,
     payload
   );
+  return response.data.results[0];
+};
 
-export const useBulkAssignLeavePolicies = (
-  onSuccess: (response: BulkAssignPolicyResponse) => void,
-  onError: () => void
-): UseMutationResult<
-  AxiosResponse<BulkAssignPolicyApiResponse>,
+export const useBulkAssignLeavePolicies = (): UseMutationResult<
+  BulkAssignPolicyResponse,
   AxiosError,
   BulkAssignPolicyPayload
 > => {
@@ -37,14 +36,11 @@ export const useBulkAssignLeavePolicies = (
 
   return useMutation({
     mutationFn: bulkAssignLeavePolicies,
-    onSuccess: (response) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
       queryClient.invalidateQueries({
         queryKey: leaveEntitlementQueryKeys.LEAVE_ENTITLEMENTS()
       });
-
-      onSuccess(response.data.results[0]);
-    },
-    onError
+    }
   });
 };

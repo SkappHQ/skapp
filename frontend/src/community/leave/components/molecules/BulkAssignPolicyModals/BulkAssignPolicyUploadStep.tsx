@@ -10,15 +10,11 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { useBulkAssignLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
-import { MAX_BULK_ASSIGN_ROWS } from "~community/leave/constants/leavePolicyConstants";
 import {
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse
 } from "~community/leave/types/LeavePolicyTypes";
-import {
-  buildBulkAssignPayload,
-  getMissingBulkAssignHeaders
-} from "~community/leave/utils/bulkAssignPolicyUtils";
+import { validateBulkAssignCsv } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
   onComplete: (response: BulkAssignPolicyResponse) => void;
@@ -38,7 +34,10 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   const [fileError, setFileError] = useState<string>("");
   const [payload, setPayload] = useState<BulkAssignPolicyPayload | null>(null);
 
-  const onSuccess = (response: BulkAssignPolicyResponse): void => {
+  const { mutateAsync: bulkAssignLeavePolicies, isPending } =
+    useBulkAssignLeavePolicies();
+
+  const showResultToast = (response: BulkAssignPolicyResponse): void => {
     const { successCount, failedCount } = response.bulkStatusSummary;
 
     if (successCount === 0 && failedCount > 0) {
@@ -64,11 +63,9 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
               })
       });
     }
-
-    onComplete(response);
   };
 
-  const onError = (): void => {
+  const showErrorToast = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -77,38 +74,13 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     });
   };
 
-  const { mutate, isPending } = useBulkAssignLeavePolicies(onSuccess, onError);
-
   const handleParseComplete = (
     results: ParseResult<Record<string, string>>
   ): void => {
-    const missingHeaders = getMissingBulkAssignHeaders(
-      results.meta.fields ?? [],
-      translateText
-    );
-    if (missingHeaders.length > 0) {
-      setFileError(
-        translateText(["missingColumnsError"], {
-          columns: missingHeaders.join(", ")
-        })
-      );
-      return;
-    }
-    if (results.errors.length > 0) {
-      setFileError(translateText(["malformedRowsError"]));
-      return;
-    }
-    if (results.data.length === 0) {
-      setFileError(translateText(["emptyFileError"]));
-      return;
-    }
-    if (results.data.length > MAX_BULK_ASSIGN_ROWS) {
-      setFileError(
-        translateText(["tooManyRowsError"], { maxRows: MAX_BULK_ASSIGN_ROWS })
-      );
-      return;
-    }
-    setPayload(buildBulkAssignPayload(results.data, translateText));
+    const { error, payload } = validateBulkAssignCsv(results, translateText);
+
+    setFileError(error);
+    setPayload(payload);
   };
 
   const handleFile = (files: FileUploadType[]): void => {
@@ -128,9 +100,17 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     });
   };
 
-  const handleConfirm = (): void => {
-    if (payload) {
-      mutate(payload);
+  const handleConfirm = async (): Promise<void> => {
+    if (!payload) {
+      return;
+    }
+
+    try {
+      const response = await bulkAssignLeavePolicies(payload);
+      showResultToast(response);
+      onComplete(response);
+    } catch {
+      showErrorToast();
     }
   };
 

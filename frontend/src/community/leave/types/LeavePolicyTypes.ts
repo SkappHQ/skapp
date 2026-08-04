@@ -28,6 +28,11 @@ export interface BulkAssignPolicyApiResponse {
   results: BulkAssignPolicyResponse[];
 }
 
+export interface BulkAssignCsvValidation {
+  error: string;
+  payload: BulkAssignPolicyPayload | null;
+}
+
 export enum BulkAssignPolicySteps {
   INSTRUCTIONS = "INSTRUCTIONS",
   UPLOAD = "UPLOAD",

@@ -1,6 +1,10 @@
+import { ParseResult } from "papaparse";
+
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
+import { MAX_BULK_ASSIGN_ROWS } from "~community/leave/constants/leavePolicyConstants";
 import {
+  BulkAssignCsvValidation,
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse,
   BulkAssignPolicyRow
@@ -39,7 +43,7 @@ const getCell = (
   return (entry?.[1] ?? "").trim();
 };
 
-export const getMissingBulkAssignHeaders = (
+const getMissingBulkAssignHeaders = (
   fields: string[],
   translateText: TranslatorFunctionType
 ): string[] => {
@@ -49,7 +53,7 @@ export const getMissingBulkAssignHeaders = (
   );
 };
 
-export const buildBulkAssignPayload = (
+const buildBulkAssignPayload = (
   rows: Record<string, string | undefined>[],
   translateText: TranslatorFunctionType
 ): BulkAssignPolicyPayload => {
@@ -61,6 +65,46 @@ export const buildBulkAssignPayload = (
       policyName: getCell(row, headers.policyName),
       effectiveDate: getCell(row, headers.effectiveDate)
     }))
+  };
+};
+
+export const validateBulkAssignCsv = (
+  results: ParseResult<Record<string, string>>,
+  translateText: TranslatorFunctionType
+): BulkAssignCsvValidation => {
+  const missingHeaders = getMissingBulkAssignHeaders(
+    results.meta.fields ?? [],
+    translateText
+  );
+  if (missingHeaders.length > 0) {
+    return {
+      error: translateText(["missingColumnsError"], {
+        columns: missingHeaders.join(", ")
+      }),
+      payload: null
+    };
+  }
+
+  if (results.errors.length > 0) {
+    return { error: translateText(["malformedRowsError"]), payload: null };
+  }
+
+  if (results.data.length === 0) {
+    return { error: translateText(["emptyFileError"]), payload: null };
+  }
+
+  if (results.data.length > MAX_BULK_ASSIGN_ROWS) {
+    return {
+      error: translateText(["tooManyRowsError"], {
+        maxRows: MAX_BULK_ASSIGN_ROWS.toString()
+      }),
+      payload: null
+    };
+  }
+
+  return {
+    error: "",
+    payload: buildBulkAssignPayload(results.data, translateText)
   };
 };
 
