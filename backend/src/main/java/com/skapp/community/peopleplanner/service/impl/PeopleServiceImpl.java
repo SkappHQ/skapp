@@ -59,10 +59,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
-import com.skapp.community.peopleplanner.payload.request.PayrollIdUniquenessCheckDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
-import com.skapp.community.peopleplanner.payload.request.TinUniquenessCheckDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistCheckDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
@@ -1388,19 +1388,13 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
-	public ResponseEntityDto checkPayrollIdUniqueness(PayrollIdUniquenessCheckDto payrollIdUniquenessCheckDto) {
+	public ResponseEntityDto checkPayrollIdUniqueness(PayrollIdExistCheckDto payrollIdExistCheckDto) {
 		PayrollIdUniquenessResponseDto responseDto = new PayrollIdUniquenessResponseDto();
 
-		String payrollId = payrollIdUniquenessCheckDto.getPayrollId();
+		String payrollId = payrollIdExistCheckDto.getPayrollId();
 		if (payrollId != null && !payrollId.isBlank()) {
-			boolean exists;
-			if (payrollIdUniquenessCheckDto.getEmployeeId() != null) {
-				exists = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId,
-						payrollIdUniquenessCheckDto.getEmployeeId());
-			}
-			else {
-				exists = employeeDao.existsByPayrollId(payrollId);
-			}
+			boolean exists = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId,
+					payrollIdExistCheckDto.getEmployeeId());
 			responseDto.setIsPayrollIdExists(exists);
 		}
 
@@ -1408,18 +1402,12 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
-	public ResponseEntityDto checkTinUniqueness(TinUniquenessCheckDto tinUniquenessCheckDto) {
+	public ResponseEntityDto checkTinUniqueness(TinExistCheckDto tinExistCheckDto) {
 		TinUniquenessResponseDto responseDto = new TinUniquenessResponseDto();
 
-		String tin = tinUniquenessCheckDto.getTin();
+		String tin = tinExistCheckDto.getTin();
 		if (tin != null && !tin.isBlank()) {
-			boolean exists;
-			if (tinUniquenessCheckDto.getEmployeeId() != null) {
-				exists = employeeDao.existsByTinAndEmployeeIdNot(tin, tinUniquenessCheckDto.getEmployeeId());
-			}
-			else {
-				exists = employeeDao.existsByTin(tin);
-			}
+			boolean exists = employeeDao.existsByTinAndEmployeeIdNot(tin, tinExistCheckDto.getEmployeeId());
 			responseDto.setIsTinExists(exists);
 		}
 		else {
@@ -1980,7 +1968,7 @@ public class PeopleServiceImpl implements PeopleService {
 					new Object[] { PeopleConstants.MAX_PAYROLL_ID_LENGTH, "Payroll ID" }));
 		}
 
-		if (employeeDao.existsByPayrollId(payrollId)) {
+		if (employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, null)) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST));
 		}
 	}
@@ -1995,7 +1983,7 @@ public class PeopleServiceImpl implements PeopleService {
 					new Object[] { PeopleConstants.MAX_TIN_LENGTH, "TIN" }));
 		}
 
-		if (employeeDao.existsByTin(tin)) {
+		if (employeeDao.existsByTinAndEmployeeIdNot(tin, null)) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST));
 		}
 	}

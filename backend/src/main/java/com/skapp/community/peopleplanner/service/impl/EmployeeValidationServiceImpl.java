@@ -366,15 +366,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 		Validations.validatePayrollId(payrollId);
 
-		boolean isDuplicate;
-		if (user.getEmployee() != null) {
-			isDuplicate = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, user.getEmployee().getEmployeeId());
-		}
-		else {
-			isDuplicate = employeeDao.existsByPayrollId(payrollId);
-		}
-
-		if (isDuplicate) {
+		Long employeeId = user.getEmployee() != null ? user.getEmployee().getEmployeeId() : null;
+		if (employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, employeeId)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST);
 		}
 	}
@@ -387,15 +380,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 		Validations.validateTin(tin);
 
-		boolean isDuplicate;
-		if (user.getEmployee() != null) {
-			isDuplicate = employeeDao.existsByTinAndEmployeeIdNot(tin, user.getEmployee().getEmployeeId());
-		}
-		else {
-			isDuplicate = employeeDao.existsByTin(tin);
-		}
-
-		if (isDuplicate) {
+		Long employeeId = user.getEmployee() != null ? user.getEmployee().getEmployeeId() : null;
+		if (employeeDao.existsByTinAndEmployeeIdNot(tin, employeeId)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST);
 		}
 	}

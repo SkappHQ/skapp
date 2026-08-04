@@ -5,10 +5,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TinUniquenessCheckDto {
+public class PayrollIdExistCheckDto {
 
 	private Long employeeId;
 
-	private String tin;
+	private String payrollId;
 
 }

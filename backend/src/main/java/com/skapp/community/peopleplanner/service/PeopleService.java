@@ -7,10 +7,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
-import com.skapp.community.peopleplanner.payload.request.PayrollIdUniquenessCheckDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
-import com.skapp.community.peopleplanner.payload.request.TinUniquenessCheckDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -41,9 +41,9 @@ public interface PeopleService {
 
 	ResponseEntityDto getEmployeeByIdOrEmail(EmployeeDataValidationDto employeeDataValidationDto);
 
-	ResponseEntityDto checkPayrollIdUniqueness(PayrollIdUniquenessCheckDto payrollIdUniquenessCheckDto);
+	ResponseEntityDto checkPayrollIdUniqueness(PayrollIdExistCheckDto payrollIdExistCheckDto);
 
-	ResponseEntityDto checkTinUniqueness(TinUniquenessCheckDto tinUniquenessCheckDto);
+	ResponseEntityDto checkTinUniqueness(TinExistCheckDto tinExistCheckDto);
 
 	ResponseEntityDto terminateUser(Long userId);
 

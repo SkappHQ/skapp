@@ -43,12 +43,4 @@ public interface EmployeeDao
 	List<Employee> findByWorkLocationWorkLocationIdAndAccountStatusIn(Long workLocationId,
 			Set<AccountStatus> accountStatuses);
 
-	boolean existsByPayrollId(String payrollId);
-
-	boolean existsByPayrollIdAndEmployeeIdNot(String payrollId, Long employeeId);
-
-	boolean existsByTin(String tin);
-
-	boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId);
-
 }
