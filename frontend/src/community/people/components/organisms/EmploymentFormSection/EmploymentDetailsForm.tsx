@@ -6,11 +6,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { theme } from "~community/common/theme/theme";
 import { scrollToFirstError } from "~community/common/utils/commonUtil";
-import {
-  useCheckEmailAndIdentificationNo,
-  useCheckPayrollIdUniqueness,
-  useCheckTinUniqueness
-} from "~community/people/api/PeopleApi";
+import { useCheckEmailAndIdentificationNo } from "~community/people/api/PeopleApi";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useStepper from "~community/people/hooks/useStepper";
 import { usePeopleStore } from "~community/people/store/store";
@@ -75,7 +71,7 @@ const EmploymentDetailsForm = ({
   const env = useGetEnvironment();
   const isEnterpriseMode = env === appModes.ENTERPRISE;
 
-  const { tenantID, isPeopleAdmin } = useSessionData();
+  const { tenantID } = useSessionData();
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
@@ -89,20 +85,6 @@ const EmploymentDetailsForm = ({
   const { data: emailValidation } = useCheckEmailAndIdentificationNo(
     email,
     employeeNumber
-  );
-
-  const employeeIdForExistCheck = employee?.common?.employeeId;
-  const payrollId =
-    employee?.employment?.identificationAndDiversityDetails?.payrollId;
-  const tin = employee?.employment?.identificationAndDiversityDetails?.tin;
-
-  const { data: payrollIdValidation } = useCheckPayrollIdUniqueness(
-    payrollId,
-    employeeIdForExistCheck
-  );
-  const { data: tinValidation } = useCheckTinUniqueness(
-    tin,
-    employeeIdForExistCheck
   );
 
   const isTerminatedEmployee =
@@ -125,42 +107,8 @@ const EmploymentDetailsForm = ({
     return true;
   };
 
-  const validateIdentificationUniqueness = (): boolean => {
-    let isValid = true;
-
-    if (isPeopleAdmin && payrollId && payrollIdValidation?.isPayrollIdExists) {
-      identificationDetailsRef.current?.setFieldError?.(
-        "payrollId",
-        translateText([
-          "addResource",
-          "divesityDetails",
-          "payrollIdAlreadyExistsError"
-        ])
-      );
-      isValid = false;
-    }
-
-    if (isPeopleAdmin && tin && tinValidation?.isTinExists) {
-      identificationDetailsRef.current?.setFieldError?.(
-        "tin",
-        translateText([
-          "addResource",
-          "divesityDetails",
-          "tinAlreadyExistsError"
-        ])
-      );
-      isValid = false;
-    }
-
-    return isValid;
-  };
-
   const onSave = async () => {
     if (!validateGoogleDomain()) {
-      return;
-    }
-
-    if (!validateIdentificationUniqueness()) {
       return;
     }
 

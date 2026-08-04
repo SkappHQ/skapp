@@ -241,6 +241,11 @@ export interface EmployeeEmploymentContextType {
   isUpdate: boolean;
 }
 
+export interface EmployeeIdentificationContextType {
+  isUniquePayrollId: boolean;
+  isUniqueTin: boolean;
+}
+
 export interface EmployeePermission {
   changedBy: Record<string, string | null> | null;
   changedDate: string | null;

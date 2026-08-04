@@ -15,7 +15,10 @@ import {
 import { isValidEmailPattern } from "~community/common/utils/validation";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveEntitlementDropdownListType } from "~community/leave/types/LeaveTypes";
-import { EmployeeEmploymentContextType } from "~community/people/types/EmployeeTypes";
+import {
+  EmployeeEmploymentContextType,
+  EmployeeIdentificationContextType
+} from "~community/people/types/EmployeeTypes";
 
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "../constants/configs";
 import {
@@ -314,6 +317,7 @@ export const employeeCareerDetailsValidation = (
   });
 
 export const employeeIdentificationDetailsValidation = (
+  context: EmployeeIdentificationContextType,
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
@@ -330,6 +334,13 @@ export const employeeIdentificationDetailsValidation = (
           max: String(PAYROLL_ID_LENGTH)
         })
       )
+      .test(
+        "is-unique-payroll-id",
+        translator(["payrollIdAlreadyExistsError"]),
+        function () {
+          return context?.isUniquePayrollId;
+        }
+      )
       .nullable(),
     tin: Yup.string()
       .trim()
@@ -338,6 +349,13 @@ export const employeeIdentificationDetailsValidation = (
         translator(["tinMaxLengthError"], {
           max: String(TIN_LENGTH)
         })
+      )
+      .test(
+        "is-unique-tin",
+        translator(["tinAlreadyExistsError"]),
+        function () {
+          return context?.isUniqueTin;
+        }
       )
       .nullable()
   });

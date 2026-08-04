@@ -8,10 +8,15 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
 import {
+  useCheckPayrollIdUniqueness,
+  useCheckTinUniqueness
+} from "~community/people/api/PeopleApi";
+import {
   PAYROLL_ID_LENGTH,
   TIN_LENGTH
 } from "~community/people/constants/stringConstants";
 import { usePeopleStore } from "~community/people/store/store";
+import { EmployeeIdentificationContextType } from "~community/people/types/EmployeeTypes";
 import { FormMethods } from "~community/people/types/PeopleEditTypes";
 import { L3IdentificationAndDiversityDetailsType } from "~community/people/types/PeopleTypes";
 import {
@@ -44,6 +49,28 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
 
     const { isPeopleAdmin } = useSessionData();
 
+    const employeeIdForExistCheck = employee?.common?.employeeId;
+    const payrollId =
+      employee?.employment?.identificationAndDiversityDetails?.payrollId;
+    const tin = employee?.employment?.identificationAndDiversityDetails?.tin;
+
+    const { data: payrollIdValidation } = useCheckPayrollIdUniqueness(
+      payrollId,
+      employeeIdForExistCheck
+    );
+    
+    const { data: tinValidation } = useCheckTinUniqueness(
+      tin,
+      employeeIdForExistCheck
+    );
+
+    const context: EmployeeIdentificationContextType = {
+      isUniquePayrollId: !(
+        isPeopleAdmin && payrollIdValidation?.isPayrollIdExists
+      ),
+      isUniqueTin: !(isPeopleAdmin && tinValidation?.isTinExists)
+    };
+
     const initialValues = useMemo<L3IdentificationAndDiversityDetailsType>(
       () =>
         employee?.employment
@@ -53,7 +80,10 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
 
     const formik = useFormik({
       initialValues,
-      validationSchema: employeeIdentificationDetailsValidation(translateText),
+      validationSchema: employeeIdentificationDetailsValidation(
+        context,
+        translateText
+      ),
       onSubmit: () => {},
       validateOnChange: false,
       validateOnBlur: true,
