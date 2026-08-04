@@ -40,13 +40,11 @@ const chipClassName =
 interface Props {
   searchTerm?: string;
   onSearchTermChange: (searchTerm: string) => void;
-  setHasEmptyFilterResults: (isEmpty: boolean) => void;
 }
 
 const CustomLeaveAllocationsTable: React.FC<Props> = ({
   searchTerm,
-  onSearchTermChange,
-  setHasEmptyFilterResults
+  onSearchTermChange
 }) => {
   const translateText = useTranslator("leaveModule", "customLeave");
   const translateAria = useTranslator(
@@ -77,7 +75,6 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     leaveTypes
   );
 
-  const hasRows = (customLeaveData?.items?.length ?? 0) > 0;
   const isFiltering = !!searchTerm || selectedLeaveTypes.length > 0;
   const searchPlaceholder = translateText([
     "CustomLeaveAllocationsSectionSearchBarPlaceholder"
@@ -86,18 +83,8 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   useEffect(() => {
     if (customLeaveData?.items) {
       setCustomLeaveAllocations(customLeaveData.items);
-      setHasEmptyFilterResults(
-        customLeaveData.items.length === 0 && isFiltering
-      );
-    } else {
-      setHasEmptyFilterResults(false);
     }
-  }, [
-    customLeaveData?.items,
-    isFiltering,
-    setCustomLeaveAllocations,
-    setHasEmptyFilterResults
-  ]);
+  }, [customLeaveData?.items, setCustomLeaveAllocations]);
 
   const handleEdit = useCallback(
     (leaveAllocation: LeaveAllocation) => {
@@ -278,15 +265,12 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
         onPageChange: setCurrentPage
       }}
       toolbar={{
-        searchBar:
-          hasRows || isFiltering
-            ? {
-                value: searchTerm ?? "",
-                onChange: handleSearchChange,
-                placeholder: searchPlaceholder,
-                "aria-label": searchPlaceholder
-              }
-            : undefined,
+        searchBar: {
+          value: searchTerm ?? "",
+          onChange: handleSearchChange,
+          placeholder: searchPlaceholder,
+          "aria-label": searchPlaceholder
+        },
         dropdown: {
           id: "custom-leave-allocations-table-year-filter",
           options: getAdjacentYearsWithCurrent().map((year) => ({
