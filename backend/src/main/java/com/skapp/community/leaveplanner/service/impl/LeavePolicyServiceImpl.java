@@ -224,6 +224,15 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public boolean isLeavePoliciesEnabled() {
+		return organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name())
+			.filter(this::isLeavePolicyEnabled)
+			.isPresent();
+	}
+
+	@Override
 	public void setDefaultLeavePolicyConfig() {
 		log.info("setDefaultLeavePolicyConfig: execution started");
 

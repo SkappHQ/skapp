@@ -6,6 +6,7 @@ import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveType;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.CarryForwardDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.CarryForwardEntitlementDto;
@@ -31,6 +32,8 @@ import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestWithEmployeeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -177,5 +180,18 @@ public interface LeaveMapper {
 
 	List<PolicyLeaveTypeResponseDto> policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(
 			List<PolicyLeaveType> policyLeaveTypes);
+
+	PolicyLeaveTypeDetailResponseDto policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(PolicyLeaveType policyLeaveType);
+
+	@Mapping(target = "leaveRequestId", source = "id")
+	@Mapping(target = "policyId", source = "policy.id")
+	@Mapping(target = "policyName", source = "policy.name")
+	@Mapping(target = "leaveType", source = "policy.leaveType")
+	@Mapping(target = "remainingBalance", ignore = true)
+	PolicyLeaveRequestResponseDto policyLeaveRequestToPolicyLeaveRequestResponseDto(
+			PolicyLeaveRequest policyLeaveRequest);
+
+	List<PolicyLeaveRequestResponseDto> policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(
+			List<PolicyLeaveRequest> policyLeaveRequests);
 
 }
