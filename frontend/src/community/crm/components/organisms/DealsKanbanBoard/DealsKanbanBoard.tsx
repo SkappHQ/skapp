@@ -72,26 +72,27 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-stretch gap-4 h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-4">
+        <div className="flex items-stretch h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-2">
           {boardStages.map((stage) => {
             const stageDeals = stageMap.find((s) => s.stageId === stage.id);
             const deals = stageDeals?.deals ?? [];
 
             return (
-              <DealStageLane
-                key={stage.id}
-                stage={stage}
-                deals={deals}
-                isLoading={isLoading}
-                currentPage={stageDeals?.currentPage ?? 0}
-                hasNextPage={stageDeals?.hasNextPage ?? false}
-                totalCount={stageDeals?.totalCount ?? 0}
-                isOver={overStageId === stage.id}
-                searchKeyword={searchKeyword}
-                onDealClick={handleDealClick}
-                onAddDeal={handleAddDeal}
-                isAddDealDisabled={isCheckingCrmLimit}
-              />
+              <div key={stage.id} className="shrink-0 m-2">
+                <DealStageLane
+                  stage={stage}
+                  deals={deals}
+                  isLoading={isLoading}
+                  currentPage={stageDeals?.currentPage ?? 0}
+                  hasNextPage={stageDeals?.hasNextPage ?? false}
+                  totalCount={stageDeals?.totalCount ?? 0}
+                  isOver={overStageId === stage.id}
+                  searchKeyword={searchKeyword}
+                  onDealClick={handleDealClick}
+                  onAddDeal={handleAddDeal}
+                  isAddDealDisabled={isCheckingCrmLimit}
+                />
+              </div>
             );
           })}
         </div>
