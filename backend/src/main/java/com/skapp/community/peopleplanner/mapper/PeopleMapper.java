@@ -166,6 +166,7 @@ public interface PeopleMapper {
 	@Mapping(target = "jobFamily", ignore = true)
 	@Mapping(target = "jobTitle", ignore = true)
 	@Mapping(target = "workLocation", ignore = true)
+	@Mapping(target = "businessUnit", ignore = true)
 	Employee employeeBulkDtoToEmployee(EmployeeBulkDto employeeBulkDto);
 
 	@Mapping(target = "primaryManager", ignore = true)
