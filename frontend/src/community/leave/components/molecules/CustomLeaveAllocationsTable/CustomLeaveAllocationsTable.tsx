@@ -34,9 +34,6 @@ import {
   LeaveAllocation
 } from "~community/leave/types/CustomLeaveAllocationTypes";
 
-const chipClassName =
-  "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
-
 interface Props {
   searchTerm?: string;
   onSearchTermChange: (searchTerm: string) => void;
@@ -70,7 +67,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   const { data: customLeaveData, isLoading } = useGetCustomLeaves(
     currentPage,
     5,
-    searchTerm?.trim(),
+    searchTerm,
     Number(selectedYear),
     leaveTypes
   );
@@ -151,12 +148,22 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
             chipStyles={{
               display: "flex",
               justifyContent: "start",
-              maxWidth: "fit-content"
+              maxWidth: "fit-content",
+              backgroundColor: "var(--color-tertiary-background)"
             }}
           />
         ),
         duration: (
-          <div className={chipClassName}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "var(--color-tertiary-background)",
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
             {leaveAllocation.totalDaysAllocated === 0.5
               ? translateText(["halfDayChip"])
               : `${leaveAllocation.totalDaysAllocated} ${
@@ -167,7 +174,16 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
           </div>
         ),
         type: (
-          <div className={chipClassName}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "var(--color-tertiary-background)",
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
             <span role="img" aria-hidden="true">
               {getEmoji(leaveAllocation.leaveType?.emojiCode || "")}
             </span>
@@ -254,6 +270,13 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     <TableView
       className="body2"
       tableName={TableNames.CUSTOM_LEAVE_ALLOCATIONS}
+      ariaLabel={{
+        regionAriaLabel: translateAria(["tableRegion"]),
+        paginationAriaLabel: translateAria(["pagination"]),
+        previousPageLabel: translateAria(["previousPage"]),
+        nextPageLabel: translateAria(["nextPage"]),
+        getPageAriaLabel: (page) => translateAria(["page"], { page })
+      }}
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}

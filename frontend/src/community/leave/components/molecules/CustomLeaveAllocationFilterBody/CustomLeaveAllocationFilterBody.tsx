@@ -2,7 +2,7 @@ import {
   BasicFilterStructure,
   SelectableItemList
 } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { toggleFilterValue } from "~community/common/utils/commonUtil";
@@ -29,14 +29,10 @@ const CustomLeaveAllocationFilterBody: FC<Props> = ({
   const [selectedLeaveTypes, setSelectedLeaveTypes] =
     useState<string[]>(appliedLeaveTypeIds);
 
-  const leaveTypeOptions = useMemo(
-    () =>
-      (leaveTypes ?? []).map((leaveType) => ({
-        label: leaveType.name,
-        value: leaveType.typeId.toString()
-      })),
-    [leaveTypes]
-  );
+  const leaveTypeOptions = (leaveTypes ?? []).map((leaveType) => ({
+    label: leaveType.name,
+    value: leaveType.typeId.toString()
+  }));
 
   const handleApply = () => {
     onApply(selectedLeaveTypes);
