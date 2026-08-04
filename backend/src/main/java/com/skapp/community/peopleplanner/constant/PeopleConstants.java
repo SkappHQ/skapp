@@ -13,6 +13,8 @@ public class PeopleConstants {
 
 	public static final String HOLIDAY_ALL_WORK_LOCATIONS = "All locations";
 
+	public static final Long HOLIDAY_NO_WORK_LOCATION_ID = 0L;
+
 	public static final String FIELD_EMPLOYMENT_TYPE = "Employment Type";
 
 	public static final String FIELD_JOB_FAMILY = "Job Family";

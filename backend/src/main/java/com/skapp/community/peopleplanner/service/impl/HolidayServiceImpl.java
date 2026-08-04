@@ -1,12 +1,14 @@
 package com.skapp.community.peopleplanner.service.impl;
 
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -97,6 +99,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 	private final EmployeeDao employeeDao;
 
+	private final UserService userService;
+
 	@Override
 	public ResponseEntityDto getAllHolidays(HolidayFilterDto holidayFilterDto) {
 		log.info("getAllHolidays: execution started");
@@ -109,6 +113,8 @@ public class HolidayServiceImpl implements HolidayService {
 
 		Pageable pageable = PageRequest.of(holidayFilterDto.getPage(), pageSize,
 				Sort.by(holidayFilterDto.getSortOrder(), holidayFilterDto.getSortKey().toString()));
+
+		applyEmployeeWorkLocationFilter(holidayFilterDto);
 
 		Page<Holiday> holidays = holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		PageDto pageDto = pageTransformer.transform(holidays);
@@ -532,6 +538,19 @@ public class HolidayServiceImpl implements HolidayService {
 	private boolean canDeleteHoliday(Holiday holiday) {
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		return holiday.getDate().isAfter(currentDate);
+	}
+
+	private void applyEmployeeWorkLocationFilter(HolidayFilterDto holidayFilterDto) {
+		if (holidayFilterDto.getWorkLocationId() != null) {
+			return;
+		}
+
+		User currentUser = userService.getCurrentUser();
+		Employee currentEmployee = currentUser.getEmployee();
+		WorkLocation workLocation = currentEmployee != null ? currentEmployee.getWorkLocation() : null;
+
+		holidayFilterDto.setWorkLocationId(
+				workLocation != null ? workLocation.getWorkLocationId() : PeopleConstants.HOLIDAY_NO_WORK_LOCATION_ID);
 	}
 
 	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames,
