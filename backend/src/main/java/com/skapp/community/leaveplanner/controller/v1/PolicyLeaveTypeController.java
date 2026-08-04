@@ -29,7 +29,9 @@ public class PolicyLeaveTypeController {
 	private final PolicyLeaveTypeService policyLeaveTypeService;
 
 	@Operation(summary = "Get policy leave types",
-			description = "Returns all active leave types available for policy creation")
+			description = "Returns all active leave types as a lightweight lookup for policy creation dropdowns. "
+					+ "This is deliberately unpaginated and returns id, name and appearance only; "
+					+ "use the paginated /search endpoint for the management list view")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes() {

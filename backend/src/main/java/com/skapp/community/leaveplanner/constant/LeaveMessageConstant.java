@@ -89,16 +89,17 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_LEAVE_POLICY_ALREADY_ENABLED("api.error.leave.leave-policy-already-enabled"),
 	LEAVE_ERROR_LEAVE_POLICY_ALREADY_INACTIVE("api.error.leave.leave-policy-already-inactive"),
 	LEAVE_ERROR_LEAVE_POLICY_ALREADY_ACTIVE("api.error.leave.leave-policy-already-active"),
-	LEAVE_ERROR_POLICY_LEAVE_TYPE_NOT_EXIST("api.error.leave.policy-leave-type-not-exist"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ID_NOT_FOUND("api.error.leave.policy-leave-type-id-not-found"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_EXISTS("api.error.leave.policy-leave-type-already-exists"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_NAME_REQUIRED("api.error.leave.policy-leave-type-name-required"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_NAME_MAX_LENGTH_EXCEEDED(
 			"api.error.leave.policy-leave-type-name-max-length-exceeded"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_EMOJI_CODE_REQUIRED("api.error.leave.policy-leave-type-emoji-code-required"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_REQUIRED("api.error.leave.policy-leave-type-color-code-required"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_INVALID("api.error.leave.policy-leave-type-color-code-invalid"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_MIN_DURATION_REQUIRED("api.error.leave.policy-leave-type-min-duration-required"),
-	LEAVE_ERROR_POLICY_LEAVE_TYPE_UNABLE_TO_MAKE_ATTACHMENT_MANDATORY(
-			"api.error.leave.policy-leave-type-unable-to-make-attachment-mandatory"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_NUMBER("api.error.leave.policy-leave-type-invalid-page-number"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_SIZE("api.error.leave.policy-leave-type-invalid-page-size"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE("api.error.leave.policy-leave-type-already-inactive"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active");
 

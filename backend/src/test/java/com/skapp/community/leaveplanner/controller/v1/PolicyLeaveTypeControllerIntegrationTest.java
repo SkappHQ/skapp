@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -38,6 +39,8 @@ class PolicyLeaveTypeControllerIntegrationTest {
 	private static final String ENDPOINT = "/v1/leave/policy-leave-types";
 
 	private static final String SEARCH_ENDPOINT = ENDPOINT + "/search";
+
+	private static final String SEED_NAME_PREFIX = "Policy";
 
 	private static final String INSERT_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) VALUES ";
 
@@ -276,6 +279,21 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Returns bad request when the color code is not a hexadecimal value")
+		void addPolicyLeaveType_InvalidColorCode_ReturnsBadRequest() throws Exception {
+			String invalidColorCode = """
+					{
+					  "name": "Casual Leave",
+					  "emojiCode": "U+1F3D6",
+					  "colorCode": "red",
+					  "minDuration": "HALF_DAY"
+					}
+					""";
+
+			performCreate(leaveAdminToken(), invalidColorCode).andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
 		@DisplayName("Returns bad request when the minimum duration is missing")
 		void addPolicyLeaveType_MissingMinDuration_ReturnsBadRequest() throws Exception {
 			String missingDuration = """
@@ -318,13 +336,23 @@ class PolicyLeaveTypeControllerIntegrationTest {
 				.with(SecurityTestUtils.bearerToken(authToken)));
 		}
 
+		private ResultActions performScopedSearch(String authToken, String... extraParams) throws Exception {
+			MockHttpServletRequestBuilder request = get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
+				.param("searchKeyword", SEED_NAME_PREFIX)
+				.with(SecurityTestUtils.bearerToken(authToken));
+
+			for (int i = 0; i < extraParams.length; i += 2) {
+				request.param(extraParams[i], extraParams[i + 1]);
+			}
+
+			return mvc.perform(request);
+		}
+
 		@Test
 		@DisplayName("Leave admin can search leave types regardless of active status")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
 		void searchPolicyLeaveTypes_LeaveAdmin_ReturnsAllTypes() throws Exception {
-			mvc.perform(get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
+			performScopedSearch(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results[0].items", hasSize(3)))
@@ -337,9 +365,7 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@DisplayName("Results are ordered by name ascending")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
 		void searchPolicyLeaveTypes_OrdersByNameAscending() throws Exception {
-			mvc.perform(get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
+			performScopedSearch(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
 				.andExpect(jsonPath("$.results[0].items[1].name").value("PolicyInactive"))
@@ -350,7 +376,7 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@DisplayName("Active filter returns only active leave types")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
 		void searchPolicyLeaveTypes_IsActiveTrue_ReturnsOnlyActive() throws Exception {
-			performSearch(leaveAdminToken(), "isActive", "true").andDo(print())
+			performScopedSearch(leaveAdminToken(), "isActive", "true").andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
 				.andExpect(jsonPath("$.results[0].totalItems").value(2));
@@ -360,7 +386,7 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@DisplayName("Inactive filter returns only inactive leave types")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
 		void searchPolicyLeaveTypes_IsActiveFalse_ReturnsOnlyInactive() throws Exception {
-			performSearch(leaveAdminToken(), "isActive", "false").andDo(print())
+			performScopedSearch(leaveAdminToken(), "isActive", "false").andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyInactive"));
@@ -390,15 +416,29 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@DisplayName("Page size is respected and total pages are calculated")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
 		void searchPolicyLeaveTypes_PageSize_LimitsResults() throws Exception {
-			mvc.perform(get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.param("page", "0")
-				.param("size", "2")
-				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
-				.andDo(print())
+			performScopedSearch(leaveAdminToken(), "page", "0", "size", "2").andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
 				.andExpect(jsonPath("$.results[0].totalItems").value(3))
 				.andExpect(jsonPath("$.results[0].totalPages").value(2));
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the page number is negative")
+		void searchPolicyLeaveTypes_NegativePage_ReturnsBadRequest() throws Exception {
+			performSearch(leaveAdminToken(), "page", "-1").andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the page size is below the minimum")
+		void searchPolicyLeaveTypes_ZeroSize_ReturnsBadRequest() throws Exception {
+			performSearch(leaveAdminToken(), "size", "0").andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the page size exceeds the maximum")
+		void searchPolicyLeaveTypes_SizeAboveMaximum_ReturnsBadRequest() throws Exception {
+			performSearch(leaveAdminToken(), "size", "1000000").andDo(print()).andExpect(status().isBadRequest());
 		}
 
 	}
@@ -505,6 +545,47 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_TYPE })
 		void updatePolicyLeaveType_BlankName_ReturnsBadRequest() throws Exception {
 			performUpdate(leaveAdminToken(), 100, "{\"name\": \"   \"}").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leading and trailing whitespace is trimmed from an updated name")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
+		void updatePolicyLeaveType_NameWithSurroundingWhitespace_IsTrimmed() throws Exception {
+			performUpdate(leaveAdminToken(), 100, "{\"name\": \"  Trimmed Leave Type  \"}").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].name").value("Trimmed Leave Type"));
+		}
+
+		@Test
+		@DisplayName("Returns bad request when renaming to an existing name padded with whitespace")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
+		void updatePolicyLeaveType_PaddedDuplicateName_ReturnsBadRequest() throws Exception {
+			performUpdate(leaveAdminToken(), 100, "{\"name\": \"  PolicySick  \"}").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the emoji code is updated to a blank value")
+		@Sql(statements = { SEED_LEAVE_TYPE })
+		void updatePolicyLeaveType_BlankEmojiCode_ReturnsBadRequest() throws Exception {
+			performUpdate(leaveAdminToken(), 100, "{\"emojiCode\": \"   \"}").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the color code is updated to a blank value")
+		@Sql(statements = { SEED_LEAVE_TYPE })
+		void updatePolicyLeaveType_BlankColorCode_ReturnsBadRequest() throws Exception {
+			performUpdate(leaveAdminToken(), 100, "{\"colorCode\": \"\"}").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the color code is updated to a non-hexadecimal value")
+		@Sql(statements = { SEED_LEAVE_TYPE })
+		void updatePolicyLeaveType_InvalidColorCode_ReturnsBadRequest() throws Exception {
+			performUpdate(leaveAdminToken(), 100, "{\"colorCode\": \"red\"}").andDo(print())
 				.andExpect(status().isBadRequest());
 		}
 
