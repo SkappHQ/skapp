@@ -1209,7 +1209,7 @@ public class TimeServiceImpl implements TimeService {
 			if (activeTimeSlotResponseDto1 != null)
 				return activeTimeSlotResponseDto1;
 
-			return getAllActiveSlots(currentDate, currentDayConfig, morningHours, eveningHours);
+			return getAllActiveSlots(currentUser, currentDate, currentDayConfig, morningHours, eveningHours);
 		}
 
 		return null;
@@ -1271,9 +1271,15 @@ public class TimeServiceImpl implements TimeService {
 		return null;
 	}
 
-	private ResponseEntityDto getAllActiveSlots(LocalDate currentDate, TimeConfig currentDayConfig, float morningHours,
-			float eveningHours) {
-		List<Holiday> holidayList = holidayDao.findAllByIsActiveTrueAndDate(currentDate);
+	private ResponseEntityDto getAllActiveSlots(User currentUser, LocalDate currentDate, TimeConfig currentDayConfig,
+			float morningHours, float eveningHours) {
+
+		Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
+				? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
+
+		List<Holiday> holidayList = employeeWorkLocationId == null
+				? holidayDao.findAllByIsActiveTrueAndDate(currentDate)
+				: holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationId(currentDate, employeeWorkLocationId);
 
 		boolean attendanceConfigForHolidays = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
