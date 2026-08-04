@@ -1,12 +1,17 @@
 import { Card, RadioButton } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEvent } from "react";
 
+export const DURATION_OPTION_ATTRIBUTE = "data-duration-option";
+
 interface Props {
   title: string;
   description: string;
   isSelected: boolean;
   isError: boolean;
+  index: number;
+  describedBy?: string;
   onSelect: () => void;
+  onNavigate: (fromIndex: number, direction: number) => void;
 }
 
 const DurationOptionCard: FC<Props> = ({
@@ -14,7 +19,10 @@ const DurationOptionCard: FC<Props> = ({
   description,
   isSelected,
   isError,
-  onSelect
+  index,
+  describedBy,
+  onSelect,
+  onNavigate
 }) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
     if (event.key === "Enter" || event.key === " ") {
@@ -25,15 +33,13 @@ const DurationOptionCard: FC<Props> = ({
 
     if (event.key === "ArrowDown" || event.key === "ArrowRight") {
       event.preventDefault();
-      (event.currentTarget.nextElementSibling as HTMLElement | null)?.focus();
+      onNavigate(index, 1);
       return;
     }
 
     if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
       event.preventDefault();
-      (
-        event.currentTarget.previousElementSibling as HTMLElement | null
-      )?.focus();
+      onNavigate(index, -1);
     }
   };
 
@@ -49,6 +55,8 @@ const DurationOptionCard: FC<Props> = ({
       tabIndex={0}
       aria-checked={isSelected}
       aria-label={title}
+      aria-describedby={describedBy}
+      {...{ [DURATION_OPTION_ATTRIBUTE]: true }}
     >
       <div className="inline-flex w-full items-center justify-start gap-3">
         <RadioButton isSelected={isSelected} />

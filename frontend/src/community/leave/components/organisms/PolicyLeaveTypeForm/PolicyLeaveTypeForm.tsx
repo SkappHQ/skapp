@@ -6,44 +6,41 @@ import {
   InputField,
   Tooltip
 } from "@rootcodelabs/skapp-ui";
-import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useRef } from "react";
 
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
 import ColorPalette from "~community/common/components/molecules/ColorPalette/ColorPalette";
 import EmojiPicker from "~community/common/components/molecules/EmojiPicker/EmojiPicker";
 import ROUTES from "~community/common/constants/routes";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
-import { getEmoji } from "~community/common/utils/commonUtil";
-import {
-  useAddPolicyLeaveType,
-  useGetPolicyLeaveType,
-  useUpdatePolicyLeaveType
-} from "~community/leave/api/PolicyLeaveTypeApi";
+import { getBlinkClass, getEmoji } from "~community/common/utils/commonUtil";
+import { useGetPolicyLeaveType } from "~community/leave/api/PolicyLeaveTypeApi";
 import { leaveTypeColors } from "~community/leave/constants/configs";
 import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   LeaveDurationTypes,
   LeaveTypeFormTypes
 } from "~community/leave/enums/LeaveTypeEnums";
+import usePolicyLeaveTypeFormSubmit from "~community/leave/hooks/usePolicyLeaveTypeFormSubmit";
 import { useLeaveStore } from "~community/leave/store/store";
 import { PolicyLeaveTypeFormDataType } from "~community/leave/types/PolicyLeaveTypeTypes";
-import { handleColorClick } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import {
-  getPolicyLeaveTypeErrorToastKeys,
   getUpdatedMinDuration,
-  isMinDurationSelected,
-  mapPolicyLeaveTypeFormToPayload
+  isMinDurationSelected
 } from "~community/leave/utils/policyLeaveTypes/policyLeaveTypeUtils";
 import { policyLeaveTypeValidationSchema } from "~community/leave/utils/validations";
+import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
-import DurationOptionCard from "./DurationOptionCard";
+import DurationOptionCard, {
+  DURATION_OPTION_ATTRIBUTE
+} from "./DurationOptionCard";
 import SettingToggleRow from "./SettingToggleRow";
+
+const MIN_DURATION_ERROR_ID = "policy-leave-type-min-duration-error";
+const MIN_DURATION_GROUP_LABEL_ID = "policy-leave-type-min-duration-label";
 
 const PolicyLeaveTypeForm: FC = () => {
   const translateText = useTranslator("leaveModule", "leaveTypes");
@@ -54,54 +51,25 @@ const PolicyLeaveTypeForm: FC = () => {
   const isEditMode = slug === LeaveTypeFormTypes.EDIT;
   const policyLeaveTypeId = id ? Number(id) : undefined;
 
-  const { setToastMessage } = useToast();
+  const isMissingEditId = isEditMode && router.isReady && !policyLeaveTypeId;
 
   const { setLeaveTypeFormDirty } = useLeaveStore((state) => ({
     setLeaveTypeFormDirty: state.setLeaveTypeFormDirty
   }));
 
-  const [colors, setColors] = useState<string[]>(leaveTypeColors);
+  const { ongoingQuickSetup } = useCommonEnterpriseStore((state) => ({
+    ongoingQuickSetup: state.ongoingQuickSetup
+  }));
+
+  const durationGroupRef = useRef<HTMLDivElement>(null);
 
   const { data: editingPolicyLeaveType, isLoading: isPolicyLeaveTypeLoading } =
     useGetPolicyLeaveType(isEditMode ? policyLeaveTypeId : undefined);
 
-  const onMutationSuccess = async (isEdit: boolean) => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.SUCCESS,
-      title: translateText([
-        isEdit
-          ? "editLeaveTypeSuccessToastTitle"
-          : "addLeaveTypeSuccessToastTitle"
-      ]),
-      description: translateText([
-        isEdit
-          ? "editLeaveTypeSuccessToastDescription"
-          : "addLeaveTypeSuccessToastDescription"
-      ]),
-      isIcon: true
-    });
-    setLeaveTypeFormDirty(false);
-    await router.push(ROUTES.LEAVE.LEAVE_TYPES);
-  };
-
-  const onMutationError = (error: AxiosError) => {
-    const { title, description } = getPolicyLeaveTypeErrorToastKeys(error);
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText([title]),
-      description: translateText([description]),
-      isIcon: true
-    });
-  };
-
-  const { mutate: addPolicyLeaveType, isPending: isAddPending } =
-    useAddPolicyLeaveType(() => onMutationSuccess(false), onMutationError);
-
-  const { mutate: updatePolicyLeaveType, isPending: isUpdatePending } =
-    useUpdatePolicyLeaveType(() => onMutationSuccess(true), onMutationError);
+  const { submitPolicyLeaveType, isSubmitting } = usePolicyLeaveTypeFormSubmit({
+    isEditMode,
+    policyLeaveTypeId
+  });
 
   const initialValues: PolicyLeaveTypeFormDataType = useMemo(
     () => ({
@@ -119,24 +87,13 @@ const PolicyLeaveTypeForm: FC = () => {
     [editingPolicyLeaveType]
   );
 
-  const onSubmit = (formValues: PolicyLeaveTypeFormDataType) => {
-    const payload = mapPolicyLeaveTypeFormToPayload(formValues);
-
-    if (isEditMode && policyLeaveTypeId) {
-      updatePolicyLeaveType({ id: policyLeaveTypeId, payload });
-      return;
-    }
-
-    addPolicyLeaveType(payload);
-  };
-
   const formik = useFormik({
     initialValues,
     validationSchema: policyLeaveTypeValidationSchema(translateText),
     enableReinitialize: true,
     validateOnChange: false,
     validateOnBlur: true,
-    onSubmit
+    onSubmit: submitPolicyLeaveType
   });
 
   const {
@@ -154,12 +111,35 @@ const PolicyLeaveTypeForm: FC = () => {
     setLeaveTypeFormDirty(dirty);
   }, [dirty, setLeaveTypeFormDirty]);
 
+  useEffect(() => {
+    if (isMissingEditId) {
+      router.replace(ROUTES.LEAVE.LEAVE_TYPES);
+    }
+  }, [isMissingEditId, router]);
+
   const handleMinDurationClick = async (duration: LeaveDurationTypes) => {
     await setFieldValue(
       "minDuration",
       getUpdatedMinDuration(values.minDuration, duration)
     );
     setFieldError("minDuration", "");
+  };
+
+  const handleDurationNavigate = (
+    fromIndex: number,
+    direction: number
+  ): void => {
+    const options = durationGroupRef.current?.querySelectorAll<HTMLElement>(
+      `[${DURATION_OPTION_ATTRIBUTE}]`
+    );
+
+    if (!options?.length) {
+      return;
+    }
+
+    const nextIndex = (fromIndex + direction + options.length) % options.length;
+
+    options[nextIndex]?.focus();
   };
 
   const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -170,14 +150,9 @@ const PolicyLeaveTypeForm: FC = () => {
     setFieldError("name", "");
   };
 
-  const handleColorSelect = (color: string) => {
-    handleColorClick({
-      color,
-      colors,
-      setColors,
-      setFieldValue,
-      setFieldError
-    });
+  const handleColorSelect = async (color: string) => {
+    await setFieldValue("colorCode", color);
+    setFieldError("colorCode", "");
   };
 
   const handleAttachmentToggle = async (checked: boolean) => {
@@ -210,6 +185,10 @@ const PolicyLeaveTypeForm: FC = () => {
 
   const isSaveBtnDisabled = isEditMode ? !dirty : false;
   const hasMinDurationError = Boolean(errors.minDuration);
+
+  if (isMissingEditId) {
+    return null;
+  }
 
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
@@ -246,7 +225,7 @@ const PolicyLeaveTypeForm: FC = () => {
             ) : (
               <ColorPalette
                 label={translateText(["color"])}
-                colors={colors}
+                colors={leaveTypeColors}
                 onClick={handleColorSelect}
                 selectedColor={values?.colorCode}
                 error={errors?.colorCode}
@@ -258,6 +237,7 @@ const PolicyLeaveTypeForm: FC = () => {
 
         <div className="flex flex-row items-center gap-4">
           <h3
+            id={MIN_DURATION_GROUP_LABEL_ID}
             className={`subtitle2 ${
               hasMinDurationError ? "text-semantic-red-text" : "text-black"
             }`}
@@ -274,7 +254,12 @@ const PolicyLeaveTypeForm: FC = () => {
           </Tooltip>
         </div>
 
-        <div className="mt-4 flex flex-col gap-5">
+        <div
+          ref={durationGroupRef}
+          role="group"
+          aria-labelledby={MIN_DURATION_GROUP_LABEL_ID}
+          className="mt-4 flex flex-col gap-5"
+        >
           <DurationOptionCard
             title={translateText(["halfDay"])}
             description={translateText(["halfDayDescription"])}
@@ -283,7 +268,12 @@ const PolicyLeaveTypeForm: FC = () => {
               LeaveDurationTypes.HALF_DAY
             )}
             isError={hasMinDurationError}
+            index={0}
+            describedBy={
+              hasMinDurationError ? MIN_DURATION_ERROR_ID : undefined
+            }
             onSelect={() => handleMinDurationClick(LeaveDurationTypes.HALF_DAY)}
+            onNavigate={handleDurationNavigate}
           />
           <DurationOptionCard
             title={translateText(["fullDay"])}
@@ -293,12 +283,21 @@ const PolicyLeaveTypeForm: FC = () => {
               LeaveDurationTypes.FULL_DAY
             )}
             isError={hasMinDurationError}
+            index={1}
+            describedBy={
+              hasMinDurationError ? MIN_DURATION_ERROR_ID : undefined
+            }
             onSelect={() => handleMinDurationClick(LeaveDurationTypes.FULL_DAY)}
+            onNavigate={handleDurationNavigate}
           />
         </div>
 
         {errors.minDuration && touched.minDuration && (
-          <p role="alert" className="body2 mt-1.5 text-semantic-red-text">
+          <p
+            id={MIN_DURATION_ERROR_ID}
+            role="alert"
+            className="body2 mt-1.5 text-semantic-red-text"
+          >
             {errors.minDuration}
           </p>
         )}
@@ -366,9 +365,10 @@ const PolicyLeaveTypeForm: FC = () => {
             variant="primary"
             type="submit"
             disabled={isSaveBtnDisabled}
-            isLoading={isAddPending || isUpdatePending}
+            isLoading={isSubmitting}
             icon={<ArrowRightIcon />}
             iconPosition="end"
+            className={getBlinkClass(ongoingQuickSetup.SETUP_LEAVE_TYPES)}
           >
             {translateText(["saveBtn"])}
           </ButtonV2>

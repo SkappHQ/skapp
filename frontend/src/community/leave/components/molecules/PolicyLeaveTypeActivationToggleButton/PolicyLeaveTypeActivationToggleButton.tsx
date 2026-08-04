@@ -17,6 +17,7 @@ import {
   useChangePolicyLeaveTypeStatus,
   useGetPolicyLeaveType
 } from "~community/leave/api/PolicyLeaveTypeApi";
+import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { getPolicyLeaveTypeErrorToastKeys } from "~community/leave/utils/policyLeaveTypes/policyLeaveTypeUtils";
 
 const PolicyLeaveTypeActivationToggleButton: FC = () => {
@@ -26,6 +27,8 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
   const { id } = router.query;
 
   const policyLeaveTypeId = id ? Number(id) : undefined;
+
+  const canManageLeavePolicies = useCanManageLeavePolicies();
 
   const { setToastMessage } = useToast();
 
@@ -75,6 +78,10 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
 
     changeStatus({ id: policyLeaveTypeId, isActive: !isActive });
   };
+
+  if (!canManageLeavePolicies) {
+    return null;
+  }
 
   return (
     <>

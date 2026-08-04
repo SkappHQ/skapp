@@ -9,7 +9,7 @@
  * TODO: remove this constant and back `useIsLeavePoliciesEnabled` with the real
  * config query once the endpoint is available.
  */
-export const IS_LEAVE_POLICIES_ENABLED_MOCK = true;
+export const IS_LEAVE_POLICIES_ENABLED_MOCK = false;
 
 export const MAX_POLICY_LEAVE_TYPE_NAME_LENGTH = 100;
 

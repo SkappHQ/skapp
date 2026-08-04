@@ -43,6 +43,21 @@ export const getPolicyLeaveTypeErrorToastKeys = (
   }
 };
 
+export const getMinDurationTranslationKeys = (
+  minDuration: LeaveDurationTypes
+): string[] => {
+  switch (minDuration) {
+    case LeaveDurationTypes.HALF_DAY:
+      return ["halfDay"];
+    case LeaveDurationTypes.FULL_DAY:
+      return ["fullDay"];
+    case LeaveDurationTypes.HALF_AND_FULL_DAY:
+      return ["fullDay", "halfDay"];
+    default:
+      return [];
+  }
+};
+
 /**
  * Half-day and full-day are independent choices that combine into a single
  * enum value, so clicking one toggles it on or off within the current pair.
