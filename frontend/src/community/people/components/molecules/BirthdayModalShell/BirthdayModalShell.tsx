@@ -1,8 +1,8 @@
-import { LargeModal } from "@rootcodelabs/skapp-ui";
+import { Avatar, LargeModal } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import BirthdayAvatar from "~community/people/components/atoms/BirthdayAvatar/BirthdayAvatar";
 import BirthdayCelebrationPanel from "~community/people/components/molecules/BirthdayCelebrationPanel/BirthdayCelebrationPanel";
 import {
   BIRTHDAY_MODAL_CENTERED_CONTENT_CLASS,
@@ -31,6 +31,7 @@ const BirthdayModalShell: FC<Props> = ({
   onDismiss
 }) => {
   const translateAria = useTranslator("peopleAria", "birthdayNotifications");
+  const imageUrl = useGetImageUrl(employee.authPic ?? "");
 
   return (
     <LargeModal
@@ -53,9 +54,10 @@ const BirthdayModalShell: FC<Props> = ({
               })}
             </p>
           )}
-          <BirthdayAvatar
+          <Avatar
             id={`${id}-avatar`}
-            authPic={employee.authPic}
+            size="2xl"
+            src={imageUrl ?? undefined}
             firstName={employee.firstName}
             lastName={employee.lastName}
             alt={translateAria(["profilePhoto"], {
