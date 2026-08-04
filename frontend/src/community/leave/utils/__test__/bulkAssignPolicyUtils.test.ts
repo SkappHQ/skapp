@@ -4,26 +4,33 @@ import {
   toCsvRow
 } from "../bulkAssignPolicyUtils";
 
+const headerTranslations: Record<string, string> = {
+  employeeNameHeader: "Employee Name",
+  policyNameHeader: "Policy Name",
+  effectiveDateHeader: "Effective Date"
+};
+
+const translateText = (suffixes: string[]): string =>
+  headerTranslations[suffixes[0]];
+
 describe("getMissingBulkAssignHeaders", () => {
   it("returns an empty array when all required headers are present", () => {
     expect(
-      getMissingBulkAssignHeaders([
-        "Employee Name",
-        "Policy Name",
-        "Effective Date"
-      ])
+      getMissingBulkAssignHeaders(
+        ["Employee Name", "Policy Name", "Effective Date"],
+        translateText
+      )
     ).toEqual([]);
   });
 
   it("returns only the headers that are missing", () => {
-    expect(getMissingBulkAssignHeaders(["Employee Name"])).toEqual([
-      "Policy Name",
-      "Effective Date"
-    ]);
+    expect(
+      getMissingBulkAssignHeaders(["Employee Name"], translateText)
+    ).toEqual(["Policy Name", "Effective Date"]);
   });
 
-  it("treats an absent fields argument as all headers missing", () => {
-    expect(getMissingBulkAssignHeaders()).toEqual([
+  it("treats an empty fields list as all headers missing", () => {
+    expect(getMissingBulkAssignHeaders([], translateText)).toEqual([
       "Employee Name",
       "Policy Name",
       "Effective Date"
@@ -32,11 +39,10 @@ describe("getMissingBulkAssignHeaders", () => {
 
   it("accepts headers that differ only by case and spacing", () => {
     expect(
-      getMissingBulkAssignHeaders([
-        " employee  name ",
-        "POLICY NAME",
-        "effective date"
-      ])
+      getMissingBulkAssignHeaders(
+        [" employee  name ", "POLICY NAME", "effective date"],
+        translateText
+      )
     ).toEqual([]);
   });
 });
@@ -51,7 +57,7 @@ describe("buildBulkAssignPayload", () => {
       }
     ];
 
-    expect(buildBulkAssignPayload(rows)).toEqual({
+    expect(buildBulkAssignPayload(rows, translateText)).toEqual({
       assignments: [
         {
           employeeName: "John Doe",
@@ -63,7 +69,7 @@ describe("buildBulkAssignPayload", () => {
   });
 
   it("defaults missing cells to empty strings", () => {
-    expect(buildBulkAssignPayload([{}])).toEqual({
+    expect(buildBulkAssignPayload([{}], translateText)).toEqual({
       assignments: [{ employeeName: "", policyName: "", effectiveDate: "" }]
     });
   });
@@ -77,7 +83,7 @@ describe("buildBulkAssignPayload", () => {
       }
     ];
 
-    expect(buildBulkAssignPayload(rows)).toEqual({
+    expect(buildBulkAssignPayload(rows, translateText)).toEqual({
       assignments: [
         {
           employeeName: "John Doe",

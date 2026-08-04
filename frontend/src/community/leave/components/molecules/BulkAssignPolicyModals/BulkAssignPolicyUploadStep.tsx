@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { parse } from "papaparse";
+import { ParseResult, parse } from "papaparse";
 import { FC, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -10,6 +10,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { useBulkAssignLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
+import { MAX_BULK_ASSIGN_ROWS } from "~community/leave/constants/leavePolicyConstants";
 import {
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse
@@ -23,10 +24,6 @@ interface Props {
   onComplete: (response: BulkAssignPolicyResponse) => void;
   onBack: () => void;
 }
-
-const MAX_CSV_FILE_SIZE = { inBytes: 5_000_000, inReadableSize: "5MB" };
-
-const MAX_CSV_ROWS = 1000;
 
 const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   const translateText = useTranslator(
@@ -82,6 +79,38 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
 
   const { mutate, isPending } = useBulkAssignLeavePolicies(onSuccess, onError);
 
+  const handleParseComplete = (
+    results: ParseResult<Record<string, string>>
+  ): void => {
+    const missingHeaders = getMissingBulkAssignHeaders(
+      results.meta.fields ?? [],
+      translateText
+    );
+    if (missingHeaders.length > 0) {
+      setFileError(
+        translateText(["missingColumnsError"], {
+          columns: missingHeaders.join(", ")
+        })
+      );
+      return;
+    }
+    if (results.errors.length > 0) {
+      setFileError(translateText(["malformedRowsError"]));
+      return;
+    }
+    if (results.data.length === 0) {
+      setFileError(translateText(["emptyFileError"]));
+      return;
+    }
+    if (results.data.length > MAX_BULK_ASSIGN_ROWS) {
+      setFileError(
+        translateText(["tooManyRowsError"], { maxRows: MAX_BULK_ASSIGN_ROWS })
+      );
+      return;
+    }
+    setPayload(buildBulkAssignPayload(results.data, translateText));
+  };
+
   const handleFile = (files: FileUploadType[]): void => {
     setFileError("");
     setPayload(null);
@@ -94,34 +123,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: "greedy",
-      complete: (results) => {
-        const missingHeaders = getMissingBulkAssignHeaders(
-          results.meta.fields ?? []
-        );
-        if (missingHeaders.length > 0) {
-          setFileError(
-            translateText(["missingColumnsError"], {
-              columns: missingHeaders.join(", ")
-            })
-          );
-          return;
-        }
-        if (results.errors.length > 0) {
-          setFileError(translateText(["malformedRowsError"]));
-          return;
-        }
-        if (results.data.length === 0) {
-          setFileError(translateText(["emptyFileError"]));
-          return;
-        }
-        if (results.data.length > MAX_CSV_ROWS) {
-          setFileError(
-            translateText(["tooManyRowsError"], { maxRows: MAX_CSV_ROWS })
-          );
-          return;
-        }
-        setPayload(buildBulkAssignPayload(results.data));
-      },
+      complete: handleParseComplete,
       error: () => setFileError(translateText(["unreadableFileError"]))
     });
   };
@@ -147,7 +149,6 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
         uploadableFiles={attachment}
         supportedFiles=".csv"
         maxFileSize={1}
-        maxSizeOfFile={MAX_CSV_FILE_SIZE}
         isZeroFilesErrorRequired={false}
         customError={fileError}
         accessibility={{ componentName: translateText(["title"]) }}

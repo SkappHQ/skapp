@@ -21,6 +21,8 @@ export const MIN_ACCRUAL_CAP_DAYS = 1;
 
 export const MIN_WAITING_PERIOD_DAYS = 1;
 
+export const MAX_BULK_ASSIGN_ROWS = 1000;
+
 export const accrualFrequencyItemList = [
   { id: "daily", labelKey: "daily", value: AccrualFrequency.DAILY },
   { id: "weekly", labelKey: "weekly", value: AccrualFrequency.WEEKLY },

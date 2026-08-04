@@ -45,10 +45,7 @@ export const leavePolicyEndPoints = {
   GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
   GET_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies`,
   ENABLE_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies/enable`,
-  GET_LEAVE_POLICY_CONFIG: `${moduleAPIPath.LEAVE}/policies/config`
-};
-
-export const leavePolicyAssignmentEndPoints = {
+  GET_LEAVE_POLICY_CONFIG: `${moduleAPIPath.LEAVE}/policies/config`,
   BULK_ASSIGN_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policy-assignments/bulk`
 };
 

@@ -6,7 +6,7 @@ import {
 import { AxiosError, AxiosResponse } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { leavePolicyAssignmentEndPoints } from "~community/leave/api/utils/ApiEndpoints";
+import { leavePolicyEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import {
   leaveEntitlementQueryKeys,
   leavePolicyQueryKeys
@@ -21,7 +21,7 @@ const bulkAssignLeavePolicies = (
   payload: BulkAssignPolicyPayload
 ): Promise<AxiosResponse<BulkAssignPolicyApiResponse>> =>
   authFetch.post<BulkAssignPolicyApiResponse>(
-    leavePolicyAssignmentEndPoints.BULK_ASSIGN_LEAVE_POLICIES,
+    leavePolicyEndPoints.BULK_ASSIGN_LEAVE_POLICIES,
     payload
   );
 
@@ -43,13 +43,7 @@ export const useBulkAssignLeavePolicies = (
         queryKey: leaveEntitlementQueryKeys.LEAVE_ENTITLEMENTS()
       });
 
-      const result = response.data.results[0];
-      if (!result) {
-        onError();
-        return;
-      }
-
-      onSuccess(result);
+      onSuccess(response.data.results[0]);
     },
     onError
   });

@@ -42,7 +42,9 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({ response, onDone }) => {
         {failedCount > 0 && (
           <ButtonV2
             variant="tertiary"
-            onClick={() => downloadBulkAssignErrorReport(response)}
+            onClick={() =>
+              downloadBulkAssignErrorReport(response, translateText)
+            }
             icon={<Icon name={IconName.DOWNLOAD_ICON} />}
             iconPosition="end"
           >

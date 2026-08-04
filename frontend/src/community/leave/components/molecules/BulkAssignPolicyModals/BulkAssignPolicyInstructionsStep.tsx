@@ -26,7 +26,7 @@ const BulkAssignPolicyInstructionsStep: FC<Props> = ({ onContinue }) => {
       <div className="flex flex-row justify-end gap-3">
         <ButtonV2
           variant="tertiary"
-          onClick={downloadBulkAssignPolicyTemplate}
+          onClick={() => downloadBulkAssignPolicyTemplate(translateText)}
           icon={
             <Icon
               name={IconName.DOWNLOAD_ICON}

@@ -28,6 +28,12 @@ export interface BulkAssignPolicyApiResponse {
   results: BulkAssignPolicyResponse[];
 }
 
+export enum BulkAssignPolicySteps {
+  INSTRUCTIONS = "INSTRUCTIONS",
+  UPLOAD = "UPLOAD",
+  SUMMARY = "SUMMARY"
+}
+
 export enum LeavePolicyStatus {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE"
