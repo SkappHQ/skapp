@@ -96,11 +96,11 @@ const EmploymentDetailsForm = ({
     employee?.employment?.identificationAndDiversityDetails?.payrollId;
   const tin = employee?.employment?.identificationAndDiversityDetails?.tin;
 
-  const { refetch: refetchPayrollIdUniqueness } = useCheckPayrollIdUniqueness(
+  const { data: payrollIdValidation } = useCheckPayrollIdUniqueness(
     payrollId,
     employeeIdForExistCheck
   );
-  const { refetch: refetchTinUniqueness } = useCheckTinUniqueness(
+  const { data: tinValidation } = useCheckTinUniqueness(
     tin,
     employeeIdForExistCheck
   );
@@ -125,8 +125,42 @@ const EmploymentDetailsForm = ({
     return true;
   };
 
+  const validateIdentificationUniqueness = (): boolean => {
+    let isValid = true;
+
+    if (isPeopleAdmin && payrollId && payrollIdValidation?.isPayrollIdExists) {
+      identificationDetailsRef.current?.setFieldError?.(
+        "payrollId",
+        translateText([
+          "addResource",
+          "divesityDetails",
+          "payrollIdAlreadyExistsError"
+        ])
+      );
+      isValid = false;
+    }
+
+    if (isPeopleAdmin && tin && tinValidation?.isTinExists) {
+      identificationDetailsRef.current?.setFieldError?.(
+        "tin",
+        translateText([
+          "addResource",
+          "divesityDetails",
+          "tinAlreadyExistsError"
+        ])
+      );
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const onSave = async () => {
     if (!validateGoogleDomain()) {
+      return;
+    }
+
+    if (!validateIdentificationUniqueness()) {
       return;
     }
 
@@ -153,44 +187,6 @@ const EmploymentDetailsForm = ({
       Object.keys(identificationFormErrors).length === 0;
 
     if (employmentFormIsValid && identificationFormIsValid) {
-      let hasIdentificationUniquenessError = false;
-
-      if (isPeopleAdmin && payrollId) {
-        const { data: payrollIdCheckResult } =
-          await refetchPayrollIdUniqueness();
-        if (payrollIdCheckResult?.isPayrollIdExists) {
-          identificationDetailsRef.current?.setFieldError?.(
-            "payrollId",
-            translateText([
-              "addResource",
-              "divesityDetails",
-              "payrollIdAlreadyExistsError"
-            ])
-          );
-          hasIdentificationUniquenessError = true;
-        }
-      }
-
-      if (isPeopleAdmin && tin) {
-        const { data: tinCheckResult } = await refetchTinUniqueness();
-        if (tinCheckResult?.isTinExists) {
-          identificationDetailsRef.current?.setFieldError?.(
-            "tin",
-            translateText([
-              "addResource",
-              "divesityDetails",
-              "tinAlreadyExistsError"
-            ])
-          );
-          hasIdentificationUniquenessError = true;
-        }
-      }
-
-      if (hasIdentificationUniquenessError) {
-        scrollToFirstError(theme);
-        return;
-      }
-
       employmentDetailsRef?.current?.submitForm();
       identificationDetailsRef?.current?.submitForm();
       if (isAddFlow) {

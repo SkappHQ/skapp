@@ -320,7 +320,7 @@ export const useCheckPayrollIdUniqueness = (
   return useQuery({
     queryKey: peopleQueryKeys.PAYROLL_ID_UNIQUENESS_KEYS(employeeId, payrollId),
     queryFn: () => checkPayrollIdExists({ payrollId, employeeId }),
-    enabled: false
+    enabled: Boolean(payrollId)
   });
 };
 
@@ -340,7 +340,7 @@ export const useCheckTinUniqueness = (
   return useQuery({
     queryKey: peopleQueryKeys.TIN_UNIQUENESS_KEYS(employeeId, tin),
     queryFn: () => checkTinExists({ tin, employeeId }),
-    enabled: false
+    enabled: Boolean(tin)
   });
 };
 
