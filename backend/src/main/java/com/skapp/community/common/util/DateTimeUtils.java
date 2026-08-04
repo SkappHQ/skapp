@@ -2,10 +2,12 @@ package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -26,8 +28,10 @@ import java.util.Set;
 import static org.aspectj.bridge.Version.SIMPLE_DATE_FORMAT;
 
 /**
- * Utility class for handling UTC date and time operations.
+ * Utility class for handling date and time operations, including both UTC-based and
+ * zone-parameterised formatting/conversion.
  */
+@Slf4j
 public class DateTimeUtils {
 
 	public static final int JANUARY = 1;
@@ -455,6 +459,25 @@ public class DateTimeUtils {
 		}
 		Set<String> validIDs = ZoneId.getAvailableZoneIds();
 		return validIDs.contains(timeZone);
+	}
+
+	/**
+	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is
+	 * null, blank, or not a valid zone ID.
+	 * @param timezone The time zone ID string to resolve.
+	 * @return The resolved ZoneId, or UTC if the input is invalid.
+	 */
+	public static ZoneId resolveZoneId(String timezone) {
+		if (timezone == null) {
+			return UTC_ZONE_ID;
+		}
+		try {
+			return ZoneId.of(timezone);
+		}
+		catch (DateTimeException e) {
+			log.warn("resolveZoneId: Invalid time zone '{}', falling back to UTC", timezone);
+			return UTC_ZONE_ID;
+		}
 	}
 
 	/**

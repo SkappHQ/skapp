@@ -2,6 +2,7 @@ package com.skapp.community.timeplanner.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.NotificationService;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 
@@ -30,11 +32,12 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 
 	private final EmployeeManagerDao employeeManagerDao;
 
+	private final OrganizationService organizationService;
+
 	@Override
 	public void sendTimeEntryRequestSubmittedEmployeeNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		notificationService.createNotification(timeRequest.getEmployee(), timeRequest.getTimeRequestId().toString(),
 				NotificationType.TIME_ENTRY, EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_SUBMITTED_EMPLOYEE,
@@ -44,8 +47,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendReceivedTimeEntryRequestManagerNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 		attendanceEmailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
 
@@ -59,8 +61,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendTimeEntryRequestApprovedEmployeeNotification(TimeRequest timeRequest, User user) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		notificationService.createNotification(timeRequest.getEmployee(), timeRequest.getTimeRequestId().toString(),
 				NotificationType.TIME_ENTRY, EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_APPROVED_EMPLOYEE,
@@ -70,8 +71,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendTimeEntryRequestDeclinedByManagerEmployeeNotification(TimeRequest timeRequest, User user) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		notificationService.createNotification(timeRequest.getEmployee(), timeRequest.getTimeRequestId().toString(),
 				NotificationType.TIME_ENTRY, EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_DECLINED_EMPLOYEE,
@@ -81,8 +81,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendPendingTimeEntryRequestCancelledEmployeeNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		notificationService.createNotification(timeRequest.getEmployee(), timeRequest.getTimeRequestId().toString(),
 				NotificationType.TIME_ENTRY,
@@ -93,8 +92,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendPendingTimeEntryRequestCancelledManagerNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 		attendanceEmailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
 
@@ -108,8 +106,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendTimeEntryRequestAutoApprovedEmployeeNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		notificationService.createNotification(timeRequest.getEmployee(), timeRequest.getTimeRequestId().toString(),
 				NotificationType.TIME_ENTRY,
@@ -120,8 +117,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 	@Override
 	public void sendTimeEntryRequestAutoApprovedManagerNotification(TimeRequest timeRequest) {
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 		attendanceEmailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
 
@@ -256,8 +252,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
 		attendanceEmailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		List<EmployeeManager> otherManagers = getOtherManagers(
 				employeeManagerDao.findByEmployee(timeRequest.getEmployee()), user);
@@ -272,8 +267,7 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 		AttendanceEmailDynamicFields attendanceEmailDynamicFields = new AttendanceEmailDynamicFields();
 		attendanceEmailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		attendanceEmailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
+		setTimeEntryDate(attendanceEmailDynamicFields, timeRequest);
 
 		List<EmployeeManager> otherManagers = getOtherManagers(
 				employeeManagerDao.findByEmployee(timeRequest.getEmployee()), user);
@@ -281,6 +275,12 @@ public class AttendanceNotificationServiceImpl implements AttendanceNotification
 		createAttendanceNotificationForManagers(otherManagers, timeRequest.getTimeRequestId().toString(),
 				attendanceEmailDynamicFields,
 				EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_DECLINED_OTHER_MANAGER);
+	}
+
+	private void setTimeEntryDate(AttendanceEmailDynamicFields fields, TimeRequest request) {
+		ZoneId zoneId = organizationService.getOrganizationZoneId();
+		fields.setTimeEntryDate(
+				DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId).toLocalDate().toString());
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {

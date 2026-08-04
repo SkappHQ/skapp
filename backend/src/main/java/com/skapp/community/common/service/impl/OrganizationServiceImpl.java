@@ -19,6 +19,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
@@ -229,8 +230,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
-	public ZoneId getOrganizationTimeZoneInZoneId() {
-		return ZoneId.of(getOrganizationTimeZone());
+	public ZoneId getOrganizationZoneId() {
+		return DateTimeUtils.resolveZoneId(getOrganizationTimeZone());
 	}
 
 	public void getDefaultTimeConfigs() {

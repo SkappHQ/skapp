@@ -24,6 +24,6 @@ public interface OrganizationService {
 
 	String getOrganizationTimeZone();
 
-	ZoneId getOrganizationTimeZoneInZoneId();
+	ZoneId getOrganizationZoneId();
 
 }
