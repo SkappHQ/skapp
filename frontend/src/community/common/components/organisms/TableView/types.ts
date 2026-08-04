@@ -2,7 +2,8 @@ import type {
   GridHeader,
   GridRow,
   TableToolBarProps,
-  TableV2Props
+  TableV2Props,
+  TableV2Variant
 } from "@rootcodelabs/skapp-ui";
 import type { ReactNode } from "react";
 
@@ -13,6 +14,11 @@ export interface TableViewPagination {
   totalPages?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
+  pageSize?: number;
+  pageSizeOptions?: number[];
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeLabel?: string;
+  isPageSizeDisabled?: boolean;
 }
 
 /** Infinite scroll — requires a fixed `height` on the scroll container. */
@@ -45,6 +51,7 @@ export interface TableViewAriaLabels {
   previousPageLabel?: string;
   nextPageLabel?: string;
   getPageAriaLabel?: (page: number) => string;
+  pageSizeAriaLabel?: string;
 }
 
 /** Footer region rendered below the table. */
@@ -57,6 +64,7 @@ export interface TableViewProps {
   heading?: ReactNode;
   tableName?: string;
   ariaLabel?: TableViewAriaLabels;
+  variant?: TableV2Variant;
   headers: GridHeader[];
   rows: GridRow[];
   isLoading?: boolean;
