@@ -256,6 +256,14 @@ export const filterByValue = <T>(
   return objectArray?.filter((objItem: T) => objItem[element] !== value);
 };
 
+export const toggleFilterValue = <T>(
+  selectedValues: T[],
+  toggledValue: T
+): T[] =>
+  selectedValues.includes(toggledValue)
+    ? selectedValues.filter((selectedValue) => selectedValue !== toggledValue)
+    : [...selectedValues, toggledValue];
+
 export const getJobRoleByJobRoleId = (
   selectedJobRoleId: number | string,
   jobRoles: JobFamilies[]

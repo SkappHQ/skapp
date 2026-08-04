@@ -22,6 +22,7 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
+import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -57,6 +58,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	protected final LeaveTypeService leaveTypeService;
 
 	protected final LeaveCycleService leaveCycleService;
+
+	protected final LeavePolicyService leavePolicyService;
 
 	private final UserService userService;
 
@@ -212,6 +215,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		okrConfigService.setOkrDefaultConfig();
 		crmConfigService.setDefaultCrmConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
+		leavePolicyService.setDefaultLeavePolicyConfig();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}

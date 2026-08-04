@@ -335,24 +335,32 @@
     }
   },
   "leave": {
-    "buttons": {
-      "cancel": "Cancel",
-      "save": "Save changes"
-    },
     "leavePoliciesSection": {
       "title": "Leave policies",
       "description": "Automate leave entitlements using policies. This replaces manual bulk uploads and custom allocations.",
-      "enableLabel": "Enable leave policies"
+      "enableLabel": "Enable leave policies",
+      "infoTooltip": "Once enabled, this cannot be undone. Bulk uploads and custom allocations will be permanently removed.",
+      "toggleOffTooltip": "Click to enable leave policy management for your organisation."
     },
     "enableConfirmModal": {
-      "title": "Are you sure?",
-      "warningTitle": "This action cannot be undone.",
-      "warningDescription": "We recommend enabling this at the start of a new leave period to avoid mid-period disruption",
+      "title": "Enable leave policies?",
+      "irreversibleNotice": "This action cannot be undone.",
       "consequencesTitle": "Switching to Leave Policies will:",
-      "consequenceDeleteAllocations": "Permanently delete all existing custom leave allocations",
+      "consequenceZeroAllocations": "Reset all existing custom leave allocation balances to zero (allocation records are kept)",
+      "consequenceCancelPending": "Cancel all pending leave requests",
       "consequenceRemoveBulkUpload": "Remove the Bulk Upload option from Leave Entitlements",
       "consequenceRetainRecords": "Retain all past applied leave records",
-      "confirmButton": "Enable leave policies"
+      "recommendationNotice": "We recommend enabling this at the start of a new leave period to avoid mid-period disruption.",
+      "confirmButton": "Enable leave policies",
+      "confirmingButton": "Enabling…",
+      "confirmingTooltip": "Please wait while Leave Policies is being enabled.",
+      "cancelButton": "Cancel"
+    },
+    "toasts": {
+      "successTitle": "Leave Policies Enabled",
+      "successDescription": "Leave policies have been enabled successfully. You can now create and assign policies.",
+      "errorTitle": "Oops! Something went wrong",
+      "errorDescription": "Failed to enable Leave Policies. Please try again or contact support."
     }
   }
 }

@@ -17,4 +17,10 @@ public interface LeavePolicyService {
 
 	ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto);
 
+	ResponseEntityDto enableLeavePolicies();
+
+	ResponseEntityDto getLeavePolicyConfig();
+
+	void setDefaultLeavePolicyConfig();
+
 }
