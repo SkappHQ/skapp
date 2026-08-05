@@ -7,7 +7,6 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
-import com.skapp.community.common.payload.response.BirthdayNotificationConfigResponseDto;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.NotificationSettingsResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
@@ -84,11 +83,11 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
@@ -1497,8 +1496,8 @@ public class PeopleServiceImpl implements PeopleService {
 			.getLastViewedDate(currentEmployeeId, SpecialNotificationType.BIRTHDAY)
 			.orElse(null);
 
-		BirthdayNotificationConfigResponseDto birthdayNotificationConfig = specialNotificationService
-			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigResponseDto.class);
+		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
+			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
 		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
 			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
@@ -1519,9 +1518,9 @@ public class PeopleServiceImpl implements PeopleService {
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
-		List<EmployeeBirthdayResponseDto> response = peopleMapper
-			.employeeListToEmployeeBirthdayResponseDtoList(employeesWithBirthdays);
-		response.forEach(dto -> dto.setIsCurrentUser(dto.getEmployeeId().equals(currentEmployeeId)));
+		List<EmployeeBasicDetailsResponseDto> response = employeesWithBirthdays.stream()
+			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
+			.toList();
 
 		log.info("getTodayBirthdayNotifications: execution ended, {} birthday(s) found", response.size());
 		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
@@ -1534,14 +1533,14 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 		LocalDate today = resolveBirthdayNotificationDate();
-		specialNotificationService.markNotificationViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY, today);
+		specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY, today);
 
 		log.info("markTodayBirthdayNotificationsAsViewed: execution ended");
 		return new ResponseEntityDto(false, new BirthdayNotificationViewedResponseDto(today));
 	}
 
 	private BirthdayNotificationScope resolveBirthdayNotificationScope(
-			BirthdayNotificationConfigResponseDto birthdayNotificationConfig) {
+			BirthdayNotificationConfigDto birthdayNotificationConfig) {
 		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsOrganizationWide())) {
 			return BirthdayNotificationScope.ORGANIZATION;
 		}

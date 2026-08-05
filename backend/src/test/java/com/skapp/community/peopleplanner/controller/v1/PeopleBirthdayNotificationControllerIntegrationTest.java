@@ -5,7 +5,6 @@ import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.SpecialNotificationStatus;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.payload.response.BirthdayNotificationConfigResponseDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.SpecialNotificationStatusDao;
@@ -18,6 +17,7 @@ import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
@@ -88,6 +88,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private static final Long TOKEN_USER_ID = 1L;
 
+	private static final Long RESTRICTED_TOKEN_USER_ID = 2L;
+
 	/** Leap year, so a 29 February month/day pair is always representable. */
 	private static final int BIRTH_YEAR = 1996;
 
@@ -119,12 +121,12 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	@BeforeEach
 	void setup() {
-		currentUserToken = tokenFor(CURRENT_USER_EMAIL);
+		currentUserToken = tokenFor(CURRENT_USER_EMAIL, TOKEN_USER_ID);
 		today = DateTimeUtils.getCurrentUtcDate();
 	}
 
-	private String tokenFor(String email) {
-		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername(email), TOKEN_USER_ID);
+	private String tokenFor(String email, Long userId) {
+		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername(email), userId);
 	}
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -142,7 +144,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	}
 
 	private void seedConfig(boolean isTurnedOn, boolean isOrganizationWide, boolean isTeamWide) {
-		BirthdayNotificationConfigResponseDto config = new BirthdayNotificationConfigResponseDto();
+		BirthdayNotificationConfigDto config = new BirthdayNotificationConfigDto();
 		config.setIsTurnedOn(isTurnedOn);
 		config.setIsOrganizationWide(isOrganizationWide);
 		config.setIsTeamWide(isTeamWide);
@@ -198,7 +200,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private String tokenWithoutPeopleRole() {
 		mutateEmployee(TEAMMATE_EMPLOYEE_ID, employee -> employee.getEmployeeRole().setPeopleRole(null));
-		return tokenFor(RESTRICTED_USER_EMAIL);
+		return tokenFor(RESTRICTED_USER_EMAIL, RESTRICTED_TOKEN_USER_ID);
 	}
 
 	private LocalDate storedLastViewedDate(Long employeeId) {
@@ -251,8 +253,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(birthdayFieldPath(0, "firstName")).value("Employee User One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "lastName")).value("Lastname One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "authPic")).value("auth-pic-one.png"))
-				.andExpect(jsonPath(birthdayFieldPath(0, "email")).value(CURRENT_USER_EMAIL))
-				.andExpect(jsonPath(birthdayFieldPath(0, "isCurrentUser")).value(true))
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()));
 			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
@@ -282,9 +282,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(2))
 				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(0, "isCurrentUser")).value(true))
-				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(TEAMMATE_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(1, "isCurrentUser")).value(false));
+				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(TEAMMATE_EMPLOYEE_ID.intValue()));
 		}
 
 		@Test
@@ -314,11 +312,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(3))
 				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(SECOND_OUTSIDER_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(0, "isCurrentUser")).value(false))
 				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(OUTSIDER_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(1, "isCurrentUser")).value(false))
-				.andExpect(jsonPath(birthdayFieldPath(2, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(2, "isCurrentUser")).value(true));
+				.andExpect(jsonPath(birthdayFieldPath(2, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 		}
 
 		@Test
@@ -470,16 +465,29 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 		private static final String FAR_AHEAD_TIME_ZONE = "Pacific/Kiritimati";
 
+		private static final String FAR_BEHIND_TIME_ZONE = "Pacific/Midway";
+
 		@Test
-		@DisplayName("Mark viewed when the organization time zone is not UTC - Uses the organization's local date")
-		void markTodayBirthdayNotificationsAsViewed_WithNonUtcOrganizationTimeZone_UsesOrganizationDate()
+		@DisplayName("Mark viewed when the organization time zone is far ahead of UTC - Uses the organization's local date")
+		void markTodayBirthdayNotificationsAsViewed_WithFarAheadOrganizationTimeZone_UsesOrganizationDate()
 				throws Exception {
+			assertMarkViewedUsesOrganizationDate(FAR_AHEAD_TIME_ZONE);
+		}
+
+		@Test
+		@DisplayName("Mark viewed when the organization time zone is far behind UTC - Uses the organization's local date")
+		void markTodayBirthdayNotificationsAsViewed_WithFarBehindOrganizationTimeZone_UsesOrganizationDate()
+				throws Exception {
+			assertMarkViewedUsesOrganizationDate(FAR_BEHIND_TIME_ZONE);
+		}
+
+		private void assertMarkViewedUsesOrganizationDate(String timeZone) throws Exception {
 			Organization organization = new Organization();
 			organization.setOrganizationName("Time Zone Test Organization");
-			organization.setOrganizationTimeZone(FAR_AHEAD_TIME_ZONE);
+			organization.setOrganizationTimeZone(timeZone);
 			organizationDao.saveAndFlush(organization);
 
-			LocalDate organizationToday = LocalDate.now(ZoneId.of(FAR_AHEAD_TIME_ZONE));
+			LocalDate organizationToday = LocalDate.now(ZoneId.of(timeZone));
 
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), organizationToday);
 

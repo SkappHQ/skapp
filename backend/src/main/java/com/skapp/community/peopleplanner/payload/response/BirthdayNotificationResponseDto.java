@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.payload.response;
 
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,6 @@ public class BirthdayNotificationResponseDto {
 
 	private LocalDate lastViewedDate;
 
-	private List<EmployeeBirthdayResponseDto> employeeBirthdays;
+	private List<EmployeeBasicDetailsResponseDto> employeeBirthdays;
 
 }

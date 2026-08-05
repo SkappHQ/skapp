@@ -46,7 +46,6 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalFamilyDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
-import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDetailedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeJobFamilyDto;
@@ -197,12 +196,6 @@ public interface PeopleMapper {
 	EmployeeSignInResponseDto employeeToEmployeeSignInResponseDto(Employee employee);
 
 	EmployeeBasicDetailsResponseDto employeeToEmployeeBasicDetailsResponseDto(Employee employee);
-
-	@Mapping(target = "email", source = "user.email")
-	@Mapping(target = "isCurrentUser", ignore = true)
-	EmployeeBirthdayResponseDto employeeToEmployeeBirthdayResponseDto(Employee employee);
-
-	List<EmployeeBirthdayResponseDto> employeeListToEmployeeBirthdayResponseDtoList(List<Employee> employees);
 
 	List<HolidayBasicDetailsResponseDto> holidaysToHolidayBasicDetailsResponseDtos(List<Holiday> holidays);
 
