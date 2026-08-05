@@ -50,3 +50,5 @@ databaseChangeLog:
 
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-leave-policy-tables.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-employee-leave-policy-add-effective-date-type.sql

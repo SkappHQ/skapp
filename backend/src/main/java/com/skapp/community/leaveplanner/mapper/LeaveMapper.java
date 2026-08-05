@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.mapper;
 
 import com.skapp.community.leaveplanner.model.CarryForwardInfo;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
@@ -23,6 +24,7 @@ import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponse
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeRequestDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveEntitlementReportExportDto;
+import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestManagerResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveRequestResponseDto;
@@ -157,6 +159,19 @@ public interface LeaveMapper {
 	LeavePolicyResponseDto leavePolicyToLeavePolicyResponseDto(LeavePolicy leavePolicy);
 
 	List<LeavePolicyResponseDto> leavePolicyListToLeavePolicyResponseDtoList(List<LeavePolicy> leavePolicies);
+
+	@Mapping(target = "employeeId", source = "employee.employeeId")
+	@Mapping(target = "policyId", source = "policy.id")
+	@Mapping(target = "policyName", source = "policy.name")
+	@Mapping(target = "policyType", source = "policy.policyType")
+	@Mapping(target = "leaveTypeId", source = "policy.leaveType.id")
+	@Mapping(target = "leaveTypeName", source = "policy.leaveType.name")
+	@Mapping(target = "leaveTypeEmojiCode", source = "policy.leaveType.emojiCode")
+	EmployeeLeavePolicyResponseDto employeeLeavePolicyToEmployeeLeavePolicyResponseDto(
+			EmployeeLeavePolicy employeeLeavePolicy);
+
+	List<EmployeeLeavePolicyResponseDto> employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(
+			List<EmployeeLeavePolicy> employeeLeavePolicies);
 
 	PolicyLeaveTypeResponseDto policyLeaveTypeToPolicyLeaveTypeResponseDto(PolicyLeaveType policyLeaveType);
 

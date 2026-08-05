@@ -35,11 +35,6 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import {
-  AdminTypes,
-  EmployeeTypes,
-  ManagerTypes
-} from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
@@ -47,6 +42,7 @@ import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
@@ -132,18 +128,10 @@ const Drawer = (): JSX.Element => {
 
   const isEnterprise = environment === appModes.ENTERPRISE;
 
-  const canAccessLeavePolicies =
-    user?.roles?.some((role) =>
-      [
-        AdminTypes.SUPER_ADMIN,
-        AdminTypes.LEAVE_ADMIN,
-        AdminTypes.PEOPLE_ADMIN
-      ].includes(role as AdminTypes)
-    ) ?? false;
+  const canViewLeavePolicies = useCanViewLeavePolicies();
 
-  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled(
-    canAccessLeavePolicies
-  );
+  const { isLeavePoliciesEnabled, isError: isLeavePoliciesConfigError } =
+    useLeavePoliciesEnabled(canViewLeavePolicies);
 
   const drawerRoutes = useMemo(
     () =>
@@ -160,7 +148,8 @@ const Drawer = (): JSX.Element => {
         notificationLeaveCount,
         notificationTimesheetCount,
         notificationSignCount,
-        isLeavePoliciesEnabled
+        isLeavePoliciesEnabled,
+        isLeavePoliciesConfigError
       }),
     [
       user,
@@ -170,7 +159,9 @@ const Drawer = (): JSX.Element => {
       notificationLeaveCount,
       notificationTimesheetCount,
       notificationSignCount,
-      isLeavePoliciesEnabled
+      isLeavePoliciesEnabled,
+      isLeavePoliciesEnabled,
+      isLeavePoliciesConfigError
     ]
   );
 

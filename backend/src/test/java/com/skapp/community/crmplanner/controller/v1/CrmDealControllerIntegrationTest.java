@@ -274,6 +274,48 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Deal for Contact A"));
 	}
 
+	@Test
+	@DisplayName("Get deals as Sales Representative - Returns only deals owned by the representative")
+	void getDeals_SalesRep_ReturnsOnlyOwnDeals() throws Exception {
+		// user2@gmail.com is a CRM sales representative (employee ID 2)
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Rep Filter Company");
+		CrmContact sharedContact = savedContact(company);
+
+		// Deal owned by admin (employee 1)
+		CrmDeal adminDeal = new CrmDeal();
+		adminDeal.setName("Admin Deal");
+		adminDeal.setStage(stage);
+		adminDeal.setContact(sharedContact);
+		adminDeal.setCompany(company);
+		adminDeal.setOwner(employeeDao.getReferenceById(1L));
+		adminDeal.setPriority(CrmDealPriority.MEDIUM);
+		adminDeal.setOrderIndex("a0");
+		crmDealDao.save(adminDeal);
+
+		// Deal owned by the sales representative (employee 2)
+		CrmDeal repDeal = new CrmDeal();
+		repDeal.setName("Rep Deal");
+		repDeal.setStage(stage);
+		repDeal.setContact(sharedContact);
+		repDeal.setCompany(company);
+		repDeal.setOwner(employeeDao.getReferenceById(2L));
+		repDeal.setPriority(CrmDealPriority.MEDIUM);
+		repDeal.setOrderIndex("b0");
+		crmDealDao.save(repDeal);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep Deal"));
+	}
+
 	// --- Check deal name exists tests ---
 
 	@Test
@@ -575,6 +617,53 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(savedDeal.getStage().getId().intValue()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID as Sales Representative viewing another owner's deal - returns view-denied error")
+	void getDealById_SalesRepViewingOthersDeal_ReturnsBadRequest() throws Exception {
+		// user2@gmail.com is a CRM sales representative (employee ID 2)
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		// Deal owned by admin (employee 1)
+		CrmDeal deal = savedDeal();
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Get deal by ID as Sales Representative viewing own deal - returns deal detail")
+	void getDealById_SalesRepViewingOwnDeal_ReturnsOk() throws Exception {
+		// user2@gmail.com is a CRM sales representative (employee ID 2)
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Own Deal Company");
+		CrmContact contact = savedContact(company);
+		CrmDeal deal = new CrmDeal();
+		deal.setName("Own Deal");
+		deal.setStage(stage);
+		deal.setContact(contact);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(2L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex("a0");
+		deal = crmDealDao.save(deal);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Own Deal"));
 	}
 
 	@Test
