@@ -3,8 +3,6 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.type.SpecialNotificationType;
-import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.service.PeopleConfigService;
@@ -19,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class PeopleConfigServiceImpl implements PeopleConfigService {
 
 	private final SpecialNotificationService specialNotificationService;
-
-	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -55,9 +51,7 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 		specialNotificationService.saveConfig(SpecialNotificationType.BIRTHDAY, config);
 
 		log.info("updateBirthdayNotificationConfigs: execution ended");
-		return new ResponseEntityDto(
-				messageUtil.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_BIRTHDAY_NOTIFICATION_CONFIG_UPDATED),
-				false);
+		return new ResponseEntityDto(false, config);
 	}
 
 }

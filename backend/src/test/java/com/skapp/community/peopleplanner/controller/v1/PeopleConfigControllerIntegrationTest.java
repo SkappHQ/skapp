@@ -6,8 +6,6 @@ import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.MessageUtil;
-import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
@@ -28,7 +26,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
-import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -73,8 +70,6 @@ class PeopleConfigControllerIntegrationTest {
 	private final UserDetailsService userDetailsService;
 
 	private final MockMvc mvc;
-
-	private final MessageUtil messageUtil;
 
 	private final OrganizationConfigDao organizationConfigDao;
 
@@ -182,11 +177,7 @@ class PeopleConfigControllerIntegrationTest {
 		@Test
 		@DisplayName("Patch only isTurnedOn - Persists it and leaves the other flags at their defaults")
 		void updateBirthdayNotificationConfigs_WithSingleField_PersistsThatFieldOnly() throws Exception {
-			performPatchRequest(configRequestBody(true, null, null), adminToken).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH).value(messageUtil
-					.getMessage(PeopleMessageConstant.PEOPLE_SUCCESS_BIRTHDAY_NOTIFICATION_CONFIG_UPDATED)));
+			assertFlags(performPatchRequest(configRequestBody(true, null, null), adminToken), true, false, false);
 
 			assertThat(configRowExists()).isTrue();
 			assertFlags(performGetRequest(adminToken), true, false, false);
@@ -195,12 +186,9 @@ class PeopleConfigControllerIntegrationTest {
 		@Test
 		@DisplayName("Patch isTurnedOn then isTeamWide - Second patch preserves the first")
 		void updateBirthdayNotificationConfigs_WithSecondPartialPatch_PreservesUntouchedFields() throws Exception {
-			performPatchRequest(configRequestBody(true, null, null), adminToken).andExpect(status().isOk());
-			assertFlags(performGetRequest(adminToken), true, false, false);
+			assertFlags(performPatchRequest(configRequestBody(true, null, null), adminToken), true, false, false);
 
-			performPatchRequest(configRequestBody(null, null, true), adminToken).andExpect(status().isOk());
-
-			assertFlags(performGetRequest(adminToken), true, false, true);
+			assertFlags(performPatchRequest(configRequestBody(null, null, true), adminToken), true, false, true);
 		}
 
 		@Test
@@ -209,9 +197,7 @@ class PeopleConfigControllerIntegrationTest {
 
 			seedConfig(true, true, false);
 
-			performPatchRequest(EMPTY_JSON_BODY, adminToken).andDo(print()).andExpect(status().isOk());
-
-			assertFlags(performGetRequest(adminToken), true, true, false);
+			assertFlags(performPatchRequest(EMPTY_JSON_BODY, adminToken), true, true, false);
 		}
 
 		@Test
@@ -219,10 +205,7 @@ class PeopleConfigControllerIntegrationTest {
 		void updateBirthdayNotificationConfigs_WithFalseValue_OverwritesTrue() throws Exception {
 			seedConfig(true, true, true);
 
-			performPatchRequest(configRequestBody(false, null, null), adminToken).andDo(print())
-				.andExpect(status().isOk());
-
-			assertFlags(performGetRequest(adminToken), false, true, true);
+			assertFlags(performPatchRequest(configRequestBody(false, null, null), adminToken), false, true, true);
 		}
 
 		@Test
