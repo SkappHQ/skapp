@@ -116,6 +116,18 @@ const nextConfig = {
         destination: "/community/people/directory/add-new-resource"
       },
       {
+        source: "/people/directory/sync-changes",
+        destination: "/enterprise/people/directory/sync-changes"
+      },
+      {
+        source: "/people/directory/import-google/review",
+        destination: "/enterprise/people/directory/import-google/review"
+      },
+      {
+        source: "/people/directory/import-google/syncing",
+        destination: "/enterprise/people/directory/import-google/syncing"
+      },
+      {
         source: "/people/directory/pending",
         destination: "/community/people/directory/pending"
       },

@@ -26,7 +26,7 @@
         "name": "Enter name",
         "email": "Enter email",
         "contactNumber": "Enter contact no.",
-        "company": "Search company",
+        "company": "Search by company name",
         "owner": "Search contact owner"
       },
       "emptyStates": {
@@ -290,7 +290,8 @@
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "filterButtonAriaLabel": "Filter companies",
-      "search": "Search company",
+      "searchAriaLabel": "Search companies by name",
+      "search": "Search by company name",
       "infiniteScrollLoadingMessage": "Loading companies...",
       "closedDealsLabel": "Deals closed",
       "overdueLabel": "overdue",
@@ -392,7 +393,10 @@
       "deleteDeal": "Delete Deal",
       "kebabMenuAriaLabel": "Deal actions",
       "description": "Description",
-      "tasks": "Tasks",
+      "tasks": {
+        "title": "Tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this deal"
+      },
       "addTask": "Add task",
       "value": "Value",
       "priority": "Priority",

@@ -165,31 +165,36 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
           }
         ]
       : [
-    {
-      id: "terminate-employee",
-      icon: (
-        <Icon
-          name={IconName.MINUS_ICON}
-          fill={theme.palette.error.contrastText}
-        />
-      ),
-      text: translateTerminationText(["terminateButtonText"]),
-      color: theme.palette.error.contrastText,
-      onClickHandler: () => handleTermination()
-    },
-    {
-      id: "delete-employee",
-      icon: (
-        <Icon
-          name={IconName.BIN_ICON}
-          fill={theme.palette.error.contrastText}
-        />
-      ),
-      text: translateTerminationText(["deleteButtonText"]),
-      color: theme.palette.error.contrastText,
-      onClickHandler: () => handleDeletion()
-        }
-      ];
+          ...(initialEmployee?.common?.accountStatus !==
+          AccountStatusTypes.PENDING
+            ? [
+                {
+                  id: "terminate-employee",
+                  icon: (
+                    <Icon
+                      name={IconName.MINUS_ICON}
+                      fill={theme.palette.error.contrastText}
+                    />
+                  ),
+                  text: translateTerminationText(["terminateButtonText"]),
+                  color: theme.palette.error.contrastText,
+                  onClickHandler: () => handleTermination()
+                }
+              ]
+            : []),
+          {
+            id: "delete-employee",
+            icon: (
+              <Icon
+                name={IconName.BIN_ICON}
+                fill={theme.palette.error.contrastText}
+              />
+            ),
+            text: translateTerminationText(["deleteButtonText"]),
+            color: theme.palette.error.contrastText,
+            onClickHandler: () => handleDeletion()
+          }
+        ];
   const cardData = useMemo(() => {
     return {
       employeeId:
@@ -540,20 +545,20 @@ const EditInfoCard = ({ onClick, styles }: Props): JSX.Element => {
                   {translateTerminationText(["status"])} :
                 </Typography>
                 {hasTerminationAbility && (
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: "1.5rem",
-                        right: "1rem"
-                      }}
-                    >
-                      <KebabMenu
-                        id="add-team-kebab-menu"
-                        menuItems={kebabMenuOptions}
-                        icon={<Icon name={IconName.THREE_DOTS_ICON} />}
-                      />
-                    </Box>
-                  )}
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: "1.5rem",
+                      right: "1rem"
+                    }}
+                  >
+                    <KebabMenu
+                      id="add-team-kebab-menu"
+                      menuItems={kebabMenuOptions}
+                      icon={<Icon name={IconName.THREE_DOTS_ICON} />}
+                    />
+                  </Box>
+                )}
               </Stack>
               <Box>
                 <BasicChip

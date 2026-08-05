@@ -20,14 +20,11 @@ export interface ManagerTimesheetFiltersSliceTypes
   extends Pick<
     AttendanceStore,
     | "timesheetRequestsFilters"
-    | "selectedTimesheetFilterLabels"
     | "timesheetRequestSelectedDates"
     | "timesheetRequestParams"
     | "timesheetRequestsFilterValues"
     | "setTimesheetRequestsFilters"
     | "resetTimesheetRequestParams"
-    | "resetTimesheetRequestParamsToDefault"
-    | "setTimesheetSelectedFilterLabels"
     | "setTimesheetRequestSelectedDates"
     | "setTimesheetRequestPagination"
     | "timesheetAnalyticsParams"
@@ -60,12 +57,10 @@ export interface EmployeeTimesheetFilterSliceTypes
     AttendanceStore,
     | "employeeTimesheetRequestsFilters"
     | "employeeTimesheetRequestSelectedDates"
-    | "employeeSelectedTimesheetFilterLabels"
     | "employeeTimesheetRequestParams"
     | "employeeTimesheetRequestsFilterValues"
     | "setEmployeeTimesheetRequestsFilters"
     | "resetEmployeeTimesheetRequestParams"
-    | "setEmployeeTimesheetSelectedFilterLabels"
     | "setEmployeeTimesheetRequestSelectedDates"
     | "setEmployeeTimesheetRequestPagination"
   > {}

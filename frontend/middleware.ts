@@ -5,7 +5,9 @@ import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
-  managerRestrictedRoutes
+  managerRestrictedRoutes,
+  nonSuperAdminRestrictedRoutes,
+  userRolesRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
   AdminTypes,
@@ -59,7 +61,10 @@ const superAdminRoutes = {
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.CRM.BASE
+    ROUTES.CRM.BASE,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+    ROUTES.PEOPLE.SYNC_CHANGES
   ]
 };
 
@@ -310,6 +315,15 @@ export function middleware(request: NextRequest) {
       );
     }
 
+    // Check super-admin restricted routes
+    const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      nonSuperAdminRestrictedRoutes,
+      AdminTypes.SUPER_ADMIN,
+      roles
+    );
+    if (nonSuperAdminRedirect) return nonSuperAdminRedirect;
+
     // Check manager restricted routes
     const managerRedirect = checkRestrictedRoutesAndRedirect(
       request,
@@ -318,6 +332,15 @@ export function middleware(request: NextRequest) {
       roles
     );
     if (managerRedirect) return managerRedirect;
+
+    // Check user roles restricted routes (Super Admin only)
+    const userRolesRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      userRolesRestrictedRoutes,
+      ROLE_SUPER_ADMIN,
+      roles
+    );
+    if (userRolesRedirect) return userRolesRedirect;
 
     // Check invoice employee restricted routes
     const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
