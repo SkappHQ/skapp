@@ -18,7 +18,10 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
+import {
+  checkRestrictedRoutesAndRedirect,
+  getSignUpTenantRedirect
+} from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
@@ -205,6 +208,10 @@ export function middleware(request: NextRequest) {
 
   const currentPath = request.nextUrl.pathname;
 
+  if (currentPath.startsWith(ROUTES.AUTH.SIGNUP)) {
+    return getSignUpTenantRedirect(request);
+  }
+
   if (
     currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
     currentPath.startsWith(ROUTES.SIGN.SIGN) ||
@@ -378,6 +385,8 @@ export const config = {
   matcher: [
     // All community routes
     "/community/:path*",
+    // Auth routes
+    "/signup",
     // Super admin routes
     "/setup-organization/:path*",
     "/module-selection",
