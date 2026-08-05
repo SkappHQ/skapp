@@ -12,9 +12,12 @@ interface Props {
 const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
   const { getStageByName } = useStageNameMapper();
 
+  const stageName = getStageByName(deal?.stage?.name);
+
   return (
     <Chip
-      label={getStageByName(deal?.stage?.name)}
+      label={stageName}
+      tooltip={stageName}
       size="sm"
       prefixIcon={<StageDot color={deal?.stage?.color} />}
     />
