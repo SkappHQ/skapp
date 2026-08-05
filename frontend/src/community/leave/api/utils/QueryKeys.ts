@@ -61,6 +61,9 @@ export const leaveEntitlementQueryKeys = {
 };
 
 export const leaveAnalyticsQueryKeys = {
+  EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL: [
+    "employee-leave-entitlements"
+  ],
   EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS: function (employeeId: number) {
     return ["employee-leave-entitlements", employeeId];
   },
@@ -279,6 +282,7 @@ export const reportsQueryKeys = {
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
   POLICY_LEAVE_TYPES: ["policy-leave-types"],
+  LEAVE_POLICY_CONFIG: ["leave-policies-config"],
   LEAVE_POLICIES_INFINITE: function (
     searchKeyword: string,
     leaveTypeId: string,
@@ -292,4 +296,14 @@ export const leavePolicyQueryKeys = {
       size
     ];
   }
+};
+
+export const leavePolicyAssignmentQueryKeys = {
+  ALL: ["employee-leave-policies"],
+  EMPLOYEE_LEAVE_POLICIES: (employeeId: number, page: number, size: number) => [
+    "employee-leave-policies",
+    employeeId,
+    page,
+    size
+  ]
 };
