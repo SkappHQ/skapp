@@ -70,8 +70,3 @@ export interface UpdatePolicyLeaveTypeVariables {
   id: number;
   payload: PolicyLeaveTypePayloadType;
 }
-
-export interface ChangePolicyLeaveTypeStatusVariables {
-  id: number;
-  isActive: boolean;
-}

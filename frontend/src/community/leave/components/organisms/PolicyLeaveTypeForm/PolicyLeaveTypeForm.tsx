@@ -49,7 +49,7 @@ const PolicyLeaveTypeForm: FC = () => {
   const { slug, id } = router.query;
 
   const isEditMode = slug === LeaveTypeFormTypes.EDIT;
-  const policyLeaveTypeId = id ? Number(id) : undefined;
+  const policyLeaveTypeId = Number(id);
 
   const isMissingEditId = isEditMode && router.isReady && !policyLeaveTypeId;
 
@@ -64,7 +64,7 @@ const PolicyLeaveTypeForm: FC = () => {
   const durationGroupRef = useRef<HTMLDivElement>(null);
 
   const { data: editingPolicyLeaveType, isLoading: isPolicyLeaveTypeLoading } =
-    useGetPolicyLeaveType(isEditMode ? policyLeaveTypeId : undefined);
+    useGetPolicyLeaveType(policyLeaveTypeId, isEditMode);
 
   const { submitPolicyLeaveType, isSubmitting } = usePolicyLeaveTypeFormSubmit({
     isEditMode,

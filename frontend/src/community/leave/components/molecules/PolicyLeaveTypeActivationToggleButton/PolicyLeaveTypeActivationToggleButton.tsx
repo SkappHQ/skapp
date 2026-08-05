@@ -14,7 +14,8 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
-  useChangePolicyLeaveTypeStatus,
+  useActivatePolicyLeaveType,
+  useDeactivatePolicyLeaveType,
   useGetPolicyLeaveType
 } from "~community/leave/api/PolicyLeaveTypeApi";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
@@ -26,7 +27,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
   const router = useRouter();
   const { id } = router.query;
 
-  const policyLeaveTypeId = id ? Number(id) : undefined;
+  const policyLeaveTypeId = Number(id);
 
   const canManageLeavePolicies = useCanManageLeavePolicies();
 
@@ -38,30 +39,37 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
 
   const isActive = policyLeaveType?.isActive ?? true;
 
-  const { mutate: changeStatus, isPending } = useChangePolicyLeaveTypeStatus(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["editLeaveTypeSuccessToastTitle"]),
-        description: translateText(["editLeaveTypeSuccessToastDescription"]),
-        isIcon: true
-      });
-      setIsConfirmModalOpen(false);
-    },
-    (error: AxiosError) => {
-      const { title, description } = getPolicyLeaveTypeErrorToastKeys(error);
+  const onStatusChangeSuccess = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["editLeaveTypeSuccessToastTitle"]),
+      description: translateText(["editLeaveTypeSuccessToastDescription"]),
+      isIcon: true
+    });
+    setIsConfirmModalOpen(false);
+  };
 
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText([title]),
-        description: translateText([description]),
-        isIcon: true
-      });
-      setIsConfirmModalOpen(false);
-    }
-  );
+  const onStatusChangeError = (error: AxiosError): void => {
+    const { title, description } = getPolicyLeaveTypeErrorToastKeys(error);
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([title]),
+      description: translateText([description]),
+      isIcon: true
+    });
+    setIsConfirmModalOpen(false);
+  };
+
+  const { mutate: activatePolicyLeaveType, isPending: isActivating } =
+    useActivatePolicyLeaveType(onStatusChangeSuccess, onStatusChangeError);
+
+  const { mutate: deactivatePolicyLeaveType, isPending: isDeactivating } =
+    useDeactivatePolicyLeaveType(onStatusChangeSuccess, onStatusChangeError);
+
+  const isPending = isActivating || isDeactivating;
 
   const handleOpenConfirmModal = (): void => {
     setIsConfirmModalOpen(true);
@@ -76,7 +84,12 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
       return;
     }
 
-    changeStatus({ id: policyLeaveTypeId, isActive: !isActive });
+    if (isActive) {
+      deactivatePolicyLeaveType(policyLeaveTypeId);
+      return;
+    }
+
+    activatePolicyLeaveType(policyLeaveTypeId);
   };
 
   if (!canManageLeavePolicies) {

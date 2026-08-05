@@ -25,7 +25,7 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 interface Props {
   isEditMode: boolean;
-  policyLeaveTypeId: number | undefined;
+  policyLeaveTypeId: number;
 }
 
 interface PolicyLeaveTypeFormSubmit {

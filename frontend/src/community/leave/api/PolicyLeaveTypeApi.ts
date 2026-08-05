@@ -14,7 +14,6 @@ import {
   policyLeaveTypeQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
 import {
-  ChangePolicyLeaveTypeStatusVariables,
   PolicyLeaveTypeMutationResponse,
   PolicyLeaveTypePayloadType,
   PolicyLeaveTypeSettingsType,
@@ -71,12 +70,13 @@ const getPolicyLeaveType = async (
 };
 
 export const useGetPolicyLeaveType = (
-  id: number | undefined
+  id: number,
+  isEnabled = true
 ): UseQueryResult<PolicyLeaveTypeSettingsType> => {
   return useQuery({
-    enabled: Boolean(id),
-    queryKey: policyLeaveTypeQueryKeys.DETAIL(id as number),
-    queryFn: () => getPolicyLeaveType(id as number)
+    enabled: isEnabled && Boolean(id),
+    queryKey: policyLeaveTypeQueryKeys.DETAIL(id),
+    queryFn: () => getPolicyLeaveType(id)
   });
 };
 
@@ -149,30 +149,57 @@ export const useUpdatePolicyLeaveType = (
   });
 };
 
-const changePolicyLeaveTypeStatus = ({
-  id,
-  isActive
-}: ChangePolicyLeaveTypeStatusVariables): Promise<
-  AxiosResponse<PolicyLeaveTypeStatusResponse>
-> =>
+const activatePolicyLeaveType = (
+  id: number
+): Promise<AxiosResponse<PolicyLeaveTypeStatusResponse>> =>
   authFetch.patch<PolicyLeaveTypeStatusResponse>(
-    isActive
-      ? policyLeaveTypeEndPoints.ACTIVATE_POLICY_LEAVE_TYPE(id)
-      : policyLeaveTypeEndPoints.DEACTIVATE_POLICY_LEAVE_TYPE(id)
+    policyLeaveTypeEndPoints.ACTIVATE_POLICY_LEAVE_TYPE(id)
   );
 
-export const useChangePolicyLeaveTypeStatus = (
+export const useActivatePolicyLeaveType = (
   onSuccess: () => void,
   onError: (error: AxiosError) => void
 ): UseMutationResult<
   AxiosResponse<PolicyLeaveTypeStatusResponse>,
   AxiosError,
-  ChangePolicyLeaveTypeStatusVariables
+  number
 > => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: changePolicyLeaveTypeStatus,
+    mutationFn: activatePolicyLeaveType,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: policyLeaveTypeQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const deactivatePolicyLeaveType = (
+  id: number
+): Promise<AxiosResponse<PolicyLeaveTypeStatusResponse>> =>
+  authFetch.patch<PolicyLeaveTypeStatusResponse>(
+    policyLeaveTypeEndPoints.DEACTIVATE_POLICY_LEAVE_TYPE(id)
+  );
+
+export const useDeactivatePolicyLeaveType = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<PolicyLeaveTypeStatusResponse>,
+  AxiosError,
+  number
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deactivatePolicyLeaveType,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
