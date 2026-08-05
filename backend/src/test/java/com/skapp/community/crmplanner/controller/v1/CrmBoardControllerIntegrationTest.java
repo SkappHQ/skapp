@@ -421,6 +421,24 @@ class CrmBoardControllerIntegrationTest {
 			.andExpect(jsonPath("['results'][1]['deals'][0]['taskCount']").value(0));
 	}
 
+	@Test
+	@DisplayName("Deals grouped by stage as Sales Representative - returns only deals owned by the representative")
+	void getDealsByStages_SalesRep_ReturnsOnlyOwnDeals() throws Exception {
+		// Deal owned by admin (employee 1) and deal owned by rep user2 (employee 2)
+		createDeal("Admin Deal", stage1, "a0", 1L);
+		createDeal("Rep Deal", stage1, "b0", 2L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['name']").value("Rep Deal"));
+	}
+
 	private ResultActions performPostDealsByStagesRequest(CrmDealsByStagesRequestDto dto, String token)
 			throws Exception {
 		return mvc.perform(post("/v1/crm/board/deals-grouped-by-stages").contentType(MediaType.APPLICATION_JSON)
