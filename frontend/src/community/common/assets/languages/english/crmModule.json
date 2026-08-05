@@ -1,11 +1,13 @@
 {
   "common": {
-    "crm": "CRM",
     "ownerPopupSearch": {
       "placeholder": "None",
       "searchPlaceholder": "Search Owner",
       "noResults": "No results"
     }
+  },
+  "breadcrumbs": {
+    "crm": "CRM"
   },
   "contacts": {
     "pageHead": "Contacts | Skapp",

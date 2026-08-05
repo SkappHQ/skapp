@@ -16,7 +16,7 @@ import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule", "tasks");
-  const translateCommonText = useTranslator("crmModule", "common");
+  const translateBreadcrumb = useTranslator("crmModule", "breadcrumbs");
   const containerRef = useRef<HTMLDivElement>(null);
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
@@ -56,7 +56,7 @@ const Tasks: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateCommonText(["crm"]) },
+        { label: translateBreadcrumb(["crm"]) },
         { label: translateText(["title"]) }
       ]}
       pageHead={translateText(["pageHead"])}
