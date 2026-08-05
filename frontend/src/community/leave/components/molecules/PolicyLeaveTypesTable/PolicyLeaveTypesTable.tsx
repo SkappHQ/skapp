@@ -31,7 +31,6 @@ const PolicyLeaveTypesTable: FC = () => {
   const [page, setPage] = useState<number>(0);
 
   const { data: policyLeaveTypesPage, isLoading } = useSearchPolicyLeaveTypes({
-    searchKeyword: "",
     page,
     size: POLICY_LEAVE_TYPES_PAGE_SIZE
   });
@@ -142,8 +141,6 @@ const PolicyLeaveTypesTable: FC = () => {
     ];
   }, [translateText, canManageLeavePolicies, handleEditPolicyLeaveType]);
 
-  const totalPages = policyLeaveTypesPage?.totalPages ?? 0;
-
   const handlePageChange = useCallback((selectedPage: number): void => {
     setPage(selectedPage);
   }, []);
@@ -157,9 +154,9 @@ const PolicyLeaveTypesTable: FC = () => {
         isLoading={isLoading}
         noDataState={{ title: translateText(["noLeaveTypesTitle"]) }}
       />
-      {totalPages > 1 && (
+      {policyLeaveTypesPage && policyLeaveTypesPage.totalPages > 1 && (
         <Pagination
-          totalPages={totalPages}
+          totalPages={policyLeaveTypesPage.totalPages}
           currentPage={page}
           onChange={handlePageChange}
         />

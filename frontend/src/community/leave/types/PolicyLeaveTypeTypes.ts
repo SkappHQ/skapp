@@ -43,7 +43,7 @@ export interface SearchPolicyLeaveTypesParams {
 }
 
 export interface UseSearchPolicyLeaveTypesArgs {
-  searchKeyword: string;
+  searchKeyword?: string;
   isActive?: boolean;
   page: number;
   size: number;

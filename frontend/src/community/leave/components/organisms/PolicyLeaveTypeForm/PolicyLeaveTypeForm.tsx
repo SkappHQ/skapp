@@ -34,9 +34,7 @@ import {
 import { policyLeaveTypeValidationSchema } from "~community/leave/utils/validations";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
-import DurationOptionCard, {
-  DURATION_OPTION_ATTRIBUTE
-} from "./DurationOptionCard";
+import DurationOptionCard from "./DurationOptionCard";
 import SettingToggleRow from "./SettingToggleRow";
 
 const MIN_DURATION_ERROR_ID = "policy-leave-type-min-duration-error";
@@ -130,7 +128,7 @@ const PolicyLeaveTypeForm: FC = () => {
     direction: number
   ): void => {
     const options = durationGroupRef.current?.querySelectorAll<HTMLElement>(
-      `[${DURATION_OPTION_ATTRIBUTE}]`
+      ':scope > [role="checkbox"]'
     );
 
     if (!options?.length) {

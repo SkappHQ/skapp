@@ -1,8 +1,6 @@
 import { Card, RadioButton } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEvent } from "react";
 
-export const DURATION_OPTION_ATTRIBUTE = "data-duration-option";
-
 interface Props {
   title: string;
   description: string;
@@ -56,7 +54,6 @@ const DurationOptionCard: FC<Props> = ({
       aria-checked={isSelected}
       aria-label={title}
       aria-describedby={describedBy}
-      {...{ [DURATION_OPTION_ATTRIBUTE]: true }}
     >
       <div className="inline-flex w-full items-center justify-start gap-3">
         <RadioButton isSelected={isSelected} />

@@ -37,7 +37,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
 
   const { data: policyLeaveType } = useGetPolicyLeaveType(policyLeaveTypeId);
 
-  const isActive = policyLeaveType?.isActive ?? true;
+  const isActive = !!policyLeaveType?.isActive;
 
   const onStatusChangeSuccess = (): void => {
     setToastMessage({

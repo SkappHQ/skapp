@@ -279,7 +279,7 @@ export const reportsQueryKeys = {
 export const policyLeaveTypeQueryKeys = {
   ALL: ["policy-leave-type-settings"],
   SEARCH: (
-    searchKeyword: string,
+    searchKeyword: string | undefined,
     isActive: boolean | undefined,
     page: number,
     size: number
