@@ -1,12 +1,12 @@
 package com.skapp.community.peopleplanner.service.impl;
 
-import com.skapp.community.common.payload.request.BirthdayNotificationConfigRequestDto;
-import com.skapp.community.common.payload.response.BirthdayNotificationConfigResponseDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
+import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.service.PeopleConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +27,8 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 	public ResponseEntityDto getBirthdayNotificationConfigs() {
 		log.info("getBirthdayNotificationConfigs: execution started");
 
-		BirthdayNotificationConfigResponseDto responseDto = specialNotificationService
-			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigResponseDto.class);
+		BirthdayNotificationConfigDto responseDto = specialNotificationService
+			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
 
 		log.info("getBirthdayNotificationConfigs: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -39,8 +39,8 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 	public ResponseEntityDto updateBirthdayNotificationConfigs(BirthdayNotificationConfigRequestDto requestDto) {
 		log.info("updateBirthdayNotificationConfigs: execution started");
 
-		BirthdayNotificationConfigResponseDto config = specialNotificationService
-			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigResponseDto.class);
+		BirthdayNotificationConfigDto config = specialNotificationService.getConfig(SpecialNotificationType.BIRTHDAY,
+				BirthdayNotificationConfigDto.class);
 
 		if (requestDto.getIsTurnedOn() != null) {
 			config.setIsTurnedOn(requestDto.getIsTurnedOn());

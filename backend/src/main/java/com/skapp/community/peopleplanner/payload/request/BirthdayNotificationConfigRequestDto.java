@@ -1,4 +1,4 @@
-package com.skapp.community.common.payload.request;
+package com.skapp.community.peopleplanner.payload.request;
 
 import lombok.Getter;
 import lombok.Setter;

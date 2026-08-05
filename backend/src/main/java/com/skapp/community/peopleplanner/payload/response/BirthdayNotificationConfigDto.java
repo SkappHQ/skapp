@@ -1,4 +1,4 @@
-package com.skapp.community.common.payload.response;
+package com.skapp.community.peopleplanner.payload.response;
 
 import com.skapp.community.common.payload.SpecialNotificationConfig;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BirthdayNotificationConfigResponseDto implements SpecialNotificationConfig {
+public class BirthdayNotificationConfigDto implements SpecialNotificationConfig {
 
 	private Boolean isTurnedOn = false;
 

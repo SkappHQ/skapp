@@ -2,8 +2,6 @@ package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.model.OrganizationConfig;
-import com.skapp.community.common.payload.request.BirthdayNotificationConfigRequestDto;
-import com.skapp.community.common.payload.response.BirthdayNotificationConfigResponseDto;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.OrganizationConfigType;
@@ -11,6 +9,8 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +64,8 @@ class PeopleConfigControllerIntegrationTest {
 
 	private static final Long TOKEN_USER_ID = 1L;
 
+	private static final Long RESTRICTED_TOKEN_USER_ID = 2L;
+
 	private final JsonMapper objectMapper;
 
 	private final JwtService jwtService;
@@ -82,11 +84,11 @@ class PeopleConfigControllerIntegrationTest {
 
 	@BeforeEach
 	void setup() {
-		adminToken = tokenFor(ADMIN_USER_EMAIL);
+		adminToken = tokenFor(ADMIN_USER_EMAIL, TOKEN_USER_ID);
 	}
 
-	private String tokenFor(String email) {
-		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername(email), TOKEN_USER_ID);
+	private String tokenFor(String email, Long userId) {
+		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername(email), userId);
 	}
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -112,7 +114,7 @@ class PeopleConfigControllerIntegrationTest {
 	}
 
 	private void seedConfig(boolean isTurnedOn, boolean isOrganizationWide, boolean isTeamWide) {
-		BirthdayNotificationConfigResponseDto config = new BirthdayNotificationConfigResponseDto();
+		BirthdayNotificationConfigDto config = new BirthdayNotificationConfigDto();
 		config.setIsTurnedOn(isTurnedOn);
 		config.setIsOrganizationWide(isOrganizationWide);
 		config.setIsTeamWide(isTeamWide);
@@ -134,7 +136,7 @@ class PeopleConfigControllerIntegrationTest {
 		Employee employee = employeeDao.findById(RESTRICTED_EMPLOYEE_ID).orElseThrow();
 		employee.getEmployeeRole().setPeopleRole(Role.PEOPLE_EMPLOYEE);
 		employeeDao.saveAndFlush(employee);
-		return tokenFor(RESTRICTED_USER_EMAIL);
+		return tokenFor(RESTRICTED_USER_EMAIL, RESTRICTED_TOKEN_USER_ID);
 	}
 
 	private void assertFlags(ResultActions resultActions, boolean isTurnedOn, boolean isOrganizationWide,

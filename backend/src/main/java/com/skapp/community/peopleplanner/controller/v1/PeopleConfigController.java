@@ -1,10 +1,11 @@
 package com.skapp.community.peopleplanner.controller.v1;
 
-import com.skapp.community.common.payload.request.BirthdayNotificationConfigRequestDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
 import com.skapp.community.peopleplanner.service.PeopleConfigService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class PeopleConfigController {
 	@PatchMapping(value = "/birthday-notifications")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateBirthdayNotificationConfigs(
-			@RequestBody BirthdayNotificationConfigRequestDto requestDto) {
+			@Valid @RequestBody BirthdayNotificationConfigRequestDto requestDto) {
 		ResponseEntityDto response = peopleConfigService.updateBirthdayNotificationConfigs(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
