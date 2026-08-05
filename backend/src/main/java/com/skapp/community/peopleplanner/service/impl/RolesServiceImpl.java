@@ -14,7 +14,6 @@ import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
-import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.ModuleRolesRestriction;
@@ -28,7 +27,6 @@ import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionR
 import com.skapp.community.peopleplanner.payload.response.RoleResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
-import com.skapp.community.peopleplanner.repository.ModuleRoleRestrictionDao;
 import com.skapp.community.peopleplanner.repository.ModuleRolesRestrictionDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
 import com.skapp.community.peopleplanner.service.RolesService;
@@ -66,10 +64,6 @@ public class RolesServiceImpl implements RolesService {
 	private final EmployeeDao employeeDao;
 
 	private final TeamDao teamDao;
-
-	private final PeopleMapper peopleMapper;
-
-	private final ModuleRoleRestrictionDao moduleRoleRestrictionDao;
 
 	private final ModuleRolesRestrictionDao moduleRolesRestrictionDao;
 
@@ -559,16 +553,16 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	protected Boolean validateRestrictedRoleAssignment(Role role, ModuleType moduleType) {
-		ModuleRoleRestrictionResponseDto restrictedRole = getRestrictedRoleByModule(moduleType);
+		Set<RoleLevel> restrictedRoleLevels = getRestrictedRoleLevels(moduleType);
 
 		if (role == Role.PEOPLE_ADMIN || role == Role.ATTENDANCE_ADMIN || role == Role.LEAVE_ADMIN
 				|| role == Role.INVOICE_ADMIN || role == Role.CRM_ADMIN) {
-			return Boolean.TRUE.equals(restrictedRole.getIsAdmin());
+			return restrictedRoleLevels.contains(RoleLevel.ADMIN);
 		}
 
 		if (role == Role.PEOPLE_MANAGER || role == Role.ATTENDANCE_MANAGER || role == Role.LEAVE_MANAGER
 				|| role == Role.INVOICE_MANAGER || role == Role.CRM_SALES_MANAGER) {
-			return Boolean.TRUE.equals(restrictedRole.getIsManager());
+			return restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(moduleType));
 		}
 
 		return false;
