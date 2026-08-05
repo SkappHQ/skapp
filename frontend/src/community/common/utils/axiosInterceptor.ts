@@ -21,8 +21,6 @@ export const authFetchV2 = axios.create({
   baseURL: getApiUrl() + ApiVersions.V2
 });
 
-// Requests that must reach the app's own origin rather than the API host, so
-// cookies the response sets belong to the host the browser is on.
 export const authFetchSameOrigin = axios.create({
   baseURL: "",
   withCredentials: true
