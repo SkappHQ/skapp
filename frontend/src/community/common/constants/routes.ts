@@ -69,7 +69,10 @@ const ROUTES = {
     PENDING: "/people/directory/pending",
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
-    ADD: "/people/directory/add"
+    ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
+    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
     BASE: "/configurations",
@@ -181,6 +184,12 @@ export const invoiceEmployeeRestrictedRoutes = [
 export const employeeRestrictedRoutes = [
   RESCRITED_DYNAMIC_ROUTES.PEOPLE.EDIT,
   ROUTES.PEOPLE.ADD
+];
+
+export const nonSuperAdminRestrictedRoutes = [
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.SYNC_CHANGES
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];

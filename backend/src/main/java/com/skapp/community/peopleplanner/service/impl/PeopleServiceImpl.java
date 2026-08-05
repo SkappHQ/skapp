@@ -2737,6 +2737,10 @@ public class PeopleServiceImpl implements PeopleService {
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_USER_NOT_FOUND));
 		Employee employee = user.getEmployee();
 
+		if (status.equals(AccountStatus.TERMINATED) && employee.getAccountStatus() == AccountStatus.PENDING) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_CANNOT_TERMINATE_PENDING_EMPLOYEE);
+		}
+
 		if (status.equals(AccountStatus.ACTIVE) && Boolean.FALSE.equals(user.getIsActive())) {
 			employee.setAccountStatus(status);
 			employee.setTerminationDate(null);

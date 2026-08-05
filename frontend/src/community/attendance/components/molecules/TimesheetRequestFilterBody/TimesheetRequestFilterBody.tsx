@@ -8,6 +8,7 @@ import type { DateRange } from "react-day-picker";
 
 import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { toggleFilterValue } from "~community/common/utils/commonUtil";
 import {
   clampToCurrentYear,
   convertDateRangeArrayToDateRange,
@@ -41,12 +42,8 @@ const TimesheetRequestFilterBody: FC<Props> = ({
 
   const isEmpty = selectedStatus.length === 0 && !selectedDateRange?.from && !selectedDateRange?.to;
 
-  const toggleStatus = (value: string) =>
-    setSelectedStatus((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value]
-    );
+  const toggleStatus = (status: string) =>
+    setSelectedStatus((previous) => toggleFilterValue(previous, status));
 
   const handleApply = () => {
     setFilters({ status: selectedStatus });

@@ -2,16 +2,18 @@ import { Box, Divider } from "@mui/material";
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import PeopleConfigurations from "~enterprise/configurations/components/organisms/PeopleConfigurations/PeopleConfigurations";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
+import { useGetGoogleConnectionStatus } from "~enterprise/people/api/GoogleWorkspaceSyncApi";
 
 const Configurations: NextPage = () => {
   const { user } = useAuth();
@@ -19,6 +21,11 @@ const Configurations: NextPage = () => {
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
+  const { isSuperAdmin } = useSessionData();
+
+  const { data: googleConnectionStatus } = useGetGoogleConnectionStatus(
+    isEnterprise && isSuperAdmin
+  );
 
   const allTabs = useMemo(
     () =>
@@ -28,26 +35,40 @@ const Configurations: NextPage = () => {
     [translateText, isEnterprise]
   );
 
-  const visibleTabs = useMemo(() => {
+  const visibleTabsBeforeOverride = useMemo(() => {
     const userRoles = user?.roles || [];
     return allTabs.filter((tab) => {
-      return userRoles.some((role) =>
-        tab.requiredRoles.includes(role as AdminTypes)
-      );
+      if (!tab.requiredRoles.some((role) => userRoles.includes(role)))
+        return false;
+      if (tab.id === "people") return googleConnectionStatus?.isConnected;
+      return true;
     });
-  }, [allTabs, user?.roles]);
+  }, [allTabs, user?.roles, googleConnectionStatus]);
 
-  const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
+  const [activeTab, setActiveTab] = useState(visibleTabsBeforeOverride[0]?.id);
 
-  useEffect(() => {
-    if (!router.isReady || visibleTabs?.length === 0) return;
-    const tabParam = router.query.tab as string | undefined;
-    if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
-      if (tabParam !== activeTab) {
-        setActiveTab(tabParam);
-      }
-    }
-  }, [router.isReady, router.query.tab, visibleTabs]);
+  const handlePeopleDisconnected = () => {
+    setActiveTab((current) => {
+      if (current !== "people") return current;
+      const fallback = allTabs.find((tab) => tab.id !== "people");
+      return fallback ? fallback.id : current;
+    });
+  };
+
+  const visibleTabs = useMemo(
+    () =>
+      visibleTabsBeforeOverride.map((tab) =>
+        tab.id === "people"
+          ? {
+              ...tab,
+              component: (
+                <PeopleConfigurations onDisconnected={handlePeopleDisconnected} />
+              )
+            }
+          : tab
+      ),
+    [visibleTabsBeforeOverride]
+  );
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);

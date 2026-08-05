@@ -2,6 +2,7 @@ package com.skapp.community.timeplanner.service.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,8 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 	private final EmailService emailService;
 
 	private final EmployeeManagerDao employeeManagerDao;
+
+	private final OrganizationService organizationService;
 
 	@Override
 	public void sendNonWorkingDaySingleDayPendingLeaveRequestCancelEmployeeEmail(LeaveRequest leaveRequest) {
@@ -171,10 +175,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(
 				timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 
 		User user = timeRequest.getEmployee().getUser();
 
@@ -188,10 +189,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(timeRequest.getEmployee());
 
@@ -206,11 +204,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(timeRequestResponse.getEmployee().getFirstName() + " "
 				+ timeRequestResponse.getEmployee().getLastName());
-		emailDynamicFields.setTimeEntryDate(
-				DateTimeUtils.epochMillisToUtcLocalDate(timeRequestResponse.getRequestedStartTime()).toString());
-		emailDynamicFields
-			.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequestResponse);
 		emailDynamicFields
 			.setManagerName(managerUser.getEmployee().getFirstName() + " " + managerUser.getEmployee().getLastName());
 
@@ -224,11 +218,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(timeRequestResponse.getEmployee().getFirstName() + " "
 				+ timeRequestResponse.getEmployee().getLastName());
-		emailDynamicFields.setTimeEntryDate(
-				DateTimeUtils.epochMillisToUtcLocalDate(timeRequestResponse.getRequestedStartTime()).toString());
-		emailDynamicFields
-			.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequestResponse);
 		emailDynamicFields
 			.setManagerName(managerUser.getEmployee().getFirstName() + " " + managerUser.getEmployee().getLastName());
 
@@ -242,10 +232,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(
 				timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 
 		emailService.sendEmail(EmailBodyTemplates.ATTENDANCE_MODULE_PENDING_TIME_ENTRY_REQUEST_CANCELLED_EMPLOYEE,
 				emailDynamicFields, timeRequest.getEmployee().getUser().getEmail());
@@ -257,10 +244,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(timeRequest.getEmployee());
 
@@ -274,11 +258,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields.setEmployeeOrManagerName(timeRequestResponse.getEmployee().getFirstName() + " "
 				+ timeRequestResponse.getEmployee().getLastName());
-		emailDynamicFields.setTimeEntryDate(
-				DateTimeUtils.epochMillisToUtcLocalDate(timeRequestResponse.getRequestedStartTime()).toString());
-		emailDynamicFields
-			.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequestResponse.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequestResponse);
 
 		emailService.sendEmail(EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_AUTO_APPROVED_EMPLOYEE,
 				emailDynamicFields, timeRequestResponse.getEmployee().getUser().getEmail());
@@ -290,10 +270,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		emailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 
 		List<EmployeeManager> managers = employeeManagerDao.findByEmployee(timeRequest.getEmployee());
 
@@ -305,10 +282,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 	public void sendTimeEntryRequestApprovedOtherManagerEmail(TimeRequest timeRequest, User managerUser) {
 		AttendanceEmailDynamicFields emailDynamicFields = new AttendanceEmailDynamicFields();
 
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 		emailDynamicFields
 			.setManagerName(managerUser.getEmployee().getFirstName() + " " + managerUser.getEmployee().getLastName());
 		emailDynamicFields
@@ -329,10 +303,7 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 				managerUser.getEmployee().getFirstName() + " " + managerUser.getEmployee().getLastName());
 		emailDynamicFields
 			.setEmployeeName(timeRequest.getEmployee().getFirstName() + " " + timeRequest.getEmployee().getLastName());
-		emailDynamicFields
-			.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDate(timeRequest.getRequestedStartTime()).toString());
-		emailDynamicFields.setStartTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedStartTime()));
-		emailDynamicFields.setEndTime(DateTimeUtils.epochMillisToAmPmString(timeRequest.getRequestedEndTime()));
+		setEmailTimeEntryDateFields(emailDynamicFields, timeRequest);
 		emailDynamicFields
 			.setManagerName(managerUser.getEmployee().getFirstName() + " " + managerUser.getEmployee().getLastName());
 
@@ -341,6 +312,15 @@ public class TimeEmailServiceImpl implements TimeEmailService {
 
 		createAttendanceEmailForManagers(otherManagers, emailDynamicFields,
 				EmailBodyTemplates.ATTENDANCE_MODULE_TIME_ENTRY_REQUEST_DECLINED_OTHER_MANAGER);
+	}
+
+	private void setEmailTimeEntryDateFields(AttendanceEmailDynamicFields fields, TimeRequest request) {
+		ZoneId zoneId = organizationService.getOrganizationZoneId();
+		fields.setTimeEntryDate(DateTimeUtils.epochMillisToUtcLocalDateTime(request.getRequestedStartTime(), zoneId)
+			.toLocalDate()
+			.toString());
+		fields.setStartTime(DateTimeUtils.epochMillisToAmPmString(request.getRequestedStartTime(), zoneId));
+		fields.setEndTime(DateTimeUtils.epochMillisToAmPmString(request.getRequestedEndTime(), zoneId));
 	}
 
 	private List<EmployeeManager> getOtherManagers(List<EmployeeManager> allManagers, User currentManager) {
