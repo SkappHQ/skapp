@@ -19,7 +19,11 @@ import { specialCharacters } from "~community/common/regex/regexPatterns";
 import { getBlinkClass, getEmoji } from "~community/common/utils/commonUtil";
 import { useGetPolicyLeaveType } from "~community/leave/api/PolicyLeaveTypeApi";
 import { leaveTypeColors } from "~community/leave/constants/configs";
-import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
+import {
+  MAX_POLICY_LEAVE_TYPE_NAME_LENGTH,
+  MIN_DURATION_ERROR_ID,
+  MIN_DURATION_GROUP_LABEL_ID
+} from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   LeaveDurationTypes,
   LeaveTypeFormTypes
@@ -36,9 +40,6 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 import DurationOptionCard from "./DurationOptionCard";
 import SettingToggleRow from "./SettingToggleRow";
-
-const MIN_DURATION_ERROR_ID = "policy-leave-type-min-duration-error";
-const MIN_DURATION_GROUP_LABEL_ID = "policy-leave-type-min-duration-label";
 
 const PolicyLeaveTypeForm: FC = () => {
   const translateText = useTranslator("leaveModule", "leaveTypes");

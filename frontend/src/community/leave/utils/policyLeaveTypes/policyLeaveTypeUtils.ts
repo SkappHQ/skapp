@@ -10,8 +10,12 @@ import {
   PolicyLeaveTypePayloadType
 } from "~community/leave/types/PolicyLeaveTypeTypes";
 
+interface PolicyLeaveTypeErrorResult {
+  messageKey?: string;
+}
+
 interface PolicyLeaveTypeErrorData {
-  results?: { messageKey?: string }[];
+  results?: PolicyLeaveTypeErrorResult[];
 }
 
 interface PolicyLeaveTypeErrorToastKeys {

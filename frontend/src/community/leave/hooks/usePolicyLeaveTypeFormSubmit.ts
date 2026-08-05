@@ -33,11 +33,6 @@ interface PolicyLeaveTypeFormSubmit {
   isSubmitting: boolean;
 }
 
-/**
- * Owns the create/update mutations for a policy leave type together with the
- * toast, analytics and quick setup side effects the legacy leave type flow
- * performs, so the form component stays layout only.
- */
 const usePolicyLeaveTypeFormSubmit = ({
   isEditMode,
   policyLeaveTypeId
