@@ -14,7 +14,6 @@ import com.skapp.community.leaveplanner.payload.EmployeeLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.EmployeesOnLeaveFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.ManagerType;
-import com.skapp.community.peopleplanner.constant.PeopleConstants;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
@@ -67,6 +66,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1641,13 +1641,17 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		CriteriaQuery<Employee> criteriaQuery = cb.createQuery(Employee.class);
 		Root<Employee> root = criteriaQuery.from(Employee.class);
 
+		root.fetch(Employee_.personalInfo);
+		root.fetch(Employee_.user);
+		root.fetch(Employee_.employeeRole, JoinType.LEFT);
+
 		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo);
+		Join<Employee, User> userJoin = root.join(Employee_.user);
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.isTrue(root.get(Employee_.user).get(User_.isActive)));
+		predicates.add(cb.isTrue(userJoin.get(User_.isActive)));
 		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
-
-		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(cb, roleJoin));
 
 		predicates.add(cb.isNotNull(personalInfoJoin.get(EmployeePersonalInfo_.birthDate)));
@@ -1656,8 +1660,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		criteriaQuery.select(root)
 			.where(predicates.toArray(new Predicate[0]))
-			.distinct(true)
-			.orderBy(cb.asc(cb.lower(root.get(Employee_.firstName))), cb.asc(cb.lower(root.get(Employee_.lastName))));
+			.orderBy(cb.asc(cb.lower(root.get(Employee_.firstName))), cb.asc(cb.lower(root.get(Employee_.lastName))),
+					cb.asc(root.get(Employee_.employeeId)));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
@@ -1671,12 +1675,12 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		Predicate onDate = cb.and(cb.equal(month, date.getMonthValue()), cb.equal(day, date.getDayOfMonth()));
 
-		boolean isFallbackForLeapBirthday = date.getMonthValue() == PeopleConstants.FEBRUARY_MONTH_VALUE
-				&& date.getDayOfMonth() == PeopleConstants.SHORT_FEBRUARY_LAST_DAY && !date.isLeapYear();
+		boolean isLastDayOfShortFebruary = date.getMonthValue() == Month.FEBRUARY.getValue()
+				&& date.getDayOfMonth() == date.lengthOfMonth() && !date.isLeapYear();
 
-		if (isFallbackForLeapBirthday) {
-			Predicate onLeapDay = cb.and(cb.equal(month, PeopleConstants.FEBRUARY_MONTH_VALUE),
-					cb.equal(day, PeopleConstants.LEAP_DAY_OF_FEBRUARY));
+		if (isLastDayOfShortFebruary) {
+			Predicate onLeapDay = cb.and(cb.equal(month, Month.FEBRUARY.getValue()),
+					cb.equal(day, Month.FEBRUARY.maxLength()));
 			return cb.or(onDate, onLeapDay);
 		}
 
@@ -1685,11 +1689,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 	private Predicate buildBirthdayScopePredicate(CriteriaBuilder cb, CriteriaQuery<Employee> criteriaQuery,
 			Root<Employee> root, Long currentEmployeeId, BirthdayNotificationScope scope) {
-		Predicate selfPredicate = cb.equal(root.get(Employee_.employeeId), currentEmployeeId);
-
 		if (scope == BirthdayNotificationScope.ORGANIZATION) {
 			return cb.conjunction();
 		}
+
+		Predicate selfPredicate = cb.equal(root.get(Employee_.employeeId), currentEmployeeId);
 
 		if (scope == BirthdayNotificationScope.SELF) {
 			return selfPredicate;
