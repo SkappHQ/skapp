@@ -12,6 +12,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
+import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
@@ -45,6 +46,8 @@ const DealsTable: FC<Props> = ({
   onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+
+  const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
@@ -168,7 +171,12 @@ const DealsTable: FC<Props> = ({
               {formattedAmount}
             </span>
           ),
-          stage: <StageLabel name={deal.stage.name} color={deal.stage.color} />,
+          stage: (
+            <StageLabel
+              label={getStageByName(deal.stage.name)}
+              color={deal.stage.color}
+            />
+          ),
           companyName: (
             <span
               className="body2 block w-full truncate"
@@ -191,7 +199,7 @@ const DealsTable: FC<Props> = ({
           )
         };
       }),
-    [allDeals]
+    [allDeals, getStageByName]
   );
 
   const tableData = useMemo(

@@ -64,7 +64,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
       dealStages.map((s) => ({
         id: String(s.id),
         value: String(s.id),
-        label: <StageLabel name={s.name} color={s.color} />
+        label: <StageLabel label={s.name} color={s.color} />
       })),
     [dealStages]
   );
