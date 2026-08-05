@@ -72,7 +72,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     leaveTypes
   );
 
-  const isFiltering = !!searchTerm || selectedLeaveTypes.length > 0;
+  const isEmptySearchResult = !!searchTerm || selectedLeaveTypes.length > 0;
   const searchPlaceholder = translateText([
     "CustomLeaveAllocationsSectionSearchBarPlaceholder"
   ]);
@@ -238,13 +238,13 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   const showEmptyTableButton =
     (selectedYear === currentYear.toString() ||
       selectedYear === nextYear.toString()) &&
-    !isFiltering;
+    !isEmptySearchResult;
 
   const emptyState = {
-    title: isFiltering
+    title: isEmptySearchResult
       ? translateText(["emptySearchResult", "title"])
       : translateText(["emptyCustomLeaveScreen", "title"]),
-    description: isFiltering
+    description: isEmptySearchResult
       ? translateText(["emptySearchResult", "description"])
       : translateText(["emptyCustomLeaveScreen", "description"]),
     actions: showEmptyTableButton

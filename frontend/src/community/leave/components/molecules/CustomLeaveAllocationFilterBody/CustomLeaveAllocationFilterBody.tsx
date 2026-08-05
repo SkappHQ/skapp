@@ -26,7 +26,7 @@ const CustomLeaveAllocationFilterBody: FC<Props> = ({
 
   const { data: leaveTypes } = useGetLeaveTypes();
 
-  const [selectedLeaveTypes, setSelectedLeaveTypes] =
+  const [selectedLeaveTypeIds, setSelectedLeaveTypeIds] =
     useState<string[]>(appliedLeaveTypeIds);
 
   const leaveTypeOptions = (leaveTypes ?? []).map((leaveType) => ({
@@ -35,7 +35,7 @@ const CustomLeaveAllocationFilterBody: FC<Props> = ({
   }));
 
   const handleApply = () => {
-    onApply(selectedLeaveTypes);
+    onApply(selectedLeaveTypeIds);
     onClose();
   };
 
@@ -49,7 +49,7 @@ const CustomLeaveAllocationFilterBody: FC<Props> = ({
       title={translateFilterText(["title"])}
       resetButtonProps={{
         onClick: handleReset,
-        disabled: selectedLeaveTypes.length === 0,
+        disabled: selectedLeaveTypeIds.length === 0,
         children: translateFilterText(["resetBtn"])
       }}
       applyButtonProps={{
@@ -61,9 +61,9 @@ const CustomLeaveAllocationFilterBody: FC<Props> = ({
       <SelectableItemList
         title={translateText(["filterButtonTitle"])}
         items={leaveTypeOptions}
-        selectedValues={selectedLeaveTypes}
+        selectedValues={selectedLeaveTypeIds}
         onChipClick={(leaveTypeId) =>
-          setSelectedLeaveTypes((previous) =>
+          setSelectedLeaveTypeIds((previous) =>
             toggleFilterValue(previous, leaveTypeId)
           )
         }
