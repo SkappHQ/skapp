@@ -72,7 +72,7 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-stretch h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-2">
+        <div className="flex h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-2">
           {boardStages.map((stage) => {
             const stageDeals = stageMap.find((s) => s.stageId === stage.id);
             const deals = stageDeals?.deals ?? [];
