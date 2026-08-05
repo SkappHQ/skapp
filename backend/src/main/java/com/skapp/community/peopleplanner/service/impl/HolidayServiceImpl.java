@@ -549,8 +549,9 @@ public class HolidayServiceImpl implements HolidayService {
 		Employee currentEmployee = currentUser.getEmployee();
 		WorkLocation workLocation = currentEmployee != null ? currentEmployee.getWorkLocation() : null;
 
-		holidayFilterDto.setWorkLocationId(
-				workLocation != null ? workLocation.getWorkLocationId() : PeopleConstants.HOLIDAY_NO_WORK_LOCATION_ID);
+		if (workLocation != null) {
+			holidayFilterDto.setWorkLocationId(workLocation.getWorkLocationId());
+		}
 	}
 
 	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames,
