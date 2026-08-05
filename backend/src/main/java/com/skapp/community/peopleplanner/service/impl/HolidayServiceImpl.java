@@ -114,8 +114,6 @@ public class HolidayServiceImpl implements HolidayService {
 		Pageable pageable = PageRequest.of(holidayFilterDto.getPage(), pageSize,
 				Sort.by(holidayFilterDto.getSortOrder(), holidayFilterDto.getSortKey().toString()));
 
-		applyEmployeeWorkLocationFilter(holidayFilterDto);
-
 		Page<Holiday> holidays = holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		PageDto pageDto = pageTransformer.transform(holidays);
 		List<HolidayResponseDto> list = peopleMapper
@@ -538,20 +536,6 @@ public class HolidayServiceImpl implements HolidayService {
 	private boolean canDeleteHoliday(Holiday holiday) {
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		return holiday.getDate().isAfter(currentDate);
-	}
-
-	private void applyEmployeeWorkLocationFilter(HolidayFilterDto holidayFilterDto) {
-		if (holidayFilterDto.getWorkLocationId() != null) {
-			return;
-		}
-
-		User currentUser = userService.getCurrentUser();
-		Employee currentEmployee = currentUser.getEmployee();
-		WorkLocation workLocation = currentEmployee != null ? currentEmployee.getWorkLocation() : null;
-
-		if (workLocation != null) {
-			holidayFilterDto.setWorkLocationId(workLocation.getWorkLocationId());
-		}
 	}
 
 	private Set<WorkLocation> resolveWorkLocations(List<String> workLocationNames,
