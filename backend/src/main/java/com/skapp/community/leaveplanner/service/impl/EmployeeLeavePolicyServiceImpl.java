@@ -102,7 +102,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 				? bulkAssignLeavePolicyRequestDto.getAssignments() : Collections.emptyList();
 		if (rows.size() > MAX_BULK_ASSIGN_ROWS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_BULK_ROW_LIMIT_EXCEEDED,
-					new Object[] { MAX_BULK_ASSIGN_ROWS });
+					new String[] { String.valueOf(MAX_BULK_ASSIGN_ROWS) });
 		}
 
 		Set<String> employeeNames = new HashSet<>();
@@ -210,27 +210,27 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		List<Employee> employees = employeesByName.getOrDefault(StringUtils.normalizeName(employeeName), List.of());
 		if (employees.isEmpty()) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_EMPLOYEE_NOT_FOUND,
-					new Object[] { employeeName });
+					new String[] { employeeName });
 		}
 		if (employees.size() > 1) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_EMPLOYEE_MULTIPLE_FOUND,
-					new Object[] { employeeName });
+					new String[] { employeeName });
 		}
 		Employee employee = employees.get(0);
 
 		List<LeavePolicy> policies = policiesByName.getOrDefault(StringUtils.normalizeName(policyName), List.of());
 		if (policies.isEmpty()) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_NOT_FOUND,
-					new Object[] { policyName });
+					new String[] { policyName });
 		}
 		if (policies.size() > 1) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_MULTIPLE_FOUND,
-					new Object[] { policyName });
+					new String[] { policyName });
 		}
 		LeavePolicy policy = policies.get(0);
 		if (policy.getPolicyType() != PolicyType.ACCRUAL) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_NOT_ACCRUAL,
-					new Object[] { policyName });
+					new String[] { policyName });
 		}
 
 		EffectiveDateType effectiveDateType = effectiveDateValue.isEmpty() ? EffectiveDateType.HIRE_DATE
@@ -239,7 +239,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		if (effectiveDateType == EffectiveDateType.HIRE_DATE) {
 			if (employee.getJoinDate() == null) {
 				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE,
-						new Object[] { employeeName });
+						new String[] { employeeName });
 			}
 			effectiveFrom = employee.getJoinDate();
 		}
@@ -253,7 +253,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		String duplicateKey = employee.getEmployeeId() + ":" + policy.getLeaveType().getId();
 		if (processedEmployeeLeaveTypes.contains(duplicateKey)) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_DUPLICATE_ROW,
-					new Object[] { employee.getFullName(), policy.getLeaveType().getName() });
+					new String[] { employee.getFullName(), policy.getLeaveType().getName() });
 		}
 
 		assignSingle(employee, policy, effectiveFrom, effectiveDateType,
