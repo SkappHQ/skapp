@@ -281,13 +281,24 @@ export const reportsQueryKeys = {
 
 export const policyLeaveTypeQueryKeys = {
   ALL: ["policy-leave-type-settings"],
-  SEARCH: (
+  SEARCH: function (
     searchKeyword: string | undefined,
     isActive: boolean | undefined,
     page: number,
     size: number
-  ) => ["search-policy-leave-types", searchKeyword, isActive, page, size],
-  DETAIL: (id: number) => ["policy-leave-type", id]
+  ) {
+    return [
+      ...(this?.ALL || []),
+      "search-policy-leave-types",
+      searchKeyword,
+      isActive,
+      page,
+      size
+    ];
+  },
+  DETAIL: function (id: number) {
+    return [...(this?.ALL || []), "policy-leave-type", id];
+  }
 };
 
 export const leavePolicyQueryKeys = {
@@ -295,22 +306,18 @@ export const leavePolicyQueryKeys = {
   POLICY_LEAVE_TYPES: ["policy-leave-types"],
   LEAVE_POLICY_CONFIG: ["leave-policies-config"],
   LEAVE_POLICIES_INFINITE: function (
-  LEAVE_POLICY_CONFIG: ["leave-policy-config"],
-  LEAVE_POLICIES_INFINITE: (
     searchKeyword: string,
     leaveTypeId: string,
     size: number
-  ) => ["leave-policies-infinite", searchKeyword, leaveTypeId, size]
-};
-
-export const leavePolicyAssignmentQueryKeys = {
-  ALL: ["employee-leave-policies"],
-  EMPLOYEE_LEAVE_POLICIES: (employeeId: number, page: number, size: number) => [
-    "employee-leave-policies",
-    employeeId,
-    page,
-    size
-  ]
+  ) {
+    return [
+      ...(this?.ALL || []),
+      "leave-policies-infinite",
+      searchKeyword,
+      leaveTypeId,
+      size
+    ];
+  }
 };
 
 export const leavePolicyAssignmentQueryKeys = {

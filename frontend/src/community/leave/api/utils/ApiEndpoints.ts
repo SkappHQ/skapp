@@ -48,6 +48,19 @@ export const leavePolicyEndPoints = {
   GET_LEAVE_POLICY_CONFIG: `${moduleAPIPath.LEAVE}/policies/config`
 };
 
+export const policyLeaveTypeEndPoints = {
+  SEARCH_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types/search`,
+  ADD_POLICY_LEAVE_TYPE: `${moduleAPIPath.LEAVE}/policy-leave-types`,
+  GET_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}`,
+  UPDATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}`,
+  ACTIVATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}/activate`,
+  DEACTIVATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}/deactivate`
+};
+
 export const leavePolicyAssignmentEndPoints = {
   ASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
   UNASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,

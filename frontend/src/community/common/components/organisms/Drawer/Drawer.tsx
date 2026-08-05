@@ -160,7 +160,6 @@ const Drawer = (): JSX.Element => {
       notificationTimesheetCount,
       notificationSignCount,
       isLeavePoliciesEnabled,
-      isLeavePoliciesEnabled,
       isLeavePoliciesConfigError
     ]
   );

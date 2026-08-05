@@ -181,14 +181,6 @@ export interface LeavePolicyMutationResponse {
   results: LeavePolicyResponseDto[];
 }
 
-export interface LeavePolicyConfigResult {
-  isEnabled: boolean;
-}
-
-export interface LeavePolicyConfigResponse {
-  results: LeavePolicyConfigResult[];
-}
-
 export enum EffectiveDateType {
   HIRE_DATE = "HIRE_DATE",
   SPECIFIC = "SPECIFIC"
