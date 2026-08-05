@@ -1,11 +1,31 @@
+import { DurationLike } from "luxon";
+
 import {
   AccrualFrequency,
   AccrualTiming,
+  CalendarUnit,
   FirstAccrualType,
   LeavePolicyFormData
 } from "~community/leave/types/LeavePolicyTypes";
 
 export const MAX_POLICY_NAME_LENGTH = 100;
+
+export const ACCRUAL_PREVIEW_ROW_LIMIT = 12;
+
+export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
+  DAILY: "day",
+  WEEKLY: "week",
+  MONTHLY: "month",
+  QUARTERLY: "quarter",
+  YEARLY: "year",
+  ON_ANNIVERSARY: "year"
+};
+
+export const INTERVAL_STEP: Partial<Record<AccrualFrequency, DurationLike>> = {
+  EVERY_OTHER_WEEK: { weeks: 2 },
+  TWICE_A_MONTH: { days: 15 },
+  TWICE_A_YEAR: { months: 6 }
+};
 
 export const LEAVE_POLICY_PAGE_SIZE = 10;
 
