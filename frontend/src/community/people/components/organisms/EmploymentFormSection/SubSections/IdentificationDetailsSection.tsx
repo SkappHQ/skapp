@@ -65,10 +65,10 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
     );
 
     const context: EmployeeIdentificationContextType = {
-      isUniquePayrollId: !(
+      isPayrollIdExists: !(
         isPeopleAdmin && payrollIdValidation?.isPayrollIdExists
       ),
-      isUniqueTin: !(isPeopleAdmin && tinValidation?.isTinExists)
+      isTinExists: !(isPeopleAdmin && tinValidation?.isTinExists)
     };
 
     const initialValues = useMemo<L3IdentificationAndDiversityDetailsType>(

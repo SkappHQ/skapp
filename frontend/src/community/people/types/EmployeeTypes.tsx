@@ -242,8 +242,8 @@ export interface EmployeeEmploymentContextType {
 }
 
 export interface EmployeeIdentificationContextType {
-  isUniquePayrollId: boolean;
-  isUniqueTin: boolean;
+  isPayrollIdExists: boolean;
+  isTinExists: boolean;
 }
 
 export interface EmployeePermission {

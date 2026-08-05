@@ -338,7 +338,7 @@ export const employeeIdentificationDetailsValidation = (
         "payroll-id-exists",
         translator(["payrollIdAlreadyExistsError"]),
         function () {
-          return context?.isUniquePayrollId;
+          return context?.isPayrollIdExists;
         }
       )
       .nullable(),
@@ -350,13 +350,9 @@ export const employeeIdentificationDetailsValidation = (
           max: String(TIN_LENGTH)
         })
       )
-      .test(
-        "tin-exists",
-        translator(["tinAlreadyExistsError"]),
-        function () {
-          return context?.isUniqueTin;
-        }
-      )
+      .test("tin-exists", translator(["tinAlreadyExistsError"]), function () {
+        return context?.isTinExists;
+      })
       .nullable()
   });
 
