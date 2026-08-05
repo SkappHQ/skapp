@@ -301,6 +301,7 @@ export const policyLeaveTypeQueryKeys = {
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
   POLICY_LEAVE_TYPES: ["policy-leave-types"],
+  LEAVE_POLICY_CONFIG: ["leave-policy-config"],
   LEAVE_POLICIES_INFINITE: function (
     searchKeyword: string,
     leaveTypeId: string,

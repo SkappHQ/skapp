@@ -2,6 +2,7 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -14,7 +15,7 @@ import {
   LeaveTypeFormTypes,
   LeaveTypeModalEnums
 } from "~community/leave/enums/LeaveTypeEnums";
-import useIsLeavePoliciesEnabled from "~community/leave/hooks/useIsLeavePoliciesEnabled";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -23,7 +24,8 @@ const LeaveType: NextPage = () => {
   const router = useRouter();
   const { slug } = router.query;
 
-  const isLeavePoliciesEnabled = useIsLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
 
   const {
     isLeaveTypeFormDirty,
@@ -81,7 +83,9 @@ const LeaveType: NextPage = () => {
     router.push(ROUTES.LEAVE.LEAVE_TYPES);
   };
 
-  const activationToggleButton = isLeavePoliciesEnabled ? (
+  const activationToggleButton = isLeavePolicyConfigLoading ? (
+    <></>
+  ) : isLeavePoliciesEnabled ? (
     <PolicyLeaveTypeActivationToggleButton />
   ) : (
     <LeaveTypeActivationToggleButton />
@@ -118,7 +122,13 @@ const LeaveType: NextPage = () => {
       }
     >
       <>
-        {isLeavePoliciesEnabled ? <PolicyLeaveTypeForm /> : <LeaveTypeForm />}
+        {isLeavePolicyConfigLoading ? (
+          <FullScreenLoader />
+        ) : isLeavePoliciesEnabled ? (
+          <PolicyLeaveTypeForm />
+        ) : (
+          <LeaveTypeForm />
+        )}
         <UnsavedChangesModal />
       </>
     </ContentLayout>

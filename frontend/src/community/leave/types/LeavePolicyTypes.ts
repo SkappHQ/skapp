@@ -85,6 +85,14 @@ export interface PolicyLeaveTypesResponse {
   results: PolicyLeaveTypesResult[];
 }
 
+export interface LeavePolicyConfigResult {
+  isEnabled: boolean;
+}
+
+export interface LeavePolicyConfigResponse {
+  results: LeavePolicyConfigResult[];
+}
+
 export interface LeavePolicyFormData {
   policyType: PolicyType | null;
   policyName: string;
