@@ -78,9 +78,9 @@ const EditContactModalContent = () => {
       ownerId: values.ownerId
     };
     const originalValues: CrmContactFormValues = {
-      firstName: selectedContact?.firstName.trim() ?? "",
+      firstName: selectedContact?.firstName?.trim() ?? "",
       lastName: selectedContact?.lastName?.trim() ?? "",
-      email: selectedContact?.email.trim() ?? "",
+      email: selectedContact?.email?.trim() ?? "",
       contactNumber: selectedContact?.contactNumber?.trim() ?? "",
       companyId: selectedContact?.company?.id ?? null,
       ownerId: selectedContact?.owner?.employeeId ?? null
