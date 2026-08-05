@@ -30,13 +30,13 @@ export const peopleQueryKeys = {
       identificationNo
     ].filter((val) => val !== undefined);
   },
-  PAYROLL_ID_UNIQUENESS_KEYS: (employeeId?: string, payrollId?: string) => [
-    "payroll-id-uniqueness-keys",
+  PAYROLL_ID_EXISTS_KEYS: (employeeId?: string, payrollId?: string) => [
+    "payroll-id-exists-keys",
     employeeId,
     payrollId
   ],
-  TIN_UNIQUENESS_KEYS: (employeeId?: string, tin?: string) => [
-    "tin-uniqueness-keys",
+  TIN_EXISTS_KEYS: (employeeId?: string, tin?: string) => [
+    "tin-exists-keys",
     employeeId,
     tin
   ],

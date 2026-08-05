@@ -455,21 +455,21 @@ export interface EmployeeDataExists {
   isGuestUser: boolean;
 }
 
-export interface PayrollIdExistCheckParams {
+export interface PayrollIdExistsCheckParams {
   payrollId?: string;
   employeeId?: string;
 }
 
-export interface TinExistCheckParams {
+export interface TinExistsCheckParams {
   tin?: string;
   employeeId?: string;
 }
 
-export interface PayrollIdUniquenessResponse {
+export interface PayrollIdExistsResponse {
   isPayrollIdExists: boolean;
 }
 
-export interface TinUniquenessResponse {
+export interface TinExistsResponse {
   isTinExists: boolean;
 }
 

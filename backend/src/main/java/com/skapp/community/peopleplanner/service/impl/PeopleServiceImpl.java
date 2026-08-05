@@ -59,10 +59,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
-import com.skapp.community.peopleplanner.payload.request.PayrollIdExistCheckDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
-import com.skapp.community.peopleplanner.payload.request.TinExistCheckDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
@@ -92,8 +92,8 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataValidationResponseDto;
-import com.skapp.community.peopleplanner.payload.response.PayrollIdUniquenessResponseDto;
-import com.skapp.community.peopleplanner.payload.response.TinUniquenessResponseDto;
+import com.skapp.community.peopleplanner.payload.response.PayrollIdExistsResponseDto;
+import com.skapp.community.peopleplanner.payload.response.TinExistsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDetailedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
@@ -1388,13 +1388,13 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
-	public ResponseEntityDto checkPayrollIdUniqueness(PayrollIdExistCheckDto payrollIdExistCheckDto) {
-		PayrollIdUniquenessResponseDto responseDto = new PayrollIdUniquenessResponseDto();
+	public ResponseEntityDto checkPayrollIdExists(PayrollIdExistsCheckDto payrollIdExistsCheckDto) {
+		PayrollIdExistsResponseDto responseDto = new PayrollIdExistsResponseDto();
 
-		String payrollId = payrollIdExistCheckDto.getPayrollId();
+		String payrollId = payrollIdExistsCheckDto.getPayrollId();
 		if (payrollId != null && !payrollId.isBlank()) {
 			boolean exists = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId,
-					payrollIdExistCheckDto.getEmployeeId());
+					payrollIdExistsCheckDto.getEmployeeId());
 			responseDto.setIsPayrollIdExists(exists);
 		}
 
@@ -1402,12 +1402,12 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
-	public ResponseEntityDto checkTinUniqueness(TinExistCheckDto tinExistCheckDto) {
-		TinUniquenessResponseDto responseDto = new TinUniquenessResponseDto();
+	public ResponseEntityDto checkTinExists(TinExistsCheckDto tinExistsCheckDto) {
+		TinExistsResponseDto responseDto = new TinExistsResponseDto();
 
-		String tin = tinExistCheckDto.getTin();
+		String tin = tinExistsCheckDto.getTin();
 		if (tin != null && !tin.isBlank()) {
-			boolean exists = employeeDao.existsByTinAndEmployeeIdNot(tin, tinExistCheckDto.getEmployeeId());
+			boolean exists = employeeDao.existsByTinAndEmployeeIdNot(tin, tinExistsCheckDto.getEmployeeId());
 			responseDto.setIsTinExists(exists);
 		}
 		else {

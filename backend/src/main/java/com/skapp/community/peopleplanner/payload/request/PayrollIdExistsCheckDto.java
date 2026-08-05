@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PayrollIdExistCheckDto {
+public class PayrollIdExistsCheckDto {
 
 	private Long employeeId;
 

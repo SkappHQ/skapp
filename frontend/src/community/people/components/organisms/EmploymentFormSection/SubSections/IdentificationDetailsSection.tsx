@@ -8,8 +8,8 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { numberPattern } from "~community/common/regex/regexPatterns";
 import {
-  useCheckPayrollIdUniqueness,
-  useCheckTinUniqueness
+  useCheckPayrollIdExists,
+  useCheckTinExists
 } from "~community/people/api/PeopleApi";
 import {
   PAYROLL_ID_LENGTH,
@@ -54,12 +54,12 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
       employee?.employment?.identificationAndDiversityDetails?.payrollId;
     const tin = employee?.employment?.identificationAndDiversityDetails?.tin;
 
-    const { data: payrollIdValidation } = useCheckPayrollIdUniqueness(
+    const { data: payrollIdValidation } = useCheckPayrollIdExists(
       payrollId,
       employeeIdForExistCheck
     );
     
-    const { data: tinValidation } = useCheckTinUniqueness(
+    const { data: tinValidation } = useCheckTinExists(
       tin,
       employeeIdForExistCheck
     );

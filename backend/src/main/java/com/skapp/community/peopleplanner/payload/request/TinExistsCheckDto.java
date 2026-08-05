@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TinExistCheckDto {
+public class TinExistsCheckDto {
 
 	private Long employeeId;
 

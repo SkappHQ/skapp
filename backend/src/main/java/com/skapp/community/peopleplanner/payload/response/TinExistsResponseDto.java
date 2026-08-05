@@ -7,8 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PayrollIdUniquenessResponseDto {
+public class TinExistsResponseDto {
 
-	private Boolean isPayrollIdExists;
+	private Boolean isTinExists;
 
 }

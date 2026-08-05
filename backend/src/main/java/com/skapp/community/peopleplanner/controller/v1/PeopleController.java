@@ -8,10 +8,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
-import com.skapp.community.peopleplanner.payload.request.PayrollIdExistCheckDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
-import com.skapp.community.peopleplanner.payload.request.TinExistCheckDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
@@ -178,8 +178,8 @@ public class PeopleController {
 			description = "This endpoint checks whether the provided Payroll ID is already assigned to another employee.")
 	@GetMapping(value = "/exists/payroll-id")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> checkPayrollIdUniqueness(PayrollIdExistCheckDto payrollIdExistCheckDto) {
-		ResponseEntityDto response = peopleService.checkPayrollIdUniqueness(payrollIdExistCheckDto);
+	public ResponseEntity<ResponseEntityDto> checkPayrollIdExists(PayrollIdExistsCheckDto payrollIdExistsCheckDto) {
+		ResponseEntityDto response = peopleService.checkPayrollIdExists(payrollIdExistsCheckDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -187,8 +187,8 @@ public class PeopleController {
 			description = "This endpoint checks whether the provided TIN is already assigned to another employee.")
 	@GetMapping(value = "/exists/tin")
 	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> checkTinUniqueness(TinExistCheckDto tinExistCheckDto) {
-		ResponseEntityDto response = peopleService.checkTinUniqueness(tinExistCheckDto);
+	public ResponseEntity<ResponseEntityDto> checkTinExists(TinExistsCheckDto tinExistsCheckDto) {
+		ResponseEntityDto response = peopleService.checkTinExists(tinExistsCheckDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

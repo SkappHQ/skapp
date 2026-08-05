@@ -47,12 +47,12 @@ import {
   EmployeeDetails,
   EmployeeManagerType,
   MyManagersType,
-  PayrollIdExistCheckParams,
-  PayrollIdUniquenessResponse,
+  PayrollIdExistsCheckParams,
+  PayrollIdExistsResponse,
   QuickAddEmployeePayload,
   QuickAddEmployeeResponse,
-  TinExistCheckParams,
-  TinUniquenessResponse
+  TinExistsCheckParams,
+  TinExistsResponse
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
@@ -304,8 +304,8 @@ export const useCheckEmailAndIdentificationNo = (
 };
 
 const checkPayrollIdExists = async (
-  params: PayrollIdExistCheckParams
-): Promise<PayrollIdUniquenessResponse> => {
+  params: PayrollIdExistsCheckParams
+): Promise<PayrollIdExistsResponse> => {
   const response = await authFetch.get(
     peoplesEndpoints.CHECK_PAYROLL_ID_EXISTS,
     { params }
@@ -313,32 +313,32 @@ const checkPayrollIdExists = async (
   return response?.data?.results[0];
 };
 
-export const useCheckPayrollIdUniqueness = (
+export const useCheckPayrollIdExists = (
   payrollId?: string,
   employeeId?: string
-): UseQueryResult<PayrollIdUniquenessResponse> => {
+): UseQueryResult<PayrollIdExistsResponse> => {
   return useQuery({
-    queryKey: peopleQueryKeys.PAYROLL_ID_UNIQUENESS_KEYS(employeeId, payrollId),
+    queryKey: peopleQueryKeys.PAYROLL_ID_EXISTS_KEYS(employeeId, payrollId),
     queryFn: () => checkPayrollIdExists({ payrollId, employeeId }),
     enabled: Boolean(payrollId)
   });
 };
 
 const checkTinExists = async (
-  params: TinExistCheckParams
-): Promise<TinUniquenessResponse> => {
+  params: TinExistsCheckParams
+): Promise<TinExistsResponse> => {
   const response = await authFetch.get(peoplesEndpoints.CHECK_TIN_EXISTS, {
     params
   });
   return response?.data?.results[0];
 };
 
-export const useCheckTinUniqueness = (
+export const useCheckTinExists = (
   tin?: string,
   employeeId?: string
-): UseQueryResult<TinUniquenessResponse> => {
+): UseQueryResult<TinExistsResponse> => {
   return useQuery({
-    queryKey: peopleQueryKeys.TIN_UNIQUENESS_KEYS(employeeId, tin),
+    queryKey: peopleQueryKeys.TIN_EXISTS_KEYS(employeeId, tin),
     queryFn: () => checkTinExists({ tin, employeeId }),
     enabled: Boolean(tin)
   });
