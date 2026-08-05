@@ -14,6 +14,6 @@ public interface SpecialNotificationService {
 
 	Optional<LocalDate> getLastViewedDate(Long employeeId, SpecialNotificationType type);
 
-	void markNotificationViewed(Long employeeId, SpecialNotificationType type, LocalDate viewedDate);
+	void markNotificationAsViewed(Long employeeId, SpecialNotificationType type, LocalDate viewedDate);
 
 }

@@ -67,8 +67,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 
 	@Override
 	@Transactional
-	public void markNotificationViewed(Long employeeId, SpecialNotificationType type, LocalDate viewedDate) {
-		log.info("markNotificationViewed: execution started for employee {} and type {}", employeeId, type);
+	public void markNotificationAsViewed(Long employeeId, SpecialNotificationType type, LocalDate viewedDate) {
+		log.info("markNotificationAsViewed: execution started for employee {} and type {}", employeeId, type);
 
 		SpecialNotificationStatus specialNotificationStatus = specialNotificationStatusDao
 			.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, type)
@@ -81,7 +81,7 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 		specialNotificationStatus.setLastViewedDate(viewedDate);
 		specialNotificationStatusDao.save(specialNotificationStatus);
 
-		log.info("markNotificationViewed: execution ended");
+		log.info("markNotificationAsViewed: execution ended");
 	}
 
 }
