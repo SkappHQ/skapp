@@ -255,7 +255,6 @@ const PolicyLeaveTypeForm: FC = () => {
 
         <div
           ref={durationGroupRef}
-          role="group"
           aria-labelledby={MIN_DURATION_GROUP_LABEL_ID}
           className="mt-4 flex flex-col gap-5"
         >
