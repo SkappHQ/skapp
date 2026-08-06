@@ -1,22 +1,20 @@
-import {
-  EditIcon,
-  IconButton,
-  Pagination,
-  Table
-} from "@rootcodelabs/skapp-ui";
+import { EditIcon, IconButton } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow
+} from "~community/common/components/organisms/TableView/types";
 import ROUTES from "~community/common/constants/routes";
+import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import { POLICY_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
-import {
-  LeaveDurationTypes,
-  LeaveTypeFormTypes
-} from "~community/leave/enums/LeaveTypeEnums";
+import { LeaveTypeFormTypes } from "~community/leave/enums/LeaveTypeEnums";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { PolicyLeaveTypeSettingsType } from "~community/leave/types/PolicyLeaveTypeTypes";
 import { getMinDurationTranslationKeys } from "~community/leave/utils/policyLeaveTypes/policyLeaveTypeUtils";
@@ -35,22 +33,6 @@ const PolicyLeaveTypesTable: FC = () => {
     size: POLICY_LEAVE_TYPES_PAGE_SIZE
   });
 
-  const tableData = useMemo(
-    () =>
-      (policyLeaveTypesPage?.items ?? []).map(
-        (policyLeaveType: PolicyLeaveTypeSettingsType) => ({
-          id: policyLeaveType.id,
-          leaveTypeName: policyLeaveType,
-          durations: policyLeaveType.minDuration,
-          status: policyLeaveType.isActive,
-          actions: policyLeaveType
-        })
-      ),
-    [policyLeaveTypesPage]
-  );
-
-  type TableRow = (typeof tableData)[number];
-
   const handleEditPolicyLeaveType = useCallback(
     (policyLeaveType: PolicyLeaveTypeSettingsType): void => {
       router.push({
@@ -61,107 +43,102 @@ const PolicyLeaveTypesTable: FC = () => {
     [router]
   );
 
-  const columns = useMemo(() => {
-    const baseColumns = [
-      {
-        key: "leaveTypeName",
-        header: translateText(["nameHeader"]),
-        render: (value: unknown) => {
-          const policyLeaveType = value as PolicyLeaveTypeSettingsType;
-          return (
+  const tableHeaders = useMemo<GridHeader[]>(() => {
+    const baseHeaders: GridHeader[] = [
+      { id: "leaveTypeName", label: translateText(["nameHeader"]) },
+      { id: "durations", label: translateText(["durationsHeader"]) },
+      { id: "status", label: translateText(["statusHeader"]) }
+    ];
+
+    if (!canManageLeavePolicies) {
+      return baseHeaders;
+    }
+
+    return [
+      ...baseHeaders,
+      { id: "actions", label: "", width: "3.5rem", align: "right" }
+    ];
+  }, [translateText, canManageLeavePolicies]);
+
+  const tableRows = useMemo<GridRow[]>(
+    () =>
+      (policyLeaveTypesPage?.items ?? []).map(
+        (policyLeaveType: PolicyLeaveTypeSettingsType) => ({
+          id: policyLeaveType.id,
+          leaveTypeName: (
             <LeaveTypeChip
               name={policyLeaveType.name}
               emojiCode={policyLeaveType.emojiCode}
             />
-          );
-        }
-      },
-      {
-        key: "durations",
-        header: translateText(["durationsHeader"]),
-        render: (value: unknown) => (
-          <div className="flex flex-row flex-wrap gap-2">
-            {getMinDurationTranslationKeys(value as LeaveDurationTypes).map(
-              (durationKey: string) => (
-                <span
-                  key={durationKey}
-                  className="body2 w-fit rounded-full bg-secondary-background px-5 py-3 text-secondary-text"
-                >
-                  {translateText([durationKey])}
-                </span>
-              )
-            )}
-          </div>
-        )
-      },
-      {
-        key: "status",
-        header: translateText(["statusHeader"]),
-        render: (value: unknown) => {
-          const isActive = value as boolean;
-          return (
+          ),
+          durations: (
+            <div className="flex flex-row flex-wrap gap-2">
+              {getMinDurationTranslationKeys(policyLeaveType.minDuration).map(
+                (durationKey: string) => (
+                  <span
+                    key={durationKey}
+                    className="body2 w-fit rounded-full bg-secondary-background px-5 py-3 text-secondary-text"
+                  >
+                    {translateText([durationKey])}
+                  </span>
+                )
+              )}
+            </div>
+          ),
+          status: (
             <LeavePolicyStatusBadge
-              isActive={isActive}
+              isActive={policyLeaveType.isActive}
               text={
-                isActive
+                policyLeaveType.isActive
                   ? translateText(["active"])
                   : translateText(["inactive"])
               }
             />
-          );
-        }
-      }
-    ];
-
-    if (!canManageLeavePolicies) {
-      return baseColumns;
-    }
-
-    return [
-      ...baseColumns,
-      {
-        key: "actions",
-        header: "",
-        width: "3.5rem",
-        render: (value: unknown) => {
-          const policyLeaveType = value as PolicyLeaveTypeSettingsType;
-          return (
-            <IconButton
-              icon={<EditIcon />}
-              variant="outlined"
-              shape="rounded"
-              onClick={() => handleEditPolicyLeaveType(policyLeaveType)}
-              aria-label={translateText(["editButton.label"], {
-                recordName: policyLeaveType.name
-              })}
-            />
-          );
-        }
-      }
-    ];
-  }, [translateText, canManageLeavePolicies, handleEditPolicyLeaveType]);
+          ),
+          ...(canManageLeavePolicies
+            ? {
+                actions: (
+                  <IconButton
+                    icon={<EditIcon />}
+                    variant="outlined"
+                    shape="rounded"
+                    onClick={() => handleEditPolicyLeaveType(policyLeaveType)}
+                    aria-label={translateText(["editButton.label"], {
+                      recordName: policyLeaveType.name
+                    })}
+                  />
+                )
+              }
+            : {})
+        })
+      ),
+    [
+      policyLeaveTypesPage,
+      translateText,
+      canManageLeavePolicies,
+      handleEditPolicyLeaveType
+    ]
+  );
 
   const handlePageChange = useCallback((selectedPage: number): void => {
     setPage(selectedPage);
   }, []);
 
   return (
-    <div className="mt-4 flex flex-col gap-4">
-      <Table<TableRow>
-        columns={columns}
-        data={tableData}
-        tableAriaLabel={translateText(["title"])}
-        isLoading={isLoading}
-        noDataState={{ title: translateText(["noLeaveTypesTitle"]) }}
-      />
-      {policyLeaveTypesPage && policyLeaveTypesPage.totalPages > 1 && (
-        <Pagination
-          totalPages={policyLeaveTypesPage.totalPages}
-          currentPage={page}
-          onChange={handlePageChange}
-        />
-      )}
-    </div>
+    <TableView
+      className="mt-4"
+      tableName={TableNames.LEAVE_TYPES}
+      ariaLabel={{ regionAriaLabel: translateText(["title"]) }}
+      headers={tableHeaders}
+      rows={tableRows}
+      isLoading={isLoading}
+      emptyState={{ title: translateText(["noLeaveTypesTitle"]) }}
+      pagination={{
+        totalPages: policyLeaveTypesPage?.totalPages,
+        currentPage: page,
+        onPageChange: handlePageChange
+      }}
+    />
   );
 };
 
