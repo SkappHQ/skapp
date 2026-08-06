@@ -7,6 +7,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.NotificationSettingsResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
@@ -87,7 +88,6 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
-import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
@@ -1556,8 +1556,8 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto getTodayBirthdayNotifications() {
 		log.info("getTodayBirthdayNotifications: execution started");
 
-		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
 			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(null, List.of()));
@@ -1599,8 +1599,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 		LocalDate today = resolveBirthdayNotificationDate();
 
-		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
 			Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
@@ -1613,7 +1613,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private BirthdayNotificationScope resolveBirthdayNotificationScope(
-			BirthdayNotificationConfigDto birthdayNotificationConfig) {
+			SpecialNotificationConfig birthdayNotificationConfig) {
 		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsOrganizationWide())) {
 			return BirthdayNotificationScope.ORGANIZATION;
 		}

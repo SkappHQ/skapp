@@ -8,8 +8,7 @@ import java.util.Optional;
 
 public interface SpecialNotificationService {
 
-	<T extends SpecialNotificationConfig> T getSpecialNotificationConfig(SpecialNotificationType type,
-																		 Class<T> configClass);
+	SpecialNotificationConfig getSpecialNotificationConfig(SpecialNotificationType type);
 
 	void saveSpecialNotificationConfig(SpecialNotificationType type, SpecialNotificationConfig config);
 

@@ -1,10 +1,10 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
-import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.service.PeopleConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +23,8 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 	public ResponseEntityDto getBirthdayNotificationConfigs() {
 		log.info("getBirthdayNotificationConfigs: execution started");
 
-		BirthdayNotificationConfigDto responseDto = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+		SpecialNotificationConfig responseDto = specialNotificationService
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		log.info("getBirthdayNotificationConfigs: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -35,8 +35,8 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 	public ResponseEntityDto updateBirthdayNotificationConfigs(BirthdayNotificationConfigRequestDto requestDto) {
 		log.info("updateBirthdayNotificationConfigs: execution started");
 
-		BirthdayNotificationConfigDto config = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+		SpecialNotificationConfig config = specialNotificationService
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		if (requestDto.getIsTurnedOn() != null) {
 			config.setIsTurnedOn(requestDto.getIsTurnedOn());

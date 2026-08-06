@@ -2,13 +2,13 @@ package com.skapp.community.peopleplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.model.OrganizationConfig;
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.payload.request.BirthdayNotificationConfigRequestDto;
-import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +109,7 @@ class PeopleConfigControllerIntegrationTest {
 	}
 
 	private void seedConfig(boolean isTurnedOn, boolean isOrganizationWide, boolean isTeamWide) {
-		BirthdayNotificationConfigDto config = new BirthdayNotificationConfigDto();
+		SpecialNotificationConfig config = new SpecialNotificationConfig();
 		config.setIsTurnedOn(isTurnedOn);
 		config.setIsOrganizationWide(isOrganizationWide);
 		config.setIsTeamWide(isTeamWide);

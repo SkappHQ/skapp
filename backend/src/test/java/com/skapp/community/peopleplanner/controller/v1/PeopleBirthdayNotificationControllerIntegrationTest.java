@@ -5,6 +5,7 @@ import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.model.SpecialNotificationStatus;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.repository.OrganizationConfigDao;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.repository.SpecialNotificationStatusDao;
@@ -17,7 +18,6 @@ import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeePersonalInfo;
 import com.skapp.community.peopleplanner.model.EmployeeTeam;
-import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationConfigDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeTeamDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
@@ -144,7 +144,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 	}
 
 	private void seedConfig(boolean isTurnedOn, boolean isOrganizationWide, boolean isTeamWide) {
-		BirthdayNotificationConfigDto config = new BirthdayNotificationConfigDto();
+		SpecialNotificationConfig config = new SpecialNotificationConfig();
 		config.setIsTurnedOn(isTurnedOn);
 		config.setIsOrganizationWide(isOrganizationWide);
 		config.setIsTeamWide(isTeamWide);
