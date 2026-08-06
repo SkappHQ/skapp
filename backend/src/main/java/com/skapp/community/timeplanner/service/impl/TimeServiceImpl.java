@@ -1209,7 +1209,10 @@ public class TimeServiceImpl implements TimeService {
 			if (activeTimeSlotResponseDto1 != null)
 				return activeTimeSlotResponseDto1;
 
-			return getAllActiveSlots(currentUser, currentDate, currentDayConfig, morningHours, eveningHours);
+			Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
+					? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
+
+			return getAllActiveSlots(employeeWorkLocationId, currentDate, currentDayConfig, morningHours, eveningHours);
 		}
 
 		return null;
@@ -1271,11 +1274,8 @@ public class TimeServiceImpl implements TimeService {
 		return null;
 	}
 
-	private ResponseEntityDto getAllActiveSlots(User user, LocalDate currentDate, TimeConfig currentDayConfig,
-			float morningHours, float eveningHours) {
-
-		Long employeeWorkLocationId = user.getEmployee().getWorkLocation() != null
-				? user.getEmployee().getWorkLocation().getWorkLocationId() : null;
+	private ResponseEntityDto getAllActiveSlots(Long employeeWorkLocationId, LocalDate currentDate,
+			TimeConfig currentDayConfig, float morningHours, float eveningHours) {
 
 		List<Holiday> holidayList = employeeWorkLocationId == null
 				? holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationsIsEmpty(currentDate)
