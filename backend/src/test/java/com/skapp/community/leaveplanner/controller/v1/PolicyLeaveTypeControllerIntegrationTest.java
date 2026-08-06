@@ -568,9 +568,10 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		void deactivatePolicyLeaveType_RemovesTypeFromActiveList() throws Exception {
 			performDeactivate(leaveAdminToken(), 100).andExpect(status().isOk());
 
-			performGetAll(leaveAdminToken()).andDo(print())
+			performGetAll(leaveAdminToken(), params("isActive", "true", "size", "-1")).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].leaveTypes", hasSize(0)));
+				.andExpect(jsonPath("$.results[0].items", hasSize(0)))
+				.andExpect(jsonPath("$.results[0].totalItems").value(0));
 		}
 
 		@Test
