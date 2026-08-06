@@ -107,6 +107,28 @@ class CrmValidationsTest {
 		}
 
 		@Test
+		@DisplayName("Number shorter than min length - throws CRM_ERROR_CONTACT_NUMBER_INVALID")
+		void validateContactNumber_NumberTooShort_ThrowsInvalid() {
+			String tooShortNumber = "1".repeat(CrmConstants.PHONE_MIN_LENGTH - 1);
+			ModuleException ex = assertThrows(ModuleException.class,
+					() -> CrmValidations.validateContactNumber("94 " + tooShortNumber));
+			assertEquals(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID, ex.getMessageKey());
+		}
+
+		@Test
+		@DisplayName("Number at exactly max length - does not throw")
+		void validateContactNumber_NumberAtMaxLength_DoesNotThrow() {
+			String maxLengthNumber = "1".repeat(CrmConstants.PHONE_MAX_LENGTH);
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("94 " + maxLengthNumber));
+		}
+
+		@Test
+		@DisplayName("Country code at exactly 4 digits - does not throw")
+		void validateContactNumber_CountryCodeAtMaxLength_DoesNotThrow() {
+			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("1234 7712345"));
+		}
+
+		@Test
 		@DisplayName("Valid country code and number - does not throw")
 		void validateContactNumber_Valid_DoesNotThrow() {
 			assertDoesNotThrow(() -> CrmValidations.validateContactNumber("94 771234567"));

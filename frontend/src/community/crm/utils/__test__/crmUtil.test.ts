@@ -1,7 +1,9 @@
 import {
+  combineContactNumber,
   findById,
   formatValue,
   groupItemsByPriority,
+  splitContactNumber,
   toDropdownOptions,
   toSelectedDropdownOption
 } from "../crmUtil";
@@ -198,5 +200,51 @@ describe("findById", () => {
     const result = findById([], 1, getId);
 
     expect(result).toBeNull();
+  });
+});
+
+describe("splitContactNumber", () => {
+  it("should return an empty number with the default country code for empty input", () => {
+    const result = splitContactNumber("", "94");
+
+    expect(result).toEqual({ countryCode: "94", number: "" });
+  });
+
+  it("should split a well-formed value into country code and number", () => {
+    const result = splitContactNumber("94 771234567", "94");
+
+    expect(result).toEqual({ countryCode: "94", number: "771234567" });
+  });
+
+  it("should treat a legacy bare-digit value (no space) as unparseable and default the country code", () => {
+    const result = splitContactNumber("0771234567", "94");
+
+    expect(result).toEqual({ countryCode: "94", number: "0771234567" });
+  });
+
+  it("should treat a leading-space value as unparseable and default the country code", () => {
+    const result = splitContactNumber(" 94771234567", "94");
+
+    expect(result).toEqual({ countryCode: "94", number: " 94771234567" });
+  });
+});
+
+describe("combineContactNumber", () => {
+  it("should return an empty string when the number is empty", () => {
+    const result = combineContactNumber("94", "");
+
+    expect(result).toBe("");
+  });
+
+  it("should combine a country code and number with a space", () => {
+    const result = combineContactNumber("94", "771234567");
+
+    expect(result).toBe("94 771234567");
+  });
+
+  it("should return an empty string when the country code is empty, even with a valid number - a real number can be silently dropped if the caller ever fails to provide a default country code", () => {
+    const result = combineContactNumber("", "771234567");
+
+    expect(result).toBe("");
   });
 });
