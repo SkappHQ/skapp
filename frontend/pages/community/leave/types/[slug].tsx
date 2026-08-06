@@ -83,13 +83,33 @@ const LeaveType: NextPage = () => {
     router.push(ROUTES.LEAVE.LEAVE_TYPES);
   };
 
-  const activationToggleButton = isLeavePolicyConfigLoading ? (
-    <></>
-  ) : isLeavePoliciesEnabled ? (
-    <PolicyLeaveTypeActivationToggleButton />
-  ) : (
-    <LeaveTypeActivationToggleButton />
-  );
+  const getActivationToggleButton = () => {
+    if (isLeavePolicyConfigLoading) {
+      return <></>;
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return <PolicyLeaveTypeActivationToggleButton />;
+    }
+
+    return <LeaveTypeActivationToggleButton />;
+  };
+
+  const activationToggleButton = getActivationToggleButton();
+
+  const getLeaveTypeForm = () => {
+    if (isLeavePolicyConfigLoading) {
+      return <FullScreenLoader />;
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return <PolicyLeaveTypeForm />;
+    }
+
+    return <LeaveTypeForm />;
+  };
+
+  const leaveTypeForm = getLeaveTypeForm();
 
   return (
     <ContentLayout
@@ -122,13 +142,7 @@ const LeaveType: NextPage = () => {
       }
     >
       <>
-        {isLeavePolicyConfigLoading ? (
-          <FullScreenLoader />
-        ) : isLeavePoliciesEnabled ? (
-          <PolicyLeaveTypeForm />
-        ) : (
-          <LeaveTypeForm />
-        )}
+        {leaveTypeForm}
         <UnsavedChangesModal />
       </>
     </ContentLayout>
