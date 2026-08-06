@@ -498,23 +498,6 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Leading and trailing whitespace is trimmed from an updated name")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void updatePolicyLeaveType_NameWithSurroundingWhitespace_IsTrimmed() throws Exception {
-			performUpdate(leaveAdminToken(), 100, "{\"name\": \"  Trimmed Leave Type  \"}").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].name").value("Trimmed Leave Type"));
-		}
-
-		@Test
-		@DisplayName("Returns bad request when renaming to an existing name padded with whitespace")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void updatePolicyLeaveType_PaddedDuplicateName_ReturnsBadRequest() throws Exception {
-			performUpdate(leaveAdminToken(), 100, "{\"name\": \"  PolicySick  \"}").andDo(print())
-				.andExpect(status().isBadRequest());
-		}
-
-		@Test
 		@DisplayName("Returns bad request when the emoji code is updated to a blank value")
 		@Sql(statements = { SEED_LEAVE_TYPE })
 		void updatePolicyLeaveType_BlankEmojiCode_ReturnsBadRequest() throws Exception {

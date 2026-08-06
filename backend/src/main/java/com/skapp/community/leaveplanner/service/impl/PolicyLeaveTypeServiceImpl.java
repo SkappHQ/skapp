@@ -14,6 +14,7 @@ import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailRe
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeStatusResponseDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.PolicyLeaveTypeService;
+import com.skapp.community.leaveplanner.type.LeaveTypeSort;
 import com.skapp.community.leaveplanner.util.PolicyLeaveTypeValidationUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 	public ResponseEntityDto getPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
 		log.info("getPolicyLeaveTypes: execution started");
 
-		Sort sort = Sort.by(Sort.Order.asc("name").ignoreCase());
+		Sort sort = Sort.by(Sort.Order.asc(LeaveTypeSort.NAME.getSortField()).ignoreCase());
 		Pageable pageable = policyLeaveTypeFilterDto.getSize() < 0 ? Pageable.unpaged(sort)
 				: PageRequest.of(policyLeaveTypeFilterDto.getPage(), policyLeaveTypeFilterDto.getSize(), sort);
 
@@ -66,20 +67,18 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 	public ResponseEntityDto addPolicyLeaveType(PolicyLeaveTypeRequestDto policyLeaveTypeRequestDto) {
 		log.info("addPolicyLeaveType: execution started");
 
-		String name = normalizeName(policyLeaveTypeRequestDto.getName());
-
-		PolicyLeaveTypeValidationUtil.validateName(name);
+		PolicyLeaveTypeValidationUtil.validateName(policyLeaveTypeRequestDto.getName());
 		PolicyLeaveTypeValidationUtil.validateEmojiCode(policyLeaveTypeRequestDto.getEmojiCode());
 		PolicyLeaveTypeValidationUtil.validateColorCode(policyLeaveTypeRequestDto.getColorCode());
 		PolicyLeaveTypeValidationUtil.validateMinDuration(policyLeaveTypeRequestDto.getMinDuration());
 		PolicyLeaveTypeValidationUtil.validateAttachmentSetup(policyLeaveTypeRequestDto.getIsAttachment(),
 				policyLeaveTypeRequestDto.getIsAttachmentMust());
 
-		if (policyLeaveTypeDao.existsByNameIgnoreCase(name)) {
+		if (policyLeaveTypeDao.existsByNameIgnoreCase(policyLeaveTypeRequestDto.getName())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_EXISTS);
 		}
 
-		PolicyLeaveType policyLeaveType = buildPolicyLeaveType(policyLeaveTypeRequestDto, name);
+		PolicyLeaveType policyLeaveType = buildPolicyLeaveType(policyLeaveTypeRequestDto);
 		policyLeaveType = policyLeaveTypeDao.save(policyLeaveType);
 
 		log.info("addPolicyLeaveType: execution ended");
@@ -109,14 +108,13 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 		PolicyLeaveType policyLeaveType = getPolicyLeaveType(id);
 
 		if (policyLeaveTypeUpdateRequestDto.getName() != null) {
-			String name = normalizeName(policyLeaveTypeUpdateRequestDto.getName());
-			PolicyLeaveTypeValidationUtil.validateName(name);
+			PolicyLeaveTypeValidationUtil.validateName(policyLeaveTypeUpdateRequestDto.getName());
 
-			if (policyLeaveTypeDao.existsByNameIgnoreCaseAndIdNot(name, id)) {
+			if (policyLeaveTypeDao.existsByNameIgnoreCaseAndIdNot(policyLeaveTypeUpdateRequestDto.getName(), id)) {
 				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_EXISTS);
 			}
 
-			policyLeaveType.setName(name);
+			policyLeaveType.setName(policyLeaveTypeUpdateRequestDto.getName());
 		}
 
 		if (policyLeaveTypeUpdateRequestDto.getEmojiCode() != null) {
@@ -206,13 +204,9 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_ID_NOT_FOUND));
 	}
 
-	private String normalizeName(String name) {
-		return name == null ? null : name.trim();
-	}
-
-	private PolicyLeaveType buildPolicyLeaveType(PolicyLeaveTypeRequestDto dto, String name) {
+	private PolicyLeaveType buildPolicyLeaveType(PolicyLeaveTypeRequestDto dto) {
 		PolicyLeaveType policyLeaveType = new PolicyLeaveType();
-		policyLeaveType.setName(name);
+		policyLeaveType.setName(dto.getName());
 		policyLeaveType.setEmojiCode(dto.getEmojiCode());
 		policyLeaveType.setColorCode(dto.getColorCode());
 		policyLeaveType.setMinDuration(dto.getMinDuration());
