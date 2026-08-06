@@ -9,53 +9,67 @@ import { AxiosError, AxiosResponse } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveTypeEndPoints } from "~community/leave/api/utils/ApiEndpoints";
-import {
-  leavePolicyQueryKeys,
-  policyLeaveTypeQueryKeys
-} from "~community/leave/api/utils/QueryKeys";
+import { policyLeaveTypeQueryKeys } from "~community/leave/api/utils/QueryKeys";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   PolicyLeaveTypeMutationResponse,
   PolicyLeaveTypePayloadType,
   PolicyLeaveTypeSettingsType,
   PolicyLeaveTypeStatusResponse,
   PolicyLeaveTypesPage,
-  SearchPolicyLeaveTypesParams,
-  SearchPolicyLeaveTypesResponse,
+  PolicyLeaveTypesPageResponse,
+  PolicyLeaveTypesParams,
   UpdatePolicyLeaveTypeVariables,
-  UseSearchPolicyLeaveTypesArgs
+  UseGetPolicyLeaveTypesArgs
 } from "~community/leave/types/PolicyLeaveTypeTypes";
 
-const searchPolicyLeaveTypes = async (
-  params: SearchPolicyLeaveTypesParams
+const getPolicyLeaveTypes = async (
+  params: PolicyLeaveTypesParams
 ): Promise<PolicyLeaveTypesPage> => {
-  const response = await authFetch.get<SearchPolicyLeaveTypesResponse>(
-    policyLeaveTypeEndPoints.SEARCH_POLICY_LEAVE_TYPES,
+  const response = await authFetch.get<PolicyLeaveTypesPageResponse>(
+    policyLeaveTypeEndPoints.GET_POLICY_LEAVE_TYPES,
     { params }
   );
 
   return response.data.results[0];
 };
 
-export const useSearchPolicyLeaveTypes = ({
-  searchKeyword,
+export const useGetPolicyLeaveTypes = ({
   isActive,
   page,
   size
-}: UseSearchPolicyLeaveTypesArgs): UseQueryResult<PolicyLeaveTypesPage> => {
+}: UseGetPolicyLeaveTypesArgs): UseQueryResult<PolicyLeaveTypesPage> => {
   return useQuery({
-    queryKey: policyLeaveTypeQueryKeys.SEARCH(
-      searchKeyword,
-      isActive,
-      page,
-      size
-    ),
+    queryKey: policyLeaveTypeQueryKeys.LIST(isActive, page, size),
     queryFn: () =>
-      searchPolicyLeaveTypes({
-        searchKeyword: searchKeyword || undefined,
+      getPolicyLeaveTypes({
         isActive,
         page,
         size
       })
+  });
+};
+
+const getActivePolicyLeaveTypes = async (): Promise<PolicyLeaveTypesPage> => {
+  const response = await authFetch.get<PolicyLeaveTypesPageResponse>(
+    policyLeaveTypeEndPoints.GET_POLICY_LEAVE_TYPES,
+    {
+      params: {
+        isActive: true,
+        page: 0,
+        size: UNPAGINATED_SIZE
+      }
+    }
+  );
+
+  return response.data.results[0];
+};
+
+export const useGetActivePolicyLeaveTypes =
+  (): UseQueryResult<PolicyLeaveTypesPage> => {
+  return useQuery({
+    queryKey: policyLeaveTypeQueryKeys.ACTIVE(),
+    queryFn: getActivePolicyLeaveTypes
   });
 };
 
@@ -104,9 +118,6 @@ export const useAddPolicyLeaveType = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
       });
-      queryClient.invalidateQueries({
-        queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES
-      });
       onSuccess();
     },
     onError
@@ -140,9 +151,6 @@ export const useUpdatePolicyLeaveType = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
       });
-      queryClient.invalidateQueries({
-        queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES
-      });
       onSuccess();
     },
     onError
@@ -172,9 +180,6 @@ export const useActivatePolicyLeaveType = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
       });
-      queryClient.invalidateQueries({
-        queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES
-      });
       onSuccess();
     },
     onError
@@ -203,9 +208,6 @@ export const useDeactivatePolicyLeaveType = (
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: policyLeaveTypeQueryKeys.ALL
-      });
-      queryClient.invalidateQueries({
-        queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES
       });
       onSuccess();
     },

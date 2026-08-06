@@ -89,21 +89,6 @@ export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
 }
 
-export interface PolicyLeaveTypeType {
-  id: number;
-  name: string;
-  emojiCode: string | null;
-  colorCode: string | null;
-}
-
-export interface PolicyLeaveTypesResult {
-  leaveTypes: PolicyLeaveTypeType[];
-}
-
-export interface PolicyLeaveTypesResponse {
-  results: PolicyLeaveTypesResult[];
-}
-
 export interface LeavePolicyConfigResult {
   isEnabled: boolean;
 }

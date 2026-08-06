@@ -4,7 +4,7 @@ import { ChangeEvent, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmoji } from "~community/common/utils/commonUtil";
-import { useGetPolicyLeaveTypes } from "~community/leave/api/LeavePolicyApi";
+import { useGetActivePolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
 
 import WizardSection from "./WizardSection";
@@ -16,29 +16,22 @@ interface Props {
   touched: FormikTouched<LeavePolicyFormData>;
 }
 
-const BasicInfoStep: FC<Props> = ({
-  formData,
-  onChange,
-  errors,
-  touched
-}) => {
+const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicies",
     "createPolicy"
   );
 
-  const { data: policyLeaveTypes, isLoading } = useGetPolicyLeaveTypes();
+  const { data: policyLeaveTypes, isLoading } = useGetActivePolicyLeaveTypes();
 
-  const leaveTypeOptions = (policyLeaveTypes?.leaveTypes ?? []).map(
-    (leaveType) => ({
-      id: String(leaveType.id),
-      label: leaveType.emojiCode
-        ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
-        : leaveType.name,
-      value: String(leaveType.id)
-    })
-  );
+  const leaveTypeOptions = (policyLeaveTypes?.items ?? []).map((leaveType) => ({
+    id: String(leaveType.id),
+    label: leaveType.emojiCode
+      ? `${getEmoji(leaveType.emojiCode)} ${leaveType.name}`
+      : leaveType.name,
+    value: String(leaveType.id)
+  }));
 
   const policyNameError = touched.policyName ? errors.policyName : undefined;
   const leaveTypeError = touched.leaveType ? errors.leaveType : undefined;

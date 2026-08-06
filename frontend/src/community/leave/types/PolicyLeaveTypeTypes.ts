@@ -35,21 +35,19 @@ export interface PolicyLeaveTypesPage {
   totalPages: number;
 }
 
-export interface SearchPolicyLeaveTypesParams {
-  searchKeyword?: string;
+export interface PolicyLeaveTypesParams {
   isActive?: boolean;
   page: number;
   size: number;
 }
 
-export interface UseSearchPolicyLeaveTypesArgs {
-  searchKeyword?: string;
+export interface UseGetPolicyLeaveTypesArgs {
   isActive?: boolean;
   page: number;
   size: number;
 }
 
-export interface SearchPolicyLeaveTypesResponse {
+export interface PolicyLeaveTypesPageResponse {
   results: PolicyLeaveTypesPage[];
 }
 

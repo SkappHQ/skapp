@@ -9,7 +9,7 @@ import { FC, useCallback, useMemo, useState } from "react";
 
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useSearchPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import { POLICY_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
@@ -30,7 +30,7 @@ const PolicyLeaveTypesTable: FC = () => {
 
   const [page, setPage] = useState<number>(0);
 
-  const { data: policyLeaveTypesPage, isLoading } = useSearchPolicyLeaveTypes({
+  const { data: policyLeaveTypesPage, isLoading } = useGetPolicyLeaveTypes({
     page,
     size: POLICY_LEAVE_TYPES_PAGE_SIZE
   });

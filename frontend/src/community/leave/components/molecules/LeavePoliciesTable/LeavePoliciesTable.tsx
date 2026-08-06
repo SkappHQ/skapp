@@ -14,9 +14,9 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useActivateLeavePolicy,
-  useGetLeavePoliciesInfinite,
-  useGetPolicyLeaveTypes
+  useGetLeavePoliciesInfinite
 } from "~community/leave/api/LeavePolicyApi";
+import { useGetActivePolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
 import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
@@ -59,9 +59,12 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["activatePolicy", "successToastTitle"]),
-      description: translateText(["activatePolicy", "successToastDescription"], {
-        policyName: activatingPolicyName
-      }),
+      description: translateText(
+        ["activatePolicy", "successToastDescription"],
+        {
+          policyName: activatingPolicyName
+        }
+      ),
       isIcon: true
     });
   };
@@ -85,7 +88,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes();
+  const { data: policyLeaveTypes } = useGetActivePolicyLeaveTypes();
 
   const leaveTypeFilterOptions = useMemo(
     () => [
@@ -94,7 +97,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         label: translateText(["leaveTypeFilterAllOption"]),
         value: ""
       },
-      ...(policyLeaveTypes?.leaveTypes ?? []).map((leaveType) => ({
+      ...(policyLeaveTypes?.items ?? []).map((leaveType) => ({
         id: String(leaveType.id),
         label: leaveType.name,
         value: String(leaveType.id)
