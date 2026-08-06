@@ -16,8 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -37,10 +38,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PolicyLeaveTypeControllerIntegrationTest {
 
 	private static final String ENDPOINT = "/v1/leave/policy-leave-types";
-
-	private static final String SEARCH_ENDPOINT = ENDPOINT + "/search";
-
-	private static final String SEED_NAME_PREFIX = "Policy";
 
 	private static final String INSERT_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) VALUES ";
 
@@ -98,6 +95,20 @@ class PolicyLeaveTypeControllerIntegrationTest {
 			.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
+	private ResultActions performGetAll(String authToken, MultiValueMap<String, String> params) throws Exception {
+		return mvc.perform(get(ENDPOINT).params(params)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private MultiValueMap<String, String> params(String... keyValuePairs) {
+		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+		for (int i = 0; i < keyValuePairs.length; i += 2) {
+			params.add(keyValuePairs[i], keyValuePairs[i + 1]);
+		}
+		return params;
+	}
+
 	private ResultActions performGetById(String authToken, long id) throws Exception {
 		return mvc.perform(get(ENDPOINT + "/" + id).accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken)));
@@ -125,25 +136,80 @@ class PolicyLeaveTypeControllerIntegrationTest {
 	class ListPolicyLeaveTypesTests {
 
 		@Test
-		@DisplayName("Leave admin can list active policy leave types")
+		@DisplayName("Leave admin can list policy leave types as a page")
 		@Sql(statements = { SEED_LEAVE_TYPE })
-		void getPolicyLeaveTypes_LeaveAdmin_ReturnsActiveTypes() throws Exception {
+		void getPolicyLeaveTypes_LeaveAdmin_ReturnsPagedTypes() throws Exception {
 			performGetAll(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].leaveTypes", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].leaveTypes[0].name").value("PolicyAnnual"));
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[0].items[0].minDuration").value("FULL_DAY"))
+				.andExpect(jsonPath("$.results[0].items[0].isActive").value(true))
+				.andExpect(jsonPath("$.results[0].currentPage").value(0))
+				.andExpect(jsonPath("$.results[0].totalItems").value(1))
+				.andExpect(jsonPath("$.results[0].totalPages").value(1));
 		}
 
 		@Test
-		@DisplayName("Inactive leave types are excluded from the active list")
+		@DisplayName("Inactive leave types are included when no status filter is applied")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE })
-		void getPolicyLeaveTypes_InactiveType_IsExcluded() throws Exception {
+		void getPolicyLeaveTypes_NoStatusFilter_IncludesInactiveType() throws Exception {
 			performGetAll(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].leaveTypes", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].leaveTypes[0].name").value("PolicyAnnual"));
+				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[0].items[1].name").value("PolicyInactive"))
+				.andExpect(jsonPath("$.results[0].totalItems").value(2));
+		}
+
+		@Test
+		@DisplayName("Inactive leave types are excluded when isActive is true")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE })
+		void getPolicyLeaveTypes_ActiveFilter_ExcludesInactiveType() throws Exception {
+			performGetAll(leaveAdminToken(), params("isActive", "true")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[0].totalItems").value(1));
+		}
+
+		@Test
+		@DisplayName("Only inactive leave types are returned when isActive is false")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE })
+		void getPolicyLeaveTypes_InactiveFilter_ReturnsInactiveTypesOnly() throws Exception {
+			performGetAll(leaveAdminToken(), params("isActive", "false")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyInactive"));
+		}
+
+		@Test
+		@DisplayName("All leave types are returned unpaginated when size is negative")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
+		void getPolicyLeaveTypes_NegativeSize_ReturnsAllTypesUnpaginated() throws Exception {
+			performGetAll(leaveAdminToken(), params("size", "-1")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
+				.andExpect(jsonPath("$.results[0].items[1].name").value("PolicySick"))
+				.andExpect(jsonPath("$.results[0].currentPage").value(0))
+				.andExpect(jsonPath("$.results[0].totalItems").value(2))
+				.andExpect(jsonPath("$.results[0].totalPages").value(1));
+		}
+
+		@Test
+		@DisplayName("Leave types are paginated by the requested page size")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
+		void getPolicyLeaveTypes_PageSizeOne_ReturnsSecondPage() throws Exception {
+			performGetAll(leaveAdminToken(), params("page", "1", "size", "1")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicySick"))
+				.andExpect(jsonPath("$.results[0].currentPage").value(1))
+				.andExpect(jsonPath("$.results[0].totalItems").value(2))
+				.andExpect(jsonPath("$.results[0].totalPages").value(2));
 		}
 
 	}
@@ -322,123 +388,6 @@ class PolicyLeaveTypeControllerIntegrationTest {
 					""";
 
 			performCreate(leaveAdminToken(), invalidAttachmentSetup).andDo(print()).andExpect(status().isBadRequest());
-		}
-
-	}
-
-	@Nested
-	@DisplayName("Search Policy Leave Types")
-	class SearchPolicyLeaveTypesTests {
-
-		private ResultActions performSearch(String authToken, String paramName, String paramValue) throws Exception {
-			return mvc.perform(get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.param(paramName, paramValue)
-				.with(SecurityTestUtils.bearerToken(authToken)));
-		}
-
-		private ResultActions performScopedSearch(String authToken, String... extraParams) throws Exception {
-			MockHttpServletRequestBuilder request = get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.param("searchKeyword", SEED_NAME_PREFIX)
-				.with(SecurityTestUtils.bearerToken(authToken));
-
-			for (int i = 0; i < extraParams.length; i += 2) {
-				request.param(extraParams[i], extraParams[i + 1]);
-			}
-
-			return mvc.perform(request);
-		}
-
-		@Test
-		@DisplayName("Leave admin can search leave types regardless of active status")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_LeaveAdmin_ReturnsAllTypes() throws Exception {
-			performScopedSearch(leaveAdminToken()).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-				.andExpect(jsonPath("$.results[0].items", hasSize(3)))
-				.andExpect(jsonPath("$.results[0].totalItems").value(3))
-				.andExpect(jsonPath("$.results[0].currentPage").value(0))
-				.andExpect(jsonPath("$.results[0].totalPages").value(1));
-		}
-
-		@Test
-		@DisplayName("Results are ordered by name ascending")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_OrdersByNameAscending() throws Exception {
-			performScopedSearch(leaveAdminToken()).andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyAnnual"))
-				.andExpect(jsonPath("$.results[0].items[1].name").value("PolicyInactive"))
-				.andExpect(jsonPath("$.results[0].items[2].name").value("PolicySick"));
-		}
-
-		@Test
-		@DisplayName("Active filter returns only active leave types")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_IsActiveTrue_ReturnsOnlyActive() throws Exception {
-			performScopedSearch(leaveAdminToken(), "isActive", "true").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
-				.andExpect(jsonPath("$.results[0].totalItems").value(2));
-		}
-
-		@Test
-		@DisplayName("Inactive filter returns only inactive leave types")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_IsActiveFalse_ReturnsOnlyInactive() throws Exception {
-			performScopedSearch(leaveAdminToken(), "isActive", "false").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicyInactive"));
-		}
-
-		@Test
-		@DisplayName("Search keyword matches leave type names case insensitively")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_SearchKeyword_IsCaseInsensitive() throws Exception {
-			performSearch(leaveAdminToken(), "searchKeyword", "SICK").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
-				.andExpect(jsonPath("$.results[0].items[0].name").value("PolicySick"));
-		}
-
-		@Test
-		@DisplayName("Search keyword returns an empty page when nothing matches")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_NoMatches_ReturnsEmptyPage() throws Exception {
-			performSearch(leaveAdminToken(), "searchKeyword", "NoSuchLeaveType").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(0)))
-				.andExpect(jsonPath("$.results[0].totalItems").value(0));
-		}
-
-		@Test
-		@DisplayName("Page size is respected and total pages are calculated")
-		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE })
-		void searchPolicyLeaveTypes_PageSize_LimitsResults() throws Exception {
-			performScopedSearch(leaveAdminToken(), "page", "0", "size", "2").andDo(print())
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items", hasSize(2)))
-				.andExpect(jsonPath("$.results[0].totalItems").value(3))
-				.andExpect(jsonPath("$.results[0].totalPages").value(2));
-		}
-
-		@Test
-		@DisplayName("Returns bad request when the page number is negative")
-		void searchPolicyLeaveTypes_NegativePage_ReturnsBadRequest() throws Exception {
-			performSearch(leaveAdminToken(), "page", "-1").andDo(print()).andExpect(status().isBadRequest());
-		}
-
-		@Test
-		@DisplayName("Returns bad request when the page size is below the minimum")
-		void searchPolicyLeaveTypes_ZeroSize_ReturnsBadRequest() throws Exception {
-			performSearch(leaveAdminToken(), "size", "0").andDo(print()).andExpect(status().isBadRequest());
-		}
-
-		@Test
-		@DisplayName("Returns bad request when the page size exceeds the maximum")
-		void searchPolicyLeaveTypes_SizeAboveMaximum_ReturnsBadRequest() throws Exception {
-			performSearch(leaveAdminToken(), "size", "1000000").andDo(print()).andExpect(status().isBadRequest());
 		}
 
 	}
@@ -679,14 +628,6 @@ class PolicyLeaveTypeControllerIntegrationTest {
 		@Sql(statements = { DOWNGRADE_USER2_TO_EMPLOYEE })
 		void addPolicyLeaveType_LeaveEmployee_ReturnsForbidden() throws Exception {
 			performCreate(user2Token(), VALID_LEAVE_TYPE_JSON).andDo(print()).andExpect(status().isForbidden());
-		}
-
-		@Test
-		@DisplayName("Non-admin user cannot search policy leave types")
-		@Sql(statements = { SEED_LEAVE_TYPE, DOWNGRADE_USER2_TO_EMPLOYEE })
-		void searchPolicyLeaveTypes_LeaveEmployee_ReturnsForbidden() throws Exception {
-			mvc.perform(get(SEARCH_ENDPOINT).accept(MediaType.APPLICATION_JSON)
-				.with(SecurityTestUtils.bearerToken(user2Token()))).andDo(print()).andExpect(status().isForbidden());
 		}
 
 		@Test

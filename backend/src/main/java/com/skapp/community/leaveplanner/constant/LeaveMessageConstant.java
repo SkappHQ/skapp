@@ -98,8 +98,6 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_REQUIRED("api.error.leave.policy-leave-type-color-code-required"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_INVALID("api.error.leave.policy-leave-type-color-code-invalid"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_MIN_DURATION_REQUIRED("api.error.leave.policy-leave-type-min-duration-required"),
-	LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_NUMBER("api.error.leave.policy-leave-type-invalid-page-number"),
-	LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_SIZE("api.error.leave.policy-leave-type-invalid-page-size"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE("api.error.leave.policy-leave-type-already-inactive"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active");
 

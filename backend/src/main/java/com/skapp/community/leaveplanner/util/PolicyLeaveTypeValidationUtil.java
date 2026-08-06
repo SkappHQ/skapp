@@ -46,13 +46,4 @@ public class PolicyLeaveTypeValidationUtil {
 		}
 	}
 
-	public static void validatePagination(int page, int size) {
-		if (page < PolicyLeaveTypeConstant.MIN_PAGE_NUMBER) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_NUMBER);
-		}
-		if (size < PolicyLeaveTypeConstant.MIN_PAGE_SIZE || size > PolicyLeaveTypeConstant.MAX_PAGE_SIZE) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TYPE_INVALID_PAGE_SIZE);
-		}
-	}
-
 }

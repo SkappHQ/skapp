@@ -11,8 +11,6 @@ public class PolicyLeaveTypeFilterDto {
 
 	private int size = 20;
 
-	private String searchKeyword;
-
 	private Boolean isActive;
 
 }

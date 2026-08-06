@@ -11,9 +11,7 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeFilterDto
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeStatusResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypesResponseDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.PolicyLeaveTypeService;
 import com.skapp.community.leaveplanner.util.PolicyLeaveTypeValidationUtil;
@@ -22,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,14 +37,28 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getPolicyLeaveTypes() {
+	public ResponseEntityDto getPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
 		log.info("getPolicyLeaveTypes: execution started");
 
-		List<PolicyLeaveTypeResponseDto> leaveTypes = leaveMapper
-			.policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(policyLeaveTypeDao.findAllByIsActive(true));
+		Sort sort = Sort.by(Sort.Order.asc("name").ignoreCase());
+		Pageable pageable = policyLeaveTypeFilterDto.getSize() < 0 ? Pageable.unpaged(sort)
+				: PageRequest.of(policyLeaveTypeFilterDto.getPage(), policyLeaveTypeFilterDto.getSize(), sort);
+
+		Boolean isActive = policyLeaveTypeFilterDto.getIsActive();
+		Page<PolicyLeaveType> policyLeaveTypePage = isActive == null ? policyLeaveTypeDao.findAll(pageable)
+				: policyLeaveTypeDao.findAllByIsActive(isActive, pageable);
+
+		List<PolicyLeaveTypeDetailResponseDto> policyLeaveTypes = leaveMapper
+			.policyLeaveTypeListToPolicyLeaveTypeDetailResponseDtoList(policyLeaveTypePage.getContent());
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(policyLeaveTypes);
+		pageDto.setCurrentPage(policyLeaveTypePage.getNumber());
+		pageDto.setTotalItems(policyLeaveTypePage.getTotalElements());
+		pageDto.setTotalPages(policyLeaveTypePage.getTotalPages());
 
 		log.info("getPolicyLeaveTypes: execution ended");
-		return new ResponseEntityDto(false, new PolicyLeaveTypesResponseDto(leaveTypes));
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override
@@ -73,31 +86,6 @@ public class PolicyLeaveTypeServiceImpl implements PolicyLeaveTypeService {
 
 		return new ResponseEntityDto(false,
 				leaveMapper.policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(policyLeaveType));
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto searchPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
-		log.info("searchPolicyLeaveTypes: execution started");
-
-		PolicyLeaveTypeValidationUtil.validatePagination(policyLeaveTypeFilterDto.getPage(),
-				policyLeaveTypeFilterDto.getSize());
-
-		Pageable pageable = PageRequest.of(policyLeaveTypeFilterDto.getPage(), policyLeaveTypeFilterDto.getSize());
-		Page<PolicyLeaveType> policyLeaveTypePage = policyLeaveTypeDao.findPolicyLeaveTypes(policyLeaveTypeFilterDto,
-				pageable);
-
-		List<PolicyLeaveTypeDetailResponseDto> policyLeaveTypeDetailResponseDtos = leaveMapper
-			.policyLeaveTypeListToPolicyLeaveTypeDetailResponseDtoList(policyLeaveTypePage.getContent());
-
-		PageDto pageDto = new PageDto();
-		pageDto.setItems(policyLeaveTypeDetailResponseDtos);
-		pageDto.setCurrentPage(policyLeaveTypePage.getNumber());
-		pageDto.setTotalItems(policyLeaveTypePage.getTotalElements());
-		pageDto.setTotalPages(policyLeaveTypePage.getTotalPages());
-
-		log.info("searchPolicyLeaveTypes: execution ended");
-		return new ResponseEntityDto(false, pageDto);
 	}
 
 	@Override

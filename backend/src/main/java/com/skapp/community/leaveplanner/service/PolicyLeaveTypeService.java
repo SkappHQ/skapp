@@ -7,11 +7,9 @@ import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeUpdateReq
 
 public interface PolicyLeaveTypeService {
 
-	ResponseEntityDto getPolicyLeaveTypes();
+	ResponseEntityDto getPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto);
 
 	ResponseEntityDto addPolicyLeaveType(PolicyLeaveTypeRequestDto policyLeaveTypeRequestDto);
-
-	ResponseEntityDto searchPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto);
 
 	ResponseEntityDto getPolicyLeaveTypeById(Long id);
 
