@@ -1533,7 +1533,14 @@ public class PeopleServiceImpl implements PeopleService {
 
 		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 		LocalDate today = resolveBirthdayNotificationDate();
-		specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY, today);
+
+		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
+				.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY,
+					today);
+		}
 
 		log.info("markTodayBirthdayNotificationsAsViewed: execution ended");
 		return new ResponseEntityDto(false, new BirthdayNotificationViewedResponseDto(today));

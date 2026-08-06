@@ -418,6 +418,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Mark today's birthdays as viewed with no existing row - Creates the row with today")
 		void markTodayBirthdayNotificationsAsViewed_WithNoExistingRow_CreatesRowWithToday() throws Exception {
+			seedConfig(true, false, false);
+
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
 
 			SpecialNotificationStatus persisted = specialNotificationStatusDao
@@ -432,6 +434,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Mark today's birthdays as viewed with an older row - Updates it to today")
 		void markTodayBirthdayNotificationsAsViewed_WithOlderExistingRow_UpdatesToToday() throws Exception {
+			seedConfig(true, false, false);
 			seedLastViewed(CURRENT_EMPLOYEE_ID, today.minusDays(5));
 
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
@@ -443,6 +446,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Mark today's birthdays as viewed twice - Updates the same row instead of duplicating")
 		void markTodayBirthdayNotificationsAsViewed_CalledTwice_UpdatesSingleRow() throws Exception {
+			seedConfig(true, false, false);
+
 			assertSuccessful(performMarkViewedRequest(currentUserToken));
 			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
 
@@ -452,9 +457,58 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Mark today's birthdays as viewed without any people role - Returns Forbidden")
 		void markTodayBirthdayNotificationsAsViewed_WithoutPeopleRole_ReturnsForbidden() throws Exception {
+			seedConfig(true, false, false);
+
 			performMarkViewedRequest(tokenWithoutPeopleRole()).andDo(print()).andExpect(status().isForbidden());
 
 			assertThat(specialNotificationStatusDao.count()).isZero();
+		}
+
+		@Test
+		@DisplayName("Mark today's birthdays as viewed when the feature is turned off - Returns today without writing a row")
+		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOff_ReturnsTodayWithoutWriting() throws Exception {
+			seedConfig(false, false, false);
+
+			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
+
+			assertThat(specialNotificationStatusDao.count()).isZero();
+		}
+
+		@Test
+		@DisplayName("Mark today's birthdays as viewed when no config row exists - Returns today without writing a row")
+		void markTodayBirthdayNotificationsAsViewed_WithNoConfigRow_ReturnsTodayWithoutWriting() throws Exception {
+			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
+
+			assertThat(specialNotificationStatusDao.count()).isZero();
+		}
+
+		@Test
+		@DisplayName("Mark today's birthdays as viewed when the feature is turned off - Leaves an existing row untouched")
+		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOffWithExistingRow_LeavesRowUntouched() throws Exception {
+			seedConfig(false, false, false);
+			seedLastViewed(CURRENT_EMPLOYEE_ID, today.minusDays(5));
+
+			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
+
+			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(today.minusDays(5));
+			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
+		}
+
+		@Test
+		@DisplayName("Turn the feature on after marking viewed while it was off - Still returns today's birthdays")
+		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOnAfterBeingOff_StillReturnsTodayBirthdays()
+				throws Exception {
+			seedConfig(false, false, false);
+			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
+
+			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
+
+			seedConfig(true, true, false);
+
+			assertSuccessful(performGetTodayRequest(currentUserToken))
+					.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
+					.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
+					.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 		}
 
 	}
@@ -482,6 +536,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		private void assertMarkViewedUsesOrganizationDate(String timeZone) throws Exception {
+			seedConfig(true, false, false);
+
 			Organization organization = new Organization();
 			organization.setOrganizationName("Time Zone Test Organization");
 			organization.setOrganizationTimeZone(timeZone);
