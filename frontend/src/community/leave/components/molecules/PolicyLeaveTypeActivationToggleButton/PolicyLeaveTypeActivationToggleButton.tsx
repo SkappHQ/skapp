@@ -35,9 +35,8 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const { data: policyLeaveType } = useGetPolicyLeaveType(policyLeaveTypeId);
-
-  const isActive = !!policyLeaveType?.isActive;
+  const { data: policyLeaveType, isLoading } =
+    useGetPolicyLeaveType(policyLeaveTypeId);
 
   const onStatusChangeSuccess = (): void => {
     setToastMessage({
@@ -84,7 +83,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
       return;
     }
 
-    if (isActive) {
+    if (policyLeaveType?.isActive) {
       deactivatePolicyLeaveType(policyLeaveTypeId);
       return;
     }
@@ -103,8 +102,8 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
           {translateText(["activate"])}
         </p>
         <Toggle
-          checked={isActive}
-          disabled={!policyLeaveType || isPending}
+          checked={policyLeaveType?.isActive as boolean}
+          disabled={!policyLeaveType || isPending || isLoading}
           onChange={handleOpenConfirmModal}
           ariaLabel={translateText(["activate"])}
         />
@@ -119,13 +118,13 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
         isOpen={isConfirmModalOpen}
         onClose={handleCloseConfirmModal}
         modalHeader={
-          isActive
+          policyLeaveType?.isActive
             ? translateText(["inactivateLeaveTypeModalTitle"])
             : translateText(["activateLeaveTypeModalTitle"])
         }
         content={
           <p className="body1 text-black">
-            {isActive
+            {policyLeaveType?.isActive
               ? translateText(["inactivatePolicyLeaveTypeModalDescription"])
               : translateText(["activatePolicyLeaveTypeModalDescription"])}
           </p>
@@ -140,7 +139,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
             children: translateText(["cancelBtn"])
           },
           buttonRight: {
-            variant: isActive ? "error" : "primary",
+            variant: policyLeaveType?.isActive ? "error" : "primary",
             onClick: handleConfirm,
             disabled: isPending,
             isLoading: isPending,
