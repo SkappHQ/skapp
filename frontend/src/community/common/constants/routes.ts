@@ -193,14 +193,6 @@ export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 
-/**
- * The base role each module's routes require, mirroring the module gates
- * `getDrawerRoutes` already applies when it hides a module from the drawer.
- *
- * `middleware.ts` cannot enforce these while the user stays inside the app, since
- * client side navigations never reach the edge. `useModuleAccessGuard` applies them
- * whenever the roles change.
- */
 export const moduleGuardedRoutes: {
   routes: string[];
   requiredRole: EmployeeTypes | ManagerTypes | RepresentativeTypes;
