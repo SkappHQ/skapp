@@ -81,7 +81,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
       dealStages.map((stage) => ({
         id: String(stage.id),
         value: String(stage.id),
-        label: <StageLabel label={stage.name} color={stage.color} />
+        label: <StageLabel label={stage?.name} color={stage?.color} />
       })),
     [dealStages]
   );

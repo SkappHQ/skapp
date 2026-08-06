@@ -173,8 +173,8 @@ const DealsTable: FC<Props> = ({
           ),
           stage: (
             <StageLabel
-              label={getStageByName(deal.stage.name)}
-              color={deal.stage.color}
+              label={getStageByName(deal?.stage?.name)}
+              color={deal?.stage?.color}
             />
           ),
           companyName: (
