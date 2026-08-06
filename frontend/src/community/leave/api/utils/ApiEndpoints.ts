@@ -48,6 +48,17 @@ export const leavePolicyEndPoints = {
   GET_LEAVE_POLICY_CONFIG: `${moduleAPIPath.LEAVE}/policies/config`
 };
 
+export const leavePolicyAssignmentEndPoints = {
+  ASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  UNASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  GET_EMPLOYEE_LEAVE_POLICIES: (
+    employeeId: number,
+    page: number,
+    size: number
+  ): string =>
+    `${moduleAPIPath.LEAVE}/policy-assignments/employee/${employeeId}?page=${page}&size=${size}`
+};
+
 export const leaveEntitlementEndPoints = {
   GET_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement`,
   ADD_BULK_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement/bulk`,

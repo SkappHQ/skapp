@@ -164,7 +164,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		log.info("getAllLeavePolicies: execution started");
 
-		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
+		Pageable pageable = leavePolicyFilterDto.getSize() < 0 ? Pageable.unpaged()
+				: PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
 		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
 
 		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
