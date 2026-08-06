@@ -14,7 +14,6 @@ public class PolicyLeaveAvailabilityResponseDto {
 
 	private String policyName;
 
-	/** Working days the selected range would consume, half-days counted as 0.5. */
 	private Float requestedDays;
 
 	private Float remainingBalance;

@@ -9,11 +9,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Apply for leave against one specific leave policy. Unlike the legacy
- * {@link LeaveRequestDto} this is scoped by {@code policyId}, not by leave type — two
- * policies of the same leave type are addressed independently.
- */
 @Getter
 @Setter
 public class PolicyLeaveRequestDto {

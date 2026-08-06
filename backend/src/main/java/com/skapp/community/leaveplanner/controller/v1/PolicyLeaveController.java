@@ -19,11 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Employee-facing leave apply flow for organizations running on leave policies. Every
- * endpoint here is scoped to the calling user's own policies — no role can reach another
- * employee's balances through this controller.
- */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/leave/policy-leave")
@@ -49,8 +44,7 @@ public class PolicyLeaveController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> checkPolicyLeaveAvailability(
 			@Valid @RequestBody PolicyLeaveAvailabilityRequestDto policyLeaveAvailabilityRequestDto) {
-		ResponseEntityDto response = policyLeaveService
-			.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
+		ResponseEntityDto response = policyLeaveService.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

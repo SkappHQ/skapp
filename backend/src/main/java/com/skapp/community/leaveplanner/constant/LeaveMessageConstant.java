@@ -8,11 +8,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum LeaveMessageConstant implements MessageConstant {
 
-	// Success messages
 	LEAVE_SUCCESS_NUDGE_MANAGER("api.success.leave.nudge-manager"),
 	LEAVE_SUCCESS_AUTO_APPROVAL_LEAVE_APPROVED("api.success.leave.auto-approval-leave-approved"),
 
-	// Error messages
 	LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND("api.error.leave.leave-cycle.not-found"),
 	LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_FOUND("api.error.leave.leave-entity.not-found"),
 	LEAVE_ERROR_ENTITLEMENT_IN_USE_CANT_DELETED("api.error.leave.leave-entitlement.in-use-cant.deleted"),

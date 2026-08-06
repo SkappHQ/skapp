@@ -13,32 +13,18 @@ import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-/**
- * Pure accrual arithmetic for leave policies. Policy balances are not persisted anywhere;
- * they are derived at read time from the policy's accrual configuration plus the
- * assignment's effective-from date. Everything in here is deterministic and side-effect
- * free so it can be reused by the balance endpoint, the availability pre-check and the
- * apply-leave server-side re-check without any risk of the three disagreeing.
- */
 @Slf4j
 @UtilityClass
 public class PolicyLeaveAccrualUtil {
 
 	private static final DateTimeFormatter CARRYOVER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
 
-	/**
-	 * A closed date window; used both for accrual periods and for policy cycles.
-	 */
 	public record DateWindow(LocalDate start, LocalDate end) {
 		public boolean contains(LocalDate date) {
 			return !date.isBefore(start) && !date.isAfter(end);
 		}
 	}
 
-	/**
-	 * The date from which the policy starts earning days for this employee — the
-	 * assignment's effective date pushed out by the configured waiting period.
-	 */
 	public static LocalDate resolveAccrualStartDate(LeavePolicy policy, LocalDate effectiveFrom) {
 		Integer waitingPeriodDays = policy.getWaitingPeriodDays();
 		if (waitingPeriodDays == null || waitingPeriodDays <= 0) {
@@ -47,10 +33,6 @@ public class PolicyLeaveAccrualUtil {
 		return effectiveFrom.plusDays(waitingPeriodDays);
 	}
 
-	/**
-	 * The cycle window a policy runs on for the given year. When carryover is enabled the
-	 * cycle is anchored on the policy's carryover date; otherwise it is the calendar year.
-	 */
 	public static DateWindow resolveCycle(LeavePolicy policy, int year) {
 		MonthDay anchor = resolveCycleAnchor(policy);
 		LocalDate start = anchor.atYear(year);
@@ -58,9 +40,6 @@ public class PolicyLeaveAccrualUtil {
 		return new DateWindow(start, end);
 	}
 
-	/**
-	 * The cycle window containing the given date.
-	 */
 	public static DateWindow resolveCycleContaining(LeavePolicy policy, LocalDate date) {
 		DateWindow cycle = resolveCycle(policy, date.getYear());
 		if (date.isBefore(cycle.start())) {
@@ -69,13 +48,6 @@ public class PolicyLeaveAccrualUtil {
 		return cycle;
 	}
 
-	/**
-	 * Total days accrued from the accrual start date up to and including {@code asOf}.
-	 * Uncapped — {@code accrualCapDays} is a ceiling on the balance you may hold, so it is
-	 * applied once per cycle in {@code PolicyLeaveBalanceCalculator}, not to this running
-	 * lifetime total (which would permanently halt accrual once the cap was first hit).
-	 * Returns 0 for non-accrual policies and for dates before the waiting period elapses.
-	 */
 	public static float accruedUpTo(LeavePolicy policy, LocalDate accrualStartDate, LocalDate asOf) {
 		if (policy.getAccrualDays() == null || policy.getFrequency() == null) {
 			return 0f;
@@ -119,9 +91,6 @@ public class PolicyLeaveAccrualUtil {
 		return total;
 	}
 
-	/**
-	 * Days accrued inside a single cycle window.
-	 */
 	public static float accruedWithinCycle(LeavePolicy policy, LocalDate accrualStartDate, DateWindow cycle,
 			LocalDate asOf) {
 		LocalDate windowEnd = asOf.isBefore(cycle.end()) ? asOf : cycle.end();
@@ -133,10 +102,6 @@ public class PolicyLeaveAccrualUtil {
 		return Math.max(0f, upToWindowEnd - upToCycleStart);
 	}
 
-	/**
-	 * Days carried into a cycle from the one before it, capped at the policy's max
-	 * carryover. Zero when carryover is disabled — unused days are simply forfeited.
-	 */
 	public static float capCarryover(LeavePolicy policy, float closingBalance) {
 		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled()) || closingBalance <= 0f) {
 			return 0f;
@@ -148,17 +113,10 @@ public class PolicyLeaveAccrualUtil {
 		return Math.min(closingBalance, maxCarryoverDays);
 	}
 
-	/**
-	 * Rounds to the nearest half day so derived balances line up with the half-day
-	 * granularity leave is actually taken in, and never surface float noise like 12.499998.
-	 */
 	public static float roundToHalfDay(float value) {
 		return Math.round(value * 2f) / 2f;
 	}
 
-	/**
-	 * Ceiling on the balance an employee may hold on the policy at any one time.
-	 */
 	public static float applyAccrualCap(LeavePolicy policy, float totalDaysAllocated) {
 		Float cap = policy.getAccrualCapDays();
 		if (cap == null) {
@@ -197,10 +155,6 @@ public class PolicyLeaveAccrualUtil {
 		}
 	}
 
-	/**
-	 * The accrual period containing {@code date}. Periods are anchored on the calendar for
-	 * every frequency except ON_ANNIVERSARY, which is anchored on the accrual start date.
-	 */
 	private static DateWindow resolvePeriodContaining(AccrualFrequency frequency, LocalDate accrualStartDate,
 			LocalDate date) {
 		return switch (frequency) {
@@ -247,14 +201,6 @@ public class PolicyLeaveAccrualUtil {
 		return new DateWindow(start, start.plusMonths(6).minusDays(1));
 	}
 
-	/**
-	 * Anniversary periods are derived from a single year offset so consecutive windows
-	 * stay contiguous. Around a Feb-29 accrual start {@code plusYears} clamps to Feb-28,
-	 * which makes {@code ChronoUnit.YEARS} disagree with it by one in either direction —
-	 * so the estimate is corrected both ways. Without this, the walk in
-	 * {@link #accruedUpTo} revisits the same window and never advances past 2025 for a
-	 * 2024-02-29 start.
-	 */
 	private static DateWindow anniversaryWindow(LocalDate accrualStartDate, LocalDate date) {
 		long yearsElapsed = ChronoUnit.YEARS.between(accrualStartDate, date);
 		while (yearsElapsed > 0 && accrualStartDate.plusYears(yearsElapsed).isAfter(date)) {

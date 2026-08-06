@@ -45,7 +45,6 @@ public class PolicyLeaveRequestResponseDto {
 
 	private List<PolicyLeaveAttachmentResponseDto> attachments;
 
-	/** Balance left on the policy once this request is accounted for. */
 	private Float remainingBalance;
 
 }

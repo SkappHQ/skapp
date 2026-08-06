@@ -59,10 +59,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 			Long employeeId, LocalDate cycleStart, LocalDate cycleEnd, PolicyLeaveRequestFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 
-		// Scoped to the caller unconditionally — this endpoint never exposes another
-		// employee's requests, whatever the caller's role.
-		predicates.add(criteriaBuilder
-			.equal(root.get(PolicyLeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
+		predicates
+			.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
 		predicates.add(criteriaBuilder.between(root.get(PolicyLeaveRequest_.START_DATE), cycleStart, cycleEnd));
 
 		if (!CollectionUtils.isEmpty(filterDto.getStatus())) {
@@ -70,8 +68,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		if (!CollectionUtils.isEmpty(filterDto.getPolicyId())) {
-			predicates
-				.add(root.get(PolicyLeaveRequest_.POLICY).get(LeavePolicy_.ID).in(filterDto.getPolicyId()));
+			predicates.add(root.get(PolicyLeaveRequest_.POLICY).get(LeavePolicy_.ID).in(filterDto.getPolicyId()));
 		}
 
 		return predicates;

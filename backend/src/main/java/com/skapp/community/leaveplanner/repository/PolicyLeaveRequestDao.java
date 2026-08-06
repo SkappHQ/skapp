@@ -12,14 +12,8 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface PolicyLeaveRequestDao
-		extends JpaRepository<PolicyLeaveRequest, Long>, PolicyLeaveRequestRepository {
+public interface PolicyLeaveRequestDao extends JpaRepository<PolicyLeaveRequest, Long>, PolicyLeaveRequestRepository {
 
-	/**
-	 * Total days already committed against a single policy within a cycle window. Only
-	 * requests that hold balance (PENDING / APPROVED) are counted; a request is attributed
-	 * to the cycle its start date falls into.
-	 */
 	@Query("""
 			SELECT SUM(plr.durationDays)
 			FROM PolicyLeaveRequest plr
@@ -32,10 +26,6 @@ public interface PolicyLeaveRequestDao
 			@Param("statuses") Collection<LeaveRequestStatus> statuses, @Param("cycleStart") LocalDate cycleStart,
 			@Param("cycleEnd") LocalDate cycleEnd);
 
-	/**
-	 * Requests belonging to the employee that overlap the given date range, regardless of
-	 * which policy they were raised against — an employee cannot be on two leaves at once.
-	 */
 	@Query("""
 			SELECT plr
 			FROM PolicyLeaveRequest plr

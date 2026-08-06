@@ -9,13 +9,6 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
-/**
- * Filters for the current user's policy leave requests table.
- *
- * <p>
- * Filtering is by <em>policy</em>, not by leave type: two policies sharing a leave type
- * must remain independently filterable, which is the whole point of this flow.
- */
 @Getter
 @Setter
 public class PolicyLeaveRequestFilterDto {

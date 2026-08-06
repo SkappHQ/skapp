@@ -68,16 +68,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-/**
- * Leave apply flow for organizations running on leave policies.
- *
- * <p>
- * This deliberately duplicates rather than reuses {@code LeaveServiceImpl}: the legacy
- * flow is scoped by leave type and settles against persisted leave_entitlement rows,
- * whereas this flow is scoped by an individual policy and derives its balance from the
- * policy's accrual configuration at read time. The two must be able to evolve
- * independently, so nothing in the legacy path is touched.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -261,23 +251,16 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				LocalDate.of(resolvedYear, 12, 31), filterDto, pageable);
 
 		PageDto pageDto = pageTransformer.transform(leaveRequests);
-		// PageTransformer skips the metadata entirely when the current page has no rows,
-		// which would report totalPages 0 to a client sitting on a now-out-of-range page
-		// after a filter change. Restate it here rather than change shared behaviour.
 		pageDto.setCurrentPage(leaveRequests.getNumber());
 		pageDto.setTotalPages(leaveRequests.getTotalPages());
 		pageDto.setTotalItems(leaveRequests.getTotalElements());
-		pageDto.setItems(leaveMapper
-			.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
+		pageDto.setItems(
+				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 
 		log.info("searchCurrentUserPolicyLeaveRequests: execution ended with {} of {} requests",
 				leaveRequests.getNumberOfElements(), leaveRequests.getTotalElements());
 		return new ResponseEntityDto(false, pageDto);
 	}
-
-	// ---------------------------------------------------------------------
-	// Balance cards
-	// ---------------------------------------------------------------------
 
 	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment, int year,
 			boolean hasSupervisor, LocalDate today) {
@@ -308,14 +291,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return card;
 	}
 
-	/**
-	 * Mirrors the three reasons an entitlement card is disabled today. Expiry is checked
-	 * before utilization so an expired-and-empty policy reports the more specific reason.
-	 */
 	private PolicyBalanceDisabledReason resolveDisabledReason(PolicyBalanceSnapshot snapshot, boolean hasSupervisor,
 			LocalDate today) {
-		// A deactivated policy is no longer available to apply against, so surface that
-		// on the card rather than letting the user reach the modal and fail at submit.
 		if (snapshot.policy().getStatus() != LeavePolicyStatus.ACTIVE) {
 			return PolicyBalanceDisabledReason.POLICY_INACTIVE;
 		}
@@ -331,14 +308,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return null;
 	}
 
-	// ---------------------------------------------------------------------
-	// Validation
-	// ---------------------------------------------------------------------
-
-	/**
-	 * Runs the same checks as {@link #validateAndCalculateDuration} but reports the first
-	 * failure instead of throwing, and records the computed duration on the response.
-	 */
 	private PolicyLeaveValidationFailure firstFailure(Employee employee, PolicyBalanceSnapshot snapshot,
 			LocalDate startDate, LocalDate endDate, LeaveState leaveState,
 			PolicyLeaveAvailabilityResponseDto responseDto) {
@@ -368,12 +337,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return null;
 	}
 
-	/**
-	 * Authoritative server-side validation for submission. Two tabs racing against the
-	 * same policy both pass their client-side checks; whichever commits second is rejected
-	 * here, because the caller holds a write lock on the assignment and so recomputes its
-	 * balance against the first request's committed days.
-	 */
 	private float validateAndCalculateDuration(Employee employee, PolicyBalanceSnapshot snapshot, LocalDate startDate,
 			LocalDate endDate, LeaveState leaveState) {
 		if (endDate.isBefore(startDate)) {
@@ -429,8 +392,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (leaveType.getMinDuration() == LeaveDuration.HALF_DAY && requestDto.getLeaveState() == LeaveState.FULLDAY) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_FULLDAY);
 		}
-		// A half-day only ever means half of one day; without this a multi-day half-day
-		// range would be charged as full days while still passing the overlap check.
 		if (isHalfDay(requestDto.getLeaveState()) && !requestDto.getStartDate().equals(requestDto.getEndDate())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY);
 		}
@@ -440,11 +401,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 	}
 
-	/**
-	 * An employee cannot hold two leaves on the same slot, regardless of which policy each
-	 * was raised against. Two half-days on the same date are allowed only when they cover
-	 * opposite halves.
-	 */
 	private boolean hasOverlappingRequest(Employee employee, LocalDate startDate, LocalDate endDate,
 			LeaveState leaveState) {
 		List<PolicyLeaveRequest> overlapping = policyLeaveRequestDao.findOverlappingRequests(employee.getEmployeeId(),
@@ -490,20 +446,12 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				|| (holidayDuration == HolidayDuration.HALF_DAY_EVENING && leaveState == LeaveState.HALFDAY_EVENING);
 	}
 
-	// ---------------------------------------------------------------------
-	// Helpers
-	// ---------------------------------------------------------------------
-
 	private void requireLeavePoliciesEnabled() {
 		if (!leavePolicyService.isLeavePoliciesEnabled()) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NOT_ENABLED);
 		}
 	}
 
-	/**
-	 * Resolves the policy the request is scoped to, and proves it is still assigned to the
-	 * caller. This is what rejects a request whose policy was unassigned mid-session.
-	 */
 	private EmployeeLeavePolicy resolveActiveAssignment(Employee employee, Long policyId) {
 		return employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(employee.getEmployeeId(), policyId,
@@ -511,22 +459,12 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 
-	/**
-	 * Same resolution, but holding a write lock on the assignment for the duration of the
-	 * transaction. Two tabs submitting against the same policy at once therefore serialise,
-	 * and the second one recomputes its balance against the first one's committed days.
-	 */
 	private EmployeeLeavePolicy lockActiveAssignment(Employee employee, Long policyId) {
 		return employeeLeavePolicyDao
 			.findActiveAssignmentForUpdate(employee.getEmployeeId(), policyId, EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 
-	/**
-	 * Child rows are built here rather than mapped, because each one needs a back
-	 * reference to the request that owns it. Cascade + orphanRemoval on the association
-	 * handles the persist.
-	 */
 	private void attachSupportingDocuments(PolicyLeaveRequest leaveRequest, PolicyLeaveType leaveType,
 			List<PolicyLeaveAttachmentDto> attachmentDtos) {
 		if (!Boolean.TRUE.equals(leaveType.getIsAttachment()) || attachmentDtos == null || attachmentDtos.isEmpty()) {
@@ -542,19 +480,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.getAttachments().addAll(attachments);
 	}
 
-	/**
-	 * The same file uploaded twice produces the same handle; keep the first occurrence so
-	 * a double-click on Upload cannot create duplicate rows.
-	 */
 	private Predicate<PolicyLeaveAttachmentDto> distinctByFileUrl() {
 		Set<String> seen = new HashSet<>();
 		return dto -> seen.add(dto.getFileUrl());
 	}
 
-	/**
-	 * Auto-approval attributes the review to the employee's first manager, matching how
-	 * the legacy flow records an auto-approved request.
-	 */
 	private void autoApprove(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers) {
 		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
 		leaveRequest.setIsAutoApproved(true);
@@ -601,10 +531,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return holidayDao.findAllByIsActiveTrue();
 	}
 
-	/**
-	 * Narrow window around the current year. The carryover walk costs one query per cycle,
-	 * so an unbounded year would let a single request fan out into a hundred of them.
-	 */
 	private int resolveYear(Integer year) {
 		int currentYear = DateTimeUtils.getCurrentUtcDate().getYear();
 		if (year == null) {

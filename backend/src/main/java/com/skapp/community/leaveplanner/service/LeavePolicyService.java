@@ -23,10 +23,6 @@ public interface LeavePolicyService {
 
 	void setDefaultLeavePolicyConfig();
 
-	/**
-	 * Whether the leave policies feature is switched on for this organization. Shared
-	 * gate for any feature that must only behave differently once policies are live.
-	 */
 	boolean isLeavePoliciesEnabled();
 
 }

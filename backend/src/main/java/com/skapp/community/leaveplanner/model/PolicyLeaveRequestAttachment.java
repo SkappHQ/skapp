@@ -14,17 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * A file attached to a {@link PolicyLeaveRequest}.
- *
- * <p>
- * {@code fileUrl} is the storage handle the upload returned, not a browsable URL: a bare
- * UUID filename on community (the file lives encrypted under the leave-attachments
- * directory) and an S3 key on enterprise. {@code originalFileName} is kept alongside it
- * so the UI can show the name the employee actually uploaded — the legacy
- * {@code leave_request_attachment} declares that column but never populates it, which is
- * why community users see a UUID when they download.
- */
 @Entity
 @Getter
 @Setter

@@ -4,11 +4,6 @@ import com.skapp.community.leaveplanner.type.LeaveDuration;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Full leave-type detail needed by the apply-leave modal — duration rules and the
- * comment/attachment requirements. The lighter {@link PolicyLeaveTypeResponseDto} used by
- * the admin screens stays untouched.
- */
 @Getter
 @Setter
 public class PolicyLeaveTypeDetailResponseDto {

@@ -14,18 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-/**
- * Derives policy balances on the fly. Allocation comes from the policy's accrual
- * configuration; usage comes from the days held by PENDING/APPROVED requests in
- * lv_leave_request. Carryover is resolved by walking cycles forward from the assignment's
- * first cycle, since each cycle's opening balance depends on the previous one's closing
- * balance.
- *
- * <p>
- * Accrual is evaluated as of the cycle end, not as of today. This matches the story's
- * balance rule ({@code requestedDays <= remainingBalance}) and keeps the card, the
- * availability pre-check and the server-side apply check in exact agreement.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -33,19 +21,11 @@ public class PolicyLeaveBalanceCalculator {
 
 	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
-	/**
-	 * Balance snapshot for the cycle covering the given year.
-	 */
 	public PolicyBalanceSnapshot calculateForYear(EmployeeLeavePolicy assignment, int year) {
 		LeavePolicy policy = assignment.getPolicy();
 		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycle(policy, year));
 	}
 
-	/**
-	 * Balance snapshot for the cycle containing the given date. Used by the apply and
-	 * availability paths, which are always scoped to the cycle the requested leave falls
-	 * into.
-	 */
 	public PolicyBalanceSnapshot calculateForDate(EmployeeLeavePolicy assignment, LocalDate date) {
 		LeavePolicy policy = assignment.getPolicy();
 		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(policy, date));
@@ -55,12 +35,10 @@ public class PolicyLeaveBalanceCalculator {
 		LeavePolicy policy = assignment.getPolicy();
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
-		// Flexible policies grant unlimited leave, so there is no balance to derive.
 		if (policy.getPolicyType() == PolicyType.FLEXIBLE) {
 			return unlimitedSnapshot(policy, effectiveFrom, targetCycle);
 		}
 
-		// The policy did not exist for this employee yet during the requested cycle.
 		if (targetCycle.end().isBefore(effectiveFrom)) {
 			return emptySnapshot(policy, effectiveFrom, targetCycle, true);
 		}
@@ -72,8 +50,7 @@ public class PolicyLeaveBalanceCalculator {
 		for (int guard = 0; guard < PolicyLeaveConstant.MAX_CARRYOVER_CYCLES; guard++) {
 			float accruedDays = PolicyLeaveAccrualUtil.roundToHalfDay(
 					PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.end()));
-			float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy,
-					carriedForwardDays + accruedDays);
+			float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, carriedForwardDays + accruedDays);
 			float totalDaysUsed = committedDays(assignment, cycle);
 
 			if (cycle.start().equals(targetCycle.start())) {
@@ -82,8 +59,6 @@ public class PolicyLeaveBalanceCalculator {
 						true);
 			}
 
-			// Cycles are contiguous, so overshooting means the target predates the
-			// assignment's first cycle and there is nothing to report.
 			if (cycle.start().isAfter(targetCycle.start())) {
 				return emptySnapshot(policy, effectiveFrom, targetCycle, true);
 			}

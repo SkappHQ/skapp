@@ -9,10 +9,8 @@ public class PolicyLeaveAttachmentResponseDto {
 
 	private Long id;
 
-	/** Storage handle: a bare filename on community, an S3 key on enterprise. */
 	private String fileUrl;
 
-	/** The name the employee uploaded the file under. May be null for older rows. */
 	private String originalFileName;
 
 }

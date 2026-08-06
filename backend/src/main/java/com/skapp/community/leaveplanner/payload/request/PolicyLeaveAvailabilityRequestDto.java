@@ -7,10 +7,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 
-/**
- * Real-time balance pre-check fired by the apply-leave modal whenever the selected dates
- * change, so the user sees the insufficient-balance error before submitting.
- */
 @Getter
 @Setter
 public class PolicyLeaveAvailabilityRequestDto {

@@ -25,12 +25,6 @@ public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolic
 	Page<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(Long employeeId,
 			EmployeeLeavePolicyStatus status, Pageable pageable);
 
-	/**
-	 * Same lookup as {@code findByEmployee_EmployeeIdAndPolicy_IdAndStatus} but holding a
-	 * write lock, so two concurrent leave applications against the same policy serialise
-	 * and the second one sees the first one's committed days. Read-only paths must keep
-	 * using the unlocked variant.
-	 */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("""
 			SELECT elp

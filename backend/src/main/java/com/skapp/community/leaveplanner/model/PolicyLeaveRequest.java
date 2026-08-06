@@ -26,11 +26,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A leave request raised against a specific {@link LeavePolicy}. This is the leave-policy
- * counterpart of {@link LeaveRequest} and is completely independent of the legacy
- * leave_type / leave_entitlement flow.
- */
 @Entity
 @Getter
 @Setter
