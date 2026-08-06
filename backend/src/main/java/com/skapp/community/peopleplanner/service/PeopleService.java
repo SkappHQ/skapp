@@ -7,8 +7,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeExportFilterDto
 import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
@@ -38,6 +40,10 @@ public interface PeopleService {
 	ResponseEntityDto searchEmployeesByEmail(String email);
 
 	ResponseEntityDto getEmployeeByIdOrEmail(EmployeeDataValidationDto employeeDataValidationDto);
+
+	ResponseEntityDto checkPayrollIdExists(PayrollIdExistsCheckDto payrollIdExistsCheckDto);
+
+	ResponseEntityDto checkTinExists(TinExistsCheckDto tinExistsCheckDto);
 
 	ResponseEntityDto terminateUser(Long userId);
 

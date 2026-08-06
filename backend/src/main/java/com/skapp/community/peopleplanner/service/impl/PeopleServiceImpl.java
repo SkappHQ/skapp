@@ -24,6 +24,7 @@ import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.common.type.VersionType;
+import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
@@ -61,8 +62,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeProgressionsDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.PrimarySupervisorTransferDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeSkillUpdateDto;
 import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
@@ -74,6 +77,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeePerson
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeeSystemPermissionsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentVisaDetailsDto;
@@ -94,6 +98,8 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCredentialsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataValidationResponseDto;
+import com.skapp.community.peopleplanner.payload.response.PayrollIdExistsResponseDto;
+import com.skapp.community.peopleplanner.payload.response.TinExistsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDetailedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
@@ -442,6 +448,9 @@ public class PeopleServiceImpl implements PeopleService {
 		CommonModuleUtils.setIfExists(
 				() -> requestDto.getEmployment().getIdentificationAndDiversityDetails().getEeoJobCategory(),
 				employee::setEeo);
+		if (requestDto != null && requestDto.getEmployment() != null) {
+			processPayrollIdAndTin(requestDto, employee);
+		}
 
 		// Common Information
 		CommonModuleUtils.setIfExists(() -> requestDto.getCommon().getAuthPic(), value -> {
@@ -506,6 +515,33 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		return employee;
+	}
+
+	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
+		if (requestDto == null || requestDto.getEmployment() == null
+				|| requestDto.getEmployment().getIdentificationAndDiversityDetails() == null || employee == null) {
+			return;
+		}
+
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		boolean canModifyAdminOnlyIdentifiers = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		if (!canModifyAdminOnlyIdentifiers) {
+			return;
+		}
+
+		EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails = requestDto.getEmployment()
+			.getIdentificationAndDiversityDetails();
+
+		String payrollId = identificationDetails.getPayrollId();
+		if (payrollId != null) {
+			employee.setPayrollId(payrollId.isBlank() ? null : payrollId.trim());
+		}
+
+		String tin = identificationDetails.getTin();
+		if (tin != null) {
+			employee.setTin(tin.isBlank() ? null : tin.trim());
+		}
 	}
 
 	private User createUserEntity(User user, CreateEmployeeRequestDto requestDto) {
@@ -1365,6 +1401,36 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	@Override
+	public ResponseEntityDto checkPayrollIdExists(PayrollIdExistsCheckDto payrollIdExistsCheckDto) {
+		PayrollIdExistsResponseDto responseDto = new PayrollIdExistsResponseDto();
+
+		String payrollId = payrollIdExistsCheckDto.getPayrollId();
+		if (payrollId != null && !payrollId.isBlank()) {
+			boolean exists = employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId,
+					payrollIdExistsCheckDto.getEmployeeId());
+			responseDto.setIsPayrollIdExists(exists);
+		}
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	public ResponseEntityDto checkTinExists(TinExistsCheckDto tinExistsCheckDto) {
+		TinExistsResponseDto responseDto = new TinExistsResponseDto();
+
+		String tin = tinExistsCheckDto.getTin();
+		if (tin != null && !tin.isBlank()) {
+			boolean exists = employeeDao.existsByTinAndEmployeeIdNot(tin, tinExistsCheckDto.getEmployeeId());
+			responseDto.setIsTinExists(exists);
+		}
+		else {
+			responseDto.setIsTinExists(false);
+		}
+
+		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
 	@Transactional
 	public ResponseEntityDto terminateUser(Long userId) {
 		log.info("terminateUser: execution started");
@@ -1979,6 +2045,36 @@ public class PeopleServiceImpl implements PeopleService {
 		if (socialSecurityNumber != null && socialSecurityNumber.length() > PeopleConstants.MAX_SSN_LENGTH)
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
 					new Object[] { PeopleConstants.MAX_SSN_LENGTH, "First Name" }));
+	}
+
+	public void validatePayrollIdInBulk(String payrollId, List<String> errors) {
+		if (payrollId == null || payrollId.isBlank()) {
+			return;
+		}
+
+		if (payrollId.length() > PeopleConstants.MAX_PAYROLL_ID_LENGTH) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
+					new Object[] { PeopleConstants.MAX_PAYROLL_ID_LENGTH, "Payroll ID" }));
+		}
+
+		if (employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, null)) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST));
+		}
+	}
+
+	public void validateTinInBulk(String tin, List<String> errors) {
+		if (tin == null || tin.isBlank()) {
+			return;
+		}
+
+		if (tin.length() > PeopleConstants.MAX_TIN_LENGTH) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_EXCEEDING_MAX_CHARACTER_LIMIT,
+					new Object[] { PeopleConstants.MAX_TIN_LENGTH, "TIN" }));
+		}
+
+		if (employeeDao.existsByTinAndEmployeeIdNot(tin, null)) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST));
+		}
 	}
 
 	public void validateWorkLocationInBulk(String workLocation, List<String> errors) {
@@ -2661,6 +2757,8 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
+		validatePayrollIdInBulk(employeeBulkDto.getPayrollId(), errors);
+		validateTinInBulk(employeeBulkDto.getTin(), errors);
 
 		return errors;
 	}
