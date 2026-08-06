@@ -85,16 +85,20 @@ const BusinessUnitsSection: FC = () => {
           }}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <ul
+          role="list"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {businessUnits.map((businessUnit) => (
-            <BusinessUnitCard
-              key={businessUnit.businessUnitId}
-              businessUnit={businessUnit}
-              onEdit={handleEditUnit}
-              onDelete={handleDeleteUnit}
-            />
+            <li key={businessUnit.businessUnitId}>
+              <BusinessUnitCard
+                businessUnit={businessUnit}
+                onEdit={handleEditUnit}
+                onDelete={handleDeleteUnit}
+              />
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

@@ -297,12 +297,10 @@
         "description": "'{{name}}' has been deleted successfully."
       },
       "deleteAndTransferSuccess": {
-        "title": "Business Unit Deleted",
         "description_one": "'{{name}}' has been deleted and {{count}} employee transferred to '{{target}}'.",
         "description_other": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
       },
       "deleteAndUnassignSuccess": {
-        "title": "Business Unit Deleted",
         "description_one": "'{{name}}' has been deleted. {{count}} employee is now unassigned.",
         "description_other": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
       },
@@ -311,7 +309,6 @@
         "description": "Failed to save business unit. Please try again."
       },
       "deleteError": {
-        "title": "Oops! Something went wrong",
         "description": "Failed to delete business unit. Please try again."
       }
     }

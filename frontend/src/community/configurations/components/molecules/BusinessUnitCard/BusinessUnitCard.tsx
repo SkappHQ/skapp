@@ -6,7 +6,7 @@ import {
   MenuItemProps,
   UsersIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, MouseEvent } from "react";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
@@ -40,10 +40,7 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
   ];
 
   return (
-    <Card
-      aria-label={businessUnit.name}
-      className="flex w-full h-[84px] mb-0 items-center gap-8 bg-white border-secondary-accent"
-    >
+    <Card className="flex w-full h-[84px] mb-0 items-center gap-8 bg-white border-secondary-accent">
       <span className="flex size-16 shrink-0 items-center justify-center rounded-full bg-tertiary-background text-secondary-icon">
         <UsersIcon />
       </span>
@@ -55,13 +52,11 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
         {businessUnit.name}
       </span>
 
-      <div onClick={(e: MouseEvent) => e.stopPropagation()}>
-        <KebabMenu
-          id={`business-unit-${businessUnit.businessUnitId}-menu`}
-          menuItems={menuItems}
-          isFlip
-        />
-      </div>
+      <KebabMenu
+        id={`business-unit-${businessUnit.businessUnitId}-menu`}
+        menuItems={menuItems}
+        isFlip
+      />
     </Card>
   );
 };

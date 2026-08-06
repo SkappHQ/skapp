@@ -39,5 +39,5 @@ export const workLocationQueryKeys = {
 
 export const businessUnitQueryKeys = {
   ALL: ["business-unit"],
-  DELETION_IMPACT: (id: number) => ["business-unit-deletion-impact", id]
+  DELETION_IMPACT: (id: number) => ["business-unit", "deletion-impact", id]
 };
