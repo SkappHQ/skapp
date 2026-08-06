@@ -52,7 +52,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 		OrganizationConfig organizationConfig = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(configKey)
 			.orElseGet(() -> new OrganizationConfig(configKey, configValue));
-		organizationConfig.setOrganizationConfigValue(configValue);
+
+        organizationConfig.setOrganizationConfigValue(configValue);
 		organizationConfigDao.save(organizationConfig);
 
 		log.info("saveConfig: execution ended");
@@ -78,7 +79,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 				newStatus.setSpecialNotificationType(type);
 				return newStatus;
 			});
-		specialNotificationStatus.setLastViewedDate(viewedDate);
+
+        specialNotificationStatus.setLastViewedDate(viewedDate);
 		specialNotificationStatusDao.save(specialNotificationStatus);
 
 		log.info("markNotificationAsViewed: execution ended");

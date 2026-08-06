@@ -1556,31 +1556,31 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto getTodayBirthdayNotifications() {
 		log.info("getTodayBirthdayNotifications: execution started");
 
+		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
+				.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(null, List.of()));
+		}
+
 		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 		LocalDate today = resolveBirthdayNotificationDate();
 		LocalDate lastViewedDate = specialNotificationService
 			.getLastViewedDate(currentEmployeeId, SpecialNotificationType.BIRTHDAY)
 			.orElse(null);
 
-		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
-			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
-		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
-			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
-			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
-		}
-
 		if (lastViewedDate != null && lastViewedDate.isEqual(today)) {
-			log.info("getTodayBirthdayNotifications: already viewed today by employee {}", currentEmployeeId);
+			log.info("getTodayBirthdayNotifications: execution ended");
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
 		BirthdayNotificationScope birthdayNotificationScope = resolveBirthdayNotificationScope(
 				birthdayNotificationConfig);
-		List<Employee> employeesWithBirthdays = employeeDao.findEmployeesWithBirthdayOn(today, currentEmployeeId,
-				birthdayNotificationScope);
+		List<Employee> employeesWithBirthdays = employeeDao.findEmployeeBirthdaysOnByViewerAndScope(today,
+				currentEmployeeId, birthdayNotificationScope);
 
 		if (employeesWithBirthdays.isEmpty()) {
-			log.info("getTodayBirthdayNotifications: no birthdays today for employee {}", currentEmployeeId);
+			log.info("getTodayBirthdayNotifications: execution ended");
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
@@ -1588,7 +1588,7 @@ public class PeopleServiceImpl implements PeopleService {
 			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
 			.toList();
 
-		log.info("getTodayBirthdayNotifications: execution ended, {} birthday(s) found", response.size());
+		log.info("getTodayBirthdayNotifications: execution ended");
 		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
 	}
 
@@ -1597,13 +1597,13 @@ public class PeopleServiceImpl implements PeopleService {
 	public ResponseEntityDto markTodayBirthdayNotificationsAsViewed() {
 		log.info("markTodayBirthdayNotificationsAsViewed: execution started");
 
-		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 		LocalDate today = resolveBirthdayNotificationDate();
 
 		BirthdayNotificationConfigDto birthdayNotificationConfig = specialNotificationService
 				.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
 
 		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
 			specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY,
 					today);
 		}

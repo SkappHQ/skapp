@@ -1636,7 +1636,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findEmployeesWithBirthdayOn(LocalDate date, Long currentEmployeeId,
+	public List<Employee> findEmployeeBirthdaysOnByViewerAndScope(LocalDate date, Long viewerEmployeeId,
 			BirthdayNotificationScope scope) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Employee> criteriaQuery = cb.createQuery(Employee.class);
@@ -1657,7 +1657,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		predicates.add(cb.isNotNull(personalInfoJoin.get(EmployeePersonalInfo_.birthDate)));
 		predicates.add(buildBirthdayOnDatePredicate(cb, personalInfoJoin, date));
-		predicates.add(buildBirthdayScopePredicate(cb, criteriaQuery, root, currentEmployeeId, scope));
+		predicates.add(buildBirthdayScopePredicate(cb, criteriaQuery, root, viewerEmployeeId, scope));
 
 		criteriaQuery.select(root)
 			.where(predicates.toArray(new Predicate[0]))
@@ -1689,28 +1689,28 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	private Predicate buildBirthdayScopePredicate(CriteriaBuilder cb, CriteriaQuery<Employee> criteriaQuery,
-			Root<Employee> root, Long currentEmployeeId, BirthdayNotificationScope scope) {
+												  Root<Employee> root, Long viewerEmployeeId, BirthdayNotificationScope scope) {
 		if (scope == BirthdayNotificationScope.ORGANIZATION) {
 			return cb.conjunction();
 		}
 
-		Predicate selfPredicate = cb.equal(root.get(Employee_.employeeId), currentEmployeeId);
+		Predicate selfPredicate = cb.equal(root.get(Employee_.employeeId), viewerEmployeeId);
 
 		if (scope == BirthdayNotificationScope.SELF) {
 			return selfPredicate;
 		}
 
-		Subquery<Long> currentEmployeeTeamIdsSubquery = criteriaQuery.subquery(Long.class);
-		Root<EmployeeTeam> currentEmployeeTeamRoot = currentEmployeeTeamIdsSubquery.from(EmployeeTeam.class);
-		currentEmployeeTeamIdsSubquery.select(currentEmployeeTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
-			.where(cb.equal(currentEmployeeTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId),
-					currentEmployeeId), cb.isTrue(currentEmployeeTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
+		Subquery<Long> viewerTeamIdsSubquery = criteriaQuery.subquery(Long.class);
+		Root<EmployeeTeam> viewerTeamRoot = viewerTeamIdsSubquery.from(EmployeeTeam.class);
+		viewerTeamIdsSubquery.select(viewerTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
+				.where(cb.equal(viewerTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), viewerEmployeeId),
+						cb.isTrue(viewerTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
 
 		Subquery<Long> sharedTeamSubquery = criteriaQuery.subquery(Long.class);
 		Root<EmployeeTeam> sharedTeamRoot = sharedTeamSubquery.from(EmployeeTeam.class);
 		sharedTeamSubquery.select(cb.literal(1L))
 			.where(cb.equal(sharedTeamRoot.get(EmployeeTeam_.employee), root),
-					sharedTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(currentEmployeeTeamIdsSubquery));
+					sharedTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId).in(viewerTeamIdsSubquery));
 
 		return cb.or(selfPredicate, cb.exists(sharedTeamSubquery));
 	}
