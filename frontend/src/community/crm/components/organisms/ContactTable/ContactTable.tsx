@@ -239,7 +239,7 @@ export const ContactTable: FC = () => {
         emptyStateType={emptyStateType}
         isLoading={isLoading}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="37.2rem"
+        height="52vh"
         hasMore={hasNextPage}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([

@@ -188,7 +188,7 @@ export const CompanyTable: FC = () => {
         emptyStateType={emptyStateType}
         isLoading={isLoading}
         customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="34.5rem"
+        height="52vh"
         hasMore={hasNextPage}
         onLoadMore={loadMore}
         infiniteScrollLoadingMessage={translateText([

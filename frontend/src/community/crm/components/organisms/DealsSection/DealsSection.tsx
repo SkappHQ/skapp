@@ -68,7 +68,7 @@ const DealsSection: FC = () => {
     const updateHeight = () => {
       if (containerRef.current) {
         const offsetTop = containerRef.current.getBoundingClientRect().top;
-        containerRef.current.style.height = `calc(96vh - ${offsetTop}px)`;
+        containerRef.current.style.height = `calc(94vh - ${offsetTop}px)`;
       }
     };
 
