@@ -148,6 +148,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS("api.error.people.crm-restricted-role-access"),
 	PEOPLE_ERROR_INVALID_RESTRICTION_MODULE("api.error.people.invalid-restriction-module"),
 	PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL("api.error.people.invalid-restriction-role-level"),
+	PEOPLE_ERROR_RESTRICTION_ROLE_LEVEL_REQUIRED("api.error.people.restriction-role-level-required"),
 	PEOPLE_ERROR_DUPLICATE_RESTRICTION_ROLE_LEVEL("api.error.people.duplicate-restriction-role-level"),
 	PEOPLE_ERROR_RESTRICTION_ADD_REMOVE_OVERLAP("api.error.people.restriction-add-remove-overlap"),
 	PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE("api.error.people.family-dob-future-date"),

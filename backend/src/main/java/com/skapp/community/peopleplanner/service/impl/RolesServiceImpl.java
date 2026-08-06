@@ -115,8 +115,7 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	private Set<RoleLevel> resolveRestrictedRoles(ModuleRoleRestrictionRequestDto requestDto) {
-		Set<RoleLevel> restrictedRoles = EnumSet.noneOf(RoleLevel.class);
-		restrictedRoles.addAll(getRestrictedRoleLevels(requestDto.getModule()));
+		Set<RoleLevel> restrictedRoles = getRestrictedRoleLevels(requestDto.getModule());
 
 		if (requestDto.getRemove() != null) {
 			requestDto.getRemove().forEach(restrictedRoles::remove);
@@ -134,8 +133,8 @@ public class RolesServiceImpl implements RolesService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_MODULE);
 		}
 
-		validateRestrictionRoleLevels(requestDto.getAdd(), module, getRestrictableRoles(module));
-		validateRestrictionRoleLevels(requestDto.getRemove(), module, null);
+		validateRestrictionRoleLevels(requestDto.getAdd(), module, getRestrictableRoles(module), true);
+		validateRestrictionRoleLevels(requestDto.getRemove(), module, null, false);
 
 		if (requestDto.getAdd() == null || requestDto.getRemove() == null) {
 			return;
@@ -151,16 +150,19 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	private void validateRestrictionRoleLevels(List<RoleLevel> roleLevels, ModuleType module,
-			List<RoleLevel> restrictableRoles) {
+			List<RoleLevel> restrictableRoles, boolean enforceAllowlist) {
 		if (roleLevels == null) {
 			return;
 		}
 
 		Set<RoleLevel> seen = EnumSet.noneOf(RoleLevel.class);
 		for (RoleLevel roleLevel : roleLevels) {
-			if (roleLevel == null || (restrictableRoles != null && !restrictableRoles.contains(roleLevel))) {
+			if (roleLevel == null) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ROLE_LEVEL_REQUIRED);
+			}
+			if (enforceAllowlist && !restrictableRoles.contains(roleLevel)) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL,
-						new String[] { String.valueOf(roleLevel), module.name() });
+						new String[] { roleLevel.name(), module.name() });
 			}
 			if (!seen.add(roleLevel)) {
 				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_DUPLICATE_RESTRICTION_ROLE_LEVEL,

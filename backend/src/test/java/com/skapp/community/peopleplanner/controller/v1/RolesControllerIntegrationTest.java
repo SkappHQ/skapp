@@ -211,8 +211,8 @@ class RolesControllerIntegrationTest {
 		void getRestrictions_ManagerModule_ReturnsAdminAndManagerAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[1]").value(RoleLevel.MANAGER.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
 		}
 
 		@Test
@@ -220,9 +220,8 @@ class RolesControllerIntegrationTest {
 		void getRestrictions_Crm_ReturnsAdminAndSalesManagerAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.CRM).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[1]")
-					.value(RoleLevel.SALES_MANAGER.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.SALES_MANAGER.name())));
 		}
 
 		/**
@@ -233,7 +232,8 @@ class RolesControllerIntegrationTest {
 		void getRestrictions_ModuleWithoutManagerRole_ReturnsOnlyAdminAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.PM).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name())));
 		}
 
 		/**
