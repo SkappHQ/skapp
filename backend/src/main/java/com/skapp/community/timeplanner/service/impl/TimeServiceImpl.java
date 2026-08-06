@@ -1169,7 +1169,7 @@ public class TimeServiceImpl implements TimeService {
 		return new ResponseEntityDto(false, utilizationInfo);
 	}
 
-	public ResponseEntityDto checkLeaveOrHolidayOrNonWorkingDay() {
+	private ResponseEntityDto checkLeaveOrHolidayOrNonWorkingDay() {
 		User currentUser = userService.getCurrentUser();
 		log.info("checkLeaveOrHolidayOrNonWorkingDay: execution started");
 
@@ -1279,7 +1279,7 @@ public class TimeServiceImpl implements TimeService {
 
 		List<Holiday> holidayList = employeeWorkLocationId == null
 				? holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationsIsEmpty(currentDate)
-				: holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationId(currentDate, employeeWorkLocationId);
+				: holidayDao.findAllActiveHolidaysByDateAndWorkLocationId(currentDate, employeeWorkLocationId);
 
 		boolean attendanceConfigForHolidays = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
