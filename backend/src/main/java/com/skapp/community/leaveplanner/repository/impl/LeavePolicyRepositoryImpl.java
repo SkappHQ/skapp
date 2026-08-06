@@ -43,8 +43,10 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		query.orderBy(cb.asc(cb.lower(root.get(LeavePolicy_.name))));
 
 		TypedQuery<LeavePolicy> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
+		if (pageable.isPaged()) {
+			typedQuery.setFirstResult((int) pageable.getOffset());
+			typedQuery.setMaxResults(pageable.getPageSize());
+		}
 
 		List<LeavePolicy> content = typedQuery.getResultList();
 

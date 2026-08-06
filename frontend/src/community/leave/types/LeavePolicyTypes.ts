@@ -80,6 +80,24 @@ export interface LeavePolicyType {
   leaveTypeEmoji: string | null;
   policyType: PolicyType;
   status: LeavePolicyStatus;
+  // Accrual configuration is returned by the list endpoint for ACCRUAL policies.
+  accrualDays?: number | null;
+  frequency?: AccrualFrequency | null;
+  waitingPeriodDays?: number | null;
+  accrualCapDays?: number | null;
+  isCarryoverEnabled?: boolean | null;
+  carryoverDate?: string | null;
+  maxCarryoverDays?: number | null;
+  firstAccrual?: FirstAccrualType | null;
+  accrualTiming?: AccrualTiming | null;
+}
+
+export type CalendarUnit = "day" | "week" | "month" | "quarter" | "year";
+
+export interface AccrualPreviewRow {
+  date: string;
+  days: number;
+  balance: number;
 }
 
 export interface LeavePoliciesPage {
@@ -93,6 +111,7 @@ export interface GetLeavePoliciesInfiniteArgs {
   searchKeyword: string;
   leaveTypeId: string;
   size: number;
+  enabled?: boolean;
 }
 
 export interface GetLeavePoliciesParams {
@@ -196,4 +215,51 @@ export interface LeavePolicyConfigResult {
 
 export interface LeavePolicyConfigResponse {
   results: LeavePolicyConfigResult[];
+}
+
+export enum EffectiveDateType {
+  HIRE_DATE = "HIRE_DATE",
+  SPECIFIC = "SPECIFIC"
+}
+
+export enum EmployeeLeavePolicyStatus {
+  ACTIVE = "ACTIVE",
+  ENDED = "ENDED"
+}
+
+export interface EmployeeLeavePolicyType {
+  id: number;
+  employeeId: number;
+  policyId: number;
+  policyName: string;
+  leaveTypeId: number;
+  leaveTypeName: string;
+  leaveTypeEmojiCode: string | null;
+  policyType: PolicyType;
+  effectiveDateType: EffectiveDateType;
+  effectiveFrom: string;
+  status: EmployeeLeavePolicyStatus;
+}
+
+export interface EmployeeLeavePoliciesPage {
+  items: EmployeeLeavePolicyType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface EmployeeLeavePoliciesResponse {
+  results: EmployeeLeavePoliciesPage[];
+}
+
+export interface AssignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
+  effectiveDateType: EffectiveDateType;
+  specificDate?: string;
+}
+
+export interface UnassignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
 }

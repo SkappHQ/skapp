@@ -153,5 +153,4 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
 
   return { ...appProps };
 };
-
 export default MyApp;
