@@ -11,7 +11,13 @@ CREATE TABLE IF NOT EXISTS `com_special_notification_status`
     `last_modified_by`          text                  DEFAULT NULL,
     `last_modified_date`        datetime(6)           DEFAULT NULL,
     CONSTRAINT `PK_com_special_notification_status` PRIMARY KEY (`employee_id`, `special_notification_type`),
-    CONSTRAINT `FK_com_special_notification_status_employee_id` FOREIGN KEY (`employee_id`) REFERENCES `employee` (`employee_id`)
+    CONSTRAINT `FK_com_special_notification_status_employee_employee_id` FOREIGN KEY
+(
+    `employee_id`
+) REFERENCES `employee`
+(
+    `employee_id`
+)
 );
 
 -- rollback DROP TABLE IF EXISTS `com_special_notification_status`;

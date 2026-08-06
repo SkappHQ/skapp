@@ -32,7 +32,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 
 	@Override
 	@Transactional(readOnly = true)
-	public <T extends SpecialNotificationConfig> T getConfig(SpecialNotificationType type, Class<T> configClass) {
+	public <T extends SpecialNotificationConfig> T getSpecialNotificationConfig(SpecialNotificationType type,
+																				Class<T> configClass) {
 		String configValue = organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(type.getOrganizationConfigType().name())
 			.map(OrganizationConfig::getOrganizationConfigValue)
@@ -43,8 +44,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 
 	@Override
 	@Transactional
-	public void saveConfig(SpecialNotificationType type, SpecialNotificationConfig config) {
-		log.info("saveConfig: execution started for type {}", type);
+	public void saveSpecialNotificationConfig(SpecialNotificationType type, SpecialNotificationConfig config) {
+		log.info("saveSpecialNotificationConfig: execution started for type {}", type);
 
 		String configKey = type.getOrganizationConfigType().name();
 		String configValue = objectMapper.writeValueAsString(config);
@@ -53,10 +54,10 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 			.findOrganizationConfigByOrganizationConfigType(configKey)
 			.orElseGet(() -> new OrganizationConfig(configKey, configValue));
 
-        organizationConfig.setOrganizationConfigValue(configValue);
+		organizationConfig.setOrganizationConfigValue(configValue);
 		organizationConfigDao.save(organizationConfig);
 
-		log.info("saveConfig: execution ended");
+		log.info("saveSpecialNotificationConfig: execution ended");
 	}
 
 	@Override
@@ -80,7 +81,7 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 				return newStatus;
 			});
 
-        specialNotificationStatus.setLastViewedDate(viewedDate);
+		specialNotificationStatus.setLastViewedDate(viewedDate);
 		specialNotificationStatusDao.save(specialNotificationStatus);
 
 		log.info("markNotificationAsViewed: execution ended");

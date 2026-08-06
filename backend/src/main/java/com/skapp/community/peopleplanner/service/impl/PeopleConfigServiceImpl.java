@@ -24,7 +24,7 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 		log.info("getBirthdayNotificationConfigs: execution started");
 
 		BirthdayNotificationConfigDto responseDto = specialNotificationService
-			.getConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
 
 		log.info("getBirthdayNotificationConfigs: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -35,8 +35,8 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 	public ResponseEntityDto updateBirthdayNotificationConfigs(BirthdayNotificationConfigRequestDto requestDto) {
 		log.info("updateBirthdayNotificationConfigs: execution started");
 
-		BirthdayNotificationConfigDto config = specialNotificationService.getConfig(SpecialNotificationType.BIRTHDAY,
-				BirthdayNotificationConfigDto.class);
+		BirthdayNotificationConfigDto config = specialNotificationService
+				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, BirthdayNotificationConfigDto.class);
 
 		if (requestDto.getIsTurnedOn() != null) {
 			config.setIsTurnedOn(requestDto.getIsTurnedOn());
@@ -48,7 +48,7 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 			config.setIsTeamWide(requestDto.getIsTeamWide());
 		}
 
-		specialNotificationService.saveConfig(SpecialNotificationType.BIRTHDAY, config);
+		specialNotificationService.saveSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY, config);
 
 		log.info("updateBirthdayNotificationConfigs: execution ended");
 		return new ResponseEntityDto(false, config);
