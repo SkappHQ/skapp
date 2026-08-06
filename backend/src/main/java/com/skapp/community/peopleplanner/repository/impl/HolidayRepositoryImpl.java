@@ -90,10 +90,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
 
-		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(
-				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+		predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);
@@ -111,10 +108,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.date), date));
 
-		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(
-				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+		predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);
@@ -152,15 +146,20 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 			Long workLocationId = holidayFilterDto.getWorkLocationId();
 			if (workLocationId != null && !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
-				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-						criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+				predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
 				criteriaQuery.distinct(true);
 			}
 		}
 
 		return predicates;
+	}
+
+	private static Predicate buildWorkLocationPredicate(CriteriaBuilder criteriaBuilder, Root<Holiday> root,
+			Long workLocationId) {
+		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+		return criteriaBuilder.or(
+				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
+				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations)));
 	}
 
 }

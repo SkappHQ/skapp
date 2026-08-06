@@ -1271,14 +1271,14 @@ public class TimeServiceImpl implements TimeService {
 		return null;
 	}
 
-	private ResponseEntityDto getAllActiveSlots(User currentUser, LocalDate currentDate, TimeConfig currentDayConfig,
+	private ResponseEntityDto getAllActiveSlots(User user, LocalDate currentDate, TimeConfig currentDayConfig,
 			float morningHours, float eveningHours) {
 
-		Long employeeWorkLocationId = currentUser.getEmployee().getWorkLocation() != null
-				? currentUser.getEmployee().getWorkLocation().getWorkLocationId() : null;
+		Long employeeWorkLocationId = user.getEmployee().getWorkLocation() != null
+				? user.getEmployee().getWorkLocation().getWorkLocationId() : null;
 
 		List<Holiday> holidayList = employeeWorkLocationId == null
-				? holidayDao.findAllByIsActiveTrueAndDate(currentDate)
+				? holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationsIsEmpty(currentDate)
 				: holidayDao.findAllByIsActiveTrueAndDateAndWorkLocationId(currentDate, employeeWorkLocationId);
 
 		boolean attendanceConfigForHolidays = attendanceConfigService
