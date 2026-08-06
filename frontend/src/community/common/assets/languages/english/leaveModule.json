@@ -453,6 +453,57 @@
     "noSearchResultsTitle": "No policies found. Try a different search term.",
     "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
   },
+  "leavePolicyAssignment": {
+    "sectionTitle": "Leave policies",
+    "assignPolicyBtnTxt": "Assign policy",
+    "menuUnassign": "Unassign",
+    "leavesRemainingLabel": "{{remaining}} / {{total}} days remaining",
+    "emptyStateTitle": "No policies assigned yet",
+    "emptyStateDescription": "Assign a policy to get started.",
+    "errorStateTitle": "Couldn't load leave policies",
+    "errorStateDescription": "Please try again.",
+    "assignModal": {
+      "title": "Assign Leave Policy",
+      "policyLabel": "Policy",
+      "policyPlaceholder": "Select a policy",
+      "effectiveDateLabel": "Policy becomes effective on",
+      "hireDateOption": "Hire Date",
+      "specificDateOption": "Specific Date",
+      "specificDatePlaceholder": "Select a date",
+      "specificDateRequired": "Please select an effective date",
+      "accrualPreviewTitle": "Accrual schedule",
+      "colDate": "Date",
+      "colAction": "Action",
+      "colDays": "Days",
+      "colBalance": "Balance",
+      "actionAccrued": "Accrued",
+      "setHireDateBtnTxt": "Set a hire date",
+      "saveBtnTxt": "Save",
+      "cancelBtnTxt": "Cancel"
+    },
+    "setHireDateModal": {
+      "title": "Set Hire Date",
+      "dateLabel": "Hire date",
+      "datePlaceholder": "Select a date",
+      "saveBtnTxt": "Save",
+      "cancelBtnTxt": "Cancel"
+    },
+    "unassignModal": {
+      "title": "Are you sure?",
+      "descriptionIntro": "Unassigning this policy will:",
+      "descriptionEntitlement": "Remove {{employeeName}}'s entitlement for {{leaveType}} immediately",
+      "descriptionBalance": "Any unused leave balance for this policy will be lost",
+      "unassignBtnTxt": "Unassign",
+      "cancelBtnTxt": "Cancel"
+    },
+    "assignSuccessTitle": "Policy Assigned",
+    "assignSuccessDescription": "\"{{policyName}}\" has been assigned to the employee.",
+    "unassignSuccessTitle": "Policy Unassigned",
+    "unassignSuccessDescription": "\"{{policyName}}\" has been unassigned from the employee.",
+    "errorTitle": "Oops! Something went wrong",
+    "assignErrorDescription": "Failed to assign the policy. Please try again or contact support.",
+    "unassignErrorDescription": "Failed to unassign the policy. Please try again or contact support."
+  },
   "leaveTypes": {
     "title": "Leave Types",
     "pageHead": "Leave Types | Skapp",
