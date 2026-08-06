@@ -33,6 +33,20 @@ const LeaveTypes: NextPage = () => {
     triggerOnMount: true
   });
 
+  const getLeaveTypesTable = () => {
+    if (isLeavePolicyConfigLoading) {
+      return <FullScreenLoader />;
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return <PolicyLeaveTypesTable />;
+    }
+
+    return <LeaveTypesTable />;
+  };
+
+  const leaveTypesTable = getLeaveTypesTable();
+
   return (
     <>
       <ContentLayout
@@ -61,13 +75,7 @@ const LeaveTypes: NextPage = () => {
           primaryBtn: ongoingQuickSetup.SETUP_LEAVE_TYPES
         }}
       >
-        {isLeavePolicyConfigLoading ? (
-          <FullScreenLoader />
-        ) : isLeavePoliciesEnabled ? (
-          <PolicyLeaveTypesTable />
-        ) : (
-          <LeaveTypesTable />
-        )}
+        {leaveTypesTable}
       </ContentLayout>
     </>
   );
