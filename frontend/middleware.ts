@@ -18,11 +18,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import {
-  checkRestrictedRoutesAndRedirect,
-  getSignUpTenantRedirect,
-  isEnterpriseMode
-} from "~community/common/utils/commonUtil";
+import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
 import { TenantStatusEnums } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
@@ -202,18 +198,12 @@ const allowedRoutes: Record<
 };
 
 export function middleware(request: NextRequest) {
-  const currentPath = request.nextUrl.pathname;
-
-  if (isEnterpriseMode() && currentPath === ROUTES.AUTH.SIGNUP) {
-    const signUpRedirect = getSignUpTenantRedirect(request);
-    if (signUpRedirect) return signUpRedirect;
-    return NextResponse.next();
-  }
-
   // Get accessToken from cookies
   const token = request.cookies.get("accessToken")?.value;
 
   const claims = extractClaimsFromToken(token || "");
+
+  const currentPath = request.nextUrl.pathname;
 
   if (
     currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
@@ -388,8 +378,6 @@ export const config = {
   matcher: [
     // All community routes
     "/community/:path*",
-    // Auth routes
-    "/signup",
     // Super admin routes
     "/setup-organization/:path*",
     "/module-selection",

@@ -1,7 +1,6 @@
 import ROUTES from "../../common/constants/routes";
 
 export const drawerHiddenProtectedRoutes = [
-  ROUTES.AUTH.SIGNUP,
   ROUTES.ORGANIZATION.SETUP,
   ROUTES.LEAVE.CREATE_LEAVE_POLICY,
   ROUTES.AUTH.RESET_PASSWORD,
