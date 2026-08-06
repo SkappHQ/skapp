@@ -81,7 +81,7 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     if (customLeaveData?.items) {
       setCustomLeaveAllocations(customLeaveData.items);
     }
-  }, [customLeaveData?.items, setCustomLeaveAllocations]);
+  }, [customLeaveData?.items]);
 
   const handleEdit = useCallback(
     (leaveAllocation: LeaveAllocation) => {
@@ -257,12 +257,12 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
       : undefined
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
     <CustomLeaveAllocationFilterBody
       appliedLeaveTypeIds={selectedLeaveTypes}
       onApply={handleApplyFilters}
       onReset={handleResetFilters}
-      onClose={close}
+      onClose={onClose}
     />
   );
 

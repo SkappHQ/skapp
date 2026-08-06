@@ -213,9 +213,7 @@ const ManagerLeaveRequest: FC<Props> = ({
     setNewLeaveId(Number(row.id));
   };
 
-  const renderFilterContent = ({
-    close: onClose
-  }: TableViewFilterContentArgs) => (
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
     <ManagerLeaveRequestFilterBody
       onClose={onClose}
       selectedDateRange={selectedDateRange}
