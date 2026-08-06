@@ -8,6 +8,7 @@ import {
   MIN_POLICY_DAYS,
   MIN_WAITING_PERIOD_DAYS
 } from "~community/leave/constants/leavePolicyConstants";
+import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
@@ -112,6 +113,28 @@ export const addLeaveTypeValidationSchema = (
             translateText(["emptyCarryForwardExpirationDaysError"])
           )
       })
+  });
+
+export const policyLeaveTypeValidationSchema = (
+  translateText: TranslatorFunctionType
+) =>
+  Yup.object({
+    name: Yup.string()
+      .trim()
+      .required(translateText(["emptyLeaveTypeNameError"]))
+      .max(
+        MAX_POLICY_LEAVE_TYPE_NAME_LENGTH,
+        translateText(["leaveTypeNameMaxLengthError"])
+      ),
+    emoji: Yup.string().required(translateText(["emptyLeaveTypeEmojiError"])),
+    colorCode: Yup.string()
+      .transform((value) => (value === null ? "" : value))
+      .required(translateText(["emptyLeaveTypeColorError"])),
+    minDuration: Yup.string().test(
+      "is-min-duration-valid",
+      translateText(["emptyLeaveDurationError"]),
+      (value) => value !== LeaveDurationTypes.NONE
+    )
   });
 
 export const editLeavePolicyValidation = (

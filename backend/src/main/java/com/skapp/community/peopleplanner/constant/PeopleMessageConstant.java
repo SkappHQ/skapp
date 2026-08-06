@@ -103,6 +103,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_MANAGER_NOT_FOUND("api.error.people.manager.not-found"),
 	PEOPLE_ERROR_EMPLOYEE_ID_CANNOT_NULL("api.error.people.employee-id-cannot-null"),
 	PEOPLE_ERROR_EMPLOYEE_NOT_TERMINATED("api.error.people.employee-not-terminated"),
+	PEOPLE_ERROR_CANNOT_TERMINATE_PENDING_EMPLOYEE("api.error.people.cannot-terminate-pending-employee"),
 	PEOPLE_ERROR_EMPLOYEE_ACCESS_DENIED("api.error.people.employee.access-denied"),
 	PEOPLE_ERROR_MISSING_PREVIOUS_EMPLOYMENT_START_AND_END_DATES(
 			"api.error.people.missing-previous-employment-start-and-end-dates"),
@@ -234,7 +235,11 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED(
 			"api.error.people.employee-termination-or-deletion-action-required"),
 	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found"),
-	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found");
+	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found"),
+	PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH("api.error.people.validation.payroll-id-length"),
+	PEOPLE_ERROR_VALIDATION_TIN_LENGTH("api.error.people.validation.tin-length"),
+	PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST("api.error.people.employee.payroll-id.exist"),
+	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist");
 
 	private final String messageKey;
 

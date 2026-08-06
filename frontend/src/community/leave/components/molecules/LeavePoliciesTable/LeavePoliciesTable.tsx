@@ -5,14 +5,18 @@ import {
   SearchIcon,
   Table
 } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { ChangeEvent, FC, useMemo, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
-  useGetLeavePoliciesInfinite,
-  useGetPolicyLeaveTypes
+  useActivateLeavePolicy,
+  useGetLeavePoliciesInfinite
 } from "~community/leave/api/LeavePolicyApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
 import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
@@ -23,12 +27,14 @@ import {
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS,
   LEAVE_POLICY_SKELETON_ROW_COUNT
 } from "~community/leave/constants/leavePolicyConstants";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import {
   LeavePolicyStatus,
   LeavePolicyType,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
+import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 interface Props {
   onCreatePolicy: () => void;
@@ -37,6 +43,7 @@ interface Props {
 const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const canManagePolicies = useCanManageLeavePolicies();
+  const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
@@ -46,13 +53,47 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   );
   const [deactivatingPolicy, setDeactivatingPolicy] =
     useState<LeavePolicyType | null>(null);
+  const [activatingPolicyName, setActivatingPolicyName] = useState<string>("");
+
+  const handleActivateSuccess = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["activatePolicy", "successToastTitle"]),
+      description: translateText(
+        ["activatePolicy", "successToastDescription"],
+        {
+          policyName: activatingPolicyName
+        }
+      ),
+      isIcon: true
+    });
+  };
+
+  const handleActivateError = (error: AxiosError): void => {
+    const { title, description } = getLeavePolicyErrorToastKeys(error);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["activatePolicy", title]),
+      description: translateText(["activatePolicy", description]),
+      isIcon: true
+    });
+  };
+
+  const { mutate: activateLeavePolicy, isPending: isActivating } =
+    useActivateLeavePolicy(handleActivateSuccess, handleActivateError);
 
   const debouncedSearch = useDebounce(
     searchTerm,
     LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes();
+  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes({
+    isActive: true,
+    page: 0,
+    size: UNPAGINATED_SIZE
+  });
 
   const leaveTypeFilterOptions = useMemo(
     () => [
@@ -61,7 +102,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
         label: translateText(["leaveTypeFilterAllOption"]),
         value: ""
       },
-      ...(policyLeaveTypes?.leaveTypes ?? []).map((leaveType) => ({
+      ...(policyLeaveTypes?.items ?? []).map((leaveType) => ({
         id: String(leaveType.id),
         label: leaveType.name,
         value: String(leaveType.id)
@@ -178,7 +219,13 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
                     onClick: () => setDeactivatingPolicy(policy)
                   }
                 ]
-              : [])
+              : [
+                  {
+                    id: `leave-policy-activate-${policy.id}`,
+                    label: translateText(["menuActivate"]),
+                    onClick: () => handleActivate(policy)
+                  }
+                ])
           ]}
         />
       );
@@ -221,6 +268,15 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
 
   const handleCloseDeactivateModal = (): void => {
     setDeactivatingPolicy(null);
+  };
+
+  const handleActivate = (policy: LeavePolicyType): void => {
+    if (isActivating) {
+      return;
+    }
+    setActivatingPolicyName(policy.name);
+    setOpenKebabMenuId(null);
+    activateLeavePolicy(policy.id);
   };
 
   return (

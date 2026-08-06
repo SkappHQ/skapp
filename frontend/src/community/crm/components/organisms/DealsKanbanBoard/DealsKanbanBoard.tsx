@@ -16,6 +16,8 @@ import { useBoardData } from "~community/crm/hooks/useBoardData";
 import { useKanbanDrag } from "~community/crm/hooks/useKanbanDrag";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 interface DealsKanbanBoardProps {
   searchKeyword?: string;
@@ -44,10 +46,15 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
     handleDragEnd
   } = useKanbanDrag();
 
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
   const handleAddDeal = (stageId: number) => {
-    const { setPreselectedStageId, openCrmSidePanel } = useCrmStore.getState();
-    setPreselectedStageId(stageId);
-    openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+    guardCrmCreate(CrmLimitResource.DEALS, () => {
+      const { setPreselectedStageId, openCrmSidePanel } =
+        useCrmStore.getState();
+      setPreselectedStageId(stageId);
+      openCrmSidePanel(CrmSidePanelTypes.ADD_DEAL_SIDE_PANEL);
+    });
   };
 
   const handleDealClick = (dealId: number) => {
@@ -65,25 +72,27 @@ const DealsKanbanBoard: FC<DealsKanbanBoardProps> = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex items-stretch gap-4 h-full overflow-x-auto py-2">
+        <div className="flex h-full overflow-x-auto overflow-y-hidden rounded-lg border border-secondary-accent p-2">
           {boardStages.map((stage) => {
             const stageDeals = stageMap.find((s) => s.stageId === stage.id);
             const deals = stageDeals?.deals ?? [];
 
             return (
-              <DealStageLane
-                key={stage.id}
-                stage={stage}
-                deals={deals}
-                isLoading={isLoading}
-                currentPage={stageDeals?.currentPage ?? 0}
-                hasNextPage={stageDeals?.hasNextPage ?? false}
-                totalCount={stageDeals?.totalCount ?? 0}
-                isOver={overStageId === stage.id}
-                searchKeyword={searchKeyword}
-                onDealClick={handleDealClick}
-                onAddDeal={handleAddDeal}
-              />
+              <div key={stage.id} className="shrink-0 m-2">
+                <DealStageLane
+                  stage={stage}
+                  deals={deals}
+                  isLoading={isLoading}
+                  currentPage={stageDeals?.currentPage ?? 0}
+                  hasNextPage={stageDeals?.hasNextPage ?? false}
+                  totalCount={stageDeals?.totalCount ?? 0}
+                  isOver={overStageId === stage.id}
+                  searchKeyword={searchKeyword}
+                  onDealClick={handleDealClick}
+                  onAddDeal={handleAddDeal}
+                  isAddDealDisabled={isCheckingCrmLimit}
+                />
+              </div>
             );
           })}
         </div>

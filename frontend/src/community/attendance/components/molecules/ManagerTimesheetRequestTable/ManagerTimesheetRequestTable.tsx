@@ -2,7 +2,7 @@ import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
-import { ChangeEvent, FC, JSX } from "react";
+import { FC, JSX } from "react";
 
 import { useCancelTimeRequest } from "~community/attendance/api/AttendanceEmployeeApi";
 import { DEFAULT_TOTAL_HOURS } from "~community/attendance/constants/constants";
@@ -10,6 +10,7 @@ import {
   TimeSheetRequestStates,
   TimeSheetRequestTypes
 } from "~community/attendance/enums/timesheetEnums";
+import { useTimesheetRequestFilterState } from "~community/attendance/hooks/useTimesheetRequestFilterState";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeRequestDataResponseType,
@@ -22,20 +23,25 @@ import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
-import Table from "~community/common/components/molecules/Table/Table";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow,
+  TableViewFilterContentArgs
+} from "~community/common/components/organisms/TableView/types";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { 
-  pascalCaseFormatter,
-  concatStrings
+import {
+  concatStrings,
+  pascalCaseFormatter
 } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
-import TimesheetRequestsFilters from "../TimesheetRequestsFilters/TimesheetRequestsFilters";
+import TimesheetRequestFilterBody from "../TimesheetRequestFilterBody/TimesheetRequestFilterBody";
 import styles from "./styles";
 
 interface Props {
@@ -62,14 +68,21 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   const theme: Theme = useTheme();
   const { setToastMessage } = useToast();
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const translateAria = useTranslator(
+    "attendanceAria",
+    "timesheet",
+    "timeEntryRequestTable"
+  );
   const classes = styles(theme);
   const router = useRouter();
 
   const {
-    employeeTimesheetRequestParams,
+    timesheetRequestParams,
     setTimesheetRequestPagination,
     resetTimesheetRequestParams
   } = useAttendanceStore((state) => state);
+
+  const { filterCount } = useTimesheetRequestFilterState(true, hasFullList);
 
   const onSuccess = () => {
     setToastMessage({
@@ -94,6 +107,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       toastType: ToastType.ERROR
     });
   };
+
+  const handlePageChange = (page: number) => {
+    setTimesheetRequestPagination(page + 1);
+  };
+
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody isManager onClose={onClose} />
+  );
 
   const getKebabMenuOptions = (timeRequestId: number) => [
     {
@@ -139,13 +160,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
     { field: "status", headerName: translateText(["actionHeaderTxt"]) }
   ];
 
-  const tableHeaders = columns.map((col) => ({
+  const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
-    label: col.headerName
+    label: col.headerName,
+    align: "center"
   }));
 
-  const transformToTableRows = () => {
-    return tableData?.map((timesheetRequest: TimeRequestDataType) => ({
+  const transformToTableRows = (): GridRow[] => {
+    return (tableData ?? []).map((timesheetRequest: TimeRequestDataType) => ({
       id: timesheetRequest.timeRequestId,
       name: (
         <AvatarChip
@@ -322,48 +344,37 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
 
   return (
     <>
-      {!hasFullList && (
-        <Typography variant="h2" my={"1.5rem"}>
-          {translateText(["requestTableManagerTitle"])}
-        </Typography>
-      )}
-      {hasFullList && <TimesheetRequestsFilters isManager={true} />}
-      <Table
+      <TableView
+        heading={
+          !hasFullList ? translateText(["requestTableManagerTitle"]) : undefined
+        }
         tableName={tableName}
         headers={tableHeaders}
-        rows={transformToTableRows() || []}
-        tableHead={{
-          customStyles: {
-            cell: classes.tableHeaderStyles
-          }
-        }}
-        tableBody={{
-          emptyState: {
-            noData: {
-              title: translateText(["emptyRequestTitle"]),
-              description: translateText(["emptyRequestDesEmployee"])
-            }
-          },
-          loadingState: {
-            skeleton: {
-              rows: 3
-            }
-          }
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: hasFullList,
-            totalPages: requestData?.totalPages,
-            currentPage: employeeTimesheetRequestParams?.page,
-            onChange: (_event: ChangeEvent<unknown>, value: number) => {
-              setTimesheetRequestPagination(value);
-            }
-          }
-        }}
-        customStyles={{
-          container: classes.tableContainerStyles
-        }}
+        rows={transformToTableRows()}
         isLoading={isRequestLoading}
+        emptyState={{
+          title: translateText(["emptyRequestTitle"]),
+          description: translateText(["emptyRequestDesEmployee"])
+        }}
+        pagination={
+          hasFullList
+            ? {
+                totalPages: requestData?.totalPages,
+                currentPage: timesheetRequestParams.page - 1,
+                onPageChange: handlePageChange
+              }
+            : undefined
+        }
+        filter={
+          hasFullList
+            ? {
+                filterCount,
+                filterButtonAriaLabel: translateAria(["filterButton"]),
+                popoverId: "manager-timesheet-request-filter",
+                filterContent: renderFilterContent
+              }
+            : undefined
+        }
       />
       {!hasFullList && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>

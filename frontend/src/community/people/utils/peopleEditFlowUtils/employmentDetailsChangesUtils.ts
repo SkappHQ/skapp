@@ -239,6 +239,24 @@ export const getIdentificationDetailsChanges = (
     changes.eeoJobCategory = newIdentificationDetails.eeoJobCategory;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newIdentificationDetails.payrollId,
+      previousIdentificationDetails.payrollId
+    )
+  ) {
+    changes.payrollId = newIdentificationDetails.payrollId;
+  }
+
+  if (
+    isFieldDifferentAndValid(
+      newIdentificationDetails.tin,
+      previousIdentificationDetails.tin
+    )
+  ) {
+    changes.tin = newIdentificationDetails.tin;
+  }
+
   return changes;
 };
 

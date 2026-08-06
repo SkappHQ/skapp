@@ -47,13 +47,13 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Pageable pageable) {
+	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Long> idQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
 		idQuery.select(dealRoot.get(CrmDeal_.id));
-		idQuery.where(buildPredicates(cb, dealRoot, filterDto).toArray(new Predicate[0]));
+		idQuery.where(buildPredicates(cb, dealRoot, filterDto, ownerId).toArray(new Predicate[0]));
 
 		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
 				cb.asc(dealRoot.get(CrmDeal_.orderIndex)), cb.asc(dealRoot.get(CrmDeal_.id)));
@@ -67,7 +67,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 			Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 			countQuery.select(cb.count(countRoot))
-				.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+				.where(buildPredicates(cb, countRoot, filterDto, ownerId).toArray(new Predicate[0]));
 			Long total = entityManager.createQuery(countQuery).getSingleResult();
 			return new PageImpl<>(new ArrayList<>(), pageable, total);
 		}
@@ -90,16 +90,21 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
 		countQuery.select(cb.count(countRoot))
-			.where(buildPredicates(cb, countRoot, filterDto).toArray(new Predicate[0]));
+			.where(buildPredicates(cb, countRoot, filterDto, ownerId).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(deals, pageable, total);
 	}
 
-	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto) {
+	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto,
+			Long ownerId) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.equal(deal.get(CrmDeal_.isDeleted), false));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
+		}
 
 		Join<CrmDeal, CrmCompany> companyJoin = deal.join(CrmDeal_.company, JoinType.LEFT);
 
@@ -135,11 +140,15 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	private List<Predicate> buildStagePredicates(CriteriaBuilder cb, Root<CrmDeal> deal, Long stageId,
-			CrmDealsByStagesRequestDto requestDto) {
+			CrmDealsByStagesRequestDto requestDto, Long ownerId) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.id), stageId));
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
+		}
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 
@@ -163,14 +172,14 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	@Override
-	public Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Pageable pageable,
-			long preComputedTotal) {
+	public Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Long ownerId,
+			Pageable pageable, long preComputedTotal) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Long> idQuery = cb.createQuery(Long.class);
 		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
 		idQuery.select(dealRoot.get(CrmDeal_.id));
-		idQuery.where(buildStagePredicates(cb, dealRoot, stageId, requestDto).toArray(new Predicate[0]));
+		idQuery.where(buildStagePredicates(cb, dealRoot, stageId, requestDto, ownerId).toArray(new Predicate[0]));
 		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.orderIndex)));
 
 		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
@@ -198,7 +207,8 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	@Override
-	public Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto) {
+	public Map<Long, Long> countDealsByStageIds(List<Long> stageIds, CrmDealsByStagesRequestDto requestDto,
+			Long ownerId) {
 		if (stageIds == null || stageIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -210,6 +220,10 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(deal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(stageIds));
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
+		}
 
 		addSearchKeywordPredicates(cb, deal, requestDto.getSearchKeyword(), predicates);
 

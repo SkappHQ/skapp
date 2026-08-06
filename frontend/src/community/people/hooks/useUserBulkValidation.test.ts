@@ -1,3 +1,7 @@
+import {
+  PAYROLL_ID_LENGTH,
+  TIN_LENGTH
+} from "~community/people/constants/stringConstants";
 import { BulkUploadUser } from "~community/people/types/UserBulkUploadTypes";
 
 import useUserBulkValidation from "./useUserBulkValidation";
@@ -56,7 +60,9 @@ describe("useUserBulkValidation", () => {
     permission: null,
     contractState: null,
     employmentStatus: null,
-    passportNo: "A1234567"
+    passportNo: "A1234567",
+    payrollId: "PR12345",
+    tin: "TIN12345"
   };
 
   const invalidUser: BulkUploadUser = {
@@ -85,6 +91,31 @@ describe("useUserBulkValidation", () => {
   it("should invalidate an array with at least one invalid user", () => {
     const result = isArrayOfUsersValid([validUser, invalidUser]);
     expect(result).toBe(false);
+  });
+
+  it("should validate a user with empty payrollId and tin", () => {
+    const userWithoutOptionalIds: BulkUploadUser = {
+      ...validUser,
+      payrollId: null,
+      tin: null
+    };
+    expect(isArrayOfUsersValid([userWithoutOptionalIds])).toBe(true);
+  });
+
+  it("should invalidate a user with a payrollId exceeding the max length", () => {
+    const userWithLongPayrollId: BulkUploadUser = {
+      ...validUser,
+      payrollId: "P".repeat(PAYROLL_ID_LENGTH + 1)
+    };
+    expect(isArrayOfUsersValid([userWithLongPayrollId])).toBe(false);
+  });
+
+  it("should invalidate a user with a tin exceeding the max length", () => {
+    const userWithLongTin: BulkUploadUser = {
+      ...validUser,
+      tin: "T".repeat(TIN_LENGTH + 1)
+    };
+    expect(isArrayOfUsersValid([userWithLongTin])).toBe(false);
   });
 
   it("should validate a CSV with correct headers", () => {
