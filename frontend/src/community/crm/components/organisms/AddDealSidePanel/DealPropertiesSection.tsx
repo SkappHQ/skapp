@@ -11,6 +11,7 @@ import {
   CrmDealAddFormTypes,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -78,7 +79,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
               selectedContact
                 ? {
                     id: selectedContact.id,
-                    name: selectedContact.name,
+                    name: getContactFullName(selectedContact),
                     companyName: selectedContact.company?.name ?? null
                   }
                 : null

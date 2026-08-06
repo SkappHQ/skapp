@@ -5,7 +5,8 @@ import {
   CrmContactFormValues,
   CrmDealResponseType,
   CrmDealStageCreatePayload,
-  CrmDealStageFormTypes
+  CrmDealStageFormTypes,
+  EditContactPayload
 } from "~community/crm/types/CommonTypes";
 
 import { STAGE_COLOR_MAP } from "../constants/stageConstants";
@@ -30,11 +31,14 @@ export const mergeDealUpdate = (
 export const getChangedContactFields = (
   newValues: CrmContactFormValues,
   originalValues: CrmContactFormValues
-): Partial<CrmContactFormValues> => {
-  const changedFields: Partial<CrmContactFormValues> = {};
+): Partial<EditContactPayload> => {
+  const changedFields: Partial<EditContactPayload> = {};
 
-  if (newValues.name !== originalValues.name) {
-    changedFields.name = newValues.name;
+  if (newValues.firstName !== originalValues.firstName) {
+    changedFields.firstName = newValues.firstName;
+  }
+  if (newValues.lastName !== originalValues.lastName) {
+    changedFields.lastName = newValues.lastName || null;
   }
   if (newValues.email !== originalValues.email) {
     changedFields.email = newValues.email;

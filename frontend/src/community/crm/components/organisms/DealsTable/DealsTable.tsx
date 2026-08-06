@@ -14,6 +14,7 @@ import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealCons
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { formatValue } from "~community/crm/utils/crmUtil";
 
 import { useContainerWidth } from "./utils/dealsTableUtils";
@@ -130,6 +131,7 @@ const DealsTable: FC<Props> = ({
     (): DealRow[] =>
       allDeals.map((deal: CrmDealResponseType) => {
         const formattedAmount = formatValue(deal.amount);
+        const fullName = getContactFullName(deal.contact);
 
         return {
           id: String(deal.id),
@@ -190,9 +192,7 @@ const DealsTable: FC<Props> = ({
             </span>
           ),
           contactName: (
-            <span className="body2 block w-full truncate">
-              {deal.contactName}
-            </span>
+            <span className="body2 block w-full truncate">{fullName}</span>
           ),
           dealOwner: (
             <OwnerAvatarChip

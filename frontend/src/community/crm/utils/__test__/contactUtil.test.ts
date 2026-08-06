@@ -9,6 +9,7 @@ import {
 } from "~community/crm/types/CommonTypes";
 
 import {
+  getContactFullName,
   mapContactToMetricItems,
   mergeAndPrioritizeCompanyDropdownItems,
   updateContactTaskCompletion
@@ -23,7 +24,8 @@ const toCompanyLookup = (id: number, name: string): CompanyLookup => ({
 
 const baseContact: CrmContact = {
   id: 1,
-  name: "Test Contact",
+  firstName: "Test",
+  lastName: "Contact",
   email: "test@example.com",
   contactNumber: "0711234567",
   lastContactAt: null,
@@ -46,6 +48,42 @@ const baseContact: CrmContact = {
   deals: []
 };
 
+describe("getContactFullName", () => {
+  it("returns an empty string for an undefined contact", () => {
+    expect(getContactFullName(undefined)).toBe("");
+  });
+
+  it("returns an empty string for a null contact", () => {
+    expect(getContactFullName(null)).toBe("");
+  });
+
+  it("returns an empty string when firstName and lastName are both empty", () => {
+    expect(getContactFullName({ firstName: "", lastName: "" })).toBe("");
+  });
+
+  it("joins firstName and lastName with a single space when both are present", () => {
+    expect(getContactFullName({ firstName: "John", lastName: "Smith" })).toBe(
+      "John Smith"
+    );
+  });
+
+  it("returns firstName only, with no trailing space, when lastName is null", () => {
+    expect(getContactFullName({ firstName: "John", lastName: null })).toBe(
+      "John"
+    );
+  });
+
+  it("returns firstName only, with no trailing space, when lastName is undefined", () => {
+    expect(getContactFullName({ firstName: "John" })).toBe("John");
+  });
+
+  it("returns lastName only, with no leading space, when firstName is empty", () => {
+    expect(getContactFullName({ firstName: "", lastName: "Smith" })).toBe(
+      "Smith"
+    );
+  });
+});
+
 describe("mapContactToMetricItems", () => {
   it("should return 4 metric items in the correct order", () => {
     const result = mapContactToMetricItems(baseContact, mockTranslateText);
@@ -65,9 +103,15 @@ describe("mapContactToMetricItems", () => {
 
   it("should include a RED chip with interpolated count when overdueTasksCount > 0", () => {
     const contact = { ...baseContact, overdueTasksCount: 2 };
-    const translateWithTemplate = (keys: string[]): string =>
+    const translateWithTemplate = (
+      keys: string[],
+      interpolationValues?: Record<string, unknown>
+    ): string =>
       keys.join(".") === "metrics.overdueChipLabel"
-        ? "{{count}} Overdue"
+        ? "{{count}} Overdue".replace(
+            "{{count}}",
+            String(interpolationValues?.count)
+          )
         : keys.join(".");
     const result = mapContactToMetricItems(contact, translateWithTemplate);
 
@@ -107,10 +151,7 @@ describe("mapContactToMetricItems", () => {
 });
 
 describe("updateContactTaskCompletion", () => {
-  const makeTask = (
-    id: number,
-    isCompleted: boolean
-  ): TaskRowResponseType => ({
+  const makeTask = (id: number, isCompleted: boolean): TaskRowResponseType => ({
     id,
     name: `Task ${id}`,
     typeName: "Call",

@@ -14,21 +14,36 @@ type TranslatorFunctionType = (suffixes: string[]) => string;
 
 export const addContactValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
-    name: Yup.string()
+    firstName: Yup.string()
       .trim()
-      .max(CONTACT_NAME_MAX_LENGTH, translator(["validations", "nameLength"]))
+      .required(translator(["validations", "firstName"]))
+      .max(
+        CONTACT_NAME_MAX_LENGTH,
+        translator(["validations", "firstNameLength"])
+      )
       .matches(isContactNameValid(), {
-        message: translator(["validations", "nameInvalidCharacters"]),
+        message: translator(["validations", "firstNameInvalidCharacters"]),
         excludeEmptyString: true
-      })
-      .required(translator(["validations", "name"])),
+      }),
+    lastName: Yup.string()
+      .trim()
+      .nullable()
+      .optional()
+      .max(
+        CONTACT_NAME_MAX_LENGTH,
+        translator(["validations", "lastNameLength"])
+      )
+      .matches(isContactNameValid(), {
+        message: translator(["validations", "lastNameInvalidCharacters"]),
+        excludeEmptyString: true
+      }),
     email: Yup.string()
       .trim()
+      .required(translator(["validations", "email"]))
       .max(CONTACT_EMAIL_MAX_LENGTH, translator(["validations", "emailLength"]))
       .matches(isValidEmail(), {
         message: translator(["validations", "invalidEmail"])
-      })
-      .required(translator(["validations", "email"])),
+      }),
     contactNumber: Yup.string()
       .trim()
       .nullable()

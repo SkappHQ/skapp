@@ -33,6 +33,7 @@ import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskFormTypes>;
@@ -87,9 +88,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
   const [selectedContactName, setSelectedContactName] = useState(
-    getContactById(selectedContactId!)?.name ??
-      selectedTask?.contact?.name ??
-      ""
+    getContactFullName(getContactById(selectedContactId!)) ||
+      getContactFullName(selectedTask?.contact)
   );
   const [dealSearchText, setDealSearchText] = useState("");
   const [selectedDealName, setSelectedDealName] = useState(
@@ -100,9 +100,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
     if (selectedTask) {
       setSelectedOwner(selectedTask.owner ?? initialOwner ?? null);
       setSelectedContactName(
-        getContactById(selectedContactId!)?.name ??
-          selectedTask?.contact?.name ??
-          ""
+        getContactFullName(getContactById(selectedContactId!)) ||
+          getContactFullName(selectedTask?.contact)
       );
       setSelectedDealName(selectedTask.deal?.name ?? "");
     } else if (initialOwner) {
@@ -165,8 +164,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
       contactLookupData?.items?.map((contact) => ({
         id: String(contact.id),
         content: (
-          <div className="w-full truncate" title={contact.name}>
-            {contact.name}
+          <div className="w-full truncate" title={getContactFullName(contact)}>
+            {getContactFullName(contact)}
           </div>
         )
       })) ?? [],
@@ -224,7 +223,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (contactLookupItem) => String(contactLookupItem.id) === item.id
     );
     setFieldValue("contactId", Number(item.id));
-    setSelectedContactName(contact?.name ?? "");
+    setSelectedContactName(getContactFullName(contact) ?? "");
     setContactSearchText("");
   };
 

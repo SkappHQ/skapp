@@ -60,8 +60,9 @@ const EditContactModalContent = () => {
   );
 
   const initialValues: CrmContactFormValues = {
-    name: selectedContact?.name,
-    email: selectedContact?.email,
+    firstName: selectedContact?.firstName ?? "",
+    lastName: selectedContact?.lastName ?? "",
+    email: selectedContact?.email ?? "",
     contactNumber: selectedContact?.contactNumber ?? "",
     companyId: selectedContact?.company?.id ?? null,
     ownerId: selectedContact?.owner?.employeeId ?? null
@@ -69,15 +70,17 @@ const EditContactModalContent = () => {
 
   const submitEditContact = (values: CrmContactFormValues) => {
     const normalizedValues: CrmContactFormValues = {
-      name: values.name.trim(),
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
       email: values.email.trim(),
       contactNumber: values.contactNumber.trim(),
       companyId: values.companyId,
       ownerId: values.ownerId
     };
     const originalValues: CrmContactFormValues = {
-      name: selectedContact?.name.trim() ?? "",
-      email: selectedContact?.email.trim() ?? "",
+      firstName: selectedContact?.firstName?.trim() ?? "",
+      lastName: selectedContact?.lastName?.trim() ?? "",
+      email: selectedContact?.email?.trim() ?? "",
       contactNumber: selectedContact?.contactNumber?.trim() ?? "",
       companyId: selectedContact?.company?.id ?? null,
       ownerId: selectedContact?.owner?.employeeId ?? null

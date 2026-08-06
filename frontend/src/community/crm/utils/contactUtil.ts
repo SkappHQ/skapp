@@ -7,6 +7,14 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { groupItemsByPriority } from "~community/crm/utils/crmUtil";
 
+interface ContactNameParts {
+  firstName: string;
+  lastName?: string | null;
+}
+
+export const getContactFullName = (contact?: ContactNameParts | null): string =>
+  [contact?.firstName ?? "", contact?.lastName ?? ""].join(" ").trim();
+
 export const mergeContactUpdate = (
   contacts: CrmContact[],
   update: CrmContact

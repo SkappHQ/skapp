@@ -25,7 +25,7 @@ import {
   replaceStagesInStageMap,
   resolveBoardDeal,
   updateDealInStageMap
-} from "./kanbanUtil";
+} from "../kanbanUtil";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -38,13 +38,15 @@ const OWNER: CrmOwner = {
 
 const CONTACT_WITH_COMPANY: CrmContactLookup = {
   id: 10,
-  name: "Acme Lead",
+  firstName: "Acme",
+  lastName: "Lead",
   company: { id: 5, name: "Acme Corp" }
 };
 
 const CONTACT_NO_COMPANY: CrmContactLookup = {
   id: 20,
-  name: "Solo Lead",
+  firstName: "Solo",
+  lastName: "Lead",
   company: null
 };
 
@@ -344,8 +346,7 @@ describe("mapCreatedDealToSlice", () => {
     orderIndex: "a0",
     amount: "1500",
     companyName: "Acme Corp",
-    contactId: 21,
-    contactName: "Acme Lead",
+    contact: CONTACT_WITH_COMPANY,
     owner: OWNER
   };
 
@@ -366,13 +367,19 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should read stageId from the nested stage", () => {
-    const result = mapCreatedDealToSlice({ ...response, stage: mkStageType(3) });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      stage: mkStageType(3)
+    });
 
     expect(result.stageId).toBe(3);
   });
 
   it("should default contactName to an empty string when absent", () => {
-    const result = mapCreatedDealToSlice({ ...response, contactName: null });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      contact: null
+    });
 
     expect(result.contactName).toBe("");
   });

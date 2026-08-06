@@ -1,6 +1,9 @@
+import { CrmContactFormValues } from "~community/crm/types/CommonTypes";
+
 import {
   findById,
   formatValue,
+  getChangedContactFields,
   groupItemsByPriority,
   toDropdownOptions,
   toSelectedDropdownOption
@@ -198,5 +201,54 @@ describe("findById", () => {
     const result = findById([], 1, getId);
 
     expect(result).toBeNull();
+  });
+});
+
+describe("getChangedContactFields", () => {
+  const original: CrmContactFormValues = {
+    firstName: "John",
+    lastName: "Smith",
+    email: "john@example.com",
+    contactNumber: "0711234567",
+    companyId: 5,
+    ownerId: 10
+  };
+
+  it("should return an empty object when nothing changed", () => {
+    expect(getChangedContactFields(original, original)).toEqual({});
+  });
+
+  it("should send null for lastName when it is cleared", () => {
+    const result = getChangedContactFields(
+      { ...original, lastName: "" },
+      original
+    );
+
+    expect(result).toEqual({ lastName: null });
+  });
+
+  it("should send the trimmed value when lastName is changed", () => {
+    const result = getChangedContactFields(
+      { ...original, lastName: "Jones" },
+      original
+    );
+
+    expect(result).toEqual({ lastName: "Jones" });
+  });
+
+  it("should omit lastName when it was already absent and stays blank", () => {
+    const withoutLastName: CrmContactFormValues = { ...original, lastName: "" };
+    const result = getChangedContactFields(withoutLastName, withoutLastName);
+
+    expect(result).not.toHaveProperty("lastName");
+  });
+
+  it("should only include the fields that changed", () => {
+    const result = getChangedContactFields(
+      { ...original, firstName: "Jane", companyId: null },
+      original
+    );
+
+    expect(result).toEqual({ firstName: "Jane", companyId: null });
   });
 });

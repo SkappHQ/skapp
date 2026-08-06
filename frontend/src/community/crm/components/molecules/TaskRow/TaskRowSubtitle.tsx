@@ -2,6 +2,7 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TaskRowResponseType } from "~community/crm/types/CommonTypes";
+import { getContactFullName } from "~community/crm/utils/contactUtil";
 import { getDueDateStatus } from "~community/crm/utils/taskUtil";
 
 interface Props {
@@ -51,7 +52,7 @@ const TaskRowSubtitle: FC<Props> = ({
                 : "text-secondary-text"
             }
           >
-            {task.contact?.name}
+            {getContactFullName(task.contact)}
           </span>
         </>
       )}
