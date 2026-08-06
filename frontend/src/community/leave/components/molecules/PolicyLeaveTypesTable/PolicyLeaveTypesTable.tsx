@@ -100,7 +100,7 @@ const PolicyLeaveTypesTable: FC = () => {
                 actions: (
                   <IconButton
                     icon={<EditIcon />}
-                    variant="outlined"
+                    variant="no-background"
                     shape="rounded"
                     onClick={() => handleEditPolicyLeaveType(policyLeaveType)}
                     aria-label={translateText(["editButton.label"], {
