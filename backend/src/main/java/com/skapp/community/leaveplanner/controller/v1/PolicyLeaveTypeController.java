@@ -34,8 +34,7 @@ public class PolicyLeaveTypeController {
 					+ "creation dropdowns fetch the active types")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes(
-			PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
+	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
 		ResponseEntityDto response = policyLeaveTypeService.getPolicyLeaveTypes(policyLeaveTypeFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
