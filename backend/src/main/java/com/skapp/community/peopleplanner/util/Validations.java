@@ -384,6 +384,18 @@ public class Validations {
 					List.of(String.valueOf(PeopleConstants.MAX_EMPLOYEE_NUMBER_LENGTH)));
 	}
 
+	public static void validatePayrollId(String payrollId) {
+		if (payrollId.length() > PeopleConstants.MAX_PAYROLL_ID_LENGTH)
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH,
+					List.of(String.valueOf(PeopleConstants.MAX_PAYROLL_ID_LENGTH)));
+	}
+
+	public static void validateTin(String tin) {
+		if (tin.length() > PeopleConstants.MAX_TIN_LENGTH)
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_TIN_LENGTH,
+					List.of(String.valueOf(PeopleConstants.MAX_TIN_LENGTH)));
+	}
+
 	public static void validateWorkLocation(Long workLocationId, WorkLocationDao workLocationDao) {
 		if (workLocationId != null && !workLocationDao.existsById(workLocationId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
