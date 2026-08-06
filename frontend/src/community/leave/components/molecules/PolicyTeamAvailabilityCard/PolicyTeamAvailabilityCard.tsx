@@ -32,12 +32,6 @@ interface Props {
   resourceAvailability: ResourceAvailabilityPayload[] | undefined;
 }
 
-/**
- * Same card as the legacy TeamAvailabilityCard, but reading dates and team selection
- * from the policy store. Sharing the legacy component here would silently break: it
- * pulls selectedDates/selectedTeam from the legacy store, which the policy flow never
- * writes to, so it would always report an empty team.
- */
 const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);

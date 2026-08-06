@@ -18,11 +18,6 @@ interface Props {
   onClose: () => void;
 }
 
-/**
- * Policy counterpart of MyLeaveRequestFilterBody. The second dimension filters by
- * individual policy rather than by leave type, so two policies sharing a leave type
- * appear as two separate chips.
- */
 const PolicyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
   const translateText = useTranslator(
     "leaveModule",

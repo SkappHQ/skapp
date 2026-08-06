@@ -4,11 +4,6 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
-/**
- * Laid out locally rather than through the shared `TableEmptyScreen`, which hardcodes
- * the magnifying-glass icon. The story asks for a calendar outline here, and giving the
- * shared component an icon prop would change something every other table depends on.
- */
 const LeavePolicyAllocationEmptyScreen = () => {
   const theme: Theme = useTheme();
 

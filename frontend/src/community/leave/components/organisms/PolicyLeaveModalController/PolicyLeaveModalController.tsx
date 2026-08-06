@@ -43,12 +43,10 @@ const PolicyLeaveModalController = () => {
     switch (modalType) {
       case PolicyLeaveModalEnums.ADD_ATTACHMENT:
       case PolicyLeaveModalEnums.TEAM_AVAILABILITY:
-      // Dismissing the confirmation means "don't discard", so go back to the form.
       case PolicyLeaveModalEnums.DISCARD_CHANGES:
         setModalType(PolicyLeaveModalEnums.APPLY_POLICY_LEAVE);
         break;
       case PolicyLeaveModalEnums.APPLY_POLICY_LEAVE:
-        // Confirm before throwing away a part-filled form.
         setModalType(
           hasUnsavedChanges
             ? PolicyLeaveModalEnums.DISCARD_CHANGES

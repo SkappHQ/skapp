@@ -30,10 +30,6 @@ import styles from "../LeaveAllocation/styles";
 import LeavePolicyAllocationEmptyScreen from "./LeavePolicyAllocationEmptyScreen";
 import LeavePolicyAllocationErrorState from "./LeavePolicyAllocationErrorState";
 
-/**
- * My Leave Allocation for organizations running on leave policies. One card per assigned
- * policy — policies sharing a leave type are shown side by side, never combined.
- */
 const LeavePolicyAllocation: FC = () => {
   const translateAria = useTranslator("leaveAria");
   const theme: Theme = useTheme();

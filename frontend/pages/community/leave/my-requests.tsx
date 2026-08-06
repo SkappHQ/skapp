@@ -41,8 +41,6 @@ const MyRequests: NextPage = () => {
     isLeavePoliciesEnabled
   );
 
-  // Policy tenants have no leave_entitlement rows, so the legacy check would hide the
-  // year dropdown from them entirely and freeze the balances view on the current year.
   const isNextYearAvailable = isLeavePoliciesEnabled
     ? (nextYearPolicyBalances?.length ?? 0) > 0
     : (isEntitlementAvailableNextYear?.length ?? 0) > 0;

@@ -7,10 +7,6 @@ interface Props {
   isRetrying: boolean;
 }
 
-/**
- * Inline error shown in place of the card list when the balances call fails. Retrying
- * refetches without a full page reload.
- */
 const LeavePolicyAllocationErrorState = ({ onRetry, isRetrying }: Props) => {
   const translateText = useTranslator(
     "leaveModule",

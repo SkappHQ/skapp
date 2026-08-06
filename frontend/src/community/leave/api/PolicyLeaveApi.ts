@@ -20,11 +20,6 @@ import {
   PolicyLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
 
-/**
- * My Leave Allocation cards for organizations running on leave policies. The response is
- * one entry per assigned policy — grouping by leave type is deliberately not done
- * anywhere in this flow.
- */
 export const useGetMyPolicyBalances = (
   year: string,
   enabled = true
@@ -59,11 +54,6 @@ export const useGetMyPolicyLeaveRequests = (
   });
 };
 
-/**
- * Paged feed for the My Requests table. Separate from
- * {@link useGetMyPolicyLeaveRequests}, which stays unpaged because the apply modal needs
- * the whole year at once to grey out already-requested dates.
- */
 export const useSearchMyPolicyLeaveRequests = (
   year: string,
   params: PolicyLeaveRequestParams,
@@ -86,10 +76,6 @@ export const useSearchMyPolicyLeaveRequests = (
   });
 };
 
-/**
- * Real-time balance check fired while the user edits dates. Failures come back on the
- * payload rather than as errors, so the modal can render them inline.
- */
 export const useCheckPolicyLeaveAvailability = (
   onSuccess?: (data: PolicyLeaveAvailabilityType) => void
 ): UseMutationResult<
@@ -135,8 +121,6 @@ export const useApplyPolicyLeave = (
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
       });
-      // Prefix match — the search key carries the table's filter/sort params, so the
-      // exact key is unknown here.
       queryClient.invalidateQueries({
         queryKey: ["my-policy-leave-requests-search", year]
       });

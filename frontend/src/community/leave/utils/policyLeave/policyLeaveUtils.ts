@@ -20,10 +20,8 @@ type TranslateFn = (key: string[], data?: Record<string, unknown>) => string;
 
 const SUCCESS_TOAST_DURATION_MS = 4000;
 
-/** MUI Snackbar treats a very large duration as "stays until dismissed". */
 const ERROR_TOAST_NO_AUTO_DISMISS_MS = 24 * 60 * 60 * 1000;
 
-/** Status chips offered by the policy My Requests filter, in display order. */
 export const policyLeaveStatusFilters: PolicyLeaveRequestStatus[] = [
   PolicyLeaveRequestStatus.PENDING,
   PolicyLeaveRequestStatus.APPROVED,
@@ -32,10 +30,6 @@ export const policyLeaveStatusFilters: PolicyLeaveRequestStatus[] = [
   PolicyLeaveRequestStatus.REVOKED
 ];
 
-/**
- * Copy for the disabled-card toast. Mirrors the three reasons an entitlement card is
- * disabled today, driven by the reason the server derived rather than a client guess.
- */
 export const getDisabledReasonToastKeys = (
   reason: PolicyBalanceDisabledReason | null
 ): { titleKey: string; descriptionKey: string } => {
@@ -64,10 +58,6 @@ export const getDisabledReasonToastKeys = (
   }
 };
 
-/**
- * Maps the availability pre-check failure onto the inline error shown under the date
- * field, so the user sees it before submitting rather than after.
- */
 export const getAvailabilityErrorMessage = ({
   failureReason,
   remainingBalance,
@@ -187,8 +177,6 @@ export const handlePolicyLeaveToast = ({
     toastType: config.toastType,
     title: translateText([config.titleKey]),
     description: translateText([config.descriptionKey]),
-    // Success auto-dismisses after 4s; errors stay until dismissed, per the story's
-    // toast spec. Anything not listed keeps the component default.
     autoHideDuration:
       config.autoHideDuration ??
       (config.toastType === ToastType.ERROR
@@ -197,10 +185,6 @@ export const handlePolicyLeaveToast = ({
   });
 };
 
-/**
- * Client-side gate before submitting. The server re-checks everything; this exists only
- * to keep the user out of an obviously invalid submit.
- */
 export const getPolicyLeaveFormErrors = ({
   selectedDatesLength,
   comment,

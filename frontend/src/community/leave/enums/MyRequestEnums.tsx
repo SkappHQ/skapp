@@ -21,7 +21,6 @@ export enum ApplyLeaveToastEnums {
   LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE = "LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE"
 }
 
-/** Backend message keys the policy apply flow maps to specific copy. */
 export enum ApplyPolicyLeaveErrorKeys {
   POLICY_NOT_ASSIGNED = "LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED",
   INSUFFICIENT_BALANCE = "LEAVE_ERROR_POLICY_LEAVE_INSUFFICIENT_BALANCE",

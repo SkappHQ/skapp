@@ -6,9 +6,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 
-/**
- * Guards against losing a part-filled apply form when the modal is dismissed.
- */
 const DiscardPolicyLeaveModal = () => {
   const translateText = useTranslator(
     "leaveModule",

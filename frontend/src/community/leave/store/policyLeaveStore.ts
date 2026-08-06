@@ -30,10 +30,6 @@ export const initialPolicyLeaveFormErrors: PolicyLeaveFormErrors = {
   attachment: ""
 };
 
-/**
- * Query params for the policy My Requests table. Filtering is by policy id rather than
- * leave type id, so two policies sharing a leave type stay independently filterable.
- */
 export interface PolicyLeaveRequestParams {
   page: number;
   size: number;
@@ -57,10 +53,6 @@ export interface PolicyLeaveStore {
   isModalOpen: boolean;
   selectedYear: string;
   requestParams: PolicyLeaveRequestParams;
-  /**
-   * The one policy every check in the apply modal is scoped to. Re-set in full on each
-   * open so no state leaks from a previously selected policy.
-   */
   selectedPolicyBalance: EmployeePolicyBalanceType | null;
   selectedDates: DateTime[];
   selectedMonth: number;
@@ -108,10 +100,6 @@ const emptyForm = () => ({
   teamAvailabilityData: []
 });
 
-/**
- * Dedicated store for the leave-policy apply flow. Kept separate from the legacy
- * leave store so the two flows cannot contaminate each other's form state.
- */
 export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
   devtools(
     (set) => ({
@@ -136,8 +124,6 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
       setSelectedYear: (selectedYear) =>
         set((state) => ({
           selectedYear,
-          // A year switch must not keep the previous year's page cursor, which may not
-          // exist in the new year's result set.
           requestParams: { ...state.requestParams, page: 0 }
         })),
       setRequestPage: (page) =>

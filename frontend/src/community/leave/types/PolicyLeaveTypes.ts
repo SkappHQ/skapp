@@ -37,10 +37,6 @@ export interface PolicyLeaveTypeDetailType {
   isAutoApproval: boolean;
 }
 
-/**
- * One My Leave Allocation card. There is exactly one of these per assigned policy —
- * two policies of the same leave type stay separate and are never summed.
- */
 export interface EmployeePolicyBalanceType {
   assignmentId: number;
   policyId: number;
@@ -56,7 +52,6 @@ export interface EmployeePolicyBalanceType {
   totalDaysAllocated: number;
   totalDaysUsed: number;
   balanceInDays: number;
-  /** True for flexible policies, which grant leave without deducting a balance. */
   isUnlimited: boolean;
   isBalanceAvailable: boolean;
   isDisabled: boolean;
@@ -82,18 +77,13 @@ export interface PolicyLeaveAvailabilityType {
   failureReason: PolicyLeaveValidationFailure | null;
 }
 
-/**
- * One uploaded file. `fileUrl` is the storage handle the upload returned — a bare
- * filename on community, an S3 key on enterprise — and is not directly browsable;
- * `originalFileName` is what the employee called it, kept so downloads and chips can
- * show a real name instead of a UUID.
- */
 export interface PolicyLeaveAttachmentPayload {
   fileUrl: string;
   originalFileName: string;
 }
 
-export interface PolicyLeaveAttachmentType extends PolicyLeaveAttachmentPayload {
+export interface PolicyLeaveAttachmentType
+  extends PolicyLeaveAttachmentPayload {
   id: number;
 }
 

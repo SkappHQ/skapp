@@ -19,16 +19,6 @@ import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/Lea
 
 import styles from "./styles";
 
-/**
- * My Requests table for organizations running on leave policies.
- *
- * <p>Deliberately a sibling of the legacy `LeaveRequests` rather than a branch inside
- * it: the two read different endpoints with different row shapes, and the legacy table
- * must keep working untouched for tenants still on entitlements.
- *
- * <p>The extra POLICY column is what makes two requests against two policies of the
- * same leave type distinguishable in the list.
- */
 const PolicyLeaveRequests: FC = () => {
   const classes = styles();
 
@@ -129,9 +119,6 @@ const PolicyLeaveRequests: FC = () => {
   return (
     <TableView
       heading={translateText(["myLeaveRequests", "requestTitle"])}
-      // `tableName` is surfaced to screen readers as the table's aria-label, so it says
-      // "Leave requests" like the legacy table. The "policy" prefix is ours, not the
-      // employee's — to them this is simply their leave requests.
       tableName={TableNames.LEAVE_REQUESTS}
       ariaLabel={{
         regionAriaLabel: translateAria([

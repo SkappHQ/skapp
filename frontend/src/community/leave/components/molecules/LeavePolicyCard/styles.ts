@@ -47,7 +47,6 @@ const styles = (theme: Theme): StyleProps => ({
     fontSize: "2.5rem",
     lineHeight: "2.5rem"
   },
-  // "Unlimited" is a word, not a figure — the display size would overflow the card.
   unlimited: {
     fontWeight: 500,
     fontSize: "1.5rem",

@@ -13,7 +13,6 @@ import { MAX_ALLOWED_UPLOADS } from "~community/leave/constants/stringConstants"
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 
-/** Story specifies 10MB per file, above the shared component's 5MB default. */
 const MAX_ATTACHMENT_SIZE_BYTES = 10_000_000;
 
 const PolicyAddAttachmentModal = () => {

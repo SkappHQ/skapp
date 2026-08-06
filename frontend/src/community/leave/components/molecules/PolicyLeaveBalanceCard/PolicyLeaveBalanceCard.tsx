@@ -12,10 +12,6 @@ interface Props {
   policyBalance: EmployeePolicyBalanceType;
 }
 
-/**
- * Hover detail inside the apply modal. Scoped to the single policy in play — never a
- * leave-type-wide total.
- */
 const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
   const translateText = useTranslator(
     "leaveModule",

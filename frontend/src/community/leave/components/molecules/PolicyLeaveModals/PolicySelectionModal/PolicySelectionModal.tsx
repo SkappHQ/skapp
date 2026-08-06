@@ -7,10 +7,6 @@ import LeavePolicyAllocation from "~community/leave/components/molecules/LeavePo
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 
-/**
- * The My Allocation picker. Rows are individual policies, not leave types — so
- * "Annual Leave — Policy A" and "Annual Leave — Policy B" are two selectable rows.
- */
 const PolicySelectionModal = () => {
   const translateText = useTranslator(
     "leaveModule",

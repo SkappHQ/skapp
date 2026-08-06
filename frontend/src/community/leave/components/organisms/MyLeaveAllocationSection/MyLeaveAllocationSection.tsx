@@ -9,11 +9,6 @@ import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnab
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 
-/**
- * Single entry point for the My Leave Allocation section. Organizations on leave
- * policies get the per-policy cards and the policy-scoped apply flow; everyone else
- * keeps the existing entitlement cards untouched.
- */
 const MyLeaveAllocationSection: FC = () => {
   const { isLeavePoliciesEnabled, isLoading } = useLeavePoliciesEnabled();
 
@@ -22,15 +17,12 @@ const MyLeaveAllocationSection: FC = () => {
     (state) => state.setSelectedYear
   );
 
-  // Keep the policy flow on the same year the page's year dropdown is showing.
   useEffect(() => {
     if (selectedYear) {
       setPolicySelectedYear(selectedYear);
     }
   }, [selectedYear, setPolicySelectedYear]);
 
-  // Render nothing concrete until the config resolves, otherwise a policy tenant would
-  // briefly mount the legacy section and fire an entitlements request it will discard.
   if (isLoading) {
     return (
       <Grid2 container spacing={2}>

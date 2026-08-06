@@ -18,10 +18,6 @@ interface Props {
   policyBalance: EmployeePolicyBalanceType;
 }
 
-/**
- * One card per assigned policy. Two policies of the same leave type render as two of
- * these — nothing here reads or aggregates by leave type.
- */
 const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
   ({ policyBalance }, ref) => {
     const {
@@ -68,8 +64,6 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
       });
     };
 
-    // "—" rather than 0 when the balance could not be derived, so an unavailable figure
-    // is never mistaken for a genuinely empty policy.
     const balanceLabel = !isBalanceAvailable
       ? "—"
       : isUnlimited
@@ -135,8 +129,6 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
           )}
           {isMouseOn && isActionable && (
             <ButtonV2
-              // Stop the click bubbling to the card, which would open the modal twice
-              // and wipe the freshly scoped form state on the second pass.
               onClick={(event) => {
                 event.stopPropagation();
                 handleClick();

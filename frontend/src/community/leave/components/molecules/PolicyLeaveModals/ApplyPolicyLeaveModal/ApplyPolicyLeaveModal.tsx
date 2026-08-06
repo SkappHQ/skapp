@@ -70,16 +70,10 @@ import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
 
-/** Story spec: the user is sent to the login page 2 seconds after the toast appears. */
 const SESSION_EXPIRED_REDIRECT_DELAY_MS = 2000;
 
 const HTTP_UNAUTHORIZED = 401;
 
-/**
- * Apply-leave modal scoped to exactly one policy. Every balance, effective-from and
- * expiry check in here reads from the scoped policy — a sibling policy of the same leave
- * type is never consulted and never deducted from.
- */
 const ApplyPolicyLeaveModal = () => {
   const theme: Theme = useTheme();
   const router = useRouter();
@@ -118,11 +112,6 @@ const ApplyPolicyLeaveModal = () => {
     setModalType
   } = usePolicyLeaveStore();
 
-  /**
-   * CalendarDateRangePicker reports its own verdict (holiday-only range, overlap with an
-   * existing request, duration not allowed) through the shared leave store. Read it back
-   * so those failures actually block submission rather than only raising a toast.
-   */
   const isCalendarSelectionInvalid = useLeaveStore(
     (state) => state.isApplyLeaveModalBtnDisabled
   );
@@ -165,11 +154,6 @@ const ApplyPolicyLeaveModal = () => {
     setModalType(PolicyLeaveModalEnums.NONE);
   };
 
-  /**
-   * The modal deliberately stays open on failure so nothing the user typed is lost —
-   * except on an expired session, where staying put would only let them retry into the
-   * same 401.
-   */
   const onApplyError = (messageKey: string, statusCode?: number) => {
     if (statusCode === HTTP_UNAUTHORIZED) {
       handlePolicyLeaveToast({
@@ -193,10 +177,6 @@ const ApplyPolicyLeaveModal = () => {
   const { mutate: applyPolicyLeave, isPending: isApplyPending } =
     useApplyPolicyLeave(selectedYear, onApplySuccess, onApplyError);
 
-  /**
-   * The calendar can never reach past the scoped policy's expiry, so a request cannot
-   * span the expiry boundary in the first place.
-   */
   const minDate = useMemo(
     () => new Date(selectedPolicyBalance?.validFrom ?? Date.now()),
     [selectedPolicyBalance]
@@ -217,10 +197,6 @@ const ApplyPolicyLeaveModal = () => {
     [timeConfig]
   );
 
-  /**
-   * Dates the user is already committed to. Shaped to the existing calendar contract so
-   * the picker can grey them out exactly as it does in the legacy flow.
-   */
   const blockingLeaveRequests: MyLeaveRequestPayloadType[] = useMemo(
     () =>
       (myPolicyLeaveRequests ?? [])
@@ -283,9 +259,6 @@ const ApplyPolicyLeaveModal = () => {
     ]
   );
 
-  // Default to Full Day per the field spec, falling back to whatever the policy's
-  // leave type actually permits. Must stay below disabledDurationSelectorOptions —
-  // referencing it from a dep array declared above its useMemo is a TDZ error.
   useEffect(() => {
     setSelectedDuration(
       getDurationInitialValue({
@@ -301,10 +274,6 @@ const ApplyPolicyLeaveModal = () => {
     setSelectedDuration
   ]);
 
-  /**
-   * Re-validate against the server whenever dates or duration change, matching the
-   * existing real-time balance check behaviour.
-   */
   useEffect(() => {
     if (
       !selectedPolicyBalance ||
@@ -338,16 +307,12 @@ const ApplyPolicyLeaveModal = () => {
     });
   }, [availability, selectedPolicyBalance, translateText]);
 
-  // Set unconditionally so the inline error clears again once the dates become valid.
   useEffect(() => {
     setFormError("selectedDates", availabilityError);
   }, [availabilityError, setFormError]);
 
   const hasDateError = Boolean(formErrors?.selectedDates);
 
-  // Pull the user back to the field they have to change. Only on the transition into
-  // an error state, so re-renders while the error persists don't steal focus from
-  // whatever they moved on to.
   useEffect(() => {
     if (hasDateError) {
       dateFieldRef.current?.focus();
@@ -375,12 +340,6 @@ const ApplyPolicyLeaveModal = () => {
     translateText
   ]);
 
-  /**
-   * Uploads each file and pairs the storage handle with the name the employee gave it.
-   * The community handle is a server-generated UUID, so without carrying
-   * `originalFileName` the user would later download `3f9a….pdf` — which is exactly
-   * what the legacy flow does today.
-   */
   const uploadAttachmentsAndGetRefs = async (): Promise<
     PolicyLeaveAttachmentPayload[]
   > => {
@@ -464,12 +423,6 @@ const ApplyPolicyLeaveModal = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 md:gap-7">
         <div className="flex flex-col gap-3">
-          {/*
-            The story wants the date field outlined in red and focused when a date error
-            appears. CalendarDateRangePicker only recolours its message text, so the
-            outline and focus target live on this wrapper rather than in the shared
-            component, which the legacy flow also renders.
-          */}
           <div
             ref={dateFieldRef}
             tabIndex={-1}

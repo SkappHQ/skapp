@@ -1,11 +1,9 @@
 export enum PolicyLeaveModalEnums {
   NONE = "NONE",
-  /** Picker listing individual policies — two policies of one leave type = two rows. */
   POLICY_SELECTION = "POLICY_SELECTION",
   APPLY_POLICY_LEAVE = "APPLY_POLICY_LEAVE",
   TEAM_AVAILABILITY = "TEAM_AVAILABILITY",
   ADD_ATTACHMENT = "ADD_ATTACHMENT",
-  /** Confirmation shown before discarding a part-filled apply form. */
   DISCARD_CHANGES = "DISCARD_CHANGES"
 }
 
