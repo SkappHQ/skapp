@@ -48,6 +48,10 @@ const nextConfig = {
           : "/community/signin"
       },
       {
+        source: "/oauth-consent",
+        destination: "/enterprise/oauth-consent"
+      },
+      {
         source: "/settings",
         destination: "/community/settings"
       },
@@ -250,6 +254,10 @@ const nextConfig = {
       {
         source: "/redirect",
         destination: "/enterprise/redirect"
+      },
+      {
+        source: "/oauth-consent",
+        destination: "/enterprise/oauth-consent"
       },
       {
         source: "/verify/reset-password",
