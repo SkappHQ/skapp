@@ -35,7 +35,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     useState<string>(BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE);
 
   const { data: impact, isLoading: isImpactLoading } =
-    useGetBusinessUnitDeletionImpact(businessUnit.businessUnitId, isOpen);
+    useGetBusinessUnitDeletionImpact(businessUnit.businessUnitId);
 
   const { data: businessUnits } = useGetBusinessUnits();
 
@@ -93,7 +93,6 @@ const DeleteBusinessUnitModal: FC<Props> = ({
 
   const handleClose = () => {
     if (isPending) return;
-    setTransferTargetValue(BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE);
     onClose();
   };
 

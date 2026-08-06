@@ -93,13 +93,11 @@ const getBusinessUnitDeletionImpact = async (
 };
 
 export const useGetBusinessUnitDeletionImpact = (
-  id: number,
-  enabled: boolean
+  id: number
 ): UseQueryResult<BusinessUnitDeletionImpact> => {
   return useQuery({
     queryKey: businessUnitQueryKeys.DELETION_IMPACT(id),
-    queryFn: () => getBusinessUnitDeletionImpact(id),
-    enabled
+    queryFn: () => getBusinessUnitDeletionImpact(id)
   });
 };
 
@@ -109,7 +107,9 @@ const deleteBusinessUnit = ({
 }: BusinessUnitDeleteVariables): Promise<AxiosResponse<BusinessUnit>> =>
   authFetch.delete(businessUnitEndpoints.DELETE_BUSINESS_UNIT(id), {
     params:
-      transferToBusinessUnitId != null ? { transferToBusinessUnitId } : undefined
+      transferToBusinessUnitId != null
+        ? { transferToBusinessUnitId }
+        : undefined
   });
 
 export const useDeleteBusinessUnit = (

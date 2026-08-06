@@ -34,43 +34,23 @@ const BusinessUnitsSection: FC = () => {
     openCommonModal(CommonModalType.DELETE_BUSINESS_UNIT, { businessUnit });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h1 className="h2">{translateText(["title"])}</h1>
-        </div>
+  const renderBody = () => {
+    if (isLoading) {
+      return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {skeletonKeys.map((key) => (
             <BusinessUnitCardSkeleton key={key} />
           ))}
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  if (!businessUnits) {
-    return null;
-  }
+    if (!businessUnits) {
+      return null;
+    }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="h2">{translateText(["title"])}</h1>
-        {businessUnits.length > 0 && (
-          <ButtonV2
-            size="md"
-            icon={<PlusIcon />}
-            iconPosition="end"
-            onClick={handleAddUnit}
-            aria-label={translateText(["addButton"])}
-          >
-            {translateText(["addButton"])}
-          </ButtonV2>
-        )}
-      </div>
-
-      {businessUnits.length === 0 ? (
+    if (businessUnits.length === 0) {
+      return (
         <EmptyDataView
           title={translateText(["emptyState", "title"])}
           description={translateText(["emptyState", "description"])}
@@ -84,22 +64,42 @@ const BusinessUnitsSection: FC = () => {
             wrapper: "bg-secondary-background rounded-lg"
           }}
         />
-      ) : (
-        <ul
-          role="list"
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {businessUnits.map((businessUnit) => (
-            <li key={businessUnit.businessUnitId}>
-              <BusinessUnitCard
-                businessUnit={businessUnit}
-                onEdit={handleEditUnit}
-                onDelete={handleDeleteUnit}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      );
+    }
+
+    return (
+      <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {businessUnits.map((businessUnit) => (
+          <li key={businessUnit.businessUnitId} className="mb-0">
+            <BusinessUnitCard
+              businessUnit={businessUnit}
+              onEdit={handleEditUnit}
+              onDelete={handleDeleteUnit}
+            />
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="h2">{translateText(["title"])}</h2>
+        {!isLoading && businessUnits && businessUnits.length > 0 && (
+          <ButtonV2
+            size="md"
+            icon={<PlusIcon />}
+            iconPosition="end"
+            onClick={handleAddUnit}
+            aria-label={translateText(["addButton"])}
+          >
+            {translateText(["addButton"])}
+          </ButtonV2>
+        )}
+      </div>
+
+      {renderBody()}
     </div>
   );
 };

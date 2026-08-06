@@ -80,7 +80,7 @@ const EditBusinessUnitModal: FC<Props> = ({
 
     updateBusinessUnit({
       id: businessUnit.businessUnitId,
-      payload: { name, description }
+      payload: { name, description: description || null }
     });
   };
 
