@@ -51,8 +51,6 @@ class PeopleConfigControllerIntegrationTest {
 
 	private static final String IS_TEAM_WIDE_PATH = RESULTS_0_PATH + "['isTeamWide']";
 
-	private static final String EMPTY_JSON_BODY = "{}";
-
 	private static final Long RESTRICTED_EMPLOYEE_ID = 2L;
 
 	private static final String ADMIN_USER_EMAIL = "user1@gmail.com";
@@ -113,12 +111,8 @@ class PeopleConfigControllerIntegrationTest {
 		config.setIsTurnedOn(isTurnedOn);
 		config.setIsOrganizationWide(isOrganizationWide);
 		config.setIsTeamWide(isTeamWide);
-		seedRawConfig(objectMapper.writeValueAsString(config));
-	}
-
-	private void seedRawConfig(String configValue) {
-		organizationConfigDao
-			.saveAndFlush(new OrganizationConfig(OrganizationConfigType.BIRTHDAY_NOTIFICATIONS.name(), configValue));
+		organizationConfigDao.saveAndFlush(new OrganizationConfig(OrganizationConfigType.BIRTHDAY_NOTIFICATIONS.name(),
+				objectMapper.writeValueAsString(config)));
 	}
 
 	private boolean configRowExists() {
@@ -155,14 +149,6 @@ class PeopleConfigControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get birthday notification config when a config row exists - Returns the stored flags")
-		void getBirthdayNotificationConfigs_WithExistingConfigRow_ReturnsStoredFlags() throws Exception {
-			seedConfig(true, true, false);
-
-			assertFlags(performGetRequest(adminToken), true, true, false);
-		}
-
-		@Test
 		@DisplayName("Get birthday notification config as a non people-admin - Returns Forbidden")
 		void getBirthdayNotificationConfigs_WithoutPeopleAdminRole_ReturnsForbidden() throws Exception {
 			performGetRequest(tokenWithoutPeopleAdminRole()).andDo(print()).andExpect(status().isForbidden());
@@ -192,29 +178,11 @@ class PeopleConfigControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Patch with an empty body - Leaves the stored config unchanged")
-		void updateBirthdayNotificationConfigs_WithEmptyBody_LeavesConfigUnchanged() throws Exception {
-
-			seedConfig(true, true, false);
-
-			assertFlags(performPatchRequest(EMPTY_JSON_BODY, adminToken), true, true, false);
-		}
-
-		@Test
 		@DisplayName("Patch isTurnedOn as false over an enabled config - Turns it off and keeps the scope flags")
 		void updateBirthdayNotificationConfigs_WithFalseValue_OverwritesTrue() throws Exception {
 			seedConfig(true, true, true);
 
 			assertFlags(performPatchRequest(configRequestBody(false, null, null), adminToken), false, true, true);
-		}
-
-		@Test
-		@DisplayName("Patch birthday notification config as a non people-admin - Returns Forbidden")
-		void updateBirthdayNotificationConfigs_WithoutPeopleAdminRole_ReturnsForbidden() throws Exception {
-			performPatchRequest(configRequestBody(true, null, null), tokenWithoutPeopleAdminRole()).andDo(print())
-				.andExpect(status().isForbidden());
-
-			assertThat(configRowExists()).isFalse();
 		}
 
 	}

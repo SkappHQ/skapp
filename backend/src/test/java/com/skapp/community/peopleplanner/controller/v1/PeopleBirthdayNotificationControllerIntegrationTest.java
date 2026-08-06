@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -39,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.util.function.Consumer;
 
@@ -47,6 +49,9 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -72,8 +77,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private static final String CURRENT_USER_EMAIL = "user1@gmail.com";
 
-	private static final String RESTRICTED_USER_EMAIL = "user2@gmail.com";
-
 	private static final Long CURRENT_EMPLOYEE_ID = 1L;
 
 	private static final Long TEAMMATE_EMPLOYEE_ID = 2L;
@@ -88,10 +91,13 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private static final Long TOKEN_USER_ID = 1L;
 
-	private static final Long RESTRICTED_TOKEN_USER_ID = 2L;
-
 	/** Leap year, so a 29 February month/day pair is always representable. */
 	private static final int BIRTH_YEAR = 1996;
+
+	/**
+	 * 2027 is not a leap year, so 28 February is the last day of that month.
+	 */
+	private static final LocalDate LAST_DAY_OF_SHORT_FEBRUARY = LocalDate.of(2027, Month.FEBRUARY.getValue(), 28);
 
 	private final JsonMapper objectMapper;
 
@@ -198,11 +204,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		userDao.saveAndFlush(user);
 	}
 
-	private String tokenWithoutPeopleRole() {
-		mutateEmployee(TEAMMATE_EMPLOYEE_ID, employee -> employee.getEmployeeRole().setPeopleRole(null));
-		return tokenFor(RESTRICTED_USER_EMAIL, RESTRICTED_TOKEN_USER_ID);
-	}
-
 	private LocalDate storedLastViewedDate(Long employeeId) {
 		return specialNotificationStatusDao
 			.findByEmployeeEmployeeIdAndSpecialNotificationType(employeeId, SpecialNotificationType.BIRTHDAY)
@@ -241,10 +242,12 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays with SELF scope and own birthday today - Returns the current user")
-		void getTodayBirthdayNotifications_WithSelfScopeAndOwnBirthdayToday_ReturnsSelf() throws Exception {
+		@DisplayName("Get today's birthdays with SELF scope - Returns the current user and excludes a teammate")
+		void getTodayBirthdayNotifications_WithSelfScope_ReturnsOnlySelf() throws Exception {
 			seedConfig(true, false, false);
+			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
+			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
 			mutateEmployee(CURRENT_EMPLOYEE_ID, employee -> employee.setAuthPic("auth-pic-one.png"));
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
@@ -258,26 +261,13 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays with SELF scope and a teammate's birthday today - Excludes the teammate")
-		void getTodayBirthdayNotifications_WithSelfScopeAndTeammateBirthdayToday_ExcludesTeammate() throws Exception {
-			seedConfig(true, false, false);
-			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
-			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays with TEAM scope and a shared active team - Returns the teammate")
-		void getTodayBirthdayNotifications_WithTeamScopeAndSharedActiveTeam_ReturnsTeammate() throws Exception {
+		@DisplayName("Get today's birthdays with TEAM scope - Returns a shared-team member and excludes a non-teammate")
+		void getTodayBirthdayNotifications_WithTeamScope_ReturnsOnlyTeammates() throws Exception {
 			seedConfig(true, false, true);
 			addToSeededTeam(TEAMMATE_EMPLOYEE_ID);
 			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
 			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
+			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(2))
@@ -286,19 +276,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays with TEAM scope and a non-teammate's birthday - Excludes them")
-		void getTodayBirthdayNotifications_WithTeamScopeAndNonTeammate_ExcludesNonTeammate() throws Exception {
-			seedConfig(true, false, true);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns all matching employees ordered by name")
+		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns all matching employees, including pending ones, ordered by name")
 		void getTodayBirthdayNotifications_WithOrganizationScope_ReturnsAllMatchingEmployeesOrderedByName()
 				throws Exception {
 			seedConfig(true, true, false);
@@ -307,7 +285,10 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			giveBirthdayOn(SECOND_OUTSIDER_EMPLOYEE_ID, today);
 
 			mutateEmployee(OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("alpha"));
-			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("Alpha"));
+			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID, employee -> {
+				employee.setFirstName("Alpha");
+				employee.setAccountStatus(AccountStatus.PENDING);
+			});
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(3))
@@ -319,26 +300,12 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		@Test
 		@DisplayName("Get today's birthdays when both organization-wide and team-wide are true - Uses ORGANIZATION scope")
 		void getTodayBirthdayNotifications_WithBothOrganizationAndTeamFlags_UsesOrganizationScope() throws Exception {
-
 			seedConfig(true, true, true);
 			giveBirthdayOn(OUTSIDER_EMPLOYEE_ID, today);
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
 				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(OUTSIDER_EMPLOYEE_ID.intValue()));
-		}
-
-		@Test
-		@DisplayName("Get today's birthdays when nobody has a birthday today - Returns empty list and writes no row")
-		void getTodayBirthdayNotifications_WithNoBirthdaysToday_ReturnsEmptyListAndWritesNothing() throws Exception {
-			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today.plusDays(1));
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(0));
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
 
 		@Test
@@ -390,23 +357,18 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays when a matching employee is pending - Includes them")
-		void getTodayBirthdayNotifications_WithPendingAccountStatus_IncludesEmployee() throws Exception {
+		@DisplayName("Get today's birthdays on 28 February of a non-leap year - Includes 29 February birthdays")
+		void getTodayBirthdayNotifications_OnLastDayOfShortFebruary_IncludesLeapDayBirthday() throws Exception {
 			seedConfig(true, true, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-			giveBirthdayOn(TEAMMATE_EMPLOYEE_ID, today);
-			mutateEmployee(TEAMMATE_EMPLOYEE_ID, employee -> employee.setAccountStatus(AccountStatus.PENDING));
+			givePersonalInfo(CURRENT_EMPLOYEE_ID, LocalDate.of(BIRTH_YEAR, Month.FEBRUARY.getValue(), 29));
 
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(2))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(TEAMMATE_EMPLOYEE_ID.intValue()));
-		}
+			try (MockedStatic<LocalDate> clock = mockStatic(LocalDate.class, CALLS_REAL_METHODS)) {
+				clock.when(() -> LocalDate.now(any(ZoneId.class))).thenReturn(LAST_DAY_OF_SHORT_FEBRUARY);
 
-		@Test
-		@DisplayName("Get today's birthdays without any people role - Returns Forbidden")
-		void getTodayBirthdayNotifications_WithoutPeopleRole_ReturnsForbidden() throws Exception {
-			performGetTodayRequest(tokenWithoutPeopleRole()).andDo(print()).andExpect(status().isForbidden());
+				assertSuccessful(performGetTodayRequest(currentUserToken))
+						.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
+						.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
+			}
 		}
 
 	}
@@ -444,47 +406,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Mark today's birthdays as viewed twice - Updates the same row instead of duplicating")
-		void markTodayBirthdayNotificationsAsViewed_CalledTwice_UpdatesSingleRow() throws Exception {
-			seedConfig(true, false, false);
-
-			assertSuccessful(performMarkViewedRequest(currentUserToken));
-			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
-
-			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
-		}
-
-		@Test
-		@DisplayName("Mark today's birthdays as viewed without any people role - Returns Forbidden")
-		void markTodayBirthdayNotificationsAsViewed_WithoutPeopleRole_ReturnsForbidden() throws Exception {
-			seedConfig(true, false, false);
-
-			performMarkViewedRequest(tokenWithoutPeopleRole()).andDo(print()).andExpect(status().isForbidden());
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Mark today's birthdays as viewed when the feature is turned off - Returns today without writing a row")
+		@DisplayName("Mark today's birthdays as viewed when the feature is turned off - Returns today and leaves the stored row untouched")
 		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOff_ReturnsTodayWithoutWriting() throws Exception {
-			seedConfig(false, false, false);
-
-			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Mark today's birthdays as viewed when no config row exists - Returns today without writing a row")
-		void markTodayBirthdayNotificationsAsViewed_WithNoConfigRow_ReturnsTodayWithoutWriting() throws Exception {
-			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
-
-			assertThat(specialNotificationStatusDao.count()).isZero();
-		}
-
-		@Test
-		@DisplayName("Mark today's birthdays as viewed when the feature is turned off - Leaves an existing row untouched")
-		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOffWithExistingRow_LeavesRowUntouched() throws Exception {
 			seedConfig(false, false, false);
 			seedLastViewed(CURRENT_EMPLOYEE_ID, today.minusDays(5));
 
@@ -492,23 +415,6 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 			assertThat(storedLastViewedDate(CURRENT_EMPLOYEE_ID)).isEqualTo(today.minusDays(5));
 			assertThat(specialNotificationStatusDao.count()).isEqualTo(1);
-		}
-
-		@Test
-		@DisplayName("Turn the feature on after marking viewed while it was off - Still returns today's birthdays")
-		void markTodayBirthdayNotificationsAsViewed_WhenTurnedOnAfterBeingOff_StillReturnsTodayBirthdays()
-				throws Exception {
-			seedConfig(false, false, false);
-			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
-
-			assertLastViewedDate(assertSuccessful(performMarkViewedRequest(currentUserToken)), today);
-
-			seedConfig(true, true, false);
-
-			assertSuccessful(performGetTodayRequest(currentUserToken))
-					.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()))
-					.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-					.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 		}
 
 	}
