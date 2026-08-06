@@ -288,7 +288,6 @@ export const policyLeaveTypeQueryKeys = {
     page,
     size
   ],
-  ACTIVE: () => [...policyLeaveTypeQueryKeys.ALL, "active-policy-leave-types"],
   DETAIL: (id: number) => [
     ...policyLeaveTypeQueryKeys.ALL,
     "policy-leave-type",

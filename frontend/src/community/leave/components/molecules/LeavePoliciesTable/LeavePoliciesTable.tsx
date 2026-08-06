@@ -16,7 +16,7 @@ import {
   useActivateLeavePolicy,
   useGetLeavePoliciesInfinite
 } from "~community/leave/api/LeavePolicyApi";
-import { useGetActivePolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
 import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
 import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
@@ -27,6 +27,7 @@ import {
   LEAVE_POLICY_SEARCH_DEBOUNCE_MS,
   LEAVE_POLICY_SKELETON_ROW_COUNT
 } from "~community/leave/constants/leavePolicyConstants";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import {
   LeavePolicyStatus,
@@ -88,7 +89,11 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: policyLeaveTypes } = useGetActivePolicyLeaveTypes();
+  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes({
+    isActive: true,
+    page: 0,
+    size: UNPAGINATED_SIZE
+  });
 
   const leaveTypeFilterOptions = useMemo(
     () => [

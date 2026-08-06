@@ -4,7 +4,8 @@ import { ChangeEvent, FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmoji } from "~community/common/utils/commonUtil";
-import { useGetActivePolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
+import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
 
 import WizardSection from "./WizardSection";
@@ -23,7 +24,11 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
     "createPolicy"
   );
 
-  const { data: policyLeaveTypes, isLoading } = useGetActivePolicyLeaveTypes();
+  const { data: policyLeaveTypes, isLoading } = useGetPolicyLeaveTypes({
+    isActive: true,
+    page: 0,
+    size: UNPAGINATED_SIZE
+  });
 
   const leaveTypeOptions = (policyLeaveTypes?.items ?? []).map((leaveType) => ({
     id: String(leaveType.id),

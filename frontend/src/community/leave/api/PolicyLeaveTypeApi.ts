@@ -10,7 +10,6 @@ import { AxiosError, AxiosResponse } from "axios";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveTypeEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { policyLeaveTypeQueryKeys } from "~community/leave/api/utils/QueryKeys";
-import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   PolicyLeaveTypeMutationResponse,
   PolicyLeaveTypePayloadType,
@@ -47,29 +46,6 @@ export const useGetPolicyLeaveTypes = ({
         page,
         size
       })
-  });
-};
-
-const getActivePolicyLeaveTypes = async (): Promise<PolicyLeaveTypesPage> => {
-  const response = await authFetch.get<PolicyLeaveTypesPageResponse>(
-    policyLeaveTypeEndPoints.GET_POLICY_LEAVE_TYPES,
-    {
-      params: {
-        isActive: true,
-        page: 0,
-        size: UNPAGINATED_SIZE
-      }
-    }
-  );
-
-  return response.data.results[0];
-};
-
-export const useGetActivePolicyLeaveTypes =
-  (): UseQueryResult<PolicyLeaveTypesPage> => {
-  return useQuery({
-    queryKey: policyLeaveTypeQueryKeys.ACTIVE(),
-    queryFn: getActivePolicyLeaveTypes
   });
 };
 
