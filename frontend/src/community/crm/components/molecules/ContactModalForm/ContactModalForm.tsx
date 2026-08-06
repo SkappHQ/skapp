@@ -1,6 +1,6 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { ChangeEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import SearchableDropdown, {
@@ -26,6 +26,7 @@ import {
   CONTACT_EMAIL_MAX_LENGTH,
   CONTACT_NAME_MAX_LENGTH
 } from "~community/crm/constants/contactConstants";
+import usePhoneNumberFieldHandlers from "~community/crm/hooks/usePhoneNumberFieldHandlers";
 import {
   CrmContactFormValues,
   CrmOwner
@@ -87,15 +88,8 @@ const ContactModalForm = ({
     dirty
   } = formik;
 
-  const handleChangeCountry = async (code: string) => {
-    await setFieldValue("countryCode", code);
-  };
-
-  const handleChangeContactNumber = async (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    handleChange(e);
-  };
+  const { handleChangeCountry, handleChangeContactNumber } =
+    usePhoneNumberFieldHandlers({ formik, countryCodeField: "countryCode" });
 
   const trimmedEmail = values.email.trim();
   const trimmedOriginalEmail = initialValues.email.trim();

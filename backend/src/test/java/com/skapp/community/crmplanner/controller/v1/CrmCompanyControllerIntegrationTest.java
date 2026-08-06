@@ -227,6 +227,19 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
+	@Test
+	@DisplayName("Create company with legacy digits-only contact number - Returns Bad Request")
+	void createCompany_LegacyContactNumberFormat_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setContactNumber("94771234567");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID)));
+	}
+
 	// --- Check company name exists tests ---
 
 	@Test

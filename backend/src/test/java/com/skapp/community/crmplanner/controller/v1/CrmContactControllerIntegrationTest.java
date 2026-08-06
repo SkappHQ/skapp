@@ -401,6 +401,20 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create contact with malformed country code - Returns Bad Request")
+	void createContact_MalformedCountryCode_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContactCreateRequestDto dto = createValidPayload(companyId);
+		dto.setContactNumber("+94 771234567");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID)));
+	}
+
+	@Test
 	@DisplayName("Create contact with apostrophe and comma in name - Returns Created")
 	void createContact_NameWithApostropheAndComma_ReturnsCreated() throws Exception {
 		CrmContactCreateRequestDto dto = createValidPayload(null);

@@ -5,7 +5,7 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 
 import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
@@ -14,6 +14,7 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useCheckCompanyNameExists } from "~community/crm/api/CompanyApi";
 import { COMPANY_NAME_DEBOUNCE_DELAY } from "~community/crm/constants/companyConstants";
 import useGetIndustryOptions from "~community/crm/hooks/useGetIndustryOptions";
+import usePhoneNumberFieldHandlers from "~community/crm/hooks/usePhoneNumberFieldHandlers";
 import { CrmCompanyFormTypes } from "~community/crm/types/CommonTypes";
 
 interface CompanyModalFormProps {
@@ -44,15 +45,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     submitForm
   } = formik;
 
-  const handleChangeCountry = async (code: string) => {
-    await setFieldValue("countryCode", code);
-  };
-
-  const handleChangeContactNumber = async (
-    e: ChangeEvent<HTMLInputElement>
-  ) => {
-    handleChange(e);
-  };
+  const { handleChangeCountry, handleChangeContactNumber } =
+    usePhoneNumberFieldHandlers({ formik, countryCodeField: "countryCode" });
 
   const trimmedName = values.name.trim();
   const trimmedOriginalName = originalName?.trim();

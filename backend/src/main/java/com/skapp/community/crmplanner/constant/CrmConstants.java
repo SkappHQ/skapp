@@ -52,8 +52,12 @@ public class CrmConstants {
 
 	public static final int PHONE_MIN_LENGTH = 7;
 
-	public static final String CONTACT_NUMBER_REGEX = "^[0-9]{1,4} [0-9]{" + PHONE_MIN_LENGTH + "," + PHONE_MAX_LENGTH
-			+ "}$";
+	public static final int COUNTRY_CODE_MIN_LENGTH = 1;
+
+	public static final int COUNTRY_CODE_MAX_LENGTH = 4;
+
+	public static final String CONTACT_NUMBER_REGEX = "^[0-9]{" + COUNTRY_CODE_MIN_LENGTH + ","
+			+ COUNTRY_CODE_MAX_LENGTH + "} [0-9]{" + PHONE_MIN_LENGTH + "," + PHONE_MAX_LENGTH + "}$";
 
 	public static final int TASK_NAME_MAX_LENGTH = 255;
 

@@ -15,6 +15,7 @@ export const addCompanyValidations = (translator: TranslatorFunctionType) =>
         translator(["validations", "companyNameLength"])
       ),
     contactNumber: Yup.string()
+      .trim()
       .nullable()
       .optional()
       .matches(isValidPhoneNumber(), {
