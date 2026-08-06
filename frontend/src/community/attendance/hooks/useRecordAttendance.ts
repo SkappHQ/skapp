@@ -6,7 +6,10 @@ import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes"
 import { getCurrentLocation } from "~community/attendance/utils/geolocationUtils";
 import { appModes } from "~community/common/constants/configs";
 import { convertDateToUTC } from "~community/common/utils/dateTimeUtils";
-import { useUpdateEmployeeStatusWithLocation } from "~enterprise/attendance/api/AttendanceApi";
+import {
+  useGetUserGeofenceStatus,
+  useUpdateEmployeeStatusWithLocation
+} from "~enterprise/attendance/api/AttendanceApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 
 export const useRecordAttendance = (
@@ -23,28 +26,49 @@ export const useRecordAttendance = (
   const isEnterprise = environment === appModes.ENTERPRISE;
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
-  const isGeoFencingEnabled = attendanceConfig?.isGeoFencingEnabled;
+  const isGeoFencingEnabled: boolean = attendanceConfig?.isGeoFencingEnabled;
+
+  const {
+    data: geofenceStatus,
+    isLoading: isGeofenceStatusLoading,
+    isError: isGeofenceStatusError
+  } = useGetUserGeofenceStatus(isGeoFencingEnabled && isEnterprise);
+  const isGeofenceConfigured = geofenceStatus?.isGeofenceConfigured;
 
   const recordAttendance = useCallback(
     (slotType: AttendanceSlotType) => {
       if (isGeoFencingEnabled && isEnterprise) {
-        getCurrentLocation().then(({ latitude, longitude }) => {
-          mutateWithLocation({
-            recordActionType: slotType,
-            time: convertDateToUTC(new Date().toISOString()) as string,
-            latitude,
-            longitude
+        if (isGeofenceStatusError) {
+          onError?.();
+          return;
+        }
+        if (isGeofenceConfigured) {
+          getCurrentLocation().then(({ latitude, longitude }) => {
+            mutateWithLocation({
+              recordActionType: slotType,
+              time: convertDateToUTC(new Date().toISOString()) as string,
+              latitude,
+              longitude
+            });
           });
-        });
-      } else {
-        mutate(slotType);
+          return;
+        }
       }
+      mutate(slotType);
     },
-    [isGeoFencingEnabled, isEnterprise, mutateWithLocation, mutate]
+    [
+      isGeoFencingEnabled,
+      isEnterprise,
+      isGeofenceStatusError,
+      isGeofenceConfigured,
+      mutateWithLocation,
+      mutate,
+      onError
+    ]
   );
 
   return {
     recordAttendance,
-    isPending: isPending || isEpPending
+    isPending: isPending || isEpPending || isGeofenceStatusLoading
   };
 };

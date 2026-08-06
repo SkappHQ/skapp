@@ -2,10 +2,12 @@ package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -458,6 +460,24 @@ public class DateTimeUtils {
 	}
 
 	/**
+	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is null,
+	 * blank, or not a valid zone ID.
+	 * @param timezone The time zone ID string to resolve.
+	 * @return The resolved ZoneId, or UTC if the input is invalid.
+	 */
+	public static ZoneId resolveZoneId(String timezone) {
+		if (timezone == null) {
+			return UTC_ZONE_ID;
+		}
+		try {
+			return ZoneId.of(timezone);
+		}
+		catch (DateTimeException e) {
+			return UTC_ZONE_ID;
+		}
+	}
+
+	/**
 	 * Retrieves the current time as a string in the given time zone.
 	 * @param zoneId The ZoneId representing the target time zone. Cannot be null.
 	 * @return the formatted time string.
@@ -627,10 +647,14 @@ public class DateTimeUtils {
 	}
 
 	public static String epochMillisToAmPmString(Long epochMillis) {
+		return epochMillisToAmPmString(epochMillis, UTC_ZONE_ID);
+	}
+
+	public static String epochMillisToAmPmString(Long epochMillis, ZoneId zoneId) {
 		if (epochMillis == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
 		}
-		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalTime();
+		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalTime();
 		return time.format(AM_PM_FORMATTER);
 	}
 

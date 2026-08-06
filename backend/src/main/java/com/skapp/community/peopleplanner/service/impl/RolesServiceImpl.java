@@ -111,8 +111,8 @@ public class RolesServiceImpl implements RolesService {
 				&& !moduleRoleRestrictionRequestDto.getRestrictions().isEmpty()) {
 			List<RoleLevel> restrictions = moduleRoleRestrictionRequestDto.getRestrictions();
 			moduleRoleRestrictionRequestDto.setIsAdmin(restrictions.contains(RoleLevel.ADMIN));
-			moduleRoleRestrictionRequestDto.setIsManager(
-					restrictions.contains(getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
+			moduleRoleRestrictionRequestDto.setIsManager(restrictions
+				.contains(PeopleUtil.getSecondaryRestrictionRole(moduleRoleRestrictionRequestDto.getModule())));
 		}
 
 		ModuleRoleRestriction moduleRoleRestriction = peopleMapper
@@ -141,7 +141,7 @@ public class RolesServiceImpl implements RolesService {
 				restrictedRoles.add(RoleLevel.ADMIN.name());
 			}
 			if (Boolean.TRUE.equals(moduleRoleRestrictionRequestDto.getIsManager())) {
-				restrictedRoles.add(getSecondaryRestrictionRole(module).name());
+				restrictedRoles.add(PeopleUtil.getSecondaryRestrictionRole(module).name());
 			}
 		}
 
@@ -151,33 +151,39 @@ public class RolesServiceImpl implements RolesService {
 		return moduleRolesRestriction;
 	}
 
-	private RoleLevel getSecondaryRestrictionRole(ModuleType module) {
-		return switch (module) {
-			case ESIGN -> RoleLevel.SENDER;
-			case CRM -> RoleLevel.SALES_MANAGER;
-			default -> RoleLevel.MANAGER;
-		};
+	protected Set<RoleLevel> getRestrictedRoleLevels(ModuleType module) {
+		return moduleRolesRestrictionDao.findById(module)
+			.map(moduleRolesRestriction -> PeopleUtil.parseRestrictions(moduleRolesRestriction.getRestrictions()))
+			.orElseGet(() -> EnumSet.noneOf(RoleLevel.class));
+	}
+
+	protected List<RoleLevel> getRestrictableRoles(ModuleType module) {
+		List<RoleLevel> moduleRoles = initializeRolesForModule().get(module);
+		if (moduleRoles == null) {
+			return List.of();
+		}
+
+		Set<RoleLevel> restrictableRoles = EnumSet.of(RoleLevel.ADMIN, PeopleUtil.getSecondaryRestrictionRole(module));
+		restrictableRoles.retainAll(moduleRoles);
+
+		return List.copyOf(restrictableRoles);
 	}
 
 	@Override
 	public ModuleRoleRestrictionResponseDto getRestrictedRoleByModule(ModuleType module) {
-		log.info("getRestrictedRoles: execution started");
+		log.info("getRestrictedRoleByModule: execution started");
 
-		Optional<ModuleRoleRestriction> restrictedRole = moduleRoleRestrictionDao.findById(module);
-		if (restrictedRole.isEmpty()) {
-			ModuleRoleRestrictionResponseDto newRestrictRole = new ModuleRoleRestrictionResponseDto();
-			newRestrictRole.setModule(module);
-			newRestrictRole.setIsAdmin(false);
-			newRestrictRole.setIsManager(false);
+		Set<RoleLevel> restrictedRoleLevels = getRestrictedRoleLevels(module);
 
-			return newRestrictRole;
-		}
+		ModuleRoleRestrictionResponseDto moduleRoleRestrictionResponseDto = new ModuleRoleRestrictionResponseDto();
+		moduleRoleRestrictionResponseDto.setModule(module);
+		moduleRoleRestrictionResponseDto.setRestrictions(List.copyOf(restrictedRoleLevels));
+		moduleRoleRestrictionResponseDto.setRestrictableRoles(getRestrictableRoles(module));
+		moduleRoleRestrictionResponseDto.setIsAdmin(restrictedRoleLevels.contains(RoleLevel.ADMIN));
+		moduleRoleRestrictionResponseDto
+			.setIsManager(restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(module)));
 
-		ModuleRoleRestriction moduleRoleRestriction = restrictedRole.get();
-		ModuleRoleRestrictionResponseDto moduleRoleRestrictionResponseDto = peopleMapper
-			.restrictRoleToRestrictRoleResponseDto(moduleRoleRestriction);
-
-		log.info("getRestrictedRoles: execution ended");
+		log.info("getRestrictedRoleByModule: execution ended");
 		return moduleRoleRestrictionResponseDto;
 	}
 
@@ -235,12 +241,11 @@ public class RolesServiceImpl implements RolesService {
 		ModuleType module = entry.getKey();
 		List<RoleLevel> prebuiltRoles = entry.getValue();
 
-		ModuleRoleRestriction moduleRoleRestriction = moduleRoleRestrictionDao.findById(module).orElse(null);
+		Set<RoleLevel> restrictedRoleLevels = getRestrictedRoleLevels(module);
 
-		boolean isAdminAllowed = isSuperAdmin
-				|| (moduleRoleRestriction == null || Boolean.FALSE.equals(moduleRoleRestriction.getIsAdmin()));
+		boolean isAdminAllowed = isSuperAdmin || !restrictedRoleLevels.contains(RoleLevel.ADMIN);
 		boolean isManagerAllowed = isSuperAdmin
-				|| (moduleRoleRestriction == null || Boolean.FALSE.equals(moduleRoleRestriction.getIsManager()));
+				|| !restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(module));
 
 		List<AllowedRoleDto> rolesForModule = prebuiltRoles.stream()
 			.filter(roleLevel -> isRoleAllowed(roleLevel, isAdminAllowed, isManagerAllowed))
@@ -671,7 +676,6 @@ public class RolesServiceImpl implements RolesService {
 		if (moduleType == ModuleType.CRM) {
 			roles.add(RoleLevel.SALES_MANAGER.getDisplayName());
 			roles.add(RoleLevel.SALES_REPRESENTATIVE.getDisplayName());
-			roles.add(RoleLevel.NONE.getDisplayName());
 			return roles;
 		}
 		roles.add(RoleLevel.MANAGER.getDisplayName());

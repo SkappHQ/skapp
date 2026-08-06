@@ -1,41 +1,43 @@
-import { Box, Stack, Theme, useTheme } from "@mui/material";
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { Box } from "@mui/material";
+import { FC, useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
 
-import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
-import Table from "~community/common/components/molecules/Table/Table";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow,
+  TableViewFilterContentArgs
+} from "~community/common/components/organisms/TableView/types";
+import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { FilterButtonTypes } from "~community/common/types/CommonTypes";
+import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
   getAsDaysString,
   getDateForPeriod
 } from "~community/common/utils/dateTimeUtils";
-import {
-  useGetLeaveRequestData,
-  useGetLeaveTypes
-} from "~community/leave/api/LeaveApi";
+import { useGetLeaveRequestData } from "~community/leave/api/LeaveApi";
 import RequestDates from "~community/leave/components/molecules/LeaveRequestRow/RequestDates";
-import ManagerLeaveRequestFilterByBtn from "~community/leave/components/molecules/ManagerLeaveRequestFilterByBtn/MangerLeaveRequestFilterByBtn";
-import ManagerLeaveRequestsSortByBtn from "~community/leave/components/molecules/ManagerLeaveRequestsSortByBtn/ManagerLeaveRequestsSortByBtn";
+import ManagerLeaveRequestFilterBody from "~community/leave/components/molecules/ManagerLeaveRequestFilterBody/ManagerLeaveRequestFilterBody";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   LeaveRequestItemsType,
   leaveRequestRowDataTypes
 } from "~community/leave/types/LeaveRequestTypes";
-import {
-  requestTypeSelector,
-  requestedLeaveTypesPreProcessor
-} from "~community/leave/utils/LeaveRequestFilterActions";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
+import { requestTypeSelector } from "~community/leave/utils/LeaveRequestFilterActions";
 import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
+
+const chipClassName =
+  "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
 
 interface Props {
   employeeLeaveRequests: LeaveRequestItemsType[];
   totalPages?: number;
-  isLoading?: true | false;
+  isLoading?: boolean;
 }
 
 const ManagerLeaveRequest: FC<Props> = ({
@@ -43,51 +45,65 @@ const ManagerLeaveRequest: FC<Props> = ({
   employeeLeaveRequests,
   isLoading
 }) => {
-  const theme: Theme = useTheme();
-
-  const commonTranslateText = useTranslator(
-    "commonComponents",
-    "dateRangePicker"
-  );
-
   const translateText = useTranslator(
     "leaveModule",
     "leaveRequests",
     "leaveRequestTable"
   );
 
+  const translateSortText = useTranslator(
+    "leaveModule",
+    "leaveRequests",
+    "leaveRequestSort"
+  );
+
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
+  const translateCommonAria = useTranslator("commonAria", "components");
+
   const {
-    resetLeaveRequestParams,
-    leaveRequestFilterOrder,
     setLeaveRequestParams,
     setPagination,
+    handleLeaveRequestsSort,
     setIsManagerModal,
     setLeaveRequestData,
     setNewLeaveId,
-    newLeaveId
+    newLeaveId,
+    leaveRequestParams,
+    leaveRequestsFilter
   } = useLeaveStore((state) => ({
     resetLeaveRequestParams: state.resetLeaveRequestParams,
     leaveRequestFilterOrder: state.leaveRequestFilterOrder,
     setLeaveRequestParams: state.setLeaveRequestParams,
     setPagination: state.setPagination,
+    handleLeaveRequestsSort: state.handleLeaveRequestsSort,
     setIsManagerModal: state.setIsManagerModal,
     setLeaveRequestData: state.setLeaveRequestData,
     setNewLeaveId: state.setNewLeaveId,
-    newLeaveId: state.newLeaveId
+    newLeaveId: state.newLeaveId,
+    leaveRequestParams: state.leaveRequestParams,
+    leaveRequestsFilter: state.leaveRequestsFilter
   }));
 
   const currentPage: number = useLeaveStore(
     (state) => state.leaveRequestParams.page
   ) as number;
 
-  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
-  const [leaveTypeButtons, setLeaveTypeButtons] = useState<FilterButtonTypes[]>(
-    []
+  const leaveRequestSort = leaveRequestParams.sortKey;
+
+  const [selectedDateRange, setSelectedDateRange] = useState<
+    DateRange | undefined
+  >(undefined);
+
+  const appliedStatus = leaveRequestsFilter.status as LeaveStatusTypes[];
+  const appliedTypes = leaveRequestsFilter.type;
+  const appliedFilterCount = appliedStatus.length + appliedTypes.length;
+
+  const isDateRangeApplied = Boolean(
+    selectedDateRange?.from && selectedDateRange?.to
   );
 
-  const { data: leaveTypes, isLoading: leaveTypesLoading } = useGetLeaveTypes();
+  const filterCount = appliedFilterCount + (isDateRangeApplied ? 1 : 0);
 
   const {
     refetch,
@@ -96,46 +112,24 @@ const ManagerLeaveRequest: FC<Props> = ({
   } = useGetLeaveRequestData(newLeaveId as number);
 
   const columns = [
-    {
-      field: "name",
-      headerName: translateText(["name"]).toLocaleUpperCase()
-    },
-    {
-      field: "duration",
-      headerName: translateText(["duration"]).toLocaleUpperCase()
-    },
-    { field: "type", headerName: translateText(["type"]).toLocaleUpperCase() },
-    {
-      field: "status",
-      headerName: translateText(["status"]).toLocaleUpperCase()
-    }
+    { field: "name", headerName: translateText(["name"]) },
+    { field: "duration", headerName: translateText(["duration"]) },
+    { field: "type", headerName: translateText(["type"]) },
+    { field: "status", headerName: translateText(["status"]) }
   ];
 
-  const tableHeaders = columns.map((col) => ({
+  const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
     label: col.headerName
   }));
 
-  const onClickReset = () => {
-    resetLeaveRequestParams();
-    setSelectedDates([]);
-  };
-
-  const handelRowClick = async (leaveRequest: { id: number }) => {
-    setIsManagerModal(false);
-    setLeaveRequestData({} as leaveRequestRowDataTypes);
-    setNewLeaveId(leaveRequest.id);
-  };
-
-  const transformToTableRows = () => {
-    return employeeLeaveRequests?.map((employeeLeaveRequest) => ({
+  const transformToTableRows = (): GridRow[] => {
+    return employeeLeaveRequests.map((employeeLeaveRequest) => ({
       id: employeeLeaveRequest.leaveRequestId,
-      ariaLabel: {
-        row: generateManagerLeaveRequestAriaLabel(
-          translateAria,
-          employeeLeaveRequest
-        )
-      },
+      ariaLabel: generateManagerLeaveRequestAriaLabel(
+        translateAria,
+        employeeLeaveRequest
+      ),
       name: (
         <Box
           role="group"
@@ -145,10 +139,13 @@ const ManagerLeaveRequest: FC<Props> = ({
             <AvatarChip
               firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
               lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
-              avatarUrl={employeeLeaveRequest?.employee.authPic ?? ""}
+              avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
               isResponsiveLayout
               chipStyles={{
-                maxWidth: "15.625rem"
+                width: "fit-content",
+                maxWidth: "15.625rem",
+                justifyContent: "flex-start",
+                backgroundColor: "var(--color-tertiary-background)"
               }}
             />
           </Box>
@@ -161,16 +158,7 @@ const ManagerLeaveRequest: FC<Props> = ({
         />
       ),
       type: (
-        <div
-          style={{
-            backgroundColor: theme.palette.common.white,
-            borderRadius: "9.375rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 1rem"
-          }}
-        >
+        <div className={chipClassName}>
           <span role="img" aria-hidden="true">
             {getEmoji(employeeLeaveRequest?.leaveType?.emojiCode || "")}
           </span>
@@ -178,17 +166,7 @@ const ManagerLeaveRequest: FC<Props> = ({
         </div>
       ),
       status: (
-        <div
-          style={{
-            display: "flex",
-            gap: "0.5rem",
-            alignItems: "center",
-            backgroundColor: theme.palette.common.white,
-            borderRadius: "9.375rem",
-            padding: "0.5rem 1rem",
-            textTransform: "capitalize"
-          }}
-        >
+        <div className={`${chipClassName} capitalize`}>
           <span role="img" aria-hidden="true">
             {requestTypeSelector(employeeLeaveRequest?.status)}
           </span>
@@ -198,27 +176,64 @@ const ManagerLeaveRequest: FC<Props> = ({
     }));
   };
 
-  useEffect(() => {
-    if (leaveTypes && !leaveTypesLoading) {
-      setLeaveTypeButtons(requestedLeaveTypesPreProcessor(leaveTypes));
+  const sortOptions = [
+    {
+      id: SortKeyTypes.CREATED_DATE,
+      label: translateSortText(["dateRequested"]),
+      value: SortKeyTypes.CREATED_DATE
+    },
+    {
+      id: SortKeyTypes.START_DATE,
+      label: translateSortText(["leaveDate"]),
+      value: SortKeyTypes.START_DATE
     }
-  }, [leaveTypes, leaveTypesLoading]);
+  ];
+
+  const handleSortChange = (value: string) => {
+    handleLeaveRequestsSort("sortKey", value);
+  };
+
+  const renderSelectedSortValue = (value?: string) => {
+    const selectedOption = sortOptions.find((option) => option.value === value);
+
+    return (
+      <span
+        aria-label={translateAria(["sortBy"], {
+          sortBy: selectedOption?.label
+        })}
+      >
+        {translateSortText(["sortBy"])}
+      </span>
+    );
+  };
+
+  const handleRowClick = (row: GridRow): void => {
+    setIsManagerModal(false);
+    setLeaveRequestData({} as leaveRequestRowDataTypes);
+    setNewLeaveId(Number(row.id));
+  };
+
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <ManagerLeaveRequestFilterBody
+      onClose={onClose}
+      selectedDateRange={selectedDateRange}
+      onDateRangeChange={setSelectedDateRange}
+    />
+  );
 
   useEffect(() => {
     setLeaveRequestParams("size", "6");
-    const startDate = getDateForPeriod("year", "start");
-    const endDate = getDateForPeriod("year", "end");
 
-    const selectedStartDate = selectedDates[0]
-      ? convertDateToFormat(selectedDates[0], "yyyy-MM-dd")
-      : startDate;
-    const selectedEndDate = selectedDates[1]
-      ? convertDateToFormat(selectedDates[1], "yyyy-MM-dd")
-      : endDate;
+    const selectedStartDate = selectedDateRange?.from
+      ? convertDateToFormat(selectedDateRange.from, DATE_FORMAT)
+      : getDateForPeriod("year", "start");
+    const selectedEndDate = selectedDateRange?.to
+      ? convertDateToFormat(selectedDateRange.to, DATE_FORMAT)
+      : getDateForPeriod("year", "end");
 
     setLeaveRequestParams("startDate", selectedStartDate);
     setLeaveRequestParams("endDate", selectedEndDate);
-  }, [leaveRequestFilterOrder, selectedDates, setLeaveRequestParams]);
+  }, [appliedStatus, appliedTypes, selectedDateRange, setLeaveRequestParams]);
 
   useEffect(() => {
     if (employeeLeaveRequests?.length === 0 && totalPages === 0) {
@@ -250,73 +265,44 @@ const ManagerLeaveRequest: FC<Props> = ({
   }, [newLeaveId]);
 
   return (
-    <Box role="region" aria-label={translateAria(["allLeaveRequestTable"])}>
-      <Table
-        tableName={TableNames.MANAGER_LEAVE_REQUESTS}
-        headers={tableHeaders}
-        rows={transformToTableRows()}
-        tableBody={{
-          emptyState: {
-            noData: {
-              title: translateText(["noLeaveRequests"]),
-              description: translateText(["noLeaveRequestsManagerDetails"])
-            }
-          },
-          loadingState: {
-            skeleton: {
-              rows: 5
-            }
-          },
-          onRowClick: handelRowClick
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: true,
-            totalPages: totalPages,
-            currentPage: currentPage,
-            onChange: (_event: ChangeEvent<unknown>, value: number) =>
-              setPagination(value - 1)
-          }
-        }}
-        actionToolbar={{
-          firstRow: {
-            leftButton: (
-              <Stack flexDirection={"row"} gap="1.25rem">
-                <ManagerLeaveRequestsSortByBtn />
-                <DateRangePicker
-                  label={commonTranslateText(["label"])}
-                  selectedDates={selectedDates}
-                  setSelectedDates={setSelectedDates}
-                  accessibility={{
-                    ariaLabel: translateAria(["dateRangeFilter"], {
-                      startDate: selectedDates[0]
-                        ? convertDateToFormat(
-                            selectedDates[0],
-                            DAY_MONTH_YEAR_FORMAT
-                          )
-                        : getDateForPeriod("year", "start"),
-                      endDate: selectedDates[1]
-                        ? convertDateToFormat(
-                            selectedDates[1],
-                            DAY_MONTH_YEAR_FORMAT
-                          )
-                        : getDateForPeriod("year", "end")
-                    })
-                  }}
-                />
-              </Stack>
-            ),
-            rightButton: (
-              <ManagerLeaveRequestFilterByBtn
-                leaveTypeButtons={leaveTypeButtons}
-                onClickReset={onClickReset}
-              />
-            )
-          }
-        }}
-        isLoading={isLoading}
-      />
-    </Box>
+    <TableView
+      tableName={TableNames.MANAGER_LEAVE_REQUESTS}
+      ariaLabel={{
+        regionAriaLabel: translateAria(["allLeaveRequestTable"])
+      }}
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isLoading}
+      skeletonRows={5}
+      emptyState={{
+        title: translateText(["noLeaveRequests"]),
+        description: translateText(["noLeaveRequestsManagerDetails"])
+      }}
+      onRowClick={handleRowClick}
+      pagination={{
+        totalPages,
+        currentPage,
+        onPageChange: setPagination
+      }}
+      toolbar={{
+        dropdown: {
+          id: "all-leave-requests-sort",
+          options: sortOptions,
+          value: leaveRequestSort,
+          onChange: handleSortChange,
+          renderSelectedValue: renderSelectedSortValue,
+          width: "auto",
+          menuWidth: "content",
+          ariaLabel: translateAria(["sort"])
+        }
+      }}
+      filter={{
+        filterCount,
+        filterButtonAriaLabel: translateCommonAria(["filterBtn"]),
+        popoverId: "all-leave-requests-filter",
+        filterContent: renderFilterContent
+      }}
+    />
   );
 };
 

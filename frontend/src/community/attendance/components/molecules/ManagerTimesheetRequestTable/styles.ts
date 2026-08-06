@@ -3,14 +3,6 @@ import { Theme } from "@mui/material";
 import { TimeRequestDataType } from "~community/attendance/types/timeSheetTypes";
 
 const styles = (theme: Theme) => ({
-  tableContainerStyles: {
-    borderTopLeftRadius: "0",
-    borderTopRightRadius: "0",
-    maxHeight: "60rem"
-  },
-  tableHeaderStyles: {
-    textAlign: "center"
-  },
   boxDateContainer: {
     display: "flex",
     flexDirection: "row",

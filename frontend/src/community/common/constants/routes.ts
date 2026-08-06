@@ -15,7 +15,9 @@ const ROUTES = {
     VERIFY_GUEST: "/verify/guest",
     VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
-    SYSTEM_UPDATE: "/system-update"
+    SYSTEM_UPDATE: "/system-update",
+    OAUTH_AUTHORIZE: "/oauth2/authorize",
+    OAUTH_CONSENT: "/oauth-consent"
   },
   ORGANIZATION: {
     SETUP: "/setup-organization",
@@ -69,7 +71,10 @@ const ROUTES = {
     PENDING: "/people/directory/pending",
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
-    ADD: "/people/directory/add"
+    ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
+    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
     BASE: "/configurations",
@@ -183,4 +188,12 @@ export const employeeRestrictedRoutes = [
   ROUTES.PEOPLE.ADD
 ];
 
+export const nonSuperAdminRestrictedRoutes = [
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.SYNC_CHANGES
+];
+
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+
+export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];

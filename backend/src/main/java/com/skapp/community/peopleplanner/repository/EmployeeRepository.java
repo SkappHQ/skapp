@@ -110,4 +110,8 @@ public interface EmployeeRepository {
 
 	void updateLastClockInDate(Long employeeId, LocalDate lastClockInDate);
 
+	boolean existsByPayrollIdAndEmployeeIdNot(String payrollId, Long employeeId);
+
+	boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId);
+
 }

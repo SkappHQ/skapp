@@ -6,6 +6,8 @@ import com.skapp.community.common.payload.request.UpdateOrganizationRequestDto;
 import com.skapp.community.common.payload.response.EmailServerConfigResponseDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 
+import java.time.ZoneId;
+
 public interface OrganizationService {
 
 	ResponseEntityDto saveOrganization(OrganizationDto organizationDto);
@@ -21,5 +23,7 @@ public interface OrganizationService {
 	ResponseEntityDto updateOrganization(UpdateOrganizationRequestDto organizationDto);
 
 	String getOrganizationTimeZone();
+
+	ZoneId getOrganizationZoneId();
 
 }

@@ -1,37 +1,84 @@
-import { ButtonV2, CloseIcon, SaveIcon, Toggle } from "@rootcodelabs/skapp-ui";
+import { Tooltip } from "@mui/material";
+import { Toggle } from "@rootcodelabs/skapp-ui";
+import { useRouter } from "next/router";
 import { FC, useState } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import ROUTES from "~community/common/constants/routes";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { IconName } from "~community/common/types/IconTypes";
 import EnableLeavePoliciesConfirmModal from "~community/configurations/components/molecules/EnableLeavePoliciesConfirmModal/EnableLeavePoliciesConfirmModal";
+import { useEnableLeavePolicies } from "~community/leave/api/LeavePolicyApi";
+import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 
 const LeaveConfigurations: FC = () => {
   const translateText = useTranslator("configurations", "leave");
+  const router = useRouter();
+  const { setToastMessage } = useToast();
 
-  const [isLeavePoliciesEnabled, setIsLeavePoliciesEnabled] = useState(false);
-  const [initialValue, setInitialValue] = useState(false);
-  const [isEnableConfirmModalOpen, setIsEnableConfirmModalOpen] =
-    useState(false);
+  const canManageLeavePolicies = useCanManageLeavePolicies();
+  const { isLeavePoliciesEnabled, isLoading, isError } =
+    useLeavePoliciesEnabled();
 
-  const isFormChanged = isLeavePoliciesEnabled !== initialValue;
+  const [isToggleOn, setIsToggleOn] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
-  const handleToggleChange = (checked: boolean) => {
-    if (checked) {
-      setIsEnableConfirmModalOpen(true);
+  const onEnableSuccess = (): void => {
+    setIsConfirmModalOpen(false);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["toasts", "successTitle"]),
+      description: translateText(["toasts", "successDescription"]),
+      isIcon: true
+    });
+    router.push(ROUTES.LEAVE.LEAVE_POLICIES);
+  };
+
+  const onEnableError = (): void => {
+    setIsConfirmModalOpen(false);
+    setIsToggleOn(false);
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toasts", "errorTitle"]),
+      description: translateText(["toasts", "errorDescription"]),
+      isIcon: true
+    });
+  };
+
+  const { mutate: enableLeavePolicies, isPending } = useEnableLeavePolicies(
+    onEnableSuccess,
+    onEnableError
+  );
+
+  if (!canManageLeavePolicies || isLoading || isError || isLeavePoliciesEnabled) {
+    return null;
+  }
+
+  const handleToggleChange = (checked: boolean): void => {
+    if (!checked) {
       return;
     }
-    setIsLeavePoliciesEnabled(false);
+    setIsToggleOn(true);
+    setIsConfirmModalOpen(true);
   };
 
-  const handleCloseEnableConfirmModal = () =>
-    setIsEnableConfirmModalOpen(false);
-
-  const handleConfirmEnable = () => {
-    setIsLeavePoliciesEnabled(true);
-    setIsEnableConfirmModalOpen(false);
+  const handleCloseModal = (): void => {
+    if (isPending) {
+      return;
+    }
+    setIsConfirmModalOpen(false);
+    setIsToggleOn(false);
   };
 
-  const handleCancel = () => setIsLeavePoliciesEnabled(initialValue);
-  const handleSave = () => setInitialValue(isLeavePoliciesEnabled);
+  const handleConfirm = (): void => {
+    enableLeavePolicies();
+  };
 
   return (
     <div className="flex w-196 flex-col gap-6">
@@ -44,42 +91,38 @@ const LeaveConfigurations: FC = () => {
         </p>
       </div>
       <div className="flex items-center justify-between">
-        <p className="body1 text-secondary-text">
-          {translateText(["leavePoliciesSection", "enableLabel"])}
-        </p>
-        <Toggle
-          checked={isLeavePoliciesEnabled}
-          onChange={handleToggleChange}
-          ariaLabel={translateText(["leavePoliciesSection", "enableLabel"])}
-        />
-      </div>
-      <div className="flex flex-row gap-4">
-        <ButtonV2
-          variant="tertiary"
-          size="md"
-          icon={<CloseIcon />}
-          iconPosition="end"
-          disabled={!isFormChanged}
-          onClick={handleCancel}
+        <div className="flex items-center gap-2">
+          <p className="body1 text-secondary-text">
+            {translateText(["leavePoliciesSection", "enableLabel"])}
+          </p>
+          <Tooltip
+            title={translateText(["leavePoliciesSection", "infoTooltip"])}
+            arrow
+          >
+            <span className="flex items-center">
+              <Icon name={IconName.INFORMATION_ICON} />
+            </span>
+          </Tooltip>
+        </div>
+        <Tooltip
+          title={translateText(["leavePoliciesSection", "toggleOffTooltip"])}
+          arrow
         >
-          {translateText(["buttons", "cancel"])}
-        </ButtonV2>
-        <ButtonV2
-          variant="primary"
-          size="md"
-          icon={<SaveIcon />}
-          iconPosition="end"
-          disabled={!isFormChanged}
-          onClick={handleSave}
-        >
-          {translateText(["buttons", "save"])}
-        </ButtonV2>
+          <span className="flex items-center">
+            <Toggle
+              checked={isToggleOn}
+              onChange={handleToggleChange}
+              ariaLabel={translateText(["leavePoliciesSection", "enableLabel"])}
+            />
+          </span>
+        </Tooltip>
       </div>
 
       <EnableLeavePoliciesConfirmModal
-        isOpen={isEnableConfirmModalOpen}
-        onClose={handleCloseEnableConfirmModal}
-        onConfirm={handleConfirmEnable}
+        isOpen={isConfirmModalOpen}
+        isEnabling={isPending}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirm}
       />
     </div>
   );
