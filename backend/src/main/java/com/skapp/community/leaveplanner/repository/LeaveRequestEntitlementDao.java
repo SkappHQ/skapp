@@ -16,4 +16,6 @@ public interface LeaveRequestEntitlementDao
 
 	List<LeaveRequestEntitlement> findAllByLeaveRequest(LeaveRequest leaveRequest);
 
+	List<LeaveRequestEntitlement> findAllByLeaveRequestIn(List<LeaveRequest> leaveRequests);
+
 }

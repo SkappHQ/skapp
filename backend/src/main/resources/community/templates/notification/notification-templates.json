@@ -50,6 +50,26 @@
         "id": "people-module-password-reset-request-manager",
         "title": "Password Reset Request",
         "message": "Password reset requested for {{employeeName}} at {{requestDateTime}}. Review and process as needed."
+      },
+      {
+        "id": "people-module-google-workspace-sync-pending-review",
+        "title": "Google Workspace Sync",
+        "message": "A new Google Workspace sync has completed and users are pending your review"
+      },
+      {
+        "id": "people-module-google-workspace-sync-failed",
+        "title": "Google Workspace Sync Failed",
+        "message": "Google Workspace sync failed: {{error}}"
+      },
+      {
+        "id": "people-module-google-workspace-user-removed-singular",
+        "title": "Google Workspace User Removed",
+        "message": "{{removedEmails}} was removed from Google Workspace and is awaiting your review to remove from Skapp"
+      },
+      {
+        "id": "people-module-google-workspace-users-removed-plural",
+        "title": "Google Workspace Users Removed",
+        "message": "{{removedCount}} users ({{removedEmails}}) were removed from Google Workspace and are awaiting your review to remove from Skapp"
       }
     ],
     "leave": [
