@@ -55,6 +55,12 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
       <KebabMenu
         id={`business-unit-${businessUnit.businessUnitId}-menu`}
         menuItems={menuItems}
+        anchorButton={{
+          "aria-haspopup": "menu",
+          "aria-label": translateText(["card", "actionsMenuAriaLabel"], {
+            name: businessUnit.name
+          })
+        }}
         isFlip
       />
     </Card>

@@ -251,7 +251,8 @@
     },
     "card": {
       "editAction": "Edit unit",
-      "deleteAction": "Delete unit"
+      "deleteAction": "Delete unit",
+      "actionsMenuAriaLabel": "Actions for {{name}}"
     },
     "form": {
       "addModalTitle": "Add Business Unit",
