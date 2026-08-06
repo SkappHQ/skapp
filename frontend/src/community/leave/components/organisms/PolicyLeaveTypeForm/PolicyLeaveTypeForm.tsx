@@ -108,7 +108,7 @@ const PolicyLeaveTypeForm: FC = () => {
 
   useEffect(() => {
     setLeaveTypeFormDirty(dirty);
-  }, [dirty, setLeaveTypeFormDirty]);
+  }, [dirty]);
 
   useEffect(() => {
     if (isMissingEditId) {
