@@ -59,6 +59,16 @@ export const leavePolicyAssignmentEndPoints = {
     `${moduleAPIPath.LEAVE}/policy-assignments/employee/${employeeId}?page=${page}&size=${size}`
 };
 
+export const policyLeaveEndPoints = {
+  GET_MY_POLICY_BALANCES: (year: string): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/balances?year=${year}`,
+  CHECK_POLICY_LEAVE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/availability`,
+  APPLY_POLICY_LEAVE: `${moduleAPIPath.LEAVE}/policy-leave`,
+  GET_MY_POLICY_LEAVE_REQUESTS: (year: string): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave?year=${year}`,
+  SEARCH_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/search`
+};
+
 export const leaveEntitlementEndPoints = {
   GET_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement`,
   ADD_BULK_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement/bulk`,
