@@ -15,6 +15,4 @@ public interface BusinessUnitService {
 
 	ResponseEntityDto getAllBusinessUnits();
 
-	ResponseEntityDto getBusinessUnitById(Long id);
-
 }

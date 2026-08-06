@@ -143,6 +143,7 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_BUSINESS_UNIT_DESCRIPTION_LENGTH_EXCEEDED(
 			"api.error.common.business-unit-description-length-exceeded"),
 	COMMON_ERROR_BUSINESS_UNIT_TRANSFER_TARGET_NOT_FOUND("api.error.common.business-unit-transfer-target-not-found"),
+	COMMON_ERROR_BUSINESS_UNIT_TRANSFER_TARGET_INVALID("api.error.common.business-unit-transfer-target-invalid"),
 	COMMON_ERROR_YAML_READ_FAILED("api.error.common.yaml-read-failed");
 
 	private final String messageKey;

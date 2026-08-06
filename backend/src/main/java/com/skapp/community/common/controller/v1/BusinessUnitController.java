@@ -34,14 +34,6 @@ public class BusinessUnitController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get a business unit by ID")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<ResponseEntityDto> getBusinessUnitById(@PathVariable Long id) {
-		ResponseEntityDto response = businessUnitService.getBusinessUnitById(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	@Operation(summary = "Create a business unit")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	@PostMapping
