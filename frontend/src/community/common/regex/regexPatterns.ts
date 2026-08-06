@@ -225,3 +225,7 @@ export function matchesMMDDYYYYSeparatedByHyphenOrSlashOrPeriod(): RegExp {
 export function matchInvalidEmailCharactersSearchPattern(): RegExp {
   return /[^a-zA-Z0-9 @._%+-]/g;
 }
+
+export function isValidIPv4Address(): RegExp {
+  return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+}

@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   APP,
+  LOCALHOST,
   characterLengths
 } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
   containsUnicode,
+  isValidIPv4Address,
   matchInvalidEmailCharactersSearchPattern,
   removeNonAlphaNumericCharactersPattern
 } from "~community/common/regex/regexPatterns";
@@ -526,11 +528,21 @@ export const checkRestrictedRoutesAndRedirect = (
 
 export const getSignUpTenantRedirect = (
   request: NextRequest
-): NextResponse => {
-  const host = request.headers.get("host") || "";
+): NextResponse | null => {
+  const host = (request.headers.get("host") || "").toLowerCase();
+  const hostname = host.split(":")[0];
+
+  if (
+    !host.includes(".") ||
+    hostname === LOCALHOST ||
+    isValidIPv4Address().test(hostname)
+  ) {
+    return null;
+  }
+
   const tenant = host.split(".")[0];
 
-  if (tenant === APP) return NextResponse.next();
+  if (tenant === APP) return null;
 
   const baseHost = host.split(".").slice(1).join(".");
   const url = request.nextUrl.clone();
