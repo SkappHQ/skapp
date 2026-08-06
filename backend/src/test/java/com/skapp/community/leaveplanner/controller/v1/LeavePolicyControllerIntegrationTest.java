@@ -3,6 +3,8 @@ package com.skapp.community.leaveplanner.controller.v1;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.leaveplanner.model.LeaveEntitlement;
+import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -51,6 +56,11 @@ class LeavePolicyControllerIntegrationTest {
 
 	private static final String USER2_PEOPLE_ADMIN_ONLY = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_ADMIN', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
 
+	private static final String SEED_ALLOCATION = "INSERT INTO leave_entitlement (entitlement_id, total_days_allocated, total_days_used, valid_from, valid_to, is_active, is_manual, is_override, leave_type_id, employee_id) "
+			+ "VALUES (900, 14, 2, DATEADD('DAY', -30, CURRENT_DATE), DATEADD('DAY', 300, CURRENT_DATE), true, false, false, (SELECT type_id FROM leave_type WHERE name = 'Study'), 2)";
+
+	private static final String SEED_LEAVE_POLICY_ENABLED = "INSERT INTO organization_config (config_title, config_value) VALUES ('LEAVE_POLICY', '{\"isEnabled\":true}')";
+
 	private static final String ACCRUAL_POLICY_JSON = """
 			{
 			  "name": "Annual Accrual Policy",
@@ -80,6 +90,8 @@ class LeavePolicyControllerIntegrationTest {
 
 	private final MockMvc mvc;
 
+	private final LeaveEntitlementDao leaveEntitlementDao;
+
 	private String leaveAdminToken() {
 		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
 		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
@@ -100,6 +112,16 @@ class LeavePolicyControllerIntegrationTest {
 	private ResultActions performGetAll(String authToken) throws Exception {
 		return mvc
 			.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performEnable(String authToken) throws Exception {
+		return mvc.perform(post(ENDPOINT + "/enable").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performGetConfig(String authToken) throws Exception {
+		return mvc.perform(get(ENDPOINT + "/config").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	@Nested
@@ -318,6 +340,55 @@ class LeavePolicyControllerIntegrationTest {
 				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
 				.andDo(print())
 				.andExpect(status().isNotFound());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Enable Leave Policies")
+	class EnableLeavePoliciesTests {
+
+		@Test
+		@DisplayName("Leave admin can enable leave policies")
+		void enableLeavePolicies_LeaveAdmin_ReturnsEnabled() throws Exception {
+			performGetConfig(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isEnabled").value(false));
+
+			performEnable(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].isEnabled").value(true));
+
+			performGetConfig(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isEnabled").value(true));
+		}
+
+		@Test
+		@DisplayName("Enabling leave policies removes existing leave allocations")
+		@Sql(statements = { SEED_ALLOCATION })
+		void enableLeavePolicies_ExistingAllocations_RemovesAllocations() throws Exception {
+			performEnable(leaveAdminToken()).andDo(print()).andExpect(status().isOk());
+
+			LeaveEntitlement allocation = leaveEntitlementDao.findById(900L).orElseThrow();
+			assertEquals(0F, allocation.getTotalDaysAllocated());
+			assertFalse(allocation.isActive());
+			assertTrue(leaveEntitlementDao.findByIsActiveTrue().isEmpty());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when leave policies are already enabled")
+		@Sql(statements = { SEED_LEAVE_POLICY_ENABLED })
+		void enableLeavePolicies_AlreadyEnabled_ReturnsBadRequest() throws Exception {
+			performEnable(leaveAdminToken()).andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Non-admin user cannot enable leave policies")
+		@Sql(statements = { DOWNGRADE_USER2_TO_EMPLOYEE })
+		void enableLeavePolicies_LeaveEmployee_ReturnsForbidden() throws Exception {
+			performEnable(user2Token()).andDo(print()).andExpect(status().isForbidden());
 		}
 
 	}

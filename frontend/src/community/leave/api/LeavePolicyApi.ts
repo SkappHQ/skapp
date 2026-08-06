@@ -16,6 +16,8 @@ import {
   GetLeavePoliciesInfiniteArgs,
   GetLeavePoliciesParams,
   LeavePoliciesResponse,
+  LeavePolicyConfigResponse,
+  LeavePolicyConfigResult,
   LeavePolicyMutationResponse,
   PolicyLeaveTypesResponse,
   PolicyLeaveTypesResult,
@@ -31,11 +33,11 @@ const getPolicyLeaveTypes = async (): Promise<PolicyLeaveTypesResult> => {
 
 export const useGetPolicyLeaveTypes =
   (): UseQueryResult<PolicyLeaveTypesResult> => {
-  return useQuery({
-    queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES,
-    queryFn: getPolicyLeaveTypes
-  });
-};
+    return useQuery({
+      queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES,
+      queryFn: getPolicyLeaveTypes
+    });
+  };
 
 const getLeavePolicies = async (params: GetLeavePoliciesParams) => {
   const response = await authFetch.get<LeavePoliciesResponse>(
@@ -48,9 +50,11 @@ const getLeavePolicies = async (params: GetLeavePoliciesParams) => {
 export const useGetLeavePoliciesInfinite = ({
   searchKeyword,
   leaveTypeId,
-  size
+  size,
+  enabled = true
 }: GetLeavePoliciesInfiniteArgs) => {
   return useInfiniteQuery({
+    enabled,
     queryKey: leavePolicyQueryKeys.LEAVE_POLICIES_INFINITE(
       searchKeyword,
       leaveTypeId,
@@ -131,6 +135,53 @@ export const useUpdateLeavePolicy = (
     mutationFn: updateLeavePolicy,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const getLeavePolicyConfig = async (): Promise<LeavePolicyConfigResult> => {
+  const response = await authFetch.get<LeavePolicyConfigResponse>(
+    leavePolicyEndPoints.GET_LEAVE_POLICY_CONFIG
+  );
+  return response.data.results[0];
+};
+
+export const useGetLeavePolicyConfig = (
+  enabled = true
+): UseQueryResult<LeavePolicyConfigResult> => {
+  return useQuery({
+    queryKey: leavePolicyQueryKeys.LEAVE_POLICY_CONFIG,
+    queryFn: getLeavePolicyConfig,
+    enabled,
+    refetchOnWindowFocus: false
+  });
+};
+
+const enableLeavePolicies = (): Promise<
+  AxiosResponse<LeavePolicyMutationResponse>
+> =>
+  authFetch.post<LeavePolicyMutationResponse>(
+    leavePolicyEndPoints.ENABLE_LEAVE_POLICIES
+  );
+
+export const useEnableLeavePolicies = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<LeavePolicyMutationResponse>,
+  AxiosError,
+  void
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: enableLeavePolicies,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: leavePolicyQueryKeys.LEAVE_POLICY_CONFIG
+      });
       onSuccess();
     },
     onError
