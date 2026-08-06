@@ -15,7 +15,6 @@ const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
   return (
     <Chip
       label={getStageByName(deal?.stage?.name)}
-      showTooltip
       size="sm"
       prefixIcon={
         <span
