@@ -5,7 +5,7 @@ import com.skapp.community.common.type.RoleLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,8 +13,8 @@ public class ModuleRoleRestrictionRequestDto {
 
 	private ModuleType module;
 
-	private List<RoleLevel> add;
+	private Set<RoleLevel> addedRoles;
 
-	private List<RoleLevel> remove;
+	private Set<RoleLevel> removedRoles;
 
 }

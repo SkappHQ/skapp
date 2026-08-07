@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -117,11 +118,11 @@ public class RolesServiceImpl implements RolesService {
 	private Set<RoleLevel> resolveRestrictedRoles(ModuleRoleRestrictionRequestDto requestDto) {
 		Set<RoleLevel> restrictedRoles = getRestrictedRoleLevels(requestDto.getModule());
 
-		if (requestDto.getRemove() != null) {
-			requestDto.getRemove().forEach(restrictedRoles::remove);
+		if (requestDto.getRemovedRoles() != null) {
+			requestDto.getRemovedRoles().forEach(restrictedRoles::remove);
 		}
-		if (requestDto.getAdd() != null) {
-			restrictedRoles.addAll(requestDto.getAdd());
+		if (requestDto.getAddedRoles() != null) {
+			restrictedRoles.addAll(requestDto.getAddedRoles());
 		}
 
 		return restrictedRoles;
@@ -133,41 +134,28 @@ public class RolesServiceImpl implements RolesService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_MODULE);
 		}
 
-		validateRestrictionRoleLevels(requestDto.getAdd(), module, getRestrictableRoles(module), true);
-		validateRestrictionRoleLevels(requestDto.getRemove(), module, null, false);
+		Set<RoleLevel> addedRoles = requestDto.getAddedRoles();
+		Set<RoleLevel> removedRoles = requestDto.getRemovedRoles();
 
-		if (requestDto.getAdd() == null || requestDto.getRemove() == null) {
-			return;
-		}
+		validateRestrictionRoleLevels(addedRoles, module);
+		validateRestrictionRoleLevels(removedRoles, module);
 
-		Set<RoleLevel> overlap = EnumSet.noneOf(RoleLevel.class);
-		overlap.addAll(requestDto.getAdd());
-		overlap.retainAll(requestDto.getRemove());
-		if (!overlap.isEmpty()) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ADD_REMOVE_OVERLAP,
-					new String[] { overlap.toString() });
+		if (addedRoles != null && removedRoles != null && !Collections.disjoint(addedRoles, removedRoles)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ADD_REMOVE_OVERLAP);
 		}
 	}
 
-	private void validateRestrictionRoleLevels(List<RoleLevel> roleLevels, ModuleType module,
-			List<RoleLevel> restrictableRoles, boolean enforceAllowlist) {
+	private void validateRestrictionRoleLevels(Set<RoleLevel> roleLevels, ModuleType module) {
 		if (roleLevels == null) {
 			return;
 		}
 
-		Set<RoleLevel> seen = EnumSet.noneOf(RoleLevel.class);
-		for (RoleLevel roleLevel : roleLevels) {
-			if (roleLevel == null) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ROLE_LEVEL_REQUIRED);
-			}
-			if (enforceAllowlist && !restrictableRoles.contains(roleLevel)) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL,
-						new String[] { roleLevel.name(), module.name() });
-			}
-			if (!seen.add(roleLevel)) {
-				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_DUPLICATE_RESTRICTION_ROLE_LEVEL,
-						new String[] { roleLevel.name() });
-			}
+		if (roleLevels.contains(null)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ROLE_LEVEL_REQUIRED);
+		}
+		if (!getRestrictableRoles(module).containsAll(roleLevels)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL,
+					new String[] { module.name() });
 		}
 	}
 
@@ -177,16 +165,23 @@ public class RolesServiceImpl implements RolesService {
 			.orElseGet(() -> EnumSet.noneOf(RoleLevel.class));
 	}
 
-	protected List<RoleLevel> getRestrictableRoles(ModuleType module) {
-		List<RoleLevel> moduleRoles = initializeRolesForModule().get(module);
-		if (moduleRoles == null) {
-			return List.of();
-		}
+	protected Set<RoleLevel> getRestrictableRoles(ModuleType module) {
+		Set<RoleLevel> restrictableRoles = initializeRestrictableRolesForModule().get(module);
+		return restrictableRoles == null ? EnumSet.noneOf(RoleLevel.class) : EnumSet.copyOf(restrictableRoles);
+	}
 
-		Set<RoleLevel> restrictableRoles = EnumSet.of(RoleLevel.ADMIN, PeopleUtil.getSecondaryRestrictionRole(module));
-		restrictableRoles.retainAll(moduleRoles);
+	protected Map<ModuleType, Set<RoleLevel>> initializeRestrictableRolesForModule() {
+		Map<ModuleType, Set<RoleLevel>> roles = new EnumMap<>(ModuleType.class);
 
-		return List.copyOf(restrictableRoles);
+		roles.put(ModuleType.ATTENDANCE, EnumSet.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
+		roles.put(ModuleType.PEOPLE, EnumSet.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
+		roles.put(ModuleType.LEAVE, EnumSet.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
+		roles.put(ModuleType.OKR, EnumSet.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
+		roles.put(ModuleType.INVOICE, EnumSet.of(RoleLevel.ADMIN, RoleLevel.MANAGER));
+		roles.put(ModuleType.PM, EnumSet.of(RoleLevel.ADMIN));
+		roles.put(ModuleType.CRM, EnumSet.of(RoleLevel.ADMIN, RoleLevel.SALES_MANAGER, RoleLevel.SALES_REPRESENTATIVE));
+
+		return roles;
 	}
 
 	@Override
@@ -197,11 +192,8 @@ public class RolesServiceImpl implements RolesService {
 
 		ModuleRoleRestrictionResponseDto moduleRoleRestrictionResponseDto = new ModuleRoleRestrictionResponseDto();
 		moduleRoleRestrictionResponseDto.setModule(module);
-		moduleRoleRestrictionResponseDto.setRestrictions(List.copyOf(restrictedRoleLevels));
+		moduleRoleRestrictionResponseDto.setRestrictions(restrictedRoleLevels);
 		moduleRoleRestrictionResponseDto.setRestrictableRoles(getRestrictableRoles(module));
-		moduleRoleRestrictionResponseDto.setIsAdmin(restrictedRoleLevels.contains(RoleLevel.ADMIN));
-		moduleRoleRestrictionResponseDto
-			.setIsManager(restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(module)));
 
 		log.info("getRestrictedRoleByModule: execution ended");
 		return moduleRoleRestrictionResponseDto;
@@ -263,12 +255,8 @@ public class RolesServiceImpl implements RolesService {
 
 		Set<RoleLevel> restrictedRoleLevels = getRestrictedRoleLevels(module);
 
-		boolean isAdminAllowed = isSuperAdmin || !restrictedRoleLevels.contains(RoleLevel.ADMIN);
-		boolean isManagerAllowed = isSuperAdmin
-				|| !restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(module));
-
 		List<AllowedRoleDto> rolesForModule = prebuiltRoles.stream()
-			.filter(roleLevel -> isRoleAllowed(roleLevel, isAdminAllowed, isManagerAllowed))
+			.filter(roleLevel -> isSuperAdmin || !restrictedRoleLevels.contains(roleLevel))
 			.map(roleLevel -> createAllowedRole(roleLevel.getDisplayName(),
 					getRoleForModuleAndLevel(module, roleLevel)))
 			.toList();
@@ -277,16 +265,6 @@ public class RolesServiceImpl implements RolesService {
 		moduleResponse.setModule(module);
 		moduleResponse.setRoles(rolesForModule);
 		return moduleResponse;
-	}
-
-	// TODO: Temporary implementation - Helper method to determine if a role is
-	// allowed based on restrictions
-	private boolean isRoleAllowed(RoleLevel roleLevel, boolean isAdminAllowed, boolean isManagerAllowed) {
-		return switch (roleLevel) {
-			case ADMIN -> isAdminAllowed;
-			case MANAGER, SENDER, SALES_MANAGER -> isManagerAllowed;
-			default -> true; // other roles are always allowed
-		};
 	}
 
 	protected Map<ModuleType, List<RoleLevel>> initializeRolesForModule() {
@@ -555,19 +533,22 @@ public class RolesServiceImpl implements RolesService {
 	}
 
 	protected Boolean validateRestrictedRoleAssignment(Role role, ModuleType moduleType) {
-		Set<RoleLevel> restrictedRoleLevels = getRestrictedRoleLevels(moduleType);
+		RoleLevel roleLevel = getRoleLevelForModuleAndRole(moduleType, role);
+		return roleLevel != null && getRestrictedRoleLevels(moduleType).contains(roleLevel);
+	}
 
-		if (role == Role.PEOPLE_ADMIN || role == Role.ATTENDANCE_ADMIN || role == Role.LEAVE_ADMIN
-				|| role == Role.INVOICE_ADMIN || role == Role.CRM_ADMIN) {
-			return restrictedRoleLevels.contains(RoleLevel.ADMIN);
+	protected RoleLevel getRoleLevelForModuleAndRole(ModuleType module, Role role) {
+		if (role == null) {
+			return null;
 		}
 
-		if (role == Role.PEOPLE_MANAGER || role == Role.ATTENDANCE_MANAGER || role == Role.LEAVE_MANAGER
-				|| role == Role.INVOICE_MANAGER || role == Role.CRM_SALES_MANAGER) {
-			return restrictedRoleLevels.contains(PeopleUtil.getSecondaryRestrictionRole(moduleType));
+		for (RoleLevel roleLevel : RoleLevel.values()) {
+			if (role == getRoleForModuleAndLevel(module, roleLevel)) {
+				return roleLevel;
+			}
 		}
 
-		return false;
+		return null;
 	}
 
 	private AllowedRoleDto createAllowedRole(String roleName, Role role) {

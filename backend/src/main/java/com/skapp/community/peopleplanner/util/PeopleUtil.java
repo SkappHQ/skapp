@@ -3,7 +3,6 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.type.ModuleType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
@@ -96,14 +95,6 @@ public class PeopleUtil {
 
 	public static List<EmployeeManager> filterManagersByAttendanceRoles(List<EmployeeManager> managers) {
 		return filterManagersByRoles(managers, List.of(Role.ATTENDANCE_ADMIN, Role.ATTENDANCE_MANAGER));
-	}
-
-	public static RoleLevel getSecondaryRestrictionRole(ModuleType module) {
-		return switch (module) {
-			case ESIGN -> RoleLevel.SENDER;
-			case CRM -> RoleLevel.SALES_MANAGER;
-			default -> RoleLevel.MANAGER;
-		};
 	}
 
 	public static Set<RoleLevel> parseRestrictions(String restrictions) {
