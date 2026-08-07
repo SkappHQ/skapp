@@ -1026,6 +1026,23 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contacts lookup filtered by companyId - Returns only that company's contacts")
+	void getContactsLookup_FilterByCompanyId_ReturnsOnlyCompanyContacts() throws Exception {
+		Long companyAId = savedCompany("Company A").getId();
+		Long companyBId = savedCompany("Company B").getId();
+		savedNamedContact("Contact A", companyAId, "contact.a@lookup.com");
+		savedNamedContact("Contact B", companyBId, "contact.b@lookup.com");
+		savedNamedContact("Solo Contact", null, "solo.lookup@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("companyId", companyAId.toString()).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Contact A"));
+	}
+
+	@Test
 	@DisplayName("Lookup contacts with keyword matching contact name only - Returns the contact")
 	void getContactsLookup_KeywordMatchesContactNameOnly_ReturnsContact() throws Exception {
 		Long companyId = savedCompany("Globex Corporation").getId();

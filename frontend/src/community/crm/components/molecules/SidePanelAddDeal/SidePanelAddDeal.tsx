@@ -38,7 +38,11 @@ interface Props {
   companyId?: number | null;
 }
 
-const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact, companyId }) => {
+const SidePanelAddDeal: FC<Props> = ({
+  onClose,
+  defaultContact,
+  companyId
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
@@ -168,9 +172,7 @@ const SidePanelAddDeal: FC<Props> = ({ onClose, defaultContact, companyId }) => 
               selectedContact={selectedContact}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
-              isInvalid={
-                !!(formik.touched.contactId && formik.errors.contactId)
-              }
+              isInvalid={!!formik.errors.contactId}
               placeholder={translateText([
                 "inlineAddDeal",
                 "contactPlaceholder"
