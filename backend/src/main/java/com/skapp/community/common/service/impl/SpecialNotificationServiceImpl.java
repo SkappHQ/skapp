@@ -33,12 +33,11 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 	@Override
 	@Transactional(readOnly = true)
 	public SpecialNotificationConfig getSpecialNotificationConfig(SpecialNotificationType type) {
-		String configValue = organizationConfigDao
+		return organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(type.getOrganizationConfigType().name())
 			.map(OrganizationConfig::getOrganizationConfigValue)
-			.orElse("{}");
-
-		return objectMapper.readValue(configValue, SpecialNotificationConfig.class);
+				.map(configValue -> objectMapper.readValue(configValue, SpecialNotificationConfig.class))
+				.orElseGet(SpecialNotificationConfig::new);
 	}
 
 	@Override
