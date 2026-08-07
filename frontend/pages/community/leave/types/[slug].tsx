@@ -2,16 +2,20 @@ import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypeActivationToggleButton from "~community/leave/components/molecules/LeaveTypeActivationToggleButton/LeaveTypeActivationToggleButton";
+import PolicyLeaveTypeActivationToggleButton from "~community/leave/components/molecules/PolicyLeaveTypeActivationToggleButton/PolicyLeaveTypeActivationToggleButton";
 import UnsavedChangesModal from "~community/leave/components/molecules/UserPromptModals/UnsavedChangesModal/UnsavedChangesModal";
 import LeaveTypeForm from "~community/leave/components/organisms/LeaveTypeForm/LeaveTypeForm";
+import PolicyLeaveTypeForm from "~community/leave/components/organisms/PolicyLeaveTypeForm/PolicyLeaveTypeForm";
 import {
   LeaveTypeFormTypes,
   LeaveTypeModalEnums
 } from "~community/leave/enums/LeaveTypeEnums";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
@@ -19,6 +23,9 @@ const LeaveType: NextPage = () => {
   const translateText = useTranslator("leaveModule");
   const router = useRouter();
   const { slug } = router.query;
+
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
 
   const {
     isLeaveTypeFormDirty,
@@ -76,6 +83,34 @@ const LeaveType: NextPage = () => {
     router.push(ROUTES.LEAVE.LEAVE_TYPES);
   };
 
+  const getActivationToggleButton = () => {
+    if (isLeavePolicyConfigLoading) {
+      return <></>;
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return <PolicyLeaveTypeActivationToggleButton />;
+    }
+
+    return <LeaveTypeActivationToggleButton />;
+  };
+
+  const activationToggleButton = getActivationToggleButton();
+
+  const getLeaveTypeForm = () => {
+    if (isLeavePolicyConfigLoading) {
+      return <FullScreenLoader />;
+    }
+
+    if (isLeavePoliciesEnabled) {
+      return <PolicyLeaveTypeForm />;
+    }
+
+    return <LeaveTypeForm />;
+  };
+
+  const leaveTypeForm = getLeaveTypeForm();
+
   return (
     <ContentLayout
       breadcrumbs={[
@@ -103,15 +138,11 @@ const LeaveType: NextPage = () => {
       isBackButtonVisible
       onBackClick={handleBackBtnClick}
       customRightContent={
-        slug === LeaveTypeFormTypes.EDIT ? (
-          <LeaveTypeActivationToggleButton />
-        ) : (
-          <></>
-        )
+        slug === LeaveTypeFormTypes.EDIT ? activationToggleButton : <></>
       }
     >
       <>
-        <LeaveTypeForm />
+        {leaveTypeForm}
         <UnsavedChangesModal />
       </>
     </ContentLayout>

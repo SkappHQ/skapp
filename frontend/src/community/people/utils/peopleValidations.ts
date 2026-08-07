@@ -3,7 +3,6 @@ import * as Yup from "yup";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import {
   allowsAlphaNumericWithHyphenAndUnderscore,
-  allowsLettersAndSpecialCharactersForNames,
   allowsOnlyNumbersAndOptionalDecimal,
   datePatternReverse,
   isValidAlphaNumericString,
@@ -16,10 +15,17 @@ import {
 import { isValidEmailPattern } from "~community/common/utils/validation";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveEntitlementDropdownListType } from "~community/leave/types/LeaveTypes";
-import { EmployeeEmploymentContextType } from "~community/people/types/EmployeeTypes";
+import {
+  EmployeeEmploymentContextType,
+  EmployeeIdentificationContextType
+} from "~community/people/types/EmployeeTypes";
 
 import { ADDRESS_MAX_CHARACTER_LENGTH } from "../constants/configs";
-import { EMAIL_MAX_LENGTH } from "../constants/stringConstants";
+import {
+  EMAIL_MAX_LENGTH,
+  PAYROLL_ID_LENGTH,
+  TIN_LENGTH
+} from "../constants/stringConstants";
 
 type TranslatorFunctionType = (
   suffixes: string[],
@@ -311,12 +317,43 @@ export const employeeCareerDetailsValidation = (
   });
 
 export const employeeIdentificationDetailsValidation = (
+  context: EmployeeIdentificationContextType,
   translator: TranslatorFunctionType
 ) =>
   Yup.object({
-    ssn: Yup.string().max(20, translator(["maxSSNCharacterLimitError"])),
-    ethnicity: Yup.string(),
-    eeoJobCategory: Yup.string()
+    ssn: Yup.string()
+      .max(20, translator(["maxSSNCharacterLimitError"]))
+      .nullable(),
+    ethnicity: Yup.string().nullable(),
+    eeoJobCategory: Yup.string().nullable(),
+    payrollId: Yup.string()
+      .trim()
+      .max(
+        PAYROLL_ID_LENGTH,
+        translator(["payrollIdMaxLengthError"], {
+          max: String(PAYROLL_ID_LENGTH)
+        })
+      )
+      .test(
+        "payroll-id-exists",
+        translator(["payrollIdAlreadyExistsError"]),
+        function () {
+          return context?.isPayrollIdExists;
+        }
+      )
+      .nullable(),
+    tin: Yup.string()
+      .trim()
+      .max(
+        TIN_LENGTH,
+        translator(["tinMaxLengthError"], {
+          max: String(TIN_LENGTH)
+        })
+      )
+      .test("tin-exists", translator(["tinAlreadyExistsError"]), function () {
+        return context?.isTinExists;
+      })
+      .nullable()
   });
 
 export const employeePreviousEmploymentDetailsValidation = (

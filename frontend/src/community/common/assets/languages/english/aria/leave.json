@@ -76,7 +76,12 @@
     "customLeaveAllocationTable": {
       "selectYear": "Custom leave allocations by year",
       "filterButton": "Filter options",
-      "filterOption": "{{filterName}} option"
+      "filterOption": "{{filterName}} option",
+      "tableRegion": "Custom leave allocations table",
+      "pagination": "Custom leave allocations pagination",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "page": "Page {{page}}"
     }
   },
   "leaveTypeCard": {

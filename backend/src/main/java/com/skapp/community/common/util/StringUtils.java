@@ -3,8 +3,15 @@ package com.skapp.community.common.util;
 import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @UtilityClass
 public class StringUtils {
+
+	private static final String COMMA_DELIMITER = ",";
 
 	/**
 	 * Returns true if the provided string is either null or consists solely of whitespace
@@ -19,6 +26,20 @@ public class StringUtils {
 
 	public static String escapeLikePattern(String input) {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
+	}
+
+	public static String convertToCommaSeperatedString(Set<String> values) {
+		if (values == null || values.isEmpty()) {
+			return null;
+		}
+		return values.stream().collect(Collectors.joining(COMMA_DELIMITER));
+	}
+
+	public static Set<String> convertToList(String value) {
+		if (isNullOrBlank(value)) {
+			return new LinkedHashSet<>();
+		}
+		return Arrays.stream(value.split(COMMA_DELIMITER)).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 }
