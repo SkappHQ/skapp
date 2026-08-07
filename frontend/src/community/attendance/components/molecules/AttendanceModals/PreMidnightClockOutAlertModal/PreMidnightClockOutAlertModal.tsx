@@ -18,8 +18,8 @@ const PreMidnightClockOutAlertModal: FC<Props> = ({ closeModal }) => {
 
   return (
     <div>
-      <p className="body2 pb-4">{translateText(["clockOutAlertMessage"])}</p>
-      <div className="flex justify-end gap-2 mt-4">
+      <p className="body2 pb-6">{translateText(["clockOutAlertMessage"])}</p>
+      <div className="flex justify-end gap-2">
         <ButtonV2
           onClick={handleOkay}
           aria-label={translateText(["ok"])}
