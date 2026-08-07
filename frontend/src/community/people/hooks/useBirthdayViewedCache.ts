@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { BirthdayNotificationViewStateType } from "~community/people/types/BirthdayNotificationTypes";
 import {
-  clearViewedCache,
   isViewedToday as isViewedTodayForDate,
   readViewedCache,
   writeViewedCache
@@ -15,10 +14,8 @@ interface BirthdayViewedCacheType {
   cacheLastViewedDate: (lastViewedDate: string) => void;
 }
 
-const UNAUTHENTICATED = "unauthenticated";
-
 const useBirthdayViewedCache = (today: string): BirthdayViewedCacheType => {
-  const { sessionStatus, userId } = useSessionData();
+  const { userId } = useSessionData();
 
   const [isCacheLoaded, setIsCacheLoaded] = useState(false);
   const [viewedCache, setViewedCache] =
@@ -32,14 +29,6 @@ const useBirthdayViewedCache = (today: string): BirthdayViewedCacheType => {
     setViewedCache(loadedCache);
     setIsCacheLoaded(true);
   }, []);
-
-  useEffect(() => {
-    if (sessionStatus !== UNAUTHENTICATED) return;
-
-    clearViewedCache();
-    viewedCacheRef.current = null;
-    setViewedCache(null);
-  }, [sessionStatus]);
 
   const cacheLastViewedDate = useCallback(
     (lastViewedDate: string) => {

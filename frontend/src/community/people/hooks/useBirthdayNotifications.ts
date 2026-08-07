@@ -19,10 +19,8 @@ import {
   normalizeEmployeeId
 } from "~community/people/utils/birthdayNotificationUtils";
 
-const UNAUTHENTICATED = "unauthenticated";
-
 const useBirthdayNotifications = (): BirthdayNotificationsType => {
-  const { sessionStatus, employeeDetails } = useSessionData();
+  const { userId, employeeDetails } = useSessionData();
   const {
     isEligible,
     today,
@@ -141,14 +139,14 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
   }, [evaluationTick, shouldEvaluate, refetch]);
 
   useEffect(() => {
-    if (sessionStatus !== UNAUTHENTICATED) return;
+    if (userId !== undefined) return;
 
     seededDataRef.current = null;
     isShowingRef.current = false;
     restoreFocusRef.current = null;
     setQueue([]);
     setCursor(0);
-  }, [sessionStatus]);
+  }, [userId]);
 
   return {
     currentEntry: queue[cursor] ?? null,

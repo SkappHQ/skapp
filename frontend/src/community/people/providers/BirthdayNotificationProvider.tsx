@@ -16,8 +16,18 @@ import { getDateForPeriod } from "~community/common/utils/dateTimeUtils";
 import useBirthdayViewedCache from "~community/people/hooks/useBirthdayViewedCache";
 import { BirthdayNotificationContextType } from "~community/people/types/BirthdayNotificationTypes";
 
+const defaultBirthdayNotificationContext: BirthdayNotificationContextType = {
+  isEligible: false,
+  today: "",
+  evaluationTick: 0,
+  isViewedToday: false,
+  cacheLastViewedDate: () => undefined
+};
+
 const BirthdayNotificationContext =
-  createContext<BirthdayNotificationContextType | null>(null);
+  createContext<BirthdayNotificationContextType>(
+    defaultBirthdayNotificationContext
+  );
 
 const BirthdayNotificationProvider: FC<{ children: ReactNode }> = ({
   children

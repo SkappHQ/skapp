@@ -29,10 +29,6 @@ export const writeViewedCache = (
   setDataToLocalStorage(BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY, cache);
 };
 
-export const clearViewedCache = (): void => {
-  removeDataFromLocalStorage(BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY);
-};
-
 export const isViewedToday = (
   cache: BirthdayNotificationViewStateType | null,
   today: string | null,
