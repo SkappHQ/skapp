@@ -11,7 +11,7 @@ export const DRAWER_TRANSFORM_DURATION = "0.05s";
 
 export const styles = ({ theme }: stylesProps) => ({
   iconBtn: (isDrawerExpanded: boolean) => ({
-    display: { xs: "flex", sm: "none", lg: "flex" },
+    display: "flex",
     position: "absolute",
     top: { xs: "2.5rem", lg: "2.65rem" },
     right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "1.05rem" },

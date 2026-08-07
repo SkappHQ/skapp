@@ -37,6 +37,7 @@ const AppBar = () => {
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
+  const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
   const { handleDrawer } = useDrawer();
   const translateAria = useTranslator("commonAria", "components", "appBar");
 
@@ -174,7 +175,7 @@ const AppBar = () => {
               />
             )}
 
-            {isBelow600 && (
+            {isBelow1024 && (
               <button
                 className="flex cursor-pointer items-center justify-center w-10 h-10"
                 onClick={handleDrawer}
