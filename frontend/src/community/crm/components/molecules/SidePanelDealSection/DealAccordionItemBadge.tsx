@@ -1,7 +1,7 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import StageDot from "~community/crm/components/atoms/StageDot/StageDot";
+import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { DetailPanelDealResponseType } from "~community/crm/types/CommonTypes";
 
@@ -16,10 +16,8 @@ const DealAccordionItemBadge: FC<Props> = ({ deal }) => {
 
   return (
     <Chip
-      label={stageName}
-      showTooltip
+      label={<StageLabel label={stageName} color={deal?.stage?.color} />}
       size="sm"
-      prefixIcon={<StageDot color={deal?.stage?.color} />}
     />
   );
 };

@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import StageDot from "~community/crm/components/atoms/StageDot/StageDot";
+import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
 
 interface StageLabelProps {
@@ -10,7 +10,10 @@ interface StageLabelProps {
 
 const StageLabel: FC<StageLabelProps> = ({ label, color }) => (
   <div className="flex min-w-0 max-w-full items-center gap-2">
-    <StageDot color={color} />
+    <div
+      className="size-2 shrink-0 rounded-full"
+      style={{ backgroundColor: STAGE_COLOR_MAP[color] }}
+    />
     <span className="body2 min-w-0 truncate" title={label}>
       {label}
     </span>
