@@ -6,9 +6,12 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationNameAvailabilityResponseDto;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
@@ -27,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +43,8 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	private final WorkLocationDao workLocationDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final HolidayDao holidayDao;
 
 	private final MessageUtil messageUtil;
 
@@ -108,6 +114,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		WorkLocation workLocation = workLocationDao.findById(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
+		deleteFutureHolidaysSpecificToWorkLocation(id);
 		clearWorkLocationFromEmployees(id);
 		workLocationDao.delete(workLocation);
 
@@ -228,6 +235,22 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 				employee.setWorkLocation(workLocation);
 			}
 			employeeDao.saveAll(employees);
+		}
+	}
+
+	private void deleteFutureHolidaysSpecificToWorkLocation(Long workLocationId) {
+		List<Holiday> locationHolidays = holidayDao.findAllByIsActiveTrueAndWorkLocationsWorkLocationId(workLocationId);
+		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+
+		List<Holiday> holidaysToDelete = locationHolidays.stream()
+			.filter(holiday -> holiday.getDate() != null && holiday.getDate().isAfter(currentDate))
+			.filter(holiday -> holiday.getWorkLocations()
+				.stream()
+				.allMatch(location -> location.getWorkLocationId().equals(workLocationId)))
+			.toList();
+
+		if (!holidaysToDelete.isEmpty()) {
+			holidayDao.deleteAll(holidaysToDelete);
 		}
 	}
 
