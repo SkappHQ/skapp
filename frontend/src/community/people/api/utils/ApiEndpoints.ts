@@ -100,5 +100,6 @@ export const peopleDashboardEndpoints = {
 };
 
 export const peopleConfigEndpoints = {
-  BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`
+  GET_BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`,
+  UPDATE_BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`
 };

@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -10,7 +11,8 @@ import { useBirthdayNotificationContext } from "~community/people/providers/Birt
 import {
   BirthdayNotificationPayloadType,
   BirthdayNotificationsType,
-  BirthdayQueueEntryType
+  BirthdayQueueEntryType,
+  MarkBirthdayNotificationsViewedResponse
 } from "~community/people/types/BirthdayNotificationTypes";
 import {
   buildBirthdayQueue,
@@ -48,8 +50,16 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
 
   const shouldEvaluate = isEligible && !isViewedToday;
 
-  const { mutate: markViewed } =
-    useMarkBirthdayNotificationsViewedToday(cacheLastViewedDate);
+  const handleMarkViewedSuccess = (
+    response: AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+  ) => {
+    const lastViewedDate = response.data.results[0]?.lastViewedDate;
+    if (lastViewedDate) cacheLastViewedDate(lastViewedDate);
+  };
+
+  const { mutate: markViewed } = useMarkBirthdayNotificationsViewedToday(
+    handleMarkViewedSuccess
+  );
 
   const { data, refetch } = useGetTodaysBirthdayNotifications(shouldEvaluate);
 

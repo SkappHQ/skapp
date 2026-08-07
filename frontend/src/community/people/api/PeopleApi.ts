@@ -987,30 +987,17 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   });
 };
 
-const getTodaysBirthdayNotifications = async (
-  signal?: AbortSignal
-): Promise<BirthdayNotificationPayloadType> => {
-  const response = await authFetch.get<BirthdayNotificationTodayResponse>(
-    peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
-    { signal }
-  );
-  return response.data.results[0];
-};
-
 export const useGetTodaysBirthdayNotifications = (
   enabled: boolean
 ): UseQueryResult<BirthdayNotificationPayloadType> => {
   return useQuery({
-    queryKey: peopleQueryKeys.BIRTHDAY_NOTIFICATIONS_TODAY,
-    queryFn: ({ signal }) => getTodaysBirthdayNotifications(signal),
-    enabled,
-    retry: false,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    networkMode: "online"
+    queryKey: peopleQueryKeys.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
+    queryFn: async () =>
+      await authFetch.get<BirthdayNotificationTodayResponse>(
+        peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS
+      ),
+    select: (data) => data?.data?.results[0],
+    enabled
   });
 };
 
@@ -1022,7 +1009,9 @@ const markBirthdayNotificationsViewedToday = (): Promise<
   );
 
 export const useMarkBirthdayNotificationsViewedToday = (
-  onViewedDatePersisted: (lastViewedDate: string) => void
+  onSuccess: (
+    response: AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+  ) => void
 ): UseMutationResult<
   AxiosResponse<MarkBirthdayNotificationsViewedResponse>,
   AxiosError,
@@ -1030,30 +1019,20 @@ export const useMarkBirthdayNotificationsViewedToday = (
 > => {
   return useMutation({
     mutationFn: markBirthdayNotificationsViewedToday,
-    retry: 1,
-    onSuccess: (response) => {
-      const lastViewedDate = response.data.results[0]?.lastViewedDate;
-      if (lastViewedDate) onViewedDatePersisted(lastViewedDate);
-    }
+    onSuccess
   });
 };
-
-const getBirthdayNotificationConfig =
-  async (): Promise<BirthdayNotificationConfigType> => {
-    const response = await authFetch.get<BirthdayNotificationConfigResponse>(
-      peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG
-    );
-    return response.data.results[0];
-  };
 
 export const useGetBirthdayNotificationConfig = (): UseQueryResult<
   BirthdayNotificationConfigType
 > => {
   return useQuery({
-    queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG,
-    queryFn: getBirthdayNotificationConfig,
-    retry: false,
-    refetchOnWindowFocus: false
+    queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
+    queryFn: async () =>
+      await authFetch.get<BirthdayNotificationConfigResponse>(
+        peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
+      ),
+    select: (data) => data?.data?.results[0]
   });
 };
 
@@ -1061,7 +1040,7 @@ const updateBirthdayNotificationConfig = (
   config: BirthdayNotificationConfigPatchType
 ): Promise<AxiosResponse<BirthdayNotificationConfigResponse>> =>
   authFetch.patch<BirthdayNotificationConfigResponse>(
-    peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG,
+    peopleConfigEndpoints.UPDATE_BIRTHDAY_NOTIFICATION_CONFIG,
     config
   );
 
@@ -1078,11 +1057,9 @@ export const useUpdateBirthdayNotificationConfig = (
   return useMutation({
     mutationFn: updateBirthdayNotificationConfig,
     onSuccess: (_data, config) => {
-      queryClient
-        .invalidateQueries({
-          queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG
-        })
-        .catch(() => {});
+      queryClient.invalidateQueries({
+        queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG
+      });
       onSuccess(config);
     },
     onError
