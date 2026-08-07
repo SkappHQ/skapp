@@ -42,10 +42,33 @@ export const leavePolicyEndPoints = {
     `${moduleAPIPath.LEAVE}/policies/${id}/deactivate`,
   ACTIVATE_LEAVE_POLICY: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policies/${id}/activate`,
-  GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
   GET_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies`,
   ENABLE_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policies/enable`,
   GET_LEAVE_POLICY_CONFIG: `${moduleAPIPath.LEAVE}/policies/config`
+};
+
+export const policyLeaveTypeEndPoints = {
+  GET_POLICY_LEAVE_TYPES: `${moduleAPIPath.LEAVE}/policy-leave-types`,
+  ADD_POLICY_LEAVE_TYPE: `${moduleAPIPath.LEAVE}/policy-leave-types`,
+  GET_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}`,
+  UPDATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}`,
+  ACTIVATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}/activate`,
+  DEACTIVATE_POLICY_LEAVE_TYPE: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave-types/${id}/deactivate`
+};
+
+export const leavePolicyAssignmentEndPoints = {
+  ASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  UNASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  GET_EMPLOYEE_LEAVE_POLICIES: (
+    employeeId: number,
+    page: number,
+    size: number
+  ): string =>
+    `${moduleAPIPath.LEAVE}/policy-assignments/employee/${employeeId}?page=${page}&size=${size}`
 };
 
 export const leaveEntitlementEndPoints = {

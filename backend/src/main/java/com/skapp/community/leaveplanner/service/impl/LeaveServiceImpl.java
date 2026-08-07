@@ -1039,7 +1039,7 @@ public class LeaveServiceImpl implements LeaveService {
 				&& employee.getWorkLocation().getWorkLocationId() != null) {
 			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 		}
-		return holidayDao.findAllByIsActiveTrue();
+		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 	}
 
 	private float getRemainingTotalHours(List<LeaveEntitlement> leaveEntitlements, LeaveRequest leaveRequest,

@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,8 +52,9 @@ public class EmployeeLeavePolicyController {
 			description = "Returns the currently active (open) policy assignment windows for the employee")
 	@GetMapping("/employee/{employeeId}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId) {
-		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId);
+	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId,
+			EmployeeLeavePolicyFilterDto filterDto) {
+		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId, filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
