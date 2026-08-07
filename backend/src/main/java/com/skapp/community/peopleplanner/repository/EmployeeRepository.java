@@ -116,6 +116,6 @@ public interface EmployeeRepository {
 	boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId);
 
 	List<Employee> findEmployeeBirthdaysOnByViewerAndScope(LocalDate date, Long viewerEmployeeId,
-														   BirthdayNotificationScope scope);
+			BirthdayNotificationScope scope);
 
 }

@@ -1689,7 +1689,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	private Predicate buildBirthdayScopePredicate(CriteriaBuilder cb, CriteriaQuery<Employee> criteriaQuery,
-												  Root<Employee> root, Long viewerEmployeeId, BirthdayNotificationScope scope) {
+			Root<Employee> root, Long viewerEmployeeId, BirthdayNotificationScope scope) {
 		if (scope == BirthdayNotificationScope.ORGANIZATION) {
 			return cb.conjunction();
 		}
@@ -1703,8 +1703,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Subquery<Long> viewerTeamIdsSubquery = criteriaQuery.subquery(Long.class);
 		Root<EmployeeTeam> viewerTeamRoot = viewerTeamIdsSubquery.from(EmployeeTeam.class);
 		viewerTeamIdsSubquery.select(viewerTeamRoot.get(EmployeeTeam_.team).get(Team_.teamId))
-				.where(cb.equal(viewerTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), viewerEmployeeId),
-						cb.isTrue(viewerTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
+			.where(cb.equal(viewerTeamRoot.get(EmployeeTeam_.employee).get(Employee_.employeeId), viewerEmployeeId),
+					cb.isTrue(viewerTeamRoot.get(EmployeeTeam_.team).get(Team_.isActive)));
 
 		Subquery<Long> sharedTeamSubquery = criteriaQuery.subquery(Long.class);
 		Root<EmployeeTeam> sharedTeamRoot = sharedTeamSubquery.from(EmployeeTeam.class);

@@ -366,8 +366,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				clock.when(() -> LocalDate.now(any(ZoneId.class))).thenReturn(LAST_DAY_OF_SHORT_FEBRUARY);
 
 				assertSuccessful(performGetTodayRequest(currentUserToken))
-						.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
-						.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
+					.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
+					.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 			}
 		}
 

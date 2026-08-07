@@ -24,7 +24,7 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 		log.info("getBirthdayNotificationConfigs: execution started");
 
 		SpecialNotificationConfig responseDto = specialNotificationService
-                .getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		log.info("getBirthdayNotificationConfigs: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -36,7 +36,7 @@ public class PeopleConfigServiceImpl implements PeopleConfigService {
 		log.info("updateBirthdayNotificationConfigs: execution started");
 
 		SpecialNotificationConfig config = specialNotificationService
-                .getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		if (requestDto.getIsTurnedOn() != null) {
 			config.setIsTurnedOn(requestDto.getIsTurnedOn());

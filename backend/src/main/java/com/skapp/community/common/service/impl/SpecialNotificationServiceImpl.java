@@ -36,8 +36,8 @@ public class SpecialNotificationServiceImpl implements SpecialNotificationServic
 		return organizationConfigDao
 			.findOrganizationConfigByOrganizationConfigType(type.getOrganizationConfigType().name())
 			.map(OrganizationConfig::getOrganizationConfigValue)
-				.map(configValue -> objectMapper.readValue(configValue, SpecialNotificationConfig.class))
-				.orElseGet(SpecialNotificationConfig::new);
+			.map(configValue -> objectMapper.readValue(configValue, SpecialNotificationConfig.class))
+			.orElseGet(SpecialNotificationConfig::new);
 	}
 
 	@Override

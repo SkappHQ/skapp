@@ -1557,7 +1557,7 @@ public class PeopleServiceImpl implements PeopleService {
 		log.info("getTodayBirthdayNotifications: execution started");
 
 		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
 			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(null, List.of()));
@@ -1600,7 +1600,7 @@ public class PeopleServiceImpl implements PeopleService {
 		LocalDate today = resolveBirthdayNotificationDate();
 
 		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
-				.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
 
 		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
 			Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
