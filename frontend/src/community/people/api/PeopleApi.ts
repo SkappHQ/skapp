@@ -992,11 +992,12 @@ export const useGetTodaysBirthdayNotifications = (
 ): UseQueryResult<BirthdayNotificationPayloadType> => {
   return useQuery({
     queryKey: peopleQueryKeys.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
-    queryFn: async () =>
-      await authFetch.get<BirthdayNotificationTodayResponse>(
+    queryFn: async () => {
+      const response = await authFetch.get<BirthdayNotificationTodayResponse>(
         peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS
-      ),
-    select: (data) => data?.data?.results[0],
+      );
+      return response.data.results[0];
+    },
     enabled
   });
 };
@@ -1028,11 +1029,12 @@ export const useGetBirthdayNotificationConfig = (): UseQueryResult<
 > => {
   return useQuery({
     queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
-    queryFn: async () =>
-      await authFetch.get<BirthdayNotificationConfigResponse>(
+    queryFn: async () => {
+      const response = await authFetch.get<BirthdayNotificationConfigResponse>(
         peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
-      ),
-    select: (data) => data?.data?.results[0]
+      );
+      return response.data.results[0];
+    }
   });
 };
 
