@@ -117,7 +117,7 @@ const TableView: FC<TableViewProps> = ({
           containerClassName="rounded-4 shadow-lg"
           {...popperProps}
         >
-          {filter?.filterContent({ close: closePopover })}
+          {filter?.filterContent({ onClose: closePopover })}
         </Popper>
       )}
     </div>

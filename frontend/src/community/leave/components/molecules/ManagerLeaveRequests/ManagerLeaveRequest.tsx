@@ -142,7 +142,9 @@ const ManagerLeaveRequest: FC<Props> = ({
               avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
               isResponsiveLayout
               chipStyles={{
+                width: "fit-content",
                 maxWidth: "15.625rem",
+                justifyContent: "flex-start",
                 backgroundColor: "var(--color-tertiary-background)"
               }}
             />
@@ -211,9 +213,7 @@ const ManagerLeaveRequest: FC<Props> = ({
     setNewLeaveId(Number(row.id));
   };
 
-  const renderFilterContent = ({
-    close: onClose
-  }: TableViewFilterContentArgs) => (
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
     <ManagerLeaveRequestFilterBody
       onClose={onClose}
       selectedDateRange={selectedDateRange}

@@ -1632,4 +1632,38 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		entityManager.createQuery(update).executeUpdate();
 	}
 
+	@Override
+	public boolean existsByPayrollIdAndEmployeeIdNot(String payrollId, Long employeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Employee> root = query.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(Employee_.payrollId), payrollId));
+		if (employeeId != null) {
+			predicates.add(cb.notEqual(root.get(Employee_.employeeId), employeeId));
+		}
+
+		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
+	@Override
+	public boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Employee> root = query.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(Employee_.tin), tin));
+		if (employeeId != null) {
+			predicates.add(cb.notEqual(root.get(Employee_.employeeId), employeeId));
+		}
+
+		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
 }

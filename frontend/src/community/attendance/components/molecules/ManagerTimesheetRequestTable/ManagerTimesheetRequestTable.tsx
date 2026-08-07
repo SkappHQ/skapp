@@ -112,8 +112,8 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
     setTimesheetRequestPagination(page + 1);
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
-    <TimesheetRequestFilterBody isManager close={close} />
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody isManager onClose={onClose} />
   );
 
   const getKebabMenuOptions = (timeRequestId: number) => [

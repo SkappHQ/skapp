@@ -1,10 +1,12 @@
+import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
 import {
   addEditCustomLeaveAllocationValidationSchema,
   addLeaveTypeValidationSchema,
-  customLeaveAllocationValidation
+  customLeaveAllocationValidation,
+  policyLeaveTypeValidationSchema
 } from "../validations";
 
 const mockTranslateText = (keys: string[]) => keys[0];
@@ -266,5 +268,68 @@ describe("addEditCustomLeaveAllocationValidationSchema", () => {
     await expect(schema.validate(invalidData)).rejects.toThrow(
       "integerNumberError"
     );
+  });
+});
+
+describe("policyLeaveTypeValidationSchema", () => {
+  const schema = policyLeaveTypeValidationSchema(mockTranslateText);
+
+  const validData = {
+    name: "Annual Leave",
+    emoji: "🌴",
+    colorCode: "#FFC107",
+    minDuration: LeaveDurationTypes.HALF_AND_FULL_DAY
+  };
+
+  it("should pass validation for a valid policy leave type", async () => {
+    await expect(schema.validate(validData)).resolves.toEqual(validData);
+  });
+
+  it("should fail when name is missing", async () => {
+    await expect(schema.validate({ ...validData, name: "" })).rejects.toThrow(
+      "emptyLeaveTypeNameError"
+    );
+  });
+
+  it("should fail when name is only whitespace", async () => {
+    await expect(
+      schema.validate({ ...validData, name: "   " })
+    ).rejects.toThrow("emptyLeaveTypeNameError");
+  });
+
+  it("should pass on the name max length boundary", async () => {
+    await expect(
+      schema.validate({
+        ...validData,
+        name: "A".repeat(MAX_POLICY_LEAVE_TYPE_NAME_LENGTH)
+      })
+    ).resolves.toBeTruthy();
+  });
+
+  it("should fail when name exceeds max length", async () => {
+    await expect(
+      schema.validate({
+        ...validData,
+        name: "A".repeat(MAX_POLICY_LEAVE_TYPE_NAME_LENGTH + 1)
+      })
+    ).rejects.toThrow("leaveTypeNameMaxLengthError");
+  });
+
+  it("should fail when emoji is missing", async () => {
+    await expect(schema.validate({ ...validData, emoji: "" })).rejects.toThrow(
+      "emptyLeaveTypeEmojiError"
+    );
+  });
+
+  it("should fail when colorCode is missing", async () => {
+    await expect(
+      schema.validate({ ...validData, colorCode: "" })
+    ).rejects.toThrow("emptyLeaveTypeColorError");
+  });
+
+  it("should fail when no leave duration is selected", async () => {
+    await expect(
+      schema.validate({ ...validData, minDuration: LeaveDurationTypes.NONE })
+    ).rejects.toThrow("emptyLeaveDurationError");
   });
 });
