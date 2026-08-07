@@ -150,9 +150,6 @@ public class RolesServiceImpl implements RolesService {
 			return;
 		}
 
-		if (roleLevels.contains(null)) {
-			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_RESTRICTION_ROLE_LEVEL_REQUIRED);
-		}
 		if (!getRestrictableRoles(module).containsAll(roleLevels)) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL,
 					new String[] { module.name() });

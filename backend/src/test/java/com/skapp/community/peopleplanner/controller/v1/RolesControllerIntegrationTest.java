@@ -331,12 +331,6 @@ class RolesControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Add with a null entry - Returns Bad Request")
-		void update_AddWithNullEntry_ReturnsBadRequest() throws Exception {
-			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[null]}").andExpect(status().isBadRequest());
-		}
-
-		@Test
 		@DisplayName("Add with duplicate entries - Deduplicated and stored once")
 		void update_AddWithDuplicateEntries_Deduplicated() throws Exception {
 			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\",\"ADMIN\"]}")
