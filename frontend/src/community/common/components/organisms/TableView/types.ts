@@ -1,24 +1,25 @@
 import type {
   GridHeader,
   GridRow,
+  PageSizeSelectorProps,
   TableToolBarProps,
   TableV2Props,
   TableV2Variant
 } from "@rootcodelabs/skapp-ui";
 import type { ReactNode } from "react";
 
-export type { GridHeader, GridRow } from "@rootcodelabs/skapp-ui";
+export type {
+  GridHeader,
+  GridRow,
+  PageSizeSelectorProps
+} from "@rootcodelabs/skapp-ui";
 
 /** Static pagination — 0-based, passed straight through to TableV2. */
 export interface TableViewPagination {
   totalPages?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
-  pageSize?: number;
-  pageSizeOptions?: number[];
-  onPageSizeChange?: (pageSize: number) => void;
-  pageSizeLabel?: string;
-  isPageSizeDisabled?: boolean;
+  pageSizeSelector?: PageSizeSelectorProps;
 }
 
 /** Infinite scroll — requires a fixed `height` on the scroll container. */

@@ -109,14 +109,8 @@ const TableView: FC<TableViewProps> = ({
         totalPages={isPaginated ? pagination?.totalPages : undefined}
         currentPage={isPaginated ? pagination?.currentPage : undefined}
         onPageChange={isPaginated ? pagination?.onPageChange : undefined}
-        pageSize={isPaginated ? pagination?.pageSize : undefined}
-        pageSizeOptions={isPaginated ? pagination?.pageSizeOptions : undefined}
-        onPageSizeChange={
-          isPaginated ? pagination?.onPageSizeChange : undefined
-        }
-        pageSizeLabel={isPaginated ? pagination?.pageSizeLabel : undefined}
-        isPageSizeDisabled={
-          isPaginated ? pagination?.isPageSizeDisabled : undefined
+        pageSizeSelector={
+          isPaginated ? pagination?.pageSizeSelector : undefined
         }
       />
 
