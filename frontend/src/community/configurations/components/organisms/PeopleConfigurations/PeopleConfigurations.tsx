@@ -14,10 +14,13 @@ import {
   BirthdayNotificationConfigType
 } from "~community/people/types/PeopleConfigTypes";
 
-const SECTION = "birthdayNotificationSection";
-
 const PeopleConfigurations: FC = () => {
-  const translateText = useTranslator("configurations", "people");
+  const translateText = useTranslator(
+    "configurations",
+    "people",
+    "birthdayNotificationSection"
+  );
+  const translateButton = useTranslator("configurations", "people", "buttons");
   const { setToastMessage } = useToast();
 
   const [config, setConfig] = useState<BirthdayNotificationConfigType | null>(
@@ -39,12 +42,8 @@ const PeopleConfigurations: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText([SECTION, "toastMessages", "successTitle"]),
-      description: translateText([
-        SECTION,
-        "toastMessages",
-        "successDescription"
-      ])
+      title: translateText(["toastMessages", "successTitle"]),
+      description: translateText(["toastMessages", "successDescription"])
     });
   };
 
@@ -52,8 +51,8 @@ const PeopleConfigurations: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText([SECTION, "toastMessages", "errorTitle"]),
-      description: translateText([SECTION, "toastMessages", "errorDescription"])
+      title: translateText(["toastMessages", "errorTitle"]),
+      description: translateText(["toastMessages", "errorDescription"])
     });
   };
 
@@ -85,7 +84,6 @@ const PeopleConfigurations: FC = () => {
 
   const subOptionsAriaMessage = config
     ? translateText([
-        SECTION,
         "aria",
         config.isTurnedOn ? "subOptionsAvailable" : "subOptionsUnavailable"
       ])
@@ -95,10 +93,10 @@ const PeopleConfigurations: FC = () => {
     <div className="flex w-196 flex-col gap-6">
       <div className="flex flex-col gap-3">
         <h2 className="subtitle2 text-black">
-          {translateText([SECTION, "title"])}
+          {translateText(["title"])}
         </h2>
         <p className="body1 text-secondary-text">
-          {translateText([SECTION, "description"])}
+          {translateText(["description"])}
         </p>
       </div>
 
@@ -112,7 +110,7 @@ const PeopleConfigurations: FC = () => {
           role="status"
           aria-busy="true"
           aria-live="polite"
-          aria-label={translateText([SECTION, "aria", "loading"])}
+          aria-label={translateText(["aria", "loading"])}
         >
           <div className="flex items-center justify-between">
             <div className="h-5 w-64 rounded-lg bg-secondary-accent" />
@@ -129,36 +127,29 @@ const PeopleConfigurations: FC = () => {
         <>
           <div className="flex flex-col gap-6">
             <SwitchRow
-              label={translateText([SECTION, "mainToggleLabel"])}
+              label={translateText(["mainToggleLabel"])}
               labelId="birthday-notification"
-              arialabel={translateText([SECTION, "aria", "mainToggle"])}
+              arialabel={translateText(["aria", "mainToggle"])}
               checked={config.isTurnedOn}
               onChange={(checked) => handleToggleChange("isTurnedOn", checked)}
             />
             {config.isTurnedOn && (
               <>
                 <SwitchRow
-                  label={translateText([SECTION, "teamToggleLabel"])}
+                  label={translateText(["teamToggleLabel"])}
                   labelId="birthday-notification-team-only"
-                  arialabel={translateText([SECTION, "aria", "teamToggle"])}
-                  tooltip={translateText([SECTION, "teamToggleTooltip"])}
+                  arialabel={translateText(["aria", "teamToggle"])}
+                  tooltip={translateText(["teamToggleTooltip"])}
                   checked={config.isTeamWide}
                   onChange={(checked) =>
                     handleToggleChange("isTeamWide", checked)
                   }
                 />
                 <SwitchRow
-                  label={translateText([SECTION, "organizationToggleLabel"])}
+                  label={translateText(["organizationToggleLabel"])}
                   labelId="birthday-notification-entire-organization"
-                  arialabel={translateText([
-                    SECTION,
-                    "aria",
-                    "organizationToggle"
-                  ])}
-                  tooltip={translateText([
-                    SECTION,
-                    "organizationToggleTooltip"
-                  ])}
+                  arialabel={translateText(["aria", "organizationToggle"])}
+                  tooltip={translateText(["organizationToggleTooltip"])}
                   checked={config.isOrganizationWide}
                   onChange={(checked) =>
                     handleToggleChange("isOrganizationWide", checked)
@@ -177,7 +168,7 @@ const PeopleConfigurations: FC = () => {
               disabled={!isFormChanged}
               onClick={handleCancel}
             >
-              {translateText(["buttons", "cancel"])}
+              {translateButton(["cancel"])}
             </ButtonV2>
             <ButtonV2
               variant="primary"
@@ -187,7 +178,7 @@ const PeopleConfigurations: FC = () => {
               disabled={!isFormChanged || isPending}
               onClick={handleSave}
             >
-              {translateText(["buttons", "save"])}
+              {translateButton(["save"])}
             </ButtonV2>
           </div>
         </>
