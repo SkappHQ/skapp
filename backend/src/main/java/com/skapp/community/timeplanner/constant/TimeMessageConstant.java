@@ -22,6 +22,7 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_ADMS_DEVICE_WEBHOOK_CREDENTIALS_REQUIRED("api.error.time.adms.device.webhook-credentials-required"),
 	TIME_ERROR_ADMS_DEVICE_WEBHOOK_USERNAME_ALREADY_EXISTS(
 			"api.error.time.adms.device.webhook-username-already-exists"),
+	TIME_ERROR_ADMS_DEVICE_WEBHOOK_PASSWORD_TOO_SHORT("api.error.time.adms.device.webhook-password-too-short"),
 	TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE("api.error.time.clockin-not-exist-for-current.date"),
 	TIME_ERROR_TIME_CLOCK_IN_EXISTS_FOR_CURRENT_DATE("api.error.time.clockin-exist-for-current.date"),
 	TIME_ERROR_END_TIME_BEFORE_START_TIME("api.error.time.end-time-before-start-time"),
