@@ -18,6 +18,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -84,7 +85,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
-			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+			predicates.add(cb.or(buildContactNameTokenPredicate(cb, contact, searchKeyword),
 					cb.like(cb.lower(owner.get(Employee_.firstName)), likePattern, '\\'),
 					cb.like(cb.lower(owner.get(Employee_.lastName)), likePattern, '\\')));
 		}
@@ -95,6 +96,26 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		}
 
 		return predicates.toArray(new Predicate[0]);
+	}
+
+	private Predicate buildContactNameTokenPredicate(CriteriaBuilder cb, Root<CrmContact> contact,
+			String searchKeyword) {
+		Expression<String> firstName = cb.lower(contact.get(CrmContact_.firstName));
+		Expression<String> lastName = cb.lower(contact.get(CrmContact_.lastName));
+
+		String[] tokens = searchKeyword.trim().toLowerCase(Locale.ROOT).split("\\s+");
+
+		List<Predicate> tokenPredicates = new ArrayList<>();
+		for (String token : tokens) {
+			String escaped = StringUtils.escapeLikePattern(token);
+			String prefixPattern = escaped + "%";
+			String innerTokenPattern = "% " + escaped + "%";
+			tokenPredicates
+				.add(cb.or(cb.like(firstName, prefixPattern, '\\'), cb.like(firstName, innerTokenPattern, '\\'),
+						cb.like(lastName, prefixPattern, '\\'), cb.like(lastName, innerTokenPattern, '\\')));
+		}
+
+		return cb.and(tokenPredicates.toArray(new Predicate[0]));
 	}
 
 	private Long getContactTotalCount(CriteriaBuilder cb, CrmContactMetricRequestDto filterDto) {
@@ -150,7 +171,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
-			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+			predicates.add(cb.or(buildContactNameTokenPredicate(cb, contact, searchKeyword),
 					cb.like(cb.lower(company.get(CrmCompany_.name)), likePattern, '\\')));
 		}
 
