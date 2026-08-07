@@ -90,8 +90,8 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
 
     const payload: UserRoleRestrictionsUpdateType = {
       module: moduleType,
-      add,
-      remove
+      addedRoles: add,
+      removedRoles: remove
     };
 
     updateUserRoleRestrictions(payload);
