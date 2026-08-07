@@ -26,4 +26,6 @@ public class PolicyLeaveTypeDetailResponseDto {
 
 	private Boolean isAutoApproval;
 
+	private Boolean isActive;
+
 }

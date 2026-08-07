@@ -34,7 +34,7 @@ import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsRe
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeResponseDto;
+import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -176,9 +176,7 @@ public interface LeaveMapper {
 	List<EmployeeLeavePolicyResponseDto> employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(
 			List<EmployeeLeavePolicy> employeeLeavePolicies);
 
-	PolicyLeaveTypeResponseDto policyLeaveTypeToPolicyLeaveTypeResponseDto(PolicyLeaveType policyLeaveType);
-
-	List<PolicyLeaveTypeResponseDto> policyLeaveTypeListToPolicyLeaveTypeResponseDtoList(
+	List<PolicyLeaveTypeDetailResponseDto> policyLeaveTypeListToPolicyLeaveTypeDetailResponseDtoList(
 			List<PolicyLeaveType> policyLeaveTypes);
 
 	PolicyLeaveTypeDetailResponseDto policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(PolicyLeaveType policyLeaveType);
