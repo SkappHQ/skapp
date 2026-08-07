@@ -1073,4 +1073,60 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isForbidden());
 	}
 
+	// --- token-based name search ---
+
+	@Test
+	@DisplayName("Lookup with reversed token order - Tokens match across first and last name")
+	void getContactsLookup_ReversedTokenOrder_MatchesContact() throws Exception {
+		savedNamedContact("John", "Smith", null, "john.smith@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "smith john").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['firstName']").value("John"));
+	}
+
+	@Test
+	@DisplayName("Lookup where one token matches nothing - All tokens must match")
+	void getContactsLookup_TokenWithNoMatch_ReturnsNoResults() throws Exception {
+		savedNamedContact("John", "Smith", null, "john.smith@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "john xyz").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(0));
+	}
+
+	@Test
+	@DisplayName("Lookup with a token prefix - Matches name token start, not a mid-token substring")
+	void getContactsLookup_PrefixNotSubstring_ExcludesMidTokenMatch() throws Exception {
+		savedNamedContact("Anna", "Bell", null, "anna.bell@lookup.com");
+		savedNamedContact("Susanna", "Ray", null, "susanna.ray@lookup.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "ann").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['firstName']").value("Anna"));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics with keyword - Exact name match ranks above a prefix match")
+	void getContactMetrics_KeywordRanking_ExactNameRanksFirst() throws Exception {
+		Long companyId = savedCompany().getId();
+		savedNamedContact("Aaron", "Smith", companyId, "aaron.smith@example.com");
+		savedNamedContact("Smith", null, companyId, "smith@example.com");
+
+		performRequest(get(METRICS_PATH).param("searchKeyword", "smith").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['firstName']").value("Smith"))
+			.andExpect(jsonPath("['results'][0]['items'][1]['firstName']").value("Aaron"));
+	}
+
 }
