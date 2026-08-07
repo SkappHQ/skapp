@@ -22,7 +22,10 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
 import LeaveAllocationSkeleton from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocationSkeleton";
 import LeavePolicyCard from "~community/leave/components/molecules/LeavePolicyCard/LeavePolicyCard";
-import { ALLOCATION_PER_PAGE } from "~community/leave/constants/stringConstants";
+import {
+  ALLOCATION_PER_PAGE,
+  ALLOCATION_PER_PAGE_MOBILE
+} from "~community/leave/constants/stringConstants";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { EmployeePolicyBalanceType } from "~community/leave/types/PolicyLeaveTypes";
 
@@ -54,7 +57,9 @@ const LeavePolicyAllocation: FC = () => {
   } = useGetMyPolicyBalances(selectedYear);
 
   useEffect(() => {
-    setAllocationsPerPage(isBelow600 ? 4 : ALLOCATION_PER_PAGE);
+    setAllocationsPerPage(
+      isBelow600 ? ALLOCATION_PER_PAGE_MOBILE : ALLOCATION_PER_PAGE
+    );
   }, [isBelow600]);
 
   useEffect(() => {

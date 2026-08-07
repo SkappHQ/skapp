@@ -1,12 +1,8 @@
-import { Box, Stack, Theme, Typography, useTheme } from "@mui/material";
-
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
 const LeavePolicyAllocationEmptyScreen = () => {
-  const theme: Theme = useTheme();
-
   const translateText = useTranslator(
     "leaveModule",
     "myRequests",
@@ -15,39 +11,17 @@ const LeavePolicyAllocationEmptyScreen = () => {
   );
 
   return (
-    <Box sx={{ width: "100%" }}>
-      <Stack
-        sx={{
-          justifyContent: "center",
-          alignItems: "center",
-          height: "24.4375rem",
-          border: "none"
-        }}
-      >
-        <Stack
-          component="div"
-          sx={{
-            width: "30.75rem",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            gap: "1rem"
-          }}
-        >
+    <div className="w-full">
+      <div className="flex h-[24.4375rem] flex-col items-center justify-center">
+        <div className="flex w-[30.75rem] flex-col items-center justify-center gap-4 text-center">
           <Icon name={IconName.CALENDAR_ICON} />
-          <Typography sx={{ fontWeight: 700, fontSize: "1.125rem" }}>
-            {translateText(["title"])}
-          </Typography>
-          <Typography
-            component="div"
-            variant="body2"
-            sx={{ color: theme.palette.common.black, width: "100%" }}
-          >
+          <p className="text-lg font-bold">{translateText(["title"])}</p>
+          <div className="body2 w-full text-black">
             {translateText(["description"])}
-          </Typography>
-        </Stack>
-      </Stack>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

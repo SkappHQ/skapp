@@ -9,6 +9,7 @@ import {
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { getCurrentMonth } from "~community/common/utils/dateTimeUtils";
+import { POLICY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
 import {
@@ -30,18 +31,21 @@ export const initialPolicyLeaveFormErrors: PolicyLeaveFormErrors = {
   attachment: ""
 };
 
-export interface PolicyLeaveRequestParams {
-  page: number;
-  size: number;
-  sortKey: SortKeyTypes;
-  sortOrder: SortOrderTypes;
+export interface PolicyLeaveRequestFilters {
   status: PolicyLeaveRequestStatus[];
   policyId: number[];
 }
 
+export interface PolicyLeaveRequestParams extends PolicyLeaveRequestFilters {
+  page: number;
+  size: number;
+  sortKey: SortKeyTypes;
+  sortOrder: SortOrderTypes;
+}
+
 export const initialPolicyLeaveRequestParams: PolicyLeaveRequestParams = {
   page: 0,
-  size: 10,
+  size: POLICY_LEAVE_REQUESTS_PER_PAGE,
   sortKey: SortKeyTypes.CREATED_DATE,
   sortOrder: SortOrderTypes.DESC,
   status: [],
@@ -68,10 +72,7 @@ export interface PolicyLeaveStore {
   setSelectedYear: (year: string) => void;
   setRequestPage: (page: number) => void;
   setRequestSortKey: (sortKey: SortKeyTypes) => void;
-  setRequestFilters: (filters: {
-    status: PolicyLeaveRequestStatus[];
-    policyId: number[];
-  }) => void;
+  setRequestFilters: (filters: PolicyLeaveRequestFilters) => void;
   resetRequestFilters: () => void;
   openApplyModalForPolicy: (policyBalance: EmployeePolicyBalanceType) => void;
   setSelectedDates: (dates: DateTime[]) => void;

@@ -1,7 +1,6 @@
-import { Theme, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
@@ -10,6 +9,7 @@ import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
+import { HTTP_UNAUTHORIZED } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -72,10 +72,9 @@ import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFuncti
 
 const SESSION_EXPIRED_REDIRECT_DELAY_MS = 2000;
 
-const HTTP_UNAUTHORIZED = 401;
+const MAX_COMMENT_LENGTH = 255;
 
 const ApplyPolicyLeaveModal = () => {
-  const theme: Theme = useTheme();
   const router = useRouter();
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
@@ -406,6 +405,33 @@ const ApplyPolicyLeaveModal = () => {
     }
   };
 
+  const handleCommentChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setComment(event.target.value);
+  };
+
+  const handleAttachmentIconClick = () => {
+    const isStorageFull =
+      process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
+      usedStoragePercentage >= NINETY_PERCENT;
+
+    if (isStorageFull) {
+      setToastMessage({
+        open: true,
+        toastType: "error",
+        title: translateStorageText(["storageTitle"]),
+        description: translateStorageText(["contactAdminText"]),
+        isIcon: true
+      });
+      return;
+    }
+
+    setModalType(PolicyLeaveModalEnums.ADD_ATTACHMENT);
+  };
+
+  const handleDeleteAttachment = (attachment: FileUploadType) => {
+    setAttachments(attachments.filter((item) => item !== attachment));
+  };
+
   if (!selectedPolicyBalance) {
     return null;
   }
@@ -419,6 +445,14 @@ const ApplyPolicyLeaveModal = () => {
     isCalendarSelectionInvalid ||
     !!availabilityError;
 
+  const handleCancel = () => {
+    setModalType(
+      hasUnsavedChanges
+        ? PolicyLeaveModalEnums.DISCARD_CHANGES
+        : PolicyLeaveModalEnums.NONE
+    );
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 md:gap-7">
@@ -429,12 +463,9 @@ const ApplyPolicyLeaveModal = () => {
             role="group"
             aria-invalid={hasDateError}
             aria-label={translateAria(["calendar", "selectDateForLeave"])}
-            style={
+            className={
               hasDateError
-                ? {
-                    border: `0.0625rem solid ${theme.palette.error.main}`,
-                    borderRadius: "0.5rem"
-                  }
+                ? "rounded-lg border border-semantic-red-accent"
                 : undefined
             }
           >
@@ -455,7 +486,7 @@ const ApplyPolicyLeaveModal = () => {
             <p>
               {translateText(["myPolicyBalance"], {
                 policyName: selectedPolicyBalance.policyName
-              }) ?? ""}
+              })}
             </p>
             <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
           </div>
@@ -471,7 +502,7 @@ const ApplyPolicyLeaveModal = () => {
           )}
           <DurationSelector
             label={translateText(["selectDuration"])}
-            onChange={(value) => setSelectedDuration(value)}
+            onChange={setSelectedDuration}
             options={{
               fullDay: LeaveStates.FULL_DAY,
               halfDayMorning: LeaveStates.MORNING,
@@ -488,27 +519,16 @@ const ApplyPolicyLeaveModal = () => {
             isAttachmentRequired={
               selectedPolicyBalance.leaveType.isAttachmentMust
             }
-            maxLength={255}
+            maxLength={MAX_COMMENT_LENGTH}
             name="comment"
             value={comment}
-            onChange={(event) => setComment(event.target.value)}
+            onChange={handleCommentChange}
             iconName={
               selectedPolicyBalance.leaveType.isAttachment
                 ? IconName.ATTACHMENT_ICON
                 : undefined
             }
-            onIconClick={() => {
-              process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
-              usedStoragePercentage >= NINETY_PERCENT
-                ? setToastMessage({
-                    open: true,
-                    toastType: "error",
-                    title: translateStorageText(["storageTitle"]),
-                    description: translateStorageText(["contactAdminText"]),
-                    isIcon: true
-                  })
-                : setModalType(PolicyLeaveModalEnums.ADD_ATTACHMENT);
-            }}
+            onIconClick={handleAttachmentIconClick}
             error={{
               comment: formErrors?.comment,
               attachment: formErrors?.attachment
@@ -516,9 +536,7 @@ const ApplyPolicyLeaveModal = () => {
           />
           <AttachmentSummary
             attachments={attachments}
-            onDeleteBtnClick={(attachment) =>
-              setAttachments(attachments.filter((a) => a !== attachment))
-            }
+            onDeleteBtnClick={handleDeleteAttachment}
           />
           {!isSubmitDisabled && (
             <LeaveSummary
@@ -536,13 +554,7 @@ const ApplyPolicyLeaveModal = () => {
       <div className="flex flex-row gap-3 mt-4 justify-end">
         <ButtonV2
           variant={"tertiary"}
-          onClick={() =>
-            setModalType(
-              hasUnsavedChanges
-                ? PolicyLeaveModalEnums.DISCARD_CHANGES
-                : PolicyLeaveModalEnums.NONE
-            )
-          }
+          onClick={handleCancel}
           icon={<Icon name={IconName.CLOSE_ICON} />}
           iconPosition="end"
         >

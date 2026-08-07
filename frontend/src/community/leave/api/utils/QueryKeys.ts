@@ -296,17 +296,9 @@ export const policyLeaveTypeQueryKeys = {
 };
 
 export const policyLeaveQueryKeys = {
-  ALL: ["policy-leave"],
-  MY_POLICY_BALANCES: (year: string) => ["my-policy-balances", year],
-  MY_POLICY_LEAVE_REQUESTS: (year: string) => [
-    "my-policy-leave-requests",
-    year
-  ],
-  MY_POLICY_LEAVE_REQUESTS_SEARCH: (year: string, params: unknown) => [
-    "my-policy-leave-requests-search",
-    year,
-    params
-  ]
+  MY_POLICY_BALANCES: "my-policy-balances",
+  MY_POLICY_LEAVE_REQUESTS: "my-policy-leave-requests",
+  MY_POLICY_LEAVE_REQUESTS_SEARCH: "my-policy-leave-requests-search"
 };
 
 export const leavePolicyQueryKeys = {

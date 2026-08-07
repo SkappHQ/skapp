@@ -1,5 +1,3 @@
-import { Box, Link, Stack, Typography } from "@mui/material";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 interface Props {
@@ -16,27 +14,19 @@ const LeavePolicyAllocationErrorState = ({ onRetry, isRetrying }: Props) => {
   );
 
   return (
-    <Box sx={{ width: "100%" }} role="alert">
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-        gap="0.5rem"
-        sx={{ padding: "1.5rem", borderRadius: "0.75rem" }}
-      >
-        <Typography variant="body2">{translateText(["message"])}</Typography>
-        <Link
-          component="button"
+    <div className="w-full" role="alert">
+      <div className="flex flex-row items-center justify-center gap-2 rounded-xl p-6">
+        <p className="body2">{translateText(["message"])}</p>
+        <button
           type="button"
-          variant="body2"
-          underline="always"
           disabled={isRetrying}
           onClick={onRetry}
+          className="body2 text-primary-text underline disabled:opacity-50"
         >
           {translateText(["retry"])}
-        </Link>
-      </Stack>
-    </Box>
+        </button>
+      </div>
+    </div>
   );
 };
 

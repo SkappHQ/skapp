@@ -17,11 +17,10 @@ import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestType } from "~community/leave/types/PolicyLeaveTypes";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 
-import styles from "./styles";
+const CHIP_CLASSES =
+  "inline-flex w-fit items-center gap-2 rounded-[9.375rem] bg-tertiary-background px-4 py-2";
 
 const PolicyLeaveRequests: FC = () => {
-  const classes = styles();
-
   const selectedYear = usePolicyLeaveStore((state) => state.selectedYear);
   const requestParams = usePolicyLeaveStore((state) => state.requestParams);
   const setRequestPage = usePolicyLeaveStore((state) => state.setRequestPage);
@@ -71,16 +70,16 @@ const PolicyLeaveRequests: FC = () => {
           />
         ),
         type: (
-          <div style={classes.iconStyles}>
+          <div className={CHIP_CLASSES}>
             <span role="img" aria-hidden="true">
-              {getEmoji(leaveRequest.leaveType?.emojiCode || "")}
+              {getEmoji(leaveRequest.leaveType.emojiCode)}
             </span>
-            {leaveRequest.leaveType?.name}
+            {leaveRequest.leaveType.name}
           </div>
         ),
         policy: leaveRequest.policyName,
         status: (
-          <div style={{ ...classes.iconStyles, textTransform: "capitalize" }}>
+          <div className={`${CHIP_CLASSES} capitalize`}>
             <span role="img" aria-hidden="true">
               {leaveStatusIconSelector(leaveRequest.status)}
             </span>
@@ -112,8 +111,8 @@ const PolicyLeaveRequests: FC = () => {
     });
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
-    <PolicyLeaveRequestFilterBody onClose={close} />
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <PolicyLeaveRequestFilterBody onClose={onClose} />
   );
 
   return (

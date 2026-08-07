@@ -1,13 +1,14 @@
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { forwardRef, useState } from "react";
+import { KeyboardEvent, MouseEvent, forwardRef, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { getEmoji, mergeSx } from "~community/common/utils/commonUtil";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
+import { LOW_BALANCE_WARNING_DAYS } from "~community/leave/constants/stringConstants";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { EmployeePolicyBalanceType } from "~community/leave/types/PolicyLeaveTypes";
 import { getDisabledReasonToastKeys } from "~community/leave/utils/policyLeave/policyLeaveUtils";
@@ -64,6 +65,24 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
       });
     };
 
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+      if (shouldActivateButton(event.key)) {
+        event.preventDefault();
+        handleClick();
+      }
+    };
+
+    const handleApplyBtnClick = (
+      event: MouseEvent<HTMLButtonElement>
+    ): void => {
+      event.stopPropagation();
+      handleClick();
+    };
+
+    const handleMouseEnter = (): void => setMouseOn(true);
+
+    const handleMouseLeave = (): void => setMouseOn(false);
+
     const balanceLabel = !isBalanceAvailable
       ? "—"
       : isUnlimited
@@ -81,15 +100,10 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
             ? classes.activeCard
             : mergeSx([classes.activeCard, classes.disabledCard])
         }
-        onMouseEnter={() => setMouseOn(true)}
-        onMouseLeave={() => setMouseOn(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        onKeyDown={(event) => {
-          if (shouldActivateButton(event.key)) {
-            event.preventDefault();
-            handleClick();
-          }
-        }}
+        onKeyDown={handleKeyDown}
         aria-label={translateText(["cardAriaLabel"], {
           policyName,
           leaveType: leaveType.name,
@@ -129,10 +143,7 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
           )}
           {isMouseOn && isActionable && (
             <ButtonV2
-              onClick={(event) => {
-                event.stopPropagation();
-                handleClick();
-              }}
+              onClick={handleApplyBtnClick}
               variant={"primary"}
               size={"md"}
               icon={<ArrowRightIcon />}
@@ -148,14 +159,18 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
     if (!isBalanceAvailable) {
       return (
         <Tooltip title={translateText(["balanceUnavailableTooltip"])} arrow>
-          <Box component="span" sx={{ display: "block", width: "100%" }}>
+          <Box component="span" className="block w-full">
             {card}
           </Box>
         </Tooltip>
       );
     }
 
-    if (isActionable && !isUnlimited && balanceInDays <= 5) {
+    if (
+      isActionable &&
+      !isUnlimited &&
+      balanceInDays <= LOW_BALANCE_WARNING_DAYS
+    ) {
       return (
         <Tooltip
           title={translateText(["daysRemainingTooltip"], {
@@ -163,7 +178,7 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
           })}
           arrow
         >
-          <Box component="span" sx={{ display: "block", width: "100%" }}>
+          <Box component="span" className="block w-full">
             {card}
           </Box>
         </Tooltip>

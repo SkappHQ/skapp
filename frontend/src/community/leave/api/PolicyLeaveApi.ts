@@ -25,7 +25,7 @@ export const useGetMyPolicyBalances = (
   enabled = true
 ): UseQueryResult<EmployeePolicyBalanceType[]> => {
   return useQuery({
-    queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year),
+    queryKey: [policyLeaveQueryKeys.MY_POLICY_BALANCES, year],
     queryFn: async () => {
       const response = await authFetch.get(
         policyLeaveEndPoints.GET_MY_POLICY_BALANCES(year)
@@ -42,7 +42,7 @@ export const useGetMyPolicyLeaveRequests = (
   enabled = true
 ): UseQueryResult<PolicyLeaveRequestType[]> => {
   return useQuery({
-    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year),
+    queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS, year],
     queryFn: async () => {
       const response = await authFetch.get(
         policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS(year)
@@ -60,10 +60,11 @@ export const useSearchMyPolicyLeaveRequests = (
   enabled = true
 ): UseQueryResult<PolicyLeaveRequestPageType> => {
   return useQuery({
-    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(
+    queryKey: [
+      policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH,
       year,
       params
-    ),
+    ],
     queryFn: async () => {
       const response = await authFetch.get(
         policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
@@ -116,13 +117,13 @@ export const useApplyPolicyLeave = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year)
+        queryKey: [policyLeaveQueryKeys.MY_POLICY_BALANCES, year]
       });
       queryClient.invalidateQueries({
-        queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
+        queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS, year]
       });
       queryClient.invalidateQueries({
-        queryKey: ["my-policy-leave-requests-search", year]
+        queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH, year]
       });
       onSuccess(data);
     },

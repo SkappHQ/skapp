@@ -1,5 +1,11 @@
 export const ALLOCATION_PER_PAGE = 6;
 
+export const ALLOCATION_PER_PAGE_MOBILE = 4;
+
+export const LOW_BALANCE_WARNING_DAYS = 5;
+
+export const POLICY_LEAVE_REQUESTS_PER_PAGE = 10;
+
 export const MAX_ALLOWED_UPLOADS = 5;
 
 export const MAX_CUSTOM_LEAVE_ALLOCATION_DAYS_ALLOWED = 360;

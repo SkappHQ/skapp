@@ -18,6 +18,40 @@ import {
 
 type TranslateFn = (key: string[], data?: Record<string, unknown>) => string;
 
+interface DisabledReasonToastKeys {
+  titleKey: string;
+  descriptionKey: string;
+}
+
+interface AvailabilityErrorMessageProps {
+  failureReason: PolicyLeaveValidationFailure | null;
+  remainingBalance: number;
+  policyName: string;
+  translateText: TranslateFn;
+}
+
+interface HandlePolicyLeaveToastProps {
+  type: PolicyLeaveToastEnums;
+  setToastMessage: (value: SetStateAction<ToastProps>) => void;
+  translateText: TranslateFn;
+}
+
+interface PolicyLeaveToastConfig {
+  toastType: ToastType;
+  titleKey: string;
+  descriptionKey: string;
+  autoHideDuration?: number;
+}
+
+interface PolicyLeaveFormErrorsProps {
+  selectedDatesLength: number;
+  comment: string;
+  attachments: FileUploadType[];
+  policyBalance: EmployeePolicyBalanceType | null;
+  availabilityError: string;
+  translateText: TranslateFn;
+}
+
 const SUCCESS_TOAST_DURATION_MS = 4000;
 
 const ERROR_TOAST_NO_AUTO_DISMISS_MS = 24 * 60 * 60 * 1000;
@@ -32,7 +66,7 @@ export const policyLeaveStatusFilters: PolicyLeaveRequestStatus[] = [
 
 export const getDisabledReasonToastKeys = (
   reason: PolicyBalanceDisabledReason | null
-): { titleKey: string; descriptionKey: string } => {
+): DisabledReasonToastKeys => {
   switch (reason) {
     case PolicyBalanceDisabledReason.ALLOCATION_PERIOD_EXPIRED:
       return {
@@ -63,12 +97,7 @@ export const getAvailabilityErrorMessage = ({
   remainingBalance,
   policyName,
   translateText
-}: {
-  failureReason: PolicyLeaveValidationFailure | null;
-  remainingBalance: number;
-  policyName: string;
-  translateText: TranslateFn;
-}): string => {
+}: AvailabilityErrorMessageProps): string => {
   switch (failureReason) {
     case PolicyLeaveValidationFailure.INSUFFICIENT_BALANCE:
       return translateText(["errors.insufficientBalance"], {
@@ -107,26 +136,12 @@ export const mapApplyErrorKeyToToastType = (
   }
 };
 
-interface HandlePolicyLeaveToastProps {
-  type: PolicyLeaveToastEnums;
-  setToastMessage: (value: SetStateAction<ToastProps>) => void;
-  translateText: TranslateFn;
-}
-
 export const handlePolicyLeaveToast = ({
   type,
   setToastMessage,
   translateText
 }: HandlePolicyLeaveToastProps): void => {
-  const toastConfig: Record<
-    PolicyLeaveToastEnums,
-    {
-      toastType: ToastType;
-      titleKey: string;
-      descriptionKey: string;
-      autoHideDuration?: number;
-    }
-  > = {
+  const toastConfig: Record<PolicyLeaveToastEnums, PolicyLeaveToastConfig> = {
     [PolicyLeaveToastEnums.APPLY_SUCCESS]: {
       toastType: ToastType.SUCCESS,
       titleKey: "toastMessages.applySuccess.title",
@@ -192,14 +207,7 @@ export const getPolicyLeaveFormErrors = ({
   policyBalance,
   availabilityError,
   translateText
-}: {
-  selectedDatesLength: number;
-  comment: string;
-  attachments: FileUploadType[];
-  policyBalance: EmployeePolicyBalanceType | null;
-  availabilityError: string;
-  translateText: TranslateFn;
-}): PolicyLeaveFormErrors => {
+}: PolicyLeaveFormErrorsProps): PolicyLeaveFormErrors => {
   const errors: PolicyLeaveFormErrors = { ...initialPolicyLeaveFormErrors };
 
   if (selectedDatesLength === 0) {

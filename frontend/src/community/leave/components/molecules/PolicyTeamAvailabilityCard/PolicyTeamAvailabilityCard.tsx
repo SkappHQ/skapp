@@ -90,6 +90,14 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     setSelectedTeam(teams?.find((team) => team.teamId === teamId) ?? null);
   };
 
+  const renderSelectedTeam = (value: string) =>
+    teamsDropdownOptions.find((option) => option.value === Number(value))
+      ?.label;
+
+  const handleViewDetailsClick = () => {
+    setModalType(PolicyLeaveModalEnums.TEAM_AVAILABILITY);
+  };
+
   return (
     <Stack
       sx={mergeSx([
@@ -111,14 +119,7 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
           onChange={handleTeamSelect}
           value={selectedTeam?.teamId?.toString() ?? ""}
           options={teamsDropdownOptions}
-          renderValue={(value: string) => {
-            const selectedOption = teamsDropdownOptions.find(
-              (option) => option.value === Number(value)
-            );
-            if (selectedOption) {
-              return selectedOption.label;
-            }
-          }}
+          renderValue={renderSelectedTeam}
           accessibility={{
             label: translateAria(["teamAvailabilityCard", "dropdown"])
           }}
@@ -156,12 +157,7 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
           />
         </Stack>
         {totalLeaveCount !== 0 ? (
-          <Stack
-            sx={classes.rightContent}
-            onClick={() =>
-              setModalType(PolicyLeaveModalEnums.TEAM_AVAILABILITY)
-            }
-          >
+          <Stack sx={classes.rightContent} onClick={handleViewDetailsClick}>
             <Typography variant="caption">
               {translateText(["viewDetails"])}
             </Typography>
