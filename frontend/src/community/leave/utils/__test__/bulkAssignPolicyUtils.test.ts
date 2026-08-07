@@ -1,20 +1,18 @@
 import { ParseResult } from "papaparse";
 
 import { MAX_BULK_ASSIGN_ROWS } from "~community/leave/constants/leavePolicyConstants";
+import {
+  BulkAssignCsvError,
+  BulkAssignCsvHeaders
+} from "~community/leave/types/LeavePolicyTypes";
 
 import { toCsvRow, validateBulkAssignCsv } from "../bulkAssignPolicyUtils";
 
-const translations: Record<string, string> = {
-  employeeNameHeader: "Employee Name",
-  policyNameHeader: "Policy Name",
-  effectiveDateHeader: "Effective Date",
-  missingColumnsError: "missingColumnsError",
-  malformedRowsError: "malformedRowsError",
-  emptyFileError: "emptyFileError",
-  tooManyRowsError: "tooManyRowsError"
+const headers: BulkAssignCsvHeaders = {
+  employeeName: "Employee Name",
+  policyName: "Policy Name",
+  effectiveDate: "Effective Date"
 };
-
-const translateText = (suffixes: string[]): string => translations[suffixes[0]];
 
 const buildParseResult = (
   data: Record<string, string>[],
@@ -36,9 +34,10 @@ const validRow = {
 describe("validateBulkAssignCsv", () => {
   it("maps CSV rows to a trimmed assignment payload", () => {
     expect(
-      validateBulkAssignCsv(buildParseResult([validRow]), translateText)
+      validateBulkAssignCsv(buildParseResult([validRow]), headers)
     ).toEqual({
-      error: "",
+      error: null,
+      missingColumns: [],
       payload: {
         assignments: [
           {
@@ -63,10 +62,10 @@ describe("validateBulkAssignCsv", () => {
         ],
         [" employee  name ", "POLICY NAME", "effective date"]
       ),
-      translateText
+      headers
     );
 
-    expect(validation.error).toBe("");
+    expect(validation.error).toBeNull();
     expect(validation.payload).toEqual({
       assignments: [
         {
@@ -80,7 +79,7 @@ describe("validateBulkAssignCsv", () => {
 
   it("defaults missing cells to empty strings", () => {
     expect(
-      validateBulkAssignCsv(buildParseResult([{}]), translateText).payload
+      validateBulkAssignCsv(buildParseResult([{}]), headers).payload
     ).toEqual({
       assignments: [{ employeeName: "", policyName: "", effectiveDate: "" }]
     });
@@ -89,10 +88,14 @@ describe("validateBulkAssignCsv", () => {
   it("rejects a file that is missing required columns", () => {
     const validation = validateBulkAssignCsv(
       buildParseResult([validRow], ["Employee Name"]),
-      translateText
+      headers
     );
 
-    expect(validation).toEqual({ error: "missingColumnsError", payload: null });
+    expect(validation).toEqual({
+      error: BulkAssignCsvError.MISSING_COLUMNS,
+      missingColumns: ["Policy Name", "Effective Date"],
+      payload: null
+    });
   });
 
   it("rejects a file with rows that could not be parsed", () => {
@@ -100,17 +103,18 @@ describe("validateBulkAssignCsv", () => {
       buildParseResult([validRow], undefined, [
         { type: "Quotes", code: "InvalidQuotes", message: "", row: 0 }
       ]),
-      translateText
+      headers
     );
 
-    expect(validation).toEqual({ error: "malformedRowsError", payload: null });
+    expect(validation.error).toBe(BulkAssignCsvError.MALFORMED_ROWS);
+    expect(validation.payload).toBeNull();
   });
 
   it("rejects a file with no data rows", () => {
-    expect(validateBulkAssignCsv(buildParseResult([]), translateText)).toEqual({
-      error: "emptyFileError",
-      payload: null
-    });
+    const validation = validateBulkAssignCsv(buildParseResult([]), headers);
+
+    expect(validation.error).toBe(BulkAssignCsvError.EMPTY_FILE);
+    expect(validation.payload).toBeNull();
   });
 
   it("rejects a file with more rows than the allowed maximum", () => {
@@ -118,18 +122,19 @@ describe("validateBulkAssignCsv", () => {
       ...validRow
     }));
 
-    expect(
-      validateBulkAssignCsv(buildParseResult(rows), translateText)
-    ).toEqual({ error: "tooManyRowsError", payload: null });
+    const validation = validateBulkAssignCsv(buildParseResult(rows), headers);
+
+    expect(validation.error).toBe(BulkAssignCsvError.TOO_MANY_ROWS);
+    expect(validation.payload).toBeNull();
   });
 
   it("reports missing columns before any other problem", () => {
     const validation = validateBulkAssignCsv(
       buildParseResult([], ["Employee Name"]),
-      translateText
+      headers
     );
 
-    expect(validation.error).toBe("missingColumnsError");
+    expect(validation.error).toBe(BulkAssignCsvError.MISSING_COLUMNS);
   });
 });
 

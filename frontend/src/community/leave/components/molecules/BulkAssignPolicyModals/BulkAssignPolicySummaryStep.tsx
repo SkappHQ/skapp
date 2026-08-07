@@ -4,6 +4,7 @@ import { FC } from "react";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import useBulkAssignCsvHeaders from "~community/leave/hooks/useBulkAssignCsvHeaders";
 import { BulkAssignPolicyResponse } from "~community/leave/types/LeavePolicyTypes";
 import { downloadBulkAssignErrorReport } from "~community/leave/utils/bulkAssignPolicyUtils";
 
@@ -21,6 +22,8 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({
     "leavePolicies",
     "bulkAssignModal"
   );
+
+  const csvHeaders = useBulkAssignCsvHeaders();
 
   const { successCount, failedCount } = assignmentResult.bulkStatusSummary;
 
@@ -46,7 +49,11 @@ const BulkAssignPolicySummaryStep: FC<Props> = ({
           <ButtonV2
             variant="tertiary"
             onClick={() =>
-              downloadBulkAssignErrorReport(assignmentResult, translateText)
+              downloadBulkAssignErrorReport(
+                assignmentResult,
+                csvHeaders,
+                translateText(["errorHeader"])
+              )
             }
             icon={<Icon name={IconName.DOWNLOAD_ICON} />}
             iconPosition="end"

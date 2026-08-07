@@ -22,8 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -60,18 +60,13 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 	}
 
 	@Override
-	public List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Collection<String> names, LeavePolicyStatus status) {
-		if (names == null || names.isEmpty()) {
-			return List.of();
-		}
-
+	public List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Set<String> names, LeavePolicyStatus status) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeavePolicy> query = cb.createQuery(LeavePolicy.class);
 		Root<LeavePolicy> root = query.from(LeavePolicy.class);
 		root.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
 
-		List<String> normalizedNames = names.stream().map(StringUtils::normalizeName).toList();
-		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(normalizedNames);
+		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(names);
 		Predicate statusPredicate = cb.equal(root.get(LeavePolicy_.status), status);
 
 		query.select(root).where(cb.and(namePredicate, statusPredicate)).distinct(true);

@@ -6,7 +6,6 @@ import lombok.experimental.UtilityClass;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,19 +29,15 @@ public class StringUtils {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}
 
-	public static String trimToEmpty(String value) {
-		return value == null ? "" : value.trim();
-	}
-
 	public static String normalizeName(String value) {
-		String trimmed = trimToEmpty(value);
+		String trimmed = org.apache.commons.lang3.StringUtils.trimToEmpty(value);
 		if (trimmed.isEmpty()) {
 			return trimmed;
 		}
 
-		String collapsed = ValidationConstant.WHITESPACE_RUN_PATTERN.matcher(trimmed).replaceAll(" ");
+		String collapsed = ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(trimmed).replaceAll(" ");
 		String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
-		return ValidationConstant.COMBINING_MARK_PATTERN.matcher(decomposed).replaceAll("").toLowerCase(Locale.ROOT);
+		return ValidationConstant.DIACRITIC_MARK_PATTERN.matcher(decomposed).replaceAll("").toLowerCase();
 	}
 
 	public static String convertToCommaSeperatedString(Set<String> values) {

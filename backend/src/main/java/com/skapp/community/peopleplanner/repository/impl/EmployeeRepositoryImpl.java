@@ -6,7 +6,6 @@ import com.skapp.community.common.model.User_;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequest_;
 import com.skapp.community.leaveplanner.payload.AdminOnLeaveDto;
@@ -66,7 +65,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -1240,11 +1238,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findActiveEmployeesByExactNames(Collection<String> names) {
-		if (names == null || names.isEmpty()) {
-			return List.of();
-		}
-
+	public List<Employee> findActiveEmployeesByExactNames(Set<String> names) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
@@ -1258,12 +1252,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
-		List<String> normalizedNames = names.stream().map(StringUtils::normalizeName).toList();
 		predicates.add(
 				criteriaBuilder
 					.lower(criteriaBuilder.concat(criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "),
 							root.get(Employee_.LAST_NAME)))
-					.in(normalizedNames));
+					.in(names));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);

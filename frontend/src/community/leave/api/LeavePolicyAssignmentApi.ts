@@ -101,7 +101,10 @@ const bulkAssignLeavePolicies = async (
   return response.data.results[0];
 };
 
-export const useBulkAssignLeavePolicies = (): UseMutationResult<
+export const useBulkAssignLeavePolicies = (
+  onSuccess: (assignmentResult: BulkAssignPolicyResponse) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
   BulkAssignPolicyResponse,
   AxiosError,
   BulkAssignPolicyPayload
@@ -110,7 +113,7 @@ export const useBulkAssignLeavePolicies = (): UseMutationResult<
 
   return useMutation({
     mutationFn: bulkAssignLeavePolicies,
-    onSuccess: () => {
+    onSuccess: (assignmentResult) => {
       queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
@@ -118,7 +121,9 @@ export const useBulkAssignLeavePolicies = (): UseMutationResult<
       queryClient.invalidateQueries({
         queryKey: leaveEntitlementQueryKeys.LEAVE_ENTITLEMENTS()
       });
-    }
+      onSuccess(assignmentResult);
+    },
+    onError
   });
 };
 

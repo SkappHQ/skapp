@@ -9,9 +9,9 @@ public class ValidationConstant {
 
 	public static final Pattern LIKE_WILDCARD_PATTERN = Pattern.compile("([\\\\%_])");
 
-	public static final Pattern WHITESPACE_RUN_PATTERN = Pattern.compile("[\\s\\u00A0]+");
+	public static final Pattern MULTIPLE_WHITESPACE_PATTERN = Pattern.compile("[\\s\\u00A0]+");
 
-	public static final Pattern COMBINING_MARK_PATTERN = Pattern.compile("\\p{M}+");
+	public static final Pattern DIACRITIC_MARK_PATTERN = Pattern.compile("\\p{M}+");
 
 	/**
 	 * This pattern validates the hexadecimal color code should consist of letters A-F and

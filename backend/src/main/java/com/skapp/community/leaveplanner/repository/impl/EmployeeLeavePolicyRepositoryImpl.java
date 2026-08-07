@@ -17,7 +17,6 @@ import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -27,12 +26,8 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 	private final EntityManager entityManager;
 
 	@Override
-	public List<EmployeeLeavePolicy> findByEmployeeIdsAndStatus(Collection<Long> employeeIds,
+	public List<EmployeeLeavePolicy> findByEmployeeIdsAndStatus(List<Long> employeeIds,
 			EmployeeLeavePolicyStatus status) {
-		if (employeeIds.isEmpty()) {
-			return List.of();
-		}
-
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<EmployeeLeavePolicy> query = cb.createQuery(EmployeeLeavePolicy.class);
 		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);

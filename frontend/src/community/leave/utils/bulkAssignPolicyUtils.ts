@@ -1,37 +1,41 @@
 import { ParseResult } from "papaparse";
 
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
-import { MAX_BULK_ASSIGN_ROWS } from "~community/leave/constants/leavePolicyConstants";
 import {
+  CSV_DELIMITER,
+  MAX_BULK_ASSIGN_ROWS
+} from "~community/leave/constants/leavePolicyConstants";
+import {
+  BulkAssignCsvError,
+  BulkAssignCsvHeaders,
   BulkAssignCsvValidation,
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse,
   BulkAssignPolicyRow
 } from "~community/leave/types/LeavePolicyTypes";
 
-const getBulkAssignTemplateHeaders = (
-  translateText: TranslatorFunctionType
-): Record<keyof BulkAssignPolicyRow, string> => ({
-  employeeName: translateText(["employeeNameHeader"]),
-  policyName: translateText(["policyNameHeader"]),
-  effectiveDate: translateText(["effectiveDateHeader"])
-});
-
 // Spreadsheets evaluate a leading =, +, - or @ as a formula even inside a quoted
 // field, so any value starting with one is prefixed with a single quote.
-const FORMULA_TRIGGER_PATTERN = /^[=+\-@\t\r]/;
+const FORMULA_TRIGGER_REGEX = /^[=+\-@\t\r]/;
+
+const MULTIPLE_WHITESPACE_REGEX = /\s+/g;
 
 export const toCsvRow = (values: string[]): string =>
   values
-    .map((value) => {
-      const escaped = FORMULA_TRIGGER_PATTERN.test(value) ? `'${value}` : value;
-      return `"${escaped.replaceAll('"', '""')}"`;
-    })
-    .join(",");
+    .map(
+      (value) =>
+        `"${value.replace(FORMULA_TRIGGER_REGEX, "'$&").replaceAll('"', '""')}"`
+    )
+    .join(CSV_DELIMITER);
+
+const toCsvValues = (row: BulkAssignCsvHeaders): string[] => [
+  row.employeeName,
+  row.policyName,
+  row.effectiveDate
+];
 
 const normalizeHeader = (header: string): string =>
-  header.trim().toLowerCase().replaceAll(/\s+/g, " ");
+  header.trim().toLowerCase().replaceAll(MULTIPLE_WHITESPACE_REGEX, " ");
 
 const getCell = (
   row: Record<string, string | undefined>,
@@ -45,83 +49,80 @@ const getCell = (
 
 const getMissingBulkAssignHeaders = (
   fields: string[],
-  translateText: TranslatorFunctionType
+  headers: BulkAssignCsvHeaders
 ): string[] => {
   const present = new Set(fields.map(normalizeHeader));
-  return Object.values(getBulkAssignTemplateHeaders(translateText)).filter(
+  return toCsvValues(headers).filter(
     (header) => !present.has(normalizeHeader(header))
   );
 };
 
 const buildBulkAssignPayload = (
   rows: Record<string, string | undefined>[],
-  translateText: TranslatorFunctionType
-): BulkAssignPolicyPayload => {
-  const headers = getBulkAssignTemplateHeaders(translateText);
-
-  return {
-    assignments: rows.map((row) => ({
-      employeeName: getCell(row, headers.employeeName),
-      policyName: getCell(row, headers.policyName),
-      effectiveDate: getCell(row, headers.effectiveDate)
-    }))
-  };
-};
+  headers: BulkAssignCsvHeaders
+): BulkAssignPolicyPayload => ({
+  assignments: rows.map((row) => ({
+    employeeName: getCell(row, headers.employeeName),
+    policyName: getCell(row, headers.policyName),
+    effectiveDate: getCell(row, headers.effectiveDate)
+  }))
+});
 
 export const validateBulkAssignCsv = (
   parseResult: ParseResult<Record<string, string>>,
-  translateText: TranslatorFunctionType
+  headers: BulkAssignCsvHeaders
 ): BulkAssignCsvValidation => {
-  const missingHeaders = getMissingBulkAssignHeaders(
+  const missingColumns = getMissingBulkAssignHeaders(
     parseResult.meta.fields ?? [],
-    translateText
+    headers
   );
-  if (missingHeaders.length > 0) {
+  if (missingColumns.length > 0) {
     return {
-      error: translateText(["missingColumnsError"], {
-        columns: missingHeaders.join(", ")
-      }),
+      error: BulkAssignCsvError.MISSING_COLUMNS,
+      missingColumns,
       payload: null
     };
   }
 
   if (parseResult.errors.length > 0) {
-    return { error: translateText(["malformedRowsError"]), payload: null };
+    return {
+      error: BulkAssignCsvError.MALFORMED_ROWS,
+      missingColumns: [],
+      payload: null
+    };
   }
 
   if (parseResult.data.length === 0) {
-    return { error: translateText(["emptyFileError"]), payload: null };
+    return {
+      error: BulkAssignCsvError.EMPTY_FILE,
+      missingColumns: [],
+      payload: null
+    };
   }
 
   if (parseResult.data.length > MAX_BULK_ASSIGN_ROWS) {
     return {
-      error: translateText(["tooManyRowsError"], {
-        maxRows: MAX_BULK_ASSIGN_ROWS.toString()
-      }),
+      error: BulkAssignCsvError.TOO_MANY_ROWS,
+      missingColumns: [],
       payload: null
     };
   }
 
   return {
-    error: "",
-    payload: buildBulkAssignPayload(parseResult.data, translateText)
+    error: null,
+    missingColumns: [],
+    payload: buildBulkAssignPayload(parseResult.data, headers)
   };
 };
 
 export const downloadBulkAssignPolicyTemplate = (
-  translateText: TranslatorFunctionType
+  headers: BulkAssignCsvHeaders,
+  exampleRow: BulkAssignPolicyRow
 ): void => {
-  const headers = Object.values(getBulkAssignTemplateHeaders(translateText));
-  const exampleRow = [
-    translateText(["templateExampleEmployeeName"]),
-    translateText(["templateExamplePolicyName"]),
-    translateText(["templateExampleEffectiveDate"])
-  ];
-
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(headers.join(",") + "\n");
-      controller.enqueue(toCsvRow(exampleRow) + "\n");
+      controller.enqueue(toCsvRow(toCsvValues(headers)) + "\n");
+      controller.enqueue(toCsvRow(toCsvValues(exampleRow)) + "\n");
       controller.close();
     }
   });
@@ -130,24 +131,17 @@ export const downloadBulkAssignPolicyTemplate = (
 
 export const downloadBulkAssignErrorReport = (
   assignmentResult: BulkAssignPolicyResponse,
-  translateText: TranslatorFunctionType
+  headers: BulkAssignCsvHeaders,
+  errorHeader: string
 ): void => {
-  const headers = [
-    ...Object.values(getBulkAssignTemplateHeaders(translateText)),
-    translateText(["errorHeader"])
-  ];
-
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(headers.join(",") + "\n");
+      controller.enqueue(
+        toCsvRow([...toCsvValues(headers), errorHeader]) + "\n"
+      );
       for (const errorLog of assignmentResult.bulkRecordErrorLogs) {
         controller.enqueue(
-          toCsvRow([
-            errorLog.employeeName,
-            errorLog.policyName,
-            errorLog.effectiveDate,
-            errorLog.error
-          ]) + "\n"
+          toCsvRow([...toCsvValues(errorLog), errorLog.error]) + "\n"
         );
       }
       controller.close();

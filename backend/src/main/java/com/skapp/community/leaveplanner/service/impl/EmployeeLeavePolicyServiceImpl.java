@@ -5,9 +5,11 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.BulkStatusSummaryDto;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
+import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
@@ -40,7 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +52,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyService {
-
-	private static final int MAX_BULK_ASSIGN_ROWS = 1000;
 
 	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
 
@@ -86,13 +85,12 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		}
 
 		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
-		List<EmployeeLeavePolicy> currentActiveAssignments = employeeLeavePolicyDao
+		EmployeeLeavePolicy currentActiveAssignment = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(),
 					policy.getLeaveType().getId(), EmployeeLeavePolicyStatus.ACTIVE)
-			.map(List::of)
-			.orElseGet(List::of);
-		EmployeeLeavePolicy employeeLeavePolicy = assignSingle(employee, policy, effectiveFrom,
-				assignLeavePolicyRequestDto.getEffectiveDateType(), currentActiveAssignments);
+			.orElse(null);
+		EmployeeLeavePolicy employeeLeavePolicy = assignPolicyToEmployee(employee, policy, effectiveFrom,
+				assignLeavePolicyRequestDto.getEffectiveDateType(), currentActiveAssignment);
 
 		log.info("assignLeavePolicy: execution ended");
 		return new ResponseEntityDto(false,
@@ -103,19 +101,23 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto bulkAssignLeavePolicies(BulkAssignLeavePolicyRequestDto bulkAssignLeavePolicyRequestDto) {
 		log.info("bulkAssignLeavePolicies: execution started");
 
-		List<BulkAssignPolicyRowDto> rows = bulkAssignLeavePolicyRequestDto.getAssignments() != null
-				? bulkAssignLeavePolicyRequestDto.getAssignments() : Collections.emptyList();
-		if (rows.size() > MAX_BULK_ASSIGN_ROWS) {
+		List<BulkAssignPolicyRowDto> assignmentRows = bulkAssignLeavePolicyRequestDto.getAssignments() != null
+				? bulkAssignLeavePolicyRequestDto.getAssignments() : List.of();
+		if (assignmentRows.size() > LeavePolicyConstant.MAX_BULK_ASSIGN_ROWS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_BULK_ROW_LIMIT_EXCEEDED,
-					new String[] { String.valueOf(MAX_BULK_ASSIGN_ROWS) });
+					new String[] { String.valueOf(LeavePolicyConstant.MAX_BULK_ASSIGN_ROWS) });
+		}
+		if (assignmentRows.isEmpty()) {
+			log.info("bulkAssignLeavePolicies: execution ended");
+			return new ResponseEntityDto(false, buildBulkAssignResponse(List.of(), new BulkStatusSummaryDto()));
 		}
 
-		Set<String> employeeNames = new HashSet<>();
-		Set<String> policyNames = new HashSet<>();
-		for (BulkAssignPolicyRowDto row : rows) {
-			employeeNames.add(StringUtils.normalizeName(row.getEmployeeName()));
-			policyNames.add(StringUtils.normalizeName(row.getPolicyName()));
-		}
+		Set<String> employeeNames = assignmentRows.stream()
+			.map(row -> StringUtils.normalizeName(row.getEmployeeName()))
+			.collect(Collectors.toSet());
+		Set<String> policyNames = assignmentRows.stream()
+			.map(row -> StringUtils.normalizeName(row.getPolicyName()))
+			.collect(Collectors.toSet());
 
 		Map<String, List<Employee>> employeesByName = employeeDao.findActiveEmployeesByExactNames(employeeNames)
 			.stream()
@@ -131,23 +133,23 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			.flatMap(List::stream)
 			.map(Employee::getEmployeeId)
 			.toList();
-		Map<String, List<EmployeeLeavePolicy>> activeByEmployeeLeaveType = employeeLeavePolicyDao
-			.findByEmployeeIdsAndStatus(employeeIds, EmployeeLeavePolicyStatus.ACTIVE)
-			.stream()
-			.collect(Collectors.groupingBy(assignment -> assignment.getEmployee().getEmployeeId() + ":"
-					+ assignment.getPolicy().getLeaveType().getId()));
+		List<EmployeeLeavePolicy> currentActiveAssignments = employeeIds.isEmpty() ? List.of()
+				: employeeLeavePolicyDao.findByEmployeeIdsAndStatus(employeeIds, EmployeeLeavePolicyStatus.ACTIVE);
+		Map<EmployeeLeaveTypeKey, EmployeeLeavePolicy> activeAssignments = currentActiveAssignments.stream()
+			.collect(Collectors.toMap(assignment -> new EmployeeLeaveTypeKey(assignment.getEmployee().getEmployeeId(),
+					assignment.getPolicy().getLeaveType().getId()), assignment -> assignment));
 
 		List<BulkAssignErrorLogDto> errorLogs = new ArrayList<>();
 		BulkStatusSummaryDto summary = new BulkStatusSummaryDto();
-		Set<String> processedEmployeeLeaveTypes = new HashSet<>();
+		Set<EmployeeLeaveTypeKey> processedEmployeeLeaveTypes = new HashSet<>();
 		TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
 
-		for (int rowIndex = 0; rowIndex < rows.size(); rowIndex++) {
-			BulkAssignPolicyRowDto row = rows.get(rowIndex);
+		for (int rowIndex = 0; rowIndex < assignmentRows.size(); rowIndex++) {
+			BulkAssignPolicyRowDto row = assignmentRows.get(rowIndex);
 			String error;
 			try {
 				error = transactionTemplate.execute(status -> validateAndAssignRow(row, employeesByName, policiesByName,
-						activeByEmployeeLeaveType, processedEmployeeLeaveTypes));
+						activeAssignments, processedEmployeeLeaveTypes));
 			}
 			catch (Exception exception) {
 				log.error("bulkAssignLeavePolicies: unexpected failure for row {}", rowIndex, exception);
@@ -168,12 +170,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 			}
 		}
 
-		BulkAssignResponseDto response = new BulkAssignResponseDto();
-		response.setBulkRecordErrorLogs(errorLogs);
-		response.setBulkStatusSummary(summary);
-
 		log.info("bulkAssignLeavePolicies: execution ended");
-		return new ResponseEntityDto(false, response);
+		return new ResponseEntityDto(false, buildBulkAssignResponse(errorLogs, summary));
 	}
 
 	@Override
@@ -216,77 +214,77 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 	private String validateAndAssignRow(BulkAssignPolicyRowDto row, Map<String, List<Employee>> employeesByName,
 			Map<String, List<LeavePolicy>> policiesByName,
-			Map<String, List<EmployeeLeavePolicy>> activeByEmployeeLeaveType, Set<String> processedEmployeeLeaveTypes) {
-		String employeeName = StringUtils.trimToEmpty(row.getEmployeeName());
-		String policyName = StringUtils.trimToEmpty(row.getPolicyName());
-		String effectiveDateValue = StringUtils.trimToEmpty(row.getEffectiveDate());
-
-		List<Employee> employees = employeesByName.getOrDefault(StringUtils.normalizeName(employeeName), List.of());
+			Map<EmployeeLeaveTypeKey, EmployeeLeavePolicy> activeAssignments,
+			Set<EmployeeLeaveTypeKey> processedEmployeeLeaveTypes) {
+		List<Employee> employees = employeesByName.getOrDefault(StringUtils.normalizeName(row.getEmployeeName()),
+				List.of());
 		if (employees.isEmpty()) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_EMPLOYEE_NOT_FOUND,
-					new String[] { employeeName });
+					new String[] { row.getEmployeeName() });
 		}
 		if (employees.size() > 1) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_EMPLOYEE_MULTIPLE_FOUND,
-					new String[] { employeeName });
+					new String[] { row.getEmployeeName() });
 		}
-		Employee employee = employees.get(0);
+		Employee employee = employees.getFirst();
 
-		List<LeavePolicy> policies = policiesByName.getOrDefault(StringUtils.normalizeName(policyName), List.of());
+		List<LeavePolicy> policies = policiesByName.getOrDefault(StringUtils.normalizeName(row.getPolicyName()),
+				List.of());
 		if (policies.isEmpty()) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_NOT_FOUND,
-					new String[] { policyName });
+					new String[] { row.getPolicyName() });
 		}
 		if (policies.size() > 1) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_MULTIPLE_FOUND,
-					new String[] { policyName });
+					new String[] { row.getPolicyName() });
 		}
-		LeavePolicy policy = policies.get(0);
+		LeavePolicy policy = policies.getFirst();
 		if (policy.getPolicyType() != PolicyType.ACCRUAL) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_POLICY_NOT_ACCRUAL,
-					new String[] { policyName });
+					new String[] { row.getPolicyName() });
 		}
 
-		EffectiveDateType effectiveDateType = effectiveDateValue.isEmpty() ? EffectiveDateType.HIRE_DATE
-				: EffectiveDateType.SPECIFIC;
-		LocalDate effectiveFrom;
-		if (effectiveDateType == EffectiveDateType.HIRE_DATE) {
-			if (employee.getJoinDate() == null) {
-				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE,
-						new String[] { employeeName });
-			}
-			effectiveFrom = employee.getJoinDate();
-		}
-		else {
-			effectiveFrom = EmployeeLeavePolicyUtil.parseBulkEffectiveDate(effectiveDateValue);
-			if (effectiveFrom == null) {
-				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_INVALID_DATE);
-			}
-		}
-
-		String duplicateKey = employee.getEmployeeId() + ":" + policy.getLeaveType().getId();
-		if (processedEmployeeLeaveTypes.contains(duplicateKey)) {
+		EmployeeLeaveTypeKey employeeLeaveTypeKey = new EmployeeLeaveTypeKey(employee.getEmployeeId(),
+				policy.getLeaveType().getId());
+		if (processedEmployeeLeaveTypes.contains(employeeLeaveTypeKey)) {
 			return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_DUPLICATE_ROW,
 					new String[] { employee.getFullName(), policy.getLeaveType().getName() });
 		}
 
-		assignSingle(employee, policy, effectiveFrom, effectiveDateType,
-				activeByEmployeeLeaveType.getOrDefault(duplicateKey, List.of()));
-		processedEmployeeLeaveTypes.add(duplicateKey);
+		EffectiveDateType effectiveDateType;
+		LocalDate effectiveFrom;
+		if (StringUtils.isNullOrBlank(row.getEffectiveDate())) {
+			if (employee.getJoinDate() == null) {
+				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE,
+						new String[] { row.getEmployeeName() });
+			}
+			effectiveDateType = EffectiveDateType.HIRE_DATE;
+			effectiveFrom = employee.getJoinDate();
+		}
+		else {
+			effectiveFrom = DateTimeUtils.parseDayMonthYearDate(row.getEffectiveDate());
+			if (effectiveFrom == null) {
+				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_INVALID_DATE);
+			}
+			effectiveDateType = EffectiveDateType.SPECIFIC;
+		}
+
+		assignPolicyToEmployee(employee, policy, effectiveFrom, effectiveDateType,
+				activeAssignments.get(employeeLeaveTypeKey));
+		processedEmployeeLeaveTypes.add(employeeLeaveTypeKey);
 		return null;
 	}
 
-	private EmployeeLeavePolicy assignSingle(Employee employee, LeavePolicy policy, LocalDate effectiveFrom,
-			EffectiveDateType effectiveDateType, List<EmployeeLeavePolicy> currentActiveAssignments) {
-		if (currentActiveAssignments.size() == 1) {
-			EmployeeLeavePolicy currentActive = currentActiveAssignments.get(0);
-			if (currentActive.getPolicy().getId().equals(policy.getId())
-					&& effectiveFrom.equals(currentActive.getEffectiveFrom())
-					&& currentActive.getEffectiveDateType() == effectiveDateType) {
-				return currentActive;
+	private EmployeeLeavePolicy assignPolicyToEmployee(Employee employee, LeavePolicy policy, LocalDate effectiveFrom,
+			EffectiveDateType effectiveDateType, EmployeeLeavePolicy currentActiveAssignment) {
+		if (currentActiveAssignment != null) {
+			if (currentActiveAssignment.getPolicy().getId().equals(policy.getId())
+					&& effectiveFrom.equals(currentActiveAssignment.getEffectiveFrom())
+					&& currentActiveAssignment.getEffectiveDateType() == effectiveDateType) {
+				return currentActiveAssignment;
 			}
+			markEmployeeLeavePolicyEnded(currentActiveAssignment);
 		}
-		currentActiveAssignments.forEach(this::markEmployeeLeavePolicyEnded);
 
 		EmployeeLeavePolicy employeeLeavePolicy = new EmployeeLeavePolicy();
 		employeeLeavePolicy.setEmployee(employee);
@@ -300,6 +298,17 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {
 		employeeLeavePolicy.setStatus(EmployeeLeavePolicyStatus.ENDED);
 		employeeLeavePolicyDao.save(employeeLeavePolicy);
+	}
+
+	private BulkAssignResponseDto buildBulkAssignResponse(List<BulkAssignErrorLogDto> errorLogs,
+			BulkStatusSummaryDto summary) {
+		BulkAssignResponseDto response = new BulkAssignResponseDto();
+		response.setBulkRecordErrorLogs(errorLogs);
+		response.setBulkStatusSummary(summary);
+		return response;
+	}
+
+	private record EmployeeLeaveTypeKey(Long employeeId, Long leaveTypeId) {
 	}
 
 }

@@ -28,8 +28,18 @@ export interface BulkAssignPolicyApiResponse {
   results: BulkAssignPolicyResponse[];
 }
 
+export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
+
+export enum BulkAssignCsvError {
+  MISSING_COLUMNS = "MISSING_COLUMNS",
+  MALFORMED_ROWS = "MALFORMED_ROWS",
+  EMPTY_FILE = "EMPTY_FILE",
+  TOO_MANY_ROWS = "TOO_MANY_ROWS"
+}
+
 export interface BulkAssignCsvValidation {
-  error: string;
+  error: BulkAssignCsvError | null;
+  missingColumns: string[];
   payload: BulkAssignPolicyPayload | null;
 }
 

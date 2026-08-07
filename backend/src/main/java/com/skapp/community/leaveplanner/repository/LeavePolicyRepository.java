@@ -6,13 +6,13 @@ import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface LeavePolicyRepository {
 
 	Page<LeavePolicy> findLeavePolicies(LeavePolicyFilterDto filterDto, Pageable pageable);
 
-	List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Collection<String> names, LeavePolicyStatus status);
+	List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Set<String> names, LeavePolicyStatus status);
 
 }

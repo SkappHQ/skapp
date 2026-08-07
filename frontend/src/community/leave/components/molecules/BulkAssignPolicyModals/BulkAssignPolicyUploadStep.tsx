@@ -11,6 +11,13 @@ import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { useBulkAssignLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import {
+  CSV_DELIMITER,
+  MAX_BULK_ASSIGN_ROWS
+} from "~community/leave/constants/leavePolicyConstants";
+import useBulkAssignCsvHeaders from "~community/leave/hooks/useBulkAssignCsvHeaders";
+import {
+  BulkAssignCsvError,
+  BulkAssignCsvValidation,
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse
 } from "~community/leave/types/LeavePolicyTypes";
@@ -30,13 +37,12 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
 
   const { setToastMessage } = useToast();
 
+  const csvHeaders = useBulkAssignCsvHeaders();
+
   const [attachments, setAttachments] = useState<FileUploadType[]>([]);
   const [fileError, setFileError] = useState<string>("");
   const [assignmentPayload, setAssignmentPayload] =
     useState<BulkAssignPolicyPayload | null>(null);
-
-  const { mutateAsync: bulkAssignLeavePolicies, isPending } =
-    useBulkAssignLeavePolicies();
 
   const showAssignmentResultToast = (
     assignmentResult: BulkAssignPolicyResponse
@@ -77,16 +83,40 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     });
   };
 
+  const { mutate: bulkAssignLeavePolicies, isPending } =
+    useBulkAssignLeavePolicies((assignmentResult) => {
+      showAssignmentResultToast(assignmentResult);
+      onComplete(assignmentResult);
+    }, showRequestFailedToast);
+
+  const getValidationErrorText = (
+    validation: BulkAssignCsvValidation
+  ): string => {
+    switch (validation.error) {
+      case BulkAssignCsvError.MISSING_COLUMNS:
+        return translateText(["missingColumnsError"], {
+          columns: validation.missingColumns.join(CSV_DELIMITER)
+        });
+      case BulkAssignCsvError.MALFORMED_ROWS:
+        return translateText(["malformedRowsError"]);
+      case BulkAssignCsvError.EMPTY_FILE:
+        return translateText(["emptyFileError"]);
+      case BulkAssignCsvError.TOO_MANY_ROWS:
+        return translateText(["tooManyRowsError"], {
+          maxRows: MAX_BULK_ASSIGN_ROWS.toString()
+        });
+      default:
+        return "";
+    }
+  };
+
   const handleParseComplete = (
     parseResult: ParseResult<Record<string, string>>
   ): void => {
-    const { error, payload } = validateBulkAssignCsv(
-      parseResult,
-      translateText
-    );
+    const validation = validateBulkAssignCsv(parseResult, csvHeaders);
 
-    setFileError(error);
-    setAssignmentPayload(payload);
+    setFileError(getValidationErrorText(validation));
+    setAssignmentPayload(validation.payload);
   };
 
   const handleFileSelection = (selectedFiles: FileUploadType[]): void => {
@@ -106,18 +136,12 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
     });
   };
 
-  const handleConfirm = async (): Promise<void> => {
+  const handleConfirm = (): void => {
     if (!assignmentPayload) {
       return;
     }
 
-    try {
-      const assignmentResult = await bulkAssignLeavePolicies(assignmentPayload);
-      showAssignmentResultToast(assignmentResult);
-      onComplete(assignmentResult);
-    } catch {
-      showRequestFailedToast();
-    }
+    bulkAssignLeavePolicies(assignmentPayload);
   };
 
   return (
