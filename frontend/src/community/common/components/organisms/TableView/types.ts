@@ -11,7 +11,8 @@ import type { ReactNode } from "react";
 export type {
   GridHeader,
   GridRow,
-  PageSizeSelectorProps
+  PageSizeSelectorProps,
+  TableV2Variant
 } from "@rootcodelabs/skapp-ui";
 
 /** Static pagination — 0-based, passed straight through to TableV2. */
@@ -55,7 +56,6 @@ export interface TableViewAriaLabels {
   pageSizeAriaLabel?: string;
 }
 
-/** Footer region rendered below the table. */
 export interface TableViewFooter {
   left?: ReactNode;
   right?: ReactNode;
