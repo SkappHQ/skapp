@@ -4,9 +4,9 @@ import {
   COMMON_ERROR_INVALID_REFRESH_TOKEN,
   COMMON_ERROR_MISSING_COOKIE_IN_TOKEN
 } from "~community/common/constants/errorMessageKeys";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
+import { getTenantId } from "~community/common/utils/tenantUtil";
 
 import { signOut } from "./authUtils";
 
@@ -22,8 +22,9 @@ const authAxios = axios.create({
 //  request interceptor
 authAxios.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (isEnterpriseMode() && tenantID) {
-      config.headers["X-Tenant-ID"] = tenantID;
+    const tenantId = getTenantId();
+    if (isEnterpriseMode() && tenantId) {
+      config.headers["X-Tenant-ID"] = tenantId;
     }
 
     return config;

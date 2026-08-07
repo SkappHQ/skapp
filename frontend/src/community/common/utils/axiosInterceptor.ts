@@ -4,11 +4,7 @@ import { getAccessToken } from "~community/auth/utils/authUtils";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
-
-const getSubDomain = (url: string, multipleValues: boolean = false) => {
-  const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
-  return subdomain;
-};
+import { getSubDomain, getTenantId } from "./tenantUtil";
 
 export const tenantID =
   typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
@@ -38,8 +34,9 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
-  if (isEnterpriseMode && tenantID) {
-    config.headers["X-Tenant-ID"] = tenantID;
+  const tenantId = getTenantId();
+  if (isEnterpriseMode && tenantId) {
+    config.headers["X-Tenant-ID"] = tenantId;
   }
   return config;
 };
