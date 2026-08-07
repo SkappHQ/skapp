@@ -344,7 +344,7 @@ const CareerProgressionDetailsSection = ({
             ...position,
             currentPosition: false,
             endDate: convertDateToFormat(
-              new Date(newStartDate),
+              DateTime.fromMillis(newStartDate).minus({ days: 1 }).toJSDate(),
               LONG_DATE_TIME_FORMAT
             )
           };

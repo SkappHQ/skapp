@@ -121,7 +121,7 @@ const CareerProgressDetailsSection = ({
             ...position,
             isCurrentEmployment: false,
             endDate: convertDateToFormat(
-              new Date(newStartDate),
+              DateTime.fromMillis(newStartDate).minus({ days: 1 }).toJSDate(),
               LONG_DATE_TIME_FORMAT
             )
           };
