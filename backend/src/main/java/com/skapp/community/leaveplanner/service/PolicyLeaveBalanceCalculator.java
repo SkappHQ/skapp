@@ -68,8 +68,7 @@ public class PolicyLeaveBalanceCalculator {
 			cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, cycle.end().plusDays(1));
 		}
 
-		log.warn("calculate: carryover walk exceeded {} cycles for assignment {}, balance could not be derived",
-				PolicyLeaveConstant.MAX_CARRYOVER_CYCLES, assignment.getId());
+		log.warn("calculate: carryover walk exceeded the cycle limit, balance could not be derived");
 		return emptySnapshot(policy, effectiveFrom, targetCycle, false);
 	}
 

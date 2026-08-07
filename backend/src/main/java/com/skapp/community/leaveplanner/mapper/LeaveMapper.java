@@ -34,7 +34,6 @@ import com.skapp.community.leaveplanner.payload.response.LeaveTypeBasicDetailsRe
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
-import com.skapp.community.leaveplanner.payload.response.PolicyLeaveTypeDetailResponseDto;
 import com.skapp.community.leaveplanner.payload.response.SummarizedLeaveEntitlementBalanceDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;

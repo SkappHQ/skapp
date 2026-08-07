@@ -23,7 +23,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -86,6 +85,6 @@ public class PolicyLeaveRequest extends Auditable<String> {
 	private String eventId;
 
 	@OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<PolicyLeaveRequestAttachment> attachments = new ArrayList<>();
+	private List<PolicyLeaveRequestAttachment> attachments;
 
 }

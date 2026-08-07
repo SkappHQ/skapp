@@ -38,26 +38,6 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Check availability against a policy before submitting",
-			description = "Real-time balance and date validation; reports the failure reason instead of erroring")
-	@PostMapping("/availability")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> checkPolicyLeaveAvailability(
-			@Valid @RequestBody PolicyLeaveAvailabilityRequestDto policyLeaveAvailabilityRequestDto) {
-		ResponseEntityDto response = policyLeaveService.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Apply for leave against a specific leave policy",
-			description = "Deducts only from the scoped policy; the balance is re-checked server side")
-	@PostMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> applyPolicyLeaveRequest(
-			@Valid @RequestBody PolicyLeaveRequestDto policyLeaveRequestDto) {
-		ResponseEntityDto response = policyLeaveService.applyPolicyLeaveRequest(policyLeaveRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
-	}
-
 	@Operation(summary = "Get the current user's policy leave requests",
 			description = "Requests raised against leave policies for the given year, newest first")
 	@GetMapping
@@ -77,6 +57,26 @@ public class PolicyLeaveController {
 		ResponseEntityDto response = policyLeaveService
 			.searchCurrentUserPolicyLeaveRequests(policyLeaveRequestFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check availability against a policy before submitting",
+			description = "Real-time balance and date validation; reports the failure reason instead of erroring")
+	@PostMapping("/availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> checkPolicyLeaveAvailability(
+			@Valid @RequestBody PolicyLeaveAvailabilityRequestDto policyLeaveAvailabilityRequestDto) {
+		ResponseEntityDto response = policyLeaveService.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Apply for leave against a specific leave policy",
+			description = "Deducts only from the scoped policy; the balance is re-checked server side")
+	@PostMapping
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> applyPolicyLeaveRequest(
+			@Valid @RequestBody PolicyLeaveRequestDto policyLeaveRequestDto) {
+		ResponseEntityDto response = policyLeaveService.applyPolicyLeaveRequest(policyLeaveRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 }

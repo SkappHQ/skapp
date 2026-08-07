@@ -124,14 +124,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.sorted(BY_POLICY_NAME)
 			.toList();
 
-		log.info("getCurrentUserPolicyBalances: execution ended with {} policy balances", balances.size());
+		log.info("getCurrentUserPolicyBalances: execution ended");
 		return new ResponseEntityDto(false, balances);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkPolicyLeaveAvailability(@NonNull PolicyLeaveAvailabilityRequestDto requestDto) {
-		log.info("checkPolicyLeaveAvailability: execution started for policy: {}", requestDto.getPolicyId());
+		log.info("checkPolicyLeaveAvailability: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -155,14 +155,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			responseDto.setBalanceAfterRequest(snapshot.balanceInDays() - responseDto.getRequestedDays());
 		}
 
-		log.info("checkPolicyLeaveAvailability: execution ended, valid: {}", responseDto.getIsValid());
+		log.info("checkPolicyLeaveAvailability: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
 	@Override
 	@Transactional
 	public ResponseEntityDto applyPolicyLeaveRequest(@NonNull PolicyLeaveRequestDto policyLeaveRequestDto) {
-		log.info("applyPolicyLeaveRequest: execution started for policy: {}", policyLeaveRequestDto.getPolicyId());
+		log.info("applyPolicyLeaveRequest: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -193,8 +193,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.setRequestDesc(policyLeaveRequestDto.getRequestDesc());
 		leaveRequest.setDurationDays(durationDays);
 		leaveRequest.setStatus(LeaveRequestStatus.PENDING);
-		leaveRequest.setIsViewed(false);
-		leaveRequest.setIsAutoApproved(false);
+		leaveRequest.setIsViewed(Boolean.FALSE);
+		leaveRequest.setIsAutoApproved(Boolean.FALSE);
 		attachSupportingDocuments(leaveRequest, policy.getLeaveType(), policyLeaveRequestDto.getAttachments());
 
 		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(employee);
@@ -203,8 +203,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 
 		PolicyLeaveRequest savedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
-		log.info("applyPolicyLeaveRequest: {} day(s) committed against policy {} for leave request {}", durationDays,
-				policy.getId(), savedLeaveRequest.getId());
 
 		notifyParticipants(currentUser, savedLeaveRequest, employeeManagers);
 
@@ -212,7 +210,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.policyLeaveRequestToPolicyLeaveRequestResponseDto(savedLeaveRequest);
 		responseDto.setRemainingBalance(snapshot.balanceInDays() - durationDays);
 
-		log.info("applyPolicyLeaveRequest: execution ended. Leave Request ID: {}", savedLeaveRequest.getId());
+		log.info("applyPolicyLeaveRequest: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
@@ -227,9 +225,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		List<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao
 			.findByEmployee_EmployeeIdAndStartDateBetweenOrderByStartDateDesc(currentUser.getEmployee().getEmployeeId(),
-					LocalDate.of(resolvedYear, 1, 1), LocalDate.of(resolvedYear, 12, 31));
+					startOfYear(resolvedYear), endOfYear(resolvedYear));
 
-		log.info("getCurrentUserPolicyLeaveRequests: execution ended with {} requests", leaveRequests.size());
+		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false,
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests));
 	}
@@ -247,8 +245,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
-				currentUser.getEmployee().getEmployeeId(), LocalDate.of(resolvedYear, 1, 1),
-				LocalDate.of(resolvedYear, 12, 31), filterDto, pageable);
+				currentUser.getEmployee().getEmployeeId(), startOfYear(resolvedYear), endOfYear(resolvedYear),
+				filterDto, pageable);
 
 		PageDto pageDto = pageTransformer.transform(leaveRequests);
 		pageDto.setCurrentPage(leaveRequests.getNumber());
@@ -257,8 +255,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 
-		log.info("searchCurrentUserPolicyLeaveRequests: execution ended with {} of {} requests",
-				leaveRequests.getNumberOfElements(), leaveRequests.getTotalElements());
+		log.info("searchCurrentUserPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -420,7 +417,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays,
 				organizationService.getOrganizationTimeZone());
-		if (workingDays == 1 && isHalfDay(leaveState)) {
+		if (workingDays == PolicyLeaveConstant.SINGLE_WORKING_DAY && isHalfDay(leaveState)) {
 			return LeaveModuleConstant.HALF_DAY;
 		}
 		return workingDays;
@@ -477,7 +474,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.map(dto -> new PolicyLeaveRequestAttachment(leaveRequest, dto.getFileUrl(), dto.getOriginalFileName()))
 			.toList();
 
-		leaveRequest.getAttachments().addAll(attachments);
+		leaveRequest.setAttachments(attachments);
 	}
 
 	private Predicate<PolicyLeaveAttachmentDto> distinctByFileUrl() {
@@ -487,13 +484,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private void autoApprove(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers) {
 		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
-		leaveRequest.setIsAutoApproved(true);
+		leaveRequest.setIsAutoApproved(Boolean.TRUE);
 		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
 		if (!employeeManagers.isEmpty()) {
 			leaveRequest.setReviewer(employeeManagers.getFirst().getManager());
 		}
-		log.info("autoApprove: leave request against policy {} marked auto-approved before persist",
-				leaveRequest.getPolicy().getId());
 	}
 
 	private void notifyParticipants(User currentUser, PolicyLeaveRequest leaveRequest,
@@ -529,6 +524,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 		}
 		return holidayDao.findAllByIsActiveTrue();
+	}
+
+	private LocalDate startOfYear(int year) {
+		return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR.atYear(year);
+	}
+
+	private LocalDate endOfYear(int year) {
+		return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR.atYear(year + 1).minusDays(1);
 	}
 
 	private int resolveYear(Integer year) {
