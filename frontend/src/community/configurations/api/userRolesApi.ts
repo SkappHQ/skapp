@@ -32,15 +32,17 @@ export const getUserRoleRestrictions = async (module: Modules) => {
     userRolesEndPoints.GET_USER_ROLE_RESTRICTIONS(module)
   );
 
-  return data.data.results[0];
+  return data?.data?.results?.[0];
 };
 
 export const useGetUserRoleRestrictions = (
-  module: Modules
+  module: Modules,
+  enabled = true
 ): UseQueryResult<UserRoleRestrictionsType> => {
   return useQuery({
     queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(module),
     queryFn: () => getUserRoleRestrictions(module),
+    enabled,
     select: (data) => data
   });
 };

@@ -1,17 +1,17 @@
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import { ButtonStyle } from "~community/common/enums/ComponentEnums";
+import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { getUserRoleRestrictions } from "~community/configurations/api/userRolesApi";
+import { useGetUserRoleRestrictions } from "~community/configurations/api/userRolesApi";
 import ModuleRolesTable from "~community/configurations/components/molecules/ModuleRolesTable/ModuleRolesTable";
 import RestrictedUserRolesModal from "~community/configurations/components/organisms/RestrictedUserRolesModal/RestrictedUserRolesModal";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { UserRoleRestrictionsType } from "~community/configurations/types/UserRolesTypes";
 import { mapApiModuleToEnum } from "~community/configurations/utils/userRoles/apiUtils";
 
 const Module: NextPage = () => {
@@ -24,23 +24,33 @@ const Module: NextPage = () => {
 
   const translateText = useTranslator("configurations");
 
+  const { setToastMessage } = useToast();
+
   const { setIsUserRoleModalOpen, setModuleType } = useConfigurationStore();
 
-  const [isPending, setIsPending] = useState<boolean>(false);
-  const [initialData, setInitialData] = useState<
-    UserRoleRestrictionsType | undefined
-  >();
+  const {
+    data: initialData,
+    isFetching,
+    refetch
+  } = useGetUserRoleRestrictions(formattedModule, false);
 
   const onPrimaryButtonClick = async () => {
-    setIsPending(true);
+    const { data, isError } = await refetch();
 
-    const data = await getUserRoleRestrictions(formattedModule);
+    if (isError || !data) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["userRoles.errorToastTitle"]),
+        description: translateText(["userRoles.errorToastDescription"])
+      });
+      return;
+    }
 
-    setInitialData(data);
-    setIsPending(false);
-    setIsUserRoleModalOpen(true);
     setModuleType(formattedModule);
+    setIsUserRoleModalOpen(true);
   };
+
   const onBackClick = () => {
     router.push(ROUTES.CONFIGURATIONS.USER_ROLES_TAB);
   };
@@ -60,7 +70,7 @@ const Module: NextPage = () => {
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      isPrimaryBtnLoading={isPending}
+      isPrimaryBtnLoading={isFetching}
       isDividerVisible={true}
       isBackButtonVisible={true}
       onBackClick={onBackClick}
