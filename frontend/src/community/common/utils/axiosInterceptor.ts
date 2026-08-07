@@ -21,6 +21,11 @@ export const authFetchV2 = axios.create({
   baseURL: getApiUrl() + ApiVersions.V2
 });
 
+export const authFetchSameOrigin = axios.create({
+  baseURL: "",
+  withCredentials: true
+});
+
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   const accessToken = await getAccessToken();
 
@@ -50,6 +55,11 @@ authFetch.interceptors.request.use(
 );
 
 authFetchV2.interceptors.request.use(
+  requestInterceptorConfig,
+  requestInterceptorConfigError
+);
+
+authFetchSameOrigin.interceptors.request.use(
   requestInterceptorConfig,
   requestInterceptorConfigError
 );

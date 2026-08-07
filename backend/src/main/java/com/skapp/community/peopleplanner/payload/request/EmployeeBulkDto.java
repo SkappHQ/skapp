@@ -69,4 +69,8 @@ public class EmployeeBulkDto {
 
 	private String workLocation;
 
+	private String payrollId;
+
+	private String tin;
+
 }
