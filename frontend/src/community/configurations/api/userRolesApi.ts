@@ -7,7 +7,8 @@ import { userRolesQueryKeys } from "~community/configurations/api/utils/QueryKey
 import {
   AllUserRolesResponseType,
   AllowedGrantableRolesType,
-  UserRoleRestrictionsType
+  UserRoleRestrictionsType,
+  UserRoleRestrictionsUpdateType
 } from "~community/configurations/types/UserRolesTypes";
 
 import { transformRolesToDropdownFormat } from "../utils/userRoles/apiUtils";
@@ -49,7 +50,7 @@ export const useUpdateUserRoleRestrictions = (
   onError: () => void
 ) => {
   return useMutation({
-    mutationFn: (payload: UserRoleRestrictionsType) => {
+    mutationFn: (payload: UserRoleRestrictionsUpdateType) => {
       return authFetch.patch(
         userRolesEndPoints.UPDATE_USER_ROLE_RESTRICTIONS,
         payload

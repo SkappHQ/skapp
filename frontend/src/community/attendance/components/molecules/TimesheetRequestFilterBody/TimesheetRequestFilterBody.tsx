@@ -17,12 +17,12 @@ import {
 
 interface Props {
   isManager?: boolean;
-  close: () => void;
+  onClose: () => void;
 }
 
 const TimesheetRequestFilterBody: FC<Props> = ({
   isManager = false,
-  close
+  onClose
 }) => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
@@ -48,13 +48,13 @@ const TimesheetRequestFilterBody: FC<Props> = ({
   const handleApply = () => {
     setFilters({ status: selectedStatus });
     setDates(convertDateRangeToDateRangeArray(selectedDateRange));
-    close();
+    onClose();
   };
 
   const handleReset = () => {
     resetParams();
     setDates(["", ""]);
-    close();
+    onClose();
   };
 
   return (

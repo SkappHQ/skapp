@@ -98,7 +98,18 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE("api.error.leave.bulk-hire-date-unavailable"),
 	LEAVE_ERROR_BULK_DUPLICATE_ROW("api.error.leave.bulk-duplicate-row"),
 	LEAVE_ERROR_BULK_ROW_LIMIT_EXCEEDED("api.error.leave.bulk-row-limit-exceeded"),
-	LEAVE_ERROR_BULK_ROW_FAILED("api.error.leave.bulk-row-failed");
+	LEAVE_ERROR_BULK_ROW_FAILED("api.error.leave.bulk-row-failed"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ID_NOT_FOUND("api.error.leave.policy-leave-type-id-not-found"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_EXISTS("api.error.leave.policy-leave-type-already-exists"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_NAME_REQUIRED("api.error.leave.policy-leave-type-name-required"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_NAME_MAX_LENGTH_EXCEEDED(
+			"api.error.leave.policy-leave-type-name-max-length-exceeded"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_EMOJI_CODE_REQUIRED("api.error.leave.policy-leave-type-emoji-code-required"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_REQUIRED("api.error.leave.policy-leave-type-color-code-required"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_INVALID("api.error.leave.policy-leave-type-color-code-invalid"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_MIN_DURATION_REQUIRED("api.error.leave.policy-leave-type-min-duration-required"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE("api.error.leave.policy-leave-type-already-inactive"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active");
 
 	private final String messageKey;
 
