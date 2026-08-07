@@ -9,9 +9,9 @@ import ContentWithDrawer from "~community/common/components/organisms/ContentWit
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
-import { SpecialNotificationProvider } from "~community/common/providers/SpecialNotificationProvider";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
 import BirthdayNotificationWrapper from "~community/people/components/organisms/BirthdayNotificationWrapper/BirthdayNotificationWrapper";
+import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import useFcmToken from "~enterprise/common/hooks/useFCMToken";
@@ -111,9 +111,9 @@ const BaseLayout = ({ children }: Props) => {
     <>
       {renderComponent}
       <CommonModalController />
-      <SpecialNotificationProvider>
+      <BirthdayNotificationProvider>
         <BirthdayNotificationWrapper />
-      </SpecialNotificationProvider>
+      </BirthdayNotificationProvider>
     </>
   );
 };

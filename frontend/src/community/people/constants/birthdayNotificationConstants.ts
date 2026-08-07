@@ -4,3 +4,8 @@ export const BIRTHDAY_MODAL_CLASS =
 
 export const BIRTHDAY_MODAL_CENTERED_CONTENT_CLASS =
   "flex h-[555px] flex-col items-center justify-center gap-4 text-center";
+
+export const BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY =
+  "birthdayNotificationViewState";
+
+export const BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS = 3000;

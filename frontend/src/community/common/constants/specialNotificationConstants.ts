@@ -1,4 +1,0 @@
-export const SPECIAL_NOTIFICATION_VIEWED_CACHE_KEY =
-  "specialNotificationsViewed";
-
-export const SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS = 3000;

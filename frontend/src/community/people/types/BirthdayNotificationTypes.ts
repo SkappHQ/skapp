@@ -24,3 +24,23 @@ export interface BirthdayQueueEntryType {
   variant: BirthdayModalVariant;
   employee: EmployeeBirthdayType;
 }
+
+export interface BirthdayNotificationViewStateType {
+  userId: number;
+  lastViewedDate: string;
+}
+
+export interface BirthdayNotificationContextType {
+  isEligible: boolean;
+  today: string;
+  evaluationTick: number;
+  isViewedToday: boolean;
+  cacheLastViewedDate: (lastViewedDate: string) => void;
+}
+
+export interface BirthdayNotificationsType {
+  currentEntry: BirthdayQueueEntryType | null;
+  position: number;
+  total: number;
+  onDismiss: () => void;
+}

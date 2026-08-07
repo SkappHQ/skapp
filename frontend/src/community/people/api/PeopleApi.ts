@@ -10,7 +10,6 @@ import { rejects } from "assert";
 import { AxiosResponse } from "axios";
 
 import { appModes } from "~community/common/constants/configs";
-import { SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS } from "~community/common/constants/specialNotificationConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -40,6 +39,7 @@ import {
   peopleConfigQueryKeys,
   peopleQueryKeys
 } from "~community/people/api/utils/QueryKeys";
+import { BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS } from "~community/people/constants/birthdayNotificationConstants";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
@@ -948,7 +948,7 @@ export const useGetTodaysBirthdayNotifications = (
     queryFn: async ({ signal }) => {
       const result = await authFetch.get(
         peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
-        { timeout: SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS, signal }
+        { timeout: BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS, signal }
       );
 
       const payload = result?.data?.results?.[0];
@@ -982,7 +982,7 @@ export const useMarkBirthdayNotificationsViewedToday = (
       const result = await authFetch.patch(
         peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY,
         undefined,
-        { timeout: SPECIAL_NOTIFICATION_REQUEST_TIMEOUT_MS }
+        { timeout: BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS }
       );
 
       return (result?.data?.results?.[0]?.lastViewedDate ?? null) as

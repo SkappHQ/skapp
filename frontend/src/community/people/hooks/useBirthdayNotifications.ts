@@ -1,28 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { SpecialNotificationType } from "~community/common/enums/SpecialNotificationEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
-import { useSpecialNotifications } from "~community/common/providers/SpecialNotificationProvider";
 import {
   useGetTodaysBirthdayNotifications,
   useGetUserPersonalDetails,
   useMarkBirthdayNotificationsViewedToday
 } from "~community/people/api/PeopleApi";
+import { useBirthdayNotificationContext } from "~community/people/providers/BirthdayNotificationProvider";
 import {
   BirthdayNotificationPayloadType,
+  BirthdayNotificationsType,
   BirthdayQueueEntryType
 } from "~community/people/types/BirthdayNotificationTypes";
 import {
   buildBirthdayQueue,
   normalizeEmployeeId
 } from "~community/people/utils/birthdayNotificationUtils";
-
-interface BirthdayNotificationsType {
-  currentEntry: BirthdayQueueEntryType | null;
-  position: number;
-  total: number;
-  onDismiss: () => void;
-}
 
 const UNAUTHENTICATED = "unauthenticated";
 
@@ -33,8 +26,8 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     today,
     evaluationTick,
     isViewedToday,
-    persistViewedDate
-  } = useSpecialNotifications();
+    cacheLastViewedDate
+  } = useBirthdayNotificationContext();
 
   const { data: currentEmployee, isPending: isCurrentEmployeePending } =
     useGetUserPersonalDetails();
@@ -53,19 +46,10 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
   const isShowingRef = useRef(false);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
-  const shouldEvaluate =
-    isEligible && !isViewedToday(SpecialNotificationType.BIRTHDAY);
+  const shouldEvaluate = isEligible && !isViewedToday;
 
-  const markBirthdayViewedDate = useCallback(
-    (lastViewedDate: string) => {
-      persistViewedDate(SpecialNotificationType.BIRTHDAY, lastViewedDate);
-    },
-    [persistViewedDate]
-  );
-
-  const { mutate: markViewed } = useMarkBirthdayNotificationsViewedToday(
-    markBirthdayViewedDate
-  );
+  const { mutate: markViewed } =
+    useMarkBirthdayNotificationsViewedToday(cacheLastViewedDate);
 
   const { data, refetch } = useGetTodaysBirthdayNotifications(shouldEvaluate);
 
@@ -79,7 +63,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     seededDataRef.current = data;
 
     if (data.lastViewedDate) {
-      markBirthdayViewedDate(data.lastViewedDate);
+      cacheLastViewedDate(data.lastViewedDate);
     }
 
     const birthdayQueue = buildBirthdayQueue(
@@ -108,7 +92,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     currentEmployeeId,
     isCurrentEmployeeResolved,
     markViewed,
-    markBirthdayViewedDate
+    cacheLastViewedDate
   ]);
 
   const finishSequence = useCallback(() => {
