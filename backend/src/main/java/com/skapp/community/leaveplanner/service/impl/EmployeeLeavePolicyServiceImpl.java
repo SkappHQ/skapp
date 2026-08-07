@@ -2,12 +2,14 @@ package com.skapp.community.leaveplanner.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
@@ -21,11 +23,13 @@ import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -103,20 +107,29 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		markEmployeeLeavePolicyEnded(activeEmployeeLeavePolicy);
 
 		log.info("unassignLeavePolicy: execution ended");
-		return getEmployeeLeavePolicies(unassignLeavePolicyRequestDto.getEmployeeId());
+		return new ResponseEntityDto(false,
+				leaveMapper.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(activeEmployeeLeavePolicy));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId) {
+	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		List<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE);
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
+			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
+					pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(leaveMapper
+			.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeEmployeeLeavePolicies.getContent()));
+		pageDto.setCurrentPage(activeEmployeeLeavePolicies.getNumber());
+		pageDto.setTotalItems(activeEmployeeLeavePolicies.getTotalElements());
+		pageDto.setTotalPages(activeEmployeeLeavePolicies.getTotalPages());
 
 		log.info("getEmployeeLeavePolicies: execution ended");
-		return new ResponseEntityDto(false,
-				leaveMapper.employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(activeEmployeeLeavePolicies));
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 	private void markEmployeeLeavePolicyEnded(EmployeeLeavePolicy employeeLeavePolicy) {

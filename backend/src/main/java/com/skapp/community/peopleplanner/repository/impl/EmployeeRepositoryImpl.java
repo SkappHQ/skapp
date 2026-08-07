@@ -111,7 +111,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(criteriaBuilder.notEqual(root.get(Employee_.ACCOUNT_STATUS), AccountStatus.DELETED));
-		predicates.add(criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE));
+		predicates.add(criteriaBuilder.or(roleJoin.get(EmployeeRole_.PM_ROLE).isNull(),
+				criteriaBuilder.notEqual(roleJoin.get(EmployeeRole_.PM_ROLE), Role.PM_GUEST_EMPLOYEE)));
 
 		if (employeeFilterDto.getRole() != null && !employeeFilterDto.getRole().isEmpty()) {
 			predicates
@@ -1629,6 +1630,40 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		update.where(cb.equal(root.get(Employee_.employeeId), employeeId));
 
 		entityManager.createQuery(update).executeUpdate();
+	}
+
+	@Override
+	public boolean existsByPayrollIdAndEmployeeIdNot(String payrollId, Long employeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Employee> root = query.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(Employee_.payrollId), payrollId));
+		if (employeeId != null) {
+			predicates.add(cb.notEqual(root.get(Employee_.employeeId), employeeId));
+		}
+
+		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getSingleResult() > 0;
+	}
+
+	@Override
+	public boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<Employee> root = query.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.equal(root.get(Employee_.tin), tin));
+		if (employeeId != null) {
+			predicates.add(cb.notEqual(root.get(Employee_.employeeId), employeeId));
+		}
+
+		query.select(cb.count(root)).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getSingleResult() > 0;
 	}
 
 }

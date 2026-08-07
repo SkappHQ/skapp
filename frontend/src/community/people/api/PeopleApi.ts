@@ -57,8 +57,12 @@ import {
   EmployeeDetails,
   EmployeeManagerType,
   MyManagersType,
+  PayrollIdExistsCheckParams,
+  PayrollIdExistsResponse,
   QuickAddEmployeePayload,
-  QuickAddEmployeeResponse
+  QuickAddEmployeeResponse,
+  TinExistsCheckParams,
+  TinExistsResponse
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
@@ -311,6 +315,47 @@ export const useCheckEmailAndIdentificationNo = (
       return response?.data?.results[0];
     },
     enabled: false
+  });
+};
+
+const checkPayrollIdExists = async (
+  params: PayrollIdExistsCheckParams
+): Promise<PayrollIdExistsResponse> => {
+  const response = await authFetch.get(
+    peoplesEndpoints.CHECK_PAYROLL_ID_EXISTS,
+    { params }
+  );
+  return response?.data?.results[0];
+};
+
+export const useCheckPayrollIdExists = (
+  payrollId?: string,
+  employeeId?: string
+): UseQueryResult<PayrollIdExistsResponse> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.PAYROLL_ID_EXISTS_KEYS(employeeId, payrollId),
+    queryFn: () => checkPayrollIdExists({ payrollId, employeeId }),
+    enabled: Boolean(payrollId)
+  });
+};
+
+const checkTinExists = async (
+  params: TinExistsCheckParams
+): Promise<TinExistsResponse> => {
+  const response = await authFetch.get(peoplesEndpoints.CHECK_TIN_EXISTS, {
+    params
+  });
+  return response?.data?.results[0];
+};
+
+export const useCheckTinExists = (
+  tin?: string,
+  employeeId?: string
+): UseQueryResult<TinExistsResponse> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.TIN_EXISTS_KEYS(employeeId, tin),
+    queryFn: () => checkTinExists({ tin, employeeId }),
+    enabled: Boolean(tin)
   });
 };
 

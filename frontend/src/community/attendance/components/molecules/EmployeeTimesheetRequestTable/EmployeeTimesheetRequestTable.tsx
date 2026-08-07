@@ -83,8 +83,8 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
     setEmployeeTimesheetRequestPagination(page);
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
-    <TimesheetRequestFilterBody close={close} />
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <TimesheetRequestFilterBody onClose={onClose} />
   );
 
   const getKebabMenuOptions = (timeRequestId: number) => [

@@ -30,6 +30,16 @@ export const peopleQueryKeys = {
       identificationNo
     ].filter((val) => val !== undefined);
   },
+  PAYROLL_ID_EXISTS_KEYS: (employeeId?: string, payrollId?: string) => [
+    "payroll-id-exists-keys",
+    employeeId,
+    payrollId
+  ],
+  TIN_EXISTS_KEYS: (employeeId?: string, tin?: string) => [
+    "tin-exists-keys",
+    employeeId,
+    tin
+  ],
   PRE_PROCESSED_ROLES: function () {
     return ["job-role", "preprocess-job-roles"];
   },
@@ -72,7 +82,10 @@ export const teamQueryKeys = {
   MY_TEAMS: ["my-teams"],
   GET_ALL_TEAMS: ["get-all-teams"],
   GET_TEAM_BY_ID: ["get-team-by-id"],
-  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => ["get-employee-transferable-teams", teamId],
+  GET_EMPLOYEE_TRANSFERABLE_TEAMS: (teamId: number) => [
+    "get-employee-transferable-teams",
+    teamId
+  ],
   teams: function () {
     return [...(this?.ALL_TEAMS || []), "get-teams"];
   },
