@@ -1,10 +1,15 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
-import { getSubDomain, getTenantId } from "./tenantUtil";
+
+const getSubDomain = (url: string, multipleValues: boolean = false) => {
+  const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
+  return subdomain;
+};
 
 export const tenantID =
   typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";

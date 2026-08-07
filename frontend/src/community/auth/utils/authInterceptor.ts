@@ -6,7 +6,7 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
-import { getTenantId } from "~community/common/utils/tenantUtil";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { signOut } from "./authUtils";
 
