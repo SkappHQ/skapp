@@ -1,1 +1,1 @@
-export const getTenantId = (): string => "";
+export const getTenantId = (): string | undefined => undefined;
