@@ -153,8 +153,8 @@ const LeaveRequests: FC = () => {
     setNewLeaveId(Number(row.id));
   };
 
-  const renderFilterContent = ({ close }: TableViewFilterContentArgs) => (
-    <MyLeaveRequestFilterBody onClose={close} />
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <MyLeaveRequestFilterBody onClose={onClose} />
   );
 
   useEffect(() => {
