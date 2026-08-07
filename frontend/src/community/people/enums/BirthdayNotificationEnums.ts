@@ -1,4 +1,4 @@
 export enum BirthdayModalVariant {
-  SELF = "self",
-  COLLEAGUE = "colleague"
+  SELF = "SELF",
+  COLLEAGUE = "COLLEAGUE"
 }

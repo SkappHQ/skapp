@@ -1,7 +1,5 @@
 import { BirthdayModalVariant } from "~community/people/enums/BirthdayNotificationEnums";
 
-export type EmployeeIdType = number | string | null | undefined;
-
 export interface EmployeeBirthdayType {
   employeeId: number;
   firstName: string;
@@ -13,6 +11,18 @@ export interface EmployeeBirthdayType {
 export interface BirthdayNotificationPayloadType {
   lastViewedDate: string | null;
   employeeBirthdays: EmployeeBirthdayType[];
+}
+
+export interface BirthdayNotificationTodayResponse {
+  results: BirthdayNotificationPayloadType[];
+}
+
+export interface MarkBirthdayNotificationsViewedResult {
+  lastViewedDate: string | null;
+}
+
+export interface MarkBirthdayNotificationsViewedResponse {
+  results: MarkBirthdayNotificationsViewedResult[];
 }
 
 export interface PartitionedBirthdaysType {

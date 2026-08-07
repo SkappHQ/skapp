@@ -106,12 +106,6 @@ const PeopleConfigurations: FC = () => {
         {subOptionsAriaMessage}
       </div>
 
-      {isError && (
-        <p className="body1 text-secondary-text">
-          {translateText([SECTION, "loadError"])}
-        </p>
-      )}
-
       {!isError && (isLoading || !config) && (
         <div
           className="flex animate-pulse flex-col gap-6"

@@ -33,7 +33,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     useGetUserPersonalDetails();
 
   const currentEmployeeId =
-    normalizeEmployeeId(employeeDetails?.employeeId) ??
+    employeeDetails?.employeeId ??
     normalizeEmployeeId(currentEmployee?.employeeId);
 
   const isCurrentEmployeeResolved =

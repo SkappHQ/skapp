@@ -1,23 +1,14 @@
 import { FC } from "react";
 
-import ColleagueBirthdayModal from "~community/people/components/molecules/ColleagueBirthdayModal/ColleagueBirthdayModal";
-import SelfBirthdayModal from "~community/people/components/molecules/SelfBirthdayModal/SelfBirthdayModal";
+import ColleagueBirthdayModal from "~community/people/components/molecules/BirthdayModals/ColleagueBirthdayModal";
+import SelfBirthdayModal from "~community/people/components/molecules/BirthdayModals/SelfBirthdayModal";
 import { BirthdayModalVariant } from "~community/people/enums/BirthdayNotificationEnums";
-import { BirthdayQueueEntryType } from "~community/people/types/BirthdayNotificationTypes";
+import useBirthdayNotifications from "~community/people/hooks/useBirthdayNotifications";
 
-interface Props {
-  entry: BirthdayQueueEntryType | null;
-  position: number;
-  total: number;
-  onDismiss: () => void;
-}
+const BirthdayModalController: FC = () => {
+  const { currentEntry: entry, position, total, onDismiss } =
+    useBirthdayNotifications();
 
-const BirthdayModalController: FC<Props> = ({
-  entry,
-  position,
-  total,
-  onDismiss
-}) => {
   if (!entry) {
     return null;
   }

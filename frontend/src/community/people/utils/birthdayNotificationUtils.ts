@@ -2,24 +2,13 @@ import { BirthdayModalVariant } from "~community/people/enums/BirthdayNotificati
 import {
   BirthdayQueueEntryType,
   EmployeeBirthdayType,
-  EmployeeIdType,
   PartitionedBirthdaysType
 } from "~community/people/types/BirthdayNotificationTypes";
 
-export const getFullName = (
-  employee: Pick<EmployeeBirthdayType, "firstName" | "lastName">
-): string =>
-  [employee.firstName?.trim(), employee.lastName?.trim()]
-    .filter(Boolean)
-    .join(" ");
-
-export const hasDisplayableName = (employee: EmployeeBirthdayType): boolean =>
-  getFullName(employee).length > 0;
-
 export const normalizeEmployeeId = (
-  employeeId: EmployeeIdType
+  employeeId: string | number | undefined
 ): number | undefined => {
-  if (employeeId === null || employeeId === undefined) {
+  if (employeeId === undefined) {
     return undefined;
   }
 
@@ -34,17 +23,18 @@ export const normalizeEmployeeId = (
 
 export const partitionBirthdays = (
   employeeBirthdays: EmployeeBirthdayType[],
-  currentEmployeeId: EmployeeIdType
+  viewerEmployeeId: number | undefined
 ): PartitionedBirthdaysType => {
-  const namedBirthdays = employeeBirthdays.filter(hasDisplayableName);
-  const viewerEmployeeId = normalizeEmployeeId(currentEmployeeId);
+  const namedBirthdays = employeeBirthdays.filter(
+    (employee) => !!employee.firstName?.trim() || !!employee.lastName?.trim()
+  );
 
   if (viewerEmployeeId === undefined) {
     return { self: null, colleagues: namedBirthdays };
   }
 
   const isViewer = (employee: EmployeeBirthdayType): boolean =>
-    normalizeEmployeeId(employee.employeeId) === viewerEmployeeId;
+    employee.employeeId === viewerEmployeeId;
 
   return {
     self: namedBirthdays.find(isViewer) ?? null,
@@ -54,11 +44,11 @@ export const partitionBirthdays = (
 
 export const buildBirthdayQueue = (
   employeeBirthdays: EmployeeBirthdayType[],
-  currentEmployeeId: EmployeeIdType
+  viewerEmployeeId: number | undefined
 ): BirthdayQueueEntryType[] => {
   const { self, colleagues } = partitionBirthdays(
     employeeBirthdays,
-    currentEmployeeId
+    viewerEmployeeId
   );
 
   return [

@@ -1,5 +1,6 @@
 import {
   type UseInfiniteQueryResult,
+  type UseMutationResult,
   type UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -7,7 +8,7 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 import { rejects } from "assert";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -39,13 +40,13 @@ import {
   peopleConfigQueryKeys,
   peopleQueryKeys
 } from "~community/people/api/utils/QueryKeys";
-import { BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS } from "~community/people/constants/birthdayNotificationConstants";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
 import {
   BirthdayNotificationPayloadType,
-  EmployeeBirthdayType
+  BirthdayNotificationTodayResponse,
+  MarkBirthdayNotificationsViewedResponse
 } from "~community/people/types/BirthdayNotificationTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
 import {
@@ -63,6 +64,7 @@ import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import {
   BirthdayNotificationConfigPatchType,
+  BirthdayNotificationConfigResponse,
   BirthdayNotificationConfigType
 } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
@@ -940,29 +942,22 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
   });
 };
 
+const getTodaysBirthdayNotifications = async (
+  signal?: AbortSignal
+): Promise<BirthdayNotificationPayloadType> => {
+  const response = await authFetch.get<BirthdayNotificationTodayResponse>(
+    peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
+    { signal }
+  );
+  return response.data.results[0];
+};
+
 export const useGetTodaysBirthdayNotifications = (
   enabled: boolean
 ): UseQueryResult<BirthdayNotificationPayloadType> => {
   return useQuery({
     queryKey: peopleQueryKeys.BIRTHDAY_NOTIFICATIONS_TODAY,
-    queryFn: async ({ signal }) => {
-      const result = await authFetch.get(
-        peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
-        { timeout: BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS, signal }
-      );
-
-      const payload = result?.data?.results?.[0];
-
-      if (!payload) {
-        throw new Error("Birthday notifications response was empty");
-      }
-
-      return {
-        lastViewedDate: (payload.lastViewedDate ?? null) as string | null,
-        employeeBirthdays: (payload.employeeBirthdays ??
-          []) as EmployeeBirthdayType[]
-      };
-    },
+    queryFn: ({ signal }) => getTodaysBirthdayNotifications(signal),
     enabled,
     retry: false,
     staleTime: 0,
@@ -974,59 +969,65 @@ export const useGetTodaysBirthdayNotifications = (
   });
 };
 
+const markBirthdayNotificationsViewedToday = (): Promise<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+> =>
+  authFetch.patch<MarkBirthdayNotificationsViewedResponse>(
+    peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY
+  );
+
 export const useMarkBirthdayNotificationsViewedToday = (
   onViewedDatePersisted: (lastViewedDate: string) => void
-) => {
+): UseMutationResult<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>,
+  AxiosError,
+  void
+> => {
   return useMutation({
-    mutationFn: async (): Promise<string | null> => {
-      const result = await authFetch.patch(
-        peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY,
-        undefined,
-        { timeout: BIRTHDAY_NOTIFICATION_REQUEST_TIMEOUT_MS }
-      );
-
-      return (result?.data?.results?.[0]?.lastViewedDate ?? null) as
-        | string
-        | null;
-    },
+    mutationFn: markBirthdayNotificationsViewedToday,
     retry: 1,
-    onSuccess: (lastViewedDate) => {
+    onSuccess: (response) => {
+      const lastViewedDate = response.data.results[0]?.lastViewedDate;
       if (lastViewedDate) onViewedDatePersisted(lastViewedDate);
     }
   });
 };
 
 const getBirthdayNotificationConfig =
-  async (): Promise<BirthdayNotificationConfigType | null> => {
-    const result = await authFetch.get(
+  async (): Promise<BirthdayNotificationConfigType> => {
+    const response = await authFetch.get<BirthdayNotificationConfigResponse>(
       peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG
     );
-
-    return result?.data?.results?.[0] ?? null;
+    return response.data.results[0];
   };
 
-export const useGetBirthdayNotificationConfig = () => {
+export const useGetBirthdayNotificationConfig = (): UseQueryResult<
+  BirthdayNotificationConfigType
+> => {
   return useQuery({
-    queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG(),
+    queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG,
     queryFn: getBirthdayNotificationConfig,
     retry: false,
     refetchOnWindowFocus: false
   });
 };
 
-const updateBirthdayNotificationConfig = async (
+const updateBirthdayNotificationConfig = (
   config: BirthdayNotificationConfigPatchType
-): Promise<void> => {
-  await authFetch.patch(
+): Promise<AxiosResponse<BirthdayNotificationConfigResponse>> =>
+  authFetch.patch<BirthdayNotificationConfigResponse>(
     peopleConfigEndpoints.BIRTHDAY_NOTIFICATION_CONFIG,
     config
   );
-};
 
 export const useUpdateBirthdayNotificationConfig = (
   onSuccess: (config: BirthdayNotificationConfigPatchType) => void,
-  onError: () => void
-) => {
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BirthdayNotificationConfigResponse>,
+  AxiosError,
+  BirthdayNotificationConfigPatchType
+> => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -1034,7 +1035,7 @@ export const useUpdateBirthdayNotificationConfig = (
     onSuccess: (_data, config) => {
       queryClient
         .invalidateQueries({
-          queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG()
+          queryKey: peopleConfigQueryKeys.BIRTHDAY_NOTIFICATION_CONFIG
         })
         .catch(() => {});
       onSuccess(config);

@@ -136,8 +136,5 @@ export const getPeopleDashboardQueryKeys = {
 };
 
 export const peopleConfigQueryKeys = {
-  ALL: ["people-config"],
-  BIRTHDAY_NOTIFICATION_CONFIG: function () {
-    return [...(this?.ALL || []), "birthday-notification-config"];
-  }
+  BIRTHDAY_NOTIFICATION_CONFIG: ["people-config", "birthday-notification-config"]
 };

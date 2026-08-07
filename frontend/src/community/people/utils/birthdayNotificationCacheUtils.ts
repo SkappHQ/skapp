@@ -3,7 +3,7 @@ import {
   removeDataFromLocalStorage,
   setDataToLocalStorage
 } from "~community/common/utils/accessLocalStorage";
-import { BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY } from "~community/people/constants/birthdayNotificationConstants";
+import { BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY } from "~community/people/constants/stringConstants";
 import { BirthdayNotificationViewStateType } from "~community/people/types/BirthdayNotificationTypes";
 
 export const readViewedCache = (): BirthdayNotificationViewStateType | null => {

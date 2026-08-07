@@ -377,7 +377,6 @@
       "organizationToggleLabel": "Send notification to entire organisation",
       "teamToggleTooltip": "Notifies only the direct team members of the person whose birthday it is",
       "organizationToggleTooltip": "Notifies all employees in the organisation, regardless of team",
-      "loadError": "We couldn't load birthday notification settings. Please refresh the page and try again.",
       "toastMessages": {
         "successTitle": "Settings Updated",
         "successDescription": "Birthday notification settings have been updated successfully.",

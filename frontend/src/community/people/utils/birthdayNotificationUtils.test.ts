@@ -3,7 +3,6 @@ import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificati
 
 import {
   buildBirthdayQueue,
-  getFullName,
   normalizeEmployeeId,
   partitionBirthdays
 } from "./birthdayNotificationUtils";
@@ -17,26 +16,6 @@ const buildEmployee = (
   authPic: null,
   email: "charlotte@rootcodelabs.com",
   ...overrides
-});
-
-describe("getFullName", () => {
-  it("joins first and last name", () => {
-    expect(getFullName(buildEmployee())).toBe("Charlotte Matthews");
-  });
-
-  it("omits a blank last name without leaving a trailing space", () => {
-    expect(getFullName(buildEmployee({ lastName: "" }))).toBe("Charlotte");
-  });
-
-  it("omits a whitespace-only first name", () => {
-    expect(getFullName(buildEmployee({ firstName: "   " }))).toBe("Matthews");
-  });
-
-  it("returns an empty string when both names are blank", () => {
-    expect(getFullName(buildEmployee({ firstName: "", lastName: "" }))).toBe(
-      ""
-    );
-  });
 });
 
 describe("normalizeEmployeeId", () => {
@@ -92,13 +71,6 @@ describe("partitionBirthdays", () => {
 
     expect(result.self).toBeNull();
     expect(result.colleagues).toEqual([self, colleagueOne]);
-  });
-
-  it("matches the viewer when the viewer id arrives as a string", () => {
-    const result = partitionBirthdays([colleagueOne, self], "7");
-
-    expect(result.self).toBe(self);
-    expect(result.colleagues).toEqual([colleagueOne]);
   });
 
   it("excludes employees with no displayable name", () => {

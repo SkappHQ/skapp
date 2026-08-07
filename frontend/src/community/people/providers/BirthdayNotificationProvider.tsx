@@ -11,13 +11,10 @@ import {
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { IsAProtectedUrlWithDrawer } from "~community/auth/utils/authUtils";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { isSuperAdminOnlySession } from "~community/common/utils/commonUtil";
 import { getDateForPeriod } from "~community/common/utils/dateTimeUtils";
 import useBirthdayViewedCache from "~community/people/hooks/useBirthdayViewedCache";
 import { BirthdayNotificationContextType } from "~community/people/types/BirthdayNotificationTypes";
-
-const AUTHENTICATED = "authenticated";
 
 const BirthdayNotificationContext =
   createContext<BirthdayNotificationContextType | null>(null);
@@ -27,13 +24,12 @@ const BirthdayNotificationProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const router = useRouter();
   const { user } = useAuth();
-  const { sessionStatus } = useSessionData();
 
   const [evaluationTick, setEvaluationTick] = useState(0);
 
   const today = getDateForPeriod("day", "start");
 
-  const { hasHydrated, isViewedToday, cacheLastViewedDate } =
+  const { isCacheLoaded, isViewedToday, cacheLastViewedDate } =
     useBirthdayViewedCache(today);
 
   useEffect(() => {
@@ -48,8 +44,8 @@ const BirthdayNotificationProvider: FC<{ children: ReactNode }> = ({
   }, [router.events]);
 
   const isEligible =
-    hasHydrated &&
-    sessionStatus === AUTHENTICATED &&
+    isCacheLoaded &&
+    !!user &&
     !isSuperAdminOnlySession(user?.roles) &&
     IsAProtectedUrlWithDrawer(router.asPath);
 

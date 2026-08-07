@@ -6,3 +6,7 @@ export interface BirthdayNotificationConfigType {
 
 export type BirthdayNotificationConfigPatchType =
   Partial<BirthdayNotificationConfigType>;
+
+export interface BirthdayNotificationConfigResponse {
+  results: BirthdayNotificationConfigType[];
+}

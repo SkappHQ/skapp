@@ -10,7 +10,7 @@ import {
 } from "~community/people/utils/birthdayNotificationCacheUtils";
 
 interface BirthdayViewedCacheType {
-  hasHydrated: boolean;
+  isCacheLoaded: boolean;
   isViewedToday: boolean;
   cacheLastViewedDate: (lastViewedDate: string) => void;
 }
@@ -20,17 +20,17 @@ const UNAUTHENTICATED = "unauthenticated";
 const useBirthdayViewedCache = (today: string): BirthdayViewedCacheType => {
   const { sessionStatus, userId } = useSessionData();
 
-  const [hasHydrated, setHasHydrated] = useState(false);
+  const [isCacheLoaded, setIsCacheLoaded] = useState(false);
   const [viewedCache, setViewedCache] =
     useState<BirthdayNotificationViewStateType | null>(null);
 
   const viewedCacheRef = useRef<BirthdayNotificationViewStateType | null>(null);
 
   useEffect(() => {
-    const hydratedCache = readViewedCache();
-    viewedCacheRef.current = hydratedCache;
-    setViewedCache(hydratedCache);
-    setHasHydrated(true);
+    const loadedCache = readViewedCache();
+    viewedCacheRef.current = loadedCache;
+    setViewedCache(loadedCache);
+    setIsCacheLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const useBirthdayViewedCache = (today: string): BirthdayViewedCacheType => {
   );
 
   return {
-    hasHydrated,
+    isCacheLoaded,
     isViewedToday: isViewedTodayForDate(viewedCache, today, userId),
     cacheLastViewedDate
   };

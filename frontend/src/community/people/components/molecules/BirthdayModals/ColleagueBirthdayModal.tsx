@@ -1,11 +1,10 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import BirthdayModalShell from "~community/people/components/molecules/BirthdayModalShell/BirthdayModalShell";
+import BirthdayModalShell from "~community/people/components/molecules/BirthdayModals/BirthdayModalShell";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
-import { getFullName } from "~community/people/utils/birthdayNotificationUtils";
 
-const MODAL_ID = "birthday-self";
+const MODAL_ID = "birthday-colleague";
 
 interface Props {
   employee: EmployeeBirthdayType;
@@ -14,7 +13,7 @@ interface Props {
   onDismiss: () => void;
 }
 
-const SelfBirthdayModal: FC<Props> = ({
+const ColleagueBirthdayModal: FC<Props> = ({
   employee,
   position,
   total,
@@ -26,10 +25,10 @@ const SelfBirthdayModal: FC<Props> = ({
     <BirthdayModalShell
       id={MODAL_ID}
       employee={employee}
-      heading={translateText(["self", "heading"], {
-        name: getFullName(employee)
+      heading={translateText(["colleague", "heading"], {
+        name: employee.firstName
       })}
-      body={translateText(["self", "body"])}
+      body={translateText(["colleague", "body"])}
       position={position}
       total={total}
       onDismiss={onDismiss}
@@ -37,4 +36,4 @@ const SelfBirthdayModal: FC<Props> = ({
   );
 };
 
-export default SelfBirthdayModal;
+export default ColleagueBirthdayModal;
