@@ -60,6 +60,7 @@
         "webhookUsernameRequired": "Webhook username is required",
         "webhookUsernameExists": "A device with this webhook username already exists",
         "webhookPasswordRequired": "Webhook password is required",
+        "webhookPasswordTooShort": "Webhook password must be at least 12 characters",
         "webhookCredentialTooLong": "Webhook credentials cannot exceed 100 characters"
       },
       "toasts": {
