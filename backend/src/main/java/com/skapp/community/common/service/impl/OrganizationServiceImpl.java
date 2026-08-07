@@ -19,6 +19,7 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
@@ -36,6 +37,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.time.DayOfWeek;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -225,6 +227,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 		return organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
 			.orElse("UTC");
+	}
+
+	@Override
+	public ZoneId getOrganizationZoneId() {
+		return DateTimeUtils.resolveZoneId(getOrganizationTimeZone());
 	}
 
 	public void getDefaultTimeConfigs() {
