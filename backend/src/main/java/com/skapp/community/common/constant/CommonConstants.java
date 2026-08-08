@@ -31,4 +31,6 @@ public class CommonConstants {
 
 	public static final String MULTIPART_CONTENT_TYPE_PREFIX = "multipart/";
 
+	public static final String IMAGE_CONTENT_TYPE_PREFIX = "image/";
+
 }
