@@ -10,6 +10,8 @@ import ContentWithoutDrawer from "~community/common/components/organisms/Content
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { tenantID } from "~community/common/utils/axiosInterceptor";
+import BirthdayModalController from "~community/people/components/organisms/BirthdayModalController/BirthdayModalController";
+import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import useFcmToken from "~enterprise/common/hooks/useFCMToken";
@@ -109,6 +111,9 @@ const BaseLayout = ({ children }: Props) => {
     <>
       {renderComponent}
       <CommonModalController />
+      <BirthdayNotificationProvider>
+        <BirthdayModalController />
+      </BirthdayNotificationProvider>
     </>
   );
 };
