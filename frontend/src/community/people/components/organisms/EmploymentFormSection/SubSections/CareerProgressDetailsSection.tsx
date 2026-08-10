@@ -12,7 +12,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import {
   convertDateToFormat,
-  getDateFromTimeStamp
+  getDateFromTimeStamp,
+  getPreviousDayFormatted
 } from "~community/common/utils/dateTimeUtils";
 import PeopleFormTable from "~community/people/components/molecules/PeopleFormTable/PeopleFormTable";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
@@ -120,10 +121,7 @@ const CareerProgressDetailsSection = ({
           positions[index] = {
             ...position,
             isCurrentEmployment: false,
-            endDate: convertDateToFormat(
-              DateTime.fromMillis(newStartDate).minus({ days: 1 }).toJSDate(),
-              LONG_DATE_TIME_FORMAT
-            )
+            endDate: getPreviousDayFormatted(startDate ?? "")
           };
         }
       });
