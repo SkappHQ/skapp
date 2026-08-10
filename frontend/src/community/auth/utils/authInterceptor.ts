@@ -6,7 +6,7 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
-import { applyTenantHeader } from "~enterprise/common/utils/tenantUtil";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { signOut } from "./authUtils";
 
@@ -22,11 +22,12 @@ const authAxios = axios.create({
 //  request interceptor
 authAxios.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    if (!isEnterpriseMode()) {
-      return config;
+    const tenantId = getTenantId();
+    if (isEnterpriseMode() && tenantId) {
+      config.headers["X-Tenant-ID"] = tenantId;
     }
 
-    return applyTenantHeader(config);
+    return config;
   },
   async (error) => {
     return await Promise.reject(error);

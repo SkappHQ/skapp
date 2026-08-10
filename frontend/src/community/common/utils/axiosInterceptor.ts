@@ -1,9 +1,9 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
-import { applyTenantHeader } from "~enterprise/common/utils/tenantUtil";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
-import { ApiVersions, appModes } from "../constants/configs";
+import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
 
 const authFetch = axios.create({
@@ -30,11 +30,12 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  if (process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE) {
-    return config;
+  const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
+  const tenantId = getTenantId();
+  if (isEnterpriseMode && tenantId) {
+    config.headers["X-Tenant-ID"] = tenantId;
   }
-
-  return applyTenantHeader(config);
+  return config;
 };
 
 const requestInterceptorConfigError = async (error: any) => {
