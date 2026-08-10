@@ -23,9 +23,9 @@ public class CrmCompanyControllerV2 {
 
 	private final CrmCompanyServiceV2 companyService;
 
-	@Operation(summary = "Get company metrics",
-			description = "Returns all details related to company info, tasks and deals")
-	@GetMapping("/metrics")
+	@Operation(summary = "Get companies",
+			description = "Returns a paginated list of companies, each with its base details and metrics.")
+	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());

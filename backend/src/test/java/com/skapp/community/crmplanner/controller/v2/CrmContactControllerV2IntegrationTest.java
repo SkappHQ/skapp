@@ -47,7 +47,7 @@ class CrmContactControllerV2IntegrationTest {
 
 	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
 
-	private static final String METRICS_PATH = BASE_PATH + "/metrics";
+	private static final String METRICS_PATH = BASE_PATH;
 
 	private final MockMvc mvc;
 

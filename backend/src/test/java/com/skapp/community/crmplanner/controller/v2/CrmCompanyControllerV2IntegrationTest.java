@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CRM Company Controller V2 Integration Tests")
 class CrmCompanyControllerV2IntegrationTest {
 
-	private static final String METRICS_PATH = "/v2/crm/company/metrics";
+	private static final String METRICS_PATH = "/v2/crm/company";
 
 	private final MockMvc mvc;
 
