@@ -3,7 +3,10 @@ import { SetStateAction } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
-import { ApplyPolicyLeaveErrorKeys } from "~community/leave/enums/MyRequestEnums";
+import {
+  ApplyPolicyLeaveErrorKeys,
+  LeaveStatusEnums
+} from "~community/leave/enums/MyRequestEnums";
 import { PolicyLeaveToastEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import {
   PolicyLeaveFormErrors,
@@ -40,7 +43,14 @@ interface PolicyLeaveToastConfig {
   toastType: ToastType;
   titleKey: string;
   descriptionKey: string;
-  autoHideDuration?: number;
+  autoHideDuration?: number | null;
+}
+
+interface PolicyBalanceLabelProps {
+  balanceInDays: number;
+  isUnlimited: boolean;
+  isBalanceAvailable: boolean;
+  translateText: TranslateFn;
 }
 
 interface PolicyLeaveFormErrorsProps {
@@ -54,7 +64,7 @@ interface PolicyLeaveFormErrorsProps {
 
 const SUCCESS_TOAST_DURATION_MS = 4000;
 
-const ERROR_TOAST_NO_AUTO_DISMISS_MS = 24 * 60 * 60 * 1000;
+const BALANCE_UNAVAILABLE_LABEL = "—";
 
 export const policyLeaveStatusFilters: PolicyLeaveRequestStatus[] = [
   PolicyLeaveRequestStatus.PENDING,
@@ -84,11 +94,41 @@ export const getDisabledReasonToastKeys = (
         descriptionKey: "policyInactiveError.description"
       };
     case PolicyBalanceDisabledReason.FULLY_UTILIZED:
-    default:
       return {
         titleKey: "fullyUtilizedError.title",
         descriptionKey: "fullyUtilizedError.description"
       };
+    default:
+      return {
+        titleKey: "balanceUnavailableError.title",
+        descriptionKey: "balanceUnavailableError.description"
+      };
+  }
+};
+
+export const getPolicyBalanceLabel = ({
+  balanceInDays,
+  isUnlimited,
+  isBalanceAvailable,
+  translateText
+}: PolicyBalanceLabelProps): string => {
+  if (!isBalanceAvailable) {
+    return BALANCE_UNAVAILABLE_LABEL;
+  }
+
+  return isUnlimited ? translateText(["unlimited"]) : balanceInDays.toString();
+};
+
+export const toLeaveStatus = (
+  status: PolicyLeaveRequestStatus
+): LeaveStatusEnums | null => {
+  switch (status) {
+    case PolicyLeaveRequestStatus.PENDING:
+      return LeaveStatusEnums.PENDING;
+    case PolicyLeaveRequestStatus.APPROVED:
+      return LeaveStatusEnums.APPROVED;
+    default:
+      return null;
   }
 };
 
@@ -194,9 +234,7 @@ export const handlePolicyLeaveToast = ({
     description: translateText([config.descriptionKey]),
     autoHideDuration:
       config.autoHideDuration ??
-      (config.toastType === ToastType.ERROR
-        ? ERROR_TOAST_NO_AUTO_DISMISS_MS
-        : undefined)
+      (config.toastType === ToastType.ERROR ? null : undefined)
   });
 };
 

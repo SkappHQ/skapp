@@ -22,6 +22,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
 import LeaveAllocationSkeleton from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocationSkeleton";
 import LeavePolicyCard from "~community/leave/components/molecules/LeavePolicyCard/LeavePolicyCard";
+import PolicyLeaveErrorState from "~community/leave/components/molecules/PolicyLeaveErrorState/PolicyLeaveErrorState";
 import {
   ALLOCATION_PER_PAGE,
   ALLOCATION_PER_PAGE_MOBILE
@@ -31,16 +32,21 @@ import { EmployeePolicyBalanceType } from "~community/leave/types/PolicyLeaveTyp
 
 import styles from "../LeaveAllocation/styles";
 import LeavePolicyAllocationEmptyScreen from "./LeavePolicyAllocationEmptyScreen";
-import LeavePolicyAllocationErrorState from "./LeavePolicyAllocationErrorState";
 
 const LeavePolicyAllocation: FC = () => {
   const translateAria = useTranslator("leaveAria");
+  const translateErrorText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "leavePolicyAllocation",
+    "errorState"
+  );
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
   const isBelow600 = useMediaQuery()(MediaQueries.BELOW_600);
 
-  const { selectedYear } = usePolicyLeaveStore();
+  const selectedYear = usePolicyLeaveStore((state) => state.selectedYear);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [allocationsPerPage, setAllocationsPerPage] =
@@ -60,6 +66,7 @@ const LeavePolicyAllocation: FC = () => {
     setAllocationsPerPage(
       isBelow600 ? ALLOCATION_PER_PAGE_MOBILE : ALLOCATION_PER_PAGE
     );
+    setCurrentPage(1);
   }, [isBelow600]);
 
   useEffect(() => {
@@ -77,6 +84,10 @@ const LeavePolicyAllocation: FC = () => {
     () => Math.ceil((policyBalances?.length ?? 0) / allocationsPerPage),
     [policyBalances, allocationsPerPage]
   );
+
+  const handleRetry = (): void => {
+    void refetch();
+  };
 
   const handleNextPage = (
     event: MouseEvent<HTMLButtonElement> | KeyboardEvent<HTMLButtonElement>
@@ -112,8 +123,10 @@ const LeavePolicyAllocation: FC = () => {
     >
       <Grid container spacing={2}>
         {isError ? (
-          <LeavePolicyAllocationErrorState
-            onRetry={() => void refetch()}
+          <PolicyLeaveErrorState
+            message={translateErrorText(["message"])}
+            retryLabel={translateErrorText(["retry"])}
+            onRetry={handleRetry}
             isRetrying={isFetching}
           />
         ) : !isLoading && policyBalances?.length === 0 ? (

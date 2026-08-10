@@ -1,6 +1,13 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
@@ -12,6 +19,7 @@ import { appModes } from "~community/common/constants/configs";
 import { HTTP_UNAUTHORIZED } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
 import { FileTypes } from "~community/common/enums/CommonEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -21,6 +29,7 @@ import {
 import { IconName } from "~community/common/types/IconTypes";
 import {
   convertToYYYYMMDDFromDateTime,
+  convertYYYYMMDDToDateTime,
   currentYear,
   getMonthStartAndEndDates
 } from "~community/common/utils/dateTimeUtils";
@@ -37,18 +46,17 @@ import LeaveSummary from "~community/leave/components/molecules/LeaveSummary/Lea
 import PolicyLeaveBalanceCard from "~community/leave/components/molecules/PolicyLeaveBalanceCard/PolicyLeaveBalanceCard";
 import PolicyTeamAvailabilityCard from "~community/leave/components/molecules/PolicyTeamAvailabilityCard/PolicyTeamAvailabilityCard";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
-import { LeaveStatusEnums } from "~community/leave/enums/MyRequestEnums";
 import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
 } from "~community/leave/enums/PolicyLeaveEnums";
-import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
+import {
+  selectHasUnsavedChanges,
+  usePolicyLeaveStore
+} from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import {
-  PolicyLeaveAttachmentPayload,
-  PolicyLeaveRequestStatus
-} from "~community/leave/types/PolicyLeaveTypes";
+import { PolicyLeaveAttachmentPayload } from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
@@ -58,7 +66,8 @@ import {
   getPolicyLeaveFormErrors,
   handlePolicyLeaveToast,
   hasPolicyLeaveFormErrors,
-  mapApplyErrorKeyToToastType
+  mapApplyErrorKeyToToastType,
+  toLeaveStatus
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
 import {
@@ -67,6 +76,8 @@ import {
 } from "~community/people/api/PeopleApi";
 import { useGetMyTeams } from "~community/people/api/TeamApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
+import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
 
@@ -74,11 +85,19 @@ const SESSION_EXPIRED_REDIRECT_DELAY_MS = 2000;
 
 const MAX_COMMENT_LENGTH = 255;
 
+const ATTACHMENT_UPLOAD_FAILED = "ATTACHMENT_UPLOAD_FAILED";
+
 const ApplyPolicyLeaveModal = () => {
   const router = useRouter();
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
+  const { sendEvent } = useGoogleAnalyticsEvent();
   const dateFieldRef = useRef<HTMLDivElement>(null);
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const availabilityRequestIdRef = useRef(0);
+
+  const [hasAvailabilityCheckFailed, setHasAvailabilityCheckFailed] =
+    useState(false);
 
   const translateStorageText = useTranslator("StorageToastMessage");
   const translateText = useTranslator(
@@ -115,6 +134,8 @@ const ApplyPolicyLeaveModal = () => {
     (state) => state.isApplyLeaveModalBtnDisabled
   );
 
+  const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
+
   const { data: timeConfig } = useDefaultCapacity();
   const { data: myTeams } = useGetMyTeams();
   const { data: myPolicyLeaveRequests } =
@@ -140,9 +161,7 @@ const ApplyPolicyLeaveModal = () => {
   const { data: storageAvailabilityData } = useStorageAvailability();
   const { mutateAsync: uploadAttachments } = useUploadImages();
 
-  const { mutate: checkAvailability } = useCheckPolicyLeaveAvailability(
-    (data) => setAvailability(data)
-  );
+  const { mutate: checkAvailability } = useCheckPolicyLeaveAvailability();
 
   const onApplySuccess = () => {
     handlePolicyLeaveToast({
@@ -150,6 +169,7 @@ const ApplyPolicyLeaveModal = () => {
       setToastMessage,
       translateText
     });
+    sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPLIED);
     setModalType(PolicyLeaveModalEnums.NONE);
   };
 
@@ -160,7 +180,7 @@ const ApplyPolicyLeaveModal = () => {
         setToastMessage,
         translateText
       });
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         void router.push(ROUTES.AUTH.SIGNIN);
       }, SESSION_EXPIRED_REDIRECT_DELAY_MS);
       return;
@@ -176,19 +196,37 @@ const ApplyPolicyLeaveModal = () => {
   const { mutate: applyPolicyLeave, isPending: isApplyPending } =
     useApplyPolicyLeave(selectedYear, onApplySuccess, onApplyError);
 
+  useEffect(
+    () => () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    },
+    []
+  );
+
   const minDate = useMemo(
-    () => new Date(selectedPolicyBalance?.validFrom ?? Date.now()),
+    () =>
+      selectedPolicyBalance
+        ? convertYYYYMMDDToDateTime(selectedPolicyBalance.validFrom).toJSDate()
+        : new Date(),
     [selectedPolicyBalance]
   );
 
   const maxDate = useMemo(
-    () => new Date(selectedPolicyBalance?.validTo ?? Date.now()),
+    () =>
+      selectedPolicyBalance
+        ? convertYYYYMMDDToDateTime(selectedPolicyBalance.validTo).toJSDate()
+        : new Date(),
     [selectedPolicyBalance]
   );
 
-  const usedStoragePercentage = useMemo(
-    () => 100 - (storageAvailabilityData?.availableSpace ?? 0),
-    [storageAvailabilityData]
+  const isStorageFull = useMemo(
+    () =>
+      environment === appModes.COMMUNITY &&
+      storageAvailabilityData !== undefined &&
+      100 - storageAvailabilityData.availableSpace >= NINETY_PERCENT,
+    [environment, storageAvailabilityData]
   );
 
   const workingDays = useMemo(
@@ -198,28 +236,32 @@ const ApplyPolicyLeaveModal = () => {
 
   const blockingLeaveRequests: MyLeaveRequestPayloadType[] = useMemo(
     () =>
-      (myPolicyLeaveRequests ?? [])
-        .filter(
-          (request) =>
-            request.status === PolicyLeaveRequestStatus.PENDING ||
-            request.status === PolicyLeaveRequestStatus.APPROVED
-        )
-        .map((request) => ({
-          leaveRequestId: request.leaveRequestId,
-          startDate: request.startDate,
-          endDate: request.endDate,
-          leaveType: {
-            typeId: request.leaveType.id,
-            name: request.leaveType.name,
-            emojiCode: request.leaveType.emojiCode,
-            colorCode: request.leaveType.colorCode
-          },
-          leaveState: request.leaveState,
-          status: request.status as unknown as LeaveStatusEnums,
-          isViewed: request.isViewed,
-          durationDays: request.durationDays,
-          requestDesc: request.requestDesc ?? ""
-        })),
+      (myPolicyLeaveRequests ?? []).flatMap((request) => {
+        const status = toLeaveStatus(request.status);
+
+        if (!status) {
+          return [];
+        }
+
+        return [
+          {
+            leaveRequestId: request.leaveRequestId,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            leaveType: {
+              typeId: request.leaveType.id,
+              name: request.leaveType.name,
+              emojiCode: request.leaveType.emojiCode,
+              colorCode: request.leaveType.colorCode
+            },
+            leaveState: request.leaveState,
+            status,
+            isViewed: request.isViewed,
+            durationDays: request.durationDays,
+            requestDesc: request.requestDesc ?? ""
+          }
+        ];
+      }),
     [myPolicyLeaveRequests]
   );
 
@@ -274,6 +316,12 @@ const ApplyPolicyLeaveModal = () => {
   ]);
 
   useEffect(() => {
+    // Bumping the request id invalidates any in-flight check, so a slow
+    // earlier response can never overwrite the state of a later selection.
+    const requestId = ++availabilityRequestIdRef.current;
+
+    setHasAvailabilityCheckFailed(false);
+
     if (
       !selectedPolicyBalance ||
       selectedDates.length === 0 ||
@@ -283,18 +331,37 @@ const ApplyPolicyLeaveModal = () => {
       return;
     }
 
-    checkAvailability({
-      policyId: selectedPolicyBalance.policyId,
-      startDate: convertToYYYYMMDDFromDateTime(selectedDates[0]),
-      endDate: convertToYYYYMMDDFromDateTime(
-        selectedDates[1] ?? selectedDates[0]
-      ),
-      leaveState: selectedDuration
-    });
+    checkAvailability(
+      {
+        policyId: selectedPolicyBalance.policyId,
+        startDate: convertToYYYYMMDDFromDateTime(selectedDates[0]),
+        endDate: convertToYYYYMMDDFromDateTime(
+          selectedDates[1] ?? selectedDates[0]
+        ),
+        leaveState: selectedDuration
+      },
+      {
+        onSuccess: (data) => {
+          if (requestId === availabilityRequestIdRef.current) {
+            setAvailability(data);
+          }
+        },
+        onError: () => {
+          if (requestId === availabilityRequestIdRef.current) {
+            setAvailability(null);
+            setHasAvailabilityCheckFailed(true);
+          }
+        }
+      }
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDates, selectedDuration, selectedPolicyBalance?.policyId]);
 
   const availabilityError = useMemo(() => {
+    if (hasAvailabilityCheckFailed) {
+      return translateText(["errors.availabilityCheckFailed"]);
+    }
+
     if (!availability || availability.isValid || !selectedPolicyBalance) {
       return "";
     }
@@ -304,7 +371,12 @@ const ApplyPolicyLeaveModal = () => {
       policyName: selectedPolicyBalance.policyName,
       translateText
     });
-  }, [availability, selectedPolicyBalance, translateText]);
+  }, [
+    hasAvailabilityCheckFailed,
+    availability,
+    selectedPolicyBalance,
+    translateText
+  ]);
 
   useEffect(() => {
     setFormError("selectedDates", availabilityError);
@@ -339,6 +411,15 @@ const ApplyPolicyLeaveModal = () => {
     translateText
   ]);
 
+  // Re-run validation once errors are on screen so they clear as the user
+  // fixes each field, instead of lingering until the next submit.
+  useEffect(() => {
+    if (hasPolicyLeaveFormErrors(formErrors)) {
+      validate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDates, comment, attachments]);
+
   const uploadAttachmentsAndGetRefs = async (): Promise<
     PolicyLeaveAttachmentPayload[]
   > => {
@@ -348,9 +429,9 @@ const ApplyPolicyLeaveModal = () => {
 
     const uploadOne = async (
       attachment: FileUploadType
-    ): Promise<PolicyLeaveAttachmentPayload | null> => {
+    ): Promise<PolicyLeaveAttachmentPayload> => {
       if (!attachment.file) {
-        return null;
+        throw new Error(ATTACHMENT_UPLOAD_FAILED);
       }
 
       if (environment === appModes.COMMUNITY) {
@@ -362,20 +443,27 @@ const ApplyPolicyLeaveModal = () => {
           "File uploaded successfully: "
         )[1];
         const fileUrl = filePath?.split("/").pop();
-        return fileUrl ? { fileUrl, originalFileName: attachment.name } : null;
+
+        if (!fileUrl) {
+          throw new Error(ATTACHMENT_UPLOAD_FAILED);
+        }
+
+        return { fileUrl, originalFileName: attachment.name };
       }
 
       const fileUrl = await uploadFileToS3ByUrl(
         attachment.file as File,
         FileCategories.LEAVE_REQUEST
       );
-      return fileUrl ? { fileUrl, originalFileName: attachment.name } : null;
+
+      if (!fileUrl) {
+        throw new Error(ATTACHMENT_UPLOAD_FAILED);
+      }
+
+      return { fileUrl, originalFileName: attachment.name };
     };
 
-    const uploaded = await Promise.all(attachments.map(uploadOne));
-    return uploaded.filter(
-      (ref): ref is PolicyLeaveAttachmentPayload => ref !== null
-    );
+    return Promise.all(attachments.map(uploadOne));
   };
 
   const onSubmit = async () => {
@@ -410,14 +498,10 @@ const ApplyPolicyLeaveModal = () => {
   };
 
   const handleAttachmentIconClick = () => {
-    const isStorageFull =
-      process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
-      usedStoragePercentage >= NINETY_PERCENT;
-
     if (isStorageFull) {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateStorageText(["storageTitle"]),
         description: translateStorageText(["contactAdminText"]),
         isIcon: true
@@ -435,9 +519,6 @@ const ApplyPolicyLeaveModal = () => {
   if (!selectedPolicyBalance) {
     return null;
   }
-
-  const hasUnsavedChanges =
-    selectedDates.length > 0 || comment.trim() !== "" || attachments.length > 0;
 
   const isSubmitDisabled =
     selectedDates.length === 0 ||

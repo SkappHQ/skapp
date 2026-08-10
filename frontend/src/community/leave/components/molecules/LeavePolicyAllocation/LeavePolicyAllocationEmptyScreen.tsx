@@ -12,8 +12,8 @@ const LeavePolicyAllocationEmptyScreen = () => {
 
   return (
     <div className="w-full">
-      <div className="flex h-[24.4375rem] flex-col items-center justify-center">
-        <div className="flex w-[30.75rem] flex-col items-center justify-center gap-4 text-center">
+      <div className="flex min-h-[24.4375rem] flex-col items-center justify-center">
+        <div className="flex w-full max-w-[30.75rem] flex-col items-center justify-center gap-4 text-center">
           <Icon name={IconName.CALENDAR_ICON} />
           <p className="text-lg font-bold">{translateText(["title"])}</p>
           <div className="body2 w-full text-black">

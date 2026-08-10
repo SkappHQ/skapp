@@ -21,6 +21,11 @@ const styles = (theme: Theme): StyleProps => ({
   disabledCard: {
     color: theme.palette.grey[600],
     filter: "saturate(0)",
+    cursor: "not-allowed",
+    "&:hover": {
+      background: theme.palette.grey[100],
+      outline: "none"
+    },
     "& .MuiTypography-root": {
       color: theme.palette.grey[700]
     }

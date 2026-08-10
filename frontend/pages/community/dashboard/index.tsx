@@ -27,9 +27,11 @@ import {
 import { ModuleTypes } from "~community/common/types/CommonTypes";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
+import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
 import LeaveAllocationSummary from "~community/leave/components/organisms/LeaveDashboard/LeaveAllocationSummary";
 import LeaveDashboard from "~community/leave/components/organisms/LeaveDashboard/LeaveDashboard";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import PeopleDashboard from "~community/people/components/organisms/PeopleDashboard/PeopleDashboard";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
@@ -211,13 +213,25 @@ const Dashboard: NextPage = () => {
 
   const currentDate = DateTime.now();
   const nextYear = currentDate.plus({ years: 1 }).year;
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
   const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
-    nextYear.toString()
+    nextYear.toString(),
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
   );
 
+  const { data: nextYearPolicyBalances } = useGetMyPolicyBalances(
+    nextYear.toString(),
+    isLeavePoliciesEnabled
+  );
+
+  const isNextYearAvailable = isLeavePoliciesEnabled
+    ? (nextYearPolicyBalances?.length ?? 0) > 0
+    : (isEntitlementAvailableNextYear?.length ?? 0) > 0;
+
   const isLeaveOnlyView = user && visibleTabs.length === 0;
-  const showYearSelector =
-    isLeaveOnlyView && isEntitlementAvailableNextYear?.length > 0;
+  const showYearSelector = isLeaveOnlyView && isNextYearAvailable;
 
   useGoogleAnalyticsEvent({
     onMountEventType:

@@ -13,8 +13,6 @@ import { MAX_ALLOWED_UPLOADS } from "~community/leave/constants/stringConstants"
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 
-const MAX_ATTACHMENT_SIZE_BYTES = 10_000_000;
-
 const PolicyAddAttachmentModal = () => {
   const translateText = useTranslator(
     "leaveModule",
@@ -22,7 +20,9 @@ const PolicyAddAttachmentModal = () => {
     "addAttachmentModal"
   );
 
-  const { attachments, setAttachments, setModalType } = usePolicyLeaveStore();
+  const attachments = usePolicyLeaveStore((state) => state.attachments);
+  const setAttachments = usePolicyLeaveStore((state) => state.setAttachments);
+  const setModalType = usePolicyLeaveStore((state) => state.setModalType);
 
   const [attachmentError, setAttachmentError] = useState(false);
 
@@ -43,10 +43,6 @@ const PolicyAddAttachmentModal = () => {
         }}
         uploadableFiles={attachments}
         maxFileSize={MAX_ALLOWED_UPLOADS}
-        maxSizeOfFile={{
-          inBytes: MAX_ATTACHMENT_SIZE_BYTES,
-          inReadableSize: "10MB"
-        }}
         supportedFiles={".jpg, .pdf, .png, .jpeg"}
       />
       <div className="flex flex-row gap-3 mt-4 justify-end">

@@ -8,7 +8,10 @@ import PolicyAddAttachmentModal from "~community/leave/components/molecules/Poli
 import PolicySelectionModal from "~community/leave/components/molecules/PolicyLeaveModals/PolicySelectionModal/PolicySelectionModal";
 import PolicyTeamAvailabilityModal from "~community/leave/components/molecules/PolicyLeaveModals/PolicyTeamAvailabilityModal/PolicyTeamAvailabilityModal";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
-import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
+import {
+  selectHasUnsavedChanges,
+  usePolicyLeaveStore
+} from "~community/leave/store/policyLeaveStore";
 
 const PolicyLeaveModalController = () => {
   const translateText = useTranslator("leaveModule", "myRequests");
@@ -16,12 +19,7 @@ const PolicyLeaveModalController = () => {
   const isModalOpen = usePolicyLeaveStore((state) => state.isModalOpen);
   const modalType = usePolicyLeaveStore((state) => state.modalType);
   const setModalType = usePolicyLeaveStore((state) => state.setModalType);
-  const selectedDates = usePolicyLeaveStore((state) => state.selectedDates);
-  const comment = usePolicyLeaveStore((state) => state.comment);
-  const attachments = usePolicyLeaveStore((state) => state.attachments);
-
-  const hasUnsavedChanges =
-    selectedDates.length > 0 || comment.trim() !== "" || attachments.length > 0;
+  const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
   const modalTitle = useMemo(() => {
     switch (modalType) {

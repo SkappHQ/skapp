@@ -29,11 +29,12 @@ const MyRequests: NextPage = () => {
   const now = DateTime.now();
   const nextYear = now.plus({ years: 1 }).year;
 
-  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
 
   const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
     nextYear.toString(),
-    !isLeavePoliciesEnabled
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
   );
 
   const { data: nextYearPolicyBalances } = useGetMyPolicyBalances(

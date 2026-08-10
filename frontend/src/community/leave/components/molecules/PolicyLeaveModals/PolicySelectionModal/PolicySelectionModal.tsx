@@ -14,7 +14,7 @@ const PolicySelectionModal = () => {
     "policySelectionModal"
   );
 
-  const { setModalType } = usePolicyLeaveStore();
+  const setModalType = usePolicyLeaveStore((state) => state.setModalType);
 
   return (
     <div className="flex flex-col gap-4">

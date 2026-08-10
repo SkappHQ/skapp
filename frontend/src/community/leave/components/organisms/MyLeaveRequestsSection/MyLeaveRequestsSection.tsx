@@ -1,27 +1,19 @@
-import { FC, useEffect } from "react";
+import { FC } from "react";
 
+import TableSkeleton from "~community/common/components/molecules/Table/TableSkeleton";
 import LeaveRequests from "~community/leave/components/molecules/LeaveRequests/LeaveRequests";
 import PolicyLeaveRequests from "~community/leave/components/molecules/PolicyLeaveRequests/PolicyLeaveRequests";
+import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
-import { useLeaveStore } from "~community/leave/store/store";
+import usePolicyLeaveYearSync from "~community/leave/hooks/usePolicyLeaveYearSync";
 
 const MyLeaveRequestsSection: FC = () => {
   const { isLeavePoliciesEnabled, isLoading } = useLeavePoliciesEnabled();
 
-  const selectedYear = useLeaveStore((state) => state.selectedYear);
-  const setPolicySelectedYear = usePolicyLeaveStore(
-    (state) => state.setSelectedYear
-  );
-
-  useEffect(() => {
-    if (selectedYear) {
-      setPolicySelectedYear(selectedYear);
-    }
-  }, [selectedYear, setPolicySelectedYear]);
+  usePolicyLeaveYearSync();
 
   if (isLoading) {
-    return null;
+    return <TableSkeleton rows={LEAVE_REQUESTS_SKELETON_ROWS} />;
   }
 
   return isLeavePoliciesEnabled ? <PolicyLeaveRequests /> : <LeaveRequests />;

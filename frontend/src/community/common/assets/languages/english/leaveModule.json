@@ -148,7 +148,11 @@
       "revokedLeaveStatus": "Leave request revoked",
       "deniedLeaveStatus": "Leave request denied",
       "attachments": "Attachments : ",
-      "uploadedAttachment": "Uploaded Attachment"
+      "uploadedAttachment": "Uploaded Attachment",
+      "errorState": {
+        "message": "Unable to load your leave requests. Please refresh the page",
+        "retry": "Retry"
+      }
     },
     "leavePolicyAllocation": {
       "available": "Available",
@@ -167,6 +171,10 @@
       "fullyUtilizedError": {
         "title": "Insufficient Balance",
         "description": "You have no available balance remaining on this leave policy"
+      },
+      "balanceUnavailableError": {
+        "title": "Unable to Apply",
+        "description": "This leave policy balance is unavailable right now. Please refresh and try again"
       },
       "expiredError": {
         "title": "Allocation Expired",
@@ -207,7 +215,8 @@
         "outsidePolicyPeriod": "The selected dates fall outside the allocation period of {{policyName}}",
         "overlappingRequest": "You already have a leave request that overlaps these dates",
         "noWorkingDays": "The selected dates contain no working days",
-        "invalidDateRange": "The end date cannot be before the start date"
+        "invalidDateRange": "The end date cannot be before the start date",
+        "availabilityCheckFailed": "We couldn't verify your balance for these dates. Please check your connection and select the dates again"
       },
       "toastMessages": {
         "applySuccess": {

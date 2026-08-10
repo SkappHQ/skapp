@@ -25,7 +25,7 @@ export const useGetMyPolicyBalances = (
   enabled = true
 ): UseQueryResult<EmployeePolicyBalanceType[]> => {
   return useQuery({
-    queryKey: [policyLeaveQueryKeys.MY_POLICY_BALANCES, year],
+    queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year),
     queryFn: async () => {
       const response = await authFetch.get(
         policyLeaveEndPoints.GET_MY_POLICY_BALANCES(year)
@@ -42,7 +42,7 @@ export const useGetMyPolicyLeaveRequests = (
   enabled = true
 ): UseQueryResult<PolicyLeaveRequestType[]> => {
   return useQuery({
-    queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS, year],
+    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year),
     queryFn: async () => {
       const response = await authFetch.get(
         policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS(year)
@@ -60,15 +60,25 @@ export const useSearchMyPolicyLeaveRequests = (
   enabled = true
 ): UseQueryResult<PolicyLeaveRequestPageType> => {
   return useQuery({
-    queryKey: [
-      policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH,
+    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(
       year,
       params
-    ],
+    ),
     queryFn: async () => {
+      // Spring binds a List<> request param from a CSV string, not from the
+      // bracketed form axios produces for arrays.
+      const { status, policyId, ...rest } = params;
+
       const response = await authFetch.get(
         policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
-        { params: { ...params, year } }
+        {
+          params: {
+            ...rest,
+            year,
+            status: status.length ? status.join(",") : undefined,
+            policyId: policyId.length ? policyId.join(",") : undefined
+          }
+        }
       );
       return response.data.results[0] as PolicyLeaveRequestPageType;
     },
@@ -77,9 +87,7 @@ export const useSearchMyPolicyLeaveRequests = (
   });
 };
 
-export const useCheckPolicyLeaveAvailability = (
-  onSuccess?: (data: PolicyLeaveAvailabilityType) => void
-): UseMutationResult<
+export const useCheckPolicyLeaveAvailability = (): UseMutationResult<
   PolicyLeaveAvailabilityType,
   ErrorResponse,
   PolicyLeaveAvailabilityPayload
@@ -91,8 +99,7 @@ export const useCheckPolicyLeaveAvailability = (
         payload
       );
       return response.data.results[0] as PolicyLeaveAvailabilityType;
-    },
-    onSuccess
+    }
   });
 };
 
@@ -117,13 +124,13 @@ export const useApplyPolicyLeave = (
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: [policyLeaveQueryKeys.MY_POLICY_BALANCES, year]
+        queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year)
       });
       queryClient.invalidateQueries({
-        queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS, year]
+        queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
       });
       queryClient.invalidateQueries({
-        queryKey: [policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH, year]
+        queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(year)
       });
       onSuccess(data);
     },

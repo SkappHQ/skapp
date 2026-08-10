@@ -85,7 +85,6 @@ export interface PolicyLeaveStore {
   setFormErrors: (errors: PolicyLeaveFormErrors) => void;
   setAvailability: (availability: PolicyLeaveAvailabilityType | null) => void;
   setTeamAvailabilityData: (data: TeamAvailabilityDataType[]) => void;
-  resetForm: () => void;
 }
 
 const emptyForm = () => ({
@@ -167,9 +166,13 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
       setFormErrors: (formErrors) => set({ formErrors }),
       setAvailability: (availability) => set({ availability }),
       setTeamAvailabilityData: (teamAvailabilityData) =>
-        set({ teamAvailabilityData }),
-      resetForm: () => set((state) => ({ ...state, ...emptyForm() }))
+        set({ teamAvailabilityData })
     }),
     { name: "policyLeaveStore" }
   )
 );
+
+export const selectHasUnsavedChanges = (state: PolicyLeaveStore): boolean =>
+  state.selectedDates.length > 0 ||
+  state.comment.trim() !== "" ||
+  state.attachments.length > 0;

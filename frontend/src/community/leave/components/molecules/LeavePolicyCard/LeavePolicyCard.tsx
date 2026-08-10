@@ -11,7 +11,10 @@ import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import { LOW_BALANCE_WARNING_DAYS } from "~community/leave/constants/stringConstants";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { EmployeePolicyBalanceType } from "~community/leave/types/PolicyLeaveTypes";
-import { getDisabledReasonToastKeys } from "~community/leave/utils/policyLeave/policyLeaveUtils";
+import {
+  getDisabledReasonToastKeys,
+  getPolicyBalanceLabel
+} from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 import styles from "./styles";
 
@@ -42,7 +45,9 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
     );
 
     const { setToastMessage } = useToast();
-    const { openApplyModalForPolicy } = usePolicyLeaveStore();
+    const openApplyModalForPolicy = usePolicyLeaveStore(
+      (state) => state.openApplyModalForPolicy
+    );
 
     const [isMouseOn, setMouseOn] = useState(false);
 
@@ -83,11 +88,12 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
 
     const handleMouseLeave = (): void => setMouseOn(false);
 
-    const balanceLabel = !isBalanceAvailable
-      ? "—"
-      : isUnlimited
-        ? translateText(["unlimited"])
-        : balanceInDays;
+    const balanceLabel = getPolicyBalanceLabel({
+      balanceInDays,
+      isUnlimited,
+      isBalanceAvailable,
+      translateText
+    });
 
     const card = (
       <Stack

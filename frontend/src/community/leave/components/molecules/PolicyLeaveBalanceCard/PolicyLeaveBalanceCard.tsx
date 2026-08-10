@@ -6,6 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
 import { EmployeePolicyBalanceType } from "~community/leave/types/PolicyLeaveTypes";
+import { getPolicyBalanceLabel } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 interface Props {
   policyBalance: EmployeePolicyBalanceType;
@@ -20,7 +21,20 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
     "policyBalanceCard"
   );
 
+  const translateAllocationText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "leavePolicyAllocation"
+  );
+
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false);
+
+  const balanceLabel = getPolicyBalanceLabel({
+    balanceInDays: policyBalance.balanceInDays,
+    isUnlimited: policyBalance.isUnlimited,
+    isBalanceAvailable: policyBalance.isBalanceAvailable,
+    translateText: translateAllocationText
+  });
 
   const handleShowTooltip = (): void => setIsTooltipOpen(true);
 
@@ -42,7 +56,9 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
           <div className={ROW_CLASSES}>
             <p className="body2">{translateText(["available"])}</p>
             <p className="body2">
-              {policyBalance.balanceInDays} / {policyBalance.totalDaysAllocated}
+              {policyBalance.isUnlimited || !policyBalance.isBalanceAvailable
+                ? balanceLabel
+                : `${balanceLabel} / ${policyBalance.totalDaysAllocated}`}
             </p>
           </div>
           <div className={ROW_CLASSES}>

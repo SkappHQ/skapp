@@ -99,7 +99,7 @@ const PolicyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
           }
         />
       </section>
-      <section aria-label={translateAria(["typeFilterSection"])}>
+      <section aria-label={translateAria(["policyFilterSection"])}>
         <SelectableItemList
           title={translateText(["filterButtonPolicy"])}
           items={(policyBalances ?? []).map((balance) => ({

@@ -12,7 +12,9 @@ import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import { useSearchMyPolicyLeaveRequests } from "~community/leave/api/PolicyLeaveApi";
 import LeaveRequestDates from "~community/leave/components/molecules/LeaveRequestDates/LeaveRequestDates";
+import PolicyLeaveErrorState from "~community/leave/components/molecules/PolicyLeaveErrorState/PolicyLeaveErrorState";
 import PolicyLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyLeaveRequestFilterBody/PolicyLeaveRequestFilterBody";
+import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestType } from "~community/leave/types/PolicyLeaveTypes";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
@@ -28,16 +30,23 @@ const PolicyLeaveRequests: FC = () => {
     (state) => state.setRequestSortKey
   );
 
-  const { data: leaveRequests, isLoading } = useSearchMyPolicyLeaveRequests(
-    selectedYear,
-    requestParams
-  );
+  const {
+    data: leaveRequests,
+    isLoading,
+    isError,
+    isFetching,
+    refetch
+  } = useSearchMyPolicyLeaveRequests(selectedYear, requestParams);
 
   const filterCount =
     requestParams.status.length + requestParams.policyId.length;
 
   const translateText = useTranslator("leaveModule", "myRequests");
   const translateAria = useTranslator("leaveAria", "myRequests");
+
+  const handleRetry = (): void => {
+    void refetch();
+  };
 
   const tableHeaders: GridHeader[] = [
     {
@@ -115,6 +124,22 @@ const PolicyLeaveRequests: FC = () => {
     <PolicyLeaveRequestFilterBody onClose={onClose} />
   );
 
+  if (isError) {
+    return (
+      <>
+        <h2 className="h2 my-4">
+          {translateText(["myLeaveRequests", "requestTitle"])}
+        </h2>
+        <PolicyLeaveErrorState
+          message={translateText(["myLeaveRequests", "errorState", "message"])}
+          retryLabel={translateText(["myLeaveRequests", "errorState", "retry"])}
+          onRetry={handleRetry}
+          isRetrying={isFetching}
+        />
+      </>
+    );
+  }
+
   return (
     <TableView
       heading={translateText(["myLeaveRequests", "requestTitle"])}
@@ -128,7 +153,7 @@ const PolicyLeaveRequests: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      skeletonRows={5}
+      skeletonRows={LEAVE_REQUESTS_SKELETON_ROWS}
       emptyState={{
         title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
         description: translateText(["myLeaveRequests", "emptyLeaveRequestDes"])
