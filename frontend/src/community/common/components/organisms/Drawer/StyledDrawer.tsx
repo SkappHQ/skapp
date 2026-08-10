@@ -18,13 +18,13 @@ export const StyledDrawer = styled(Drawer, {
   };
 
   return {
-    "&.MuiDrawer-docked": isBelow600
-      ? {}
-      : {
+    "&.MuiDrawer-docked": !isBelow600
+      ? {
           width: getDrawerWidth(),
           height: "100dvh",
           transition: `width ${DRAWER_ANIMATION_DURATION} ease`
-        },
+        }
+      : {},
     "& .MuiDrawer-paper": {
       overflowY: "visible",
       overflowX: "hidden",
