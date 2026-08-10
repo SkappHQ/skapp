@@ -40,7 +40,7 @@ public class BusinessUnitServiceImpl implements BusinessUnitService {
 
 		String name = businessUnitRequestDto.getName();
 
-		if (existsByNameCaseSensitive(name)) {
+		if (businessUnitDao.existsByName(name)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NAME_ALREADY_EXISTS);
 		}
 
@@ -74,7 +74,7 @@ public class BusinessUnitServiceImpl implements BusinessUnitService {
 						new Object[] { CommonConstants.BUSINESS_UNIT_NAME_MAX_LENGTH });
 			}
 
-			if (existsByNameCaseSensitiveExcludingId(name, id)) {
+			if (businessUnitDao.existsByNameAndBusinessUnitIdNot(name, id)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NAME_ALREADY_EXISTS);
 			}
 
@@ -163,16 +163,6 @@ public class BusinessUnitServiceImpl implements BusinessUnitService {
 		log.info("getAllBusinessUnits: execution ended");
 
 		return new ResponseEntityDto(false, businessUnits);
-	}
-
-	private boolean existsByNameCaseSensitive(String name) {
-		return businessUnitDao.findByNameIgnoreCase(name).stream().anyMatch(bu -> bu.getName().equals(name));
-	}
-
-	private boolean existsByNameCaseSensitiveExcludingId(String name, Long excludeId) {
-		return businessUnitDao.findByNameIgnoreCaseAndBusinessUnitIdNot(name, excludeId)
-			.stream()
-			.anyMatch(bu -> bu.getName().equals(name));
 	}
 
 	private void validateBusinessUnitRequest(BusinessUnitRequestDto businessUnitRequestDto) {

@@ -63,7 +63,7 @@ const AddBusinessUnitModal: FC<Props> = ({ isOpen, onClose }) => {
   const handleSubmit = (values: BusinessUnitFormValues) => {
     createBusinessUnit({
       name: values.name.trim(),
-      description: values.description.trim() || null
+      description: values.description.trim()
     });
   };
 

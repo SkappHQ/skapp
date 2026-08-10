@@ -39,9 +39,5 @@ export const workLocationQueryKeys = {
 
 export const businessUnitQueryKeys = {
   ALL: ["business-unit"],
-  BUSINESS_UNIT_SUMMARY: (id: number) => [
-    "business-unit",
-    "business-unit-summary",
-    id
-  ]
+  BUSINESS_UNIT_SUMMARY: (id: number) => ["business-unit-summary", id]
 };

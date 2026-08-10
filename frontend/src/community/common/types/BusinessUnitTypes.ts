@@ -1,12 +1,12 @@
 export interface BusinessUnit {
   businessUnitId: number;
   name: string;
-  description: string | null;
+  description?: string;
 }
 
 export interface BusinessUnitRequestPayload {
   name: string;
-  description: string | null;
+  description?: string;
 }
 
 export interface BusinessUnitUpdateVariables {
@@ -21,5 +21,5 @@ export interface BusinessUnitSummary {
 
 export interface BusinessUnitDeleteVariables {
   id: number;
-  transferToBusinessUnitId?: number | null;
+  transferToBusinessUnitId?: number;
 }

@@ -7,8 +7,8 @@ import { FC, useState } from "react";
 
 import {
   useDeleteBusinessUnit,
-  useGetBusinessUnits,
-  useGetBusinessUnitSummary
+  useGetBusinessUnitSummary,
+  useGetBusinessUnits
 } from "~community/common/api/BusinessUnitApi";
 import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/commonConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -40,9 +40,9 @@ const DeleteBusinessUnitModal: FC<Props> = ({
 
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const getSelectedTargetId = (): number | null =>
+  const getSelectedTargetId = (): number | undefined =>
     transferTargetValue === BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
-      ? null
+      ? undefined
       : Number(transferTargetValue);
 
   const handleDeleteSuccess = () => {
@@ -54,7 +54,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       description = translateText(["toasts", "deleteSuccess", "description"], {
         name: businessUnit.name
       });
-    } else if (targetId !== null) {
+    } else if (targetId !== undefined) {
       const targetName = businessUnits?.find(
         (unit) => unit.businessUnitId === targetId
       )?.name;
@@ -100,7 +100,11 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   };
 
   const renderContent = () => {
-    if (isBusinessUnitSummaryLoading || !businessUnitSummary || !businessUnits) {
+    if (
+      isBusinessUnitSummaryLoading ||
+      !businessUnitSummary ||
+      !businessUnits
+    ) {
       return (
         <div className="flex flex-col gap-3">
           <div className="h-4 w-full animate-pulse rounded bg-tertiary-background" />
