@@ -90,44 +90,44 @@ describe("hasSelectionChanged", () => {
 });
 
 describe("getRestrictionChanges", () => {
-  it("should report a newly selected role in add", () => {
+  it("should report a newly selected role in addedRoles", () => {
     expect(
       getRestrictionChanges([RoleLevel.ADMIN, RoleLevel.MANAGER], [RoleLevel.ADMIN])
-    ).toEqual({ add: [RoleLevel.MANAGER], remove: [] });
+    ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [] });
   });
 
-  it("should report a newly cleared role in remove", () => {
+  it("should report a newly cleared role in removedRoles", () => {
     expect(
       getRestrictionChanges([RoleLevel.ADMIN], [RoleLevel.ADMIN, RoleLevel.MANAGER])
-    ).toEqual({ add: [], remove: [RoleLevel.MANAGER] });
+    ).toEqual({ addedRoles: [], removedRoles: [RoleLevel.MANAGER] });
   });
 
-  it("should report a swapped role in both add and remove", () => {
+  it("should report a swapped role in both addedRoles and removedRoles", () => {
     expect(
       getRestrictionChanges([RoleLevel.MANAGER], [RoleLevel.ADMIN])
-    ).toEqual({ add: [RoleLevel.MANAGER], remove: [RoleLevel.ADMIN] });
+    ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [RoleLevel.ADMIN] });
   });
 
-  it("should report empty add and remove when nothing changed", () => {
+  it("should report empty addedRoles and removedRoles when nothing changed", () => {
     expect(
       getRestrictionChanges(
         [RoleLevel.ADMIN, RoleLevel.MANAGER],
         [RoleLevel.MANAGER, RoleLevel.ADMIN]
       )
-    ).toEqual({ add: [], remove: [] });
+    ).toEqual({ addedRoles: [], removedRoles: [] });
   });
 
-  it("should report all roles in add when starting from an empty selection", () => {
+  it("should report all roles in addedRoles when starting from an empty selection", () => {
     expect(getRestrictionChanges([RoleLevel.ADMIN], [])).toEqual({
-      add: [RoleLevel.ADMIN],
-      remove: []
+      addedRoles: [RoleLevel.ADMIN],
+      removedRoles: []
     });
   });
 
-  it("should report all roles in remove when everything is cleared", () => {
+  it("should report all roles in removedRoles when everything is cleared", () => {
     expect(getRestrictionChanges([], [RoleLevel.ADMIN])).toEqual({
-      add: [],
-      remove: [RoleLevel.ADMIN]
+      addedRoles: [],
+      removedRoles: [RoleLevel.ADMIN]
     });
   });
 });

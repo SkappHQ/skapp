@@ -1,4 +1,5 @@
 import { RoleLevel } from "~community/common/enums/CommonEnums";
+import { RestrictionChanges } from "~community/configurations/types/UserRolesTypes";
 
 export const toggleRoleLevel = (
   selected: RoleLevel[],
@@ -18,7 +19,9 @@ export const hasSelectionChanged = (
 export const getRestrictionChanges = (
   selected: RoleLevel[],
   initialSelected: RoleLevel[]
-): { add: RoleLevel[]; remove: RoleLevel[] } => ({
-  add: selected.filter((roleLevel) => !initialSelected.includes(roleLevel)),
-  remove: initialSelected.filter((roleLevel) => !selected.includes(roleLevel))
+): RestrictionChanges => ({
+  addedRoles: selected.filter((roleLevel) => !initialSelected.includes(roleLevel)),
+  removedRoles: initialSelected.filter(
+    (roleLevel) => !selected.includes(roleLevel)
+  )
 });

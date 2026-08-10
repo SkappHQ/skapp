@@ -83,15 +83,15 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
   };
 
   const handleSubmit = () => {
-    const { add, remove } = getRestrictionChanges(
+    const { addedRoles, removedRoles } = getRestrictionChanges(
       values.selected,
       initialData.restrictions
     );
 
     const payload: UserRoleRestrictionsUpdateType = {
       module: moduleType,
-      addedRoles: add,
-      removedRoles: remove
+      addedRoles,
+      removedRoles
     };
 
     updateUserRoleRestrictions(payload);

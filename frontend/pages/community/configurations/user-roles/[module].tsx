@@ -31,13 +31,11 @@ const Module: NextPage = () => {
   const {
     data: initialData,
     isFetching,
-    refetch
-  } = useGetUserRoleRestrictions(formattedModule, false);
+    isError
+  } = useGetUserRoleRestrictions(formattedModule);
 
-  const onPrimaryButtonClick = async () => {
-    const { data, isError } = await refetch();
-
-    if (isError || !data) {
+  const onPrimaryButtonClick = () => {
+    if (isError || !initialData) {
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,

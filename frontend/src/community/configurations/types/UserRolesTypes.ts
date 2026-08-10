@@ -35,6 +35,11 @@ export interface UserRoleRestrictionsUpdateType {
   removedRoles: RoleLevel[];
 }
 
+export interface RestrictionChanges {
+  addedRoles: RoleLevel[];
+  removedRoles: RoleLevel[];
+}
+
 export interface GrantableRoleTypes {
   name: string;
   role: Exclude<AdminTypes, "SUPER_ADMIN"> | ManagerTypes | EmployeeTypes;
