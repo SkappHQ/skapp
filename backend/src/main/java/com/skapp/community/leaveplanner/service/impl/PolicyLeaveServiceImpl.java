@@ -417,7 +417,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays,
 				organizationService.getOrganizationTimeZone());
-		if (workingDays == PolicyLeaveConstant.SINGLE_WORKING_DAY && isHalfDay(leaveState)) {
+		if (workingDays == 1f && isHalfDay(leaveState)) {
 			return LeaveModuleConstant.HALF_DAY;
 		}
 		return workingDays;
@@ -527,23 +527,15 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	}
 
 	private LocalDate startOfYear(int year) {
-		return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR.atYear(year);
+		return LocalDate.of(year, 1, 1);
 	}
 
 	private LocalDate endOfYear(int year) {
-		return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR.atYear(year + 1).minusDays(1);
+		return LocalDate.of(year, 12, 31);
 	}
 
 	private int resolveYear(Integer year) {
-		int currentYear = DateTimeUtils.getCurrentUtcDate().getYear();
-		if (year == null) {
-			return currentYear;
-		}
-		if (year < currentYear - PolicyLeaveConstant.MAX_YEAR_OFFSET
-				|| year > currentYear + PolicyLeaveConstant.MAX_YEAR_OFFSET) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR);
-		}
-		return year;
+		return year == null ? DateTimeUtils.getCurrentUtcDate().getYear() : year;
 	}
 
 	private boolean isHalfDay(LeaveState leaveState) {

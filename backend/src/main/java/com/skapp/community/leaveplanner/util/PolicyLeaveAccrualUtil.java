@@ -1,7 +1,6 @@
 package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
@@ -19,6 +18,8 @@ import java.time.temporal.ChronoUnit;
 public class PolicyLeaveAccrualUtil {
 
 	private static final DateTimeFormatter CARRYOVER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
+
+	private static final MonthDay CALENDAR_YEAR_START = MonthDay.of(1, 1);
 
 	public record DateWindow(LocalDate start, LocalDate end) {
 		public boolean contains(LocalDate date) {
@@ -65,7 +66,7 @@ public class PolicyLeaveAccrualUtil {
 		DateWindow period = resolvePeriodContaining(policy.getFrequency(), accrualStartDate, accrualStartDate);
 		boolean isFirstPeriod = true;
 
-		for (int guard = 0; guard < PolicyLeaveConstant.MAX_ACCRUAL_PERIODS; guard++) {
+		while (true) {
 			LocalDate creditDate = creditAtPeriodStart ? period.start() : period.end();
 			if (creditDate.isAfter(asOf)) {
 				break;
@@ -139,15 +140,15 @@ public class PolicyLeaveAccrualUtil {
 
 	private static MonthDay resolveCycleAnchor(LeavePolicy policy) {
 		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled())) {
-			return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR;
+			return CALENDAR_YEAR_START;
 		}
 		String carryoverDate = policy.getCarryoverDate();
 		if (carryoverDate == null || carryoverDate.isBlank()) {
-			return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR;
+			return CALENDAR_YEAR_START;
 		}
 		if (!DateTimeUtils.isValidMonthDay(carryoverDate)) {
 			log.warn("resolveCycleAnchor: unparseable carryover date, falling back to the default anchor");
-			return PolicyLeaveConstant.DEFAULT_CYCLE_ANCHOR;
+			return CALENDAR_YEAR_START;
 		}
 		return MonthDay.parse(carryoverDate, CARRYOVER_DATE_FORMATTER);
 	}

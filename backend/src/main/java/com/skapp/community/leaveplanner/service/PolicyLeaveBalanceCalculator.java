@@ -47,7 +47,7 @@ public class PolicyLeaveBalanceCalculator {
 		DateWindow cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, effectiveFrom);
 		float carriedForwardDays = 0f;
 
-		for (int guard = 0; guard < PolicyLeaveConstant.MAX_CARRYOVER_CYCLES; guard++) {
+		while (true) {
 			float accruedDays = PolicyLeaveAccrualUtil.roundToHalfDay(
 					PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.end()));
 			float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, carriedForwardDays + accruedDays);
@@ -65,11 +65,14 @@ public class PolicyLeaveBalanceCalculator {
 
 			carriedForwardDays = PolicyLeaveAccrualUtil
 				.roundToHalfDay(PolicyLeaveAccrualUtil.capCarryover(policy, totalDaysAllocated - totalDaysUsed));
-			cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, cycle.end().plusDays(1));
-		}
 
-		log.warn("calculate: carryover walk exceeded the cycle limit, balance could not be derived");
-		return emptySnapshot(policy, effectiveFrom, targetCycle, false);
+			DateWindow nextCycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, cycle.end().plusDays(1));
+			if (!nextCycle.start().isAfter(cycle.start())) {
+				log.warn("calculate: carryover cycle failed to advance, balance could not be derived");
+				return emptySnapshot(policy, effectiveFrom, targetCycle, false);
+			}
+			cycle = nextCycle;
+		}
 	}
 
 	private float committedDays(EmployeeLeavePolicy assignment, DateWindow cycle) {

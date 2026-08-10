@@ -112,7 +112,6 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_HALFDAY("api.error.leave.policy-leave-cannot-apply-halfday"),
 	LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_FULLDAY("api.error.leave.policy-leave-cannot-apply-fullday"),
 	LEAVE_ERROR_POLICY_LEAVE_DESCRIPTION_MAX_LENGTH("api.error.leave.policy-leave-description-max-length"),
-	LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR("api.error.leave.policy-leave-invalid-year"),
 	LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY("api.error.leave.policy-leave-halfday-single-date-only"),
 	LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS("api.error.leave.policy-leave-too-many-attachments");
 
