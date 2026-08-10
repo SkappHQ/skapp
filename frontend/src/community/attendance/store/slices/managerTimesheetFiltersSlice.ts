@@ -75,6 +75,19 @@ const managerTimesheetFiltersSlice = (
     }));
   },
 
+  restoreTimesheetRequestParams: () => {
+    set((state) => ({
+      timesheetRequestsFilters: {
+        status: [] as string[]
+      },
+      timesheetRequestParams: {
+        ...state.timesheetRequestParams,
+        status: TimeSheetRequestStates.PENDING,
+        page: 1
+      }
+    }));
+  },
+
   setTimesheetRequestSelectedDates: (value: string[]) => {
     set((state) => ({
       ...state,
