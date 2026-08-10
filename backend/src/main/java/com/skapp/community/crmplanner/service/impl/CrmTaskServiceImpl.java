@@ -152,6 +152,13 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto) {
+		CrmTask savedTask = persistNewTask(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+	}
+
+	@Override
+	@Transactional
+	public CrmTask persistNewTask(CrmTaskCreateRequestDto requestDto) {
 		log.info("createTask: execution started");
 
 		CrmValidations.validateTaskName(requestDto.getName());
@@ -197,7 +204,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		CrmTask savedTask = crmTaskDao.save(task);
 
 		log.info("createTask: execution ended with taskId={}", savedTask.getId());
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+		return savedTask;
 	}
 
 	protected void validateTaskCreationLimit() {
@@ -207,6 +214,13 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto) {
+		CrmTask updatedTask = applyTaskEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public CrmTask applyTaskEdit(Long id, CrmTaskEditRequestDto requestDto) {
 		log.info("editTask: execution started");
 
 		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
@@ -285,7 +299,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		CrmTask updatedTask = crmTaskDao.save(task);
 
 		log.info("editTask: execution ended successfully");
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+		return updatedTask;
 	}
 
 	@Override
