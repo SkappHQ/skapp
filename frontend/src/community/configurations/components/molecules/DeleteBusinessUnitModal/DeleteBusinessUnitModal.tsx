@@ -31,8 +31,9 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   const translateText = useTranslator("configurations", "businessUnit");
   const { setToastMessage } = useToast();
 
-  const [transferTargetValue, setTransferTargetValue] =
-    useState<string>(BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE);
+  const [transferTargetValue, setTransferTargetValue] = useState<string>(
+    BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
+  );
 
   const { data: impact, isLoading: isImpactLoading } =
     useGetBusinessUnitDeletionImpact(businessUnit.businessUnitId);
@@ -91,11 +92,6 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     handleDeleteError
   );
 
-  const handleClose = () => {
-    if (isPending) return;
-    onClose();
-  };
-
   const handleDelete = () => {
     deleteBusinessUnit({
       id: businessUnit.businessUnitId,
@@ -151,13 +147,13 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   return (
     <SmallModal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       modalHeader={translateText(["deleteModal", "title"])}
       content={renderContent()}
       buttons={{
         buttonLeft: {
           variant: "tertiary",
-          onClick: handleClose,
+          onClick: onClose,
           icon: <CloseIcon />,
           iconPosition: "end",
           disabled: isPending,

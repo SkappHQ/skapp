@@ -106,10 +106,7 @@ const deleteBusinessUnit = ({
   transferToBusinessUnitId
 }: BusinessUnitDeleteVariables): Promise<AxiosResponse<BusinessUnit>> =>
   authFetch.delete(businessUnitEndpoints.DELETE_BUSINESS_UNIT(id), {
-    params:
-      transferToBusinessUnitId != null
-        ? { transferToBusinessUnitId }
-        : undefined
+    params: { transferToBusinessUnitId }
   });
 
 export const useDeleteBusinessUnit = (

@@ -1,10 +1,11 @@
 import * as Yup from "yup";
 
+import {
+  BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH,
+  BUSINESS_UNIT_NAME_MAX_LENGTH
+} from "~community/common/constants/businessUnitConstants";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-
-export const BUSINESS_UNIT_NAME_MAX_LENGTH = 100;
-export const BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH = 250;
 
 export const businessUnitValidation = (
   translateText: TranslatorFunctionType,
