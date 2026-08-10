@@ -72,6 +72,7 @@ export const peopleQueryKeys = {
   SUPERVISED_BY_ME: ["supervised-by-me"],
   HAS_SUPERVISOR_ROLES: ["has-supervisor-roles"],
   EXPORT_PEOPLE_DIRECTORY: ["export-people-directory"],
+  GET_TODAYS_BIRTHDAY_NOTIFICATIONS: ["get-todays-birthday-notifications"],
   SUPERVISOR_ROLES: (userId: number) => ["supervised-employees-teams", userId],
   GET_SKILLS: ["get-skills"]
 };
@@ -145,4 +146,11 @@ export const getPeopleDashboardQueryKeys = {
       (val) => val !== undefined
     );
   }
+};
+
+export const peopleConfigQueryKeys = {
+  GET_BIRTHDAY_NOTIFICATION_CONFIG: [
+    "people-config",
+    "get-birthday-notification-config"
+  ]
 };

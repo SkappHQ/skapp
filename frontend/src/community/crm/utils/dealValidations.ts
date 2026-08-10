@@ -35,7 +35,9 @@ export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
         isDealNameValid(),
         translator(["inlineAddDeal", "validations", "dealNameInvalidChars"])
       ),
-    contactId: Yup.string().required()
+    contactId: Yup.string().required(
+      translator(["inlineAddDeal", "validations", "contactRequired"])
+    )
   });
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>
