@@ -157,6 +157,7 @@ import WaitingStatusIcon from "~community/common/assets/Icons/WaitingStatusIcon"
 import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
+import WarningTriangleIcon from "~community/common/assets/Icons/WarningTriangleIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
@@ -268,6 +269,7 @@ export const IconMapping: Partial<
   [IconName.NUDGE_BELL_ICON]: NudgeBellIcon,
   [IconName.UPGRADE_INFO_ICON]: UpgradeInfoIcon,
   [IconName.WARNING_SIGN_ICON]: WarningSignIcon,
+  [IconName.WARNING_TRIANGLE_ICON]: WarningTriangleIcon,
   [IconName.GOOGLE_ICON]: GoogleIcon,
   [IconName.DOCUMENTS_ICON]: DocumentsIcon,
   [IconName.PEOPLE_MODULE_ICON]: PeopleModuleIcon,

@@ -1,21 +1,32 @@
-import { Box, Theme, useTheme } from "@mui/material";
-import { SelectableItemList } from "@rootcodelabs/skapp-ui";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { EditIcon, IconButton } from "@rootcodelabs/skapp-ui";
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import FilterButton from "~community/common/components/molecules/FilterButton/FilterButton";
-import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
-import Table from "~community/common/components/molecules/Table/Table";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow,
+  TableViewFilterContentArgs
+} from "~community/common/components/organisms/TableView/types";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import {
+  getEmoji,
+  removeSpecialCharacters
+} from "~community/common/utils/commonUtil";
 import {
   currentYear,
   getAdjacentYearsWithCurrent,
   nextYear
 } from "~community/common/utils/dateTimeUtils";
 import { useGetCustomLeaves } from "~community/leave/api/LeaveApi";
-import { useGetLeaveTypes } from "~community/leave/api/LeaveTypesApi";
+import CustomLeaveAllocationFilterBody from "~community/leave/components/molecules/CustomLeaveAllocationFilterBody/CustomLeaveAllocationFilterBody";
 import { useLeaveStore } from "~community/leave/store/store";
 import {
   CustomLeaveAllocationModalTypes,
@@ -23,22 +34,14 @@ import {
   LeaveAllocation
 } from "~community/leave/types/CustomLeaveAllocationTypes";
 
-import {
-  tableContainerStyles,
-  tableHeaderCellStyles,
-  tableHeaderRowStyles
-} from "./styles";
-
 interface Props {
   searchTerm?: string;
-  setHasFilteredData: (hasData: boolean) => void;
-  setHasEmptyFilterResults: (isEmpty: boolean) => void;
+  onSearchTermChange: (searchTerm: string) => void;
 }
 
 const CustomLeaveAllocationsTable: React.FC<Props> = ({
   searchTerm,
-  setHasFilteredData,
-  setHasEmptyFilterResults
+  onSearchTermChange
 }) => {
   const translateText = useTranslator("leaveModule", "customLeave");
   const translateAria = useTranslator(
@@ -46,7 +49,6 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     "entitlement",
     "customLeaveAllocationTable"
   );
-  const theme: Theme = useTheme();
 
   const {
     selectedYear,
@@ -60,9 +62,6 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   } = useLeaveStore((state) => state);
 
   const [selectedLeaveTypes, setSelectedLeaveTypes] = useState<string[]>([]);
-  const [tempSelectedLeaveTypes, setTempSelectedLeaveTypes] = useState<
-    string[]
-  >([]);
 
   const leaveTypes = selectedLeaveTypes.join(",");
   const { data: customLeaveData, isLoading } = useGetCustomLeaves(
@@ -73,26 +72,16 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     leaveTypes
   );
 
+  const isEmptySearchResult = !!searchTerm || selectedLeaveTypes.length > 0;
+  const searchPlaceholder = translateText([
+    "CustomLeaveAllocationsSectionSearchBarPlaceholder"
+  ]);
+
   useEffect(() => {
     if (customLeaveData?.items) {
       setCustomLeaveAllocations(customLeaveData.items);
-      setHasFilteredData(customLeaveData.items.length > 0);
-      setHasEmptyFilterResults(
-        customLeaveData.items.length === 0 &&
-          (!!searchTerm || selectedLeaveTypes.length > 0)
-      );
-    } else {
-      setHasFilteredData(false);
-      setHasEmptyFilterResults(false);
     }
-  }, [
-    customLeaveData?.items,
-    searchTerm,
-    selectedLeaveTypes,
-    setCustomLeaveAllocations,
-    setHasFilteredData,
-    setHasEmptyFilterResults
-  ]);
+  }, [customLeaveData?.items]);
 
   const handleEdit = useCallback(
     (leaveAllocation: LeaveAllocation) => {
@@ -126,160 +115,118 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
     ]
   );
 
-  const columns = useMemo(
+  const tableHeaders: GridHeader[] = useMemo(
     () => [
-      { field: "employee", headerName: translateText(["tableHeaderOne"]) },
-      { field: "duration", headerName: translateText(["tableHeaderTwo"]) },
-      { field: "type", headerName: translateText(["tableHeaderThree"]) }
+      {
+        id: "employee",
+        label: translateText(["tableHeaderOne"]),
+        align: "left"
+      },
+      { id: "duration", label: translateText(["tableHeaderTwo"]) },
+      { id: "type", label: translateText(["tableHeaderThree"]) },
+      {
+        id: "actions",
+        label: translateText(["tableHeaderFour"]),
+        align: "right",
+        width: "6rem"
+      }
     ],
     [translateText]
   );
 
-  const tableHeaders = useMemo(
-    () => columns.map((col) => ({ id: col.field, label: col.headerName })),
-    [columns]
-  );
+  const transformToTableRows = useCallback((): GridRow[] => {
+    return (customLeaveData?.items ?? []).map((leaveAllocation) => {
+      const recordName = `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`;
 
-  const yearFilter = (
-    <RoundedSelect
-      id="custom-leave-allocations-table-year-filter"
-      onChange={(event) => setSelectedYear(event?.target?.value)}
-      value={selectedYear}
-      options={getAdjacentYearsWithCurrent()}
-      accessibility={{
-        label: translateAria(["selectYear"])
-      }}
-    />
-  );
-
-  const transformToTableRows = useCallback(() => {
-    return (
-      customLeaveData?.items?.map((leaveAllocation) => {
-        return {
-          id: leaveAllocation.entitlementId,
-          employee: (
-            <AvatarChip
-              firstName={leaveAllocation.employee?.firstName}
-              lastName={leaveAllocation.employee?.lastName}
-              avatarUrl={leaveAllocation.employee?.authPic}
-              chipStyles={{
-                display: "flex",
-                justifyContent: "start",
-                maxWidth: "fit-content"
-              }}
-            />
-          ),
-          duration: (
-            <div
-              style={{
-                backgroundColor: theme.palette.common.white,
-                borderRadius: "9.375rem",
-                padding: "0.5rem 1rem"
-              }}
-            >
-              {leaveAllocation.totalDaysAllocated === 0.5
-                ? translateText(["halfDayChip"])
-                : `${leaveAllocation.totalDaysAllocated} ${
-                    leaveAllocation.totalDaysAllocated === 1
-                      ? translateText(["day"])
-                      : translateText(["days"])
-                  }`}
-            </div>
-          ),
-          type: (
-            <div
-              style={{
-                backgroundColor: theme.palette.common.white,
-                borderRadius: "9.375rem",
-                padding: "0.5rem 1rem"
-              }}
-            >
-              <span role="img" aria-hidden="true">
-                {getEmoji(leaveAllocation.leaveType?.emojiCode || "")}
-              </span>
-              &nbsp;
-              {leaveAllocation.leaveType?.name}
-            </div>
-          ),
-          actionData: leaveAllocation,
-          ariaLabel: {
-            editButton: translateText(["editButton.label"], {
+      return {
+        id: leaveAllocation.entitlementId,
+        employee: (
+          <AvatarChip
+            firstName={leaveAllocation.employee?.firstName}
+            lastName={leaveAllocation.employee?.lastName}
+            avatarUrl={leaveAllocation.employee?.authPic}
+            chipStyles={{
+              display: "flex",
+              justifyContent: "start",
+              maxWidth: "fit-content",
+              backgroundColor: "var(--color-tertiary-background)"
+            }}
+          />
+        ),
+        duration: (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "var(--color-tertiary-background)",
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            {leaveAllocation.totalDaysAllocated === 0.5
+              ? translateText(["halfDayChip"])
+              : `${leaveAllocation.totalDaysAllocated} ${
+                  leaveAllocation.totalDaysAllocated === 1
+                    ? translateText(["day"])
+                    : translateText(["days"])
+                }`}
+          </div>
+        ),
+        type: (
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              backgroundColor: "var(--color-tertiary-background)",
+              borderRadius: "9.375rem",
+              padding: "0.5rem 1rem"
+            }}
+          >
+            <span role="img" aria-hidden="true">
+              {getEmoji(leaveAllocation.leaveType?.emojiCode || "")}
+            </span>
+            {leaveAllocation.leaveType?.name}
+          </div>
+        ),
+        actions: (
+          <IconButton
+            icon={<EditIcon />}
+            onClick={() =>
+              handleEdit({
+                ...leaveAllocation,
+                employee: {
+                  ...leaveAllocation.employee,
+                  employeeId: Number(leaveAllocation.employee.employeeId)
+                },
+                validTo: leaveAllocation.validTo || "",
+                validFrom: leaveAllocation.validFrom || ""
+              })
+            }
+            aria-label={translateText(["editButton.label"], {
               leaveType: leaveAllocation.leaveType?.name,
-              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
-            })
-          },
-          ariaDescription: {
-            editButton: translateText(["editButton.description"], {
-              leaveType: leaveAllocation.leaveType?.name,
-              recordName: `${leaveAllocation.employee?.firstName} ${leaveAllocation.employee?.lastName}`
-            })
-          }
-        };
-      }) || []
-    );
-  }, [customLeaveData?.items, translateText]);
+              recordName
+            })}
+          />
+        )
+      };
+    });
+  }, [customLeaveData?.items, handleEdit, translateText]);
 
-  const handleApplyFilters = () => {
-    setSelectedLeaveTypes(tempSelectedLeaveTypes);
+  const handleApplyFilters = (leaveTypeIds: string[]) => {
+    setSelectedLeaveTypes(leaveTypeIds);
     setCurrentPage(0);
   };
 
   const handleResetFilters = () => {
-    setTempSelectedLeaveTypes([]);
     setSelectedLeaveTypes([]);
     setCurrentPage(0);
   };
 
-  const handleLeaveTypeFilter = (leaveType: { id: string; text: string }) => {
-    setTempSelectedLeaveTypes((prev) =>
-      prev.includes(leaveType.id)
-        ? prev.filter((i) => i !== leaveType.id)
-        : [...prev, leaveType.id]
-    );
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onSearchTermChange(removeSpecialCharacters(event.target.value.trimStart()));
   };
-
-  const { data: leaveTypesData } = useGetLeaveTypes();
-
-  const leaveTypeOptions = useMemo(
-    () =>
-      leaveTypesData?.map((leaveType) => ({
-        id: leaveType.typeId,
-        name: leaveType.name
-      })) || [],
-    [leaveTypesData]
-  );
-
-  const filterButton = (
-    <FilterButton
-      handleApplyBtnClick={handleApplyFilters}
-      handleResetBtnClick={handleResetFilters}
-      selectedFilters={selectedLeaveTypes.map((type) => ({
-        filter: [
-          leaveTypeOptions.find((btn) => btn.id === Number(type))?.name ?? ""
-        ]
-      }))}
-      position={"bottom-end"}
-      id={"filter-types"}
-      isResetBtnDisabled={tempSelectedLeaveTypes.length === 0}
-    >
-      <SelectableItemList
-        title={translateText(["filterButtonTitle"])}
-        items={leaveTypeOptions.map((leaveType) => ({
-          label: leaveType.name,
-          value: leaveType.id.toString()
-        }))}
-        selectedValues={tempSelectedLeaveTypes}
-        onChipClick={(leaveTypeId) => {
-          handleLeaveTypeFilter({
-            id: leaveTypeId,
-            text:
-              leaveTypeOptions.find((lt) => lt.id.toString() === leaveTypeId)
-                ?.name ?? ""
-          });
-        }}
-      />
-    </FilterButton>
-  );
 
   const handleAddLeaveAllocation = () => {
     setCustomLeaveAllocationModalType(
@@ -291,84 +238,81 @@ const CustomLeaveAllocationsTable: React.FC<Props> = ({
   const showEmptyTableButton =
     (selectedYear === currentYear.toString() ||
       selectedYear === nextYear.toString()) &&
-    !searchTerm &&
-    selectedLeaveTypes.length === 0;
+    !isEmptySearchResult;
+
+  const emptyState = {
+    title: isEmptySearchResult
+      ? translateText(["emptySearchResult", "title"])
+      : translateText(["emptyCustomLeaveScreen", "title"]),
+    description: isEmptySearchResult
+      ? translateText(["emptySearchResult", "description"])
+      : translateText(["emptyCustomLeaveScreen", "description"]),
+    actions: showEmptyTableButton
+      ? [
+          {
+            label: translateText(["CustomLeaveAllocationsSectionBtn"]),
+            onClick: handleAddLeaveAllocation
+          }
+        ]
+      : undefined
+  };
+
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <CustomLeaveAllocationFilterBody
+      appliedLeaveTypeIds={selectedLeaveTypes}
+      onApply={handleApplyFilters}
+      onReset={handleResetFilters}
+      onClose={onClose}
+    />
+  );
 
   return (
-    <Box>
-      <Table
-        tableName={TableNames.CUSTOM_LEAVE_ALLOCATIONS}
-        headers={tableHeaders}
-        isLoading={isLoading}
-        rows={transformToTableRows()}
-        tableHead={{
-          customStyles: {
-            row: tableHeaderRowStyles(theme),
-            cell: tableHeaderCellStyles(theme)
-          }
-        }}
-        tableBody={{
-          emptyState: {
-            noData: {
-              title:
-                !!searchTerm || selectedLeaveTypes.length > 0
-                  ? translateText(["emptySearchResult", "title"])
-                  : translateText(["emptyCustomLeaveScreen", "title"]),
-              description:
-                !!searchTerm || selectedLeaveTypes.length > 0
-                  ? translateText(["emptySearchResult", "description"])
-                  : translateText(["emptyCustomLeaveScreen", "description"]),
-              button: showEmptyTableButton
-                ? {
-                    label: translateText(["CustomLeaveAllocationsSectionBtn"]),
-                    onClick: handleAddLeaveAllocation
-                  }
-                : undefined
-            }
-          },
-          loadingState: {
-            skeleton: {
-              rows: 5
-            }
-          },
-          actionColumn: {
-            isEnabled: true,
-            actionBtns: {
-              left: {
-                onClick: (leaveAllocation) => {
-                  return handleEdit({
-                    ...leaveAllocation,
-                    employee: {
-                      ...leaveAllocation.employee,
-                      employeeId: Number(leaveAllocation.employee.employeeId)
-                    },
-                    validTo: leaveAllocation.validTo || "",
-                    validFrom: leaveAllocation.validFrom || ""
-                  });
-                }
-              }
-            }
-          }
-        }}
-        tableFoot={{
-          pagination: {
-            isEnabled: (customLeaveData?.items?.length ?? 0) > 0,
-            totalPages: customLeaveData?.totalPages || 1,
-            currentPage: currentPage,
-            onChange: (_, value) => setCurrentPage(value - 1)
-          }
-        }}
-        customStyles={{
-          container: tableContainerStyles(theme)
-        }}
-        actionToolbar={{
-          firstRow: {
-            leftButton: yearFilter,
-            rightButton: filterButton
-          }
-        }}
-      />
-    </Box>
+    <TableView
+      className="body2"
+      tableName={TableNames.CUSTOM_LEAVE_ALLOCATIONS}
+      ariaLabel={{
+        regionAriaLabel: translateAria(["tableRegion"]),
+        paginationAriaLabel: translateAria(["pagination"]),
+        previousPageLabel: translateAria(["previousPage"]),
+        nextPageLabel: translateAria(["nextPage"]),
+        getPageAriaLabel: (page) => translateAria(["page"], { page })
+      }}
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isLoading}
+      skeletonRows={5}
+      emptyState={emptyState}
+      pagination={{
+        totalPages: customLeaveData?.totalPages,
+        currentPage,
+        onPageChange: setCurrentPage
+      }}
+      toolbar={{
+        searchBar: {
+          value: searchTerm ?? "",
+          onChange: handleSearchChange,
+          placeholder: searchPlaceholder,
+          "aria-label": searchPlaceholder
+        },
+        dropdown: {
+          id: "custom-leave-allocations-table-year-filter",
+          options: getAdjacentYearsWithCurrent().map((year) => ({
+            id: year.value,
+            label: year.label,
+            value: year.value
+          })),
+          value: selectedYear,
+          onChange: setSelectedYear,
+          ariaLabel: translateAria(["selectYear"])
+        }
+      }}
+      filter={{
+        filterCount: selectedLeaveTypes.length,
+        filterButtonAriaLabel: translateAria(["filterButton"]),
+        popoverId: "custom-leave-allocations-filter",
+        filterContent: renderFilterContent
+      }}
+    />
   );
 };
 

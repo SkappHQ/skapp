@@ -48,6 +48,10 @@ const nextConfig = {
           : "/community/signin"
       },
       {
+        source: "/oauth-consent",
+        destination: "/enterprise/oauth-consent"
+      },
+      {
         source: "/settings",
         destination: "/community/settings"
       },
@@ -110,6 +114,18 @@ const nextConfig = {
       {
         source: "/people/directory/add-new-resource",
         destination: "/community/people/directory/add-new-resource"
+      },
+      {
+        source: "/people/directory/sync-changes",
+        destination: "/enterprise/people/directory/sync-changes"
+      },
+      {
+        source: "/people/directory/import-google/review",
+        destination: "/enterprise/people/directory/import-google/review"
+      },
+      {
+        source: "/people/directory/import-google/syncing",
+        destination: "/enterprise/people/directory/import-google/syncing"
       },
       {
         source: "/people/directory/pending",
@@ -238,6 +254,10 @@ const nextConfig = {
       {
         source: "/redirect",
         destination: "/enterprise/redirect"
+      },
+      {
+        source: "/oauth-consent",
+        destination: "/enterprise/oauth-consent"
       },
       {
         source: "/verify/reset-password",

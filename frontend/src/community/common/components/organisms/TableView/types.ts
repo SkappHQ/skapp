@@ -27,7 +27,7 @@ export interface TableViewInfiniteScroll {
 }
 
 export interface TableViewFilterContentArgs {
-  close: () => void;
+  onClose: () => void;
 }
 
 export interface TableViewFilter {

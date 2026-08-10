@@ -77,6 +77,10 @@
     "managerRoleLabel": "Manager",
     "salesManagerRoleLabel": "Sales Manager",
     "senderRoleLabel": "Sender",
+    "salesRepresentativeRoleLabel": "Sales Representative",
+    "employeeRoleLabel": "Employee",
+    "guestRoleLabel": "Guest",
+    "noneRoleLabel": "None",
     "teamAndOwn": "(Team & own)",
     "own": "(Own)",
     "viewDashboard": "View Dashboard",
@@ -130,7 +134,8 @@
     "userRoles": "User Roles",
     "invoice": "Invoice",
     "organization": "Organization",
-    "crm": "CRM"
+    "crm": "CRM",
+    "people": "People"
   },
   "workLocation": {
     "areYouSureModalTitle": "Are you sure?",

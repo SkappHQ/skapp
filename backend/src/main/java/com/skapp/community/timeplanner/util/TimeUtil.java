@@ -68,4 +68,8 @@ public class TimeUtil {
 				&& (currentDate.isEqual(endDate) || currentDate.isBefore(endDate));
 	}
 
+	public static long calculateExponentialBackoffMillis(int attempt, int maxBackoffSeconds, int jitterBoundMs) {
+		return (long) (Math.min(maxBackoffSeconds, Math.pow(2, attempt)) * 1000 + Math.random() * jitterBoundMs);
+	}
+
 }

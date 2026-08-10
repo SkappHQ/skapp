@@ -175,6 +175,8 @@ export interface BulkEmployeeDetails {
     startDate: string | null;
     endDate: string | null;
   };
+  payrollId: string | null;
+  tin: string | null;
 }
 
 export interface EmployeePersonalInfoResponseType {
@@ -237,6 +239,11 @@ export interface EmployeeEmploymentContextType {
   isUniqueEmail: boolean;
   isUniqueEmployeeNo: boolean;
   isUpdate: boolean;
+}
+
+export interface EmployeeIdentificationContextType {
+  isPayrollIdExists: boolean;
+  isTinExists: boolean;
 }
 
 export interface EmployeePermission {
@@ -334,7 +341,7 @@ export interface EmployeeDetails {
   userRoles: EmployeeRoleType;
   accountStatus?: string | null;
   employment?: {
-    employmentDetails?: { workLocationId?: number };
+    employmentDetails?: { workLocationId?: number; joinedDate?: string };
   };
 }
 
@@ -446,6 +453,24 @@ export interface EmployeeDataExists {
   isWorkEmailExists: boolean;
   isGoogleDomain: boolean;
   isGuestUser: boolean;
+}
+
+export interface PayrollIdExistsCheckParams {
+  payrollId?: string;
+  employeeId?: string;
+}
+
+export interface TinExistsCheckParams {
+  tin?: string;
+  employeeId?: string;
+}
+
+export interface PayrollIdExistsResponse {
+  isPayrollIdExists: boolean;
+}
+
+export interface TinExistsResponse {
+  isTinExists: boolean;
 }
 
 export interface QuickAddEmployeePayload {
