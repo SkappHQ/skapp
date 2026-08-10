@@ -15,8 +15,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Contacts: NextPage = () => {
-  const translateText = useTranslator("crmModule", "contacts");
-  const translateBreadcrumb = useTranslator("crmModule", "breadcrumbs");
+  const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
@@ -36,12 +35,12 @@ const Contacts: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateBreadcrumb(["crm"]) },
-        { label: translateText(["title"]) }
+        { label: translateText(["breadcrumbs.crm"]) },
+        { label: translateText(["contacts.title"]) }
       ]}
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
-      primaryButtonText={translateText(["addContactBtn"])}
+      pageHead={translateText(["contacts.pageHead"])}
+      title={translateText(["contacts.title"])}
+      primaryButtonText={translateText(["contacts.addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isCheckingCrmLimit}
