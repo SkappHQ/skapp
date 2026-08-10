@@ -1,11 +1,16 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { DateTime } from "luxon";
 import { FC, useMemo, useState } from "react";
 
+import { MEDIUM_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetLeavePoliciesInfinite } from "~community/leave/api/LeavePolicyApi";
-import { useAssignLeavePolicy } from "~community/leave/api/LeavePolicyAssignmentApi";
+import {
+  useAssignLeavePolicy,
+  useGetEmployeeLeavePolicies
+} from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyForm from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetHireDateModal from "~community/leave/components/molecules/SetHireDateModal/SetHireDateModal";
 import {
@@ -19,6 +24,7 @@ import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 
 interface Props {
   employeeId: number;
+  employeeName?: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -27,7 +33,17 @@ interface Props {
 // single page, so the assign dropdown lists all active policies (never capped).
 const ASSIGNABLE_POLICIES_PAGE = -1;
 
-const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
+// Conflict detection compares the selected policy against every leave type the
+// employee already holds, so this page has to cover all of their assignments
+// rather than just the first page shown in the list.
+const EXISTING_ASSIGNMENTS_PAGE_SIZE = 100;
+
+const AssignLeavePolicyModal: FC<Props> = ({
+  employeeId,
+  employeeName,
+  isOpen,
+  onClose
+}) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const { setToastMessage } = useToast();
 
@@ -59,9 +75,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const assignablePolicies: LeavePolicyType[] = useMemo(
     () =>
       (policyPages?.pages?.flatMap((page) => page?.items ?? []) ?? []).filter(
-        (policy) =>
-          policy.status === LeavePolicyStatus.ACTIVE &&
-          policy.policyType === PolicyType.ACCRUAL
+        (policy) => policy.status === LeavePolicyStatus.ACTIVE
       ),
     [policyPages]
   );
@@ -106,6 +120,12 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
     [effectiveDateType, specificDate, joinedDate]
   );
 
+  // Save is only reachable once the effective date resolves — a specific date is
+  // validated below, and a missing hire date swaps Save for "Set a hire date".
+  const effectiveDateLabel = previewStartISO
+    ? DateTime.fromISO(previewStartISO).toFormat(MEDIUM_DATE_FORMAT)
+    : "";
+
   const accrualPreview = useMemo(
     () =>
       selectedPolicy?.policyType === PolicyType.ACCRUAL
@@ -113,6 +133,34 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
         : [],
     [selectedPolicy, previewStartISO]
   );
+
+  const isFlexiblePolicy = selectedPolicy?.policyType === PolicyType.FLEXIBLE;
+
+  const { data: existingAssignmentsPage } = useGetEmployeeLeavePolicies(
+    employeeId,
+    0,
+    EXISTING_ASSIGNMENTS_PAGE_SIZE,
+    isOpen
+  );
+
+  // Assigning a policy supersedes whatever the employee already holds for that
+  // leave type. Re-selecting the policy they are already on is a no-op server
+  // side, so that case is not flagged as a replacement.
+  const conflictWarning = useMemo(() => {
+    if (!selectedPolicy) return "";
+
+    const replacedAssignment = existingAssignmentsPage?.items.find(
+      (assignment) =>
+        assignment.leaveTypeId === selectedPolicy.leaveTypeId &&
+        assignment.policyId !== selectedPolicy.id
+    );
+    if (!replacedAssignment) return "";
+
+    return translateText(["assignModal", "conflictWarning"], {
+      employeeName: employeeName ?? "",
+      leaveType: replacedAssignment.leaveTypeName
+    });
+  }, [selectedPolicy, existingAssignmentsPage, employeeName, translateText]);
 
   const handleEffectiveDateTypeChange = (type: EffectiveDateType): void => {
     setEffectiveDateType(type);
@@ -130,7 +178,9 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
       toastType: ToastType.SUCCESS,
       title: translateText(["assignSuccessTitle"]),
       description: translateText(["assignSuccessDescription"], {
-        policyName: selectedPolicyName
+        policyName: selectedPolicyName,
+        employeeName: employeeName ?? "",
+        effectiveDate: effectiveDateLabel
       }),
       isIcon: true
     });
@@ -191,6 +241,8 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
             specificDateError={specificDateError}
             onSpecificDateChange={handleSpecificDateChange}
             accrualPreview={accrualPreview}
+            isFlexiblePolicy={isFlexiblePolicy}
+            conflictWarning={conflictWarning}
           />
         }
         buttons={{

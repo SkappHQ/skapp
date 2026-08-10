@@ -10,7 +10,7 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
-export const ACCRUAL_PREVIEW_ROW_LIMIT = 12;
+export const ACCRUAL_PREVIEW_ROW_LIMIT = 4;
 
 export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
   DAILY: "day",

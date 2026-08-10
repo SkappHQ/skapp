@@ -2,8 +2,10 @@ import {
   CalendarIcon,
   DatePicker,
   Dropdown,
+  InfoTipBanner,
   InputField,
-  RadioButton
+  RadioButton,
+  Tooltip
 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
@@ -35,6 +37,8 @@ interface Props {
   specificDateError: string;
   onSpecificDateChange: (isoDate: string) => void;
   accrualPreview: AccrualPreviewRow[];
+  isFlexiblePolicy: boolean;
+  conflictWarning: string;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -46,13 +50,14 @@ const AssignLeavePolicyForm: FC<Props> = ({
   specificDate,
   specificDateError,
   onSpecificDateChange,
-  accrualPreview
+  accrualPreview,
+  isFlexiblePolicy,
+  conflictWarning
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
   const accrualHeaders: GridHeader[] = [
     { id: "date", label: translateText(["assignModal", "colDate"]) },
-    { id: "action", label: translateText(["assignModal", "colAction"]) },
     { id: "days", label: translateText(["assignModal", "colDays"]) },
     { id: "balance", label: translateText(["assignModal", "colBalance"]) }
   ];
@@ -62,15 +67,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
       accrualPreview.map((row, index) => ({
         id: index,
         date: <span className="body2 text-black">{row.date}</span>,
-        action: (
-          <span className="body2 text-black">
-            {translateText(["assignModal", "actionAccrued"])}
-          </span>
-        ),
         days: <span className="body2 text-black">{row.days}</span>,
         balance: <span className="body2 text-black">{row.balance}</span>
       })),
-    [accrualPreview, translateText]
+    [accrualPreview]
   );
 
   return (
@@ -89,6 +89,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
           width="100%"
         />
       </div>
+
+      {conflictWarning && (
+        <InfoTipBanner status="warning" description={conflictWarning} />
+      )}
 
       <div className="flex flex-col gap-2">
         <p className="body2 text-secondary-text">
@@ -177,6 +181,24 @@ const AssignLeavePolicyForm: FC<Props> = ({
           </DatePicker>
         )}
       </div>
+
+      {/* A flexible policy tracks no balance, so the accrual schedule is
+          replaced by a plain explanation — never by an input. */}
+      {isFlexiblePolicy && (
+        <Tooltip
+          content={translateText(["assignModal", "flexibleInfoTooltip"])}
+          position="top"
+        >
+          <p
+            role="status"
+            aria-live="polite"
+            tabIndex={0}
+            className="body2 text-secondary-text"
+          >
+            {translateText(["assignModal", "flexibleInfoLabel"])}
+          </p>
+        </Tooltip>
+      )}
 
       {accrualPreview.length > 0 && (
         <div className="flex flex-col gap-2">
