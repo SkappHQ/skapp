@@ -9,6 +9,7 @@ import { useFormik } from "formik";
 import { FC } from "react";
 
 import {
+  useCreateBusinessUnit,
   useGetBusinessUnits,
   useUpdateBusinessUnit
 } from "~community/common/api/BusinessUnitApi";
@@ -24,10 +25,10 @@ import { businessUnitValidation } from "~community/configurations/utils/business
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  businessUnit: BusinessUnit;
+  businessUnit?: BusinessUnit;
 }
 
-const EditBusinessUnitModal: FC<Props> = ({
+const BusinessUnitFormModal: FC<Props> = ({
   isOpen,
   onClose,
   businessUnit
@@ -35,22 +36,29 @@ const EditBusinessUnitModal: FC<Props> = ({
   const translateText = useTranslator("configurations", "businessUnit");
   const { setToastMessage } = useToast();
 
+  const isEdit = businessUnit !== undefined;
+
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const handleUpdateSuccess = () => {
+  const handleSuccess = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toasts", "updateSuccess", "title"]),
-      description: translateText(["toasts", "updateSuccess", "description"], {
-        name: formik.values.name.trim()
-      })
+      title: translateText([
+        "toasts",
+        isEdit ? "updateSuccess" : "createSuccess",
+        "title"
+      ]),
+      description: translateText(
+        ["toasts", isEdit ? "updateSuccess" : "createSuccess", "description"],
+        { name: formik.values.name.trim() }
+      )
     });
     formik.resetForm();
     onClose();
   };
 
-  const handleUpdateError = () => {
+  const handleError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -59,41 +67,49 @@ const EditBusinessUnitModal: FC<Props> = ({
     });
   };
 
-  const { mutate: updateBusinessUnit, isPending } = useUpdateBusinessUnit(
-    handleUpdateSuccess,
-    handleUpdateError
-  );
+  const { mutate: createBusinessUnit, isPending: isCreating } =
+    useCreateBusinessUnit(handleSuccess, handleError);
+
+  const { mutate: updateBusinessUnit, isPending: isUpdating } =
+    useUpdateBusinessUnit(handleSuccess, handleError);
+
+  const isPending = isCreating || isUpdating;
 
   const handleSubmit = (values: BusinessUnitFormValues) => {
     const name = values.name.trim();
     const description = values.description.trim();
 
-    const isUnchanged =
-      name === businessUnit.name.trim() &&
-      description === (businessUnit.description ?? "").trim();
-    if (isUnchanged) {
-      onClose();
+    if (businessUnit) {
+      const isUnchanged =
+        name === businessUnit.name.trim() &&
+        description === (businessUnit.description ?? "").trim();
+      if (isUnchanged) {
+        onClose();
+        return;
+      }
+
+      updateBusinessUnit({
+        id: businessUnit.businessUnitId,
+        payload: { name, description }
+      });
       return;
     }
 
-    updateBusinessUnit({
-      id: businessUnit.businessUnitId,
-      payload: { name, description }
-    });
+    createBusinessUnit({ name, description });
   };
 
   const initialValues: BusinessUnitFormValues = {
-    name: businessUnit.name,
-    description: businessUnit.description ?? ""
+    name: businessUnit?.name ?? "",
+    description: businessUnit?.description ?? ""
   };
 
   const formik = useFormik<BusinessUnitFormValues>({
     initialValues,
-    enableReinitialize: true,
+    enableReinitialize: isEdit,
     validationSchema: businessUnitValidation(
       translateText,
       businessUnits,
-      businessUnit.businessUnitId
+      businessUnit?.businessUnitId
     ),
     validateOnChange: false,
     validateOnBlur: true,
@@ -110,7 +126,10 @@ const EditBusinessUnitModal: FC<Props> = ({
     <SmallModal
       isOpen={isOpen}
       onClose={handleClose}
-      modalHeader={translateText(["form", "editModalTitle"])}
+      modalHeader={translateText([
+        "form",
+        isEdit ? "editModalTitle" : "addModalTitle"
+      ])}
       content={
         <div className="flex flex-col gap-4">
           <InputField
@@ -122,7 +141,6 @@ const EditBusinessUnitModal: FC<Props> = ({
             placeholder={translateText(["form", "namePlaceholder"])}
             errorMessage={formik.errors.name}
             state={formik.errors.name ? "error" : "default"}
-            autoFocus
             fullWidth
             required
           />
@@ -161,4 +179,4 @@ const EditBusinessUnitModal: FC<Props> = ({
   );
 };
 
-export default EditBusinessUnitModal;
+export default BusinessUnitFormModal;
