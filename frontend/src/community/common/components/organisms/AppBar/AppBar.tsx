@@ -44,9 +44,8 @@ const AppBar = () => {
   const { user } = useAuth();
   const userInfoRef = useRef<HTMLDivElement | null>(null);
 
-  const { notifyData, setNotifyData, breadcrumbs } = useCommonStore(
-    (state) => state
-  );
+  const { notifyData, setNotifyData, breadcrumbs, isDrawerExpanded } =
+    useCommonStore((state) => state);
 
   const { data: employee } = useGetUserPersonalDetails();
 
@@ -175,7 +174,7 @@ const AppBar = () => {
               />
             )}
 
-            {isBelow1024 && (
+            {isBelow1024 && !isDrawerExpanded && (
               <button
                 className="flex cursor-pointer items-center justify-center w-10 h-10"
                 onClick={handleDrawer}
