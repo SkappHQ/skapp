@@ -10,7 +10,7 @@ import {
 
 // Company
 
-export interface CompanyEntity {
+export interface CrmCompanyEntity {
   id?: number;
   name?: string;
   industry?: CrmIndustryEnum;
@@ -28,7 +28,7 @@ export interface CompanyEntity {
   taskIds?: number[];
 }
 
-export interface CompanyMetrics {
+export interface CrmCompanyMetrics {
   id?: number;
   openTasksCount?: number;
   overdue?: number;
@@ -38,18 +38,14 @@ export interface CompanyMetrics {
   closedDeals?: number;
 }
 
-export interface CompanyLookup {
+export interface CrmCompanyLookup {
   id: number;
   name: string;
 }
 
-export interface CompanyDomainSearchResponseType {
-  companies: CompanyEntity[];
-}
-
 // Contact
 
-export interface ContactEntity {
+export interface CrmContactEntity {
   id?: number;
   firstName?: string;
   lastName?: string;
@@ -70,7 +66,7 @@ export interface ContactEntity {
   taskIds?: number[];
 }
 
-export interface ContactMetrics {
+export interface CrmContactMetrics {
   id?: number;
   totalRevenue?: string;
   pipelineRevenue?: string;
@@ -81,23 +77,24 @@ export interface ContactMetrics {
   closedDealCount?: number;
 }
 
-export interface ContactLookup {
+export interface CrmContactLookupItem {
   id: number;
   firstName: string;
   lastName?: string;
-  company?: CompanyLookup;
+  company?: CrmCompanyLookup;
 }
 
-export interface Owner {
+export interface CrmOwnerEntity {
   employeeId: number;
   firstName: string;
   lastName?: string;
+  email?: string;
   authPic?: string;
 }
 
 // Deal
 
-export interface DealEntity {
+export interface CrmDealEntity {
   id?: number;
   name?: string;
   description?: string;
@@ -113,31 +110,12 @@ export interface DealEntity {
   taskIds?: number[];
 }
 
-export interface DealLookup {
+export interface CrmDealLookupItem {
   id: number;
   name: string;
 }
 
-// Board
-
-export interface BoardColumn {
-  dealIds: number[];
-  totalCount: number;
-  page: number;
-  hasNextPage: boolean;
-}
-
-export interface DealMoveResult {
-  dealId: number;
-  stageId: number;
-  orderIndex: string;
-  previousDealId?: number;
-  nextDealId?: number;
-}
-
-// Deal Stage
-
-export interface DealStageEntity {
+export interface CrmDealStageEntity {
   id?: number;
   name?: string;
   description?: string;
@@ -146,14 +124,16 @@ export interface DealStageEntity {
   stageType?: CrmDealStageEnum;
 }
 
-export interface DealStageReorderItem {
-  id: number;
-  orderIndex: number;
+export interface CrmBoardColumn {
+  dealIds: number[];
+  totalCount: number;
+  currentPage: number;
+  hasNextPage: boolean;
 }
 
-// Task
+// Task — entity and its type
 
-export interface TaskEntity {
+export interface CrmTaskEntity {
   id?: number;
   name?: string;
   priority?: CrmPriorityEnum;
@@ -167,27 +147,128 @@ export interface TaskEntity {
   dealId?: number;
 }
 
-export interface TaskType {
+export interface CrmTaskType {
   id: number;
   name: string;
   orderIndex: number;
 }
 
+// Requests
+export interface CrmDealReorderWithinStageRequest {
+  dealId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
+}
+
+export interface CrmDealMoveBetweenStagesRequest {
+  dealId: number;
+  newStageId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
+}
+
+export interface CrmDealStageReorderRequest {
+  id: number;
+  orderIndex: number;
+}
+
+// Responses
+export interface CrmCompanyListResponse {
+  items: CrmCompanyEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmCompanyLookupListResponse {
+  items: CrmCompanyLookup[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmCompanyDomainSearchResponse {
+  companies: CrmCompanyEntity[];
+}
+
+export interface CrmContactListResponse {
+  items: CrmContactEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmContactLookupListResponse {
+  items: CrmContactLookupItem[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmOwnerListResponse {
+  items: CrmOwnerEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmDealListResponse {
+  items: CrmDealEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmTaskListResponse {
+  tasks: CrmTaskEntity[];
+}
+
+export interface CrmTaskTypeListResponse {
+  taskTypes: CrmTaskType[];
+}
+
+export interface CrmTaskCompletedListResponse {
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmTaskRelatedListResponse {
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 // Filters
 
-export interface CompanyDomainSearchFilterRequest {
+export interface CrmCompanyFilterRequest {
+  searchKeyword?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmCompanyDomainSearchFilterRequest {
   domain: string;
   limit: number;
 }
 
-export interface ContactLookupFilterRequest {
+export interface CrmContactFilterRequest {
   searchKeyword?: string;
+  companyId?: number;
   dealId?: number;
-  page: number;
-  size: number;
+  page?: number;
+  size?: number;
 }
 
-export interface DealFilterRequest {
+export interface CrmOwnerLookupFilterRequest {
+  searchKeyword?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmDealFilterRequest {
   sortOrder?: SortOrderTypes;
   sortKey?: CrmDealSortEnum;
   searchKeyword?: string;
@@ -195,36 +276,36 @@ export interface DealFilterRequest {
   priority?: CrmPriorityEnum;
   companyId?: number;
   contactId?: number;
-  page: number;
-  size: number;
+  page?: number;
+  size?: number;
 }
 
-export interface DealsByStagesRequest {
+export interface CrmDealsByStagesRequest {
   stageIds: number[];
   searchKeyword?: string;
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
 }
 
-export interface TaskFilterRequest {
+export interface CrmTaskFilterRequest {
   searchKeyword?: string;
   contactId?: number;
   dealId?: number;
   companyId?: number;
 }
 
-export interface TaskCompletedFilterRequest {
+export interface CrmTaskCompletedFilterRequest {
   searchKeyword?: string;
   contactId?: number;
   dealId?: number;
   companyId?: number;
-  page: number;
-  size: number;
+  page?: number;
+  size?: number;
 }
 
-export interface TaskRelatedFilterRequest {
+export interface CrmTaskRelatedFilterRequest {
   contactId?: number;
   dealId?: number;
-  page: number;
-  size: number;
+  page?: number;
+  size?: number;
 }
