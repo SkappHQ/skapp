@@ -70,13 +70,12 @@ const Drawer = (): JSX.Element => {
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
-  const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
 
   const environment = useGetEnvironment();
 
   const { s3FileUrls, downloadS3File } = useS3Download();
 
-  const { handleDrawer } = useDrawer(isBelow1024);
+  const { handleDrawer, isBelow1024 } = useDrawer();
 
   const { data: organizationDetails, isLoading: orgLoading } =
     useGetOrganization();

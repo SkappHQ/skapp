@@ -37,15 +37,15 @@ const AppBar = () => {
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
-  const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
-  const { handleDrawer } = useDrawer();
+  const { handleDrawer, isDrawerExpanded, isBelow1024 } = useDrawer();
   const translateAria = useTranslator("commonAria", "components", "appBar");
 
   const { user } = useAuth();
   const userInfoRef = useRef<HTMLDivElement | null>(null);
 
-  const { notifyData, setNotifyData, breadcrumbs, isDrawerExpanded } =
-    useCommonStore((state) => state);
+  const { notifyData, setNotifyData, breadcrumbs } = useCommonStore(
+    (state) => state
+  );
 
   const { data: employee } = useGetUserPersonalDetails();
 
