@@ -98,6 +98,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
+		CrmDeal savedDeal = persistNewDeal(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public CrmDeal persistNewDeal(CrmDealCreateRequestDto requestDto) {
 		log.info("createDeal: creating deal with name={}", requestDto.getName());
 
 		CrmValidations.validateDealName(requestDto.getName());
@@ -143,10 +150,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOwner(owner);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("createDeal: deal created with id={}", savedDeal.getId());
-		return new ResponseEntityDto(false, responseDto);
+		return savedDeal;
 	}
 
 	protected void validateDealCreationLimit() {
@@ -417,6 +423,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
+		CrmDeal savedDeal = applyDealEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public CrmDeal applyDealEdit(Long id, CrmDealEditRequestDto requestDto) {
 		log.info("editDeal: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
@@ -490,10 +503,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
-
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		return savedDeal;
 	}
 
 	@Override
