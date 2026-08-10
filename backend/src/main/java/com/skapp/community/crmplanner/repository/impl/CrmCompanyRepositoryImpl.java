@@ -145,10 +145,6 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 
 	@Override
 	public List<CrmCompanyMetricsSummary> findCompanyMetricsSummaries(List<Long> companyIds) {
-		if (companyIds == null || companyIds.isEmpty()) {
-			return new ArrayList<>();
-		}
-
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
