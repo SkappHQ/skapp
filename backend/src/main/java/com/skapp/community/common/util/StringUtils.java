@@ -30,12 +30,11 @@ public class StringUtils {
 	}
 
 	public static String normalizeName(String value) {
-		String trimmed = org.apache.commons.lang3.StringUtils.trimToEmpty(value);
-		if (trimmed.isEmpty()) {
-			return trimmed;
+		if (isNullOrBlank(value)) {
+			return "";
 		}
 
-		String collapsed = ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(trimmed).replaceAll(" ");
+		String collapsed = ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(value.strip()).replaceAll(" ");
 		String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
 		return ValidationConstant.DIACRITIC_MARK_PATTERN.matcher(decomposed).replaceAll("").toLowerCase();
 	}
