@@ -159,7 +159,7 @@
     "bulkAssignModal": {
       "title": "Bulk Assign Leave Policies",
       "addPoliciesTitle": "Add policies",
-      "addPoliciesDescription": "Download the template and add one row per employee. Keep the column headers as they are so the policies map correctly. Leave the Effective Date empty to start the policy on the employee's hire date.",
+      "addPoliciesDescription": "Download the template and add one row per employee. Keep the column headers as they are so the policies map correctly.",
       "uploadInstruction": "Upload your CSV file to assign policies to multiple employees.",
       "downloadTemplateLink": "Download CSV Template",
       "employeeNameHeader": "Employee Name",

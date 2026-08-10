@@ -38,12 +38,7 @@ const BulkAssignPolicyInstructionsStep: FC<Props> = ({ onContinue }) => {
         <ButtonV2
           variant="tertiary"
           onClick={handleTemplateDownload}
-          icon={
-            <Icon
-              name={IconName.DOWNLOAD_ICON}
-              fill="var(--color-primary-text)"
-            />
-          }
+          icon={<Icon name={IconName.DOWNLOAD_ICON} />}
           iconPosition="end"
         >
           {translateText(["downloadTemplateLink"])}
