@@ -13,7 +13,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { getBlinkClass } from "~community/common/utils/commonUtil";
 import {
   useCheckEmailAndIdentificationNoForQuickAdd,
@@ -139,7 +139,7 @@ const AddNewResourceModal = () => {
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
-    tenantID as string
+    getTenantId()
   );
 
   const validateWorkEmail = () => {
