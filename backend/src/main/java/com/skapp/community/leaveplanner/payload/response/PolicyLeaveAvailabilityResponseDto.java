@@ -24,6 +24,8 @@ public class PolicyLeaveAvailabilityResponseDto {
 
 	private LocalDate validTo;
 
+	private Boolean isUnlimited;
+
 	private Boolean isValid;
 
 	private PolicyLeaveValidationFailure failureReason;

@@ -84,7 +84,7 @@ public class PolicyLeaveRequest extends Auditable<String> {
 	@Column(name = "event_id")
 	private String eventId;
 
-	@OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL)
 	private List<PolicyLeaveRequestAttachment> attachments;
 
 }

@@ -1,29 +1,14 @@
 package com.skapp.community.leaveplanner.payload.request;
 
-import com.skapp.community.leaveplanner.type.LeaveState;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Getter
 @Setter
-public class PolicyLeaveRequestDto {
-
-	@NotNull
-	private Long policyId;
-
-	@NotNull
-	private LocalDate startDate;
-
-	@NotNull
-	private LocalDate endDate;
-
-	@NotNull
-	private LeaveState leaveState;
+public class PolicyLeaveRequestDto extends PolicyLeaveAvailabilityRequestDto {
 
 	private String requestDesc;
 

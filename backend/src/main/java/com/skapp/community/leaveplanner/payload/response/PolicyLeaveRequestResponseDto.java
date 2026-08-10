@@ -47,4 +47,6 @@ public class PolicyLeaveRequestResponseDto {
 
 	private Float remainingBalance;
 
+	private Boolean isUnlimited;
+
 }

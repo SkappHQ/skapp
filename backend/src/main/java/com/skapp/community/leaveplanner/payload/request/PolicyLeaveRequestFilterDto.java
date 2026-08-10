@@ -1,7 +1,7 @@
 package com.skapp.community.leaveplanner.payload.request;
 
+import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
-import com.skapp.community.leaveplanner.type.PolicyLeaveRequestSort;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +19,7 @@ public class PolicyLeaveRequestFilterDto {
 	@Min(1)
 	private int size = 10;
 
-	private PolicyLeaveRequestSort sortKey = PolicyLeaveRequestSort.CREATED_DATE;
+	private LeaveRequestSort sortKey = LeaveRequestSort.CREATED_DATE;
 
 	private Sort.Direction sortOrder = Sort.Direction.DESC;
 

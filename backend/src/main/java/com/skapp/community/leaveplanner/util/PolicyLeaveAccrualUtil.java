@@ -22,9 +22,6 @@ public class PolicyLeaveAccrualUtil {
 	private static final MonthDay CALENDAR_YEAR_START = MonthDay.of(1, 1);
 
 	public record DateWindow(LocalDate start, LocalDate end) {
-		public boolean contains(LocalDate date) {
-			return !date.isBefore(start) && !date.isAfter(end);
-		}
 	}
 
 	public static LocalDate resolveAccrualStartDate(LeavePolicy policy, LocalDate effectiveFrom) {
@@ -50,7 +47,7 @@ public class PolicyLeaveAccrualUtil {
 		return cycle;
 	}
 
-	public static float accruedUpTo(LeavePolicy policy, LocalDate accrualStartDate, LocalDate asOf) {
+	private static float accruedUpTo(LeavePolicy policy, LocalDate accrualStartDate, LocalDate asOf) {
 		if (policy.getAccrualDays() == null || policy.getFrequency() == null) {
 			return 0f;
 		}
@@ -157,7 +154,7 @@ public class PolicyLeaveAccrualUtil {
 			LocalDate date) {
 		return switch (frequency) {
 			case DAILY -> new DateWindow(date, date);
-			case WEEKLY -> weekWindow(date, 1);
+			case WEEKLY -> weekWindow(date);
 			case EVERY_OTHER_WEEK -> fortnightWindow(accrualStartDate, date);
 			case TWICE_A_MONTH -> twiceAMonthWindow(date);
 			case MONTHLY -> new DateWindow(date.withDayOfMonth(1), date.withDayOfMonth(date.lengthOfMonth()));
@@ -168,9 +165,9 @@ public class PolicyLeaveAccrualUtil {
 		};
 	}
 
-	private static DateWindow weekWindow(LocalDate date, int weeks) {
+	private static DateWindow weekWindow(LocalDate date) {
 		LocalDate start = date.minusDays(date.getDayOfWeek().getValue() - 1L);
-		return new DateWindow(start, start.plusWeeks(weeks).minusDays(1));
+		return new DateWindow(start, start.plusWeeks(1).minusDays(1));
 	}
 
 	private static DateWindow fortnightWindow(LocalDate accrualStartDate, LocalDate date) {

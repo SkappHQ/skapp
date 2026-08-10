@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum LeaveMessageConstant implements MessageConstant {
 
+	// Success messages
 	LEAVE_SUCCESS_NUDGE_MANAGER("api.success.leave.nudge-manager"),
 	LEAVE_SUCCESS_AUTO_APPROVAL_LEAVE_APPROVED("api.success.leave.auto-approval-leave-approved"),
 
+	// Error messages
 	LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND("api.error.leave.leave-cycle.not-found"),
 	LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_FOUND("api.error.leave.leave-entity.not-found"),
 	LEAVE_ERROR_ENTITLEMENT_IN_USE_CANT_DELETED("api.error.leave.leave-entitlement.in-use-cant.deleted"),
@@ -98,6 +100,7 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_MIN_DURATION_REQUIRED("api.error.leave.policy-leave-type-min-duration-required"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE("api.error.leave.policy-leave-type-already-inactive"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active"),
+	// Policy leave errors
 	LEAVE_ERROR_POLICY_LEAVE_NOT_ENABLED("api.error.leave.policy-leave-not-enabled"),
 	LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED("api.error.leave.policy-leave-policy-not-assigned"),
 	LEAVE_ERROR_POLICY_LEAVE_POLICY_INACTIVE("api.error.leave.policy-leave-policy-inactive"),
@@ -113,7 +116,9 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_FULLDAY("api.error.leave.policy-leave-cannot-apply-fullday"),
 	LEAVE_ERROR_POLICY_LEAVE_DESCRIPTION_MAX_LENGTH("api.error.leave.policy-leave-description-max-length"),
 	LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY("api.error.leave.policy-leave-halfday-single-date-only"),
-	LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS("api.error.leave.policy-leave-too-many-attachments");
+	LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS("api.error.leave.policy-leave-too-many-attachments"),
+	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENTS_NOT_ALLOWED("api.error.leave.policy-leave-attachments-not-allowed"),
+	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENT_URL_MAX_LENGTH("api.error.leave.policy-leave-attachment-url-max-length");
 
 	private final String messageKey;
 

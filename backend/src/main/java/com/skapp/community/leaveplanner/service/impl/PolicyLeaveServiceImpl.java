@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
@@ -35,6 +34,7 @@ import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.leaveplanner.type.PolicyBalanceDisabledReason;
@@ -98,8 +98,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private final LeaveMapper leaveMapper;
 
-	private final PageTransformer pageTransformer;
-
 	private final LeaveEmailService leaveEmailService;
 
 	private final LeaveNotificationService leaveNotificationService;
@@ -143,15 +141,17 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		responseDto.setPolicyId(assignment.getPolicy().getId());
 		responseDto.setPolicyName(assignment.getPolicy().getName());
 		responseDto.setRemainingBalance(snapshot.balanceInDays());
+		responseDto.setIsUnlimited(snapshot.isUnlimited());
 		responseDto.setValidFrom(snapshot.usableFrom());
 		responseDto.setValidTo(snapshot.cycleEnd());
+		responseDto.setRequestedDays(0f);
 
 		PolicyLeaveValidationFailure failure = firstFailure(currentUser.getEmployee(), snapshot,
 				requestDto.getStartDate(), requestDto.getEndDate(), requestDto.getLeaveState(), responseDto);
 
 		responseDto.setIsValid(failure == null);
 		responseDto.setFailureReason(failure);
-		if (responseDto.getRequestedDays() != null) {
+		if (failure == null && !snapshot.isUnlimited()) {
 			responseDto.setBalanceAfterRequest(snapshot.balanceInDays() - responseDto.getRequestedDays());
 		}
 
@@ -195,7 +195,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.setStatus(LeaveRequestStatus.PENDING);
 		leaveRequest.setIsViewed(Boolean.FALSE);
 		leaveRequest.setIsAutoApproved(Boolean.FALSE);
-		attachSupportingDocuments(leaveRequest, policy.getLeaveType(), policyLeaveRequestDto.getAttachments());
+		attachSupportingDocuments(leaveRequest, policyLeaveRequestDto.getAttachments());
 
 		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(employee);
 		if (Boolean.TRUE.equals(policy.getLeaveType().getIsAutoApproval())) {
@@ -208,7 +208,10 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		PolicyLeaveRequestResponseDto responseDto = leaveMapper
 			.policyLeaveRequestToPolicyLeaveRequestResponseDto(savedLeaveRequest);
-		responseDto.setRemainingBalance(snapshot.balanceInDays() - durationDays);
+		responseDto.setIsUnlimited(snapshot.isUnlimited());
+		if (!snapshot.isUnlimited()) {
+			responseDto.setRemainingBalance(snapshot.balanceInDays() - durationDays);
+		}
 
 		log.info("applyPolicyLeaveRequest: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -241,14 +244,18 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		User currentUser = userService.getCurrentUser();
 		int resolvedYear = resolveYear(filterDto.getYear());
 
-		Sort sort = Sort.by(filterDto.getSortOrder(), filterDto.getSortKey().toString());
+		LeaveRequestSort sortKey = filterDto.getSortKey() == null ? LeaveRequestSort.CREATED_DATE
+				: filterDto.getSortKey();
+		Sort.Direction sortOrder = filterDto.getSortOrder() == null ? Sort.Direction.DESC : filterDto.getSortOrder();
+
+		Sort sort = Sort.by(sortOrder, sortKey.toString());
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
 				currentUser.getEmployee().getEmployeeId(), startOfYear(resolvedYear), endOfYear(resolvedYear),
 				filterDto, pageable);
 
-		PageDto pageDto = pageTransformer.transform(leaveRequests);
+		PageDto pageDto = new PageDto();
 		pageDto.setCurrentPage(leaveRequests.getNumber());
 		pageDto.setTotalPages(leaveRequests.getTotalPages());
 		pageDto.setTotalItems(leaveRequests.getTotalElements());
@@ -379,9 +386,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				&& (requestDto.getAttachments() == null || requestDto.getAttachments().isEmpty())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_MUST_INCLUDE_ATTACHMENT);
 		}
-		if (requestDto.getAttachments() != null
-				&& requestDto.getAttachments().size() > PolicyLeaveConstant.MAX_ATTACHMENTS) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS);
+		if (requestDto.getAttachments() != null && !requestDto.getAttachments().isEmpty()) {
+			if (!Boolean.TRUE.equals(leaveType.getIsAttachment())) {
+				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_ATTACHMENTS_NOT_ALLOWED);
+			}
+			if (requestDto.getAttachments().size() > PolicyLeaveConstant.MAX_ATTACHMENTS) {
+				throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS);
+			}
+			validateAttachmentUrls(requestDto.getAttachments());
 		}
 		if (leaveType.getMinDuration() == LeaveDuration.FULL_DAY && isHalfDay(requestDto.getLeaveState())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_HALFDAY);
@@ -395,6 +407,15 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (requestDto.getRequestDesc() != null
 				&& requestDto.getRequestDesc().length() > PolicyLeaveConstant.MAX_REQUEST_DESCRIPTION_LENGTH) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_DESCRIPTION_MAX_LENGTH);
+		}
+	}
+
+	private void validateAttachmentUrls(List<PolicyLeaveAttachmentDto> attachmentDtos) {
+		boolean hasOversizedUrl = attachmentDtos.stream()
+			.filter(dto -> dto != null && dto.getFileUrl() != null)
+			.anyMatch(dto -> dto.getFileUrl().length() > PolicyLeaveConstant.MAX_ATTACHMENT_URL_LENGTH);
+		if (hasOversizedUrl) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_ATTACHMENT_URL_MAX_LENGTH);
 		}
 	}
 
@@ -433,6 +454,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (holidayDuration == null || holidayDuration == HolidayDuration.FULL_DAY) {
 			return false;
 		}
+		// A half-day holiday inside a multi-day range is not a conflict:
+		// getWorkingDaysBetweenTwoDates already charges 0.5 for that day.
 		if (!isSingleDay) {
 			return false;
 		}
@@ -462,9 +485,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 
-	private void attachSupportingDocuments(PolicyLeaveRequest leaveRequest, PolicyLeaveType leaveType,
+	private void attachSupportingDocuments(PolicyLeaveRequest leaveRequest,
 			List<PolicyLeaveAttachmentDto> attachmentDtos) {
-		if (!Boolean.TRUE.equals(leaveType.getIsAttachment()) || attachmentDtos == null || attachmentDtos.isEmpty()) {
+		if (attachmentDtos == null || attachmentDtos.isEmpty()) {
 			return;
 		}
 
@@ -523,7 +546,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				&& employee.getWorkLocation().getWorkLocationId() != null) {
 			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 		}
-		return holidayDao.findAllByIsActiveTrue();
+		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 	}
 
 	private LocalDate startOfYear(int year) {

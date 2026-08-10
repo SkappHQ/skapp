@@ -10,6 +10,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +38,15 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		criteriaQuery.where(buildPredicates(criteriaBuilder, root, employeeId, cycleStart, cycleEnd, filterDto)
-			.toArray(new Predicate[0]));
+		root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT).fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		criteriaQuery.select(root)
+			.where(buildPredicates(criteriaBuilder, root, employeeId, cycleStart, cycleEnd, filterDto)
+				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
 		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
-		query.setFirstResult(pageable.getPageNumber() * pageable.getPageSize());
+		query.setFirstResult((int) pageable.getOffset());
 		query.setMaxResults(pageable.getPageSize());
 
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
@@ -60,15 +64,15 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates
-			.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
-		predicates.add(criteriaBuilder.between(root.get(PolicyLeaveRequest_.START_DATE), cycleStart, cycleEnd));
+			.add(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId));
+		predicates.add(criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
 
 		if (!CollectionUtils.isEmpty(filterDto.getStatus())) {
-			predicates.add(root.get(PolicyLeaveRequest_.STATUS).in(filterDto.getStatus()));
+			predicates.add(root.get(PolicyLeaveRequest_.status).in(filterDto.getStatus()));
 		}
 
 		if (!CollectionUtils.isEmpty(filterDto.getPolicyId())) {
-			predicates.add(root.get(PolicyLeaveRequest_.POLICY).get(LeavePolicy_.ID).in(filterDto.getPolicyId()));
+			predicates.add(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id).in(filterDto.getPolicyId()));
 		}
 
 		return predicates;
