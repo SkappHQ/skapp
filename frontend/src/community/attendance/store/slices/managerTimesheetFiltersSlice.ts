@@ -14,7 +14,7 @@ const managerTimesheetFiltersSlice = (
   set: SetType<ManagerTimesheetFiltersSliceTypes>
 ): ManagerTimesheetFiltersSliceTypes => ({
   timesheetRequestsFilters: {
-    status: []
+    status: [TimeSheetRequestStates.PENDING]
   },
   timesheetRequestSelectedDates: [],
   timesheetRequestParams: {
@@ -78,7 +78,7 @@ const managerTimesheetFiltersSlice = (
   restoreTimesheetRequestParams: () => {
     set((state) => ({
       timesheetRequestsFilters: {
-        status: [] as string[]
+        status: [TimeSheetRequestStates.PENDING] as string[]
       },
       timesheetRequestParams: {
         ...state.timesheetRequestParams,
