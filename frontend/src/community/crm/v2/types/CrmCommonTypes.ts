@@ -64,6 +64,16 @@ export interface CrmDealListResponse {
   totalPages: number;
 }
 
+export interface CrmDealsByStagesResponse {
+  stageId: number;
+  deals: CrmDealEntity[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
+}
+
 export interface CrmTaskListResponse {
   tasks: CrmTaskEntity[];
 }
@@ -84,6 +94,10 @@ export interface CrmTaskRelatedListResponse {
   currentPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export interface CrmExistsResponse {
+  isExists: boolean;
 }
 
 // Filters
