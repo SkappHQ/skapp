@@ -35,12 +35,12 @@ const Deals: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateText(["breadcrumbs.crm"]) },
-        { label: translateText(["deals.title"]) }
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["deals", "title"]) }
       ]}
-      pageHead={translateText(["deals.pageHead"])}
-      title={translateText(["deals.title"])}
-      primaryButtonText={translateText(["deals.addDealBtn"])}
+      pageHead={translateText(["deals", "pageHead"])}
+      title={translateText(["deals", "title"])}
+      primaryButtonText={translateText(["deals", "addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}

@@ -55,12 +55,12 @@ const Tasks: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateText(["breadcrumbs.crm"]) },
-        { label: translateText(["tasks.title"]) }
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["tasks", "title"]) }
       ]}
-      pageHead={translateText(["tasks.pageHead"])}
-      title={translateText(["tasks.title"])}
-      primaryButtonText={translateText(["tasks.addTaskBtn"])}
+      pageHead={translateText(["tasks", "pageHead"])}
+      title={translateText(["tasks", "title"])}
+      primaryButtonText={translateText(["tasks", "addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       containerStyles={{
         padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }

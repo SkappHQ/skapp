@@ -35,12 +35,12 @@ const Contacts: NextPage = () => {
   return (
     <ContentLayout
       breadcrumbs={[
-        { label: translateText(["breadcrumbs.crm"]) },
-        { label: translateText(["contacts.title"]) }
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["contacts", "title"]) }
       ]}
-      pageHead={translateText(["contacts.pageHead"])}
-      title={translateText(["contacts.title"])}
-      primaryButtonText={translateText(["contacts.addContactBtn"])}
+      pageHead={translateText(["contacts", "pageHead"])}
+      title={translateText(["contacts", "title"])}
+      primaryButtonText={translateText(["contacts", "addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isCheckingCrmLimit}
