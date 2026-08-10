@@ -7,9 +7,9 @@ import lombok.Setter;
 @Setter
 public class BulkAssignErrorLogDto {
 
-	private String employeeName;
+	private String employeeEmail;
 
-	private String policyName;
+	private String policyId;
 
 	private String effectiveDate;
 

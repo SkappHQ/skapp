@@ -1238,7 +1238,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
-	public List<Employee> findActiveEmployeesByExactNames(Set<String> names) {
+	public List<Employee> findActiveEmployeesByEmails(Set<String> emails) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
@@ -1246,17 +1246,15 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 
-		Join<Employee, User> userJoin = root.join(Employee_.user);
+		// Fetched rather than plain-joined so the emails can be read back outside this
+		// query's session without a select per employee.
+		Join<Employee, User> userJoin = (Join<Employee, User>) root.fetch(Employee_.user);
 		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
 
 		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
 
-		predicates.add(
-				criteriaBuilder
-					.lower(criteriaBuilder.concat(criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "),
-							root.get(Employee_.LAST_NAME)))
-					.in(names));
+		predicates.add(criteriaBuilder.lower(userJoin.get(User_.EMAIL)).in(emails));
 
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
