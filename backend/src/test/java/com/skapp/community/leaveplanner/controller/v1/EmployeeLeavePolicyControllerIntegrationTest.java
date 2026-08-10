@@ -50,7 +50,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 
 	// 500/501 are both ACTIVE accrual policies on leave type 100 (conflict pair);
 	// 502 is DEACTIVATED; 600 is an accrual policy on a different leave type (200);
-	// 700 is a FLEXIBLE policy (rejected this phase — accrual only).
+	// 700 is a FLEXIBLE policy on leave type 100 (assignable, tracks no balance).
 	private static final String SEED_POLICIES = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Annual Standard', 100, 'ACCRUAL', 'ACTIVE', false), "
 			+ "(501, 'Annual Senior', 100, 'ACCRUAL', 'ACTIVE', false), "
@@ -233,11 +233,34 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns 400 when assigning a flexible policy (accrual only this phase)")
+		@DisplayName("Leave admin assigns a flexible policy; window opens exactly as it does for accrual")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void assign_FlexiblePolicy_ReturnsBadRequest() throws Exception {
+		void assign_FlexiblePolicy_ReturnsCreatedWindow() throws Exception {
 			performAssign(leaveAdminToken(), assignBody(1, 700, "HIRE_DATE", null)).andDo(print())
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].policyId").value(700))
+				.andExpect(jsonPath("$.results[0].policyName").value("Annual Flexible"))
+				.andExpect(jsonPath("$.results[0].policyType").value("FLEXIBLE"))
+				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"))
+				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
+		}
+
+		@Test
+		@DisplayName("A flexible policy supersedes an existing accrual policy on the same leave type")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
+		void assign_FlexibleOverAccrualSameLeaveType_ClosesPreviousWindow() throws Exception {
+			// Employee 1 already has an open window on accrual policy 500 (leave type
+			// 100). Assigning flexible policy 700 (also leave type 100) must close it.
+			performAssign(leaveAdminToken(), assignBody(1, 700, "SPECIFIC", "2024-06-01")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].policyId").value(700));
+
+			performGet(leaveAdminToken(), 1).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(700))
+				.andExpect(jsonPath("$.results[0].items[0].policyType").value("FLEXIBLE"));
 		}
 
 		@Test

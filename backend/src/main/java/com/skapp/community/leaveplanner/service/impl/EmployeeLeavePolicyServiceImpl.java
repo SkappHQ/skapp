@@ -11,14 +11,12 @@ import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.EmployeeLeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
-import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
-import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
@@ -57,10 +55,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		if (policy.getStatus() != LeavePolicyStatus.ACTIVE) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACTIVE);
-		}
-
-		if (policy.getPolicyType() != PolicyType.ACCRUAL) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL);
 		}
 
 		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
