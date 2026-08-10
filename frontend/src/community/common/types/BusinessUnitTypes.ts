@@ -14,7 +14,7 @@ export interface BusinessUnitUpdateVariables {
   payload: BusinessUnitRequestPayload;
 }
 
-export interface BusinessUnitDeletionImpact {
+export interface BusinessUnitSummary {
   assignedEmployeeCount: number;
   isOtherBusinessUnitsExist: boolean;
 }

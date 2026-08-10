@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class BusinessUnitDeletionImpactResponseDto {
+public class BusinessUnitSummaryResponseDto {
 
 	private Long assignedEmployeeCount;
 

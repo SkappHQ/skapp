@@ -3,7 +3,7 @@ import * as Yup from "yup";
 import {
   BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH,
   BUSINESS_UNIT_NAME_MAX_LENGTH
-} from "~community/common/constants/businessUnitConstants";
+} from "~community/common/constants/commonConstants";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 

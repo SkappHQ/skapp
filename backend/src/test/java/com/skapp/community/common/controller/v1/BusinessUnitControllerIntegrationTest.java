@@ -169,13 +169,13 @@ class BusinessUnitControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get deletion impact - Returns assigned count and other-units flag")
-		void getBusinessUnitDeletionImpact_ReturnsImpact() throws Exception {
+		@DisplayName("Get business unit summary - Returns assigned count and other-units flag")
+		void getBusinessUnitSummary_ReturnsSummary() throws Exception {
 			BusinessUnit target = seedBusinessUnit("Sales");
 			seedBusinessUnit("Marketing");
 			assignSeededEmployeeTo(target);
 
-			performRequest(get(BASE_PATH + "/{id}/deletion-impact", target.getBusinessUnitId())
+			performRequest(get(BASE_PATH + "/{id}/business-unit-summary", target.getBusinessUnitId())
 				.accept(MediaType.APPLICATION_JSON)).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))

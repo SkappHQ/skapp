@@ -7,10 +7,10 @@ import { FC, useState } from "react";
 
 import {
   useDeleteBusinessUnit,
-  useGetBusinessUnitDeletionImpact,
-  useGetBusinessUnits
+  useGetBusinessUnits,
+  useGetBusinessUnitSummary
 } from "~community/common/api/BusinessUnitApi";
-import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/businessUnitConstants";
+import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/commonConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -35,8 +35,8 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
   );
 
-  const { data: impact, isLoading: isImpactLoading } =
-    useGetBusinessUnitDeletionImpact(businessUnit.businessUnitId);
+  const { data: businessUnitSummary, isLoading: isBusinessUnitSummaryLoading } =
+    useGetBusinessUnitSummary(businessUnit.businessUnitId);
 
   const { data: businessUnits } = useGetBusinessUnits();
 
@@ -46,7 +46,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       : Number(transferTargetValue);
 
   const handleDeleteSuccess = () => {
-    const count = impact?.assignedEmployeeCount;
+    const count = businessUnitSummary?.assignedEmployeeCount;
     const targetId = getSelectedTargetId();
 
     let description: string;
@@ -100,7 +100,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   };
 
   const renderContent = () => {
-    if (isImpactLoading || !impact || !businessUnits) {
+    if (isBusinessUnitSummaryLoading || !businessUnitSummary || !businessUnits) {
       return (
         <div className="flex flex-col gap-3">
           <div className="h-4 w-full animate-pulse rounded bg-tertiary-background" />
@@ -109,7 +109,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    const count = impact.assignedEmployeeCount;
+    const count = businessUnitSummary.assignedEmployeeCount;
 
     if (count === 0) {
       return (
@@ -121,7 +121,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    if (impact.isOtherBusinessUnitsExist) {
+    if (businessUnitSummary.isOtherBusinessUnitsExist) {
       return (
         <DeleteBusinessUnitTransferContent
           businessUnits={businessUnits}
@@ -170,7 +170,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
             />
           ),
           iconPosition: "end",
-          disabled: isPending || isImpactLoading,
+          disabled: isPending || isBusinessUnitSummaryLoading,
           isLoading: isPending,
           children: translateText(["deleteModal", "deleteButton"])
         }

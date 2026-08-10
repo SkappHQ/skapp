@@ -1,7 +1,7 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/businessUnitConstants";
+import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/commonConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 

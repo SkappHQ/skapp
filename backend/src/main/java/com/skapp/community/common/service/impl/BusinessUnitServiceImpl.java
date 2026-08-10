@@ -6,7 +6,7 @@ import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.BusinessUnit;
 import com.skapp.community.common.payload.request.BusinessUnitRequestDto;
-import com.skapp.community.common.payload.response.BusinessUnitDeletionImpactResponseDto;
+import com.skapp.community.common.payload.response.BusinessUnitSummaryResponseDto;
 import com.skapp.community.common.payload.response.BusinessUnitResponseDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.BusinessUnitDao;
@@ -101,18 +101,18 @@ public class BusinessUnitServiceImpl implements BusinessUnitService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getBusinessUnitDeletionImpact(Long id) {
-		log.info("getBusinessUnitDeletionImpact: execution started");
+	public ResponseEntityDto getBusinessUnitSummary(Long id) {
+		log.info("getBusinessUnitSummary: execution started");
 
 		businessUnitDao.findById(id)
 			.orElseThrow(() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND));
 
-		BusinessUnitDeletionImpactResponseDto responseDto = new BusinessUnitDeletionImpactResponseDto();
+		BusinessUnitSummaryResponseDto responseDto = new BusinessUnitSummaryResponseDto();
 		responseDto.setAssignedEmployeeCount(employeeDao.countByBusinessUnitBusinessUnitIdAndAccountStatusIn(id,
 				Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
 		responseDto.setIsOtherBusinessUnitsExist(businessUnitDao.count() > 1);
 
-		log.info("getBusinessUnitDeletionImpact: execution ended");
+		log.info("getBusinessUnitSummary: execution ended");
 
 		return new ResponseEntityDto(false, responseDto);
 	}
