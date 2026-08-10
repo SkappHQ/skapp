@@ -1,11 +1,6 @@
-import {
-  Label,
-  ProjectTableSkeletonLoader,
-  SearchIcon
-} from "@rootcodelabs/skapp-ui";
+import { Label } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
-import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
   GridHeader,
   GridRow
@@ -17,6 +12,7 @@ import {
   useGetCrmCompanies
 } from "~community/crm/api/ContactApi";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
+import CrmTableView from "~community/crm/components/organisms/CrmTableView/CrmTableView";
 import {
   ALL_COMPANIES,
   CONTACT_SEARCH_DEBOUNCE_DELAY,
@@ -190,30 +186,19 @@ export const ContactTable: FC = () => {
   };
 
   return (
-    <TableView
+    <CrmTableView
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      loader={<ProjectTableSkeletonLoader rowCount={8} />}
-      emptyState={{
-        icon: <SearchIcon />,
-        title: hasActiveFilters
-          ? translateText(["table", "emptySearchState", "title"])
-          : translateText(["table", "emptyDataState", "title"]),
-        description: hasActiveFilters
-          ? translateText(["table", "emptySearchState", "description"])
-          : translateText(["table", "emptyDataState", "description"])
+      hasActiveFilters={hasActiveFilters}
+      translateText={translateText}
+      scrollHeight="37.2rem"
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={() => {
+        void fetchNextPage();
       }}
       onRowClick={handleRowClick}
-      infiniteScroll={{
-        isEnabled: true,
-        height: "37.2rem",
-        hasMore: hasNextPage,
-        isFetchingNextPage,
-        onLoadMore: () => {
-          void fetchNextPage();
-        }
-      }}
       toolbar={{
         searchBar: {
           value: searchTerm,
