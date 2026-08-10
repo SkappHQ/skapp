@@ -4,6 +4,7 @@ import UserRolesTable from "~community/configurations/components/molecules/UserR
 import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
 import LeaveConfigurations from "~community/configurations/components/organisms/LeaveConfigurations/LeaveConfigurations";
 import OrganizationConfigurations from "~community/configurations/components/organisms/OrganizationConfigurations/OrganizationConfigurations";
+import PeopleConfigurations from "~community/configurations/components/organisms/PeopleConfigurations/PeopleConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
 
@@ -56,6 +57,13 @@ export const getConfigurationTabs = (
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
       component: <CrmConfigurations />,
       position: 7
+    },
+    {
+      id: "people",
+      label: translateText(["tabs", "people"]),
+      requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.PEOPLE_ADMIN],
+      component: <PeopleConfigurations />,
+      position: 8
     }
   ];
 };

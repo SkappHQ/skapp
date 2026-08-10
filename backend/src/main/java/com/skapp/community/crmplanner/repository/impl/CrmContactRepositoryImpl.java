@@ -163,6 +163,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			predicates.add(contact.get(CrmContact_.id).in(dealSub));
 		}
 
+		if (filterDto.getCompanyId() != null) {
+			predicates.add(cb.equal(company.get(CrmCompany_.id), filterDto.getCompanyId()));
+		}
+
 		return predicates;
 	}
 

@@ -10,6 +10,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.RandomStringGenerator;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.DayOfWeek;
@@ -267,6 +268,23 @@ public class CommonModuleUtils {
 			return supplier.get();
 		}
 		catch (NullPointerException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Reads a JSON payload without propagating a parse failure. Jackson throws unchecked,
+	 * so an unguarded readTree on untrusted input escapes as a 500.
+	 * @param objectMapper The mapper to read with
+	 * @param payload The JSON payload
+	 * @return The parsed tree, or null if the payload is not valid JSON
+	 */
+	public static JsonNode readTreeOrNull(ObjectMapper objectMapper, String payload) {
+		try {
+			return objectMapper.readTree(payload);
+		}
+		catch (RuntimeException e) {
+			log.error("readTreeOrNull: failed to parse JSON payload: {}", e.getMessage());
 			return null;
 		}
 	}

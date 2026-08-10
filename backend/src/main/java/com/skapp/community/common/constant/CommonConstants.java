@@ -33,4 +33,8 @@ public class CommonConstants {
 
 	public static final long BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH = 250;
 
+	public static final String MULTIPART_CONTENT_TYPE_PREFIX = "multipart/";
+
+	public static final String IMAGE_CONTENT_TYPE_PREFIX = "image/";
+
 }
