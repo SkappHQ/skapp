@@ -37,7 +37,7 @@ export interface TableViewFilter {
   filterButtonAriaLabel?: string;
   popoverAriaLabel?: string;
   popoverAriaLabelledBy?: string;
-  popoverId?: string;
+  popoverId: string;
 }
 
 export interface TableViewAriaLabels {

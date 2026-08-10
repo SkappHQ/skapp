@@ -3,7 +3,7 @@ import {
   ProjectTableSkeletonLoader,
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -80,10 +80,6 @@ export const ContactTable: FC = () => {
       value: String(company.id)
     }))
   ];
-
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
 
   const columns = [
     {
@@ -221,7 +217,7 @@ export const ContactTable: FC = () => {
       toolbar={{
         searchBar: {
           value: searchTerm,
-          onChange: handleSearchChange,
+          onChange: (event) => setSearchTerm(event.target.value),
           placeholder: translateText(["table", "search"]),
           "aria-label": translateText(["table", "search"]),
           ariaLabelClearButton: translateText(["table", "clearButtonAriaLabel"])

@@ -56,42 +56,35 @@ export const CompanyTable: FC = () => {
     setSearchTerm(value);
   };
 
-  const columns = [
+  const tableHeaders: GridHeader[] = [
     {
-      field: "name",
-      headerName: translateText(["table", "columns", "nameHeader"]),
+      id: "name",
+      label: translateText(["table", "columns", "nameHeader"]),
       width: "25%"
     },
     {
-      field: "contactNumber",
-      headerName: translateText(["table", "columns", "phoneHeader"]),
+      id: "contactNumber",
+      label: translateText(["table", "columns", "phoneHeader"]),
       width: "20%"
     },
     {
-      field: "openTasksCount",
-      headerName: translateText(["table", "columns", "tasksHeader"]),
+      id: "openTasksCount",
+      label: translateText(["table", "columns", "tasksHeader"]),
       width: "15%"
     },
     {
-      field: "openValue",
-      headerName: translateText(["table", "columns", "pipelineHeader"]),
+      id: "openValue",
+      label: translateText(["table", "columns", "pipelineHeader"]),
       width: "20%",
-      align: "right" as const
+      align: "right"
     },
     {
-      field: "accountValue",
-      headerName: translateText(["table", "columns", "accountValueHeader"]),
+      id: "accountValue",
+      label: translateText(["table", "columns", "accountValueHeader"]),
       width: "20%",
-      align: "right" as const
+      align: "right"
     }
   ];
-
-  const tableHeaders: GridHeader[] = columns.map((col) => ({
-    id: col.field,
-    label: col.headerName,
-    width: col.width,
-    align: col.align
-  }));
 
   const transformToTableRows = (): GridRow[] =>
     (companies ?? []).map((company) => ({
@@ -172,14 +165,18 @@ export const CompanyTable: FC = () => {
           value: searchTerm,
           onChange: handleSearchChange,
           placeholder: translateText(["table", "search"]),
-          "aria-label": translateText(["table", "search"]),
+          "aria-label": translateText(["table", "searchAriaLabel"]),
           ariaLabelClearButton: translateText(["table", "clearButtonAriaLabel"])
         }
       }}
       filter={{
         filterCount: 0,
         isDisabled: true,
-        filterButtonAriaLabel: translateText(["table", "filterButtonAriaLabel"])
+        filterButtonAriaLabel: translateText([
+          "table",
+          "filterButtonAriaLabel"
+        ]),
+        popoverId: "crm-companies-filter"
       }}
     />
   );
