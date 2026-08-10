@@ -5,6 +5,7 @@ import TableView from "~community/common/components/organisms/TableView/TableVie
 import type {
   GridHeader,
   GridRow,
+  TableViewFilter,
   TableViewProps
 } from "~community/common/components/organisms/TableView/types";
 
@@ -22,7 +23,7 @@ interface Props {
   onLoadMore: () => void;
   onRowClick: (row: GridRow) => void;
   toolbar: TableViewProps["toolbar"];
-  filter?: TableViewProps["filter"];
+  filter?: TableViewFilter;
 }
 
 const CrmTableView: FC<Props> = ({
