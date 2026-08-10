@@ -15,7 +15,7 @@ interface Props {
   headers: GridHeader[];
   rows: GridRow[];
   isLoading: boolean;
-  hasActiveFilters: boolean;
+  emptyFilterState: boolean;
   translateText: (keys: string[], params?: Record<string, unknown>) => string;
   scrollHeight: string;
   hasNextPage?: boolean;
@@ -30,7 +30,7 @@ const CrmTableView: FC<Props> = ({
   headers,
   rows,
   isLoading,
-  hasActiveFilters,
+  emptyFilterState,
   translateText,
   scrollHeight,
   hasNextPage,
@@ -47,10 +47,10 @@ const CrmTableView: FC<Props> = ({
     loader={<ProjectTableSkeletonLoader rowCount={SKELETON_ROW_COUNT} />}
     emptyState={{
       icon: <SearchIcon />,
-      title: hasActiveFilters
+      title: emptyFilterState
         ? translateText(["table", "emptySearchState", "title"])
         : translateText(["table", "emptyDataState", "title"]),
-      description: hasActiveFilters
+      description: emptyFilterState
         ? translateText(["table", "emptySearchState", "description"])
         : translateText(["table", "emptyDataState", "description"])
     }}
