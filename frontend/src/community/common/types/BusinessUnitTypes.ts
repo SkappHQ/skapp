@@ -23,3 +23,8 @@ export interface BusinessUnitDeleteVariables {
   id: number;
   transferToBusinessUnitId?: number;
 }
+
+export interface BusinessUnitFormValues {
+  name: string;
+  description: string;
+}

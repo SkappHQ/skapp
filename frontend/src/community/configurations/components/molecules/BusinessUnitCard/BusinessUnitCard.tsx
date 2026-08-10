@@ -13,8 +13,8 @@ import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 
 interface BusinessUnitCardProps {
   businessUnit: BusinessUnit;
-  onEdit?: (businessUnit: BusinessUnit) => void;
-  onDelete?: (businessUnit: BusinessUnit) => void;
+  onEdit: (businessUnit: BusinessUnit) => void;
+  onDelete: (businessUnit: BusinessUnit) => void;
 }
 
 const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
@@ -29,13 +29,13 @@ const BusinessUnitCard: FC<BusinessUnitCardProps> = ({
       id: `${businessUnit.businessUnitId}-edit`,
       label: translateText(["card", "editAction"]),
       icon: { start: <EditSquareIcon /> },
-      onClick: () => onEdit?.(businessUnit)
+      onClick: () => onEdit(businessUnit)
     },
     {
       id: `${businessUnit.businessUnitId}-delete`,
       label: translateText(["card", "deleteAction"]),
       icon: { start: <DeleteButtonIcon width="16" height="16" /> },
-      onClick: () => onDelete?.(businessUnit)
+      onClick: () => onDelete(businessUnit)
     }
   ];
 

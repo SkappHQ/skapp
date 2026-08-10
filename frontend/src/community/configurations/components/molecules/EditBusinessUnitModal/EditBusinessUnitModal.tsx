@@ -15,18 +15,16 @@ import {
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
+import {
+  BusinessUnit,
+  BusinessUnitFormValues
+} from "~community/common/types/BusinessUnitTypes";
 import { businessUnitValidation } from "~community/configurations/utils/businessUnitValidations";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   businessUnit: BusinessUnit;
-}
-
-interface BusinessUnitFormValues {
-  name: string;
-  description: string;
 }
 
 const EditBusinessUnitModal: FC<Props> = ({
@@ -84,11 +82,13 @@ const EditBusinessUnitModal: FC<Props> = ({
     });
   };
 
+  const initialValues: BusinessUnitFormValues = {
+    name: businessUnit.name,
+    description: businessUnit.description ?? ""
+  };
+
   const formik = useFormik<BusinessUnitFormValues>({
-    initialValues: {
-      name: businessUnit.name,
-      description: businessUnit.description ?? ""
-    },
+    initialValues,
     enableReinitialize: true,
     validationSchema: businessUnitValidation(
       translateText,
@@ -96,7 +96,7 @@ const EditBusinessUnitModal: FC<Props> = ({
       businessUnit.businessUnitId
     ),
     validateOnChange: false,
-    validateOnBlur: false,
+    validateOnBlur: true,
     onSubmit: handleSubmit
   });
 

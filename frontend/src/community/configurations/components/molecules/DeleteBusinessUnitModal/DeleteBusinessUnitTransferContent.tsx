@@ -24,7 +24,7 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
 }) => {
   const translateText = useTranslator("configurations", "businessUnit");
 
-  const otherUnits = businessUnits.filter(
+  const otherUnits = businessUnits?.filter(
     (unit) => unit.businessUnitId !== currentBusinessUnitId
   );
 
@@ -34,11 +34,11 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
       label: translateText(["deleteModal", "unassignOption"]),
       value: BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
     },
-    ...otherUnits.map((unit) => ({
+    ...(otherUnits?.map((unit) => ({
       id: String(unit.businessUnitId),
       label: unit.name,
       value: String(unit.businessUnitId)
-    }))
+    })) ?? [])
   ];
 
   return (

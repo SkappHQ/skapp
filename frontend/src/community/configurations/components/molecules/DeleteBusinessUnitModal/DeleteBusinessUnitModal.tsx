@@ -40,40 +40,54 @@ const DeleteBusinessUnitModal: FC<Props> = ({
 
   const { data: businessUnits } = useGetBusinessUnits();
 
+  const assignedEmployeeCount = businessUnitSummary?.assignedEmployeeCount;
+  const isOtherBusinessUnitsExist =
+    businessUnitSummary?.isOtherBusinessUnitsExist;
+
   const getSelectedTargetId = (): number | undefined =>
     transferTargetValue === BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
       ? undefined
       : Number(transferTargetValue);
 
-  const handleDeleteSuccess = () => {
-    const count = businessUnitSummary?.assignedEmployeeCount;
-    const targetId = getSelectedTargetId();
-
-    let description: string;
+  const getSuccessDescription = (
+    count: number | undefined,
+    targetId: number | undefined
+  ): string => {
     if (count === 0) {
-      description = translateText(["toasts", "deleteSuccess", "description"], {
+      return translateText(["toasts", "deleteSuccess", "description"], {
         name: businessUnit.name
       });
-    } else if (targetId !== undefined) {
+    }
+
+    if (targetId !== undefined) {
       const targetName = businessUnits?.find(
         (unit) => unit.businessUnitId === targetId
       )?.name;
-      description = translateText(
+
+      return translateText(
         ["toasts", "deleteAndTransferSuccess", "description"],
         { name: businessUnit.name, count, target: targetName }
       );
-    } else {
-      description = translateText(
-        ["toasts", "deleteAndUnassignSuccess", "description"],
-        { name: businessUnit.name, count }
-      );
     }
 
+    return translateText(
+      ["toasts", "deleteAndUnassignSuccess", "description"],
+      {
+        name: businessUnit.name,
+        count
+      }
+    );
+  };
+
+  const handleDeleteSuccess = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["toasts", "deleteSuccess", "title"]),
-      description
+      description: getSuccessDescription(
+        assignedEmployeeCount,
+        getSelectedTargetId()
+      )
     });
     onClose();
   };
@@ -102,7 +116,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   const renderContent = () => {
     if (
       isBusinessUnitSummaryLoading ||
-      !businessUnitSummary ||
+      assignedEmployeeCount === undefined ||
       !businessUnits
     ) {
       return (
@@ -113,9 +127,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    const count = businessUnitSummary.assignedEmployeeCount;
-
-    if (count === 0) {
+    if (assignedEmployeeCount === 0) {
       return (
         <p className="body1">
           {translateText(["deleteModal", "confirmDescription"], {
@@ -125,13 +137,13 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    if (businessUnitSummary.isOtherBusinessUnitsExist) {
+    if (isOtherBusinessUnitsExist) {
       return (
         <DeleteBusinessUnitTransferContent
           businessUnits={businessUnits}
           currentBusinessUnitId={businessUnit.businessUnitId}
           businessUnitName={businessUnit.name}
-          assignedEmployeeCount={count}
+          assignedEmployeeCount={assignedEmployeeCount}
           value={transferTargetValue}
           onChange={setTransferTargetValue}
         />
@@ -141,7 +153,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     return (
       <p className="body1">
         {translateText(["deleteModal", "noOtherUnitsDescription"], {
-          count,
+          count: assignedEmployeeCount,
           name: businessUnit.name
         })}
       </p>

@@ -9,12 +9,6 @@ import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import BusinessUnitCard from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCard";
 import BusinessUnitCardSkeleton from "~community/configurations/components/molecules/BusinessUnitCard/BusinessUnitCardSkeleton";
 
-const BUSINESS_UNIT_SKELETON_COUNT = 3;
-const skeletonKeys = Array.from(
-  { length: BUSINESS_UNIT_SKELETON_COUNT },
-  (_, index) => `business-unit-skeleton-${index}`
-);
-
 const BusinessUnitsSection: FC = () => {
   const translateText = useTranslator("configurations", "businessUnit");
 
@@ -36,13 +30,7 @@ const BusinessUnitsSection: FC = () => {
 
   const renderBody = () => {
     if (isLoading) {
-      return (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {skeletonKeys.map((key) => (
-            <BusinessUnitCardSkeleton key={key} />
-          ))}
-        </div>
-      );
+      return <BusinessUnitCardSkeleton />;
     }
 
     if (!businessUnits) {
