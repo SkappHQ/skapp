@@ -5,7 +5,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyMetricsResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyListItemDtoV2;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.v2.CrmCompanyServiceV2;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
@@ -49,7 +49,7 @@ public class CrmCompanyServiceImplV2 implements CrmCompanyServiceV2 {
 			.stream()
 			.collect(Collectors.toMap(CrmCompanyMetricsSummary::getCompanyId, Function.identity()));
 
-		List<CrmCompanyMetricsResponseDtoV2> items = companyPage.getContent()
+		List<CrmCompanyListItemDtoV2> items = companyPage.getContent()
 			.stream()
 			.map(company -> enrichWithMetrics(company, summaryMap))
 			.toList();
@@ -58,7 +58,7 @@ public class CrmCompanyServiceImplV2 implements CrmCompanyServiceV2 {
 		return new ResponseEntityDto(false, buildPageDto(items, companyPage));
 	}
 
-	private CrmCompanyMetricsResponseDtoV2 enrichWithMetrics(CrmCompany company,
+	private CrmCompanyListItemDtoV2 enrichWithMetrics(CrmCompany company,
 			Map<Long, CrmCompanyMetricsSummary> summaryMap) {
 		CrmCompanyResponseDto companyDto = crmMapper.crmCompanyToCrmCompanyResponseDto(company);
 
@@ -68,10 +68,10 @@ public class CrmCompanyServiceImplV2 implements CrmCompanyServiceV2 {
 				summary != null ? summary.getAccountValue() : null, summary != null ? summary.getOpenDeals() : 0L,
 				summary != null ? summary.getClosedDeals() : 0L);
 
-		return new CrmCompanyMetricsResponseDtoV2(companyDto, metrics);
+		return new CrmCompanyListItemDtoV2(companyDto, metrics);
 	}
 
-	private PageDto buildPageDto(List<CrmCompanyMetricsResponseDtoV2> items, Page<CrmCompany> companyPage) {
+	private PageDto buildPageDto(List<CrmCompanyListItemDtoV2> items, Page<CrmCompany> companyPage) {
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(items);
 		pageDto.setCurrentPage(companyPage.getNumber());

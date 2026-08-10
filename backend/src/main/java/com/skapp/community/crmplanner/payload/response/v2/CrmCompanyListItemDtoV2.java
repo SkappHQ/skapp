@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmCompanyMetricsResponseDtoV2 {
+public class CrmCompanyListItemDtoV2 {
 
 	private CrmCompanyResponseDto company;
 

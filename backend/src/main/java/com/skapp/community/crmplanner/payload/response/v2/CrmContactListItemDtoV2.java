@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class CrmContactMetricsResponseDtoV2 {
+public class CrmContactListItemDtoV2 {
 
 	private CrmContactResponseDtoV2 contact;
 

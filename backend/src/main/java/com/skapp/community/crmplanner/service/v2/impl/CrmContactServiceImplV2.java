@@ -9,7 +9,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactListItemDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -71,7 +71,7 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 			.stream()
 			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
-		List<CrmContactMetricsResponseDtoV2> items = contactPage.getContent()
+		List<CrmContactListItemDtoV2> items = contactPage.getContent()
 			.stream()
 			.map(contact -> enrichWithMetrics(contact, dealSummaryMap, taskSummaryMap))
 			.toList();
@@ -80,8 +80,8 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 		return new ResponseEntityDto(false, buildPageDto(items, contactPage));
 	}
 
-	private CrmContactMetricsResponseDtoV2 enrichWithMetrics(CrmContact contact,
-			Map<Long, CrmDealSummary> dealSummaryMap, Map<Long, CrmTaskSummary> taskSummaryMap) {
+	private CrmContactListItemDtoV2 enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
+			Map<Long, CrmTaskSummary> taskSummaryMap) {
 		CrmContactResponseDtoV2 contactDto = crmMapperV2.crmContactToCrmContactResponseDtoV2(contact);
 
 		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
@@ -92,7 +92,7 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 				deals != null ? deals.getClosedDealCount() : 0L, tasks != null ? tasks.getOpenTaskCount() : 0L,
 				tasks != null ? tasks.getOverdueTaskCount() : 0L);
 
-		return new CrmContactMetricsResponseDtoV2(contactDto, metrics);
+		return new CrmContactListItemDtoV2(contactDto, metrics);
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 		return new ResponseEntityDto(false, crmMapperV2.crmContactToCrmContactResponseDtoV2(savedContact));
 	}
 
-	private PageDto buildPageDto(List<CrmContactMetricsResponseDtoV2> items, Page<CrmContact> contactPage) {
+	private PageDto buildPageDto(List<CrmContactListItemDtoV2> items, Page<CrmContact> contactPage) {
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(items);
 		pageDto.setCurrentPage(contactPage.getNumber());
