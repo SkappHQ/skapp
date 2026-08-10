@@ -26,6 +26,11 @@ const PolicyAddAttachmentModal = () => {
 
   const [attachmentError, setAttachmentError] = useState(false);
 
+  const handleCancel = () => {
+    setAttachments([]);
+    setModalType(PolicyLeaveModalEnums.APPLY_POLICY_LEAVE);
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <p className={attachmentError ? "text-red-600" : ""}>
@@ -48,10 +53,7 @@ const PolicyAddAttachmentModal = () => {
       <div className="flex flex-row gap-3 mt-4 justify-end">
         <ButtonV2
           variant={"tertiary"}
-          onClick={() => {
-            setAttachments([]);
-            setModalType(PolicyLeaveModalEnums.APPLY_POLICY_LEAVE);
-          }}
+          onClick={handleCancel}
           icon={<Icon name={IconName.CLOSE_ICON} />}
           iconPosition="end"
         >
