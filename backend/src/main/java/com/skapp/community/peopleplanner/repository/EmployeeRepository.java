@@ -15,6 +15,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeManagerDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeTeamDto;
 import com.skapp.community.peopleplanner.payload.response.PrimarySecondaryOrTeamSupervisorResponseDto;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.community.peopleplanner.type.EmploymentAllocation;
 import com.skapp.community.peopleplanner.type.EmploymentType;
 import com.skapp.community.peopleplanner.type.Gender;
@@ -113,5 +114,8 @@ public interface EmployeeRepository {
 	boolean existsByPayrollIdAndEmployeeIdNot(String payrollId, Long employeeId);
 
 	boolean existsByTinAndEmployeeIdNot(String tin, Long employeeId);
+
+	List<Employee> findEmployeeBirthdaysOnByViewerAndScope(LocalDate date, Long viewerEmployeeId,
+			BirthdayNotificationScope scope);
 
 }

@@ -1,4 +1,6 @@
-export const STAGE_COLOR_MAP: Record<string, string> = {
+import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
+
+export const STAGE_COLOR_MAP: Record<CrmDealStageColorsEnum, string> = {
   SKY: "#60a5fa",
   PINK: "#ea5da3",
   APRICOT: "#ff9f40",

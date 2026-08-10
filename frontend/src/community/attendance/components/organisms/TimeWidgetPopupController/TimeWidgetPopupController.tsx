@@ -111,6 +111,9 @@ const TimeWidgetPopupController = (): JSX.Element => {
     if (isAttendanceModalOpen && popupType === AttendancePopupTypes.CLOCK_IN) {
       return translateText(["clockInConfirmation"]);
     }
+    if (isPreMidnightClockOutAlertOpen) {
+      return translateText(["clockOutAlert"]);
+    }
     if (isAutoClockOutMidnightModalOpen) {
       return translateText(["clockedOut"]);
     }
