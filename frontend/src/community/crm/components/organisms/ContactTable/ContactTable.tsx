@@ -61,7 +61,7 @@ export const ContactTable: FC = () => {
     if (fetchedContacts) setContacts(fetchedContacts);
   }, [fetchedContacts]);
 
-  const emptyFilterState =
+  const isEmptyFilterState =
     debouncedSearch.trim() !== "" || selectedCompany !== undefined;
 
   const companyOptions = [
@@ -190,7 +190,7 @@ export const ContactTable: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      emptyFilterState={emptyFilterState}
+      isEmptyFilterState={isEmptyFilterState}
       translateText={translateText}
       scrollHeight="37.2rem"
       hasNextPage={hasNextPage}

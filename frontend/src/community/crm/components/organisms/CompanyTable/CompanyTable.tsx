@@ -26,7 +26,7 @@ export const CompanyTable: FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
-  const emptyFilterState = debouncedSearch.trim() !== "";
+  const isEmptyFilterState = debouncedSearch.trim() !== "";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
@@ -136,7 +136,7 @@ export const CompanyTable: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      emptyFilterState={emptyFilterState}
+      isEmptyFilterState={isEmptyFilterState}
       translateText={translateText}
       scrollHeight="34.5rem"
       hasNextPage={hasNextPage}
