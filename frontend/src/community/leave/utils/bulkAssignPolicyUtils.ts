@@ -1,17 +1,22 @@
 import { ParseResult } from "papaparse";
 
 import { createCSV } from "~community/common/utils/bulkUploadUtils";
+import { XlsxSheet, downloadXlsx } from "~community/common/utils/xlsxUtils";
 import {
+  BULK_ASSIGN_ERROR_REPORT_FILE_NAME,
+  BULK_ASSIGN_TEMPLATE_COLUMN_WIDTH,
+  BULK_ASSIGN_TEMPLATE_FILE_NAME,
   CSV_DELIMITER,
   MAX_BULK_ASSIGN_ROWS
 } from "~community/leave/constants/leavePolicyConstants";
 import {
   BulkAssignCsvError,
-  BulkAssignCsvHeaders,
   BulkAssignCsvValidation,
   BulkAssignPolicyPayload,
   BulkAssignPolicyResponse,
-  BulkAssignPolicyRow
+  BulkAssignResourceHeaders,
+  BulkAssignTemplateContent,
+  BulkAssignTemplateHeaders
 } from "~community/leave/types/LeavePolicyTypes";
 
 // Spreadsheets evaluate a leading =, +, - or @ as a formula even inside a quoted
@@ -28,10 +33,16 @@ export const toCsvRow = (values: string[]): string =>
     )
     .join(CSV_DELIMITER);
 
-const toCsvValues = (row: BulkAssignCsvHeaders): string[] => [
-  row.employeeName,
-  row.policyName,
+const toTemplateRowValues = (row: BulkAssignTemplateHeaders): string[] => [
+  row.employeeEmail,
+  row.policyId,
   row.effectiveDate
+];
+
+const toResourceRowValues = (row: BulkAssignResourceHeaders): string[] => [
+  row.policyId,
+  row.policyName,
+  row.leaveType
 ];
 
 const normalizeHeader = (header: string): string =>
@@ -49,28 +60,28 @@ const getCell = (
 
 const getMissingBulkAssignHeaders = (
   fields: string[],
-  headers: BulkAssignCsvHeaders
+  headers: BulkAssignTemplateHeaders
 ): string[] => {
   const present = new Set(fields.map(normalizeHeader));
-  return toCsvValues(headers).filter(
+  return toTemplateRowValues(headers).filter(
     (header) => !present.has(normalizeHeader(header))
   );
 };
 
 const buildBulkAssignPayload = (
   rows: Record<string, string | undefined>[],
-  headers: BulkAssignCsvHeaders
+  headers: BulkAssignTemplateHeaders
 ): BulkAssignPolicyPayload => ({
   assignments: rows.map((row) => ({
-    employeeName: getCell(row, headers.employeeName),
-    policyName: getCell(row, headers.policyName),
+    employeeEmail: getCell(row, headers.employeeEmail),
+    policyId: getCell(row, headers.policyId),
     effectiveDate: getCell(row, headers.effectiveDate)
   }))
 });
 
 export const validateBulkAssignCsv = (
   parseResult: ParseResult<Record<string, string>>,
-  headers: BulkAssignCsvHeaders
+  headers: BulkAssignTemplateHeaders
 ): BulkAssignCsvValidation => {
   const missingColumns = getMissingBulkAssignHeaders(
     parseResult.meta.fields ?? [],
@@ -115,37 +126,57 @@ export const validateBulkAssignCsv = (
   };
 };
 
+export const buildBulkAssignTemplateSheets = ({
+  sheetNames,
+  headers,
+  exampleRow,
+  resourceHeaders,
+  policies
+}: BulkAssignTemplateContent): XlsxSheet[] => [
+  {
+    name: sheetNames.template,
+    columnWidth: BULK_ASSIGN_TEMPLATE_COLUMN_WIDTH,
+    rows: [toTemplateRowValues(headers), toTemplateRowValues(exampleRow)]
+  },
+  {
+    name: sheetNames.resource,
+    columnWidth: BULK_ASSIGN_TEMPLATE_COLUMN_WIDTH,
+    rows: [
+      toResourceRowValues(resourceHeaders),
+      ...policies.map((policy) => [
+        policy.id,
+        policy.name,
+        policy.leaveTypeName
+      ])
+    ]
+  }
+];
+
 export const downloadBulkAssignPolicyTemplate = (
-  headers: BulkAssignCsvHeaders,
-  exampleRow: BulkAssignPolicyRow
-): void => {
-  const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(toCsvRow(toCsvValues(headers)) + "\n");
-      controller.enqueue(toCsvRow(toCsvValues(exampleRow)) + "\n");
-      controller.close();
-    }
-  });
-  createCSV(stream, "leave_policy_assignment_template");
-};
+  content: BulkAssignTemplateContent
+): void =>
+  downloadXlsx(
+    buildBulkAssignTemplateSheets(content),
+    BULK_ASSIGN_TEMPLATE_FILE_NAME
+  );
 
 export const downloadBulkAssignErrorReport = (
   assignmentResult: BulkAssignPolicyResponse,
-  headers: BulkAssignCsvHeaders,
+  headers: BulkAssignTemplateHeaders,
   errorHeader: string
 ): void => {
   const stream = new ReadableStream({
     start(controller) {
       controller.enqueue(
-        toCsvRow([...toCsvValues(headers), errorHeader]) + "\n"
+        toCsvRow([...toTemplateRowValues(headers), errorHeader]) + "\n"
       );
       for (const errorLog of assignmentResult.bulkRecordErrorLogs) {
         controller.enqueue(
-          toCsvRow([...toCsvValues(errorLog), errorLog.error]) + "\n"
+          toCsvRow([...toTemplateRowValues(errorLog), errorLog.error]) + "\n"
         );
       }
       controller.close();
     }
   });
-  createCSV(stream, "leave_policy_assignment_errors");
+  createCSV(stream, BULK_ASSIGN_ERROR_REPORT_FILE_NAME);
 };

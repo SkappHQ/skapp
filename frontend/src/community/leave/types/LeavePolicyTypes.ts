@@ -6,9 +6,15 @@ export enum PolicyType {
 }
 
 export interface BulkAssignPolicyRow {
-  employeeName: string;
-  policyName: string;
+  employeeEmail: string;
+  policyId: string;
   effectiveDate: string;
+}
+
+export interface BulkAssignResourceRow {
+  policyId: string;
+  policyName: string;
+  leaveType: string;
 }
 
 export interface BulkAssignPolicyPayload {
@@ -28,7 +34,15 @@ export interface BulkAssignPolicyApiResponse {
   results: BulkAssignPolicyResponse[];
 }
 
-export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
+export type BulkAssignTemplateHeaders = Record<
+  keyof BulkAssignPolicyRow,
+  string
+>;
+
+export type BulkAssignResourceHeaders = Record<
+  keyof BulkAssignResourceRow,
+  string
+>;
 
 export enum BulkAssignCsvError {
   MISSING_COLUMNS = "MISSING_COLUMNS",
@@ -41,6 +55,14 @@ export interface BulkAssignCsvValidation {
   error: BulkAssignCsvError | null;
   missingColumns: string[];
   payload: BulkAssignPolicyPayload | null;
+}
+
+export interface BulkAssignTemplateContent {
+  sheetNames: { template: string; resource: string };
+  headers: BulkAssignTemplateHeaders;
+  exampleRow: BulkAssignPolicyRow;
+  resourceHeaders: BulkAssignResourceHeaders;
+  policies: LeavePolicyType[];
 }
 
 export enum BulkAssignPolicySteps {

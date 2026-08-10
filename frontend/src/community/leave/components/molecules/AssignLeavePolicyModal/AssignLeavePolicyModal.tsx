@@ -8,6 +8,7 @@ import { useGetLeavePoliciesInfinite } from "~community/leave/api/LeavePolicyApi
 import { useAssignLeavePolicy } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyForm from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetHireDateModal from "~community/leave/components/molecules/SetHireDateModal/SetHireDateModal";
+import { ASSIGNABLE_POLICIES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
 import {
   EffectiveDateType,
   LeavePolicyStatus,
@@ -22,10 +23,6 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// A negative size tells the backend to return every matching policy in a
-// single page, so the assign dropdown lists all active policies (never capped).
-const ASSIGNABLE_POLICIES_PAGE = -1;
 
 const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
@@ -52,7 +49,7 @@ const AssignLeavePolicyModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
     leaveTypeId: "",
-    size: ASSIGNABLE_POLICIES_PAGE,
+    size: ASSIGNABLE_POLICIES_PAGE_SIZE,
     enabled: isOpen
   });
 

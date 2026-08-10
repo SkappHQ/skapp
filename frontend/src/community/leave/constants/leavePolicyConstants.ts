@@ -45,6 +45,17 @@ export const MAX_BULK_ASSIGN_ROWS = 1000;
 
 export const CSV_DELIMITER = ",";
 
+// The policy list endpoint returns every policy in one page for a negative size.
+export const ASSIGNABLE_POLICIES_PAGE_SIZE = -1;
+
+export const BULK_ASSIGN_TEMPLATE_FILE_NAME =
+  "leave_policy_assignment_template";
+
+export const BULK_ASSIGN_ERROR_REPORT_FILE_NAME =
+  "leave_policy_assignment_errors";
+
+export const BULK_ASSIGN_TEMPLATE_COLUMN_WIDTH = 24;
+
 export const accrualFrequencyItemList = [
   { id: "daily", labelKey: "daily", value: AccrualFrequency.DAILY },
   { id: "weekly", labelKey: "weekly", value: AccrualFrequency.WEEKLY },

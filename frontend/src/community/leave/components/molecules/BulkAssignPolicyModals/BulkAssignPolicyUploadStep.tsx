@@ -14,7 +14,7 @@ import {
   CSV_DELIMITER,
   MAX_BULK_ASSIGN_ROWS
 } from "~community/leave/constants/leavePolicyConstants";
-import useBulkAssignCsvHeaders from "~community/leave/hooks/useBulkAssignCsvHeaders";
+import useBulkAssignTemplateHeaders from "~community/leave/hooks/useBulkAssignTemplateHeaders";
 import {
   BulkAssignCsvError,
   BulkAssignCsvValidation,
@@ -37,7 +37,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
 
   const { setToastMessage } = useToast();
 
-  const csvHeaders = useBulkAssignCsvHeaders();
+  const templateHeaders = useBulkAssignTemplateHeaders();
 
   const [attachments, setAttachments] = useState<FileUploadType[]>([]);
   const [fileError, setFileError] = useState<string>("");
@@ -113,7 +113,7 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
   const handleParseComplete = (
     parseResult: ParseResult<Record<string, string>>
   ): void => {
-    const validation = validateBulkAssignCsv(parseResult, csvHeaders);
+    const validation = validateBulkAssignCsv(parseResult, templateHeaders);
 
     setFileError(getValidationErrorText(validation));
     setAssignmentPayload(validation.payload);
