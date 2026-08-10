@@ -17,6 +17,7 @@ import {
   holidayDurationSelector
 } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
@@ -30,7 +31,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { getEmoji, mergeSx } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
@@ -49,6 +50,7 @@ interface Props {
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
   const { isFreeTier } = useSessionData();
+  const { isManualEntryRestricted } = useManualEntryRestriction();
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -196,17 +198,25 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
     handleAvailability
   );
 
+  const handleRowActivate = () => {
+    if (isManualEntryRestricted) return;
+    mutate();
+  };
+
   return (
     <Stack
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={classes.stackContainerStyle}
-      onClick={() => mutate()}
+      sx={mergeSx([
+        classes.stackContainerStyle,
+        isManualEntryRestricted ? { cursor: "default" } : undefined
+      ])}
+      onClick={handleRowActivate}
       tabIndex={getTabIndex(isFreeTier)}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {
-          mutate();
+          handleRowActivate();
         }
         if (shouldMoveUpward(e.key)) {
           const previousRow = e.currentTarget

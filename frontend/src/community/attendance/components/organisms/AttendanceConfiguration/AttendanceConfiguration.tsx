@@ -17,6 +17,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
+import ManualEntryRestrictionSettings from "~enterprise/configurations/components/organisms/ManualEntryRestrictionSettings/ManualEntryRestrictionSettings";
 
 import styles from "./styles";
 
@@ -173,6 +174,11 @@ const AttendanceConfiguration = (): JSX.Element => {
           config={config}
           initialConfig={initialConfig}
           onSwitchChange={handleSwitchChange}
+        />
+
+        <ManualEntryRestrictionSettings
+          config={config}
+          initialConfig={initialConfig}
         />
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>

@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
@@ -110,6 +111,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -559,6 +561,7 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("editClockInClockOut: execution started");
 
+		validateManualEntryRestriction(currentUser);
 		validateRequestParameters(timeRequestDto);
 
 		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
@@ -602,6 +605,8 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("addManualEntryRequest: execution started");
+
+		validateManualEntryRestriction(currentUser);
 
 		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
@@ -2179,6 +2184,39 @@ public class TimeServiceImpl implements TimeService {
 
 	protected boolean isGeoFencingEnabled() {
 		return false;
+	}
+
+	/**
+	 * Restricting manual time entries and edits is an enterprise feature, so the
+	 * community edition always leaves it switched off. The enterprise edition overrides
+	 * this method to read the stored organization level setting.
+	 * @return whether manual time entry creation and edits are restricted to authorized
+	 * roles.
+	 */
+	protected boolean isManualEntryRestrictionEnabled() {
+		return false;
+	}
+
+	/**
+	 * Rejects manual time entry creation and edits made by employees while the manual
+	 * entry restriction is enabled. Only attendance managers, attendance admins and super
+	 * admins may add or change time records once the setting is on.
+	 * @param currentUser the user submitting the manual entry or edit request.
+	 */
+	private void validateManualEntryRestriction(User currentUser) {
+		if (!isManualEntryRestrictionEnabled()) {
+			return;
+		}
+
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+
+		if (!isAuthorized) {
+			throw new AccessDeniedException(
+					messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED));
+		}
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,
