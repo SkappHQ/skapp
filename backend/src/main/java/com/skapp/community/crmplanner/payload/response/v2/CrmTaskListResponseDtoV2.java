@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CrmGetTasksResponseDtoV2 {
+public class CrmTaskListResponseDtoV2 {
 
 	private List<CrmTaskResponseDtoV2> tasks;
 

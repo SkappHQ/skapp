@@ -13,7 +13,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmGetTasksResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmTaskListResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
@@ -56,7 +56,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 			.map(crmMapperV2::crmTaskToCrmTaskResponseDtoV2)
 			.toList();
 
-		CrmGetTasksResponseDtoV2 response = new CrmGetTasksResponseDtoV2();
+		CrmTaskListResponseDtoV2 response = new CrmTaskListResponseDtoV2();
 		response.setTasks(tasks);
 
 		log.info("getTasks: execution ended");
