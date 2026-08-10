@@ -120,7 +120,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	}
 
 	@Override
-	public Page<CrmCompany> findCompaniesForMetrics(Pageable pageable, String searchKeyword) {
+	public Page<CrmCompany> searchCompanies(Pageable pageable, String searchKeyword) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmCompany> query = cb.createQuery(CrmCompany.class);
 		Root<CrmCompany> company = query.from(CrmCompany.class);

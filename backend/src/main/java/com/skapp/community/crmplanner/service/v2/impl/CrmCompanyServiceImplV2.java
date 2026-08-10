@@ -36,7 +36,7 @@ public class CrmCompanyServiceImplV2 implements CrmCompanyServiceV2 {
 	public ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable) {
 		log.info("getCompanyMetrics: execution started");
 
-		Page<CrmCompany> companyPage = crmCompanyDao.findCompaniesForMetrics(pageable, searchKeyword);
+		Page<CrmCompany> companyPage = crmCompanyDao.searchCompanies(pageable, searchKeyword);
 
 		List<Long> companyIds = companyPage.getContent().stream().map(CrmCompany::getId).toList();
 
