@@ -90,6 +90,12 @@ public class Employee extends Auditable<String> {
 	@Column(name = "identification_no", length = 15)
 	private String identificationNo;
 
+	@Column(name = "payroll_id")
+	private String payrollId;
+
+	@Column(name = "tin")
+	private String tin;
+
 	@Column(name = "time_zone")
 	private String timeZone;
 

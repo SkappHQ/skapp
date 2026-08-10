@@ -19,25 +19,8 @@ import {
   LeavePolicyConfigResponse,
   LeavePolicyConfigResult,
   LeavePolicyMutationResponse,
-  PolicyLeaveTypesResponse,
-  PolicyLeaveTypesResult,
   UpdateLeavePolicyVariables
 } from "~community/leave/types/LeavePolicyTypes";
-
-const getPolicyLeaveTypes = async (): Promise<PolicyLeaveTypesResult> => {
-  const response = await authFetch.get<PolicyLeaveTypesResponse>(
-    leavePolicyEndPoints.GET_POLICY_LEAVE_TYPES
-  );
-  return response.data.results[0];
-};
-
-export const useGetPolicyLeaveTypes =
-  (): UseQueryResult<PolicyLeaveTypesResult> => {
-    return useQuery({
-      queryKey: leavePolicyQueryKeys.POLICY_LEAVE_TYPES,
-      queryFn: getPolicyLeaveTypes
-    });
-  };
 
 const getLeavePolicies = async (params: GetLeavePoliciesParams) => {
   const response = await authFetch.get<LeavePoliciesResponse>(

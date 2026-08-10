@@ -41,6 +41,17 @@ export enum Modules {
   NONE = ""
 }
 
+export enum RoleLevel {
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  SENDER = "SENDER",
+  EMPLOYEE = "EMPLOYEE",
+  GUEST = "GUEST",
+  NONE = "NONE",
+  SALES_MANAGER = "SALES_MANAGER",
+  SALES_REPRESENTATIVE = "SALES_REPRESENTATIVE"
+}
+
 export enum FileTypes {
   ORGANIZATION_LOGOS = "ORGANIZATION_LOGOS",
   USER_IMAGE = "USER_IMAGE",

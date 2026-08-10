@@ -89,19 +89,12 @@ export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
 }
 
-export interface PolicyLeaveTypeType {
-  id: number;
-  name: string;
-  emojiCode: string | null;
-  colorCode: string | null;
+export interface LeavePolicyConfigResult {
+  isEnabled: boolean;
 }
 
-export interface PolicyLeaveTypesResult {
-  leaveTypes: PolicyLeaveTypeType[];
-}
-
-export interface PolicyLeaveTypesResponse {
-  results: PolicyLeaveTypesResult[];
+export interface LeavePolicyConfigResponse {
+  results: LeavePolicyConfigResult[];
 }
 
 export interface LeavePolicyFormData {
@@ -171,14 +164,6 @@ export interface LeavePolicyResponseDto {
 
 export interface LeavePolicyMutationResponse {
   results: LeavePolicyResponseDto[];
-}
-
-export interface LeavePolicyConfigResult {
-  isEnabled: boolean;
-}
-
-export interface LeavePolicyConfigResponse {
-  results: LeavePolicyConfigResult[];
 }
 
 export enum EffectiveDateType {
