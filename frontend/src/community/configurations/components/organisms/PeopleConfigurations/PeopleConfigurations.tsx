@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { FC, useRef, useState } from "react";
+import { FC } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
@@ -11,6 +11,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
+import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import {
   useGetBirthdayNotificationConfig,
   useUpdateBirthdayNotificationConfig
@@ -18,10 +19,6 @@ import {
 import { BirthdayNotificationConfigType } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import GoogleWorkspaceSyncSettings from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
-import type {
-  GoogleWorkspaceSyncSettingsActions,
-  GoogleWorkspaceSyncSettingsState
-} from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
 
 const PeopleConfigurations: FC = () => {
   const translateText = useTranslator(
@@ -36,15 +33,17 @@ const PeopleConfigurations: FC = () => {
   const { isSuperAdmin } = useSessionData();
   const canManageGoogleWorkspace = isEnterprise && !!isSuperAdmin;
 
-  const workspaceActionsRef = useRef<GoogleWorkspaceSyncSettingsActions>({
-    save: async () => true,
-    reset: () => {}
-  });
-  const [workspaceState, setWorkspaceState] =
-    useState<GoogleWorkspaceSyncSettingsState>({
-      isDirty: false,
-      isSubmitting: false
-    });
+  const {
+    setIsWorkspaceSaveTriggered,
+    setIsWorkspaceResetTriggered,
+    isWorkspaceDirty,
+    isWorkspaceSubmitting
+  } = useConfigurationStore((store) => ({
+    setIsWorkspaceSaveTriggered: store.setIsPeopleWorkspaceSaveTriggered,
+    setIsWorkspaceResetTriggered: store.setIsPeopleWorkspaceResetTriggered,
+    isWorkspaceDirty: store.isPeopleWorkspaceDirty,
+    isWorkspaceSubmitting: store.isPeopleWorkspaceSubmitting
+  }));
 
   const { data, isLoading, isError } = useGetBirthdayNotificationConfig();
 
@@ -81,14 +80,14 @@ const PeopleConfigurations: FC = () => {
 
   const isBirthdaySectionLoaded = isError || (!isLoading && !!data);
 
-  const isWorkspaceChanged = canManageGoogleWorkspace && workspaceState.isDirty;
+  const isWorkspaceChanged = canManageGoogleWorkspace && isWorkspaceDirty;
   const isAnyChanged = birthdayFormik.dirty || isWorkspaceChanged;
   const isAnySubmitting =
-    isPending || (canManageGoogleWorkspace && workspaceState.isSubmitting);
+    isPending || (canManageGoogleWorkspace && isWorkspaceSubmitting);
 
   const handleCancelAll = () => {
     if (birthdayFormik.dirty) birthdayFormik.resetForm();
-    if (isWorkspaceChanged) workspaceActionsRef.current.reset();
+    if (isWorkspaceChanged) setIsWorkspaceResetTriggered(true);
   };
 
   const handleSaveAll = async () => {
@@ -100,7 +99,7 @@ const PeopleConfigurations: FC = () => {
       }
     }
     if (isWorkspaceChanged) {
-      await workspaceActionsRef.current.save();
+      setIsWorkspaceSaveTriggered(true);
     }
   };
 
@@ -187,10 +186,7 @@ const PeopleConfigurations: FC = () => {
         <>
           <hr className="w-full border-t border-secondary-accent" />
 
-          <GoogleWorkspaceSyncSettings
-            actionsRef={workspaceActionsRef}
-            onStateChange={setWorkspaceState}
-          />
+          <GoogleWorkspaceSyncSettings />
         </>
       )}
 
