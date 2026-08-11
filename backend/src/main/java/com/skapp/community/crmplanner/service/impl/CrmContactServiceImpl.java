@@ -103,7 +103,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public CrmContact persistNewContact(CrmContactCreateRequestDto requestDto) {
-		log.info("createContact: execution started");
+		log.info("persistNewContact: execution started");
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId());
@@ -131,7 +131,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("createContact: execution ended");
+		log.info("persistNewContact: execution ended");
 		return savedContact;
 	}
 
@@ -149,7 +149,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public CrmContact applyContactEdit(Long id, CrmContactEditRequestDto requestDto) {
-		log.info("editContact: execution started");
+		log.info("applyContactEdit: execution started");
 
 		User currentUser = userService.getCurrentUser();
 
@@ -201,7 +201,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("editContact: execution ended");
+		log.info("applyContactEdit: execution ended");
 		return savedContact;
 	}
 

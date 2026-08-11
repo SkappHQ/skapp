@@ -6,8 +6,6 @@ import com.skapp.community.crmplanner.service.v2.CrmCompanyServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,8 +26,7 @@ public class CrmCompanyControllerV2 {
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
-		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
-		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

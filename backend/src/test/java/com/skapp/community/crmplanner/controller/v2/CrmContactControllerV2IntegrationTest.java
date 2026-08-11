@@ -1,14 +1,26 @@
 package com.skapp.community.crmplanner.controller.v2;
 
+import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
+import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +38,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -61,6 +77,14 @@ class CrmContactControllerV2IntegrationTest {
 
 	private final CrmContactDao crmContactDao;
 
+	private final CrmDealDao crmDealDao;
+
+	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
 	private final EmployeeDao employeeDao;
 
 	private String authToken;
@@ -94,8 +118,9 @@ class CrmContactControllerV2IntegrationTest {
 		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performGetMetricsRequest() throws Exception {
-		return performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON));
+	private ResultActions performGetMetricsRequest(String searchKeyword) throws Exception {
+		return performRequest(
+				get(METRICS_PATH).param("searchKeyword", searchKeyword).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmCompany savedCompany(String name) {
@@ -109,12 +134,54 @@ class CrmContactControllerV2IntegrationTest {
 	}
 
 	private CrmContact savedContact(Long companyId, String email) {
+		return savedContact(companyId, "Test Contact", email);
+	}
+
+	private CrmContact savedContact(Long companyId, String name, String email) {
 		CrmContact contact = new CrmContact();
-		contact.setName("Test Contact");
+		contact.setName(name);
 		contact.setEmail(email);
 		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		return crmContactDao.save(contact);
+	}
+
+	private CrmDealStage savedStage(String name, CrmDealStageType stageType, int orderIndex) {
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName(name);
+		stage.setColor("#123456");
+		stage.setOrderIndex(orderIndex);
+		stage.setStageType(stageType);
+		return crmDealStageDao.save(stage);
+	}
+
+	private void savedDeal(CrmContact contact, CrmDealStage stage, String amount, String orderIndex) {
+		CrmDeal deal = new CrmDeal();
+		deal.setName("V2 Contact Deal");
+		deal.setStage(stage);
+		deal.setCompany(contact.getCompany());
+		deal.setContact(contact);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setOrderIndex(orderIndex);
+		deal.setAmount(amount);
+		crmDealDao.save(deal);
+	}
+
+	private void savedTask(CrmContact contact, LocalDateTime dueAt) {
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("V2 Task Type");
+		taskType.setOrderIndex(1);
+		crmTaskTypeDao.save(taskType);
+
+		CrmTask task = new CrmTask();
+		task.setName("V2 Contact Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setContact(contact);
+		task.setDueAt(dueAt);
+		crmTaskDao.save(task);
 	}
 
 	private CrmContactCreateRequestDto createValidPayload(Long companyId) {
@@ -190,20 +257,39 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").doesNotExist());
 	}
 
+	@Test
+	@DisplayName("Get contact by ID that does not exist - Returns Bad Request")
+	void getContactById_NotFound_ReturnsBadRequest() throws Exception {
+		performGetByIdRequest(999999L).andDo(print()).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("Get contact by ID without CRM role - Returns Forbidden")
+	void getContactById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		Long companyId = savedCompany("Forbidden Detail V2 Corp").getId();
+		Long contactId = savedContact(companyId, "forbidden.detail.v2@example.com").getId();
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(BY_ID_PATH, contactId).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
 	// --- getContactMetrics ---
 
 	@Test
-	@DisplayName("Get contact metrics - Returns page with nested contact and metrics")
+	@DisplayName("Get contact metrics - Returns page with nested contact and zero metrics when no deals or tasks")
 	void getContactMetrics_WithContacts_ReturnsNestedContactAndMetrics() throws Exception {
 		Long companyId = savedCompany("Metrics V2 Corp").getId();
-		Long contactId = savedContact(companyId, "metrics.contact.v2@example.com").getId();
+		Long contactId = savedContact(companyId, "ZeroMetricsContactV2Unique", "metrics.contact.v2@example.com")
+			.getId();
 
-		performGetMetricsRequest().andDo(print())
+		performGetMetricsRequest("ZeroMetricsContactV2Unique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['id']").value(contactId))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("Test Contact"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("ZeroMetricsContactV2Unique"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['company']['id']").value(companyId))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealValue']").value("0"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(0))
@@ -212,18 +298,49 @@ class CrmContactControllerV2IntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contact metrics - Aggregates won-deal value/count and open/overdue task counts")
+	void getContactMetrics_WithDealsAndTasks_ReturnsAggregatedMetrics() throws Exception {
+		Long companyId = savedCompany("Aggregate V2 Corp").getId();
+		CrmContact contact = savedContact(companyId, "AggMetricsContactV2Unique", "agg.contact.v2@example.com");
+
+		CrmDealStage openStage = savedStage("V2 Open Stage", CrmDealStageType.OPEN, 1);
+		CrmDealStage wonStage = savedStage("V2 Won Stage", CrmDealStageType.WON, 2);
+		savedDeal(contact, openStage, "150", "a0");
+		savedDeal(contact, wonStage, "400", "a1");
+		savedDeal(contact, wonStage, "600", "a2");
+
+		savedTask(contact, LocalDateTime.now().plusDays(3));
+		savedTask(contact, LocalDateTime.now().minusDays(2));
+
+		String content = performGetMetricsRequest("AggMetricsContactV2Unique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].items[0].metrics.closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
+			.isEqualByComparingTo("1000");
+	}
+
+	@Test
 	@DisplayName("Get contact metrics - Company-less contact returns null company, not an empty object")
 	void getContactMetrics_ContactWithoutCompany_ReturnsNullCompany() throws Exception {
 		CrmContact contact = new CrmContact();
-		contact.setName("No Company Contact");
+		contact.setName("NoCompanyContactV2Unique");
 		contact.setEmail("nocompany.v2@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		crmContactDao.save(contact);
 
-		performGetMetricsRequest().andDo(print())
+		performGetMetricsRequest("NoCompanyContactV2Unique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("No Company Contact"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("NoCompanyContactV2Unique"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['company']").doesNotExist());
 	}
 
@@ -259,6 +376,19 @@ class CrmContactControllerV2IntegrationTest {
 		Long companyId = savedCompany("Missing Edit V2 Corp").getId();
 
 		performPatchRequest(999999L, editValidPayload(companyId)).andDo(print()).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("Edit contact without CRM role - Returns Forbidden")
+	void editContact_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		Long companyId = savedCompany("Forbidden Edit V2 Corp").getId();
+		Long contactId = savedContact(companyId, "forbidden.edit.v2@example.com").getId();
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(editValidPayload(companyId)))
+			.accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

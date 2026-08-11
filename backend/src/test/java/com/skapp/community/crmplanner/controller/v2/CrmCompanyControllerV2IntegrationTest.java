@@ -7,13 +7,18 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +35,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -61,6 +67,10 @@ class CrmCompanyControllerV2IntegrationTest {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -124,6 +134,22 @@ class CrmCompanyControllerV2IntegrationTest {
 		crmDealDao.save(deal);
 	}
 
+	private void savedTask(CrmCompany company, LocalDateTime dueAt) {
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("V2 Task Type");
+		taskType.setOrderIndex(1);
+		crmTaskTypeDao.save(taskType);
+
+		CrmTask task = new CrmTask();
+		task.setName("V2 Company Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setCompany(company);
+		task.setDueAt(dueAt);
+		crmTaskDao.save(task);
+	}
+
 	@Test
 	@DisplayName("Get company metrics - Returns nested company and metrics with seeded values")
 	void getCompanyMetrics_HappyPath_ReturnsNestedCompanyAndMetrics() throws Exception {
@@ -155,6 +181,42 @@ class CrmCompanyControllerV2IntegrationTest {
 		assertThat(new BigDecimal(openValue)).as("open value sums INITIAL + OPEN deals only")
 			.isEqualByComparingTo("200");
 		assertThat(new BigDecimal(accountValue)).as("account value sums WON deals only").isEqualByComparingTo("400");
+	}
+
+	@Test
+	@DisplayName("Get company metrics - Counts open and overdue tasks")
+	void getCompanyMetrics_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
+		CrmCompany company = savedCompany("TaskMetricsCoV2Unique");
+
+		savedTask(company, LocalDateTime.now().plusDays(5));
+		savedTask(company, LocalDateTime.now().minusDays(1));
+
+		performGetMetricsRequest("TaskMetricsCoV2Unique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdue']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get company metrics - No paging params falls back to defaults and returns OK")
+	void getCompanyMetrics_NoPagingParams_ReturnsOk() throws Exception {
+		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get company metrics - Search matching nothing returns empty page")
+	void getCompanyMetrics_NoMatch_ReturnsEmptyPage() throws Exception {
+		savedCompany("MetricsCoV2Unique");
+
+		performGetMetricsRequest("NoSuchCompanyXyz").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(0))
+			.andExpect(jsonPath("['results'][0]['items']").isEmpty());
 	}
 
 	@Test
