@@ -65,10 +65,10 @@ const EditContactModalContent = () => {
   );
 
   const { countryCode: originalCountryCode, number: originalContactNumber } =
-    splitContactNumber(
-      selectedContact?.contactNumber ?? "",
+    splitContactNumber({
+      contactNumber: selectedContact?.contactNumber ?? "",
       defaultCountryCode
-    );
+    });
 
   const initialValues: CrmContactFormValues = {
     name: selectedContact?.name,

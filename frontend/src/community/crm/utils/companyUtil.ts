@@ -12,10 +12,10 @@ export const getCompanyFormInitialValues = (
   defaultCountryCode: string,
   company?: CrmCompany
 ): CrmCompanyFormTypes => {
-  const { countryCode, number } = splitContactNumber(
-    company?.contactNumber ?? "",
+  const { countryCode, number } = splitContactNumber({
+    contactNumber: company?.contactNumber ?? "",
     defaultCountryCode
-  );
+  });
 
   return {
     name: company?.name || "",

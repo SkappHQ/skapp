@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { formatPhoneNumber } from "~community/common/utils/commonUtil";
 import { useCreateNewContact } from "~community/crm/api/ContactApi";
 import ContactModalForm from "~community/crm/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStore } from "~community/crm/store/store";
@@ -11,7 +12,6 @@ import {
   CrmContactFormValues,
   CrmOwner
 } from "~community/crm/types/CommonTypes";
-import { combineContactNumber } from "~community/crm/utils/crmUtil";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
@@ -84,9 +84,10 @@ const AddContactModalContent = () => {
     const payload: CrmContactCreatePayload = {
       name: values.name.trim(),
       email: values.email.trim(),
-      contactNumber:
-        combineContactNumber(values.countryCode, values.contactNumber.trim()) ||
-        undefined,
+      contactNumber: formatPhoneNumber(
+        values.countryCode,
+        values.contactNumber.trim()
+      ),
       companyId: values.companyId ?? undefined,
       ownerId: values.ownerId ?? undefined
     };

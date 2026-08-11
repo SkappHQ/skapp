@@ -4,6 +4,7 @@ import React from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { formatPhoneNumber } from "~community/common/utils/commonUtil";
 import { useCreateNewCompany } from "~community/crm/api/CompanyApi";
 import CompanyModalForm from "~community/crm/components/molecules/CompanyModalForm/CompanyModalForm";
 import { useCrmStore } from "~community/crm/store/store";
@@ -13,7 +14,6 @@ import {
 } from "~community/crm/types/CommonTypes";
 import { getCompanyFormInitialValues } from "~community/crm/utils/companyUtil";
 import { addCompanyValidations } from "~community/crm/utils/companyValidations";
-import { combineContactNumber } from "~community/crm/utils/crmUtil";
 import useGetDefaultCountryCode from "~community/people/hooks/useGetDefaultCountryCode";
 
 const AddCompanyModalContent: React.FC = () => {
@@ -73,9 +73,10 @@ const AddCompanyModalContent: React.FC = () => {
       industry: values.industry,
       website: values.website?.trim() || null,
       address: values.address?.trim() || null,
-      contactNumber:
-        combineContactNumber(values.countryCode, values.contactNumber.trim()) ||
-        null
+      contactNumber: formatPhoneNumber(
+        values.countryCode,
+        values.contactNumber.trim()
+      )
     };
 
     createNewCompany(payload);

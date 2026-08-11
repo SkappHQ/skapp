@@ -44,7 +44,7 @@ export const getChangedContactFields = (
     newValues.contactNumber !== originalValues.contactNumber ||
     newValues.countryCode !== originalValues.countryCode
   ) {
-    changedFields.contactNumber = combineContactNumber(
+    changedFields.contactNumber = formatPhoneNumber(
       newValues.countryCode,
       newValues.contactNumber
     );
@@ -132,14 +132,20 @@ export const groupItemsByPriority = <T extends Id>(
   return { prioritized, deprioritized };
 };
 
-export const splitContactNumber = (
-  contactNumber: string,
-  defaultCountryCode: string
-): { countryCode: string; number: string } => {
-  if (!contactNumber) {
-    return { countryCode: defaultCountryCode, number: "" };
-  }
+export interface SplitContactNumberParams {
+  contactNumber: string;
+  defaultCountryCode: string;
+}
 
+export interface SplitContactNumberResult {
+  countryCode: string;
+  number: string;
+}
+
+export const splitContactNumber = ({
+  contactNumber,
+  defaultCountryCode
+}: SplitContactNumberParams): SplitContactNumberResult => {
   const spaceIndex = contactNumber.indexOf(" ");
   if (spaceIndex <= 0) {
     return { countryCode: defaultCountryCode, number: contactNumber };
@@ -149,14 +155,6 @@ export const splitContactNumber = (
     countryCode: contactNumber.slice(0, spaceIndex),
     number: contactNumber.slice(spaceIndex + 1)
   };
-};
-
-export const combineContactNumber = (
-  countryCode: string,
-  number: string
-): string => {
-  if (!number) return "";
-  return formatPhoneNumber(countryCode, number);
 };
 
 export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
