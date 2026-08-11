@@ -694,7 +694,9 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_NotFound_ReturnsBadRequest() throws Exception {
 		performRequest(get(BASE_PATH + "/999999").accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
@@ -706,7 +708,9 @@ class CrmCompanyControllerIntegrationTest {
 
 		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
