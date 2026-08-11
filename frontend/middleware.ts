@@ -69,7 +69,10 @@ const superAdminRoutes = {
 };
 
 const adminRoutes = {
-  [AdminTypes.PEOPLE_ADMIN]: [ROUTES.PEOPLE.BASE],
+  [AdminTypes.PEOPLE_ADMIN]: [
+    ROUTES.PEOPLE.BASE,
+    ROUTES.CONFIGURATIONS.BASE
+  ],
   [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
