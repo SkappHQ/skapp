@@ -75,7 +75,9 @@ const PeopleConfigurations: FC = () => {
       isTeamWide: data?.isTeamWide ?? false,
       isOrganizationWide: data?.isOrganizationWide ?? false
     },
-    onSubmit: () => {}
+    onSubmit: async (values) => {
+      await updateConfigAsync(values);
+    }
   });
 
   const isBirthdaySectionLoaded = isError || (!isLoading && !!data);
@@ -93,9 +95,9 @@ const PeopleConfigurations: FC = () => {
   const handleSaveAll = async () => {
     if (birthdayFormik.dirty) {
       try {
-        await updateConfigAsync(birthdayFormik.values);
+        await birthdayFormik.submitForm();
       } catch {
-        // handleError already showed a toast for this failure
+        
       }
     }
     if (isWorkspaceChanged) {
@@ -182,13 +184,7 @@ const PeopleConfigurations: FC = () => {
         </div>
       )}
 
-      {canManageGoogleWorkspace && (
-        <>
-          <hr className="w-full border-t border-secondary-accent" />
-
-          <GoogleWorkspaceSyncSettings />
-        </>
-      )}
+      {canManageGoogleWorkspace && <GoogleWorkspaceSyncSettings />}
 
       {isBirthdaySectionLoaded && (
         <Box sx={{ display: "flex", flexDirection: "row", gap: "0.75rem" }}>
