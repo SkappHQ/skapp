@@ -260,6 +260,34 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").doesNotExist());
 	}
 
+	@Test
+	@DisplayName("Get tasks (open) - Projects the nested deal with its stage, company and contact")
+	void getTasks_WithLinkedDeal_ProjectsNestedDeal() throws Exception {
+		CrmDeal deal = savedDeal("Nested Deal V2");
+
+		CrmTask task = new CrmTask();
+		task.setName("Task With Deal V2");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(contact);
+		task.setCompany(company);
+		task.setDeal(deal);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		crmTaskDao.save(task);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task With Deal V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['id']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['name']").value("Nested Deal V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['stage']['name']").value("Task Deal Stage"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['company']['id']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['contact']['name']").value("Task Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['contact']['company']['id']").value(companyId));
+	}
+
 	// --- getCompletedTasks ---
 
 	@Test

@@ -51,10 +51,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		List<CrmTaskResponseDtoV2> tasks = crmTaskDao.findTasks(ownerId, filterDto)
-			.stream()
-			.map(task -> CrmUtil.toTaskResponseDtoV2(crmMapperV2, task))
-			.toList();
+		List<CrmTaskResponseDtoV2> tasks = crmTaskDao.findTasksV2(ownerId, filterDto);
 
 		CrmTaskListResponseDtoV2 response = new CrmTaskListResponseDtoV2();
 		response.setTasks(tasks);
@@ -72,10 +69,10 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
-		Page<CrmTask> taskPage = crmTaskDao.findCompletedTasks(ownerId, filterDto, pageable);
+		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findCompletedTasksV2(ownerId, filterDto, pageable);
 
 		log.info("getCompletedTasks: execution ended");
-		return new ResponseEntityDto(false, buildPageDto(taskPage));
+		return new ResponseEntityDto(false, toPageDto(taskPage));
 	}
 
 	@Override
@@ -89,10 +86,10 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmTask> taskPage = crmTaskDao.findRelatedTasks(filterDto, ownerId, pageable);
+		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(filterDto, ownerId, pageable);
 
 		log.info("getRelatedTasks: execution ended");
-		return new ResponseEntityDto(false, buildPageDto(taskPage));
+		return new ResponseEntityDto(false, toPageDto(taskPage));
 	}
 
 	@Override
@@ -134,14 +131,9 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, updatedTask));
 	}
 
-	private PageDto buildPageDto(Page<CrmTask> taskPage) {
-		List<CrmTaskResponseDtoV2> tasks = taskPage.getContent()
-			.stream()
-			.map(task -> CrmUtil.toTaskResponseDtoV2(crmMapperV2, task))
-			.toList();
-
+	private PageDto toPageDto(Page<CrmTaskResponseDtoV2> taskPage) {
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(tasks);
+		pageDto.setItems(taskPage.getContent());
 		pageDto.setCurrentPage(taskPage.getNumber());
 		pageDto.setTotalItems(taskPage.getTotalElements());
 		pageDto.setTotalPages(taskPage.getTotalPages());
