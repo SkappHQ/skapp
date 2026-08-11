@@ -1084,6 +1084,24 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contacts lookup filtered by companyId - Returns only contacts of that company")
+	void getContactsLookup_FilterByCompanyId_ReturnsOnlyCompanyContacts() throws Exception {
+		Long companyAId = savedCompany("Globex Corporation").getId();
+		Long companyBId = savedCompany("Initech").getId();
+		savedNamedContact("Globex Contact", companyAId, "globex.contact@lookup.com");
+		savedNamedContact("Initech Contact", companyBId, "initech.contact@lookup.com");
+		savedNamedContact("Solo Contact", null, "solo@lookup.com");
+
+		performRequest(
+				get(LOOKUP_PATH).param("companyId", String.valueOf(companyAId)).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Globex Contact"));
+	}
+
+	@Test
 	@DisplayName("Lookup contacts without CRM role - Returns Forbidden")
 	void getContactsLookup_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())

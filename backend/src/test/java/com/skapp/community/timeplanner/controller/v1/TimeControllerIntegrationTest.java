@@ -1,6 +1,7 @@
 package com.skapp.community.timeplanner.controller.v1;
 
 import com.skapp.TestSkappApplication;
+import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.timeplanner.payload.request.AddTimeRecordDto;
 import com.skapp.community.timeplanner.payload.request.EditTimeRequestDto;
@@ -10,6 +11,7 @@ import com.skapp.community.timeplanner.payload.request.TimeConfigDto;
 import com.skapp.community.timeplanner.payload.request.TimeRequestManagerPatchDto;
 import com.skapp.community.timeplanner.payload.request.UpdateIncompleteTimeRecordsRequestDto;
 import com.skapp.community.timeplanner.payload.request.UpdateTimeRequestsFilterDto;
+import com.skapp.community.timeplanner.payload.response.ActiveTimeSlotResponseDto;
 import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import org.junit.jupiter.api.DisplayName;
@@ -24,11 +26,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.*;
+import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.STATUS_PATH;
+import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = TestSkappApplication.class)
 @AutoConfigureMockMvc
@@ -95,11 +104,15 @@ class TimeControllerIntegrationTest extends AbstractControllerIntegrationTest {
 	class TimeSlotTests {
 
 		@Test
-		@DisplayName("GET /active-slot - returns OK")
-		void getActiveTimeSlot_ReturnsOk() throws Exception {
-			when(timeService.getActiveTimeSlot()).thenReturn(response("getActiveTimeSlot"));
+		@DisplayName("GET /active-slot - returns the period type resolved by the service (HOLIDAY)")
+		void getActiveTimeSlot_ReturnsHolidayPeriodType() throws Exception {
+			ActiveTimeSlotResponseDto activeTimeSlot = new ActiveTimeSlotResponseDto();
+			activeTimeSlot.setPeriodType(TimeRecordActionTypes.HOLIDAY);
+			when(timeService.getActiveTimeSlot()).thenReturn(new ResponseEntityDto(false, activeTimeSlot));
 
-			assertOk(performGetRequest(BASE_PATH + "/active-slot"), "getActiveTimeSlot");
+			performGetRequest(BASE_PATH + "/active-slot").andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath(RESULTS_0_PATH + "['periodType']").value(TimeRecordActionTypes.HOLIDAY.name()));
 			verify(timeService).getActiveTimeSlot();
 		}
 

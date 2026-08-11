@@ -29,4 +29,8 @@ public class CommonConstants {
 
 	public static final long WORK_LOCATION_NAME_MAX_LENGTH = 50;
 
+	public static final String MULTIPART_CONTENT_TYPE_PREFIX = "multipart/";
+
+	public static final String IMAGE_CONTENT_TYPE_PREFIX = "image/";
+
 }

@@ -37,6 +37,7 @@ import {
   CrmOwner,
   CrmTaskFormTypes
 } from "~community/crm/types/CommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskFormTypes>;
@@ -67,12 +68,18 @@ const TaskModalForm: FC<TaskFormProps> = ({
     setIsTaskModalOpen,
     selectedTaskId,
     selectedContactId,
+    selectedCompanyId,
+    isCrmSidePanelOpen,
+    crmSidePanelType,
     getContactById,
     getTaskById
   } = useCrmStore((store) => ({
     setIsTaskModalOpen: store.setIsTaskModalOpen,
     selectedTaskId: store.selectedTaskId,
     selectedContactId: store.selectedContactId,
+    selectedCompanyId: store.selectedCompanyId,
+    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+    crmSidePanelType: store.crmSidePanelType,
     getContactById: store.getContactById,
     getTaskById: store.getTaskById
   }));
@@ -137,25 +144,44 @@ const TaskModalForm: FC<TaskFormProps> = ({
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
   );
 
+  const companyScopeId =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL
+      ? selectedCompanyId
+      : null;
+
+  const hasSelectedContact = values.contactId != null;
+  const hasSelectedDeal = values.dealId != null;
+
+  const contactLookupCompanyId = hasSelectedDeal ? null : companyScopeId;
+
   const isContactSearchEnabled =
     debouncedContactSearchText.length > 0 || !!values.dealId;
+
   const contactLookupParams: CrmContactLookupParams = {
     searchKeyword: debouncedContactSearchText,
     size: DEFAULT_LOOKUP_PAGE_SIZE,
-    dealId: values.dealId
+    dealId: values.dealId,
+    companyId: contactLookupCompanyId
   };
+
   const { data: contactLookupData } = useGetCrmContacts(
     contactLookupParams,
     isContactSearchEnabled
   );
 
+  const dealLookupCompanyId = hasSelectedContact ? null : companyScopeId;
+
   const isDealSearchEnabled =
-    debouncedDealSearchText.length > 0 || !!values.contactId;
+    debouncedDealSearchText.length > 0 ||
+    hasSelectedContact ||
+    dealLookupCompanyId != null;
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     isDealSearchEnabled,
-    values.contactId
+    values.contactId,
+    dealLookupCompanyId
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
@@ -242,6 +268,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
     setFieldValue("dealId", Number(item.id));
     setSelectedDealName(deal?.name ?? "");
     setDealSearchText("");
+
+    if (deal?.contactId != null && deal?.contactName != null) {
+      formik.setFieldValue("contactId", deal.contactId);
+      setSelectedContactName(deal?.contactName);
+      setContactSearchText("");
+    }
   };
 
   const handleClearOwner = () => {

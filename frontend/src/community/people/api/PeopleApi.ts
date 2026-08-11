@@ -1,5 +1,6 @@
 import {
   type UseInfiniteQueryResult,
+  type UseMutationResult,
   type UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -7,7 +8,7 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 import { rejects } from "assert";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -32,12 +33,21 @@ import {
 } from "~community/people/actions/PeopleDataPreprocessor";
 import {
   authEndpoints,
+  peopleConfigEndpoints,
   peoplesEndpoints
 } from "~community/people/api/utils/ApiEndpoints";
-import { peopleQueryKeys } from "~community/people/api/utils/QueryKeys";
+import {
+  peopleConfigQueryKeys,
+  peopleQueryKeys
+} from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
 import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  BirthdayNotificationPayloadType,
+  BirthdayNotificationTodayResponse,
+  MarkBirthdayNotificationsViewedResponse
+} from "~community/people/types/BirthdayNotificationTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
 import {
   BulkEmployeeDetails,
@@ -56,6 +66,11 @@ import {
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
+import {
+  BirthdayNotificationConfigPatchType,
+  BirthdayNotificationConfigResponse,
+  BirthdayNotificationConfigType
+} from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
@@ -967,6 +982,87 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
         peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
+    },
+    onError
+  });
+};
+
+export const useGetTodaysBirthdayNotifications = (
+  enabled: boolean
+): UseQueryResult<BirthdayNotificationPayloadType> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
+    queryFn: async () => {
+      const response = await authFetch.get<BirthdayNotificationTodayResponse>(
+        peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS
+      );
+      return response.data.results[0];
+    },
+    enabled
+  });
+};
+
+const markBirthdayNotificationsViewedToday = (): Promise<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+> =>
+  authFetch.patch<MarkBirthdayNotificationsViewedResponse>(
+    peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY
+  );
+
+export const useMarkBirthdayNotificationsViewedToday = (
+  onSuccess: (
+    response: AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+  ) => void
+): UseMutationResult<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>,
+  AxiosError,
+  void
+> => {
+  return useMutation({
+    mutationFn: markBirthdayNotificationsViewedToday,
+    onSuccess
+  });
+};
+
+export const useGetBirthdayNotificationConfig = (): UseQueryResult<
+  BirthdayNotificationConfigType
+> => {
+  return useQuery({
+    queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
+    queryFn: async () => {
+      const response = await authFetch.get<BirthdayNotificationConfigResponse>(
+        peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
+      );
+      return response.data.results[0];
+    }
+  });
+};
+
+const updateBirthdayNotificationConfig = (
+  config: BirthdayNotificationConfigPatchType
+): Promise<AxiosResponse<BirthdayNotificationConfigResponse>> =>
+  authFetch.patch<BirthdayNotificationConfigResponse>(
+    peopleConfigEndpoints.UPDATE_BIRTHDAY_NOTIFICATION_CONFIG,
+    config
+  );
+
+export const useUpdateBirthdayNotificationConfig = (
+  onSuccess: (config: BirthdayNotificationConfigPatchType) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BirthdayNotificationConfigResponse>,
+  AxiosError,
+  BirthdayNotificationConfigPatchType
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateBirthdayNotificationConfig,
+    onSuccess: (_data, config) => {
+      queryClient.invalidateQueries({
+        queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG
+      });
+      onSuccess(config);
     },
     onError
   });
