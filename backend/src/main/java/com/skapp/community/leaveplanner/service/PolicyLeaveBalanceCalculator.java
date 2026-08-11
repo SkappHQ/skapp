@@ -51,7 +51,7 @@ public class PolicyLeaveBalanceCalculator {
 			float accruedDays = PolicyLeaveAccrualUtil.roundToHalfDay(
 					PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.end()));
 			float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, carriedForwardDays + accruedDays);
-			float totalDaysUsed = committedDays(assignment, cycle);
+			float totalDaysUsed = totalDaysUsedInCycle(assignment, cycle);
 
 			if (cycle.start().equals(targetCycle.start())) {
 				PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
@@ -85,11 +85,11 @@ public class PolicyLeaveBalanceCalculator {
 		}
 	}
 
-	private float committedDays(EmployeeLeavePolicy assignment, DateWindow cycle) {
-		Double committed = policyLeaveRequestDao.sumCommittedDaysForPolicyInCycle(
+	private float totalDaysUsedInCycle(EmployeeLeavePolicy assignment, DateWindow cycle) {
+		Double totalDaysUsed = policyLeaveRequestDao.sumCommittedDaysForPolicyInCycle(
 				assignment.getEmployee().getEmployeeId(), assignment.getPolicy().getId(),
 				PolicyLeaveConstant.BALANCE_HOLDING_STATUSES, cycle.start(), cycle.end());
-		return committed == null ? 0f : committed.floatValue();
+		return totalDaysUsed == null ? 0f : totalDaysUsed.floatValue();
 	}
 
 	private PolicyLeaveBalanceDto emptyBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle,
