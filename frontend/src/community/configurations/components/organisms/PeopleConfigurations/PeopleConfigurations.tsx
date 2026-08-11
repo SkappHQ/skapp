@@ -1,10 +1,9 @@
 import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, type FormEvent, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
-import Form from "~community/common/components/molecules/Form/Form";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -25,12 +24,6 @@ import type {
   GoogleWorkspaceSyncSettingsActions,
   GoogleWorkspaceSyncSettingsState
 } from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
-
-const buttonsContainerStyles = {
-  display: "flex",
-  flexDirection: "row" as const,
-  gap: "0.75rem"
-};
 
 const PeopleConfigurations: FC = () => {
   const translateText = useTranslator(
@@ -121,14 +114,12 @@ const PeopleConfigurations: FC = () => {
   const isAnySubmitting =
     isPending || (canManageGoogleWorkspace && workspaceState.isSubmitting);
 
-  const handleCancelAll = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCancelAll = () => {
     if (isFormChanged) handleCancel();
     if (isWorkspaceChanged) workspaceActionsRef.current.reset();
   };
 
-  const handleSaveAll = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSaveAll = () => {
     if (isFormChanged) handleSave();
     if (isWorkspaceChanged) workspaceActionsRef.current.save();
   };
@@ -141,11 +132,7 @@ const PeopleConfigurations: FC = () => {
     : "";
 
   return (
-    <Form
-      className="flex w-196 flex-col gap-6"
-      onSubmit={handleSaveAll}
-      onReset={handleCancelAll}
-    >
+    <div className="flex w-196 flex-col gap-6">
       <div className="flex flex-col gap-3">
         <h2 className="subtitle2 text-black">
           {translateText(["title"])}
@@ -224,20 +211,20 @@ const PeopleConfigurations: FC = () => {
       )}
 
       {isBirthdaySectionLoaded && (
-        <Box sx={buttonsContainerStyles}>
+        <Box sx={{ display: "flex", flexDirection: "row", gap: "0.75rem" }}>
           <ButtonV2
-            type="reset"
             variant="tertiary"
             disabled={!isAnyChanged || isAnySubmitting}
+            onClick={handleCancelAll}
             icon={<Icon name={IconName.CLOSE_ICON} />}
             iconPosition="end"
           >
             {translateButtons(["cancel"])}
           </ButtonV2>
           <ButtonV2
-            type="submit"
             disabled={!isAnyChanged || isAnySubmitting}
             isLoading={isAnySubmitting}
+            onClick={handleSaveAll}
             icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
             iconPosition="end"
           >
@@ -245,7 +232,7 @@ const PeopleConfigurations: FC = () => {
           </ButtonV2>
         </Box>
       )}
-    </Form>
+    </div>
   );
 };
 
