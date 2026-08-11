@@ -20,7 +20,6 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Fetch;
-import jakarta.persistence.criteria.From;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -104,13 +103,17 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return predicates.toArray(new Predicate[0]);
 	}
 
-	private Predicate buildAllTokensMatchNamePredicate(CriteriaBuilder cb, From<?, CrmContact> contact,
+	private Predicate buildAllTokensMatchNamePredicate(CriteriaBuilder cb, Root<CrmContact> contact,
 			String searchKeyword) {
 		Expression<String> firstName = cb.lower(contact.get(CrmContact_.firstName));
 		Expression<String> lastName = cb.lower(contact.get(CrmContact_.lastName));
 
 		List<Predicate> tokenPredicates = new ArrayList<>();
 		for (String token : searchKeyword.trim().toLowerCase(Locale.ROOT).split("\\s+")) {
+			if (token.isEmpty()) {
+				continue;
+			}
+
 			String escaped = StringUtils.escapeLikePattern(token);
 			String prefixPattern = escaped + "%";
 			String innerTokenPattern = "% " + escaped + "%";
@@ -119,10 +122,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 						cb.like(lastName, prefixPattern, '\\'), cb.like(lastName, innerTokenPattern, '\\')));
 		}
 
-		return cb.and(tokenPredicates.toArray(new Predicate[0]));
+		return tokenPredicates.isEmpty() ? cb.conjunction() : cb.and(tokenPredicates.toArray(new Predicate[0]));
 	}
 
-	private List<Order> buildNameRelevanceOrders(CriteriaBuilder cb, From<?, CrmContact> contact,
+	private List<Order> buildNameRelevanceOrders(CriteriaBuilder cb, Root<CrmContact> contact,
 			String searchKeyword) {
 		if (searchKeyword == null || searchKeyword.isBlank()) {
 			return List.of();
