@@ -13,6 +13,8 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_REQUEST_DESCRIPTION_LENGTH = 255;
 
+	public static final int MAX_REVIEWER_COMMENT_LENGTH = 255;
+
 	public static final int MAX_ATTACHMENTS = 5;
 
 	public static final int MAX_ATTACHMENT_URL_LENGTH = 1000;

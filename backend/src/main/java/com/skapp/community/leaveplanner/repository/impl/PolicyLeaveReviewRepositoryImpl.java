@@ -1,0 +1,162 @@
+package com.skapp.community.leaveplanner.repository.impl;
+
+import com.skapp.community.common.model.User;
+import com.skapp.community.common.model.User_;
+import com.skapp.community.leaveplanner.model.LeavePolicy_;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
+import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
+import com.skapp.community.leaveplanner.payload.request.PolicyManagerLeaveRequestFilterDto;
+import com.skapp.community.leaveplanner.repository.PolicyLeaveReviewRepository;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
+import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeManager_;
+import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.peopleplanner.type.AccountStatus;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.query.QueryUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+@Component
+@RequiredArgsConstructor
+public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewRepository {
+
+	private final EntityManager entityManager;
+
+	@Override
+	public Page<PolicyLeaveRequest> findRequestsAssignedToManager(Long managerEmployeeId,
+			PolicyManagerLeaveRequestFilterDto filterDto, Pageable pageable) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
+		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(PolicyLeaveRequest_.id)))
+			.where(buildManagerPredicates(criteriaBuilder, countRoot, countRoot.join(PolicyLeaveRequest_.employee),
+					managerEmployeeId, filterDto)
+				.toArray(new Predicate[0]));
+		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
+
+		if (totalRows == 0) {
+			return new PageImpl<>(Collections.emptyList(), pageable, 0);
+		}
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT).fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		criteriaQuery.select(root)
+			.distinct(true)
+			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), managerEmployeeId, filterDto)
+				.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
+
+		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
+		if (pageable.isPaged()) {
+			query.setFirstResult((int) pageable.getOffset());
+			query.setMaxResults(pageable.getPageSize());
+		}
+
+		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findPendingRequestsAssignedToManager(Long managerEmployeeId, String searchKeyword) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT).fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		PolicyManagerLeaveRequestFilterDto filterDto = new PolicyManagerLeaveRequestFilterDto();
+		filterDto.setStatus(List.of(LeaveRequestStatus.PENDING));
+		filterDto.setSearchKeyword(searchKeyword);
+
+		criteriaQuery.select(root)
+			.distinct(true)
+			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), managerEmployeeId, filterDto)
+				.toArray(new Predicate[0]));
+		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public Optional<PolicyLeaveRequest> findByIdForUpdate(Long id) {
+		return Optional.ofNullable(entityManager.find(PolicyLeaveRequest.class, id, LockModeType.PESSIMISTIC_WRITE));
+	}
+
+	/**
+	 * Reuses the employee fetch join as a regular join so the entity queries do not join
+	 * the employee table twice, once for the fetch and once for the manager scoping.
+	 */
+	@SuppressWarnings("unchecked")
+	private Join<PolicyLeaveRequest, Employee> fetchEmployee(Root<PolicyLeaveRequest> root) {
+		return (Join<PolicyLeaveRequest, Employee>) root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
+	}
+
+	private List<Predicate> buildManagerPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
+			Join<PolicyLeaveRequest, Employee> employee, Long managerEmployeeId,
+			PolicyManagerLeaveRequestFilterDto filterDto) {
+		List<Predicate> predicates = new ArrayList<>();
+
+		Join<Employee, User> user = employee.join(Employee_.user);
+		Join<Employee, EmployeeManager> employeeManagers = employee.join(Employee_.employeeManagers);
+		Join<EmployeeManager, Employee> manager = employeeManagers.join(EmployeeManager_.manager);
+
+		predicates.add(criteriaBuilder.equal(user.get(User_.isActive), true));
+		predicates.add(criteriaBuilder
+			.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)));
+		predicates.add(criteriaBuilder.equal(manager.get(Employee_.employeeId), managerEmployeeId));
+
+		if (!CollectionUtils.isEmpty(filterDto.getStatus())) {
+			predicates.add(root.get(PolicyLeaveRequest_.status).in(filterDto.getStatus()));
+		}
+
+		if (!CollectionUtils.isEmpty(filterDto.getLeaveTypeId())) {
+			predicates.add(root.get(PolicyLeaveRequest_.policy)
+				.get(LeavePolicy_.leaveType)
+				.get(PolicyLeaveType_.id)
+				.in(filterDto.getLeaveTypeId()));
+		}
+
+		if (filterDto.getStartDate() != null) {
+			predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate),
+					filterDto.getStartDate()));
+		}
+
+		if (filterDto.getEndDate() != null) {
+			predicates.add(
+					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), filterDto.getEndDate()));
+		}
+
+		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().trim().isEmpty()) {
+			String pattern = "%" + filterDto.getSearchKeyword().trim().toLowerCase() + "%";
+			predicates.add(criteriaBuilder.or(
+					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.firstName)), pattern),
+					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.middleName)), pattern),
+					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.lastName)), pattern)));
+		}
+
+		return predicates;
+	}
+
+}

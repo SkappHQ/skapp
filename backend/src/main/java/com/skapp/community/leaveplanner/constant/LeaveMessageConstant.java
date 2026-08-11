@@ -118,7 +118,18 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY("api.error.leave.policy-leave-halfday-single-date-only"),
 	LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS("api.error.leave.policy-leave-too-many-attachments"),
 	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENTS_NOT_ALLOWED("api.error.leave.policy-leave-attachments-not-allowed"),
-	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENT_URL_MAX_LENGTH("api.error.leave.policy-leave-attachment-url-max-length");
+	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENT_URL_MAX_LENGTH("api.error.leave.policy-leave-attachment-url-max-length"),
+
+	// Policy leave review errors
+	LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND("api.error.leave.policy-leave-request-not-found"),
+	LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_MANAGER(
+			"api.error.leave.policy-leave-invalid-status-transition-manager"),
+	LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_EMPLOYEE(
+			"api.error.leave.policy-leave-invalid-status-transition-employee"),
+	LEAVE_ERROR_POLICY_LEAVE_ALREADY_IN_STATUS("api.error.leave.policy-leave-already-in-status"),
+	LEAVE_ERROR_POLICY_LEAVE_INFORMANT_CANNOT_REVIEW("api.error.leave.policy-leave-informant-cannot-review"),
+	LEAVE_ERROR_POLICY_LEAVE_DECLINE_REASON_REQUIRED("api.error.leave.policy-leave-decline-reason-required"),
+	LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH("api.error.leave.policy-leave-reviewer-comment-max-length");
 
 	private final String messageKey;
 
