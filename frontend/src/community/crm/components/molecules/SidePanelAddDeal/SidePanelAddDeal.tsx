@@ -59,10 +59,7 @@ const SidePanelAddDeal: FC<Props> = ({
     size: DEFAULT_LOOKUP_PAGE_SIZE,
     companyId
   };
-  const { data: contactLookupData } = useGetCrmContacts(
-    contactLookupParams,
-    true
-  );
+  const { data: contactLookupData } = useGetCrmContacts(contactLookupParams);
   const contacts = contactLookupData?.items ?? [];
 
   const { initialStageId, isLoading: isStagesLoading } =

@@ -212,21 +212,15 @@ export const useGetOwnerLookup = (
 const fetchContactsLookup = async (
   params: CrmContactLookupParams
 ): Promise<CrmContactLookupResponseType> => {
-  const { searchKeyword, size, dealId, companyId } = params;
   const response = await authFetch.get(contactEndpoints.CONTACT_LOOKUP, {
-    params: {
-      searchKeyword,
-      size,
-      ...(dealId != null && { dealId }),
-      ...(companyId != null && { companyId })
-    }
+    params
   });
   return response?.data?.results?.[0];
 };
 
 export const useGetCrmContacts = (
   params: CrmContactLookupParams,
-  enabled: boolean
+  enabled?: boolean
 ): UseQueryResult<CrmContactLookupResponseType> => {
   return useQuery({
     queryKey: contactQueryKeys.CONTACT_LOOKUP(params),
