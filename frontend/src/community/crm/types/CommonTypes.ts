@@ -127,8 +127,8 @@ export interface CrmContactLookupResponseType {
 export interface CrmContactLookupParams {
   searchKeyword: string;
   size: number;
-  dealId?: number | null;
-  companyId?: number | null;
+  dealId?: number;
+  companyId?: number;
 }
 
 export interface CrmOwnersResponseType {
