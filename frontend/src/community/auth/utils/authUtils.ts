@@ -342,6 +342,8 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
     const existingCallback = urlParams.get("callback");
 
     const callbackPath = existingCallback || currentPath;
-    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${callbackPath}`;
+    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${encodeURIComponent(
+      callbackPath
+    )}`;
   }
 };

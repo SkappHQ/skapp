@@ -15,7 +15,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { organizationSetupValidation } from "~community/common/utils/validation";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { FileCategories } from "~enterprise/common/types/s3Types";
@@ -40,7 +40,7 @@ const OrganizationSettings = (): JSX.Element => {
 
   const { data: globalLogin } = useGetGlobalLoginMethod(
     isEnterpriseMode,
-    tenantID as string
+    getTenantId()
   );
 
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
@@ -87,7 +87,7 @@ const OrganizationSettings = (): JSX.Element => {
         organizationWebsite: organizationDetails.organizationWebsite || "",
         country: organizationDetails.country || "",
         organizationTimeZone: organizationDetails.organizationTimeZone || "",
-        companyDomain: tenantID as string,
+        companyDomain: getTenantId(),
         organizationGlobalLogin: globalLogin || "",
         organizationLogo: logo,
         themeColor: themeColor
