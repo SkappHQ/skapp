@@ -22,6 +22,8 @@ public class PolicyLeaveBalanceDto {
 
 	private LocalDate cycleEnd;
 
+	private LocalDate usableFrom;
+
 	private float accruedDays;
 
 	private float totalDaysAllocated;
@@ -33,17 +35,5 @@ public class PolicyLeaveBalanceDto {
 	private boolean isUnlimited;
 
 	private boolean isDerived;
-
-	public LocalDate usableFrom() {
-		return effectiveFrom.isAfter(cycleStart) ? effectiveFrom : cycleStart;
-	}
-
-	public boolean hasBalance() {
-		return isUnlimited || balanceInDays > 0f;
-	}
-
-	public boolean canAccommodate(float requestedDays) {
-		return isUnlimited || requestedDays <= balanceInDays;
-	}
 
 }

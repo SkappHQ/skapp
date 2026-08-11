@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
@@ -12,19 +13,9 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.temporal.ChronoUnit;
 
-/**
- * Accrual maths for the policy leave flow.
- *
- * The accrual cycle is always the calendar year. Carryover (capping, expiry, the
- * carryover/accrual bucket split) is owned by a separate story and is intentionally
- * absent here.
- */
 @Slf4j
 @UtilityClass
 public class PolicyLeaveAccrualUtil {
-
-	public record DateWindow(LocalDate start, LocalDate end) {
-	}
 
 	public static LocalDate resolveAccrualStartDate(LeavePolicy policy, LocalDate effectiveFrom) {
 		Integer waitingPeriodDays = policy.getWaitingPeriodDays();
@@ -34,12 +25,12 @@ public class PolicyLeaveAccrualUtil {
 		return effectiveFrom.plusDays(waitingPeriodDays);
 	}
 
-	public static DateWindow resolveCycle(int year) {
+	public static PolicyLeaveDateWindowDto resolveCycle(int year) {
 		MonthDay anchor = DateTimeUtils.CALENDAR_YEAR_START;
-		return new DateWindow(anchor.atYear(year), anchor.atYear(year + 1).minusDays(1));
+		return new PolicyLeaveDateWindowDto(anchor.atYear(year), anchor.atYear(year + 1).minusDays(1));
 	}
 
-	public static DateWindow resolveCycleContaining(LocalDate date) {
+	public static PolicyLeaveDateWindowDto resolveCycleContaining(LocalDate date) {
 		return resolveCycle(date.getYear());
 	}
 
@@ -57,8 +48,9 @@ public class PolicyLeaveAccrualUtil {
 
 		float total = 0f;
 		boolean isFirstPeriod = true;
-		DateWindow period = resolvePeriodContaining(policy.getFrequency(), accrualStartDate, accrualStartDate);
-		LocalDate creditDate = creditAtPeriodStart ? period.start() : period.end();
+		PolicyLeaveDateWindowDto period = resolvePeriodContaining(policy.getFrequency(), accrualStartDate,
+				accrualStartDate);
+		LocalDate creditDate = creditAtPeriodStart ? period.getStartDate() : period.getEndDate();
 
 		while (!creditDate.isAfter(asOf)) {
 			float credited = accrualDays;
@@ -68,27 +60,27 @@ public class PolicyLeaveAccrualUtil {
 			total += credited;
 			isFirstPeriod = false;
 
-			DateWindow nextPeriod = resolvePeriodContaining(policy.getFrequency(), accrualStartDate,
-					period.end().plusDays(1));
-			if (!nextPeriod.start().isAfter(period.start())) {
+			PolicyLeaveDateWindowDto nextPeriod = resolvePeriodContaining(policy.getFrequency(), accrualStartDate,
+					period.getEndDate().plusDays(1));
+			if (!nextPeriod.getStartDate().isAfter(period.getStartDate())) {
 				log.warn("accruedUpTo: accrual period failed to advance, stopping walk");
 				break;
 			}
 			period = nextPeriod;
-			creditDate = creditAtPeriodStart ? period.start() : period.end();
+			creditDate = creditAtPeriodStart ? period.getStartDate() : period.getEndDate();
 		}
 
 		return total;
 	}
 
-	public static float accruedWithinCycle(LeavePolicy policy, LocalDate accrualStartDate, DateWindow cycle,
-			LocalDate asOf) {
-		LocalDate windowEnd = asOf.isBefore(cycle.end()) ? asOf : cycle.end();
-		if (windowEnd.isBefore(cycle.start())) {
+	public static float accruedWithinCycle(LeavePolicy policy, LocalDate accrualStartDate,
+			PolicyLeaveDateWindowDto cycle, LocalDate asOf) {
+		LocalDate windowEnd = asOf.isBefore(cycle.getEndDate()) ? asOf : cycle.getEndDate();
+		if (windowEnd.isBefore(cycle.getStartDate())) {
 			return 0f;
 		}
 		float upToWindowEnd = accruedUpTo(policy, accrualStartDate, windowEnd);
-		float upToCycleStart = accruedUpTo(policy, accrualStartDate, cycle.start().minusDays(1));
+		float upToCycleStart = accruedUpTo(policy, accrualStartDate, cycle.getStartDate().minusDays(1));
 		return Math.max(0f, upToWindowEnd - upToCycleStart);
 	}
 
@@ -104,65 +96,66 @@ public class PolicyLeaveAccrualUtil {
 		return Math.min(totalDaysAllocated, cap);
 	}
 
-	private static float proration(DateWindow period, LocalDate accrualStartDate) {
-		if (!accrualStartDate.isAfter(period.start())) {
+	private static float proration(PolicyLeaveDateWindowDto period, LocalDate accrualStartDate) {
+		if (!accrualStartDate.isAfter(period.getStartDate())) {
 			return 1f;
 		}
-		long periodLength = ChronoUnit.DAYS.between(period.start(), period.end()) + 1;
-		long earnedLength = ChronoUnit.DAYS.between(accrualStartDate, period.end()) + 1;
+		long periodLength = ChronoUnit.DAYS.between(period.getStartDate(), period.getEndDate()) + 1;
+		long earnedLength = ChronoUnit.DAYS.between(accrualStartDate, period.getEndDate()) + 1;
 		if (periodLength <= 0 || earnedLength <= 0) {
 			return 0f;
 		}
 		return (float) earnedLength / (float) periodLength;
 	}
 
-	private static DateWindow resolvePeriodContaining(AccrualFrequency frequency, LocalDate accrualStartDate,
-			LocalDate date) {
+	private static PolicyLeaveDateWindowDto resolvePeriodContaining(AccrualFrequency frequency,
+			LocalDate accrualStartDate, LocalDate date) {
 		return switch (frequency) {
-			case DAILY -> new DateWindow(date, date);
+			case DAILY -> new PolicyLeaveDateWindowDto(date, date);
 			case WEEKLY -> weekWindow(date);
 			case EVERY_OTHER_WEEK -> fortnightWindow(accrualStartDate, date);
 			case TWICE_A_MONTH -> twiceAMonthWindow(date);
-			case MONTHLY -> new DateWindow(date.withDayOfMonth(1), date.withDayOfMonth(date.lengthOfMonth()));
+			case MONTHLY ->
+				new PolicyLeaveDateWindowDto(date.withDayOfMonth(1), date.withDayOfMonth(date.lengthOfMonth()));
 			case QUARTERLY -> quarterWindow(date);
 			case TWICE_A_YEAR -> halfYearWindow(date);
-			case YEARLY -> new DateWindow(date.withDayOfYear(1), date.withDayOfYear(date.lengthOfYear()));
+			case YEARLY -> new PolicyLeaveDateWindowDto(date.withDayOfYear(1), date.withDayOfYear(date.lengthOfYear()));
 			case ON_ANNIVERSARY -> anniversaryWindow(accrualStartDate, date);
 		};
 	}
 
-	private static DateWindow weekWindow(LocalDate date) {
+	private static PolicyLeaveDateWindowDto weekWindow(LocalDate date) {
 		LocalDate start = date.minusDays(date.getDayOfWeek().getValue() - 1L);
-		return new DateWindow(start, start.plusWeeks(1).minusDays(1));
+		return new PolicyLeaveDateWindowDto(start, start.plusWeeks(1).minusDays(1));
 	}
 
-	private static DateWindow fortnightWindow(LocalDate accrualStartDate, LocalDate date) {
+	private static PolicyLeaveDateWindowDto fortnightWindow(LocalDate accrualStartDate, LocalDate date) {
 		LocalDate anchor = accrualStartDate.minusDays(accrualStartDate.getDayOfWeek().getValue() - 1L);
 		long weeksElapsed = ChronoUnit.WEEKS.between(anchor, date);
 		LocalDate start = anchor.plusWeeks(weeksElapsed - Math.floorMod(weeksElapsed, 2L));
-		return new DateWindow(start, start.plusWeeks(2).minusDays(1));
+		return new PolicyLeaveDateWindowDto(start, start.plusWeeks(2).minusDays(1));
 	}
 
-	private static DateWindow twiceAMonthWindow(LocalDate date) {
+	private static PolicyLeaveDateWindowDto twiceAMonthWindow(LocalDate date) {
 		if (date.getDayOfMonth() <= 15) {
-			return new DateWindow(date.withDayOfMonth(1), date.withDayOfMonth(15));
+			return new PolicyLeaveDateWindowDto(date.withDayOfMonth(1), date.withDayOfMonth(15));
 		}
-		return new DateWindow(date.withDayOfMonth(16), date.withDayOfMonth(date.lengthOfMonth()));
+		return new PolicyLeaveDateWindowDto(date.withDayOfMonth(16), date.withDayOfMonth(date.lengthOfMonth()));
 	}
 
-	private static DateWindow quarterWindow(LocalDate date) {
+	private static PolicyLeaveDateWindowDto quarterWindow(LocalDate date) {
 		int firstMonthOfQuarter = ((date.getMonthValue() - 1) / 3) * 3 + 1;
 		LocalDate start = LocalDate.of(date.getYear(), firstMonthOfQuarter, 1);
-		return new DateWindow(start, start.plusMonths(3).minusDays(1));
+		return new PolicyLeaveDateWindowDto(start, start.plusMonths(3).minusDays(1));
 	}
 
-	private static DateWindow halfYearWindow(LocalDate date) {
+	private static PolicyLeaveDateWindowDto halfYearWindow(LocalDate date) {
 		int firstMonthOfHalf = date.getMonthValue() <= 6 ? 1 : 7;
 		LocalDate start = LocalDate.of(date.getYear(), firstMonthOfHalf, 1);
-		return new DateWindow(start, start.plusMonths(6).minusDays(1));
+		return new PolicyLeaveDateWindowDto(start, start.plusMonths(6).minusDays(1));
 	}
 
-	private static DateWindow anniversaryWindow(LocalDate accrualStartDate, LocalDate date) {
+	private static PolicyLeaveDateWindowDto anniversaryWindow(LocalDate accrualStartDate, LocalDate date) {
 		long yearsElapsed = ChronoUnit.YEARS.between(accrualStartDate, date);
 		while (yearsElapsed > 0 && accrualStartDate.plusYears(yearsElapsed).isAfter(date)) {
 			yearsElapsed--;
@@ -170,7 +163,7 @@ public class PolicyLeaveAccrualUtil {
 		while (!accrualStartDate.plusYears(yearsElapsed + 1).isAfter(date)) {
 			yearsElapsed++;
 		}
-		return new DateWindow(accrualStartDate.plusYears(yearsElapsed),
+		return new PolicyLeaveDateWindowDto(accrualStartDate.plusYears(yearsElapsed),
 				accrualStartDate.plusYears(yearsElapsed + 1).minusDays(1));
 	}
 
