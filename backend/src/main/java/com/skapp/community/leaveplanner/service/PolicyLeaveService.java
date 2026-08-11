@@ -13,8 +13,6 @@ public interface PolicyLeaveService {
 
 	ResponseEntityDto applyPolicyLeaveRequest(PolicyLeaveRequestDto policyLeaveRequestDto);
 
-	ResponseEntityDto getCurrentUserPolicyLeaveRequests(Integer year);
-
-	ResponseEntityDto searchCurrentUserPolicyLeaveRequests(PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto);
+	ResponseEntityDto getCurrentUserPolicyLeaveRequests(PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto);
 
 }

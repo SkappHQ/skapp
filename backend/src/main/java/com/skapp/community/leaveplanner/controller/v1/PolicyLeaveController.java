@@ -39,23 +39,15 @@ public class PolicyLeaveController {
 	}
 
 	@Operation(summary = "Get the current user's policy leave requests",
-			description = "Requests raised against leave policies for the given year, newest first")
+			description = "Paged, sorted and filtered feed backing the My Requests table. "
+					+ "A negative size returns every matching request unpaginated, which is how the "
+					+ "apply leave calendar fetches the requests already raised for a year")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getCurrentUserPolicyLeaveRequests(
-			@RequestParam(required = false) Integer year) {
-		ResponseEntityDto response = policyLeaveService.getCurrentUserPolicyLeaveRequests(year);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Search the current user's policy leave requests",
-			description = "Paged, sorted and filtered feed backing the My Requests table")
-	@GetMapping("/search")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> searchCurrentUserPolicyLeaveRequests(
 			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
 		ResponseEntityDto response = policyLeaveService
-			.searchCurrentUserPolicyLeaveRequests(policyLeaveRequestFilterDto);
+			.getCurrentUserPolicyLeaveRequests(policyLeaveRequestFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

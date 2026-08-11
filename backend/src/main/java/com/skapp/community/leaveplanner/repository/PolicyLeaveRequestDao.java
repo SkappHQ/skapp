@@ -38,7 +38,4 @@ public interface PolicyLeaveRequestDao extends JpaRepository<PolicyLeaveRequest,
 			@Param("statuses") Collection<LeaveRequestStatus> statuses, @Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
 
-	List<PolicyLeaveRequest> findByEmployee_EmployeeIdAndStartDateBetweenOrderByStartDateDesc(Long employeeId,
-			LocalDate startDate, LocalDate endDate);
-
 }

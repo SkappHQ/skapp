@@ -219,26 +219,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getCurrentUserPolicyLeaveRequests(Integer year) {
+	public ResponseEntityDto getCurrentUserPolicyLeaveRequests(@NonNull PolicyLeaveRequestFilterDto filterDto) {
 		log.info("getCurrentUserPolicyLeaveRequests: execution started");
-		requireLeavePoliciesEnabled();
-
-		User currentUser = userService.getCurrentUser();
-		int resolvedYear = resolveYear(year);
-
-		List<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao
-			.findByEmployee_EmployeeIdAndStartDateBetweenOrderByStartDateDesc(currentUser.getEmployee().getEmployeeId(),
-					startOfYear(resolvedYear), endOfYear(resolvedYear));
-
-		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
-		return new ResponseEntityDto(false,
-				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests));
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto searchCurrentUserPolicyLeaveRequests(@NonNull PolicyLeaveRequestFilterDto filterDto) {
-		log.info("searchCurrentUserPolicyLeaveRequests: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -249,7 +231,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		Sort.Direction sortOrder = filterDto.getSortOrder() == null ? Sort.Direction.DESC : filterDto.getSortOrder();
 
 		Sort sort = Sort.by(sortOrder, sortKey.toString());
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
+		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged(sort)
+				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
 				currentUser.getEmployee().getEmployeeId(), startOfYear(resolvedYear), endOfYear(resolvedYear),
@@ -262,7 +245,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
 
-		log.info("searchCurrentUserPolicyLeaveRequests: execution ended");
+		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 

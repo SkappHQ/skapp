@@ -46,8 +46,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
 		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
-		query.setFirstResult((int) pageable.getOffset());
-		query.setMaxResults(pageable.getPageSize());
+		if (pageable.isPaged()) {
+			query.setFirstResult((int) pageable.getOffset());
+			query.setMaxResults(pageable.getPageSize());
+		}
 
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
