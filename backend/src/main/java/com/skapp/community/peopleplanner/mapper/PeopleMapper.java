@@ -59,7 +59,6 @@ import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationRes
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
-import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamDetailResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
@@ -181,8 +180,6 @@ public interface PeopleMapper {
 
 	ModuleRoleRestriction roleRestrictionRequestDtoToRestrictRole(
 			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto);
-
-	ModuleRoleRestrictionResponseDto restrictRoleToRestrictRoleResponseDto(ModuleRoleRestriction restrictedRole);
 
 	List<EmployeeDetailedResponseDto> employeeListToEmployeeDetailedResponseDtoList(List<Employee> employees);
 

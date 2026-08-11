@@ -6,6 +6,7 @@ import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
   managerRestrictedRoutes,
+  nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
 } from "~community/common/constants/routes";
 import {
@@ -60,12 +61,18 @@ const superAdminRoutes = {
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
-    ROUTES.CRM.BASE
+    ROUTES.CRM.BASE,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+    ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+    ROUTES.PEOPLE.SYNC_CHANGES
   ]
 };
 
 const adminRoutes = {
-  [AdminTypes.PEOPLE_ADMIN]: [ROUTES.PEOPLE.BASE],
+  [AdminTypes.PEOPLE_ADMIN]: [
+    ROUTES.PEOPLE.BASE,
+    ROUTES.CONFIGURATIONS.BASE
+  ],
   [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
@@ -310,6 +317,15 @@ export function middleware(request: NextRequest) {
         new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
       );
     }
+
+    // Check super-admin restricted routes
+    const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
+      request,
+      nonSuperAdminRestrictedRoutes,
+      AdminTypes.SUPER_ADMIN,
+      roles
+    );
+    if (nonSuperAdminRedirect) return nonSuperAdminRedirect;
 
     // Check manager restricted routes
     const managerRedirect = checkRestrictedRoutesAndRedirect(

@@ -116,7 +116,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         />
       </PropertyRow>
 
-      <PropertyRow label={translateText(["labels", "ownedBy"])}>
+      <PropertyRow label={translateText(["labels", "ownedBy"])} required>
         <div className={"flex flex-col w-full"}>
           <OwnerPopupSearch
             selectedUser={selectedOwner}

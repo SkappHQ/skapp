@@ -15,7 +15,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Deals: NextPage = () => {
-  const translateText = useTranslator("crmModule", "deals");
+  const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
@@ -34,9 +34,13 @@ const Deals: NextPage = () => {
 
   return (
     <ContentLayout
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
-      primaryButtonText={translateText(["addDealBtn"])}
+      breadcrumbs={[
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["deals", "title"]) }
+      ]}
+      pageHead={translateText(["deals", "pageHead"])}
+      title={translateText(["deals", "title"])}
+      primaryButtonText={translateText(["deals", "addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}

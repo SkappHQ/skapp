@@ -232,7 +232,11 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.employee-termination-or-deletion-action-required"),
 	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found"),
 	PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND("api.error.people.validation-business-unit-not-found"),
-	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found");
+	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found"),
+	PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH("api.error.people.validation.payroll-id-length"),
+	PEOPLE_ERROR_VALIDATION_TIN_LENGTH("api.error.people.validation.tin-length"),
+	PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST("api.error.people.employee.payroll-id.exist"),
+	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist");
 
 	private final String messageKey;
 

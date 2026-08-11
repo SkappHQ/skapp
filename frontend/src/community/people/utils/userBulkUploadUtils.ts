@@ -136,7 +136,9 @@ export const convertUserBulkCsvHeaders = (header: string) => {
     "Social Security No (SSN)": "ssn",
     Ethnicity: "ethnicity",
     "EEO Job Category": "eeo",
-    "Passport Number": "passportNo"
+    "Passport Number": "passportNo",
+    "Payroll ID": "payrollId",
+    TIN: "tin"
   };
   return headerSelector[header] || header;
 };

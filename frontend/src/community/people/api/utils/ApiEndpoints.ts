@@ -7,6 +7,8 @@ export const peoplesEndpoints = {
   BULK_LEAVES: `${moduleAPIPath.LEAVE}/entitlement/bulk`,
   SEARCH_EMPLOYEE: `${moduleAPIPath.PEOPLE}/search/employee`,
   CHECK_EXISTING_EMAIL_EMPID: `${moduleAPIPath.PEOPLE}/check-email-identification-no`,
+  CHECK_PAYROLL_ID_EXISTS: `${moduleAPIPath.PEOPLE}/exists/payroll-id`,
+  CHECK_TIN_EXISTS: `${moduleAPIPath.PEOPLE}/exists/tin`,
   JOB_ROLES: `${moduleAPIPath.JOB}/family`,
   QUICK_ADD_EMPLOYEE: `${moduleAPIPath.PEOPLE}/employee/quick-add`,
   EMPLOYEE_BY_ID: (id: number) => `${moduleAPIPath.PEOPLE}/employee/${id}`,
@@ -38,7 +40,9 @@ export const peoplesEndpoints = {
   REASSIGN_SUPERVISORS_AND_TERMINATE_OR_DELETE_EMPLOYEE: (userId: number) =>
     `${moduleAPIPath.PEOPLE}/user/${userId}/reassign-supervisors-and-terminate-or-delete`,
   GET_SKILLS: `${moduleAPIPath.PEOPLE}/skills`,
-  CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`
+  CREATE_CUSTOM_SKILLS: `${moduleAPIPath.PEOPLE}/skills/custom`,
+  GET_TODAYS_BIRTHDAY_NOTIFICATIONS: `${moduleAPIPath.PEOPLE}/birthday-notifications/today`,
+  MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY: `${moduleAPIPath.PEOPLE}/birthday-notifications/mark-viewed-today`
 };
 
 export const authEndpoints = {
@@ -93,4 +97,9 @@ export const peopleDashboardEndpoints = {
     `/people/analytics/job-family-overview`,
   GET_PEOPLE_DASHBOARD_ANALYTICS_DATA: (): string =>
     `/people/analytics/dashboard-summary`
+};
+
+export const peopleConfigEndpoints = {
+  GET_BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`,
+  UPDATE_BIRTHDAY_NOTIFICATION_CONFIG: `/people-config/birthday-notifications`
 };

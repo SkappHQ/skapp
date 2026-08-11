@@ -183,6 +183,8 @@ export interface L3IdentificationAndDiversityDetailsType {
   ssn?: string;
   ethnicity?: EthnicityTypes;
   eeoJobCategory?: EEOJobCategoryTypes;
+  payrollId?: string;
+  tin?: string;
 }
 
 export interface L3PreviousEmploymentDetailsType {

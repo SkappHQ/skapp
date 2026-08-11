@@ -71,4 +71,8 @@ public class EmployeeBulkDto {
 
 	private String businessUnit;
 
+	private String payrollId;
+
+	private String tin;
+
 }

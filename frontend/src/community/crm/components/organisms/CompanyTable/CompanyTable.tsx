@@ -162,6 +162,7 @@ export const CompanyTable: FC = () => {
             "table",
             "clearButtonAriaLabel"
           ])}
+          aria-label={translateText(["table", "searchAriaLabel"])}
           className="w-[25.75rem] h-[3rem]"
           placeholder={translateText(["table", "search"])}
           rightIcon={<SearchIcon />}

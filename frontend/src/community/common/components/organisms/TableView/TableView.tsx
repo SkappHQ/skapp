@@ -12,6 +12,7 @@ const TableView: FC<TableViewProps> = ({
   heading,
   tableName,
   ariaLabel,
+  variant,
   headers,
   rows,
   isLoading,
@@ -56,7 +57,8 @@ const TableView: FC<TableViewProps> = ({
     paginationAriaLabel: ariaLabel?.paginationAriaLabel,
     previousPageLabel: ariaLabel?.previousPageLabel,
     nextPageLabel: ariaLabel?.nextPageLabel,
-    getPageAriaLabel: ariaLabel?.getPageAriaLabel
+    getPageAriaLabel: ariaLabel?.getPageAriaLabel,
+    pageSizeAriaLabel: ariaLabel?.pageSizeAriaLabel
   };
 
   return (
@@ -86,6 +88,7 @@ const TableView: FC<TableViewProps> = ({
       <TableV2
         tableName={tableName}
         ariaLabel={mergedAriaLabel}
+        variant={variant}
         headers={headers}
         rows={rows}
         isLoading={isLoading}
@@ -106,6 +109,9 @@ const TableView: FC<TableViewProps> = ({
         totalPages={isPaginated ? pagination?.totalPages : undefined}
         currentPage={isPaginated ? pagination?.currentPage : undefined}
         onPageChange={isPaginated ? pagination?.onPageChange : undefined}
+        pageSizeSelector={
+          isPaginated ? pagination?.pageSizeSelector : undefined
+        }
       />
 
       {isFilterEnabled && (
@@ -117,7 +123,7 @@ const TableView: FC<TableViewProps> = ({
           containerClassName="rounded-4 shadow-lg"
           {...popperProps}
         >
-          {filter?.filterContent({ close: closePopover })}
+          {filter?.filterContent({ onClose: closePopover })}
         </Popper>
       )}
     </div>
