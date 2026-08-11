@@ -9,12 +9,14 @@ import ContentWithDrawer from "~community/common/components/organisms/ContentWit
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
+import BirthdayModalController from "~community/people/components/organisms/BirthdayModalController/BirthdayModalController";
+import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
 import LogoColorLoader from "~enterprise/common/components/molecules/LogoColorLoader/LogoColorLoader";
 import useFcmToken from "~enterprise/common/hooks/useFCMToken";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
 
 interface Props {
@@ -38,7 +40,7 @@ const BaseLayout = ({ children }: Props) => {
   }));
 
   const { data: globalLogin, isLoading: isGlobalLoginMethodLoading } =
-    useGetGlobalLoginMethod(isEnterprise, tenantID as string);
+    useGetGlobalLoginMethod(isEnterprise, getTenantId());
 
   useEffect(() => {
     setIsClient(true);
@@ -109,6 +111,9 @@ const BaseLayout = ({ children }: Props) => {
     <>
       {renderComponent}
       <CommonModalController />
+      <BirthdayNotificationProvider>
+        <BirthdayModalController />
+      </BirthdayNotificationProvider>
     </>
   );
 };

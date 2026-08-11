@@ -2,6 +2,7 @@ const ROUTES = {
   AUTH: {
     SIGNUP: "/signup",
     SIGNIN: "/signin",
+    REDIRECT: "/redirect",
     ENTERPRISE_SIGNIN: "/enterprise/signin",
     DOMAIN_VERIFICATION: "/enterprise/domain-verification",
     RESET_PASSWORD: "/reset-password",

@@ -24,6 +24,16 @@ public class StringUtils {
 		return string == null || string.isBlank();
 	}
 
+	/**
+	 * Removes NUL characters from a string. Some hardware pads a payload with NUL bytes,
+	 * which a parser then rejects.
+	 * @param value the string to clean
+	 * @return the string without NUL characters, or null if the input was null
+	 */
+	public static String removeNullCharacters(String value) {
+		return value == null ? null : value.replace("\0", "");
+	}
+
 	public static String escapeLikePattern(String input) {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
 	}

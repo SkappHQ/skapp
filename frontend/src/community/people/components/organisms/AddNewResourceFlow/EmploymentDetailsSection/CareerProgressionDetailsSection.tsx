@@ -28,7 +28,8 @@ import {
 } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
-  getDateFromTimeStamp
+  getDateFromTimeStamp,
+  getPreviousDayFormatted
 } from "~community/common/utils/dateTimeUtils";
 import { useGetPreprocessedRoles } from "~community/people/api/PeopleApi";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
@@ -343,10 +344,7 @@ const CareerProgressionDetailsSection = ({
           positions[index] = {
             ...position,
             currentPosition: false,
-            endDate: convertDateToFormat(
-              new Date(newStartDate),
-              LONG_DATE_TIME_FORMAT
-            )
+            endDate: getPreviousDayFormatted(startDate)
           };
         }
       });

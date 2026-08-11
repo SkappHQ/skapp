@@ -7,6 +7,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.NotificationSettingsResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
@@ -14,12 +15,15 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
+import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -84,6 +88,8 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
@@ -117,6 +123,7 @@ import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmployeeSkillType;
@@ -144,6 +151,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -214,6 +223,10 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeExportMapperService employeeExportMapperService;
 
 	private final EmployeeSkillService employeeSkillService;
+
+	private final SpecialNotificationService specialNotificationService;
+
+	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional
@@ -1537,6 +1550,82 @@ public class PeopleServiceImpl implements PeopleService {
 
 		log.info("reassignSupervisorsAndTerminateOrDeleteEmployee: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getTodayBirthdayNotifications() {
+		log.info("getTodayBirthdayNotifications: execution started");
+
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(null, List.of()));
+		}
+
+		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+		LocalDate today = resolveBirthdayNotificationDate();
+		LocalDate lastViewedDate = specialNotificationService
+			.getLastViewedDate(currentEmployeeId, SpecialNotificationType.BIRTHDAY)
+			.orElse(null);
+
+		if (lastViewedDate != null && lastViewedDate.isEqual(today)) {
+			log.info("getTodayBirthdayNotifications: execution ended");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
+		}
+
+		BirthdayNotificationScope birthdayNotificationScope = resolveBirthdayNotificationScope(
+				birthdayNotificationConfig);
+		List<Employee> employeesWithBirthdays = employeeDao.findEmployeeBirthdaysOnByViewerAndScope(today,
+				currentEmployeeId, birthdayNotificationScope);
+
+		if (employeesWithBirthdays.isEmpty()) {
+			log.info("getTodayBirthdayNotifications: execution ended");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
+		}
+
+		List<EmployeeBasicDetailsResponseDto> response = employeesWithBirthdays.stream()
+			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
+			.toList();
+
+		log.info("getTodayBirthdayNotifications: execution ended");
+		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto markTodayBirthdayNotificationsAsViewed() {
+		log.info("markTodayBirthdayNotificationsAsViewed: execution started");
+
+		LocalDate today = resolveBirthdayNotificationDate();
+
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+			specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY,
+					today);
+		}
+
+		log.info("markTodayBirthdayNotificationsAsViewed: execution ended");
+		return new ResponseEntityDto(false, new BirthdayNotificationViewedResponseDto(today));
+	}
+
+	private BirthdayNotificationScope resolveBirthdayNotificationScope(
+			SpecialNotificationConfig birthdayNotificationConfig) {
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsOrganizationWide())) {
+			return BirthdayNotificationScope.ORGANIZATION;
+		}
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTeamWide())) {
+			return BirthdayNotificationScope.TEAM;
+		}
+		return BirthdayNotificationScope.SELF;
+	}
+
+	private LocalDate resolveBirthdayNotificationDate() {
+		return LocalDate.now(ZoneId.of(organizationService.getOrganizationTimeZone()));
 	}
 
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,

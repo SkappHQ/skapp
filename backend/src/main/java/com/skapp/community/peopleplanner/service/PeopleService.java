@@ -75,4 +75,8 @@ public interface PeopleService {
 	ResponseEntityDto reassignSupervisorsAndTerminateOrDeleteEmployee(Long userId,
 			ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto requestDto);
 
+	ResponseEntityDto getTodayBirthdayNotifications();
+
+	ResponseEntityDto markTodayBirthdayNotificationsAsViewed();
+
 }
