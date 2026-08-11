@@ -53,7 +53,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 		List<CrmTaskResponseDtoV2> tasks = crmTaskDao.findTasks(ownerId, filterDto)
 			.stream()
-			.map(crmMapperV2::crmTaskToCrmTaskResponseDtoV2)
+			.map(task -> CrmUtil.toTaskResponseDtoV2(crmMapperV2, task))
 			.toList();
 
 		CrmTaskListResponseDtoV2 response = new CrmTaskListResponseDtoV2();
@@ -109,7 +109,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		}
 
 		log.info("getTaskById: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmTaskToCrmTaskResponseDtoV2(task));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, task));
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		CrmTask savedTask = crmTaskService.persistNewTask(requestDto);
 
 		log.info("createTask: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmTaskToCrmTaskResponseDtoV2(savedTask));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, savedTask));
 	}
 
 	@Override
@@ -131,13 +131,13 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		CrmTask updatedTask = crmTaskService.applyTaskEdit(id, requestDto);
 
 		log.info("editTask: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmTaskToCrmTaskResponseDtoV2(updatedTask));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, updatedTask));
 	}
 
 	private PageDto buildPageDto(Page<CrmTask> taskPage) {
 		List<CrmTaskResponseDtoV2> tasks = taskPage.getContent()
 			.stream()
-			.map(crmMapperV2::crmTaskToCrmTaskResponseDtoV2)
+			.map(task -> CrmUtil.toTaskResponseDtoV2(crmMapperV2, task))
 			.toList();
 
 		PageDto pageDto = new PageDto();

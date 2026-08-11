@@ -159,7 +159,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public CrmTask persistNewTask(CrmTaskCreateRequestDto requestDto) {
-		log.info("createTask: execution started");
+		log.info("persistNewTask: execution started");
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
@@ -170,7 +170,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		User currentUser = userService.getCurrentUser();
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
 
-		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
+		CrmTaskType taskType = crmTaskTypeDao.findById(requestDto.getTypeId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND));
 
 		CrmTask task = new CrmTask();
 		task.setName(requestDto.getName());
@@ -203,7 +204,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		CrmTask savedTask = crmTaskDao.save(task);
 
-		log.info("createTask: execution ended with taskId={}", savedTask.getId());
+		log.info("persistNewTask: execution ended with taskId={}", savedTask.getId());
 		return savedTask;
 	}
 
@@ -221,7 +222,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public CrmTask applyTaskEdit(Long id, CrmTaskEditRequestDto requestDto) {
-		log.info("editTask: execution started");
+		log.info("applyTaskEdit: execution started");
 
 		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
@@ -298,7 +299,7 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		CrmTask updatedTask = crmTaskDao.save(task);
 
-		log.info("editTask: execution ended successfully");
+		log.info("applyTaskEdit: execution ended successfully");
 		return updatedTask;
 	}
 

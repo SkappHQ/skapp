@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -37,6 +38,7 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -90,6 +92,12 @@ class CrmDealControllerV2IntegrationTest {
 
 	private ResultActions performGetByIdRequest(Long id) throws Exception {
 		return performRequest(get(BASE_PATH + "/" + id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPatchRequest(Long id, CrmDealEditRequestDto dto) throws Exception {
+		return performRequest(patch(BASE_PATH + "/" + id).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetDealsRequest(Long companyId) throws Exception {
@@ -239,11 +247,87 @@ class CrmDealControllerV2IntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal and contact")
+	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deleted Co V2");
+		CrmContact contact = savedContact(company, "deal.deletedco.v2@example.com");
+		CrmDeal deal = savedDeal("Deleted Co Deal V2", stage, company, contact, 1L);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performGetByIdRequest(deal.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Get deal by ID that does not exist - Returns Bad Request")
 	void getDealById_NotFound_ReturnsBadRequest() throws Exception {
 		performGetByIdRequest(999999L).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	// --- editDeal ---
+
+	@Test
+	@DisplayName("Edit deal - Returns OK with updated deal and embedded associations")
+	void editDeal_HappyPath_ReturnsUpdatedDeal() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deal Edit V2 Corp");
+		CrmContact contact = savedContact(company, "deal.edit.v2@example.com");
+		CrmDeal deal = savedDeal("Original Deal V2", stage, company, contact, 1L);
+
+		CrmDealEditRequestDto editDto = new CrmDealEditRequestDto();
+		editDto.setName("Updated Deal V2");
+
+		performPatchRequest(deal.getId(), editDto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Deal V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(company.getId()));
+	}
+
+	@Test
+	@DisplayName("Edit deal as Sales Representative editing another owner's deal - Returns edit-denied error")
+	void editDeal_SalesRepEditingOthersDeal_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Rep Edit Restricted V2 Corp");
+		CrmContact contact = savedContact(company, "deal.rep.edit.v2@example.com");
+		CrmDeal deal = savedDeal("Admin Owned Deal V2", stage, company, contact, 1L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmDealEditRequestDto editDto = new CrmDealEditRequestDto();
+		editDto.setName("Hijacked Deal V2");
+
+		performPatchRequest(deal.getId(), editDto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create deal without CRM role - Returns Forbidden")
+	void createDeal_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Forbidden Deal V2 Corp");
+		CrmContact contact = savedContact(company, "deal.forbidden.v2@example.com");
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performPostRequest(validPayload(stage.getId(), contact.getId())).andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 }

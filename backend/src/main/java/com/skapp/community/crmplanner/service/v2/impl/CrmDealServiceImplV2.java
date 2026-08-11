@@ -5,7 +5,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -40,8 +39,6 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 	private final UserService userService;
 
-	private final PageTransformer pageTransformer;
-
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDeals(CrmDealFilterDto filterDto) {
@@ -55,11 +52,14 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 		List<CrmDealResponseDtoV2> deals = dealsPage.getContent()
 			.stream()
-			.map(crmMapperV2::crmDealToCrmDealResponseDtoV2)
+			.map(deal -> CrmUtil.toDealResponseDtoV2(crmMapperV2, deal))
 			.toList();
 
-		PageDto pageDto = pageTransformer.transform(dealsPage);
+		PageDto pageDto = new PageDto();
 		pageDto.setItems(deals);
+		pageDto.setCurrentPage(dealsPage.getNumber());
+		pageDto.setTotalItems(dealsPage.getTotalElements());
+		pageDto.setTotalPages(dealsPage.getTotalPages());
 
 		log.info("getDeals: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, pageDto);
@@ -81,7 +81,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		}
 
 		log.info("getDealById: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmDealToCrmDealResponseDtoV2(deal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, deal));
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		CrmDeal savedDeal = crmDealService.persistNewDeal(requestDto);
 
 		log.info("createDeal: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmDealToCrmDealResponseDtoV2(savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, savedDeal));
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		CrmDeal savedDeal = crmDealService.applyDealEdit(id, requestDto);
 
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, crmMapperV2.crmDealToCrmDealResponseDtoV2(savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, savedDeal));
 	}
 
 }

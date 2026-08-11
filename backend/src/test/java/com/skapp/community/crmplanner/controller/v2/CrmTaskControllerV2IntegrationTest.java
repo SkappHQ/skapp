@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v2;
 import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -23,6 +24,7 @@ import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +45,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -82,6 +85,8 @@ class CrmTaskControllerV2IntegrationTest {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
+
+	private final EmployeeRoleDao employeeRoleDao;
 
 	private String authToken;
 
@@ -150,10 +155,9 @@ class CrmTaskControllerV2IntegrationTest {
 				authToken);
 	}
 
-	private ResultActions performGetRelatedRequest(Long contactId) throws Exception {
-		return performRequest(
-				get(BASE_PATH + "/related").param("contactId", contactId.toString()).accept(MediaType.APPLICATION_JSON),
-				authToken);
+	private ResultActions performGetRelatedRequest(Long targetContactId) throws Exception {
+		return performRequest(get(BASE_PATH + "/related").param("contactId", targetContactId.toString())
+			.accept(MediaType.APPLICATION_JSON), authToken);
 	}
 
 	private ResultActions performGetByIdRequest(Long id) throws Exception {
@@ -335,7 +339,30 @@ class CrmTaskControllerV2IntegrationTest {
 		Long updatedId = ((Number) JsonPath.read(result.getResponse().getContentAsString(), "$.results[0].id"))
 			.longValue();
 		CrmTask updated = crmTaskDao.findById(updatedId).orElseThrow();
-		org.junit.jupiter.api.Assertions.assertEquals("Updated Task V2", updated.getName());
+		assertEquals("Updated Task V2", updated.getName());
+	}
+
+	@Test
+	@DisplayName("Get task by ID as Sales Representative viewing another owner's task - Returns view-denied error")
+	void getTaskById_SalesRepViewingOthersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmTask task = savedTask("Admin Owned Task V2", false);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetByIdRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get related tasks without contactId or dealId - Returns Bad Request")
+	void getRelatedTasks_NoContext_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/related").accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 }

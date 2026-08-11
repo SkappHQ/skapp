@@ -105,7 +105,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public CrmDeal persistNewDeal(CrmDealCreateRequestDto requestDto) {
-		log.info("createDeal: creating deal with name={}", requestDto.getName());
+		log.info("persistNewDeal: creating deal with name={}", requestDto.getName());
 
 		CrmValidations.validateDealName(requestDto.getName());
 		CrmValidations.validateDealDescription(requestDto.getDescription());
@@ -151,7 +151,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
-		log.info("createDeal: deal created with id={}", savedDeal.getId());
+		log.info("persistNewDeal: deal created with id={}", savedDeal.getId());
 		return savedDeal;
 	}
 
@@ -430,7 +430,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public CrmDeal applyDealEdit(Long id, CrmDealEditRequestDto requestDto) {
-		log.info("editDeal: execution started");
+		log.info("applyDealEdit: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -503,7 +503,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
-		log.info("editDeal: execution ended");
+		log.info("applyDealEdit: execution ended");
 		return savedDeal;
 	}
 

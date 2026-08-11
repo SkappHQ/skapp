@@ -23,6 +23,8 @@ public class CrmTaskResponseDtoV2 {
 
 	private LocalDateTime dueAt;
 
+	private LocalDateTime lastModifiedDate;
+
 	private String notes;
 
 	private CrmTaskTypeResponseDto type;
