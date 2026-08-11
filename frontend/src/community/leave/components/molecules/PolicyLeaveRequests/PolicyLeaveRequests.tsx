@@ -14,7 +14,9 @@ import { useGetMyPolicyLeaveRequestsPage } from "~community/leave/api/PolicyLeav
 import LeaveRequestDates from "~community/leave/components/molecules/LeaveRequestDates/LeaveRequestDates";
 import PolicyLeaveErrorState from "~community/leave/components/molecules/PolicyLeaveErrorState/PolicyLeaveErrorState";
 import PolicyLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyLeaveRequestFilterBody/PolicyLeaveRequestFilterBody";
+import PolicyEmployeeLeaveStatusPopupController from "~community/leave/components/organisms/PolicyEmployeeLeaveStatusPopupController/PolicyEmployeeLeaveStatusPopupController";
 import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
+import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestType } from "~community/leave/types/PolicyLeaveTypes";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
@@ -26,6 +28,10 @@ const CHIP_CLASSES =
 const PolicyLeaveRequests: FC = () => {
   const { selectedYear, requestParams, setRequestPage, setRequestSortKey } =
     usePolicyLeaveStore((state) => state);
+
+  const openEmployeeModal = usePolicyLeaveReviewStore(
+    (state) => state.openEmployeeModal
+  );
 
   const queryParams = useMemo(
     () => getPolicyLeaveRequestQueryParams(selectedYear, requestParams),
@@ -143,50 +149,58 @@ const PolicyLeaveRequests: FC = () => {
   }
 
   return (
-    <TableView
-      heading={translateText(["myLeaveRequests", "requestTitle"])}
-      tableName={TableNames.LEAVE_REQUESTS}
-      ariaLabel={{
-        regionAriaLabel: translateAria([
-          "myLeaveRequests",
-          "myLeaveRequestsSection"
-        ])
-      }}
-      headers={tableHeaders}
-      rows={transformToTableRows()}
-      isLoading={isLoading}
-      skeletonRows={LEAVE_REQUESTS_SKELETON_ROWS}
-      emptyState={{
-        title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
-        description: translateText(["myLeaveRequests", "emptyLeaveRequestDes"])
-      }}
-      pagination={{
-        totalPages: leaveRequests?.totalPages,
-        currentPage: requestParams.page,
-        onPageChange: setRequestPage
-      }}
-      toolbar={{
-        dropdown: {
-          id: "my-policy-leave-requests-sort",
-          options: sortOptions,
-          value: requestParams.sortKey,
-          onChange: (value: string) => setRequestSortKey(value as SortKeyTypes),
-          renderSelectedValue: renderSelectedSortValue,
-          width: "auto",
-          menuWidth: "content",
-          ariaLabel: translateAria(["myLeaveRequests", "sort"])
-        }
-      }}
-      filter={{
-        filterCount,
-        filterButtonAriaLabel: translateAria([
-          "myLeaveRequests",
-          "filterSection"
-        ]),
-        popoverId: "my-policy-leave-requests-filter",
-        filterContent: renderFilterContent
-      }}
-    />
+    <>
+      <TableView
+        heading={translateText(["myLeaveRequests", "requestTitle"])}
+        tableName={TableNames.LEAVE_REQUESTS}
+        ariaLabel={{
+          regionAriaLabel: translateAria([
+            "myLeaveRequests",
+            "myLeaveRequestsSection"
+          ])
+        }}
+        headers={tableHeaders}
+        rows={transformToTableRows()}
+        isLoading={isLoading}
+        skeletonRows={LEAVE_REQUESTS_SKELETON_ROWS}
+        emptyState={{
+          title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
+          description: translateText([
+            "myLeaveRequests",
+            "emptyLeaveRequestDes"
+          ])
+        }}
+        onRowClick={(row: GridRow) => openEmployeeModal(Number(row.id))}
+        pagination={{
+          totalPages: leaveRequests?.totalPages,
+          currentPage: requestParams.page,
+          onPageChange: setRequestPage
+        }}
+        toolbar={{
+          dropdown: {
+            id: "my-policy-leave-requests-sort",
+            options: sortOptions,
+            value: requestParams.sortKey,
+            onChange: (value: string) =>
+              setRequestSortKey(value as SortKeyTypes),
+            renderSelectedValue: renderSelectedSortValue,
+            width: "auto",
+            menuWidth: "content",
+            ariaLabel: translateAria(["myLeaveRequests", "sort"])
+          }
+        }}
+        filter={{
+          filterCount,
+          filterButtonAriaLabel: translateAria([
+            "myLeaveRequests",
+            "filterSection"
+          ]),
+          popoverId: "my-policy-leave-requests-filter",
+          filterContent: renderFilterContent
+        }}
+      />
+      <PolicyEmployeeLeaveStatusPopupController />
+    </>
   );
 };
 

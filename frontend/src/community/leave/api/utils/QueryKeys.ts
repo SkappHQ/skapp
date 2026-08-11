@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 
 import { LeaveEntitlementParamsType } from "~community/leave/types/LeaveEntitlementTypes";
+import { PolicyManagerLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveTypes";
 
 export const leaveQueryKeys = {
@@ -314,6 +315,35 @@ export const policyLeaveQueryKeys = {
     ...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(queryParams.year),
     "page",
     queryParams
+  ]
+};
+
+export const policyLeaveReviewQueryKeys = {
+  ALL: ["policy-leave-review"],
+  MANAGER_REQUESTS: (queryParams: PolicyManagerLeaveRequestQueryParams) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "manager-requests",
+    queryParams
+  ],
+  PENDING_REQUESTS: (searchKeyword: string) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "pending-requests",
+    searchKeyword
+  ],
+  MANAGER_REQUEST: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "manager-request",
+    leaveRequestId
+  ],
+  MY_REQUEST: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "my-request",
+    leaveRequestId
+  ],
+  NUDGE_STATUS: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "nudge-status",
+    leaveRequestId
   ]
 };
 

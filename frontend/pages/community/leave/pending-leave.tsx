@@ -7,7 +7,7 @@ import SearchBox from "~community/common/components/molecules/SearchBox/SearchBo
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import PendingLeaveRequestTable from "~community/leave/components/molecules/PendingLeaveRequestTable/PendingLeaveRequestTable";
+import PendingLeaveRequestsSection from "~community/leave/components/organisms/PendingLeaveRequestsSection/PendingLeaveRequestsSection";
 
 const PendingLeave: NextPage = () => {
   const translateText = useTranslator("leaveModule", "pendingRequests");
@@ -41,7 +41,7 @@ const PendingLeave: NextPage = () => {
             placeHolder={translateText(["searchBoxPlaceholder"])}
           />
         </Box>
-        <PendingLeaveRequestTable searchTerm={searchTerm} />
+        <PendingLeaveRequestsSection searchTerm={searchTerm} />
       </>
     </ContentLayout>
   );

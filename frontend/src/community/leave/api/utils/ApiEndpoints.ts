@@ -79,6 +79,23 @@ export const policyLeaveEndPoints = {
   GET_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave`
 };
 
+export const policyLeaveReviewEndPoints = {
+  GET_MANAGER_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/requests`,
+  GET_PENDING_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/pending-requests`,
+  GET_MANAGER_POLICY_LEAVE_REQUEST: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/managers/${id}`,
+  REVIEW_POLICY_LEAVE_REQUEST: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/managers/${id}`,
+  GET_MY_POLICY_LEAVE_REQUEST: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
+  CANCEL_MY_POLICY_LEAVE_REQUEST: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
+  NUDGE_POLICY_LEAVE_REQUEST_MANAGERS: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/${id}/nudge`,
+  GET_POLICY_LEAVE_REQUEST_NUDGE_STATUS: (id: number): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/${id}/nudge/status`
+};
+
 export const leaveEntitlementEndPoints = {
   GET_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement`,
   ADD_BULK_LEAVE_ENTITLEMENTS: `${moduleAPIPath.LEAVE}/entitlement/bulk`,

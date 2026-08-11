@@ -21,7 +21,7 @@ interface Props {
   textStyles?: CSSProperties;
   role?: string | undefined;
   employee?:
-    | { empName: ""; lastName: ""; avatarUrl: "" }
+    | { empName: string; lastName: string; avatarUrl: string }
     | leaveRequestRowDataTypes;
   reviewer?: Manager;
   addLabel?: boolean;
