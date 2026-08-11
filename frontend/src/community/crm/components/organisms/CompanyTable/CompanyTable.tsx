@@ -57,8 +57,7 @@ export const CompanyTable: FC = () => {
   }, [fetchedCompanies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchTerm(value);
+    setSearchTerm(event.target.value.trimStart());
   };
 
   const columns: TableColumn<CrmCompany>[] = [
