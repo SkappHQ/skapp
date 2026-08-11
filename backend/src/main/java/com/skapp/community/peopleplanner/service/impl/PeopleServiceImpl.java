@@ -527,11 +527,6 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private void processBusinessUnit(CreateEmployeeRequestDto requestDto, Employee employee) {
-		if (requestDto == null || requestDto.getEmployment() == null
-				|| requestDto.getEmployment().getEmploymentDetails() == null || employee == null) {
-			return;
-		}
-
 		Long businessUnitId = requestDto.getEmployment().getEmploymentDetails().getBusinessUnitId();
 		if (businessUnitId == null) {
 			return;
@@ -2004,7 +1999,8 @@ public class PeopleServiceImpl implements PeopleService {
 				.filter(unit -> unit.getName().equals(businessUnit))
 				.ifPresentOrElse(employee::setBusinessUnit, () -> {
 					throw new EntityNotFoundException(
-							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND);
+							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+							new Object[] { businessUnit });
 				});
 		}
 	}
