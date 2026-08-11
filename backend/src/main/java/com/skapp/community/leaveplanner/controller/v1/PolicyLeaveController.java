@@ -57,33 +57,12 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Check availability against a policy before submitting",
-			description = "Real-time balance and date validation; reports the failure reason instead of erroring")
-	@PostMapping("/availability")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> checkPolicyLeaveAvailability(
-			@Valid @RequestBody PolicyLeaveAvailabilityRequestDto policyLeaveAvailabilityRequestDto) {
-		ResponseEntityDto response = policyLeaveService.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	@Operation(summary = "Get one of the current user's leave requests",
 			description = "Includes the reviewer comment and any supporting documents")
 	@GetMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getMyPolicyLeaveRequestById(@PathVariable Long id) {
 		ResponseEntityDto response = policyLeaveReviewService.getMyPolicyLeaveRequestById(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Cancel one of the current user's pending leave requests",
-			description = "Only a PENDING request can be cancelled by the employee who raised it")
-	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequestByEmployee(@PathVariable Long id,
-			@Valid @RequestBody PolicyLeaveCancelRequestDto policyLeaveCancelRequestDto) {
-		ResponseEntityDto response = policyLeaveReviewService.updatePolicyLeaveRequestByEmployee(id,
-				policyLeaveCancelRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -102,6 +81,27 @@ public class PolicyLeaveController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveRequestNudgeStatus(@PathVariable Long id) {
 		ResponseEntityDto response = policyLeaveReviewService.getPolicyLeaveRequestNudgeStatus(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check availability against a policy before submitting",
+			description = "Real-time balance and date validation; reports the failure reason instead of erroring")
+	@PostMapping("/availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> checkPolicyLeaveAvailability(
+			@Valid @RequestBody PolicyLeaveAvailabilityRequestDto policyLeaveAvailabilityRequestDto) {
+		ResponseEntityDto response = policyLeaveService.checkPolicyLeaveAvailability(policyLeaveAvailabilityRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Cancel one of the current user's pending leave requests",
+			description = "Only a PENDING request can be cancelled by the employee who raised it")
+	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequestByEmployee(@PathVariable Long id,
+			@Valid @RequestBody PolicyLeaveCancelRequestDto policyLeaveCancelRequestDto) {
+		ResponseEntityDto response = policyLeaveReviewService.updatePolicyLeaveRequestByEmployee(id,
+				policyLeaveCancelRequestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

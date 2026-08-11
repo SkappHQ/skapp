@@ -150,7 +150,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 	@Transactional
 	public ResponseEntityDto updatePolicyLeaveRequestByManager(@NonNull Long id,
 			@NonNull PolicyLeaveReviewRequestDto reviewRequestDto) {
-		log.info("updatePolicyLeaveRequestByManager: execution started for request: {}", id);
+		log.info("updatePolicyLeaveRequestByManager: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -175,7 +175,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 		PolicyLeaveRequest savedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 		notifyReviewOutcome(savedLeaveRequest);
 
-		log.info("updatePolicyLeaveRequestByManager: execution ended for request: {}", id);
+		log.info("updatePolicyLeaveRequestByManager: execution ended");
 		return new ResponseEntityDto(false, toDetailResponse(savedLeaveRequest));
 	}
 
@@ -197,7 +197,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 	@Transactional
 	public ResponseEntityDto updatePolicyLeaveRequestByEmployee(@NonNull Long id,
 			@NonNull PolicyLeaveCancelRequestDto cancelRequestDto) {
-		log.info("updatePolicyLeaveRequestByEmployee: execution started for request: {}", id);
+		log.info("updatePolicyLeaveRequestByEmployee: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -213,7 +213,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 		PolicyLeaveRequest savedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 		policyLeaveReviewNotificationService.sendCancelledPolicyLeaveRequestNotifications(savedLeaveRequest);
 
-		log.info("updatePolicyLeaveRequestByEmployee: execution ended for request: {}", id);
+		log.info("updatePolicyLeaveRequestByEmployee: execution ended");
 		return new ResponseEntityDto(false, toDetailResponse(savedLeaveRequest));
 	}
 
@@ -225,7 +225,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 	@Override
 	@Transactional
 	public ResponseEntityDto nudgePolicyLeaveRequestManagers(@NonNull Long id) {
-		log.info("nudgePolicyLeaveRequestManagers: execution started for request: {}", id);
+		log.info("nudgePolicyLeaveRequestManagers: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -239,14 +239,14 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 
 		policyLeaveReviewNotificationService.sendNudgePolicyLeaveRequestManagerNotifications(leaveRequest);
 
-		log.info("nudgePolicyLeaveRequestManagers: execution ended for request: {}", id);
+		log.info("nudgePolicyLeaveRequestManagers: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(LeaveMessageConstant.LEAVE_SUCCESS_NUDGE_MANAGER), false);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getPolicyLeaveRequestNudgeStatus(@NonNull Long id) {
-		log.info("getPolicyLeaveRequestNudgeStatus: execution started for request: {}", id);
+		log.info("getPolicyLeaveRequestNudgeStatus: execution started");
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
@@ -265,7 +265,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 			nudgeStatus.setLastNudgedDateTime(lastNudge.getCreatedDate());
 		}
 
-		log.info("getPolicyLeaveRequestNudgeStatus: execution ended for request: {}", id);
+		log.info("getPolicyLeaveRequestNudgeStatus: execution ended");
 		return new ResponseEntityDto(false, nudgeStatus);
 	}
 
@@ -282,8 +282,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 				policyLeaveReviewNotificationService.sendDeclinedPolicyLeaveRequestNotifications(leaveRequest);
 			case REVOKED ->
 				policyLeaveReviewNotificationService.sendRevokedPolicyLeaveRequestNotifications(leaveRequest);
-			default ->
-				log.debug("notifyReviewOutcome: no notification configured for status: {}", leaveRequest.getStatus());
+			default -> log.debug("notifyReviewOutcome: no notification configured for this status");
 		}
 	}
 
