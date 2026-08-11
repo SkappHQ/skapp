@@ -56,3 +56,5 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-payroll-id-column.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-tin-column.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-com-work-location-add-is-deleted.sql

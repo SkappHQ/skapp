@@ -397,7 +397,7 @@ public class Validations {
 	}
 
 	public static void validateWorkLocation(Long workLocationId, WorkLocationDao workLocationDao) {
-		if (workLocationId != null && !workLocationDao.existsById(workLocationId)) {
+		if (workLocationId != null && !workLocationDao.existsByWorkLocationIdAndIsDeletedFalse(workLocationId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
 		}
 	}

@@ -55,7 +55,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		String workLocationName = workLocationRequestDto.getName();
 
-		if (workLocationDao.existsByNameIgnoreCase(workLocationName)) {
+		if (workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
@@ -77,13 +77,13 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto updateWorkLocation(Long id, WorkLocationRequestDto workLocationRequestDto) {
 		log.info("updateWorkLocation: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		String workLocationName = workLocationRequestDto.getName();
 
 		if (workLocationName != null && !workLocationName.equalsIgnoreCase(workLocation.getName())
-				&& workLocationDao.existsByNameIgnoreCase(workLocationName)) {
+				&& workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
@@ -111,12 +111,14 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto deleteWorkLocation(Long id) {
 		log.info("deleteWorkLocation: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		deleteFutureHolidaysSpecificToWorkLocation(id);
 		clearWorkLocationFromEmployees(id);
-		workLocationDao.delete(workLocation);
+
+		workLocation.setIsDeleted(true);
+		workLocationDao.save(workLocation);
 
 		log.info("deleteWorkLocation: execution ended");
 
@@ -184,7 +186,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getWorkLocationById(Long id) {
 		log.info("getWorkLocationById: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		List<Employee> locationEmployees = employeeDao.findActiveEmployeesExcludingGuests(id);
@@ -276,7 +278,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED);
 		}
 
-		boolean isExists = workLocationDao.existsByNameIgnoreCase(name);
+		boolean isExists = workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
 
 		WorkLocationNameAvailabilityResponseDto responseDto = new WorkLocationNameAvailabilityResponseDto();
 		responseDto.setIsExists(isExists);
