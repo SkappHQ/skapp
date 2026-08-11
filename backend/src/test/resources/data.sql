@@ -78,9 +78,9 @@ VALUES (default, 'DEV', true),
 INSERT INTO employee_team (id, team_id, employee_id, is_supervisor)
 VALUES (default, 1, 1, true);
 
-INSERT INTO com_work_location (id, name, address)
-VALUES (1, 'Head Office', '123 Main Street'),
-       (2, 'Branch Office', '456 Second Avenue');
+INSERT INTO com_work_location (id, name, address, is_deleted)
+VALUES (1, 'Head Office', '123 Main Street', false),
+       (2, 'Branch Office', '456 Second Avenue', false);
 
 INSERT INTO holiday (id, date, name, holiday_duration, is_active)
 VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-03-06', 'Poya Day', 'FULL_DAY', true),

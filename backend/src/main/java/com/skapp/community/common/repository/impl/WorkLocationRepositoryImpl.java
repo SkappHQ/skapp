@@ -57,6 +57,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		CriteriaQuery<WorkLocation> query = cb.createQuery(WorkLocation.class);
 		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
 
+		query.where(cb.isFalse(workLocation.get(WorkLocation_.isDeleted)));
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
 		return entityManager.createQuery(query).getResultList();
@@ -65,6 +66,9 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<WorkLocation> workLocation,
 			WorkLocationFilterDto workLocationFilterDto) {
 		List<Predicate> predicates = new ArrayList<>();
+
+		// Exclude soft-deleted work locations from all listing and count queries.
+		predicates.add(cb.isFalse(workLocation.get(WorkLocation_.isDeleted)));
 
 		String searchKeyword = workLocationFilterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
