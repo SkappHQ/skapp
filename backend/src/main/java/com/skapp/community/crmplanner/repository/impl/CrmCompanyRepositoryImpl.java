@@ -19,7 +19,9 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.type.CrmCompanyMetricsSummary;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyListItemDtoV2;
+import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -120,35 +122,11 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	}
 
 	@Override
-	public Page<CrmCompany> searchCompanies(Pageable pageable, String searchKeyword) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmCompany> query = cb.createQuery(CrmCompany.class);
-		Root<CrmCompany> company = query.from(CrmCompany.class);
-
-		query.where(buildPredicates(cb, company, searchKeyword));
-		query.orderBy(buildOrderBy(cb, company, searchKeyword));
-
-		List<CrmCompany> content = entityManager.createQuery(query)
-			.setFirstResult((int) pageable.getOffset())
-			.setMaxResults(pageable.getPageSize())
-			.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
-
-		countQuery.select(cb.countDistinct(countRoot.get(CrmCompany_.id)))
-			.where(buildPredicates(cb, countRoot, searchKeyword));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
-	}
-
-	@Override
-	public List<CrmCompanyMetricsSummary> findCompanyMetricsSummaries(List<Long> companyIds) {
+	public Page<CrmCompanyListItemDtoV2> getCompanyMetricsV2(Pageable pageable, String searchKeyword) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmCompanyMetricsSummary> query = cb.createQuery(CrmCompanyMetricsSummary.class);
+		CriteriaQuery<CrmCompanyListItemDtoV2> query = cb.createQuery(CrmCompanyListItemDtoV2.class);
 		Root<CrmCompany> company = query.from(CrmCompany.class);
 
 		Subquery<Long> taskSubquery = query.subquery(Long.class);
@@ -194,13 +172,30 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(openCountDeal.get(CrmDeal_.isDeleted)),
 					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
-		query.select(cb.construct(CrmCompanyMetricsSummary.class, company.get(CrmCompany_.id), taskSubquery,
-				overdueSubquery, openValueSubquery.cast(String.class), accountValueSubquery.cast(String.class),
-				openCountSubquery, closedCountSubquery));
+		query.select(cb.construct(CrmCompanyListItemDtoV2.class,
+				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
+						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
+				cb.construct(CrmCompanyMetrics.class, taskSubquery, overdueSubquery,
+						openValueSubquery.cast(String.class), accountValueSubquery.cast(String.class),
+						openCountSubquery, closedCountSubquery)));
 
-		query.where(company.get(CrmCompany_.id).in(companyIds), cb.isFalse(company.get(CrmCompany_.isDeleted)));
+		query.where(buildPredicates(cb, company, searchKeyword));
+		query.orderBy(buildOrderBy(cb, company, searchKeyword));
 
-		return entityManager.createQuery(query).getResultList();
+		List<CrmCompanyListItemDtoV2> content = entityManager.createQuery(query)
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
+
+		countQuery.select(cb.countDistinct(countRoot.get(CrmCompany_.id)))
+			.where(buildPredicates(cb, countRoot, searchKeyword));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
 	}
 
 	private Predicate[] buildPredicates(CriteriaBuilder cb, From<?, CrmCompany> root, String searchKeyword) {
