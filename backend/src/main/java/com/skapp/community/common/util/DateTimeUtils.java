@@ -291,6 +291,24 @@ public class DateTimeUtils {
 	}
 
 	/**
+	 * Returns the first day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 1 January of the given year.
+	 */
+	public static LocalDate getStartOfYear(int year) {
+		return LocalDate.of(year, JANUARY, FIRST_DAY);
+	}
+
+	/**
+	 * Returns the last day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 31 December of the given year.
+	 */
+	public static LocalDate getEndOfYear(int year) {
+		return LocalDate.of(year, DECEMBER, LAST_DAY);
+	}
+
+	/**
 	 * Retrieves the year from the given {@link LocalDate}.
 	 * @param date The {@link LocalDate} instance from which to extract the year.
 	 * @return The year as an {@code int}.

@@ -230,8 +230,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
-				currentUser.getEmployee().getEmployeeId(), startOfYear(resolvedYear), endOfYear(resolvedYear),
-				filterDto, pageable);
+				currentUser.getEmployee().getEmployeeId(), DateTimeUtils.getStartOfYear(resolvedYear),
+				DateTimeUtils.getEndOfYear(resolvedYear), filterDto, pageable);
 
 		PageDto pageDto = new PageDto();
 		pageDto.setCurrentPage(leaveRequests.getNumber());
@@ -432,8 +432,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (holidayDuration == null || holidayDuration == HolidayDuration.FULL_DAY) {
 			return false;
 		}
-		// A half-day holiday inside a multi-day range is not a conflict:
-		// getWorkingDaysBetweenTwoDates already charges 0.5 for that day.
+
 		if (!isSingleDay) {
 			return false;
 		}
@@ -525,14 +524,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			return holidayDao.findAllActiveHolidaysByWorkLocationId(employee.getWorkLocation().getWorkLocationId());
 		}
 		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
-	}
-
-	private LocalDate startOfYear(int year) {
-		return LocalDate.of(year, 1, 1);
-	}
-
-	private LocalDate endOfYear(int year) {
-		return LocalDate.of(year, 12, 31);
 	}
 
 	private int resolveYear(Integer year) {
