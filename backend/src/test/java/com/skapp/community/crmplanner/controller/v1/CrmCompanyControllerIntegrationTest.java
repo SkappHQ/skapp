@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.jayway.jsonpath.JsonPath;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
@@ -58,6 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
@@ -663,5 +665,103 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private int orderIndexCounter = 0;
+
+	private void createCompanyTask(Long companyId, LocalDateTime dueAt) {
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Metrics Task Type");
+		taskType.setOrderIndex(1);
+		crmTaskTypeDao.save(taskType);
+
+		CrmTask task = new CrmTask();
+		task.setName("Metrics Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setCompany(crmCompanyDao.getReferenceById(companyId));
+		task.setDueAt(dueAt);
+		crmTaskDao.save(task);
+	}
+
+	// --- getCompanyMetricsById ---
+
+	@Test
+	@DisplayName("Get company metrics by ID - Returns aggregated deal and task metrics")
+	void getCompanyMetricsById_HappyPath_ReturnsMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("MetricsByIdCo");
+		CrmContact contact = createMetricsContact(company, "metrics.byid@example.com");
+		CrmDealStage openStage = createStage("Open Stage", CrmDealStageType.OPEN, 1);
+		CrmDealStage wonStage = createStage("Won Stage", CrmDealStageType.WON, 2);
+		createDeal("Open Deal", company, contact, openStage, "200", false);
+		createDeal("Won Deal", company, contact, wonStage, "400", false);
+		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
+		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+
+		String content = performRequest(
+				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openDeals']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDeals']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdue']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String openValue = JsonPath.read(content, "$.results[0].openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value sums non-closed deals").isEqualByComparingTo("200");
+		assertThat(new BigDecimal(accountValue)).as("account value sums WON deals").isEqualByComparingTo("400");
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID with no deals or tasks - Returns zero metrics")
+	void getCompanyMetricsById_NoActivity_ReturnsZeroMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("EmptyMetricsCo");
+
+		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openDeals']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDeals']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdue']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openValue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['accountValue']").value("0"));
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID that does not exist - Returns Bad Request")
+	void getCompanyMetricsById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID for a soft-deleted company - Returns Bad Request")
+	void getCompanyMetricsById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmCompany company = createMetricsCompany("DeletedMetricsCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID without CRM role - Returns Forbidden")
+	void getCompanyMetricsById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmCompany company = createMetricsCompany("ForbiddenMetricsCo");
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isForbidden());
+	}
 
 }

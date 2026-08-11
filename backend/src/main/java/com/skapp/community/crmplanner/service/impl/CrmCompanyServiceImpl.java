@@ -23,6 +23,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
+import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -124,6 +125,18 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		log.info("getCompanyMetrics: execution ended");
 
 		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompanyMetricsById(Long id) {
+		log.info("getCompanyMetricsById: execution started");
+
+		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		log.info("getCompanyMetricsById: execution ended");
+		return new ResponseEntityDto(false, metrics);
 	}
 
 	@Override
