@@ -1,7 +1,7 @@
 import { MutableRefObject } from "react";
 
 export interface GoogleWorkspaceSyncSettingsActions {
-  save: () => void;
+  save: () => Promise<boolean>;
   reset: () => void;
 }
 

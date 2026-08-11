@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useRef, useState } from "react";
+import { useFormik } from "formik";
+import { FC, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
@@ -14,10 +15,7 @@ import {
   useGetBirthdayNotificationConfig,
   useUpdateBirthdayNotificationConfig
 } from "~community/people/api/PeopleApi";
-import {
-  BirthdayNotificationConfigPatchType,
-  BirthdayNotificationConfigType
-} from "~community/people/types/PeopleConfigTypes";
+import { BirthdayNotificationConfigType } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import GoogleWorkspaceSyncSettings from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
 import type {
@@ -39,7 +37,7 @@ const PeopleConfigurations: FC = () => {
   const canManageGoogleWorkspace = isEnterprise && !!isSuperAdmin;
 
   const workspaceActionsRef = useRef<GoogleWorkspaceSyncSettingsActions>({
-    save: () => {},
+    save: async () => true,
     reset: () => {}
   });
   const [workspaceState, setWorkspaceState] =
@@ -48,22 +46,9 @@ const PeopleConfigurations: FC = () => {
       isSubmitting: false
     });
 
-  const [config, setConfig] = useState<BirthdayNotificationConfigType | null>(
-    null
-  );
-  const [initialConfig, setInitialConfig] =
-    useState<BirthdayNotificationConfigType | null>(null);
-
   const { data, isLoading, isError } = useGetBirthdayNotificationConfig();
 
-  useEffect(() => {
-    if (!data || config !== null) return;
-    setConfig(data);
-    setInitialConfig(data);
-  }, [data, config]);
-
-  const handleSuccess = (savedConfig: BirthdayNotificationConfigPatchType) => {
-    setInitialConfig(savedConfig as BirthdayNotificationConfigType);
+  const handleSuccess = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -81,62 +66,57 @@ const PeopleConfigurations: FC = () => {
     });
   };
 
-  const { mutate: updateConfig, isPending } =
+  const { mutateAsync: updateConfigAsync, isPending } =
     useUpdateBirthdayNotificationConfig(handleSuccess, handleError);
 
-  const isFormChanged =
-    !!config &&
-    !!initialConfig &&
-    (config.isTurnedOn !== initialConfig.isTurnedOn ||
-      config.isTeamWide !== initialConfig.isTeamWide ||
-      config.isOrganizationWide !== initialConfig.isOrganizationWide);
+  const birthdayFormik = useFormik<BirthdayNotificationConfigType>({
+    enableReinitialize: true,
+    initialValues: {
+      isTurnedOn: data?.isTurnedOn ?? false,
+      isTeamWide: data?.isTeamWide ?? false,
+      isOrganizationWide: data?.isOrganizationWide ?? false
+    },
+    onSubmit: () => {}
+  });
 
-  const handleToggleChange = (
-    key: keyof BirthdayNotificationConfigType,
-    checked: boolean
-  ) => {
-    setConfig((previousConfig) =>
-      previousConfig ? { ...previousConfig, [key]: checked } : previousConfig
-    );
-  };
-
-  const handleCancel = () => setConfig(initialConfig);
-
-  const handleSave = () => {
-    if (!config || isPending) return;
-    updateConfig(config);
-  };
-
-  const isBirthdaySectionLoaded = isError || (!isLoading && !!config);
+  const isBirthdaySectionLoaded = isError || (!isLoading && !!data);
 
   const isWorkspaceChanged = canManageGoogleWorkspace && workspaceState.isDirty;
-  const isAnyChanged = isFormChanged || isWorkspaceChanged;
+  const isAnyChanged = birthdayFormik.dirty || isWorkspaceChanged;
   const isAnySubmitting =
     isPending || (canManageGoogleWorkspace && workspaceState.isSubmitting);
 
   const handleCancelAll = () => {
-    if (isFormChanged) handleCancel();
+    if (birthdayFormik.dirty) birthdayFormik.resetForm();
     if (isWorkspaceChanged) workspaceActionsRef.current.reset();
   };
 
-  const handleSaveAll = () => {
-    if (isFormChanged) handleSave();
-    if (isWorkspaceChanged) workspaceActionsRef.current.save();
+  const handleSaveAll = async () => {
+    if (birthdayFormik.dirty) {
+      try {
+        await updateConfigAsync(birthdayFormik.values);
+      } catch {
+        // handleError already showed a toast for this failure
+      }
+    }
+    if (isWorkspaceChanged) {
+      await workspaceActionsRef.current.save();
+    }
   };
 
-  const subOptionsAriaMessage = config
+  const subOptionsAriaMessage = data
     ? translateText([
         "aria",
-        config.isTurnedOn ? "subOptionsAvailable" : "subOptionsUnavailable"
+        birthdayFormik.values.isTurnedOn
+          ? "subOptionsAvailable"
+          : "subOptionsUnavailable"
       ])
     : "";
 
   return (
     <div className="flex w-196 flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <h2 className="subtitle2 text-black">
-          {translateText(["title"])}
-        </h2>
+        <h2 className="subtitle2 text-black">{translateText(["title"])}</h2>
         <p className="body1 text-secondary-text">
           {translateText(["description"])}
         </p>
@@ -146,7 +126,7 @@ const PeopleConfigurations: FC = () => {
         {subOptionsAriaMessage}
       </div>
 
-      {!isError && (isLoading || !config) && (
+      {!isError && (isLoading || !data) && (
         <div
           className="flex animate-pulse flex-col gap-6"
           role="status"
@@ -165,33 +145,37 @@ const PeopleConfigurations: FC = () => {
         </div>
       )}
 
-      {!isError && config && (
+      {!isError && data && (
         <div className="flex flex-col gap-6">
           <SwitchRow
             label={translateText(["mainToggleLabel"])}
             labelId="birthday-notification"
             arialabel={translateText(["aria", "mainToggle"])}
-            checked={config.isTurnedOn}
-            onChange={(checked) => handleToggleChange("isTurnedOn", checked)}
+            checked={birthdayFormik.values.isTurnedOn}
+            onChange={(checked) =>
+              birthdayFormik.setFieldValue("isTurnedOn", checked)
+            }
           />
-          {config.isTurnedOn && (
+          {birthdayFormik.values.isTurnedOn && (
             <>
               <SwitchRow
                 label={translateText(["teamToggleLabel"])}
                 labelId="birthday-notification-team-only"
                 arialabel={translateText(["aria", "teamToggle"])}
                 tooltip={translateText(["teamToggleTooltip"])}
-                checked={config.isTeamWide}
-                onChange={(checked) => handleToggleChange("isTeamWide", checked)}
+                checked={birthdayFormik.values.isTeamWide}
+                onChange={(checked) =>
+                  birthdayFormik.setFieldValue("isTeamWide", checked)
+                }
               />
               <SwitchRow
                 label={translateText(["organizationToggleLabel"])}
                 labelId="birthday-notification-entire-organization"
                 arialabel={translateText(["aria", "organizationToggle"])}
                 tooltip={translateText(["organizationToggleTooltip"])}
-                checked={config.isOrganizationWide}
+                checked={birthdayFormik.values.isOrganizationWide}
                 onChange={(checked) =>
-                  handleToggleChange("isOrganizationWide", checked)
+                  birthdayFormik.setFieldValue("isOrganizationWide", checked)
                 }
               />
             </>
