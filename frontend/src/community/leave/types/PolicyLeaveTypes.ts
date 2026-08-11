@@ -50,7 +50,6 @@ export interface EmployeePolicyBalanceType {
   year: number;
   validFrom: string;
   validTo: string;
-  carriedForwardDays: number;
   accruedDays: number;
   totalDaysAllocated: number;
   totalDaysUsed: number;
