@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.type.CrmCompanyMetricsSummary;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyListItemDtoV2;
 
 import java.util.List;
 
@@ -16,9 +16,7 @@ public interface CrmCompanyRepository {
 
 	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
 
-	Page<CrmCompany> findCompaniesForMetrics(Pageable pageable, String searchKeyword);
-
-	List<CrmCompanyMetricsSummary> findCompanyMetricsSummaries(List<Long> companyIds);
+	Page<CrmCompanyListItemDtoV2> getCompanyMetricsV2(Pageable pageable, String searchKeyword);
 
 	List<CrmCompany> findCompaniesByWebsiteDomain(String domain, int limit);
 

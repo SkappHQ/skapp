@@ -52,10 +52,10 @@ public class CrmContactControllerV2 {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get contact metrics",
-			description = "Returns a paginated list of contacts with closed-deal and open-task metrics.")
+	@Operation(summary = "Get contacts",
+			description = "Returns a paginated list of contacts, each with its base details and metrics.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	@GetMapping("/metrics")
+	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getContactMetrics(CrmContactMetricRequestDto filterDto) {
 		ResponseEntityDto response = contactService.getContactMetrics(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
