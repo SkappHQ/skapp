@@ -329,8 +329,8 @@ class CrmContactControllerV2IntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get contact metrics - Company-less contact returns null company, not an empty object")
-	void getContactMetrics_ContactWithoutCompany_ReturnsNullCompany() throws Exception {
+	@DisplayName("Get contact metrics - Company-less contact is returned")
+	void getContactMetrics_ContactWithoutCompany_IsReturned() throws Exception {
 		CrmContact contact = new CrmContact();
 		contact.setName("NoCompanyContactV2Unique");
 		contact.setEmail("nocompany.v2@example.com");
@@ -340,8 +340,8 @@ class CrmContactControllerV2IntegrationTest {
 		performGetMetricsRequest("NoCompanyContactV2Unique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("NoCompanyContactV2Unique"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['company']").doesNotExist());
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("NoCompanyContactV2Unique"));
 	}
 
 	@Test

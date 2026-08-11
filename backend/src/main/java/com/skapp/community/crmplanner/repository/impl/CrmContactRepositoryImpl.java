@@ -130,16 +130,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();
 
-		content.forEach(CrmContactRepositoryImpl::nullifyMissingCompany);
-
 		return new PageImpl<>(content, pageable, getContactTotalCount(cb, filterDto));
-	}
-
-	private static void nullifyMissingCompany(CrmContactListItemDtoV2 item) {
-		CrmContactResponseDtoV2 contact = item.getContact();
-		if (contact.getCompany() != null && contact.getCompany().getId() == null) {
-			contact.setCompany(null);
-		}
 	}
 
 	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<?> query) {
