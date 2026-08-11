@@ -128,6 +128,20 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompanyById(Long id) {
+		log.info("getCompanyById: execution started");
+
+		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		CrmCompanyResponseDto response = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(company);
+
+		log.info("getCompanyById: execution ended");
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
 		log.info("searchCompaniesByDomain: execution started");
 

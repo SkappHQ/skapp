@@ -18,6 +18,8 @@ public interface CrmCompanyService {
 
 	ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable);
 
+	ResponseEntityDto getCompanyById(Long id);
+
 	ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto);
 
 	ResponseEntityDto deleteCompany(Long id);
