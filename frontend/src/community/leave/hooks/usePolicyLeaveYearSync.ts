@@ -14,7 +14,6 @@ const usePolicyLeaveYearSync = (): void => {
     if (selectedYear && selectedYear !== policySelectedYear) {
       setPolicySelectedYear(selectedYear);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, policySelectedYear]);
 };
 

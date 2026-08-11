@@ -36,7 +36,12 @@ const PolicyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
     requestParams,
     setRequestFilters,
     resetRequestFilters
-  } = usePolicyLeaveStore((state) => state);
+  } = usePolicyLeaveStore((state) => ({
+    selectedYear: state.selectedYear,
+    requestParams: state.requestParams,
+    setRequestFilters: state.setRequestFilters,
+    resetRequestFilters: state.resetRequestFilters
+  }));
 
   const { data: policyBalances } = useGetMyPolicyBalances(selectedYear);
 

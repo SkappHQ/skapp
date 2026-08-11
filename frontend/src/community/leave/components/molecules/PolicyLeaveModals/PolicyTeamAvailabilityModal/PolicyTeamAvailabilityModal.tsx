@@ -25,7 +25,7 @@ const TeamAvailabilityStatus = ({ data }: TeamAvailabilityStatusProps) => {
   if (data.holidays.length > 0) {
     return (
       <span
-        className={`${CHIP_CLASSES} border border-border-surface-secondary text-secondary-text text-xs font-normal`}
+        className={`${CHIP_CLASSES} body3 border border-border-surface-secondary text-secondary-text`}
       >
         {data.holidays.length > 1
           ? `${data.holidays[0].name} +${data.holidays.length}`
@@ -62,10 +62,12 @@ const PolicyTeamAvailabilityModal = () => {
     "teamAvailabilityModal"
   );
 
-  const teamAvailabilityData = usePolicyLeaveStore(
-    (state) => state.teamAvailabilityData
+  const { teamAvailabilityData, setModalType } = usePolicyLeaveStore(
+    (state) => ({
+      teamAvailabilityData: state.teamAvailabilityData,
+      setModalType: state.setModalType
+    })
   );
-  const setModalType = usePolicyLeaveStore((state) => state.setModalType);
 
   return (
     <div className="flex flex-col gap-4">

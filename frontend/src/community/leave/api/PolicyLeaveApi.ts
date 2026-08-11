@@ -11,10 +11,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { policyLeaveQueryKeys } from "~community/leave/api/utils/QueryKeys";
 import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
-import {
-  PolicyLeaveRequestParams,
-  initialPolicyLeaveRequestParams
-} from "~community/leave/store/policyLeaveStore";
+import { initialPolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
 import {
   EmployeePolicyBalanceType,
   EmployeePolicyBalancesResponse,
@@ -28,6 +25,7 @@ import {
   PolicyLeaveRequestResponse,
   PolicyLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
+import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const getMyPolicyBalances = async (
   year: string
@@ -51,18 +49,8 @@ export const useGetMyPolicyBalances = (
 };
 
 const getMyPolicyLeaveRequestsPage = async (
-  year: string,
-  params: PolicyLeaveRequestParams
+  queryParams: PolicyLeaveRequestQueryParams
 ): Promise<PolicyLeaveRequestPageType> => {
-  const { status, policyId, ...rest } = params;
-
-  const queryParams: PolicyLeaveRequestQueryParams = {
-    ...rest,
-    year,
-    status: status.length ? status.join(",") : undefined,
-    policyId: policyId.length ? policyId.join(",") : undefined
-  };
-
   const response = await authFetch.get<PolicyLeaveRequestPageResponse>(
     policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS,
     { params: queryParams }
@@ -71,13 +59,12 @@ const getMyPolicyLeaveRequestsPage = async (
 };
 
 export const useGetMyPolicyLeaveRequestsPage = (
-  year: string,
-  params: PolicyLeaveRequestParams,
+  queryParams: PolicyLeaveRequestQueryParams,
   enabled = true
 ): UseQueryResult<PolicyLeaveRequestPageType> => {
   return useQuery({
-    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_PAGE(year, params),
-    queryFn: () => getMyPolicyLeaveRequestsPage(year, params),
+    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_PAGE(queryParams),
+    queryFn: () => getMyPolicyLeaveRequestsPage(queryParams),
     enabled,
     refetchOnWindowFocus: false
   });
@@ -86,12 +73,12 @@ export const useGetMyPolicyLeaveRequestsPage = (
 const getMyPolicyLeaveRequests = async (
   year: string
 ): Promise<PolicyLeaveRequestType[]> => {
-  // The apply leave calendar needs every request raised in the year, not a page
-  // of them; a negative size tells the backend to skip pagination.
-  const page = await getMyPolicyLeaveRequestsPage(year, {
-    ...initialPolicyLeaveRequestParams,
-    size: UNPAGINATED_SIZE
-  });
+  const page = await getMyPolicyLeaveRequestsPage(
+    getPolicyLeaveRequestQueryParams(year, {
+      ...initialPolicyLeaveRequestParams,
+      size: UNPAGINATED_SIZE
+    })
+  );
   return page.items;
 };
 
@@ -140,7 +127,7 @@ const applyPolicyLeave = async (
 export const useApplyPolicyLeave = (
   year: string,
   onSuccess: (data: PolicyLeaveRequestType) => void,
-  onError: (messageKey: string, statusCode: number | undefined) => void
+  onError: (messageKey: string) => void
 ): UseMutationResult<
   PolicyLeaveRequestType,
   ErrorResponse,
@@ -160,10 +147,7 @@ export const useApplyPolicyLeave = (
       onSuccess(data);
     },
     onError: (error: ErrorResponse) => {
-      onError(
-        error?.response?.data?.results?.[0]?.messageKey ?? "",
-        error?.response?.status
-      );
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
     }
   });
 };

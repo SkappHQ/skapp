@@ -1,15 +1,14 @@
 import { appModes } from "~community/common/constants/configs";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { FileUploadType } from "~community/common/types/CommonTypes";
-import {
-  ATTACHMENT_UPLOAD_FAILED,
-  COMMUNITY_UPLOAD_SUCCESS_PREFIX
-} from "~community/leave/constants/stringConstants";
+import { ATTACHMENT_UPLOAD_FAILED } from "~community/leave/constants/stringConstants";
 import { PolicyLeaveAttachmentPayload } from "~community/leave/types/PolicyLeaveTypes";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
 
 type UploadImagesFn = (formData: FormData) => Promise<{ message?: string }>;
+
+const UPLOADED_FILE_NAME_PATTERN = /\/([^/\s]+)$/;
 
 interface UploadPolicyLeaveAttachmentsProps {
   attachments: FileUploadType[];
@@ -26,8 +25,7 @@ const uploadToCommunity = async (
   formData.append("type", FileTypes.LEAVE_ATTACHMENTS);
 
   const response = await uploadAttachments(formData);
-  const filePath = response.message?.split(COMMUNITY_UPLOAD_SUCCESS_PREFIX)[1];
-  const fileUrl = filePath?.split("/").pop();
+  const fileUrl = response.message?.match(UPLOADED_FILE_NAME_PATTERN)?.[1];
 
   if (!fileUrl) {
     throw new Error(ATTACHMENT_UPLOAD_FAILED);

@@ -1,5 +1,4 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import {
   ChangeEvent,
   useCallback,
@@ -16,8 +15,6 @@ import TextArea from "~community/common/components/atoms/TextArea/TextArea";
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import DurationSelector from "~community/common/components/molecules/DurationSelector/DurationSelector";
 import { appModes } from "~community/common/constants/configs";
-import { HTTP_UNAUTHORIZED } from "~community/common/constants/httpStatusCodes";
-import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -45,7 +42,6 @@ import PolicyLeaveBalanceCard from "~community/leave/components/molecules/Policy
 import PolicyTeamAvailabilityCard from "~community/leave/components/molecules/PolicyTeamAvailabilityCard/PolicyTeamAvailabilityCard";
 import {
   MAX_POLICY_LEAVE_COMMENT_LENGTH,
-  SESSION_EXPIRED_REDIRECT_DELAY_MS,
   TOTAL_PERCENTAGE
 } from "~community/leave/constants/stringConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
@@ -81,12 +77,10 @@ import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalytics
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 const ApplyPolicyLeaveModal = () => {
-  const router = useRouter();
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
   const { sendEvent } = useGoogleAnalyticsEvent();
   const dateFieldRef = useRef<HTMLFieldSetElement>(null);
-  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const availabilityRequestIdRef = useRef(0);
 
   const [hasAvailabilityCheckFailed, setHasAvailabilityCheckFailed] =
@@ -196,19 +190,7 @@ const ApplyPolicyLeaveModal = () => {
     setModalType(PolicyLeaveModalEnums.NONE);
   };
 
-  const onApplyError = (messageKey: string, statusCode: number | undefined) => {
-    if (statusCode === HTTP_UNAUTHORIZED) {
-      handlePolicyLeaveToast({
-        type: PolicyLeaveToastEnums.SESSION_EXPIRED,
-        setToastMessage,
-        translateText
-      });
-      redirectTimerRef.current = setTimeout(() => {
-        router.push(ROUTES.AUTH.SIGNIN);
-      }, SESSION_EXPIRED_REDIRECT_DELAY_MS);
-      return;
-    }
-
+  const onApplyError = (messageKey: string) => {
     handlePolicyLeaveToast({
       type: mapApplyErrorKeyToToastType(messageKey),
       setToastMessage,
@@ -218,14 +200,6 @@ const ApplyPolicyLeaveModal = () => {
 
   const { mutate: applyPolicyLeave, isPending: isApplyPending } =
     useApplyPolicyLeave(selectedYear, onApplySuccess, onApplyError);
-
-  const clearRedirectTimer = () => {
-    if (redirectTimerRef.current) {
-      clearTimeout(redirectTimerRef.current);
-    }
-  };
-
-  useEffect(() => clearRedirectTimer, []);
 
   const minDate = useMemo(
     () =>

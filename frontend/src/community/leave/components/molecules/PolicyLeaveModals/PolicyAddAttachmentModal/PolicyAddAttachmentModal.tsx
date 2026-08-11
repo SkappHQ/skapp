@@ -20,9 +20,13 @@ const PolicyAddAttachmentModal = () => {
     "addAttachmentModal"
   );
 
-  const attachments = usePolicyLeaveStore((state) => state.attachments);
-  const setAttachments = usePolicyLeaveStore((state) => state.setAttachments);
-  const setModalType = usePolicyLeaveStore((state) => state.setModalType);
+  const { attachments, setAttachments, setModalType } = usePolicyLeaveStore(
+    (state) => ({
+      attachments: state.attachments,
+      setAttachments: state.setAttachments,
+      setModalType: state.setModalType
+    })
+  );
 
   const [attachmentError, setAttachmentError] = useState(false);
 
@@ -33,7 +37,7 @@ const PolicyAddAttachmentModal = () => {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className={attachmentError ? "text-red-600" : ""}>
+      <p className={attachmentError ? "text-semantic-red-text" : ""}>
         {translateText(["description"])}
       </p>
       <DragAndDropField

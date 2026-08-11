@@ -49,7 +49,13 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     setSelectedTeam,
     setTeamAvailabilityData,
     setModalType
-  } = usePolicyLeaveStore((state) => state);
+  } = usePolicyLeaveStore((state) => ({
+    selectedDates: state.selectedDates,
+    selectedTeam: state.selectedTeam,
+    setSelectedTeam: state.setSelectedTeam,
+    setTeamAvailabilityData: state.setTeamAvailabilityData,
+    setModalType: state.setModalType
+  }));
 
   const cardData = useMemo(() => {
     const teamAvailabilityData = getTeamAvailabilityData({

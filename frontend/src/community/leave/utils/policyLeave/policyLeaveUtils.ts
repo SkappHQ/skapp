@@ -11,12 +11,14 @@ import {
 import { PolicyLeaveToastEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import {
   PolicyLeaveFormErrors,
+  PolicyLeaveRequestParams,
   PolicyLeaveStore,
   initialPolicyLeaveFormErrors
 } from "~community/leave/store/policyLeaveStore";
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
+  PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
   PolicyLeaveValidationFailure
 } from "~community/leave/types/PolicyLeaveTypes";
@@ -193,11 +195,6 @@ export const handlePolicyLeaveToast = ({
       titleKey: "toastMessages.applyError.title",
       descriptionKey: "toastMessages.applyError.description"
     },
-    [PolicyLeaveToastEnums.SESSION_EXPIRED]: {
-      toastType: ToastType.ERROR,
-      titleKey: "toastMessages.sessionExpired.title",
-      descriptionKey: "toastMessages.sessionExpired.description"
-    },
     [PolicyLeaveToastEnums.POLICY_NOT_ASSIGNED]: {
       toastType: ToastType.ERROR,
       titleKey: "toastMessages.policyNotAssigned.title",
@@ -273,3 +270,17 @@ export const selectHasUnsavedChanges = (state: PolicyLeaveStore): boolean =>
   state.selectedDates.length > 0 ||
   state.comment.trim() !== "" ||
   state.attachments.length > 0;
+
+export const getPolicyLeaveRequestQueryParams = (
+  year: string,
+  params: PolicyLeaveRequestParams
+): PolicyLeaveRequestQueryParams => {
+  const { status, policyId, ...rest } = params;
+
+  return {
+    ...rest,
+    year,
+    status: status.length ? status.join(",") : undefined,
+    policyId: policyId.length ? policyId.join(",") : undefined
+  };
+};

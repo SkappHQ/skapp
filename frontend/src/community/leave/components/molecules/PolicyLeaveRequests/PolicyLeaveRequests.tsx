@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -18,6 +18,7 @@ import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringC
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestType } from "~community/leave/types/PolicyLeaveTypes";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import { getPolicyLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const CHIP_CLASSES =
   "inline-flex w-fit items-center gap-2 rounded-[9.375rem] bg-tertiary-background px-4 py-2";
@@ -26,13 +27,18 @@ const PolicyLeaveRequests: FC = () => {
   const { selectedYear, requestParams, setRequestPage, setRequestSortKey } =
     usePolicyLeaveStore((state) => state);
 
+  const queryParams = useMemo(
+    () => getPolicyLeaveRequestQueryParams(selectedYear, requestParams),
+    [selectedYear, requestParams]
+  );
+
   const {
     data: leaveRequests,
     isLoading,
     isError,
     isFetching,
     refetch
-  } = useGetMyPolicyLeaveRequestsPage(selectedYear, requestParams);
+  } = useGetMyPolicyLeaveRequestsPage(queryParams);
 
   const filterCount =
     requestParams.status.length + requestParams.policyId.length;

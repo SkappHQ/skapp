@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 
-import { PolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
 import { LeaveEntitlementParamsType } from "~community/leave/types/LeaveEntitlementTypes";
+import { PolicyLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveTypes";
 
 export const leaveQueryKeys = {
   ALL: ["all-leaves"],
@@ -309,9 +309,12 @@ export const policyLeaveQueryKeys = {
     year
   ],
   MY_POLICY_LEAVE_REQUESTS_PAGE: (
-    year: string,
-    params: PolicyLeaveRequestParams
-  ) => [...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year), "page", params]
+    queryParams: PolicyLeaveRequestQueryParams
+  ) => [
+    ...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(queryParams.year),
+    "page",
+    queryParams
+  ]
 };
 
 export const leavePolicyQueryKeys = {

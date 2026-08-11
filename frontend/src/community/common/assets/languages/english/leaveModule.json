@@ -227,10 +227,6 @@
           "title": "Oops! Something went wrong",
           "description": "Failed to submit your leave request. Please try again."
         },
-        "sessionExpired": {
-          "title": "Oops! Something went wrong",
-          "description": "Your session has expired. Please log in again."
-        },
         "policyNotAssigned": {
           "title": "Oops! Something went wrong",
           "description": "This leave policy is no longer assigned to you. Please refresh and select another policy."
