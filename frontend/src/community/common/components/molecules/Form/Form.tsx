@@ -1,13 +1,25 @@
-import { JSX, type ReactNode } from "react";
+import { type FormEvent, JSX, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
-  onSubmit?: () => void;
+  className?: string;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void;
+  onReset?: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-const Form = ({ children, onSubmit }: Props): JSX.Element => {
+const Form = ({
+  children,
+  className,
+  onSubmit,
+  onReset
+}: Props): JSX.Element => {
   return (
-    <form onSubmit={onSubmit} autoComplete="off">
+    <form
+      className={className}
+      onSubmit={onSubmit}
+      onReset={onReset}
+      autoComplete="off"
+    >
       {children}
     </form>
   );
