@@ -81,6 +81,12 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				false);
 	}
 
+	@Override
+	public void updateManualEntryRestrictionEnabled(boolean enabled) {
+		log.info("updateManualEntryRestrictionEnabled: setting manual entry restriction to {}", enabled);
+		updateOrCreateConfig(AttendanceConfigType.MANUAL_ENTRY_ENABLED, String.valueOf(enabled));
+	}
+
 	private void updateOrCreateConfig(AttendanceConfigType configType, String configValue) {
 		AttendanceConfig config = attendanceConfigDao.findByAttendanceConfigType(configType);
 
