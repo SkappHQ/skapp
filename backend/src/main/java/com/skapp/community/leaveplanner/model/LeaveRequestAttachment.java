@@ -40,4 +40,9 @@ public class LeaveRequestAttachment {
 	@JoinColumn(name = "leave_Request_id")
 	private LeaveRequest leaveRequest;
 
+	public LeaveRequestAttachment(String url, LeaveRequest leaveRequest) {
+		this.url = url;
+		this.leaveRequest = leaveRequest;
+	}
+
 }
