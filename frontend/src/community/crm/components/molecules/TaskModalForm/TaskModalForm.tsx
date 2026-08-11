@@ -156,7 +156,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const contactLookupCompanyId = hasSelectedDeal ? null : companyScopeId;
 
   const isContactSearchEnabled =
-    debouncedContactSearchText.length > 0 || !!values.dealId;
+    debouncedContactSearchText.length > 0 ||
+    hasSelectedDeal ||
+    contactLookupCompanyId != null;
 
   const contactLookupParams: CrmContactLookupParams = {
     searchKeyword: debouncedContactSearchText,
@@ -176,6 +178,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedDealSearchText.length > 0 ||
     hasSelectedContact ||
     dealLookupCompanyId != null;
+
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
