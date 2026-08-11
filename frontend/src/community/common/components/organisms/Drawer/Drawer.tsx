@@ -69,13 +69,13 @@ const Drawer = (): JSX.Element => {
   const { user } = useAuth();
 
   const queryMatches = useMediaQuery();
-  const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
+  const isBelow600 = queryMatches(MediaQueries.BELOW_600);
 
   const environment = useGetEnvironment();
 
   const { s3FileUrls, downloadS3File } = useS3Download();
 
-  const { handleDrawer } = useDrawer(isBelow1024);
+  const { handleDrawer, isBelow1024 } = useDrawer();
 
   const { data: organizationDetails, isLoading: orgLoading } =
     useGetOrganization();
@@ -228,6 +228,8 @@ const Drawer = (): JSX.Element => {
       hideBackdrop={false}
       component="nav"
       aria-label={translateAria(["drawer"])}
+      isBelow600={isBelow600}
+      isBelow1024={isBelow1024}
     >
       <Stack
         sx={{
@@ -479,7 +481,11 @@ const Drawer = (): JSX.Element => {
         )}
       </Stack>
       <IconButton
-        sx={{ ...classes.iconBtn(isDrawerExpanded), visibility: "visible" }} // TO DO: Need to verify why this style affects other places which use this icon
+        sx={{
+          ...classes.iconBtn(isDrawerExpanded, isBelow1024),
+          visibility: "visible"
+        }}
+        // TO DO: Need to verify why this style affects other places which use this icon
         onClick={handleDrawer}
         data-testid={appDrawerTestId.buttons.drawerToggleBtn}
         aria-label={
