@@ -17,8 +17,79 @@ import {
   PolicyLeaveAvailabilityType,
   PolicyLeaveRequestPageType,
   PolicyLeaveRequestPayload,
-  PolicyLeaveRequestType
+  PolicyLeaveRequestType,
+  PolicyLeaveSearchQueryParams
 } from "~community/leave/types/PolicyLeaveTypes";
+
+// Spring binds a List<> request param from a CSV string, not from the
+// bracketed form axios produces for arrays.
+const toSearchQueryParams = (
+  year: string,
+  params: PolicyLeaveRequestParams
+): PolicyLeaveSearchQueryParams => {
+  const { status, policyId, ...rest } = params;
+
+  return {
+    ...rest,
+    year,
+    status: status.length ? status.join(",") : undefined,
+    policyId: policyId.length ? policyId.join(",") : undefined
+  };
+};
+
+const getMyPolicyBalances = async (
+  year: string
+): Promise<EmployeePolicyBalanceType[]> => {
+  const response = await authFetch.get(
+    policyLeaveEndPoints.GET_MY_POLICY_BALANCES(year)
+  );
+
+  return response.data.results;
+};
+
+const getMyPolicyLeaveRequests = async (
+  year: string
+): Promise<PolicyLeaveRequestType[]> => {
+  const response = await authFetch.get(
+    policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS(year)
+  );
+
+  return response.data.results;
+};
+
+const searchMyPolicyLeaveRequests = async (
+  year: string,
+  params: PolicyLeaveRequestParams
+): Promise<PolicyLeaveRequestPageType> => {
+  const response = await authFetch.get(
+    policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
+    { params: toSearchQueryParams(year, params) }
+  );
+
+  return response.data.results[0];
+};
+
+const checkPolicyLeaveAvailability = async (
+  payload: PolicyLeaveAvailabilityPayload
+): Promise<PolicyLeaveAvailabilityType> => {
+  const response = await authFetch.post(
+    policyLeaveEndPoints.CHECK_POLICY_LEAVE_AVAILABILITY,
+    payload
+  );
+
+  return response.data.results[0];
+};
+
+const applyPolicyLeave = async (
+  payload: PolicyLeaveRequestPayload
+): Promise<PolicyLeaveRequestType> => {
+  const response = await authFetch.post(
+    policyLeaveEndPoints.APPLY_POLICY_LEAVE,
+    payload
+  );
+
+  return response.data.results[0];
+};
 
 export const useGetMyPolicyBalances = (
   year: string,
@@ -26,12 +97,7 @@ export const useGetMyPolicyBalances = (
 ): UseQueryResult<EmployeePolicyBalanceType[]> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year),
-    queryFn: async () => {
-      const response = await authFetch.get(
-        policyLeaveEndPoints.GET_MY_POLICY_BALANCES(year)
-      );
-      return response.data.results as EmployeePolicyBalanceType[];
-    },
+    queryFn: () => getMyPolicyBalances(year),
     enabled,
     refetchOnWindowFocus: false
   });
@@ -43,12 +109,7 @@ export const useGetMyPolicyLeaveRequests = (
 ): UseQueryResult<PolicyLeaveRequestType[]> => {
   return useQuery({
     queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year),
-    queryFn: async () => {
-      const response = await authFetch.get(
-        policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS(year)
-      );
-      return response.data.results as PolicyLeaveRequestType[];
-    },
+    queryFn: () => getMyPolicyLeaveRequests(year),
     enabled,
     refetchOnWindowFocus: false
   });
@@ -64,24 +125,7 @@ export const useSearchMyPolicyLeaveRequests = (
       year,
       params
     ),
-    queryFn: async () => {
-      // Spring binds a List<> request param from a CSV string, not from the
-      // bracketed form axios produces for arrays.
-      const { status, policyId, ...rest } = params;
-
-      const response = await authFetch.get(
-        policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
-        {
-          params: {
-            ...rest,
-            year,
-            status: status.length ? status.join(",") : undefined,
-            policyId: policyId.length ? policyId.join(",") : undefined
-          }
-        }
-      );
-      return response.data.results[0] as PolicyLeaveRequestPageType;
-    },
+    queryFn: () => searchMyPolicyLeaveRequests(year, params),
     enabled,
     refetchOnWindowFocus: false
   });
@@ -93,20 +137,14 @@ export const useCheckPolicyLeaveAvailability = (): UseMutationResult<
   PolicyLeaveAvailabilityPayload
 > => {
   return useMutation({
-    mutationFn: async (payload: PolicyLeaveAvailabilityPayload) => {
-      const response = await authFetch.post(
-        policyLeaveEndPoints.CHECK_POLICY_LEAVE_AVAILABILITY,
-        payload
-      );
-      return response.data.results[0] as PolicyLeaveAvailabilityType;
-    }
+    mutationFn: checkPolicyLeaveAvailability
   });
 };
 
 export const useApplyPolicyLeave = (
   year: string,
   onSuccess: (data: PolicyLeaveRequestType) => void,
-  onError: (messageKey: string, statusCode?: number) => void
+  onError: (messageKey: string, statusCode: number | undefined) => void
 ): UseMutationResult<
   PolicyLeaveRequestType,
   ErrorResponse,
@@ -115,13 +153,7 @@ export const useApplyPolicyLeave = (
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: PolicyLeaveRequestPayload) => {
-      const response = await authFetch.post(
-        policyLeaveEndPoints.APPLY_POLICY_LEAVE,
-        payload
-      );
-      return response.data.results[0] as PolicyLeaveRequestType;
-    },
+    mutationFn: applyPolicyLeave,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_BALANCES(year)

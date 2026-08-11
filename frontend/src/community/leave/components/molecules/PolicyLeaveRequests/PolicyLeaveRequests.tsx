@@ -23,12 +23,8 @@ const CHIP_CLASSES =
   "inline-flex w-fit items-center gap-2 rounded-[9.375rem] bg-tertiary-background px-4 py-2";
 
 const PolicyLeaveRequests: FC = () => {
-  const selectedYear = usePolicyLeaveStore((state) => state.selectedYear);
-  const requestParams = usePolicyLeaveStore((state) => state.requestParams);
-  const setRequestPage = usePolicyLeaveStore((state) => state.setRequestPage);
-  const setRequestSortKey = usePolicyLeaveStore(
-    (state) => state.setRequestSortKey
-  );
+  const { selectedYear, requestParams, setRequestPage, setRequestSortKey } =
+    usePolicyLeaveStore((state) => state);
 
   const {
     data: leaveRequests,
@@ -45,7 +41,7 @@ const PolicyLeaveRequests: FC = () => {
   const translateAria = useTranslator("leaveAria", "myRequests");
 
   const handleRetry = (): void => {
-    void refetch();
+    refetch();
   };
 
   const tableHeaders: GridHeader[] = [

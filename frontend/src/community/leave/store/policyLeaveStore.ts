@@ -168,11 +168,9 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
       setTeamAvailabilityData: (teamAvailabilityData) =>
         set({ teamAvailabilityData })
     }),
-    { name: "policyLeaveStore" }
+    {
+      name: "policyLeaveStore",
+      enabled: process.env.NODE_ENV !== "production"
+    }
   )
 );
-
-export const selectHasUnsavedChanges = (state: PolicyLeaveStore): boolean =>
-  state.selectedDates.length > 0 ||
-  state.comment.trim() !== "" ||
-  state.attachments.length > 0;

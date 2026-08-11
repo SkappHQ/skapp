@@ -43,13 +43,13 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
   );
   const translateAria = useTranslator("leaveAria", "applyLeave");
 
-  const selectedDates = usePolicyLeaveStore((state) => state.selectedDates);
-  const selectedTeam = usePolicyLeaveStore((state) => state.selectedTeam);
-  const setSelectedTeam = usePolicyLeaveStore((state) => state.setSelectedTeam);
-  const setTeamAvailabilityData = usePolicyLeaveStore(
-    (state) => state.setTeamAvailabilityData
-  );
-  const setModalType = usePolicyLeaveStore((state) => state.setModalType);
+  const {
+    selectedDates,
+    selectedTeam,
+    setSelectedTeam,
+    setTeamAvailabilityData,
+    setModalType
+  } = usePolicyLeaveStore((state) => state);
 
   const cardData = useMemo(() => {
     const teamAvailabilityData = getTeamAvailabilityData({

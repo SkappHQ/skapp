@@ -18,7 +18,6 @@ import DurationSelector from "~community/common/components/molecules/DurationSel
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_UNAUTHORIZED } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
-import { FileTypes } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -30,7 +29,6 @@ import { IconName } from "~community/common/types/IconTypes";
 import {
   convertToYYYYMMDDFromDateTime,
   convertYYYYMMDDToDateTime,
-  currentYear,
   getMonthStartAndEndDates
 } from "~community/common/utils/dateTimeUtils";
 import { NINETY_PERCENT } from "~community/common/utils/getConstants";
@@ -45,28 +43,31 @@ import AttachmentSummary from "~community/leave/components/molecules/AttachmentS
 import LeaveSummary from "~community/leave/components/molecules/LeaveSummary/LeaveSummary";
 import PolicyLeaveBalanceCard from "~community/leave/components/molecules/PolicyLeaveBalanceCard/PolicyLeaveBalanceCard";
 import PolicyTeamAvailabilityCard from "~community/leave/components/molecules/PolicyTeamAvailabilityCard/PolicyTeamAvailabilityCard";
+import {
+  MAX_POLICY_LEAVE_COMMENT_LENGTH,
+  SESSION_EXPIRED_REDIRECT_DELAY_MS,
+  TOTAL_PERCENTAGE
+} from "~community/leave/constants/stringConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import {
   PolicyLeaveModalEnums,
   PolicyLeaveToastEnums
 } from "~community/leave/enums/PolicyLeaveEnums";
-import {
-  selectHasUnsavedChanges,
-  usePolicyLeaveStore
-} from "~community/leave/store/policyLeaveStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { useLeaveStore } from "~community/leave/store/store";
 import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
-import { PolicyLeaveAttachmentPayload } from "~community/leave/types/PolicyLeaveTypes";
 import {
   getDurationInitialValue,
   getDurationSelectorDisabledOptions
 } from "~community/leave/utils/myRequests/applyLeaveModalUtils";
+import { uploadPolicyLeaveAttachments } from "~community/leave/utils/policyLeave/policyLeaveAttachmentUtils";
 import {
   getAvailabilityErrorMessage,
   getPolicyLeaveFormErrors,
   handlePolicyLeaveToast,
   hasPolicyLeaveFormErrors,
   mapApplyErrorKeyToToastType,
+  selectHasUnsavedChanges,
   toLeaveStatus
 } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 import { useGetAllHolidays } from "~community/people/api/HolidayApi";
@@ -78,14 +79,6 @@ import { useGetMyTeams } from "~community/people/api/TeamApi";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
-import { FileCategories } from "~enterprise/common/types/s3Types";
-import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
-
-const SESSION_EXPIRED_REDIRECT_DELAY_MS = 2000;
-
-const MAX_COMMENT_LENGTH = 255;
-
-const ATTACHMENT_UPLOAD_FAILED = "ATTACHMENT_UPLOAD_FAILED";
 
 const ApplyPolicyLeaveModal = () => {
   const router = useRouter();
@@ -136,10 +129,24 @@ const ApplyPolicyLeaveModal = () => {
 
   const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
+  // A policy period can straddle two calendar years, so holidays and existing
+  // requests have to be fetched for both ends of the validFrom..validTo span.
+  const policyStartYear = selectedPolicyBalance
+    ? convertYYYYMMDDToDateTime(selectedPolicyBalance.validFrom).year.toString()
+    : selectedYear;
+  const policyEndYear = selectedPolicyBalance
+    ? convertYYYYMMDDToDateTime(selectedPolicyBalance.validTo).year.toString()
+    : selectedYear;
+  const spansTwoYears = policyStartYear !== policyEndYear;
+
   const { data: timeConfig } = useDefaultCapacity();
   const { data: myTeams } = useGetMyTeams();
-  const { data: myPolicyLeaveRequests } =
-    useGetMyPolicyLeaveRequests(selectedYear);
+  const { data: requestsInStartYear } =
+    useGetMyPolicyLeaveRequests(policyStartYear);
+  const { data: requestsInEndYear } = useGetMyPolicyLeaveRequests(
+    policyEndYear,
+    spansTwoYears
+  );
   const { data: currentEmployee } = useGetUserPersonalDetails();
 
   const { data: employeeData, isLoading: isEmployeeDataLoading } =
@@ -150,12 +157,28 @@ const ApplyPolicyLeaveModal = () => {
   const workLocationId =
     employeeData?.employment?.employmentDetails?.workLocationId;
 
-  const { data: allHolidays } = useGetAllHolidays(
-    currentYear.toString(),
+  const { data: holidaysInStartYear } = useGetAllHolidays(
+    policyStartYear,
     true,
     undefined,
     workLocationId,
     !isEmployeeDataLoading
+  );
+
+  const { data: holidaysInEndYear } = useGetAllHolidays(
+    policyEndYear,
+    true,
+    undefined,
+    workLocationId,
+    !isEmployeeDataLoading && spansTwoYears
+  );
+
+  const allHolidays = useMemo(
+    () => [
+      ...(holidaysInStartYear ?? []),
+      ...(spansTwoYears ? (holidaysInEndYear ?? []) : [])
+    ],
+    [holidaysInStartYear, holidaysInEndYear, spansTwoYears]
   );
 
   const { data: storageAvailabilityData } = useStorageAvailability();
@@ -173,7 +196,7 @@ const ApplyPolicyLeaveModal = () => {
     setModalType(PolicyLeaveModalEnums.NONE);
   };
 
-  const onApplyError = (messageKey: string, statusCode?: number) => {
+  const onApplyError = (messageKey: string, statusCode: number | undefined) => {
     if (statusCode === HTTP_UNAUTHORIZED) {
       handlePolicyLeaveToast({
         type: PolicyLeaveToastEnums.SESSION_EXPIRED,
@@ -181,7 +204,7 @@ const ApplyPolicyLeaveModal = () => {
         translateText
       });
       redirectTimerRef.current = setTimeout(() => {
-        void router.push(ROUTES.AUTH.SIGNIN);
+        router.push(ROUTES.AUTH.SIGNIN);
       }, SESSION_EXPIRED_REDIRECT_DELAY_MS);
       return;
     }
@@ -196,14 +219,13 @@ const ApplyPolicyLeaveModal = () => {
   const { mutate: applyPolicyLeave, isPending: isApplyPending } =
     useApplyPolicyLeave(selectedYear, onApplySuccess, onApplyError);
 
-  useEffect(
-    () => () => {
-      if (redirectTimerRef.current) {
-        clearTimeout(redirectTimerRef.current);
-      }
-    },
-    []
-  );
+  const clearRedirectTimer = () => {
+    if (redirectTimerRef.current) {
+      clearTimeout(redirectTimerRef.current);
+    }
+  };
+
+  useEffect(() => clearRedirectTimer, []);
 
   const minDate = useMemo(
     () =>
@@ -225,7 +247,8 @@ const ApplyPolicyLeaveModal = () => {
     () =>
       environment === appModes.COMMUNITY &&
       storageAvailabilityData !== undefined &&
-      100 - storageAvailabilityData.availableSpace >= NINETY_PERCENT,
+      TOTAL_PERCENTAGE - storageAvailabilityData.availableSpace >=
+        NINETY_PERCENT,
     [environment, storageAvailabilityData]
   );
 
@@ -236,7 +259,10 @@ const ApplyPolicyLeaveModal = () => {
 
   const blockingLeaveRequests: MyLeaveRequestPayloadType[] = useMemo(
     () =>
-      (myPolicyLeaveRequests ?? []).flatMap((request) => {
+      [
+        ...(requestsInStartYear ?? []),
+        ...(spansTwoYears ? (requestsInEndYear ?? []) : [])
+      ].flatMap((request) => {
         const status = toLeaveStatus(request.status);
 
         if (!status) {
@@ -262,7 +288,7 @@ const ApplyPolicyLeaveModal = () => {
           }
         ];
       }),
-    [myPolicyLeaveRequests]
+    [requestsInStartYear, requestsInEndYear, spansTwoYears]
   );
 
   const startAndEndDates = useMemo(
@@ -401,13 +427,13 @@ const ApplyPolicyLeaveModal = () => {
     });
     setFormErrors(errors);
     return !hasPolicyLeaveFormErrors(errors);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedDates.length,
     comment,
     attachments,
     selectedPolicyBalance,
     availabilityError,
-    setFormErrors,
     translateText
   ]);
 
@@ -420,59 +446,17 @@ const ApplyPolicyLeaveModal = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDates, comment, attachments]);
 
-  const uploadAttachmentsAndGetRefs = async (): Promise<
-    PolicyLeaveAttachmentPayload[]
-  > => {
-    if (attachments.length === 0) {
-      return [];
-    }
-
-    const uploadOne = async (
-      attachment: FileUploadType
-    ): Promise<PolicyLeaveAttachmentPayload> => {
-      if (!attachment.file) {
-        throw new Error(ATTACHMENT_UPLOAD_FAILED);
-      }
-
-      if (environment === appModes.COMMUNITY) {
-        const formData = new FormData();
-        formData.append("file", attachment.file);
-        formData.append("type", FileTypes.LEAVE_ATTACHMENTS);
-        const response = await uploadAttachments(formData);
-        const filePath = response.message?.split(
-          "File uploaded successfully: "
-        )[1];
-        const fileUrl = filePath?.split("/").pop();
-
-        if (!fileUrl) {
-          throw new Error(ATTACHMENT_UPLOAD_FAILED);
-        }
-
-        return { fileUrl, originalFileName: attachment.name };
-      }
-
-      const fileUrl = await uploadFileToS3ByUrl(
-        attachment.file as File,
-        FileCategories.LEAVE_REQUEST
-      );
-
-      if (!fileUrl) {
-        throw new Error(ATTACHMENT_UPLOAD_FAILED);
-      }
-
-      return { fileUrl, originalFileName: attachment.name };
-    };
-
-    return Promise.all(attachments.map(uploadOne));
-  };
-
   const onSubmit = async () => {
     if (!selectedPolicyBalance || !validate()) {
       return;
     }
 
     try {
-      const attachmentRefs = await uploadAttachmentsAndGetRefs();
+      const attachmentRefs = await uploadPolicyLeaveAttachments({
+        attachments,
+        environment,
+        uploadAttachments
+      });
 
       applyPolicyLeave({
         policyId: selectedPolicyBalance.policyId,
@@ -600,7 +584,7 @@ const ApplyPolicyLeaveModal = () => {
             isAttachmentRequired={
               selectedPolicyBalance.leaveType.isAttachmentMust
             }
-            maxLength={MAX_COMMENT_LENGTH}
+            maxLength={MAX_POLICY_LEAVE_COMMENT_LENGTH}
             name="comment"
             value={comment}
             onChange={handleCommentChange}

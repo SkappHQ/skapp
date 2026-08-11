@@ -43,7 +43,7 @@ const PolicyAddAttachmentModal = () => {
         setAttachments={(files: FileUploadType[]) => setAttachments(files)}
         accept={{
           "image/jpeg": [".jpg", ".jpeg"],
-          "image/png": [],
+          "image/png": [".png"],
           "application/pdf": [".pdf"]
         }}
         uploadableFiles={attachments}

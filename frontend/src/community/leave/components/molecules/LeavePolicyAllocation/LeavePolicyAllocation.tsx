@@ -5,6 +5,7 @@ import {
   FC,
   KeyboardEvent,
   MouseEvent,
+  ReactNode,
   useEffect,
   useMemo,
   useRef,
@@ -86,7 +87,7 @@ const LeavePolicyAllocation: FC = () => {
   );
 
   const handleRetry = (): void => {
-    void refetch();
+    refetch();
   };
 
   const handleNextPage = (
@@ -113,6 +114,34 @@ const LeavePolicyAllocation: FC = () => {
     }
   }, [currentPage]);
 
+  const renderAllocations = (): ReactNode => {
+    if (isError) {
+      return (
+        <PolicyLeaveErrorState
+          message={translateErrorText(["message"])}
+          retryLabel={translateErrorText(["retry"])}
+          onRetry={handleRetry}
+          isRetrying={isFetching}
+        />
+      );
+    }
+
+    if (!isLoading && policyBalances?.length === 0) {
+      return <LeavePolicyAllocationEmptyScreen />;
+    }
+
+    return currentAllocations?.map(
+      (policyBalance: EmployeePolicyBalanceType, index: number) => (
+        <Grid key={policyBalance.assignmentId} size={{ xs: 6, md: 4 }}>
+          <LeavePolicyCard
+            policyBalance={policyBalance}
+            ref={index === 0 ? firstCardRef : undefined}
+          />
+        </Grid>
+      )
+    );
+  };
+
   return (
     <Box
       role="region"
@@ -122,27 +151,7 @@ const LeavePolicyAllocation: FC = () => {
       )}
     >
       <Grid container spacing={2}>
-        {isError ? (
-          <PolicyLeaveErrorState
-            message={translateErrorText(["message"])}
-            retryLabel={translateErrorText(["retry"])}
-            onRetry={handleRetry}
-            isRetrying={isFetching}
-          />
-        ) : !isLoading && policyBalances?.length === 0 ? (
-          <LeavePolicyAllocationEmptyScreen />
-        ) : (
-          currentAllocations?.map(
-            (policyBalance: EmployeePolicyBalanceType, index: number) => (
-              <Grid key={policyBalance.assignmentId} size={{ xs: 6, md: 4 }}>
-                <LeavePolicyCard
-                  policyBalance={policyBalance}
-                  ref={index === 0 ? firstCardRef : undefined}
-                />
-              </Grid>
-            )
-          )
-        )}
+        {renderAllocations()}
         {isLoading && <LeaveAllocationSkeleton />}
       </Grid>
       {(policyBalances?.length ?? 0) > allocationsPerPage && (

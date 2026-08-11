@@ -5,16 +5,17 @@ import { useLeaveStore } from "~community/leave/store/store";
 
 const usePolicyLeaveYearSync = (): void => {
   const selectedYear = useLeaveStore((state) => state.selectedYear);
-  const setPolicySelectedYear = usePolicyLeaveStore(
-    (state) => state.setSelectedYear
-  );
-  const policySelectedYear = usePolicyLeaveStore((state) => state.selectedYear);
+  const {
+    selectedYear: policySelectedYear,
+    setSelectedYear: setPolicySelectedYear
+  } = usePolicyLeaveStore((state) => state);
 
   useEffect(() => {
     if (selectedYear && selectedYear !== policySelectedYear) {
       setPolicySelectedYear(selectedYear);
     }
-  }, [selectedYear, policySelectedYear, setPolicySelectedYear]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, policySelectedYear]);
 };
 
 export default usePolicyLeaveYearSync;

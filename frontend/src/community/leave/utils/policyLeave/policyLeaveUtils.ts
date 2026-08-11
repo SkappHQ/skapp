@@ -3,6 +3,7 @@ import { SetStateAction } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
+import { SUCCESS_TOAST_DURATION_MS } from "~community/leave/constants/stringConstants";
 import {
   ApplyPolicyLeaveErrorKeys,
   LeaveStatusEnums
@@ -10,6 +11,7 @@ import {
 import { PolicyLeaveToastEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import {
   PolicyLeaveFormErrors,
+  PolicyLeaveStore,
   initialPolicyLeaveFormErrors
 } from "~community/leave/store/policyLeaveStore";
 import {
@@ -61,8 +63,6 @@ interface PolicyLeaveFormErrorsProps {
   availabilityError: string;
   translateText: TranslateFn;
 }
-
-const SUCCESS_TOAST_DURATION_MS = 4000;
 
 const BALANCE_UNAVAILABLE_LABEL = "—";
 
@@ -268,3 +268,8 @@ export const getPolicyLeaveFormErrors = ({
 export const hasPolicyLeaveFormErrors = (
   errors: PolicyLeaveFormErrors
 ): boolean => Object.values(errors).some((error) => error !== "");
+
+export const selectHasUnsavedChanges = (state: PolicyLeaveStore): boolean =>
+  state.selectedDates.length > 0 ||
+  state.comment.trim() !== "" ||
+  state.attachments.length > 0;

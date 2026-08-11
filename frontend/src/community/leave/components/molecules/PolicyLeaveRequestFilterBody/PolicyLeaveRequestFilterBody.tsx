@@ -31,26 +31,20 @@ const PolicyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
   );
   const translateFilterText = useTranslator("commonComponents", "filterButton");
 
-  const selectedYear = usePolicyLeaveStore((state) => state.selectedYear);
-  const appliedStatus = usePolicyLeaveStore(
-    (state) => state.requestParams.status
-  );
-  const appliedPolicyIds = usePolicyLeaveStore(
-    (state) => state.requestParams.policyId
-  );
-  const setRequestFilters = usePolicyLeaveStore(
-    (state) => state.setRequestFilters
-  );
-  const resetRequestFilters = usePolicyLeaveStore(
-    (state) => state.resetRequestFilters
-  );
+  const {
+    selectedYear,
+    requestParams,
+    setRequestFilters,
+    resetRequestFilters
+  } = usePolicyLeaveStore((state) => state);
 
   const { data: policyBalances } = useGetMyPolicyBalances(selectedYear);
 
-  const [selectedStatus, setSelectedStatus] =
-    useState<PolicyLeaveRequestStatus[]>(appliedStatus);
-  const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>(
-    appliedPolicyIds.map(String)
+  const [selectedStatus, setSelectedStatus] = useState<
+    PolicyLeaveRequestStatus[]
+  >(requestParams.status);
+  const [selectedPolicyIds, setSelectedPolicyIds] = useState<string[]>(() =>
+    requestParams.policyId.map(String)
   );
 
   const isEmpty = selectedStatus.length === 0 && selectedPolicyIds.length === 0;

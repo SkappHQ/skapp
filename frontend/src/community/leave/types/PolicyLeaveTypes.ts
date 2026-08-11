@@ -1,4 +1,8 @@
-import { LeaveStates } from "~community/common/types/CommonTypes";
+import {
+  LeaveStates,
+  SortKeyTypes,
+  SortOrderTypes
+} from "~community/common/types/CommonTypes";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
 
@@ -44,7 +48,6 @@ export interface EmployeePolicyBalanceType {
   policyType: PolicyType;
   leaveType: PolicyLeaveTypeDetailType;
   year: number;
-  effectiveFrom: string;
   validFrom: string;
   validTo: string;
   carriedForwardDays: number;
@@ -82,8 +85,7 @@ export interface PolicyLeaveAttachmentPayload {
   originalFileName: string;
 }
 
-export interface PolicyLeaveAttachmentType
-  extends PolicyLeaveAttachmentPayload {
+export interface PolicyLeaveAttachmentType extends PolicyLeaveAttachmentPayload {
   id: number;
 }
 
@@ -121,4 +123,14 @@ export interface PolicyLeaveRequestPageType {
   currentPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export interface PolicyLeaveSearchQueryParams {
+  page: number;
+  size: number;
+  sortKey: SortKeyTypes;
+  sortOrder: SortOrderTypes;
+  year: string;
+  status?: string;
+  policyId?: string;
 }

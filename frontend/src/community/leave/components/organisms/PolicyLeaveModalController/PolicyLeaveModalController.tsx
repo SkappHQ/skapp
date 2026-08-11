@@ -8,10 +8,8 @@ import PolicyAddAttachmentModal from "~community/leave/components/molecules/Poli
 import PolicySelectionModal from "~community/leave/components/molecules/PolicyLeaveModals/PolicySelectionModal/PolicySelectionModal";
 import PolicyTeamAvailabilityModal from "~community/leave/components/molecules/PolicyLeaveModals/PolicyTeamAvailabilityModal/PolicyTeamAvailabilityModal";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
-import {
-  selectHasUnsavedChanges,
-  usePolicyLeaveStore
-} from "~community/leave/store/policyLeaveStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
+import { selectHasUnsavedChanges } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const PolicyLeaveModalController = () => {
   const translateText = useTranslator("leaveModule", "myRequests");
