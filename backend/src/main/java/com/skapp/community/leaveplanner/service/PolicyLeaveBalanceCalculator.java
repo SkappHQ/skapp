@@ -54,9 +54,19 @@ public class PolicyLeaveBalanceCalculator {
 			float totalDaysUsed = committedDays(assignment, cycle);
 
 			if (cycle.start().equals(targetCycle.start())) {
-				return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), carriedForwardDays,
-						accruedDays, totalDaysAllocated, totalDaysUsed, totalDaysAllocated - totalDaysUsed, false,
-						true);
+				PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
+				balance.setPolicy(policy);
+				balance.setEffectiveFrom(effectiveFrom);
+				balance.setCycleStart(cycle.start());
+				balance.setCycleEnd(cycle.end());
+				balance.setCarriedForwardDays(carriedForwardDays);
+				balance.setAccruedDays(accruedDays);
+				balance.setTotalDaysAllocated(totalDaysAllocated);
+				balance.setTotalDaysUsed(totalDaysUsed);
+				balance.setBalanceInDays(totalDaysAllocated - totalDaysUsed);
+				balance.setUnlimited(false);
+				balance.setDerived(true);
+				return balance;
 			}
 
 			if (cycle.start().isAfter(targetCycle.start())) {
@@ -84,13 +94,31 @@ public class PolicyLeaveBalanceCalculator {
 
 	private PolicyLeaveBalanceDto emptyBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle,
 			boolean isDerived) {
-		return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, false,
-				isDerived);
+		PolicyLeaveBalanceDto balance = zeroedBalance(policy, effectiveFrom, cycle);
+		balance.setUnlimited(false);
+		balance.setDerived(isDerived);
+		return balance;
 	}
 
 	private PolicyLeaveBalanceDto unlimitedBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle) {
-		return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, true,
-				true);
+		PolicyLeaveBalanceDto balance = zeroedBalance(policy, effectiveFrom, cycle);
+		balance.setUnlimited(true);
+		balance.setDerived(true);
+		return balance;
+	}
+
+	private PolicyLeaveBalanceDto zeroedBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle) {
+		PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
+		balance.setPolicy(policy);
+		balance.setEffectiveFrom(effectiveFrom);
+		balance.setCycleStart(cycle.start());
+		balance.setCycleEnd(cycle.end());
+		balance.setCarriedForwardDays(0f);
+		balance.setAccruedDays(0f);
+		balance.setTotalDaysAllocated(0f);
+		balance.setTotalDaysUsed(0f);
+		balance.setBalanceInDays(0f);
+		return balance;
 	}
 
 }
