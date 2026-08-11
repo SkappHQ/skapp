@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
@@ -25,6 +26,7 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -1088,6 +1091,73 @@ class CrmContactControllerIntegrationTest {
 	@DisplayName("Lookup contacts without CRM role - Returns Forbidden")
 	void getContactsLookup_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	// --- getContactMetricsById ---
+
+	@Test
+	@DisplayName("Get contact metrics by ID - Returns aggregated deal and task metrics")
+	void getContactMetricsById_HappyPath_ReturnsMetrics() throws Exception {
+		Long companyId = savedCompany("MetricsByIdCorp").getId();
+		Long contactId = savedNamedContact("MetricsByIdContact", companyId, "metrics.byid@example.com").getId();
+
+		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
+		CrmDealStage wonStage = savedStage(CrmDealStageType.WON);
+		savedDeal(contactId, companyId, openStage, "150");
+		savedDeal(contactId, companyId, wonStage, "400");
+		savedDeal(contactId, companyId, wonStage, "600");
+		savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		savedTask(contactId, false, LocalDateTime.now().minusDays(2));
+
+		String content = performRequest(
+				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
+			.isEqualByComparingTo("1000");
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID with no deals or tasks - Returns zero metrics")
+	void getContactMetricsById_NoActivity_ReturnsZeroMetrics() throws Exception {
+		Long companyId = savedCompany("EmptyMetricsCorp").getId();
+		Long contactId = savedNamedContact("EmptyMetricsContact", companyId, "empty.metrics@example.com").getId();
+
+		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['closedDealValue']").value("0"))
+			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID that does not exist - Returns Bad Request")
+	void getContactMetricsById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID without CRM role - Returns Forbidden")
+	void getContactMetricsById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		Long companyId = savedCompany("ForbiddenMetricsCorp").getId();
+		Long contactId = savedContact(companyId, "forbidden.metrics@example.com").getId();
+
+		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON), noRoleToken)
+			.andDo(print())
 			.andExpect(status().isForbidden());
 	}
 

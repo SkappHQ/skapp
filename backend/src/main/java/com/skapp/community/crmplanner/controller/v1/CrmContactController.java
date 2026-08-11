@@ -101,4 +101,13 @@ public class CrmContactController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get contact metrics by ID",
+			description = "Returns the aggregated deal and task metrics for a single contact.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/{id}/metrics")
+	public ResponseEntity<ResponseEntityDto> getContactMetricsById(@PathVariable Long id) {
+		ResponseEntityDto response = contactService.getContactMetricsById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

@@ -31,6 +31,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
@@ -294,6 +295,18 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactMetrics: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactMetricsById(Long id) {
+		log.info("getContactMetricsById: execution started");
+
+		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		log.info("getContactMetricsById: execution ended");
+		return new ResponseEntityDto(false, metrics);
 	}
 
 	@Override

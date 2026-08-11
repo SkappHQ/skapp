@@ -26,6 +26,8 @@ public interface CrmContactService {
 
 	ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto);
 
+	ResponseEntityDto getContactMetricsById(Long id);
+
 	ResponseEntityDto getContactsLookup(CrmContactFilterDto filterDto);
 
 	ResponseEntityDto getContactById(Long id);
