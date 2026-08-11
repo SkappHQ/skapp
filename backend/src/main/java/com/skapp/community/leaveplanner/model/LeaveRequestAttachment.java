@@ -33,11 +33,9 @@ public class LeaveRequestAttachment {
 	@Column(name = "original_file_name", updatable = false)
 	private String originalFileName;
 
-	@NonNull
 	@Column(name = "file_Url", updatable = false)
 	private String url;
 
-	@NonNull
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "leave_Request_id")
 	private LeaveRequest leaveRequest;
