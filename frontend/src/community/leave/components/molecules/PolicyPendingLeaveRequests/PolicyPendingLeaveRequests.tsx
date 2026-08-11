@@ -107,6 +107,20 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
     }
   );
 
+  const handleLeaveRequestApproval = (leaveRequestId: number): void => {
+    approveLeaveRequest({
+      leaveRequestId,
+      status: PolicyLeaveRequestStatus.APPROVED
+    });
+  };
+
+  const handleLeaveRequestDecline = (leaveRequestId: number): void => {
+    declineLeaveRequest({
+      leaveRequestId,
+      status: PolicyLeaveRequestStatus.DENIED
+    });
+  };
+
   const leaveRequests = data || [];
 
   const tableRows = leaveRequests.map(
@@ -149,12 +163,7 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
         >
           <ButtonV2
             variant={"tertiary"}
-            onClick={() =>
-              declineLeaveRequest({
-                leaveRequestId: request.leaveRequestId,
-                status: PolicyLeaveRequestStatus.DENIED
-              })
-            }
+            onClick={() => handleLeaveRequestDecline(request.leaveRequestId)}
             type={"reset"}
             size={"md"}
             icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -164,12 +173,7 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
           </ButtonV2>
           <ButtonV2
             variant={"secondary"}
-            onClick={() =>
-              approveLeaveRequest({
-                leaveRequestId: request.leaveRequestId,
-                status: PolicyLeaveRequestStatus.APPROVED
-              })
-            }
+            onClick={() => handleLeaveRequestApproval(request.leaveRequestId)}
             type={"submit"}
             size={"md"}
             icon={<Icon name={IconName.CHECK_ICON} />}

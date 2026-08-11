@@ -27,7 +27,6 @@ const PolicyLeaveReviewModalController: FC = () => {
     (state) => state.closeManagerModal
   );
 
-  const [modalTitle, setModalTitle] = useState<string>("");
   const [popupType, setPopupType] = useState<string>("");
 
   const { data: request } =
@@ -52,24 +51,26 @@ const PolicyLeaveReviewModalController: FC = () => {
       return setPopupType(PolicyLeaveRequestStatus.REVOKED);
   }, [request, isManagerModalOpen]);
 
-  useEffect(() => {
-    if (popupType === PolicyLeaveRequestStatus.PENDING)
-      setModalTitle(translateText(["approveModalTitle"]));
-    else if (popupType === PolicyLeaveReviewModalEnums.DECLINE)
-      setModalTitle(translateText(["declineModalTitle"]));
-    else if (popupType === PolicyLeaveRequestStatus.APPROVED)
-      setModalTitle(translateText(["approvedModalTitle"]));
-    else if (popupType === PolicyLeaveRequestStatus.DENIED)
-      setModalTitle(translateText(["deniedModalTitle"]));
-    else if (popupType === PolicyLeaveRequestStatus.REVOKED)
-      setModalTitle(translateText(["revokedModalTitle"]));
-    else if (popupType === PolicyLeaveRequestStatus.CANCELLED)
-      setModalTitle(translateText(["cancelledModalTitle"]));
-    else if (popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS)
-      setModalTitle(translateText(["deniedModalTitle"]));
-    else if (popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS)
-      setModalTitle(translateText(["approvedModalTitle"]));
-  }, [popupType, isManagerModalOpen]);
+  const getModalTitle = (): string => {
+    switch (popupType) {
+      case PolicyLeaveRequestStatus.PENDING:
+        return translateText(["approveModalTitle"]);
+      case PolicyLeaveReviewModalEnums.DECLINE:
+        return translateText(["declineModalTitle"]);
+      case PolicyLeaveRequestStatus.APPROVED:
+      case PolicyLeaveReviewModalEnums.APPROVED_STATUS:
+        return translateText(["approvedModalTitle"]);
+      case PolicyLeaveRequestStatus.DENIED:
+      case PolicyLeaveReviewModalEnums.DECLINE_STATUS:
+        return translateText(["deniedModalTitle"]);
+      case PolicyLeaveRequestStatus.REVOKED:
+        return translateText(["revokedModalTitle"]);
+      case PolicyLeaveRequestStatus.CANCELLED:
+        return translateText(["cancelledModalTitle"]);
+      default:
+        return "";
+    }
+  };
 
   const modalContent = (): ReactNode => {
     if (!request) return null;
@@ -108,7 +109,7 @@ const PolicyLeaveReviewModalController: FC = () => {
     <SmallModal
       isOpen={isManagerModalOpen && !!popupType}
       onClose={closeModel}
-      modalHeader={modalTitle}
+      modalHeader={getModalTitle()}
       content={modalContent()}
     />
   );

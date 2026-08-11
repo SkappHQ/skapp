@@ -101,10 +101,10 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
         />
         <LeaveStatusPopupRow
           label={translateText(["type"])}
-          iconType={request.leaveType?.name ?? ""}
+          iconType={request.leaveType.name}
           styles={{ marginBottom: "1.25rem" }}
-          aria-label={`Leave request type is ${request.leaveType?.name ?? ""}`}
-          icon={request.leaveType?.emojiCode}
+          aria-label={`Leave request type is ${request.leaveType.name}`}
+          icon={request.leaveType.emojiCode}
         />
         <LeaveStatusPopupRow
           label={translateText(["status"])}

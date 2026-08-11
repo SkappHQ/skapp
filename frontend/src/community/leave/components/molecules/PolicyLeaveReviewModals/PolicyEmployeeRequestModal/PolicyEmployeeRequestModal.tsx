@@ -85,8 +85,8 @@ const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
     >
       <StatusPopupRow
         label={translateText(["myLeaveRequests", "type"])}
-        iconName={request?.leaveType?.name}
-        icon={request?.leaveType?.emojiCode}
+        iconName={request.leaveType.name}
+        icon={request.leaveType.emojiCode}
       />
       <StatusPopupRow
         label={translateText(["myLeaveRequests", "status"])}
@@ -122,7 +122,7 @@ const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
         text={request.requestDesc ?? ""}
         isDisabled={true}
       />
-      <PolicyLeaveAttachmentRow attachments={request?.attachments} />
+      <PolicyLeaveAttachmentRow attachments={request.attachments} />
       <Box
         sx={{
           display: "flex",

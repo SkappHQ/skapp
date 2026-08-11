@@ -6,7 +6,6 @@ import {
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
 import { MANAGER_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
-import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
 export interface PolicyLeaveReviewFilters {
@@ -36,7 +35,6 @@ export const initialPolicyLeaveReviewRequestParams: PolicyLeaveReviewRequestPara
   };
 
 export interface PolicyLeaveReviewStore {
-  modalType: PolicyLeaveReviewModalEnums;
   isManagerModalOpen: boolean;
   isEmployeeModalOpen: boolean;
   selectedRequestId: number | null;
@@ -57,7 +55,6 @@ export interface PolicyLeaveReviewStore {
 export const usePolicyLeaveReviewStore = create<PolicyLeaveReviewStore>()(
   devtools(
     (set) => ({
-      modalType: PolicyLeaveReviewModalEnums.NONE,
       isManagerModalOpen: false,
       isEmployeeModalOpen: false,
       selectedRequestId: null,

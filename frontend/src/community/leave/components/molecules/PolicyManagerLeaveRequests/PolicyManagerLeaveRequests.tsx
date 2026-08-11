@@ -22,6 +22,7 @@ import {
 import { useGetPolicyManagerLeaveRequests } from "~community/leave/api/PolicyLeaveReviewApi";
 import RequestDates from "~community/leave/components/molecules/LeaveRequestRow/RequestDates";
 import PolicyManagerLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyManagerLeaveRequestFilterBody/PolicyManagerLeaveRequestFilterBody";
+import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { PolicyManagerLeaveRequestType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
@@ -120,13 +121,13 @@ const PolicyManagerLeaveRequests: FC = () => {
         name: (
           <Box
             role="group"
-            aria-label={`${employeeLeaveRequest?.employee?.firstName} ${employeeLeaveRequest?.employee?.lastName}`}
+            aria-label={`${employeeLeaveRequest.employee.firstName} ${employeeLeaveRequest.employee.lastName}`}
           >
             <Box aria-hidden={true}>
               <AvatarChip
-                firstName={employeeLeaveRequest?.employee?.firstName ?? ""}
-                lastName={employeeLeaveRequest?.employee?.lastName ?? ""}
-                avatarUrl={employeeLeaveRequest?.employee?.authPic ?? ""}
+                firstName={employeeLeaveRequest.employee.firstName}
+                lastName={employeeLeaveRequest.employee.lastName}
+                avatarUrl={employeeLeaveRequest.employee.authPic ?? ""}
                 isResponsiveLayout
                 chipStyles={{
                   width: "fit-content",
@@ -140,7 +141,7 @@ const PolicyManagerLeaveRequests: FC = () => {
         ),
         duration: (
           <RequestDates
-            days={getAsDaysString(String(employeeLeaveRequest?.durationDays))}
+            days={getAsDaysString(employeeLeaveRequest.durationDays)}
             dates={getStartEndDate(
               employeeLeaveRequest.startDate,
               employeeLeaveRequest.endDate
@@ -150,17 +151,17 @@ const PolicyManagerLeaveRequests: FC = () => {
         type: (
           <div className={chipClassName}>
             <span role="img" aria-hidden="true">
-              {getEmoji(employeeLeaveRequest?.leaveType?.emojiCode || "")}
+              {getEmoji(employeeLeaveRequest.leaveType.emojiCode)}
             </span>
-            {employeeLeaveRequest?.leaveType?.name}
+            {employeeLeaveRequest.leaveType.name}
           </div>
         ),
         status: (
           <div className={`${chipClassName} capitalize`}>
             <span role="img" aria-hidden="true">
-              {requestTypeSelector(employeeLeaveRequest?.status)}
+              {requestTypeSelector(employeeLeaveRequest.status)}
             </span>
-            {employeeLeaveRequest?.status.toLowerCase()}
+            {employeeLeaveRequest.status.toLowerCase()}
           </div>
         )
       })
@@ -202,6 +203,14 @@ const PolicyManagerLeaveRequests: FC = () => {
     />
   );
 
+  const handleSortChange = (value: string): void => {
+    setRequestSortKey(value as SortKeyTypes);
+  };
+
+  const handleRowClick = (row: GridRow): void => {
+    openManagerModal(Number(row.id));
+  };
+
   // The store outlives the page, so the status filter is seeded on every entry the way
   // the legacy page did it.
   useEffect(() => {
@@ -236,12 +245,12 @@ const PolicyManagerLeaveRequests: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      skeletonRows={5}
+      skeletonRows={LEAVE_REQUESTS_SKELETON_ROWS}
       emptyState={{
         title: translateText(["noLeaveRequests"]),
         description: translateText(["noLeaveRequestsManagerDetails"])
       }}
-      onRowClick={(row: GridRow) => openManagerModal(Number(row.id))}
+      onRowClick={handleRowClick}
       pagination={{
         totalPages,
         currentPage,
@@ -252,7 +261,7 @@ const PolicyManagerLeaveRequests: FC = () => {
           id: "all-leave-requests-sort",
           options: sortOptions,
           value: requestParams.sortKey,
-          onChange: (value: string) => setRequestSortKey(value as SortKeyTypes),
+          onChange: handleSortChange,
           renderSelectedValue: renderSelectedSortValue,
           width: "auto",
           menuWidth: "content",

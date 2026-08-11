@@ -138,8 +138,8 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
       >
         <StatusPopupRow
           label={translateText(["myLeaveRequests", "type"])}
-          iconName={request?.leaveType?.name}
-          icon={request?.leaveType?.emojiCode}
+          iconName={request.leaveType.name}
+          icon={request.leaveType.emojiCode}
         />
         <StatusPopupRow
           label={translateText(["myLeaveRequests", "status"])}
@@ -196,7 +196,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
         )}
 
         {layout.showAttachments && (
-          <PolicyLeaveAttachmentRow attachments={request?.attachments} />
+          <PolicyLeaveAttachmentRow attachments={request.attachments} />
         )}
 
         <ButtonV2

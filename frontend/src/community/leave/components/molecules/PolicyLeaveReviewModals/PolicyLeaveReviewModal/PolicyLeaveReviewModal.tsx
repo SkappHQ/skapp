@@ -108,17 +108,17 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
           tabIndex={0}
           role="group"
           aria-label={translateAria(["leaveType"], {
-            leaveType: request.leaveType?.name
+            leaveType: request.leaveType.name
           })}
         >
           <IconChip
             accessibility={{
-              ariaLabel: request.leaveType?.name,
+              ariaLabel: request.leaveType.name,
               ariaHidden: true
             }}
-            label={request.leaveType?.name ?? ""}
+            label={request.leaveType.name}
             isTruncated={false}
-            icon={request.leaveType?.emojiCode ?? ""}
+            icon={request.leaveType.emojiCode}
             chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
             tabIndex={-1}
           />

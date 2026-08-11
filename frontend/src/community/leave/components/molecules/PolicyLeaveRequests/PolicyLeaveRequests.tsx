@@ -132,6 +132,14 @@ const PolicyLeaveRequests: FC = () => {
     <PolicyLeaveRequestFilterBody onClose={onClose} />
   );
 
+  const handleRowClick = (row: GridRow): void => {
+    openEmployeeModal(Number(row.id));
+  };
+
+  const handleSortChange = (value: string): void => {
+    setRequestSortKey(value as SortKeyTypes);
+  };
+
   if (isError) {
     return (
       <>
@@ -170,7 +178,7 @@ const PolicyLeaveRequests: FC = () => {
             "emptyLeaveRequestDes"
           ])
         }}
-        onRowClick={(row: GridRow) => openEmployeeModal(Number(row.id))}
+        onRowClick={handleRowClick}
         pagination={{
           totalPages: leaveRequests?.totalPages,
           currentPage: requestParams.page,
@@ -181,8 +189,7 @@ const PolicyLeaveRequests: FC = () => {
             id: "my-policy-leave-requests-sort",
             options: sortOptions,
             value: requestParams.sortKey,
-            onChange: (value: string) =>
-              setRequestSortKey(value as SortKeyTypes),
+            onChange: handleSortChange,
             renderSelectedValue: renderSelectedSortValue,
             width: "auto",
             menuWidth: "content",
