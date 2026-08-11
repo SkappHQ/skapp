@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.common.model.BusinessUnit;
 import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.util.converter.FieldEncryptionConverter;
@@ -179,6 +180,10 @@ public class Employee extends Auditable<String> {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "work_location_id")
 	private WorkLocation workLocation;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "business_unit_id")
+	private BusinessUnit businessUnit;
 
 	public String getFullName() {
 		return firstName + " " + lastName;
