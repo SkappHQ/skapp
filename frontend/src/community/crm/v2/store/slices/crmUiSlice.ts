@@ -1,5 +1,5 @@
-import { CrmModalTypes } from "~community/crm/v2/types/ModalTypes";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/SidePanelTypes";
+import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 export interface CrmUiSlice {
   isCompanyModalOpen: boolean;

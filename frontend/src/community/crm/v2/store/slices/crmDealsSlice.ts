@@ -1,30 +1,31 @@
 import {
   CrmBoardColumn,
-  CrmDealEntity
-} from "~community/crm/v2/types/CrmTypes";
+  CrmDealEntity,
+  CrmTaskEntity
+} from "~community/crm/types/CrmTypes";
 
 export interface CrmDealsSlice {
   deals: Record<number, CrmDealEntity>;
   dealIds: number[];
   board: Record<number, CrmBoardColumn>;
 
+  setDeals: (deals: CrmDealEntity[], currentPage?: number) => void;
   upsertDeals: (deals: CrmDealEntity[]) => void;
   upsertDeal: (deal: CrmDealEntity) => void;
   removeDeal: (dealId: number) => void;
 
-  setDealIds: (dealIds: number[]) => void;
-  appendDealIds: (dealIds: number[]) => void;
-
-  setBoard: (board: Record<number, CrmBoardColumn>) => void;
-  setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
-  appendBoardColumnDealIds: (
+  setBoardColumn: (
     stageId: number,
-    dealIds: number[],
+    deals: CrmDealEntity[],
+    totalCount: number,
     currentPage: number,
     hasNextPage: boolean
   ) => void;
   moveDeal: (dealId: number, toStageId: number, toIndex: number) => void;
 
-  setDealTaskIds: (dealId: number, taskIds: number[]) => void;
-  appendDealTaskIds: (dealId: number, taskIds: number[]) => void;
+  setDealTasks: (
+    dealId: number,
+    tasks: CrmTaskEntity[],
+    currentPage?: number
+  ) => void;
 }
