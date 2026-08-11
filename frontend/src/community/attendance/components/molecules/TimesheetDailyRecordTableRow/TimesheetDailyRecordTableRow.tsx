@@ -210,7 +210,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
       alignItems="center"
       sx={mergeSx([
         classes.stackContainerStyle,
-        isManualEntryRestricted ? { cursor: "default" } : undefined
+        isManualEntryRestricted ? classes.nonInteractiveStackStyle : undefined
       ])}
       onClick={handleRowActivate}
       tabIndex={getTabIndex(isFreeTier)}

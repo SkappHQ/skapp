@@ -28,7 +28,7 @@ const MyTimeSheet: NextPage = () => {
       title={translateText(["timesheet.myTimesheet.title"])}
       primaryButtonText={
         isManualEntryRestricted
-          ? ""
+          ? undefined
           : translateText(["timesheet.manualTimeEntryButtonTxt"])
       }
       primaryButtonType={ButtonStyle.PRIMARY}

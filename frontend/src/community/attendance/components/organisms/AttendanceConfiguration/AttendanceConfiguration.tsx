@@ -57,10 +57,21 @@ const AttendanceConfiguration = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (configData) {
-      setConfig(configData);
-      setInitialConfig(configData);
-    }
+    if (!configData) return;
+
+    setInitialConfig(configData);
+    // The manual entry restriction saves itself and invalidates this query, so a refetch
+    // must only pick up that field. Replacing the whole object would silently discard
+    // unsaved edits made to the other settings on this page.
+    setConfig((prevConfig) =>
+      prevConfig
+        ? {
+            ...prevConfig,
+            isManualEntryRestrictionEnabled:
+              configData.isManualEntryRestrictionEnabled
+          }
+        : configData
+    );
   }, [configData]);
 
   const handleSwitchChange = (
