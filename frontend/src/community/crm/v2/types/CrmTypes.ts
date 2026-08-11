@@ -1,134 +1,195 @@
+import { SortOrderTypes } from "~community/common/types/CommonTypes";
+
+import { CrmDealSortEnum, CrmPriorityEnum } from "../enums/common";
 import {
-  CrmDealStageColorsEnum,
-  CrmDealStageEnum,
-  CrmIndustryEnum,
-  CrmPriorityEnum
-} from "../enums/common";
+  CrmCompanyEntity,
+  CrmContactEntity,
+  CrmDealEntity,
+  CrmOwnerEntity,
+  CrmTaskEntity,
+  CrmTaskTypeEntity
+} from "./CrmCommonTypes";
 
-// Company
+// Modals and side panels
 
-export interface CrmCompanyEntity {
-  id?: number;
-  name?: string;
-  industry?: CrmIndustryEnum;
-  website?: string;
-  address?: string;
-  contactNumber?: string;
-  openTasksCount?: number;
-  overdue?: number;
-  openValue?: string;
-  accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
-  contactIds?: number[];
-  dealIds?: number[];
-  taskIds?: number[];
+export enum CrmModalTypes {
+  ADD_COMPANY_MODAL = "ADD_COMPANY_MODAL",
+  ADD_CONTACT_MODAL = "ADD_CONTACT_MODAL",
+  EDIT_COMPANY_MODAL = "EDIT_COMPANY_MODAL",
+  EDIT_CONTACT_MODAL = "EDIT_CONTACT_MODAL",
+  ADD_TASK_MODAL = "ADD_TASK_MODAL",
+  EDIT_TASK_MODAL = "EDIT_TASK_MODAL",
+  DELETE_COMPANY_MODAL = "DELETE_COMPANY_MODAL",
+  DELETE_CONTACT_MODAL = "DELETE_CONTACT_MODAL",
+  ADD_DEAL_STAGE_MODAL = "ADD_DEAL_STAGE_MODAL",
+  EDIT_DEAL_STAGE_MODAL = "EDIT_DEAL_STAGE_MODAL",
+  DELETE_DEAL_STAGE_MODAL = "DELETE_DEAL_STAGE_MODAL",
+  DELETE_TASK_MODAL = "DELETE_TASK_MODAL"
 }
 
-export interface CrmCompanyMetrics {
-  id?: number;
-  openTasksCount?: number;
-  overdue?: number;
-  openValue?: string;
-  accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
+export enum CrmSidePanelTypes {
+  CONTACT_SIDE_PANEL = "CONTACT_SIDE_PANEL",
+  COMPANY_SIDE_PANEL = "COMPANY_SIDE_PANEL",
+  TASK_SIDE_PANEL = "TASK_SIDE_PANEL",
+  ADD_DEAL_SIDE_PANEL = "ADD_DEAL_SIDE_PANEL",
+  DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
 }
 
-// Contact
+// Requests
 
-export interface CrmContactEntity {
-  id?: number;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  contactNumber?: string;
-  lastContactAt?: string;
-  lastModifiedDate?: string;
-  companyId?: number;
-  ownerId?: number;
-  totalRevenue?: string;
-  pipelineRevenue?: string;
-  activeDealsCount?: number;
-  openTasksCount?: number;
-  overdueTasksCount?: number;
-  closedDealValue?: string;
-  closedDealCount?: number;
-  dealIds?: number[];
-  taskIds?: number[];
+export interface CrmDealReorderWithinStageRequest {
+  dealId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
 }
 
-export interface CrmContactMetrics {
-  id?: number;
-  totalRevenue?: string;
-  pipelineRevenue?: string;
-  activeDealsCount?: number;
-  openTasksCount?: number;
-  overdueTasksCount?: number;
-  closedDealValue?: string;
-  closedDealCount?: number;
+export interface CrmDealMoveBetweenStagesRequest {
+  dealId: number;
+  newStageId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
 }
 
-export interface CrmOwnerEntity {
-  employeeId: number;
-  firstName: string;
-  lastName?: string;
-  email?: string;
-  authPic?: string;
+export interface CrmDealStageReorderRequest {
+  id: number;
+  orderIndex: number;
 }
 
-// Deal
+// Responses
 
-export interface CrmDealEntity {
-  id?: number;
-  name?: string;
-  description?: string;
-  priority?: CrmPriorityEnum;
-  orderIndex?: string;
-  amount?: string;
-  closingAt?: string;
-  stageId?: number;
-  companyId?: number;
-  contactId?: number;
-  ownerId?: number;
-  openTasksCount?: number;
-  taskIds?: number[];
+export interface CrmCompanyListResponse {
+  items: CrmCompanyEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
-export interface CrmStageEntity {
-  id?: number;
-  name?: string;
-  description?: string;
-  color?: CrmDealStageColorsEnum;
-  orderIndex?: number;
-  stageType?: CrmDealStageEnum;
+export interface CrmCompanyDomainSearchResponse {
+  companies: CrmCompanyEntity[];
 }
 
-export interface CrmBoardColumn {
-  dealIds: number[];
+export interface CrmContactListResponse {
+  items: CrmContactEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmOwnerListResponse {
+  items: CrmOwnerEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmDealListResponse {
+  items: CrmDealEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmDealsByStagesResponse {
+  stageId: number;
+  deals: CrmDealEntity[];
   totalCount: number;
   currentPage: number;
+  totalPages: number;
+  pageSize: number;
   hasNextPage: boolean;
 }
 
-// Task
-
-export interface CrmTaskEntity {
-  id?: number;
-  name?: string;
-  priority?: CrmPriorityEnum;
-  isCompleted?: boolean;
-  dueAt?: string;
-  notes?: string;
-  typeId?: number;
-  ownerId?: number;
-  contactId?: number;
-  companyId?: number;
-  dealId?: number;
+export interface CrmTaskListResponse {
+  tasks: CrmTaskEntity[];
 }
 
-export interface CrmTaskTypeEntity {
-  id: number;
-  name: string;
-  orderIndex: number;
+export interface CrmTaskTypeListResponse {
+  taskTypes: CrmTaskTypeEntity[];
+}
+
+export interface CrmTaskCompletedListResponse {
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmTaskRelatedListResponse {
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface CrmExistsResponse {
+  isExists: boolean;
+}
+
+// Filters
+
+export interface CrmCompanyFilterRequest {
+  searchKeyword?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmCompanyDomainSearchFilterRequest {
+  domain: string;
+  limit: number;
+}
+
+export interface CrmContactFilterRequest {
+  searchKeyword?: string;
+  companyId?: number;
+  dealId?: number;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmOwnerLookupFilterRequest {
+  searchKeyword?: string;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmDealFilterRequest {
+  sortOrder?: SortOrderTypes;
+  sortKey?: CrmDealSortEnum;
+  searchKeyword?: string;
+  stageId?: number;
+  priority?: CrmPriorityEnum;
+  companyId?: number;
+  contactId?: number;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmDealsByStagesRequest {
+  stageIds: number[];
+  searchKeyword?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface CrmTaskFilterRequest {
+  searchKeyword?: string;
+  contactId?: number;
+  dealId?: number;
+  companyId?: number;
+}
+
+export interface CrmTaskCompletedFilterRequest {
+  searchKeyword?: string;
+  contactId?: number;
+  dealId?: number;
+  companyId?: number;
+  page?: number;
+  size?: number;
+}
+
+export interface CrmTaskRelatedFilterRequest {
+  contactId?: number;
+  dealId?: number;
+  page?: number;
+  size?: number;
 }
