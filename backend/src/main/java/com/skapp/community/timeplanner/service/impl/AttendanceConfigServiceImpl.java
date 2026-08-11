@@ -72,7 +72,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		}
 
 		if (attendanceConfigRequestDto.getIsManualEntryRestrictionEnabled() != null) {
-			updateOrCreateConfig(AttendanceConfigType.MANUAL_ENTRY_RESTRICTION_ENABLED,
+			updateOrCreateConfig(AttendanceConfigType.MANUAL_ENTRY_ENABLED,
 					String.valueOf(attendanceConfigRequestDto.getIsManualEntryRestrictionEnabled()));
 		}
 
@@ -110,7 +110,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 		boolean isGeoFencingEnabled = isConfigEnabled(attendanceConfigs, AttendanceConfigType.GEO_FENCING_ENABLED);
 		boolean isClockInClockOutOnly = isConfigEnabled(attendanceConfigs, AttendanceConfigType.CLOCK_IN_OUT_ONLY);
 		boolean isManualEntryRestrictionEnabled = isConfigEnabled(attendanceConfigs,
-				AttendanceConfigType.MANUAL_ENTRY_RESTRICTION_ENABLED);
+				AttendanceConfigType.MANUAL_ENTRY_ENABLED);
 
 		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
 				isGeoFencingEnabled, isClockInClockOutOnly, null, isManualEntryRestrictionEnabled);
@@ -134,7 +134,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
 				case CLOCK_IN_OUT_ONLY -> dto.setIsClockInClockOutOnly(value);
 				case FINGERPRINT_ATTENDANCE_ENABLED -> dto.setIsFingerprintAttendanceEnabled(value);
-				case MANUAL_ENTRY_RESTRICTION_ENABLED -> dto.setIsManualEntryRestrictionEnabled(value);
+				case MANUAL_ENTRY_ENABLED -> dto.setIsManualEntryRestrictionEnabled(value);
 			}
 		}
 

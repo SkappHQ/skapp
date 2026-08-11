@@ -133,16 +133,15 @@ class AttendanceConfigServiceImplUnitTest {
 
 		assertTrue(captor.getAllValues()
 			.stream()
-			.anyMatch(
-					config -> config.getAttendanceConfigType() == AttendanceConfigType.MANUAL_ENTRY_RESTRICTION_ENABLED
-							&& "true".equals(config.getAttendanceConfigValue())));
+			.anyMatch(config -> config.getAttendanceConfigType() == AttendanceConfigType.MANUAL_ENTRY_ENABLED
+					&& "true".equals(config.getAttendanceConfigValue())));
 	}
 
 	@Test
 	void getAllAttendanceConfigs_nonAdminReturnsManualEntryRestriction() {
 		when(userService.getCurrentUserRoles()).thenReturn(Set.of(Role.ATTENDANCE_EMPLOYEE.name()));
 		when(attendanceConfigDao.findAll())
-			.thenReturn(List.of(new AttendanceConfig(AttendanceConfigType.MANUAL_ENTRY_RESTRICTION_ENABLED, "true")));
+			.thenReturn(List.of(new AttendanceConfig(AttendanceConfigType.MANUAL_ENTRY_ENABLED, "true")));
 
 		AttendanceConfigRequestDto dto = (AttendanceConfigRequestDto) attendanceConfigService.getAllAttendanceConfigs()
 			.getResults()
