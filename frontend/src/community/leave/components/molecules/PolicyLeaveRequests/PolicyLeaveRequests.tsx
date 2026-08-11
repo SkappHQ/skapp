@@ -10,7 +10,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SortKeyTypes } from "~community/common/types/CommonTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
-import { useSearchMyPolicyLeaveRequests } from "~community/leave/api/PolicyLeaveApi";
+import { useGetMyPolicyLeaveRequestsPage } from "~community/leave/api/PolicyLeaveApi";
 import LeaveRequestDates from "~community/leave/components/molecules/LeaveRequestDates/LeaveRequestDates";
 import PolicyLeaveErrorState from "~community/leave/components/molecules/PolicyLeaveErrorState/PolicyLeaveErrorState";
 import PolicyLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyLeaveRequestFilterBody/PolicyLeaveRequestFilterBody";
@@ -32,7 +32,7 @@ const PolicyLeaveRequests: FC = () => {
     isError,
     isFetching,
     refetch
-  } = useSearchMyPolicyLeaveRequests(selectedYear, requestParams);
+  } = useGetMyPolicyLeaveRequestsPage(selectedYear, requestParams);
 
   const filterCount =
     requestParams.status.length + requestParams.policyId.length;

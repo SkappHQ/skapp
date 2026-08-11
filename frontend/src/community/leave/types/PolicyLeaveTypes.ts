@@ -61,6 +61,10 @@ export interface EmployeePolicyBalanceType {
   disabledReason: PolicyBalanceDisabledReason | null;
 }
 
+export interface EmployeePolicyBalancesResponse {
+  results: EmployeePolicyBalanceType[];
+}
+
 export interface PolicyLeaveAvailabilityPayload {
   policyId: number;
   startDate: string;
@@ -78,6 +82,10 @@ export interface PolicyLeaveAvailabilityType {
   validTo: string;
   isValid: boolean;
   failureReason: PolicyLeaveValidationFailure | null;
+}
+
+export interface PolicyLeaveAvailabilityResponse {
+  results: PolicyLeaveAvailabilityType[];
 }
 
 export interface PolicyLeaveAttachmentPayload {
@@ -118,6 +126,10 @@ export interface PolicyLeaveRequestType {
   remainingBalance: number | null;
 }
 
+export interface PolicyLeaveRequestResponse {
+  results: PolicyLeaveRequestType[];
+}
+
 export interface PolicyLeaveRequestPageType {
   items: PolicyLeaveRequestType[];
   currentPage: number;
@@ -125,7 +137,11 @@ export interface PolicyLeaveRequestPageType {
   totalPages: number;
 }
 
-export interface PolicyLeaveSearchQueryParams {
+export interface PolicyLeaveRequestPageResponse {
+  results: PolicyLeaveRequestPageType[];
+}
+
+export interface PolicyLeaveRequestQueryParams {
   page: number;
   size: number;
   sortKey: SortKeyTypes;

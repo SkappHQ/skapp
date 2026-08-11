@@ -76,9 +76,7 @@ export const policyLeaveEndPoints = {
     `${moduleAPIPath.LEAVE}/policy-leave/balances?year=${year}`,
   CHECK_POLICY_LEAVE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/availability`,
   APPLY_POLICY_LEAVE: `${moduleAPIPath.LEAVE}/policy-leave`,
-  GET_MY_POLICY_LEAVE_REQUESTS: (year: string): string =>
-    `${moduleAPIPath.LEAVE}/policy-leave?year=${year}`,
-  SEARCH_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/search`
+  GET_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave`
 };
 
 export const leaveEntitlementEndPoints = {

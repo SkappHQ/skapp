@@ -10,85 +10,32 @@ import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { policyLeaveQueryKeys } from "~community/leave/api/utils/QueryKeys";
-import { PolicyLeaveRequestParams } from "~community/leave/store/policyLeaveStore";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
+import {
+  PolicyLeaveRequestParams,
+  initialPolicyLeaveRequestParams
+} from "~community/leave/store/policyLeaveStore";
 import {
   EmployeePolicyBalanceType,
+  EmployeePolicyBalancesResponse,
   PolicyLeaveAvailabilityPayload,
+  PolicyLeaveAvailabilityResponse,
   PolicyLeaveAvailabilityType,
+  PolicyLeaveRequestPageResponse,
   PolicyLeaveRequestPageType,
   PolicyLeaveRequestPayload,
-  PolicyLeaveRequestType,
-  PolicyLeaveSearchQueryParams
+  PolicyLeaveRequestQueryParams,
+  PolicyLeaveRequestResponse,
+  PolicyLeaveRequestType
 } from "~community/leave/types/PolicyLeaveTypes";
-
-// Spring binds a List<> request param from a CSV string, not from the
-// bracketed form axios produces for arrays.
-const toSearchQueryParams = (
-  year: string,
-  params: PolicyLeaveRequestParams
-): PolicyLeaveSearchQueryParams => {
-  const { status, policyId, ...rest } = params;
-
-  return {
-    ...rest,
-    year,
-    status: status.length ? status.join(",") : undefined,
-    policyId: policyId.length ? policyId.join(",") : undefined
-  };
-};
 
 const getMyPolicyBalances = async (
   year: string
 ): Promise<EmployeePolicyBalanceType[]> => {
-  const response = await authFetch.get(
+  const response = await authFetch.get<EmployeePolicyBalancesResponse>(
     policyLeaveEndPoints.GET_MY_POLICY_BALANCES(year)
   );
-
   return response.data.results;
-};
-
-const getMyPolicyLeaveRequests = async (
-  year: string
-): Promise<PolicyLeaveRequestType[]> => {
-  const response = await authFetch.get(
-    policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS(year)
-  );
-
-  return response.data.results;
-};
-
-const searchMyPolicyLeaveRequests = async (
-  year: string,
-  params: PolicyLeaveRequestParams
-): Promise<PolicyLeaveRequestPageType> => {
-  const response = await authFetch.get(
-    policyLeaveEndPoints.SEARCH_MY_POLICY_LEAVE_REQUESTS,
-    { params: toSearchQueryParams(year, params) }
-  );
-
-  return response.data.results[0];
-};
-
-const checkPolicyLeaveAvailability = async (
-  payload: PolicyLeaveAvailabilityPayload
-): Promise<PolicyLeaveAvailabilityType> => {
-  const response = await authFetch.post(
-    policyLeaveEndPoints.CHECK_POLICY_LEAVE_AVAILABILITY,
-    payload
-  );
-
-  return response.data.results[0];
-};
-
-const applyPolicyLeave = async (
-  payload: PolicyLeaveRequestPayload
-): Promise<PolicyLeaveRequestType> => {
-  const response = await authFetch.post(
-    policyLeaveEndPoints.APPLY_POLICY_LEAVE,
-    payload
-  );
-
-  return response.data.results[0];
 };
 
 export const useGetMyPolicyBalances = (
@@ -103,6 +50,51 @@ export const useGetMyPolicyBalances = (
   });
 };
 
+const getMyPolicyLeaveRequestsPage = async (
+  year: string,
+  params: PolicyLeaveRequestParams
+): Promise<PolicyLeaveRequestPageType> => {
+  const { status, policyId, ...rest } = params;
+
+  const queryParams: PolicyLeaveRequestQueryParams = {
+    ...rest,
+    year,
+    status: status.length ? status.join(",") : undefined,
+    policyId: policyId.length ? policyId.join(",") : undefined
+  };
+
+  const response = await authFetch.get<PolicyLeaveRequestPageResponse>(
+    policyLeaveEndPoints.GET_MY_POLICY_LEAVE_REQUESTS,
+    { params: queryParams }
+  );
+  return response.data.results[0];
+};
+
+export const useGetMyPolicyLeaveRequestsPage = (
+  year: string,
+  params: PolicyLeaveRequestParams,
+  enabled = true
+): UseQueryResult<PolicyLeaveRequestPageType> => {
+  return useQuery({
+    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_PAGE(year, params),
+    queryFn: () => getMyPolicyLeaveRequestsPage(year, params),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+};
+
+const getMyPolicyLeaveRequests = async (
+  year: string
+): Promise<PolicyLeaveRequestType[]> => {
+  // The apply leave calendar needs every request raised in the year, not a page
+  // of them; a negative size tells the backend to skip pagination.
+  const page = await getMyPolicyLeaveRequestsPage(year, {
+    ...initialPolicyLeaveRequestParams,
+    size: UNPAGINATED_SIZE
+  });
+  return page.items;
+};
+
 export const useGetMyPolicyLeaveRequests = (
   year: string,
   enabled = true
@@ -115,20 +107,14 @@ export const useGetMyPolicyLeaveRequests = (
   });
 };
 
-export const useSearchMyPolicyLeaveRequests = (
-  year: string,
-  params: PolicyLeaveRequestParams,
-  enabled = true
-): UseQueryResult<PolicyLeaveRequestPageType> => {
-  return useQuery({
-    queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(
-      year,
-      params
-    ),
-    queryFn: () => searchMyPolicyLeaveRequests(year, params),
-    enabled,
-    refetchOnWindowFocus: false
-  });
+const checkPolicyLeaveAvailability = async (
+  payload: PolicyLeaveAvailabilityPayload
+): Promise<PolicyLeaveAvailabilityType> => {
+  const response = await authFetch.post<PolicyLeaveAvailabilityResponse>(
+    policyLeaveEndPoints.CHECK_POLICY_LEAVE_AVAILABILITY,
+    payload
+  );
+  return response.data.results[0];
 };
 
 export const useCheckPolicyLeaveAvailability = (): UseMutationResult<
@@ -139,6 +125,16 @@ export const useCheckPolicyLeaveAvailability = (): UseMutationResult<
   return useMutation({
     mutationFn: checkPolicyLeaveAvailability
   });
+};
+
+const applyPolicyLeave = async (
+  payload: PolicyLeaveRequestPayload
+): Promise<PolicyLeaveRequestType> => {
+  const response = await authFetch.post<PolicyLeaveRequestResponse>(
+    policyLeaveEndPoints.APPLY_POLICY_LEAVE,
+    payload
+  );
+  return response.data.results[0];
 };
 
 export const useApplyPolicyLeave = (
@@ -160,9 +156,6 @@ export const useApplyPolicyLeave = (
       });
       queryClient.invalidateQueries({
         queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year)
-      });
-      queryClient.invalidateQueries({
-        queryKey: policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS_SEARCH(year)
       });
       onSuccess(data);
     },

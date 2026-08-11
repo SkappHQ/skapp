@@ -308,15 +308,10 @@ export const policyLeaveQueryKeys = {
     "my-policy-leave-requests",
     year
   ],
-  MY_POLICY_LEAVE_REQUESTS_SEARCH: (
+  MY_POLICY_LEAVE_REQUESTS_PAGE: (
     year: string,
-    params?: PolicyLeaveRequestParams
-  ) => [
-    ...policyLeaveQueryKeys.ALL,
-    "my-policy-leave-requests-search",
-    year,
-    ...(params ? [params] : [])
-  ]
+    params: PolicyLeaveRequestParams
+  ) => [...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(year), "page", params]
 };
 
 export const leavePolicyQueryKeys = {
