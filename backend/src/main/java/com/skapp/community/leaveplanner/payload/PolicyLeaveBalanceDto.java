@@ -22,8 +22,6 @@ public class PolicyLeaveBalanceDto {
 
 	private LocalDate cycleEnd;
 
-	private float carriedForwardDays;
-
 	private float accruedDays;
 
 	private float totalDaysAllocated;

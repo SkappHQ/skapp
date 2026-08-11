@@ -12,6 +12,13 @@ import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Accrual maths for the policy leave flow.
+ *
+ * The accrual cycle is always the calendar year. Carryover (capping, expiry, the
+ * carryover/accrual bucket split) is owned by a separate story and is intentionally
+ * absent here.
+ */
 @Slf4j
 @UtilityClass
 public class PolicyLeaveAccrualUtil {
@@ -27,19 +34,13 @@ public class PolicyLeaveAccrualUtil {
 		return effectiveFrom.plusDays(waitingPeriodDays);
 	}
 
-	public static DateWindow resolveCycle(LeavePolicy policy, int year) {
-		MonthDay anchor = resolveCycleAnchor(policy);
-		LocalDate start = anchor.atYear(year);
-		LocalDate end = anchor.atYear(year + 1).minusDays(1);
-		return new DateWindow(start, end);
+	public static DateWindow resolveCycle(int year) {
+		MonthDay anchor = DateTimeUtils.CALENDAR_YEAR_START;
+		return new DateWindow(anchor.atYear(year), anchor.atYear(year + 1).minusDays(1));
 	}
 
-	public static DateWindow resolveCycleContaining(LeavePolicy policy, LocalDate date) {
-		DateWindow cycle = resolveCycle(policy, date.getYear());
-		if (date.isBefore(cycle.start())) {
-			return resolveCycle(policy, date.getYear() - 1);
-		}
-		return cycle;
+	public static DateWindow resolveCycleContaining(LocalDate date) {
+		return resolveCycle(date.getYear());
 	}
 
 	private static float accruedUpTo(LeavePolicy policy, LocalDate accrualStartDate, LocalDate asOf) {
@@ -55,21 +56,16 @@ public class PolicyLeaveAccrualUtil {
 		boolean prorateFirstPeriod = policy.getFirstAccrual() != FirstAccrualType.FULL;
 
 		float total = 0f;
-		DateWindow period = resolvePeriodContaining(policy.getFrequency(), accrualStartDate, accrualStartDate);
 		boolean isFirstPeriod = true;
+		DateWindow period = resolvePeriodContaining(policy.getFrequency(), accrualStartDate, accrualStartDate);
+		LocalDate creditDate = creditAtPeriodStart ? period.start() : period.end();
 
-		while (true) {
-			LocalDate creditDate = creditAtPeriodStart ? period.start() : period.end();
-			if (creditDate.isAfter(asOf)) {
-				break;
-			}
-
+		while (!creditDate.isAfter(asOf)) {
 			float credited = accrualDays;
 			if (isFirstPeriod && prorateFirstPeriod) {
 				credited = accrualDays * proration(period, accrualStartDate);
 			}
 			total += credited;
-
 			isFirstPeriod = false;
 
 			DateWindow nextPeriod = resolvePeriodContaining(policy.getFrequency(), accrualStartDate,
@@ -79,6 +75,7 @@ public class PolicyLeaveAccrualUtil {
 				break;
 			}
 			period = nextPeriod;
+			creditDate = creditAtPeriodStart ? period.start() : period.end();
 		}
 
 		return total;
@@ -93,17 +90,6 @@ public class PolicyLeaveAccrualUtil {
 		float upToWindowEnd = accruedUpTo(policy, accrualStartDate, windowEnd);
 		float upToCycleStart = accruedUpTo(policy, accrualStartDate, cycle.start().minusDays(1));
 		return Math.max(0f, upToWindowEnd - upToCycleStart);
-	}
-
-	public static float capCarryover(LeavePolicy policy, float closingBalance) {
-		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled()) || closingBalance <= 0f) {
-			return 0f;
-		}
-		Float maxCarryoverDays = policy.getMaxCarryoverDays();
-		if (maxCarryoverDays == null) {
-			return closingBalance;
-		}
-		return Math.min(closingBalance, maxCarryoverDays);
 	}
 
 	public static float roundToHalfDay(float value) {
@@ -128,21 +114,6 @@ public class PolicyLeaveAccrualUtil {
 			return 0f;
 		}
 		return (float) earnedLength / (float) periodLength;
-	}
-
-	private static MonthDay resolveCycleAnchor(LeavePolicy policy) {
-		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled())) {
-			return DateTimeUtils.CALENDAR_YEAR_START;
-		}
-		String carryoverDate = policy.getCarryoverDate();
-		if (carryoverDate == null || carryoverDate.isBlank()) {
-			return DateTimeUtils.CALENDAR_YEAR_START;
-		}
-		if (!DateTimeUtils.isValidMonthDay(carryoverDate)) {
-			log.warn("resolveCycleAnchor: unparseable carryover date, falling back to the default anchor");
-			return DateTimeUtils.CALENDAR_YEAR_START;
-		}
-		return DateTimeUtils.parseMonthDay(carryoverDate);
 	}
 
 	private static DateWindow resolvePeriodContaining(AccrualFrequency frequency, LocalDate accrualStartDate,

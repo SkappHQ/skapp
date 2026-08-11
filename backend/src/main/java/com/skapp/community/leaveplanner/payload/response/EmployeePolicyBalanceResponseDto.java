@@ -29,8 +29,6 @@ public class EmployeePolicyBalanceResponseDto {
 
 	private LocalDate validTo;
 
-	private Float carriedForwardDays;
-
 	private Float accruedDays;
 
 	private Float totalDaysAllocated;

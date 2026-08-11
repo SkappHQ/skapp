@@ -9,12 +9,18 @@ import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil.DateWindow;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Slf4j
+/**
+ * Derives a policy leave balance for a single accrual cycle.
+ *
+ * Carryover is deliberately out of scope here: a cycle's balance is what its own accrual
+ * schedule earned minus what was used inside it. Carried-over days, their expiry and the
+ * carryover/accrual bucket split are owned by a separate story and must not leak into
+ * this calculation or into the apply flow that consumes it.
+ */
 @Component
 @RequiredArgsConstructor
 public class PolicyLeaveBalanceCalculator {
@@ -22,67 +28,43 @@ public class PolicyLeaveBalanceCalculator {
 	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
 	public PolicyLeaveBalanceDto calculateForYear(EmployeeLeavePolicy assignment, int year) {
-		LeavePolicy policy = assignment.getPolicy();
-		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycle(policy, year));
+		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycle(year));
 	}
 
 	public PolicyLeaveBalanceDto calculateForDate(EmployeeLeavePolicy assignment, LocalDate date) {
-		LeavePolicy policy = assignment.getPolicy();
-		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(policy, date));
+		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date));
 	}
 
-	private PolicyLeaveBalanceDto calculate(EmployeeLeavePolicy assignment, DateWindow targetCycle) {
+	private PolicyLeaveBalanceDto calculate(EmployeeLeavePolicy assignment, DateWindow cycle) {
 		LeavePolicy policy = assignment.getPolicy();
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
 		if (policy.getPolicyType() == PolicyType.FLEXIBLE) {
-			return unlimitedBalance(policy, effectiveFrom, targetCycle);
+			return unlimitedBalance(policy, effectiveFrom, cycle);
 		}
 
-		if (targetCycle.end().isBefore(effectiveFrom)) {
-			return emptyBalance(policy, effectiveFrom, targetCycle, true);
+		if (cycle.end().isBefore(effectiveFrom)) {
+			return emptyBalance(policy, effectiveFrom, cycle);
 		}
 
 		LocalDate accrualStartDate = PolicyLeaveAccrualUtil.resolveAccrualStartDate(policy, effectiveFrom);
-		DateWindow cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, effectiveFrom);
-		float carriedForwardDays = 0f;
+		float accruedDays = PolicyLeaveAccrualUtil
+			.roundToHalfDay(PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.end()));
+		float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, accruedDays);
+		float totalDaysUsed = totalDaysUsedInCycle(assignment, cycle);
 
-		while (true) {
-			float accruedDays = PolicyLeaveAccrualUtil.roundToHalfDay(
-					PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.end()));
-			float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, carriedForwardDays + accruedDays);
-			float totalDaysUsed = totalDaysUsedInCycle(assignment, cycle);
-
-			if (cycle.start().equals(targetCycle.start())) {
-				PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
-				balance.setPolicy(policy);
-				balance.setEffectiveFrom(effectiveFrom);
-				balance.setCycleStart(cycle.start());
-				balance.setCycleEnd(cycle.end());
-				balance.setCarriedForwardDays(carriedForwardDays);
-				balance.setAccruedDays(accruedDays);
-				balance.setTotalDaysAllocated(totalDaysAllocated);
-				balance.setTotalDaysUsed(totalDaysUsed);
-				balance.setBalanceInDays(totalDaysAllocated - totalDaysUsed);
-				balance.setUnlimited(false);
-				balance.setDerived(true);
-				return balance;
-			}
-
-			if (cycle.start().isAfter(targetCycle.start())) {
-				return emptyBalance(policy, effectiveFrom, targetCycle, true);
-			}
-
-			carriedForwardDays = PolicyLeaveAccrualUtil
-				.roundToHalfDay(PolicyLeaveAccrualUtil.capCarryover(policy, totalDaysAllocated - totalDaysUsed));
-
-			DateWindow nextCycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, cycle.end().plusDays(1));
-			if (!nextCycle.start().isAfter(cycle.start())) {
-				log.warn("calculate: carryover cycle failed to advance, balance could not be derived");
-				return emptyBalance(policy, effectiveFrom, targetCycle, false);
-			}
-			cycle = nextCycle;
-		}
+		PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
+		balance.setPolicy(policy);
+		balance.setEffectiveFrom(effectiveFrom);
+		balance.setCycleStart(cycle.start());
+		balance.setCycleEnd(cycle.end());
+		balance.setAccruedDays(accruedDays);
+		balance.setTotalDaysAllocated(totalDaysAllocated);
+		balance.setTotalDaysUsed(totalDaysUsed);
+		balance.setBalanceInDays(totalDaysAllocated - totalDaysUsed);
+		balance.setUnlimited(false);
+		balance.setDerived(true);
+		return balance;
 	}
 
 	private float totalDaysUsedInCycle(EmployeeLeavePolicy assignment, DateWindow cycle) {
@@ -92,11 +74,10 @@ public class PolicyLeaveBalanceCalculator {
 		return totalDaysUsed == null ? 0f : totalDaysUsed.floatValue();
 	}
 
-	private PolicyLeaveBalanceDto emptyBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle,
-			boolean isDerived) {
+	private PolicyLeaveBalanceDto emptyBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle) {
 		PolicyLeaveBalanceDto balance = zeroedBalance(policy, effectiveFrom, cycle);
 		balance.setUnlimited(false);
-		balance.setDerived(isDerived);
+		balance.setDerived(true);
 		return balance;
 	}
 
@@ -113,7 +94,6 @@ public class PolicyLeaveBalanceCalculator {
 		balance.setEffectiveFrom(effectiveFrom);
 		balance.setCycleStart(cycle.start());
 		balance.setCycleEnd(cycle.end());
-		balance.setCarriedForwardDays(0f);
 		balance.setAccruedDays(0f);
 		balance.setTotalDaysAllocated(0f);
 		balance.setTotalDaysUsed(0f);

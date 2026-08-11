@@ -259,7 +259,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		card.setEffectiveFrom(balance.getEffectiveFrom());
 		card.setValidFrom(balance.usableFrom());
 		card.setValidTo(balance.getCycleEnd());
-		card.setCarriedForwardDays(balance.getCarriedForwardDays());
 		card.setAccruedDays(balance.getAccruedDays());
 		card.setTotalDaysAllocated(balance.getTotalDaysAllocated());
 		card.setTotalDaysUsed(balance.getTotalDaysUsed());
