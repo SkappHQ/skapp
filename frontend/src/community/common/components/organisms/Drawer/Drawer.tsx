@@ -485,6 +485,7 @@ const Drawer = (): JSX.Element => {
           ...classes.iconBtn(isDrawerExpanded, isBelow1024),
           visibility: "visible"
         }}
+        // TO DO: Need to verify why this style affects other places which use this icon
         onClick={handleDrawer}
         data-testid={appDrawerTestId.buttons.drawerToggleBtn}
         aria-label={

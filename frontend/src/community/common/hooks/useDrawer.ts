@@ -17,8 +17,6 @@ const useDrawer = () => {
   const queryMatches = useMediaQuery();
   const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
 
-  // Below the desktop breakpoint the drawer is opened from the AppBar
-  // hamburger, so collapse it whenever the viewport crosses that threshold.
   useEffect(() => {
     if (isBelow1024) {
       setIsDrawerExpanded(false);
