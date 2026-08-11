@@ -85,7 +85,7 @@ const ApplyPolicyLeaveModal = () => {
   const { setToastMessage } = useToast();
   const environment = useGetEnvironment();
   const { sendEvent } = useGoogleAnalyticsEvent();
-  const dateFieldRef = useRef<HTMLDivElement>(null);
+  const dateFieldRef = useRef<HTMLFieldSetElement>(null);
   const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const availabilityRequestIdRef = useRef(0);
 
@@ -522,16 +522,14 @@ const ApplyPolicyLeaveModal = () => {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 md:gap-7">
         <div className="flex flex-col gap-3">
-          <div
+          <fieldset
             ref={dateFieldRef}
             tabIndex={-1}
-            role="group"
-            aria-invalid={hasDateError}
             aria-label={translateAria(["calendar", "selectDateForLeave"])}
             className={
               hasDateError
-                ? "rounded-lg border border-semantic-red-accent"
-                : undefined
+                ? "min-w-0 rounded-lg border border-semantic-red-accent"
+                : "min-w-0"
             }
           >
             <CalendarDateRangePicker
@@ -546,7 +544,7 @@ const ApplyPolicyLeaveModal = () => {
               myLeaveRequests={blockingLeaveRequests}
               error={formErrors?.selectedDates}
             />
-          </div>
+          </fieldset>
           <div className="flex flex-row items-center gap-2">
             <p>
               {translateText(["myPolicyBalance"], {

@@ -7,6 +7,53 @@ import { removeLetters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
+import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
+
+const CHIP_CLASSES = "inline-flex items-center rounded-full px-2 py-0.5";
+
+interface TeamAvailabilityStatusProps {
+  data: TeamAvailabilityDataType;
+}
+
+const TeamAvailabilityStatus = ({ data }: TeamAvailabilityStatusProps) => {
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "teamAvailabilityModal"
+  );
+
+  if (data.holidays.length > 0) {
+    return (
+      <span
+        className={`${CHIP_CLASSES} border border-border-surface-secondary text-secondary-text text-xs font-normal`}
+      >
+        {data.holidays.length > 1
+          ? `${data.holidays[0].name} +${data.holidays.length}`
+          : data.holidays[0].name}
+      </span>
+    );
+  }
+
+  if (data.leaveCount === 0) {
+    return (
+      <span
+        className={`${CHIP_CLASSES} bg-semantic-green-background text-semantic-green-text`}
+      >
+        {translateText(["fullTeamAvailable"])}
+      </span>
+    );
+  }
+
+  if (data.availableCount === 0) {
+    return (
+      <span className={`${CHIP_CLASSES} bg-semantic-red-accent text-white`}>
+        {translateText(["fullTeamAway"])}
+      </span>
+    );
+  }
+
+  return <AvatarGroup avatars={data.employees} isHoverModal={true} />;
+};
 
 const PolicyTeamAvailabilityModal = () => {
   const translateText = useTranslator(
@@ -41,23 +88,7 @@ const PolicyTeamAvailabilityModal = () => {
               <p className="text-primary-text">{data.dayOfWeek}</p>
             </div>
             <div className="flex flex-row justify-start flex-1">
-              {data?.holidays.length > 0 ? (
-                <span className="inline-flex items-center rounded-full border border-border-surface-secondary text-secondary-text text-xs font-normal px-2 py-0.5">
-                  {data.holidays.length > 1
-                    ? `${data.holidays[0].name} +${data.holidays.length}`
-                    : data.holidays[0].name}
-                </span>
-              ) : data.leaveCount === 0 ? (
-                <span className="inline-flex items-center rounded-full bg-semantic-green-background text-semantic-green-text px-2 py-0.5">
-                  {translateText(["fullTeamAvailable"])}
-                </span>
-              ) : data.availableCount === 0 ? (
-                <span className="inline-flex items-center rounded-full bg-semantic-red-accent text-white px-2 py-0.5">
-                  {translateText(["fullTeamAway"])}
-                </span>
-              ) : (
-                <AvatarGroup avatars={data.employees} isHoverModal={true} />
-              )}
+              <TeamAvailabilityStatus data={data} />
             </div>
           </div>
         ))}

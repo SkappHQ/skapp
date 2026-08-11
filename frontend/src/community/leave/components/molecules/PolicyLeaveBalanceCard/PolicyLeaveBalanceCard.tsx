@@ -77,9 +77,9 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
       }
       tabIndex={-1}
     >
-      <span
-        role="button"
-        tabIndex={0}
+      <button
+        type="button"
+        className="inline-flex cursor-pointer items-center justify-center"
         aria-label={ariaLabel}
         onMouseEnter={handleShowTooltip}
         onMouseLeave={handleHideTooltip}
@@ -87,7 +87,7 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
         onBlur={handleHideTooltip}
       >
         <Icon name={IconName.INFORMATION_ICON} />
-      </span>
+      </button>
     </Tooltip>
   );
 };
