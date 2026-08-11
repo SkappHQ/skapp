@@ -26,8 +26,8 @@ import {
 type TranslateFn = (key: string[], data?: Record<string, unknown>) => string;
 
 interface DisabledReasonToastKeys {
-  titleKey: string;
-  descriptionKey: string;
+  titleKey: string[];
+  descriptionKey: string[];
 }
 
 interface AvailabilityErrorMessageProps {
@@ -45,8 +45,8 @@ interface HandlePolicyLeaveToastProps {
 
 interface PolicyLeaveToastConfig {
   toastType: ToastType;
-  titleKey: string;
-  descriptionKey: string;
+  titleKey: string[];
+  descriptionKey: string[];
   autoHideDuration?: number | null;
 }
 
@@ -82,28 +82,28 @@ export const getDisabledReasonToastKeys = (
   switch (reason) {
     case PolicyBalanceDisabledReason.ALLOCATION_PERIOD_EXPIRED:
       return {
-        titleKey: "expiredError.title",
-        descriptionKey: "expiredError.description"
+        titleKey: ["expiredError", "title"],
+        descriptionKey: ["expiredError", "description"]
       };
     case PolicyBalanceDisabledReason.NO_SUPERVISOR_ASSIGNED:
       return {
-        titleKey: "noSupervisorError.title",
-        descriptionKey: "noSupervisorError.description"
+        titleKey: ["noSupervisorError", "title"],
+        descriptionKey: ["noSupervisorError", "description"]
       };
     case PolicyBalanceDisabledReason.POLICY_INACTIVE:
       return {
-        titleKey: "policyInactiveError.title",
-        descriptionKey: "policyInactiveError.description"
+        titleKey: ["policyInactiveError", "title"],
+        descriptionKey: ["policyInactiveError", "description"]
       };
     case PolicyBalanceDisabledReason.FULLY_UTILIZED:
       return {
-        titleKey: "fullyUtilizedError.title",
-        descriptionKey: "fullyUtilizedError.description"
+        titleKey: ["fullyUtilizedError", "title"],
+        descriptionKey: ["fullyUtilizedError", "description"]
       };
     default:
       return {
-        titleKey: "balanceUnavailableError.title",
-        descriptionKey: "balanceUnavailableError.description"
+        titleKey: ["balanceUnavailableError", "title"],
+        descriptionKey: ["balanceUnavailableError", "description"]
       };
   }
 };
@@ -142,18 +142,18 @@ export const getAvailabilityErrorMessage = ({
 }: AvailabilityErrorMessageProps): string => {
   switch (failureReason) {
     case PolicyLeaveValidationFailure.INSUFFICIENT_BALANCE:
-      return translateText(["errors.insufficientBalance"], {
+      return translateText(["errors", "insufficientBalance"], {
         days: remainingBalance,
         policyName
       });
     case PolicyLeaveValidationFailure.OUTSIDE_POLICY_PERIOD:
-      return translateText(["errors.outsidePolicyPeriod"], { policyName });
+      return translateText(["errors", "outsidePolicyPeriod"], { policyName });
     case PolicyLeaveValidationFailure.OVERLAPPING_REQUEST:
-      return translateText(["errors.overlappingRequest"]);
+      return translateText(["errors", "overlappingRequest"]);
     case PolicyLeaveValidationFailure.NO_WORKING_DAYS:
-      return translateText(["errors.noWorkingDays"]);
+      return translateText(["errors", "noWorkingDays"]);
     case PolicyLeaveValidationFailure.INVALID_DATE_RANGE:
-      return translateText(["errors.invalidDateRange"]);
+      return translateText(["errors", "invalidDateRange"]);
     default:
       return "";
   }
@@ -186,39 +186,39 @@ export const handlePolicyLeaveToast = ({
   const toastConfig: Record<PolicyLeaveToastEnums, PolicyLeaveToastConfig> = {
     [PolicyLeaveToastEnums.APPLY_SUCCESS]: {
       toastType: ToastType.SUCCESS,
-      titleKey: "toastMessages.applySuccess.title",
-      descriptionKey: "toastMessages.applySuccess.description",
+      titleKey: ["toastMessages", "applySuccess", "title"],
+      descriptionKey: ["toastMessages", "applySuccess", "description"],
       autoHideDuration: SUCCESS_TOAST_DURATION_MS
     },
     [PolicyLeaveToastEnums.APPLY_ERROR]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.applyError.title",
-      descriptionKey: "toastMessages.applyError.description"
+      titleKey: ["toastMessages", "applyError", "title"],
+      descriptionKey: ["toastMessages", "applyError", "description"]
     },
     [PolicyLeaveToastEnums.POLICY_NOT_ASSIGNED]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.policyNotAssigned.title",
-      descriptionKey: "toastMessages.policyNotAssigned.description"
+      titleKey: ["toastMessages", "policyNotAssigned", "title"],
+      descriptionKey: ["toastMessages", "policyNotAssigned", "description"]
     },
     [PolicyLeaveToastEnums.INSUFFICIENT_BALANCE]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.insufficientBalance.title",
-      descriptionKey: "toastMessages.insufficientBalance.description"
+      titleKey: ["toastMessages", "insufficientBalance", "title"],
+      descriptionKey: ["toastMessages", "insufficientBalance", "description"]
     },
     [PolicyLeaveToastEnums.NOT_APPLICABLE]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.notApplicable.title",
-      descriptionKey: "toastMessages.notApplicable.description"
+      titleKey: ["toastMessages", "notApplicable", "title"],
+      descriptionKey: ["toastMessages", "notApplicable", "description"]
     },
     [PolicyLeaveToastEnums.REQUEST_OVERLAP]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.requestOverlap.title",
-      descriptionKey: "toastMessages.requestOverlap.description"
+      titleKey: ["toastMessages", "requestOverlap", "title"],
+      descriptionKey: ["toastMessages", "requestOverlap", "description"]
     },
     [PolicyLeaveToastEnums.OUTSIDE_POLICY_PERIOD]: {
       toastType: ToastType.ERROR,
-      titleKey: "toastMessages.outsidePolicyPeriod.title",
-      descriptionKey: "toastMessages.outsidePolicyPeriod.description"
+      titleKey: ["toastMessages", "outsidePolicyPeriod", "title"],
+      descriptionKey: ["toastMessages", "outsidePolicyPeriod", "description"]
     }
   };
 
@@ -227,8 +227,8 @@ export const handlePolicyLeaveToast = ({
   setToastMessage({
     open: true,
     toastType: config.toastType,
-    title: translateText([config.titleKey]),
-    description: translateText([config.descriptionKey]),
+    title: translateText(config.titleKey),
+    description: translateText(config.descriptionKey),
     autoHideDuration:
       config.autoHideDuration ??
       (config.toastType === ToastType.ERROR ? null : undefined)
@@ -246,17 +246,17 @@ export const getPolicyLeaveFormErrors = ({
   const errors: PolicyLeaveFormErrors = { ...initialPolicyLeaveFormErrors };
 
   if (selectedDatesLength === 0) {
-    errors.selectedDates = translateText(["errors.datesRequired"]);
+    errors.selectedDates = translateText(["errors", "datesRequired"]);
   } else if (availabilityError) {
     errors.selectedDates = availabilityError;
   }
 
   if (policyBalance?.leaveType?.isCommentMust && !comment.trim()) {
-    errors.comment = translateText(["errors.commentRequired"]);
+    errors.comment = translateText(["errors", "commentRequired"]);
   }
 
   if (policyBalance?.leaveType?.isAttachmentMust && attachments.length === 0) {
-    errors.attachment = translateText(["errors.attachmentRequired"]);
+    errors.attachment = translateText(["errors", "attachmentRequired"]);
   }
 
   return errors;

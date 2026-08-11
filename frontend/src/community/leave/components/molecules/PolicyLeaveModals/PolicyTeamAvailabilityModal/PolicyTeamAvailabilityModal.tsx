@@ -1,59 +1,12 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { removeLetters } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
+import PolicyTeamAvailabilityStatus from "~community/leave/components/molecules/PolicyTeamAvailabilityStatus/PolicyTeamAvailabilityStatus";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
-import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
-
-const CHIP_CLASSES = "inline-flex items-center rounded-full px-2 py-0.5";
-
-interface TeamAvailabilityStatusProps {
-  data: TeamAvailabilityDataType;
-}
-
-const TeamAvailabilityStatus = ({ data }: TeamAvailabilityStatusProps) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "myRequests",
-    "teamAvailabilityModal"
-  );
-
-  if (data.holidays.length > 0) {
-    return (
-      <span
-        className={`${CHIP_CLASSES} body3 border border-border-surface-secondary text-secondary-text`}
-      >
-        {data.holidays.length > 1
-          ? `${data.holidays[0].name} +${data.holidays.length}`
-          : data.holidays[0].name}
-      </span>
-    );
-  }
-
-  if (data.leaveCount === 0) {
-    return (
-      <span
-        className={`${CHIP_CLASSES} bg-semantic-green-background text-semantic-green-text`}
-      >
-        {translateText(["fullTeamAvailable"])}
-      </span>
-    );
-  }
-
-  if (data.availableCount === 0) {
-    return (
-      <span className={`${CHIP_CLASSES} bg-semantic-red-accent text-white`}>
-        {translateText(["fullTeamAway"])}
-      </span>
-    );
-  }
-
-  return <AvatarGroup avatars={data.employees} isHoverModal={true} />;
-};
 
 const PolicyTeamAvailabilityModal = () => {
   const translateText = useTranslator(
@@ -90,7 +43,7 @@ const PolicyTeamAvailabilityModal = () => {
               <p className="text-primary-text">{data.dayOfWeek}</p>
             </div>
             <div className="flex flex-row justify-start flex-1">
-              <TeamAvailabilityStatus data={data} />
+              <PolicyTeamAvailabilityStatus data={data} />
             </div>
           </div>
         ))}

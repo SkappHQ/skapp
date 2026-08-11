@@ -123,8 +123,6 @@ const ApplyPolicyLeaveModal = () => {
 
   const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
-  // A policy period can straddle two calendar years, so holidays and existing
-  // requests have to be fetched for both ends of the validFrom..validTo span.
   const policyStartYear = selectedPolicyBalance
     ? convertYYYYMMDDToDateTime(selectedPolicyBalance.validFrom).year.toString()
     : selectedYear;
@@ -274,7 +272,7 @@ const ApplyPolicyLeaveModal = () => {
     if (!selectedTeam && myTeams && myTeams.length > 0) {
       setSelectedTeam(myTeams[0] ?? null);
     }
-  }, [myTeams, selectedTeam, setSelectedTeam]);
+  }, [myTeams, selectedTeam]);
 
   const { data: resourceAvailability } = useGetResourceAvailability({
     teams: selectedTeam !== null ? (selectedTeam.teamId as number) : null,
@@ -316,8 +314,6 @@ const ApplyPolicyLeaveModal = () => {
   ]);
 
   useEffect(() => {
-    // Bumping the request id invalidates any in-flight check, so a slow
-    // earlier response can never overwrite the state of a later selection.
     const requestId = ++availabilityRequestIdRef.current;
 
     setHasAvailabilityCheckFailed(false);
@@ -354,7 +350,6 @@ const ApplyPolicyLeaveModal = () => {
         }
       }
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDates, selectedDuration, selectedPolicyBalance?.policyId]);
 
   const availabilityError = useMemo(() => {
@@ -401,7 +396,6 @@ const ApplyPolicyLeaveModal = () => {
     });
     setFormErrors(errors);
     return !hasPolicyLeaveFormErrors(errors);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedDates.length,
     comment,
@@ -411,13 +405,10 @@ const ApplyPolicyLeaveModal = () => {
     translateText
   ]);
 
-  // Re-run validation once errors are on screen so they clear as the user
-  // fixes each field, instead of lingering until the next submit.
   useEffect(() => {
     if (hasPolicyLeaveFormErrors(formErrors)) {
       validate();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDates, comment, attachments]);
 
   const onSubmit = async () => {

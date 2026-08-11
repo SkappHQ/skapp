@@ -65,8 +65,8 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText([titleKey], { policyName }),
-        description: translateText([descriptionKey])
+        title: translateText(titleKey, { policyName }),
+        description: translateText(descriptionKey)
       });
     };
 

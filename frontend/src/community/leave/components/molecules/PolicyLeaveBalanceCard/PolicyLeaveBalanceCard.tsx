@@ -15,17 +15,7 @@ interface Props {
 const ROW_CLASSES = "flex flex-row justify-between gap-4";
 
 const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "myRequests",
-    "policyBalanceCard"
-  );
-
-  const translateAllocationText = useTranslator(
-    "leaveModule",
-    "myRequests",
-    "leavePolicyAllocation"
-  );
+  const translateText = useTranslator("leaveModule", "myRequests");
 
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false);
 
@@ -33,14 +23,14 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
     balanceInDays: policyBalance.balanceInDays,
     isUnlimited: policyBalance.isUnlimited,
     isBalanceAvailable: policyBalance.isBalanceAvailable,
-    translateText: translateAllocationText
+    translateText: (key) => translateText(["leavePolicyAllocation", ...key])
   });
 
   const handleShowTooltip = (): void => setIsTooltipOpen(true);
 
   const handleHideTooltip = (): void => setIsTooltipOpen(false);
 
-  const ariaLabel = translateText(["ariaLabel"], {
+  const ariaLabel = translateText(["policyBalanceCard", "ariaLabel"], {
     policyName: policyBalance.policyName
   });
 
@@ -54,7 +44,9 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
       title={
         <div className="flex min-w-[16rem] flex-col gap-1">
           <div className={ROW_CLASSES}>
-            <p className="body2">{translateText(["available"])}</p>
+            <p className="body2">
+              {translateText(["policyBalanceCard", "available"])}
+            </p>
             <p className="body2">
               {policyBalance.isUnlimited || !policyBalance.isBalanceAvailable
                 ? balanceLabel
@@ -62,13 +54,17 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
             </p>
           </div>
           <div className={ROW_CLASSES}>
-            <p className="body2">{translateText(["effectiveFrom"])}</p>
+            <p className="body2">
+              {translateText(["policyBalanceCard", "effectiveFrom"])}
+            </p>
             <p className="body2">
               {formatDateWithOrdinalSuffix(policyBalance.validFrom)}
             </p>
           </div>
           <div className={ROW_CLASSES}>
-            <p className="body2">{translateText(["expiryDate"])}</p>
+            <p className="body2">
+              {translateText(["policyBalanceCard", "expiryDate"])}
+            </p>
             <p className="body2">
               {formatDateWithOrdinalSuffix(policyBalance.validTo)}
             </p>

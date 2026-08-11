@@ -16,7 +16,11 @@ const MyLeaveRequestsSection: FC = () => {
     return <TableSkeleton rows={LEAVE_REQUESTS_SKELETON_ROWS} />;
   }
 
-  return isLeavePoliciesEnabled ? <PolicyLeaveRequests /> : <LeaveRequests />;
+  if (isLeavePoliciesEnabled) {
+    return <PolicyLeaveRequests />;
+  }
+
+  return <LeaveRequests />;
 };
 
 export default MyLeaveRequestsSection;
