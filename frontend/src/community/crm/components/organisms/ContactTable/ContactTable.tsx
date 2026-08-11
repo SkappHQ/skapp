@@ -1,6 +1,11 @@
-import { Label } from "@rootcodelabs/skapp-ui";
+import {
+  Label,
+  ProjectTableSkeletonLoader,
+  SearchIcon
+} from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
+import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
   GridHeader,
   GridRow
@@ -12,7 +17,6 @@ import {
   useGetCrmCompanies
 } from "~community/crm/api/ContactApi";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
-import CrmTableView from "~community/crm/components/organisms/CrmTableView/CrmTableView";
 import {
   ALL_COMPANIES,
   CONTACT_SEARCH_DEBOUNCE_DELAY,
@@ -31,16 +35,18 @@ export const ContactTable: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<number | undefined>(
-    ALL_COMPANIES
-  );
+  const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
   const debouncedSearch = useDebounce(
     searchTerm,
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, selectedCompany);
+    useGetContactMetrics(
+      debouncedSearch,
+      DEFAULT_PAGE_SIZE,
+      selectedCompany ? Number(selectedCompany) : undefined
+    );
 
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
@@ -62,13 +68,13 @@ export const ContactTable: FC = () => {
   }, [fetchedContacts]);
 
   const isEmptyFilterState =
-    debouncedSearch.trim() !== "" || selectedCompany !== undefined;
+    debouncedSearch.trim() !== "" || selectedCompany !== ALL_COMPANIES;
 
   const companyOptions = [
     {
-      id: "",
+      id: "all-companies",
       label: translateText(["table", "companyFilter", "allCompanies"]),
-      value: ""
+      value: ALL_COMPANIES
     },
     ...(companies?.items ?? []).map((company) => ({
       id: String(company.id),
@@ -186,19 +192,30 @@ export const ContactTable: FC = () => {
   };
 
   return (
-    <CrmTableView
+    <TableView
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      isEmptyFilterState={isEmptyFilterState}
-      translateText={translateText}
-      scrollHeight="37.2rem"
-      hasNextPage={hasNextPage}
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => {
-        void fetchNextPage();
+      loader={<ProjectTableSkeletonLoader rowCount={8} />}
+      emptyState={{
+        icon: <SearchIcon />,
+        title: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "title"])
+          : translateText(["table", "emptyDataState", "title"]),
+        description: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "description"])
+          : translateText(["table", "emptyDataState", "description"])
       }}
       onRowClick={handleRowClick}
+      infiniteScroll={{
+        isEnabled: true,
+        height: "37.2rem",
+        hasMore: hasNextPage,
+        isFetchingNextPage,
+        onLoadMore: () => {
+          void fetchNextPage();
+        }
+      }}
       toolbar={{
         searchBar: {
           value: searchTerm,
@@ -210,9 +227,8 @@ export const ContactTable: FC = () => {
         dropdown: {
           id: "crm-contacts-company-filter",
           options: companyOptions,
-          value: String(selectedCompany ?? ""),
-          onChange: (value) =>
-            setSelectedCompany(value ? Number(value) : ALL_COMPANIES),
+          value: selectedCompany,
+          onChange: (value) => setSelectedCompany(value),
           width: "auto",
           menuWidth: "content",
           ariaLabel: translateText(["table", "companyFilter", "ariaLabel"])

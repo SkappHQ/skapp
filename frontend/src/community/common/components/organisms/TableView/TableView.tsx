@@ -31,9 +31,8 @@ const TableView: FC<TableViewProps> = ({
 
   const isOpen = anchorEl !== null;
   const isFilterEnabled = filter;
-  const isFilterInteractive = Boolean(
-    filter?.filterContent && !filter?.isDisabled
-  );
+  const filterContent = filter?.filterContent;
+  const isFilterInteractive = !!filterContent && !filter?.isDisabled;
   const isToolbarVisible = toolbar !== undefined || isFilterEnabled;
   const isInfiniteScroll = infiniteScroll?.isEnabled;
   const isPaginated = !isInfiniteScroll && pagination;
@@ -123,7 +122,7 @@ const TableView: FC<TableViewProps> = ({
           containerClassName="rounded-4 shadow-lg"
           {...popperProps}
         >
-          {filter?.filterContent?.({ close: closePopover })}
+          {filterContent({ onClose: closePopover })}
         </Popper>
       )}
     </div>

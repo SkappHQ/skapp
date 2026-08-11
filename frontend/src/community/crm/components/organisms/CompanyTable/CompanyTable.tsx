@@ -1,6 +1,11 @@
-import { Label } from "@rootcodelabs/skapp-ui";
+import {
+  Label,
+  ProjectTableSkeletonLoader,
+  SearchIcon
+} from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 
+import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
   GridHeader,
   GridRow
@@ -8,7 +13,6 @@ import type {
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompanyMetrics } from "~community/crm/api/CompanyApi";
-import CrmTableView from "~community/crm/components/organisms/CrmTableView/CrmTableView";
 import {
   COMPANY_NAME_DEBOUNCE_DELAY,
   DEFAULT_PAGE_SIZE
@@ -132,19 +136,30 @@ export const CompanyTable: FC = () => {
   };
 
   return (
-    <CrmTableView
+    <TableView
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      isEmptyFilterState={isEmptyFilterState}
-      translateText={translateText}
-      scrollHeight="34.5rem"
-      hasNextPage={hasNextPage}
-      isFetchingNextPage={isFetchingNextPage}
-      onLoadMore={() => {
-        void fetchNextPage();
+      loader={<ProjectTableSkeletonLoader rowCount={8} />}
+      emptyState={{
+        icon: <SearchIcon />,
+        title: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "title"])
+          : translateText(["table", "emptyDataState", "title"]),
+        description: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "description"])
+          : translateText(["table", "emptyDataState", "description"])
       }}
       onRowClick={handleRowClick}
+      infiniteScroll={{
+        isEnabled: true,
+        height: "34.5rem",
+        hasMore: hasNextPage,
+        isFetchingNextPage,
+        onLoadMore: () => {
+          void fetchNextPage();
+        }
+      }}
       toolbar={{
         searchBar: {
           value: searchTerm,
