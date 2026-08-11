@@ -35,7 +35,9 @@ export const ContactTable: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<string>(ALL_COMPANIES);
+  const [selectedCompany, setSelectedCompany] = useState<string | undefined>(
+    ALL_COMPANIES
+  );
   const debouncedSearch = useDebounce(
     searchTerm,
     CONTACT_SEARCH_DEBOUNCE_DELAY
@@ -78,7 +80,7 @@ export const ContactTable: FC = () => {
     ...(companies?.items ?? []).map((company) => ({
       id: String(company.id),
       label: company.name,
-      value: String(company.id)
+      value: company.id
     }))
   ];
 
