@@ -39,7 +39,7 @@ import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
 import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
@@ -140,7 +140,7 @@ const Drawer = (): JSX.Element => {
         tiers: user?.tiers?.length ? user.tiers : user?.tier ? [user.tier] : [],
         isEnterprise,
         globalLoginMethod,
-        tenantID: tenantID as string,
+        tenantID: getTenantId(),
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
