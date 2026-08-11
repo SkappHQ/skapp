@@ -17,34 +17,34 @@ interface Props {
   onClose: () => void;
 }
 
-const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
+const SetJoinDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   const translateText = useTranslator(
     "leaveModule",
     "leavePolicyAssignment",
-    "setHireDateModal"
+    "setJoinDateModal"
   );
 
-  const [hireDate, setHireDate] = useState<string>("");
+  const [joinDate, setJoinDate] = useState<string>("");
 
   const { mutate: editEmployee, isPending } = useEditEmployee(
     String(employeeId)
   );
 
   const handleClose = (): void => {
-    setHireDate("");
+    setJoinDate("");
     onClose();
   };
 
   const handleDateSelect = (date?: Date): void => {
-    setHireDate(date ? (DateTime.fromJSDate(date).toISODate() ?? "") : "");
+    setJoinDate(date ? (DateTime.fromJSDate(date).toISODate() ?? "") : "");
   };
 
   const handleSave = (): void => {
-    if (!hireDate) {
+    if (!joinDate) {
       return;
     }
     const payload: L1EmployeeType = {
-      employment: { employmentDetails: { joinedDate: hireDate } }
+      employment: { employmentDetails: { joinedDate: joinDate } }
     };
     editEmployee(payload, { onSuccess: () => handleClose() });
   };
@@ -62,17 +62,17 @@ const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
           <DatePicker
             mode="single"
             selected={
-              hireDate ? DateTime.fromISO(hireDate).toJSDate() : undefined
+              joinDate ? DateTime.fromISO(joinDate).toJSDate() : undefined
             }
             onSelect={handleDateSelect}
             popperProps={{ position: "bottom-start" }}
           >
             <div>
               <InputField
-                name="hireDate"
+                name="joinDate"
                 value={
-                  hireDate
-                    ? DateTime.fromISO(hireDate).toJSDate().toLocaleDateString()
+                  joinDate
+                    ? DateTime.fromISO(joinDate).toJSDate().toLocaleDateString()
                     : ""
                 }
                 placeholder={translateText(["datePlaceholder"])}
@@ -95,7 +95,7 @@ const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
         buttonRight: {
           variant: "primary",
           onClick: handleSave,
-          disabled: !hireDate || isPending,
+          disabled: !joinDate || isPending,
           isLoading: isPending,
           children: translateText(["saveBtnTxt"])
         }
@@ -104,4 +104,4 @@ const SetHireDateModal: FC<Props> = ({ employeeId, isOpen, onClose }) => {
   );
 };
 
-export default SetHireDateModal;
+export default SetJoinDateModal;

@@ -370,7 +370,7 @@
       "policyLabel": "Policy",
       "policyPlaceholder": "Select a policy",
       "effectiveDateLabel": "Policy becomes effective on",
-      "hireDateOption": "Hire Date",
+      "joinDateOption": "Join Date",
       "specificDateOption": "Specific Date",
       "specificDatePlaceholder": "Select a date",
       "specificDateRequired": "Please select an effective date",
@@ -381,13 +381,13 @@
       "colDate": "Date",
       "colDays": "Days",
       "colBalance": "Balance",
-      "setHireDateBtnTxt": "Set a hire date",
+      "setJoinDateBtnTxt": "Set a join date",
       "saveBtnTxt": "Save",
       "cancelBtnTxt": "Cancel"
     },
-    "setHireDateModal": {
-      "title": "Set Hire Date",
-      "dateLabel": "Hire date",
+    "setJoinDateModal": {
+      "title": "Set Join Date",
+      "dateLabel": "Join date",
       "datePlaceholder": "Select a date",
       "saveBtnTxt": "Save",
       "cancelBtnTxt": "Cancel"

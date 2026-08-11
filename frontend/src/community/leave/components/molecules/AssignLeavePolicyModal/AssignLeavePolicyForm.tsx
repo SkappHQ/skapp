@@ -106,18 +106,18 @@ const AssignLeavePolicyForm: FC<Props> = ({
           <button
             type="button"
             role="radio"
-            aria-checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
+            aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
             onClick={() =>
-              onEffectiveDateTypeChange(EffectiveDateType.HIRE_DATE)
+              onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
             }
             className="flex w-fit cursor-pointer items-center gap-3"
           >
             <RadioButton
-              isSelected={effectiveDateType === EffectiveDateType.HIRE_DATE}
+              isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
               variant="dot"
             />
             <span className="body1 text-black">
-              {translateText(["assignModal", "hireDateOption"])}
+              {translateText(["assignModal", "joinDateOption"])}
             </span>
           </button>
           <button

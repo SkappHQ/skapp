@@ -21,7 +21,7 @@ public class EmployeeLeavePolicyUtil {
 		}
 
 		if (employee.getJoinDate() == null) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_HIRE_DATE_UNAVAILABLE);
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_JOIN_DATE_UNAVAILABLE);
 		}
 		return employee.getJoinDate();
 	}

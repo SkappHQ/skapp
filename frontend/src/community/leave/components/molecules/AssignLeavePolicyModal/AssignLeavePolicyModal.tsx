@@ -12,7 +12,7 @@ import {
   useGetEmployeeLeavePolicies
 } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyForm from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
-import SetHireDateModal from "~community/leave/components/molecules/SetHireDateModal/SetHireDateModal";
+import SetJoinDateModal from "~community/leave/components/molecules/SetJoinDateModal/SetJoinDateModal";
 import {
   EffectiveDateType,
   LeavePolicyStatus,
@@ -49,19 +49,19 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
   const [effectiveDateType, setEffectiveDateType] = useState<EffectiveDateType>(
-    EffectiveDateType.HIRE_DATE
+    EffectiveDateType.JOIN_DATE
   );
   const [specificDate, setSpecificDate] = useState<string>("");
   const [specificDateError, setSpecificDateError] = useState<string>("");
-  const [isSetHireDateOpen, setIsSetHireDateOpen] = useState<boolean>(false);
+  const [isSetJoinDateOpen, setIsSetJoinDateOpen] = useState<boolean>(false);
 
   const { data: employee, isLoading: isEmployeeLoading } =
     useGetEmployeeById(employeeId);
 
   const joinedDate = employee?.employment?.employmentDetails?.joinedDate;
 
-  const needsHireDate =
-    effectiveDateType === EffectiveDateType.HIRE_DATE &&
+  const needsJoinDate =
+    effectiveDateType === EffectiveDateType.JOIN_DATE &&
     !isEmployeeLoading &&
     !joinedDate;
 
@@ -92,7 +92,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
 
   const resetForm = (): void => {
     setSelectedPolicyId("");
-    setEffectiveDateType(EffectiveDateType.HIRE_DATE);
+    setEffectiveDateType(EffectiveDateType.JOIN_DATE);
     setSpecificDate("");
     setSpecificDateError("");
   };
@@ -121,7 +121,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
   );
 
   // Save is only reachable once the effective date resolves — a specific date is
-  // validated below, and a missing hire date swaps Save for "Set a hire date".
+  // validated below, and a missing join date swaps Save for "Set a join date".
   const effectiveDateLabel = previewStartISO
     ? DateTime.fromISO(previewStartISO).toFormat(MEDIUM_DATE_FORMAT)
     : "";
@@ -227,7 +227,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
   return (
     <>
       <SmallModal
-        isOpen={isOpen && !isSetHireDateOpen}
+        isOpen={isOpen && !isSetJoinDateOpen}
         onClose={handleClose}
         modalHeader={translateText(["assignModal", "title"])}
         content={
@@ -252,12 +252,12 @@ const AssignLeavePolicyModal: FC<Props> = ({
             disabled: isPending,
             children: translateText(["assignModal", "cancelBtnTxt"])
           },
-          buttonRight: needsHireDate
+          buttonRight: needsJoinDate
             ? {
                 variant: "primary",
-                onClick: () => setIsSetHireDateOpen(true),
+                onClick: () => setIsSetJoinDateOpen(true),
                 disabled: isEmployeeLoading,
-                children: translateText(["assignModal", "setHireDateBtnTxt"])
+                children: translateText(["assignModal", "setJoinDateBtnTxt"])
               }
             : {
                 variant: "primary",
@@ -268,10 +268,10 @@ const AssignLeavePolicyModal: FC<Props> = ({
               }
         }}
       />
-      <SetHireDateModal
+      <SetJoinDateModal
         employeeId={employeeId}
-        isOpen={isSetHireDateOpen}
-        onClose={() => setIsSetHireDateOpen(false)}
+        isOpen={isSetJoinDateOpen}
+        onClose={() => setIsSetJoinDateOpen(false)}
       />
     </>
   );
