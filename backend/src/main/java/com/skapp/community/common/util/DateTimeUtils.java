@@ -60,6 +60,8 @@ public class DateTimeUtils {
 
 	public static final int LAST_DAY = 31;
 
+	public static final MonthDay CALENDAR_YEAR_START = MonthDay.of(JANUARY, FIRST_DAY);
+
 	public static final float MILLISECONDS_IN_AN_HOUR = 1000 * 60 * 60.0f;
 
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -636,6 +638,16 @@ public class DateTimeUtils {
 		catch (DateTimeParseException e) {
 			return false;
 		}
+	}
+
+	/**
+	 * Parses a month-day string in "MM-dd" format.
+	 * @param monthDay The month-day string to parse.
+	 * @return The corresponding MonthDay.
+	 * @throws DateTimeParseException If the string is not a valid month-day.
+	 */
+	public static MonthDay parseMonthDay(String monthDay) {
+		return MonthDay.parse(monthDay, MONTH_DAY_FORMATTER);
 	}
 
 	public static boolean isValidDate(String dateStr) {

@@ -16,7 +16,7 @@ import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequestAttachment;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
-import com.skapp.community.leaveplanner.payload.PolicyBalanceSnapshot;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
@@ -129,25 +129,25 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		User currentUser = userService.getCurrentUser();
 		EmployeeLeavePolicy assignment = resolveActiveAssignment(currentUser.getEmployee(), requestDto.getPolicyId());
-		PolicyBalanceSnapshot snapshot = policyLeaveBalanceCalculator.calculateForDate(assignment,
+		PolicyLeaveBalanceDto balance = policyLeaveBalanceCalculator.calculateForDate(assignment,
 				requestDto.getStartDate());
 
 		PolicyLeaveAvailabilityResponseDto responseDto = new PolicyLeaveAvailabilityResponseDto();
 		responseDto.setPolicyId(assignment.getPolicy().getId());
 		responseDto.setPolicyName(assignment.getPolicy().getName());
-		responseDto.setRemainingBalance(snapshot.balanceInDays());
-		responseDto.setIsUnlimited(snapshot.isUnlimited());
-		responseDto.setValidFrom(snapshot.usableFrom());
-		responseDto.setValidTo(snapshot.cycleEnd());
+		responseDto.setRemainingBalance(balance.getBalanceInDays());
+		responseDto.setIsUnlimited(balance.isUnlimited());
+		responseDto.setValidFrom(balance.usableFrom());
+		responseDto.setValidTo(balance.getCycleEnd());
 		responseDto.setRequestedDays(0f);
 
-		PolicyLeaveValidationFailure failure = firstFailure(currentUser.getEmployee(), snapshot,
+		PolicyLeaveValidationFailure failure = firstFailure(currentUser.getEmployee(), balance,
 				requestDto.getStartDate(), requestDto.getEndDate(), requestDto.getLeaveState(), responseDto);
 
 		responseDto.setIsValid(failure == null);
 		responseDto.setFailureReason(failure);
-		if (failure == null && !snapshot.isUnlimited()) {
-			responseDto.setBalanceAfterRequest(snapshot.balanceInDays() - responseDto.getRequestedDays());
+		if (failure == null && !balance.isUnlimited()) {
+			responseDto.setBalanceAfterRequest(balance.getBalanceInDays() - responseDto.getRequestedDays());
 		}
 
 		log.info("checkPolicyLeaveAvailability: execution ended");
@@ -173,10 +173,10 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		validatePolicyIsUsable(policy);
 		validateAgainstLeaveType(policy.getLeaveType(), policyLeaveRequestDto);
 
-		PolicyBalanceSnapshot snapshot = policyLeaveBalanceCalculator.calculateForDate(assignment,
+		PolicyLeaveBalanceDto balance = policyLeaveBalanceCalculator.calculateForDate(assignment,
 				policyLeaveRequestDto.getStartDate());
 
-		float durationDays = validateAndCalculateDuration(employee, snapshot, policyLeaveRequestDto.getStartDate(),
+		float durationDays = validateAndCalculateDuration(employee, balance, policyLeaveRequestDto.getStartDate(),
 				policyLeaveRequestDto.getEndDate(), policyLeaveRequestDto.getLeaveState());
 
 		PolicyLeaveRequest leaveRequest = new PolicyLeaveRequest();
@@ -203,9 +203,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		PolicyLeaveRequestResponseDto responseDto = leaveMapper
 			.policyLeaveRequestToPolicyLeaveRequestResponseDto(savedLeaveRequest);
-		responseDto.setIsUnlimited(snapshot.isUnlimited());
-		if (!snapshot.isUnlimited()) {
-			responseDto.setRemainingBalance(snapshot.balanceInDays() - durationDays);
+		responseDto.setIsUnlimited(balance.isUnlimited());
+		if (!balance.isUnlimited()) {
+			responseDto.setRemainingBalance(balance.getBalanceInDays() - durationDays);
 		}
 
 		log.info("applyPolicyLeaveRequest: execution ended");
@@ -247,7 +247,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment, int year,
 			boolean hasSupervisor, LocalDate today) {
 		LeavePolicy policy = assignment.getPolicy();
-		PolicyBalanceSnapshot snapshot = policyLeaveBalanceCalculator.calculateForYear(assignment, year);
+		PolicyLeaveBalanceDto balance = policyLeaveBalanceCalculator.calculateForYear(assignment, year);
 
 		EmployeePolicyBalanceResponseDto card = new EmployeePolicyBalanceResponseDto();
 		card.setAssignmentId(assignment.getId());
@@ -256,32 +256,32 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		card.setPolicyType(policy.getPolicyType());
 		card.setLeaveType(leaveMapper.policyLeaveTypeToPolicyLeaveTypeDetailResponseDto(policy.getLeaveType()));
 		card.setYear(year);
-		card.setEffectiveFrom(snapshot.effectiveFrom());
-		card.setValidFrom(snapshot.usableFrom());
-		card.setValidTo(snapshot.cycleEnd());
-		card.setCarriedForwardDays(snapshot.carriedForwardDays());
-		card.setAccruedDays(snapshot.accruedDays());
-		card.setTotalDaysAllocated(snapshot.totalDaysAllocated());
-		card.setTotalDaysUsed(snapshot.totalDaysUsed());
-		card.setBalanceInDays(snapshot.balanceInDays());
-		card.setIsUnlimited(snapshot.isUnlimited());
-		card.setIsBalanceAvailable(snapshot.isDerived());
+		card.setEffectiveFrom(balance.getEffectiveFrom());
+		card.setValidFrom(balance.usableFrom());
+		card.setValidTo(balance.getCycleEnd());
+		card.setCarriedForwardDays(balance.getCarriedForwardDays());
+		card.setAccruedDays(balance.getAccruedDays());
+		card.setTotalDaysAllocated(balance.getTotalDaysAllocated());
+		card.setTotalDaysUsed(balance.getTotalDaysUsed());
+		card.setBalanceInDays(balance.getBalanceInDays());
+		card.setIsUnlimited(balance.isUnlimited());
+		card.setIsBalanceAvailable(balance.isDerived());
 
-		PolicyBalanceDisabledReason disabledReason = resolveDisabledReason(snapshot, hasSupervisor, today);
+		PolicyBalanceDisabledReason disabledReason = resolveDisabledReason(balance, hasSupervisor, today);
 		card.setDisabledReason(disabledReason);
 		card.setIsDisabled(disabledReason != null);
 		return card;
 	}
 
-	private PolicyBalanceDisabledReason resolveDisabledReason(PolicyBalanceSnapshot snapshot, boolean hasSupervisor,
+	private PolicyBalanceDisabledReason resolveDisabledReason(PolicyLeaveBalanceDto balance, boolean hasSupervisor,
 			LocalDate today) {
-		if (snapshot.policy().getStatus() != LeavePolicyStatus.ACTIVE) {
+		if (balance.getPolicy().getStatus() != LeavePolicyStatus.ACTIVE) {
 			return PolicyBalanceDisabledReason.POLICY_INACTIVE;
 		}
-		if (snapshot.cycleEnd().isBefore(today)) {
+		if (balance.getCycleEnd().isBefore(today)) {
 			return PolicyBalanceDisabledReason.ALLOCATION_PERIOD_EXPIRED;
 		}
-		if (!snapshot.hasBalance()) {
+		if (!balance.hasBalance()) {
 			return PolicyBalanceDisabledReason.FULLY_UTILIZED;
 		}
 		if (!hasSupervisor) {
@@ -290,13 +290,13 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return null;
 	}
 
-	private PolicyLeaveValidationFailure firstFailure(Employee employee, PolicyBalanceSnapshot snapshot,
+	private PolicyLeaveValidationFailure firstFailure(Employee employee, PolicyLeaveBalanceDto balance,
 			LocalDate startDate, LocalDate endDate, LeaveState leaveState,
 			PolicyLeaveAvailabilityResponseDto responseDto) {
 		if (endDate.isBefore(startDate)) {
 			return PolicyLeaveValidationFailure.INVALID_DATE_RANGE;
 		}
-		if (startDate.isBefore(snapshot.usableFrom()) || endDate.isAfter(snapshot.cycleEnd())) {
+		if (startDate.isBefore(balance.usableFrom()) || endDate.isAfter(balance.getCycleEnd())) {
 			return PolicyLeaveValidationFailure.OUTSIDE_POLICY_PERIOD;
 		}
 
@@ -313,18 +313,18 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (hasOverlappingRequest(employee, startDate, endDate, leaveState)) {
 			return PolicyLeaveValidationFailure.OVERLAPPING_REQUEST;
 		}
-		if (!snapshot.canAccommodate(requestedDays)) {
+		if (!balance.canAccommodate(requestedDays)) {
 			return PolicyLeaveValidationFailure.INSUFFICIENT_BALANCE;
 		}
 		return null;
 	}
 
-	private float validateAndCalculateDuration(Employee employee, PolicyBalanceSnapshot snapshot, LocalDate startDate,
+	private float validateAndCalculateDuration(Employee employee, PolicyLeaveBalanceDto balance, LocalDate startDate,
 			LocalDate endDate, LeaveState leaveState) {
 		if (endDate.isBefore(startDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE);
 		}
-		if (startDate.isBefore(snapshot.usableFrom()) || endDate.isAfter(snapshot.cycleEnd())) {
+		if (startDate.isBefore(balance.usableFrom()) || endDate.isAfter(balance.getCycleEnd())) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_OUTSIDE_POLICY_PERIOD);
 		}
 
@@ -340,9 +340,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (hasOverlappingRequest(employee, startDate, endDate, leaveState)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_OVERLAP);
 		}
-		if (!snapshot.canAccommodate(requestedDays)) {
+		if (!balance.canAccommodate(requestedDays)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INSUFFICIENT_BALANCE,
-					new Object[] { snapshot.balanceInDays(), snapshot.policy().getName() });
+					new Object[] { balance.getBalanceInDays(), balance.getPolicy().getName() });
 		}
 		return requestedDays;
 	}

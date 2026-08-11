@@ -3,7 +3,7 @@ package com.skapp.community.leaveplanner.service;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
-import com.skapp.community.leaveplanner.payload.PolicyBalanceSnapshot;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.PolicyLeaveAccrualUtil;
@@ -21,26 +21,26 @@ public class PolicyLeaveBalanceCalculator {
 
 	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
-	public PolicyBalanceSnapshot calculateForYear(EmployeeLeavePolicy assignment, int year) {
+	public PolicyLeaveBalanceDto calculateForYear(EmployeeLeavePolicy assignment, int year) {
 		LeavePolicy policy = assignment.getPolicy();
 		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycle(policy, year));
 	}
 
-	public PolicyBalanceSnapshot calculateForDate(EmployeeLeavePolicy assignment, LocalDate date) {
+	public PolicyLeaveBalanceDto calculateForDate(EmployeeLeavePolicy assignment, LocalDate date) {
 		LeavePolicy policy = assignment.getPolicy();
 		return calculate(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(policy, date));
 	}
 
-	private PolicyBalanceSnapshot calculate(EmployeeLeavePolicy assignment, DateWindow targetCycle) {
+	private PolicyLeaveBalanceDto calculate(EmployeeLeavePolicy assignment, DateWindow targetCycle) {
 		LeavePolicy policy = assignment.getPolicy();
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
 		if (policy.getPolicyType() == PolicyType.FLEXIBLE) {
-			return unlimitedSnapshot(policy, effectiveFrom, targetCycle);
+			return unlimitedBalance(policy, effectiveFrom, targetCycle);
 		}
 
 		if (targetCycle.end().isBefore(effectiveFrom)) {
-			return emptySnapshot(policy, effectiveFrom, targetCycle, true);
+			return emptyBalance(policy, effectiveFrom, targetCycle, true);
 		}
 
 		LocalDate accrualStartDate = PolicyLeaveAccrualUtil.resolveAccrualStartDate(policy, effectiveFrom);
@@ -54,13 +54,13 @@ public class PolicyLeaveBalanceCalculator {
 			float totalDaysUsed = committedDays(assignment, cycle);
 
 			if (cycle.start().equals(targetCycle.start())) {
-				return new PolicyBalanceSnapshot(policy, effectiveFrom, cycle.start(), cycle.end(), carriedForwardDays,
+				return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), carriedForwardDays,
 						accruedDays, totalDaysAllocated, totalDaysUsed, totalDaysAllocated - totalDaysUsed, false,
 						true);
 			}
 
 			if (cycle.start().isAfter(targetCycle.start())) {
-				return emptySnapshot(policy, effectiveFrom, targetCycle, true);
+				return emptyBalance(policy, effectiveFrom, targetCycle, true);
 			}
 
 			carriedForwardDays = PolicyLeaveAccrualUtil
@@ -69,7 +69,7 @@ public class PolicyLeaveBalanceCalculator {
 			DateWindow nextCycle = PolicyLeaveAccrualUtil.resolveCycleContaining(policy, cycle.end().plusDays(1));
 			if (!nextCycle.start().isAfter(cycle.start())) {
 				log.warn("calculate: carryover cycle failed to advance, balance could not be derived");
-				return emptySnapshot(policy, effectiveFrom, targetCycle, false);
+				return emptyBalance(policy, effectiveFrom, targetCycle, false);
 			}
 			cycle = nextCycle;
 		}
@@ -82,14 +82,14 @@ public class PolicyLeaveBalanceCalculator {
 		return committed == null ? 0f : committed.floatValue();
 	}
 
-	private PolicyBalanceSnapshot emptySnapshot(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle,
+	private PolicyLeaveBalanceDto emptyBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle,
 			boolean isDerived) {
-		return new PolicyBalanceSnapshot(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, false,
+		return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, false,
 				isDerived);
 	}
 
-	private PolicyBalanceSnapshot unlimitedSnapshot(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle) {
-		return new PolicyBalanceSnapshot(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, true,
+	private PolicyLeaveBalanceDto unlimitedBalance(LeavePolicy policy, LocalDate effectiveFrom, DateWindow cycle) {
+		return new PolicyLeaveBalanceDto(policy, effectiveFrom, cycle.start(), cycle.end(), 0f, 0f, 0f, 0f, 0f, true,
 				true);
 	}
 

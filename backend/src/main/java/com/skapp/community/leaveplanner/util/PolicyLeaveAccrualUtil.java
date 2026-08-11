@@ -10,16 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @UtilityClass
 public class PolicyLeaveAccrualUtil {
-
-	private static final DateTimeFormatter CARRYOVER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
-
-	private static final MonthDay CALENDAR_YEAR_START = MonthDay.of(1, 1);
 
 	public record DateWindow(LocalDate start, LocalDate end) {
 	}
@@ -137,17 +132,17 @@ public class PolicyLeaveAccrualUtil {
 
 	private static MonthDay resolveCycleAnchor(LeavePolicy policy) {
 		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled())) {
-			return CALENDAR_YEAR_START;
+			return DateTimeUtils.CALENDAR_YEAR_START;
 		}
 		String carryoverDate = policy.getCarryoverDate();
 		if (carryoverDate == null || carryoverDate.isBlank()) {
-			return CALENDAR_YEAR_START;
+			return DateTimeUtils.CALENDAR_YEAR_START;
 		}
 		if (!DateTimeUtils.isValidMonthDay(carryoverDate)) {
 			log.warn("resolveCycleAnchor: unparseable carryover date, falling back to the default anchor");
-			return CALENDAR_YEAR_START;
+			return DateTimeUtils.CALENDAR_YEAR_START;
 		}
-		return MonthDay.parse(carryoverDate, CARRYOVER_DATE_FORMATTER);
+		return DateTimeUtils.parseMonthDay(carryoverDate);
 	}
 
 	private static DateWindow resolvePeriodContaining(AccrualFrequency frequency, LocalDate accrualStartDate,
