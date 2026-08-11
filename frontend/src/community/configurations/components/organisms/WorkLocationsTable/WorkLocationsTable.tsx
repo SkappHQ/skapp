@@ -135,6 +135,7 @@ const WorkLocationsTable = () => {
 
   return (
     <div className="flex flex-col gap-6 w-full">
+      <h2 className="h2">{translateText(["pageTitle"])}</h2>
       <div className="flex gap-2 items-center justify-between">
         <InputField
           className="w-[412px]"
