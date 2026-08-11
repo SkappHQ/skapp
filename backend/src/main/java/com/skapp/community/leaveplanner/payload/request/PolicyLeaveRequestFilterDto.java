@@ -2,7 +2,6 @@ package com.skapp.community.leaveplanner.payload.request;
 
 import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
-import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
@@ -13,7 +12,6 @@ import java.util.List;
 @Setter
 public class PolicyLeaveRequestFilterDto {
 
-	@Min(0)
 	private int page = 0;
 
 	private int size = 10;

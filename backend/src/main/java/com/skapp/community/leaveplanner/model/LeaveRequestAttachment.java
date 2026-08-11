@@ -10,12 +10,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@RequiredArgsConstructor
 @Table(name = "leave_request_attachment")
 public class LeaveRequestAttachment {
 
@@ -30,16 +33,13 @@ public class LeaveRequestAttachment {
 	@Column(name = "original_file_name", updatable = false)
 	private String originalFileName;
 
+	@NonNull
 	@Column(name = "file_Url", updatable = false)
 	private String url;
 
+	@NonNull
 	@ManyToOne(optional = false)
 	@JoinColumn(name = "leave_Request_id")
 	private LeaveRequest leaveRequest;
-
-	public LeaveRequestAttachment(String url, LeaveRequest leaveRequest) {
-		this.url = url;
-		this.leaveRequest = leaveRequest;
-	}
 
 }

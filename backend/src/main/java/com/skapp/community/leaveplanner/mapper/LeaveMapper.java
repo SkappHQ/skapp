@@ -184,8 +184,6 @@ public interface LeaveMapper {
 	@Mapping(target = "policyId", source = "policy.id")
 	@Mapping(target = "policyName", source = "policy.name")
 	@Mapping(target = "leaveType", source = "policy.leaveType")
-	@Mapping(target = "remainingBalance", ignore = true)
-	@Mapping(target = "isUnlimited", ignore = true)
 	PolicyLeaveRequestResponseDto policyLeaveRequestToPolicyLeaveRequestResponseDto(
 			PolicyLeaveRequest policyLeaveRequest);
 
