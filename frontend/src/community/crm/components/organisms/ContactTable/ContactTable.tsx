@@ -41,12 +41,11 @@ export const ContactTable: FC = () => {
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
+  const companyId =
+    selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactMetrics(
-      debouncedSearch,
-      DEFAULT_PAGE_SIZE,
-      selectedCompany ? Number(selectedCompany) : undefined
-    );
+    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
@@ -72,7 +71,7 @@ export const ContactTable: FC = () => {
 
   const companyOptions = [
     {
-      id: "all-companies",
+      id: ALL_COMPANIES,
       label: translateText(["table", "companyFilter", "allCompanies"]),
       value: ALL_COMPANIES
     },
