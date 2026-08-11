@@ -14,19 +14,7 @@ export interface CrmCompaniesSlice {
   upsertCompany: (company: CrmCompanyEntity) => void;
   removeCompany: (companyId: number) => void;
 
-  setCompanyContacts: (
-    companyId: number,
-    contacts: CrmContactEntity[],
-    currentPage?: number
-  ) => void;
-  setCompanyDeals: (
-    companyId: number,
-    deals: CrmDealEntity[],
-    currentPage?: number
-  ) => void;
-  setCompanyTasks: (
-    companyId: number,
-    tasks: CrmTaskEntity[],
-    currentPage?: number
-  ) => void;
+  setCompanyContacts: (companyId: number, contacts: CrmContactEntity[]) => void;
+  setCompanyDeals: (companyId: number, deals: CrmDealEntity[]) => void;
+  setCompanyTasks: (companyId: number, tasks: CrmTaskEntity[]) => void;
 }

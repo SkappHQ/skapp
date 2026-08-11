@@ -23,9 +23,5 @@ export interface CrmDealsSlice {
   ) => void;
   moveDeal: (dealId: number, toStageId: number, toIndex: number) => void;
 
-  setDealTasks: (
-    dealId: number,
-    tasks: CrmTaskEntity[],
-    currentPage?: number
-  ) => void;
+  setDealTasks: (dealId: number, tasks: CrmTaskEntity[]) => void;
 }

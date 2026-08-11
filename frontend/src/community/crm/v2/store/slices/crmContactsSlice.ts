@@ -13,14 +13,6 @@ export interface CrmContactsSlice {
   upsertContact: (contact: CrmContactEntity) => void;
   removeContact: (contactId: number) => void;
 
-  setContactDeals: (
-    contactId: number,
-    deals: CrmDealEntity[],
-    currentPage?: number
-  ) => void;
-  setContactTasks: (
-    contactId: number,
-    tasks: CrmTaskEntity[],
-    currentPage?: number
-  ) => void;
+  setContactDeals: (contactId: number, deals: CrmDealEntity[]) => void;
+  setContactTasks: (contactId: number, tasks: CrmTaskEntity[]) => void;
 }
