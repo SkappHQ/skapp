@@ -73,8 +73,8 @@ export const businessUnitEndpoints = {
   CREATE_BUSINESS_UNIT: `${moduleAPIPath.COMMON}/business-unit`,
   UPDATE_BUSINESS_UNIT: (id: number) =>
     `${moduleAPIPath.COMMON}/business-unit/${id}`,
-  GET_BUSINESS_UNIT_DELETION_IMPACT: (id: number) =>
-    `${moduleAPIPath.COMMON}/business-unit/${id}/deletion-impact`,
+  GET_BUSINESS_UNIT_SUMMARY: (id: number) =>
+    `${moduleAPIPath.COMMON}/business-unit/${id}/business-unit-summary`,
   DELETE_BUSINESS_UNIT: (id: number) =>
     `${moduleAPIPath.COMMON}/business-unit/${id}`
 };

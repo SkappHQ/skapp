@@ -10,8 +10,7 @@ import {
 } from "~community/common/types/AuthTypes";
 import { ManagerTypes } from "~community/common/types/CommonTypes";
 import { TierEnum } from "~enterprise/common/enums/Common";
-
-import { tenantID } from "../utils/axiosInterceptor";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 const useSessionData = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
@@ -183,7 +182,7 @@ const useSessionData = () => {
     isCrmSalesManager,
     isCrmSalesRepresentative,
     isCrmModuleEnabled,
-    tenantID
+    tenantID: getTenantId()
   };
 };
 

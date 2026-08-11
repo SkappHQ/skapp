@@ -7,10 +7,10 @@ import { FC, useState } from "react";
 
 import {
   useDeleteBusinessUnit,
-  useGetBusinessUnitDeletionImpact,
+  useGetBusinessUnitSummary,
   useGetBusinessUnits
 } from "~community/common/api/BusinessUnitApi";
-import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/businessUnitConstants";
+import { BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE } from "~community/common/constants/commonConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -31,48 +31,63 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   const translateText = useTranslator("configurations", "businessUnit");
   const { setToastMessage } = useToast();
 
-  const [transferTargetValue, setTransferTargetValue] =
-    useState<string>(BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE);
+  const [transferTargetValue, setTransferTargetValue] = useState<string>(
+    BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
+  );
 
-  const { data: impact, isLoading: isImpactLoading } =
-    useGetBusinessUnitDeletionImpact(businessUnit.businessUnitId, isOpen);
+  const { data: businessUnitSummary, isLoading: isBusinessUnitSummaryLoading } =
+    useGetBusinessUnitSummary(businessUnit.businessUnitId);
 
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const getSelectedTargetId = (): number | null =>
+  const assignedEmployeeCount = businessUnitSummary?.assignedEmployeeCount;
+  const isOtherBusinessUnitsExist =
+    businessUnitSummary?.isOtherBusinessUnitsExist;
+
+  const getSelectedTargetId = (): number | undefined =>
     transferTargetValue === BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE
-      ? null
+      ? undefined
       : Number(transferTargetValue);
 
-  const handleDeleteSuccess = () => {
-    const count = impact?.assignedEmployeeCount;
-    const targetId = getSelectedTargetId();
-
-    let description: string;
+  const getSuccessDescription = (
+    count: number | undefined,
+    targetId: number | undefined
+  ): string => {
     if (count === 0) {
-      description = translateText(["toasts", "deleteSuccess", "description"], {
+      return translateText(["toasts", "deleteSuccess", "description"], {
         name: businessUnit.name
       });
-    } else if (targetId !== null) {
+    }
+
+    if (targetId !== undefined) {
       const targetName = businessUnits?.find(
         (unit) => unit.businessUnitId === targetId
       )?.name;
-      description = translateText(
+
+      return translateText(
         ["toasts", "deleteAndTransferSuccess", "description"],
         { name: businessUnit.name, count, target: targetName }
       );
-    } else {
-      description = translateText(
-        ["toasts", "deleteAndUnassignSuccess", "description"],
-        { name: businessUnit.name, count }
-      );
     }
 
+    return translateText(
+      ["toasts", "deleteAndUnassignSuccess", "description"],
+      {
+        name: businessUnit.name,
+        count
+      }
+    );
+  };
+
+  const handleDeleteSuccess = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["toasts", "deleteSuccess", "title"]),
-      description
+      description: getSuccessDescription(
+        assignedEmployeeCount,
+        getSelectedTargetId()
+      )
     });
     onClose();
   };
@@ -91,12 +106,6 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     handleDeleteError
   );
 
-  const handleClose = () => {
-    if (isPending) return;
-    setTransferTargetValue(BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE);
-    onClose();
-  };
-
   const handleDelete = () => {
     deleteBusinessUnit({
       id: businessUnit.businessUnitId,
@@ -105,7 +114,11 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   };
 
   const renderContent = () => {
-    if (isImpactLoading || !impact || !businessUnits) {
+    if (
+      isBusinessUnitSummaryLoading ||
+      assignedEmployeeCount === undefined ||
+      !businessUnits
+    ) {
       return (
         <div className="flex flex-col gap-3">
           <div className="h-4 w-full animate-pulse rounded bg-tertiary-background" />
@@ -114,9 +127,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    const count = impact.assignedEmployeeCount;
-
-    if (count === 0) {
+    if (assignedEmployeeCount === 0) {
       return (
         <p className="body1">
           {translateText(["deleteModal", "confirmDescription"], {
@@ -126,13 +137,13 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       );
     }
 
-    if (impact.isOtherBusinessUnitsExist) {
+    if (isOtherBusinessUnitsExist) {
       return (
         <DeleteBusinessUnitTransferContent
           businessUnits={businessUnits}
           currentBusinessUnitId={businessUnit.businessUnitId}
           businessUnitName={businessUnit.name}
-          assignedEmployeeCount={count}
+          assignedEmployeeCount={assignedEmployeeCount}
           value={transferTargetValue}
           onChange={setTransferTargetValue}
         />
@@ -142,7 +153,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     return (
       <p className="body1">
         {translateText(["deleteModal", "noOtherUnitsDescription"], {
-          count,
+          count: assignedEmployeeCount,
           name: businessUnit.name
         })}
       </p>
@@ -152,13 +163,13 @@ const DeleteBusinessUnitModal: FC<Props> = ({
   return (
     <SmallModal
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       modalHeader={translateText(["deleteModal", "title"])}
       content={renderContent()}
       buttons={{
         buttonLeft: {
           variant: "tertiary",
-          onClick: handleClose,
+          onClick: onClose,
           icon: <CloseIcon />,
           iconPosition: "end",
           disabled: isPending,
@@ -175,7 +186,7 @@ const DeleteBusinessUnitModal: FC<Props> = ({
             />
           ),
           iconPosition: "end",
-          disabled: isPending || isImpactLoading,
+          disabled: isPending || isBusinessUnitSummaryLoading,
           isLoading: isPending,
           children: translateText(["deleteModal", "deleteButton"])
         }

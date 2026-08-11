@@ -1,10 +1,11 @@
 import * as Yup from "yup";
 
+import {
+  BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH,
+  BUSINESS_UNIT_NAME_MAX_LENGTH
+} from "~community/common/constants/commonConstants";
 import { BusinessUnit } from "~community/common/types/BusinessUnitTypes";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-
-export const BUSINESS_UNIT_NAME_MAX_LENGTH = 100;
-export const BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH = 250;
 
 export const businessUnitValidation = (
   translateText: TranslatorFunctionType,
@@ -13,12 +14,8 @@ export const businessUnitValidation = (
 ) =>
   Yup.object().shape({
     name: Yup.string()
+      .trim()
       .required(translateText(["validations", "nameRequired"]))
-      .test(
-        "name-not-blank",
-        translateText(["validations", "nameRequired"]),
-        (value) => !!value && value.trim().length > 0
-      )
       .max(
         BUSINESS_UNIT_NAME_MAX_LENGTH,
         translateText(["validations", "nameTooLong"])
@@ -29,16 +26,17 @@ export const businessUnitValidation = (
         (value) => {
           if (!value) return true;
 
-          const trimmedName = value.trim();
           return businessUnits.every(
             (businessUnit) =>
               businessUnit.businessUnitId === currentBusinessUnitId ||
-              businessUnit.name.trim() !== trimmedName
+              businessUnit.name.trim() !== value
           );
         }
       ),
-    description: Yup.string().max(
-      BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH,
-      translateText(["validations", "descriptionTooLong"])
-    )
+    description: Yup.string()
+      .trim()
+      .max(
+        BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH,
+        translateText(["validations", "descriptionTooLong"])
+      )
   });

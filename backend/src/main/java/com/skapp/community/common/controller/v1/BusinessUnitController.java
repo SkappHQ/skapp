@@ -34,14 +34,6 @@ public class BusinessUnitController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get a business unit by ID")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
-	@GetMapping(value = "/{id}")
-	public ResponseEntity<ResponseEntityDto> getBusinessUnitById(@PathVariable Long id) {
-		ResponseEntityDto response = businessUnitService.getBusinessUnitById(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	@Operation(summary = "Create a business unit")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
 	@PostMapping
@@ -60,12 +52,12 @@ public class BusinessUnitController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get the impact of deleting a business unit",
+	@Operation(summary = "Get a business unit summary",
 			description = "Returns the number of employees assigned to the business unit and whether other business units exist, used to determine the delete confirmation flow.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
-	@GetMapping(value = "/{id}/deletion-impact")
-	public ResponseEntity<ResponseEntityDto> getBusinessUnitDeletionImpact(@PathVariable Long id) {
-		ResponseEntityDto response = businessUnitService.getBusinessUnitDeletionImpact(id);
+	@GetMapping(value = "/{id}/business-unit-summary")
+	public ResponseEntity<ResponseEntityDto> getBusinessUnitSummary(@PathVariable Long id) {
+		ResponseEntityDto response = businessUnitService.getBusinessUnitSummary(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -12,8 +12,8 @@ import { businessUnitQueryKeys } from "~community/common/api/utils/QueryKeys";
 import {
   BusinessUnit,
   BusinessUnitDeleteVariables,
-  BusinessUnitDeletionImpact,
   BusinessUnitRequestPayload,
+  BusinessUnitSummary,
   BusinessUnitUpdateVariables
 } from "~community/common/types/BusinessUnitTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -83,23 +83,21 @@ export const useUpdateBusinessUnit = (
   });
 };
 
-const getBusinessUnitDeletionImpact = async (
+const getBusinessUnitSummary = async (
   id: number
-): Promise<BusinessUnitDeletionImpact> => {
+): Promise<BusinessUnitSummary> => {
   const response = await authFetch.get(
-    businessUnitEndpoints.GET_BUSINESS_UNIT_DELETION_IMPACT(id)
+    businessUnitEndpoints.GET_BUSINESS_UNIT_SUMMARY(id)
   );
   return response.data.results[0];
 };
 
-export const useGetBusinessUnitDeletionImpact = (
-  id: number,
-  enabled: boolean
-): UseQueryResult<BusinessUnitDeletionImpact> => {
+export const useGetBusinessUnitSummary = (
+  id: number
+): UseQueryResult<BusinessUnitSummary> => {
   return useQuery({
-    queryKey: businessUnitQueryKeys.DELETION_IMPACT(id),
-    queryFn: () => getBusinessUnitDeletionImpact(id),
-    enabled
+    queryKey: businessUnitQueryKeys.BUSINESS_UNIT_SUMMARY(id),
+    queryFn: () => getBusinessUnitSummary(id)
   });
 };
 
@@ -108,8 +106,7 @@ const deleteBusinessUnit = ({
   transferToBusinessUnitId
 }: BusinessUnitDeleteVariables): Promise<AxiosResponse<BusinessUnit>> =>
   authFetch.delete(businessUnitEndpoints.DELETE_BUSINESS_UNIT(id), {
-    params:
-      transferToBusinessUnitId != null ? { transferToBusinessUnitId } : undefined
+    params: { transferToBusinessUnitId }
   });
 
 export const useDeleteBusinessUnit = (

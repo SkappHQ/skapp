@@ -1,1 +1,0 @@
-export const BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE = "unassign";
