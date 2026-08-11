@@ -1,10 +1,15 @@
-import { ButtonV2, CloseIcon, SaveIcon } from "@rootcodelabs/skapp-ui";
+import { Box, Typography } from "@mui/material";
+import { ButtonV2, Spinner } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
+import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
+import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { theme } from "~community/common/theme/theme";
+import { IconName } from "~community/common/types/IconTypes";
 import {
   useGetBirthdayNotificationConfig,
   useUpdateBirthdayNotificationConfig
@@ -13,6 +18,21 @@ import {
   BirthdayNotificationConfigPatchType,
   BirthdayNotificationConfigType
 } from "~community/people/types/PeopleConfigTypes";
+import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
+import { usePeopleConfigurationsForm } from "~enterprise/configurations/hooks/usePeopleConfigurationsForm";
+import { useGetGoogleConnectionStatus } from "~enterprise/people/api/GoogleWorkspaceSyncApi";
+
+const googleWorkspaceStyles = {
+  container: { width: "100%", maxWidth: "32.875rem" },
+  sectionTitle: { marginBottom: "1rem" },
+  sectionDescription: { marginBottom: "1rem" },
+  switchWrapper: { marginBottom: "1.5rem", marginTop: "1.5rem" },
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "row" as const,
+    gap: "0.75rem"
+  }
+};
 
 const PeopleConfigurations: FC = () => {
   const translateText = useTranslator(
@@ -20,8 +40,19 @@ const PeopleConfigurations: FC = () => {
     "people",
     "birthdayNotificationSection"
   );
-  const translateButton = useTranslator("configurations", "people", "buttons");
+  const translateWorkspaceText = useTranslator("peopleEnterprise");
   const { setToastMessage } = useToast();
+
+  const isEnterprise = useGetEnvironment() === appModes.ENTERPRISE;
+
+  const { data: connectionStatus, isLoading: isConnectionStatusLoading } =
+    useGetGoogleConnectionStatus(isEnterprise);
+  const isGoogleWorkspaceConnected = connectionStatus?.isConnected;
+  const { formik: workspaceFormik, isUpdating: isWorkspaceUpdating } =
+    usePeopleConfigurationsForm({
+      isAutoSyncEnabled: connectionStatus?.autoSyncEnabled,
+      isSyncNotificationsEnabled: connectionStatus?.isSyncNotificationsEnabled
+    });
 
   const [config, setConfig] = useState<BirthdayNotificationConfigType | null>(
     null
@@ -80,6 +111,22 @@ const PeopleConfigurations: FC = () => {
   const handleSave = () => {
     if (!config || isPending) return;
     updateConfig(config);
+  };
+
+  const isWorkspaceChanged = isEnterprise && workspaceFormik.dirty;
+  const isAnyChanged = isFormChanged || isWorkspaceChanged;
+  const isAnySubmitting = isPending || (isEnterprise && isWorkspaceUpdating);
+
+  const handleCancelAll = () => {
+    if (isFormChanged) handleCancel();
+    if (isWorkspaceChanged) {
+      workspaceFormik.resetForm({ values: workspaceFormik.initialValues });
+    }
+  };
+
+  const handleSaveAll = () => {
+    if (isFormChanged) handleSave();
+    if (isWorkspaceChanged) workspaceFormik.handleSubmit();
   };
 
   const subOptionsAriaMessage = config
@@ -158,31 +205,101 @@ const PeopleConfigurations: FC = () => {
               </>
             )}
           </div>
-
-          <div className="flex flex-row gap-4">
-            <ButtonV2
-              variant="tertiary"
-              size="md"
-              icon={<CloseIcon />}
-              iconPosition="end"
-              disabled={!isFormChanged}
-              onClick={handleCancel}
-            >
-              {translateButton(["cancel"])}
-            </ButtonV2>
-            <ButtonV2
-              variant="primary"
-              size="md"
-              icon={<SaveIcon />}
-              iconPosition="end"
-              disabled={!isFormChanged || isPending}
-              onClick={handleSave}
-            >
-              {translateButton(["save"])}
-            </ButtonV2>
-          </div>
         </>
       )}
+
+      {isEnterprise && (
+        <>
+          <hr className="w-full border-t border-secondary-accent" />
+
+          <Box>
+            <Typography variant="h4" sx={googleWorkspaceStyles.sectionTitle}>
+              {translateWorkspaceText([
+                "peopleConfiguration",
+                "googleWorkspaceTitle"
+              ])}
+            </Typography>
+            <Typography
+              variant="body1"
+              color={theme.palette.text.secondary}
+              sx={googleWorkspaceStyles.sectionDescription}
+            >
+              {translateWorkspaceText([
+                "peopleConfiguration",
+                "googleWorkspaceDescription"
+              ])}
+            </Typography>
+
+            {isConnectionStatusLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <Spinner />
+              </Box>
+            ) : !isGoogleWorkspaceConnected ? (
+              <Typography
+                variant="body1"
+                color={theme.palette.text.secondary}
+                sx={googleWorkspaceStyles.sectionDescription}
+              >
+                {translateWorkspaceText([
+                  "peopleConfiguration",
+                  "notConnectedDescription"
+                ])}
+              </Typography>
+            ) : (
+              <Box sx={googleWorkspaceStyles.container}>
+                <SwitchRow
+                  labelId="google-workspace-auto-sync-enabled"
+                  label={translateWorkspaceText([
+                    "googleWorkspaceImport",
+                    "autoSyncNewLabel"
+                  ])}
+                  checked={!!workspaceFormik.values.isAutoSyncEnabled}
+                  wrapperStyles={googleWorkspaceStyles.switchWrapper}
+                  onChange={(checked) =>
+                    workspaceFormik.setFieldValue("isAutoSyncEnabled", checked)
+                  }
+                />
+                <SwitchRow
+                  labelId="google-workspace-sync-notifications-enabled"
+                  label={translateWorkspaceText([
+                    "peopleConfiguration",
+                    "syncNotificationsLabel"
+                  ])}
+                  checked={!!workspaceFormik.values.isSyncNotificationsEnabled}
+                  wrapperStyles={googleWorkspaceStyles.switchWrapper}
+                  onChange={(checked) =>
+                    workspaceFormik.setFieldValue(
+                      "isSyncNotificationsEnabled",
+                      checked
+                    )
+                  }
+                />
+              </Box>
+            )}
+          </Box>
+        </>
+      )}
+
+      <Box sx={googleWorkspaceStyles.buttonsContainer}>
+        <ButtonV2
+          variant="tertiary"
+          disabled={!isAnyChanged || isAnySubmitting}
+          onClick={handleCancelAll}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateWorkspaceText(["peopleConfiguration", "cancelButtonText"])}
+        </ButtonV2>
+        <ButtonV2
+          disabled={!isAnyChanged || isAnySubmitting}
+          isLoading={isAnySubmitting}
+          onClick={handleSaveAll}
+          icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
+          iconPosition="end"
+        >
+          {translateWorkspaceText(["peopleConfiguration", "saveButtonText"])}
+        </ButtonV2>
+      </Box>
     </div>
   );
 };
