@@ -46,8 +46,7 @@ public class PolicyLeaveController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getCurrentUserPolicyLeaveRequests(
 			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
-		ResponseEntityDto response = policyLeaveService
-			.getCurrentUserPolicyLeaveRequests(policyLeaveRequestFilterDto);
+		ResponseEntityDto response = policyLeaveService.getCurrentUserPolicyLeaveRequests(policyLeaveRequestFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

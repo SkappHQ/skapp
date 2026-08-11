@@ -62,7 +62,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,9 +71,6 @@ import java.util.function.Predicate;
 @Service
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
-
-	private static final Comparator<EmployeePolicyBalanceResponseDto> BY_POLICY_NAME = Comparator
-		.comparing(EmployeePolicyBalanceResponseDto::getPolicyName, String.CASE_INSENSITIVE_ORDER);
 
 	private final UserService userService;
 
@@ -114,12 +110,11 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 
 		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(currentUser.getEmployee().getEmployeeId(),
+			.findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(currentUser.getEmployee().getEmployeeId(),
 					EmployeeLeavePolicyStatus.ACTIVE);
 
 		List<EmployeePolicyBalanceResponseDto> balances = assignments.stream()
 			.map(assignment -> toBalanceCard(assignment, resolvedYear, hasSupervisor, today))
-			.sorted(BY_POLICY_NAME)
 			.toList();
 
 		log.info("getCurrentUserPolicyBalances: execution ended");

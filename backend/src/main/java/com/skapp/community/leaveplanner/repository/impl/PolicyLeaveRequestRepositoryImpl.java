@@ -5,6 +5,7 @@ import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -23,6 +24,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -59,6 +61,40 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(query.getResultList(), pageable, totalRows);
+	}
+
+	@Override
+	public Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+
+		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
+					criteriaBuilder.equal(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id), policyId),
+					root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
+
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
+	public List<PolicyLeaveRequest> findOverlappingRequests(Long employeeId, Collection<LeaveRequestStatus> statuses,
+			LocalDate startDate, LocalDate endDate) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+
+		criteriaQuery.select(root)
+			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
+					root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.lessThanOrEqualTo(root.get(PolicyLeaveRequest_.startDate), endDate),
+					criteriaBuilder.greaterThanOrEqualTo(root.get(PolicyLeaveRequest_.endDate), startDate));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
