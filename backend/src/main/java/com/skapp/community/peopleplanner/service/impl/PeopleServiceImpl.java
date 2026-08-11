@@ -5,7 +5,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
-import com.skapp.community.common.model.BusinessUnit;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
 import com.skapp.community.common.payload.SpecialNotificationConfig;
@@ -2001,15 +2000,13 @@ public class PeopleServiceImpl implements PeopleService {
 	public void setBulkEmployeeBusinessUnit(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		String businessUnit = employeeBulkDto.getBusinessUnit();
 		if (businessUnit != null && !businessUnit.isBlank()) {
-			findBusinessUnitByExactName(businessUnit).ifPresentOrElse(employee::setBusinessUnit, () -> {
-				throw new EntityNotFoundException(
-						PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND);
-			});
+			businessUnitDao.findByName(businessUnit)
+				.filter(unit -> unit.getName().equals(businessUnit))
+				.ifPresentOrElse(employee::setBusinessUnit, () -> {
+					throw new EntityNotFoundException(
+							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND);
+				});
 		}
-	}
-
-	private Optional<BusinessUnit> findBusinessUnitByExactName(String name) {
-		return businessUnitDao.findByNameIgnoreCase(name).stream().filter(bu -> bu.getName().equals(name)).findFirst();
 	}
 
 	public List<EmployeeDetailedResponseDto> fetchEmployeeSearchData(Page<Employee> employees) {
@@ -2132,7 +2129,10 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	public void validateBusinessUnitInBulk(String businessUnit, List<String> errors) {
-		if (businessUnit != null && !businessUnit.isBlank() && findBusinessUnitByExactName(businessUnit).isEmpty()) {
+		if (businessUnit != null && !businessUnit.isBlank()
+				&& businessUnitDao.findByName(businessUnit)
+					.filter(unit -> unit.getName().equals(businessUnit))
+					.isEmpty()) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
 					new Object[] { businessUnit }));
 		}
