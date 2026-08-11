@@ -121,7 +121,7 @@ const CareerProgressDetailsSection = ({
           positions[index] = {
             ...position,
             isCurrentEmployment: false,
-            endDate: getPreviousDayFormatted(startDate ?? "")
+            endDate: getPreviousDayFormatted(startDate)
           };
         }
       });
