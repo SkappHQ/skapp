@@ -4,9 +4,18 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import { usePeopleStore } from "../store/store";
+import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
+
+const stepSections: Record<number, EditPeopleFormTypes> = {
+  0: EditPeopleFormTypes.personal,
+  1: EditPeopleFormTypes.emergency,
+  2: EditPeopleFormTypes.employment,
+  3: EditPeopleFormTypes.permission
+};
 
 const useStepper = () => {
-  const { activeStep, setActiveStep } = usePeopleStore((state) => state);
+  const { activeStep, setActiveStep, setCurrentStep, setNextStep } =
+    usePeopleStore((state) => state);
 
   const translateText = useTranslator(
     "peopleModule",
@@ -32,15 +41,25 @@ const useStepper = () => {
     return steps;
   }, [isLeaveModuleEnabled, translateText]);
 
+  const goToStep = (step: number) => {
+    setActiveStep(step);
+
+    const section = stepSections[step];
+    if (section) {
+      setCurrentStep(section);
+      setNextStep(section);
+    }
+  };
+
   const handleNext = () => {
     const nextStep =
       activeStep < steps.length - 1 ? activeStep + 1 : activeStep;
-    setActiveStep(nextStep);
+    goToStep(nextStep);
   };
 
   const handleBack = () => {
     const prevStep = activeStep > 0 ? activeStep - 1 : activeStep;
-    setActiveStep(prevStep);
+    goToStep(prevStep);
   };
 
   return { steps, activeStep, handleNext, handleBack };

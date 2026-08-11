@@ -4,6 +4,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import { usePeopleStore } from "../store/store";
+import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
 import useStepper from "./useStepper";
 
 jest.mock("../store/store", () => ({
@@ -18,14 +19,20 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
 
 describe("useStepper", () => {
   const mockSetActiveStep = jest.fn();
+  const mockSetCurrentStep = jest.fn();
+  const mockSetNextStep = jest.fn();
   const mockTranslateText = jest.fn((keys) => keys[0]);
+
+  const mockStore = (activeStep: number) => ({
+    activeStep,
+    setActiveStep: mockSetActiveStep,
+    setCurrentStep: mockSetCurrentStep,
+    setNextStep: mockSetNextStep
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (usePeopleStore as jest.Mock).mockReturnValue({
-      activeStep: 0,
-      setActiveStep: mockSetActiveStep
-    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(0));
     (useSessionData as jest.Mock).mockReturnValue({
       isLeaveModuleEnabled: true
     });
@@ -67,13 +74,14 @@ describe("useStepper", () => {
     });
 
     expect(mockSetActiveStep).toHaveBeenCalledWith(1);
+    expect(mockSetCurrentStep).toHaveBeenCalledWith(
+      EditPeopleFormTypes.emergency
+    );
+    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.emergency);
   });
 
   it("should not go beyond the last step", () => {
-    (usePeopleStore as jest.Mock).mockReturnValue({
-      activeStep: 4,
-      setActiveStep: mockSetActiveStep
-    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(4));
 
     const { result } = renderHook(() => useStepper());
 
@@ -84,11 +92,22 @@ describe("useStepper", () => {
     expect(mockSetActiveStep).not.toHaveBeenCalledWith(5);
   });
 
-  it("should handle previous step correctly", () => {
-    (usePeopleStore as jest.Mock).mockReturnValue({
-      activeStep: 2,
-      setActiveStep: mockSetActiveStep
+  it("should not change the section on the entitlements step", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
+
+    const { result } = renderHook(() => useStepper());
+
+    act(() => {
+      result.current.handleNext();
     });
+
+    expect(mockSetActiveStep).toHaveBeenCalledWith(4);
+    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockSetNextStep).not.toHaveBeenCalled();
+  });
+
+  it("should handle previous step correctly", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(2));
 
     const { result } = renderHook(() => useStepper());
 
@@ -97,6 +116,10 @@ describe("useStepper", () => {
     });
 
     expect(mockSetActiveStep).toHaveBeenCalledWith(1);
+    expect(mockSetCurrentStep).toHaveBeenCalledWith(
+      EditPeopleFormTypes.emergency
+    );
+    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.emergency);
   });
 
   it("should not go below the first step", () => {
