@@ -201,6 +201,22 @@ class CrmContactControllerIntegrationTest {
 		return crmTaskDao.save(task);
 	}
 
+	private CrmTask savedDealTask(Long dealId, boolean completed, LocalDateTime dueAt) {
+		CrmTaskType type = new CrmTaskType();
+		type.setName("Call");
+		crmTaskTypeDao.save(type);
+
+		CrmTask task = new CrmTask();
+		task.setName("Deal Task");
+		task.setType(type);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setIsCompleted(completed);
+		task.setDueAt(dueAt);
+		task.setDeal(crmDealDao.getReferenceById(dealId));
+		task.setOwner(employeeDao.getReferenceById(1L));
+		return crmTaskDao.save(task);
+	}
+
 	private CrmCompany savedCompany() {
 		return savedCompany("Integration Test Corp");
 	}
@@ -1125,6 +1141,63 @@ class CrmContactControllerIntegrationTest {
 		String closedDealValue = JsonPath.read(content, "$.results[0].closedDealValue");
 		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
 			.isEqualByComparingTo("1000");
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID - Counts tasks attached to the contact's deals, not just direct tasks")
+	void getContactMetricsById_DealLinkedTasks_CountedViaDeal() throws Exception {
+		Long companyId = savedCompany("DealTaskCorp").getId();
+		Long contactId = savedNamedContact("DealTaskContact", companyId, "dealtask.metrics@example.com").getId();
+
+		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
+		CrmDeal deal = savedDeal(contactId, companyId, openStage, "0");
+
+		savedDealTask(deal.getId(), false, LocalDateTime.now().plusDays(1));
+		savedDealTask(deal.getId(), false, LocalDateTime.now().minusDays(1));
+
+		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID - Task counts match GET /v1/crm/contact/{id}")
+	void getContactMetricsById_TaskCounts_MatchContactDetail() throws Exception {
+		Long companyId = savedCompany("ConsistencyCorp").getId();
+		Long contactId = savedNamedContact("ConsistencyContact", companyId, "consistency.metrics@example.com").getId();
+
+		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
+		CrmDeal deal = savedDeal(contactId, companyId, openStage, "0");
+
+		savedTask(contactId, false, LocalDateTime.now().plusDays(1));
+		savedTask(contactId, false, LocalDateTime.now().minusDays(1));
+		savedDealTask(deal.getId(), false, LocalDateTime.now().plusDays(1));
+		savedDealTask(deal.getId(), false, LocalDateTime.now().minusDays(1));
+
+		String detail = performGetByIdRequest(contactId).andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+		String metrics = performRequest(
+				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		int detailOpen = JsonPath.read(detail, "$.results[0].openTasksCount");
+		int detailOverdue = JsonPath.read(detail, "$.results[0].overdueTasksCount");
+		int metricsOpen = JsonPath.read(metrics, "$.results[0].openTasksCount");
+		int metricsOverdue = JsonPath.read(metrics, "$.results[0].overdueTasksCount");
+
+		assertThat(metricsOpen).as("open task count matches the contact detail endpoint")
+			.isEqualTo(detailOpen)
+			.isEqualTo(4);
+		assertThat(metricsOverdue).as("overdue task count matches the contact detail endpoint")
+			.isEqualTo(detailOverdue)
+			.isEqualTo(2);
 	}
 
 	@Test

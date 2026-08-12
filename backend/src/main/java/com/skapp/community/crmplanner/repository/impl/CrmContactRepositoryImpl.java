@@ -190,14 +190,22 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		Subquery<Long> openTaskSub = query.subquery(Long.class);
 		Root<CrmTask> openTask = openTaskSub.from(CrmTask.class);
+		Join<CrmTask, CrmContact> openDirectContact = openTask.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> openTaskDeal = openTask.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> openDealContact = openTaskDeal.join(CrmDeal_.contact, JoinType.LEFT);
 		openTaskSub.select(cb.count(openTask.get(CrmTask_.id)))
-			.where(cb.equal(openTask.get(CrmTask_.contact), contact), cb.isFalse(openTask.get(CrmTask_.isCompleted)),
-					cb.isFalse(openTask.get(CrmTask_.isDeleted)));
+			.where(cb.or(cb.equal(openDirectContact.get(CrmContact_.id), contactId),
+					cb.equal(openDealContact.get(CrmContact_.id), contactId)),
+					cb.isFalse(openTask.get(CrmTask_.isCompleted)), cb.isFalse(openTask.get(CrmTask_.isDeleted)));
 
 		Subquery<Long> overdueTaskSub = query.subquery(Long.class);
 		Root<CrmTask> overdueTask = overdueTaskSub.from(CrmTask.class);
+		Join<CrmTask, CrmContact> overdueDirectContact = overdueTask.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> overdueTaskDeal = overdueTask.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> overdueDealContact = overdueTaskDeal.join(CrmDeal_.contact, JoinType.LEFT);
 		overdueTaskSub.select(cb.count(overdueTask.get(CrmTask_.id)))
-			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
+			.where(cb.or(cb.equal(overdueDirectContact.get(CrmContact_.id), contactId),
+					cb.equal(overdueDealContact.get(CrmContact_.id), contactId)),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
