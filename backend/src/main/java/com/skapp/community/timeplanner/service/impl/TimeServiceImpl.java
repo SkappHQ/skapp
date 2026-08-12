@@ -2186,23 +2186,10 @@ public class TimeServiceImpl implements TimeService {
 		return false;
 	}
 
-	/**
-	 * Restricting manual time entries and edits is an enterprise feature, so the
-	 * community edition always leaves it switched off. The enterprise edition overrides
-	 * this method to read the stored organization level setting.
-	 * @return whether manual time entry creation and edits are restricted to authorized
-	 * roles.
-	 */
 	protected boolean isManualEntryRestrictionEnabled() {
 		return false;
 	}
 
-	/**
-	 * Rejects manual time entry creation and edits made by employees while the manual
-	 * entry restriction is enabled. Only attendance managers, attendance admins and super
-	 * admins may add or change time records once the setting is on.
-	 * @param currentUser the user submitting the manual entry or edit request.
-	 */
 	private void validateManualEntryRestriction(User currentUser) {
 		if (!isManualEntryRestrictionEnabled()) {
 			return;
@@ -2214,8 +2201,7 @@ public class TimeServiceImpl implements TimeService {
 				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
 
 		if (!isAuthorized) {
-			throw new AccessDeniedException(
-					messageUtil.getMessage(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED));
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
 		}
 	}
 
