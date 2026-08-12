@@ -7,9 +7,11 @@ import {
   CrmStageEntity,
   CrmTaskEntity,
   CrmTaskTypeEntity
-} from "~community/crm/types/CrmTypes";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+} from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmModalTypes,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 
 interface ActionTypes {
   setCompanies: (
@@ -22,12 +24,6 @@ interface ActionTypes {
   ) => void;
   setDeals: (deals: Record<number, CrmDealEntity>, dealIds: number[]) => void;
   setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
-  moveDeal: (
-    dealId: number,
-    toStageId: number,
-    previousDealId: number | null,
-    nextDealId: number | null
-  ) => void;
   setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds: number[]) => void;
   setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
   setStages: (stages: Record<number, CrmStageEntity>) => void;

@@ -8,7 +8,7 @@ import {
   CrmStageEntity,
   CrmTaskEntity,
   CrmTaskTypeEntity
-} from "~community/crm/types/CrmTypes";
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmDataSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
 const CrmDataSlice = (

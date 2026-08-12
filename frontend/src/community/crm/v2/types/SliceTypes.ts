@@ -18,7 +18,6 @@ export interface CrmDataSliceTypes extends Pick<
   | "setContacts"
   | "setDeals"
   | "setBoardColumn"
-  | "moveDeal"
   | "setTasks"
   | "setOwners"
   | "setStages"

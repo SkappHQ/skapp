@@ -1,6 +1,8 @@
 import { SetType } from "~community/common/types/CommonTypes";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import {
+  CrmModalTypes,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { CrmUiSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
 const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
@@ -46,10 +48,8 @@ const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
     set({ selectedCompanyId }),
   setSelectedContactId: (selectedContactId: number | null) =>
     set({ selectedContactId }),
-  setSelectedDealId: (selectedDealId: number | null) =>
-    set({ selectedDealId }),
-  setSelectedTaskId: (selectedTaskId: number | null) =>
-    set({ selectedTaskId }),
+  setSelectedDealId: (selectedDealId: number | null) => set({ selectedDealId }),
+  setSelectedTaskId: (selectedTaskId: number | null) => set({ selectedTaskId }),
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
     set({ isCrmSidePanelOpen: true, crmSidePanelType }),
