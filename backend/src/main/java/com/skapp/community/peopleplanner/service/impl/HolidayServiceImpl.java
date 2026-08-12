@@ -151,8 +151,9 @@ public class HolidayServiceImpl implements HolidayService {
 				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocations(),
 						workLocationsByName);
 				holiday.setWorkLocations(workLocations);
+				Holiday savedHoliday = holidayDao.save(holiday);
 
-				savableHolidays.add(holiday);
+				savableHolidays.add(savedHoliday);
 
 				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
 				leaveRequestFilterDto.setEndDate(holidayDate);
@@ -160,7 +161,7 @@ public class HolidayServiceImpl implements HolidayService {
 				List<LeaveRequest> leaveRequests = leaveRequestDao
 					.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
 				if (systemHolidays.isEmpty() && !leaveRequests.isEmpty()) {
-					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(holiday, leaveRequest));
+					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(savedHoliday, leaveRequest));
 				}
 			}
 			catch (ModuleException | DateTimeParseException e) {
@@ -170,18 +171,17 @@ public class HolidayServiceImpl implements HolidayService {
 			}
 		});
 
-		List<Holiday> savedHolidays = holidayDao.saveAll(savableHolidays);
-		if (savedHolidays.size() == 1) {
+		if (savableHolidays.size() == 1) {
 
-			Set<WorkLocation> holidayWorkLocations = savedHolidays.getFirst().getWorkLocations();
+			Set<WorkLocation> holidayWorkLocations = savableHolidays.getFirst().getWorkLocations();
 			Set<WorkLocation> workLocationsFilter = (holidayWorkLocations == null || holidayWorkLocations.isEmpty())
 					? null : holidayWorkLocations;
 
 			List<Employee> employees = employeeDao.findAllActiveEmployeesExcludingRole(Role.PM_GUEST_EMPLOYEE,
 					workLocationsFilter);
 
-			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst(), employees);
-			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst(), employees);
+			peopleEmailService.sendNewHolidayDeclarationEmail(savableHolidays.getFirst(), employees);
+			peopleNotificationService.sendNewHolidayDeclarationNotification(savableHolidays.getFirst(), employees);
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(
