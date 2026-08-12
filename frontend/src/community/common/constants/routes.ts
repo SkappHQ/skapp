@@ -18,7 +18,9 @@ const ROUTES = {
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update",
     OAUTH_AUTHORIZE: "/oauth2/authorize",
-    OAUTH_CONSENT: "/oauth-consent"
+    OAUTH_SIGNIN: "/auth/signin",
+    OAUTH_CONSENT: "/auth/oauth-consent",
+    OAUTH_REDIRECT: "/auth/redirect"
   },
   ORGANIZATION: {
     SETUP: "/setup-organization",
