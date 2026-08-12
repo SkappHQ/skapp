@@ -31,7 +31,10 @@ export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(
+    searchTerm.trim(),
+    COMPANY_NAME_DEBOUNCE_DELAY
+  );
   const emptyStateType =
     debouncedSearch.trim() === ""
       ? EmptyStateTypeEnum.NO_DATA
@@ -57,7 +60,7 @@ export const CompanyTable: FC = () => {
   }, [fetchedCompanies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value.trimStart());
+    setSearchTerm(event.target.value);
   };
 
   const columns: TableColumn<CrmCompany>[] = [
