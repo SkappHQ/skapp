@@ -696,6 +696,16 @@ class CrmCompanyControllerIntegrationTest {
 		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
 		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
 
+		// Second company with its own deals and tasks - metrics must stay correlated to
+		// the
+		// requested company, so these values must not leak into the assertions below.
+		CrmCompany otherCompany = createMetricsCompany("OtherMetricsCo");
+		CrmContact otherContact = createMetricsContact(otherCompany, "metrics.other@example.com");
+		createDeal("Other Open Deal", otherCompany, otherContact, openStage, "999", false);
+		createDeal("Other Won Deal", otherCompany, otherContact, wonStage, "888", false);
+		createCompanyTask(otherCompany.getId(), LocalDateTime.now().plusDays(3));
+		createCompanyTask(otherCompany.getId(), LocalDateTime.now().minusDays(2));
+
 		String content = performRequest(
 				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
@@ -720,7 +730,8 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyMetricsById_NoActivity_ReturnsZeroMetrics() throws Exception {
 		CrmCompany company = createMetricsCompany("EmptyMetricsCo");
 
-		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+		String content = performRequest(
+				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -728,8 +739,14 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDeals']").value(0))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['overdue']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['openValue']").value("0"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['accountValue']").value("0"));
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String openValue = JsonPath.read(content, "$.results[0].openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value is zero with no deals").isEqualByComparingTo("0");
+		assertThat(new BigDecimal(accountValue)).as("account value is zero with no deals").isEqualByComparingTo("0");
 	}
 
 	@Test
@@ -737,7 +754,9 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyMetricsById_NotFound_ReturnsBadRequest() throws Exception {
 		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
@@ -750,7 +769,9 @@ class CrmCompanyControllerIntegrationTest {
 		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
