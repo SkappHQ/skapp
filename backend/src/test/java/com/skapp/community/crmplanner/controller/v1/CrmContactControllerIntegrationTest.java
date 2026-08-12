@@ -74,6 +74,8 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String METRICS_PATH = BASE_PATH + "/metrics";
 
+	private static final String METRICS_BY_ID_PATH = BY_ID_PATH + "/metrics";
+
 	private static final String OWNERS_PATH = BASE_PATH + "/owners";
 
 	private static final String LOOKUP_PATH = BASE_PATH + "/lookup";
@@ -157,6 +159,10 @@ class CrmContactControllerIntegrationTest {
 
 	private ResultActions performGetMetricsRequest() throws Exception {
 		return performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetMetricsByIdRequest(Long id) throws Exception {
+		return performRequest(get(METRICS_BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetOwnersRequest() throws Exception {
@@ -1126,14 +1132,12 @@ class CrmContactControllerIntegrationTest {
 		savedTask(contactId, false, LocalDateTime.now().plusDays(3));
 		savedTask(contactId, false, LocalDateTime.now().minusDays(2));
 
-		String content = performRequest(
-				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
-			.andDo(print())
+		String content = performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(2))
-			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(2))
-			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1))
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
@@ -1155,11 +1159,11 @@ class CrmContactControllerIntegrationTest {
 		savedDealTask(deal.getId(), false, LocalDateTime.now().plusDays(1));
 		savedDealTask(deal.getId(), false, LocalDateTime.now().minusDays(1));
 
-		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+		performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(2))
-			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1));
 	}
 
 	@Test
@@ -1180,9 +1184,7 @@ class CrmContactControllerIntegrationTest {
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
-		String metrics = performRequest(
-				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
+		String metrics = performGetMetricsByIdRequest(contactId).andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
@@ -1215,13 +1217,11 @@ class CrmContactControllerIntegrationTest {
 		savedTask(otherContactId, false, LocalDateTime.now().plusDays(1));
 		savedTask(otherContactId, false, LocalDateTime.now().minusDays(1));
 
-		String content = performRequest(
-				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
-			.andDo(print())
+		String content = performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(1))
-			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(1))
-			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0))
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
@@ -1237,19 +1237,19 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany("EmptyMetricsCorp").getId();
 		Long contactId = savedNamedContact("EmptyMetricsContact", companyId, "empty.metrics@example.com").getId();
 
-		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+		performGetMetricsByIdRequest(contactId).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'][0]['closedDealValue']").value("0"))
-			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(0))
-			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(0))
-			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(0));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealValue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0));
 	}
 
 	@Test
 	@DisplayName("Get contact metrics by ID that does not exist - Returns Bad Request")
 	void getContactMetricsById_NotFound_ReturnsBadRequest() throws Exception {
-		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+		performGetMetricsByIdRequest(999999L).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -1264,8 +1264,7 @@ class CrmContactControllerIntegrationTest {
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
 
-		performRequest(get(BASE_PATH + "/" + contact.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
-			.andDo(print())
+		performGetMetricsByIdRequest(contact.getId()).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -1278,7 +1277,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany("ForbiddenMetricsCorp").getId();
 		Long contactId = savedContact(companyId, "forbidden.metrics@example.com").getId();
 
-		performRequest(get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON), noRoleToken)
+		performRequest(get(METRICS_BY_ID_PATH, contactId).accept(MediaType.APPLICATION_JSON), noRoleToken)
 			.andDo(print())
 			.andExpect(status().isForbidden());
 	}
