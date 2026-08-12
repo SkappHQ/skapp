@@ -17,6 +17,7 @@
       "filterSection": "Filter my leave requests",
       "statusFilterSection": "Leave Status Filters",
       "typeFilterSection": "Leave Type Filters",
+      "policyFilterSection": "Leave Policy Filters",
       "filterOption": "Filter Option, {{filterName}}",
       "filterSelected": "{{filterName}} selected",
       "downloadAttachment": "Download attachment",
