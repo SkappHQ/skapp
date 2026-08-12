@@ -8,16 +8,28 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
+import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.model.CrmTaskType_;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
@@ -30,6 +42,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Selection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -202,6 +215,141 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getSingleResult();
+	}
+
+	@Override
+	public List<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDto filterDto) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		query.select(buildTaskProjectionSelection(cb, task));
+
+		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
+		query.where(buildTaskPredicates(cb, task, params).toArray(new Predicate[0]))
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public Page<CrmTaskResponseDtoV2> findCompletedTasksV2(Long ownerId, CrmTaskCompletedFilterDto filterDto,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		query.select(buildTaskProjectionSelection(cb, task));
+
+		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
+		query.where(buildTaskPredicates(cb, task, params).toArray(new Predicate[0]))
+			.orderBy(cb.desc(task.get(Auditable_.lastModifiedDate)), cb.desc(task.get(CrmTask_.id)));
+
+		List<CrmTaskResponseDtoV2> content = entityManager.createQuery(query)
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+		countQuery.select(cb.count(countRoot))
+			.where(buildTaskPredicates(cb, countRoot, params).toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
+	}
+
+	@Override
+	public Page<CrmTaskResponseDtoV2> findRelatedTasksV2(CrmTaskRelatedFilterDto filterDto, Long ownerId,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		query.select(buildTaskProjectionSelection(cb, task));
+
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
+				ownerId);
+		query.where(buildRelatedTaskPredicates(cb, task, params).toArray(new Predicate[0]))
+			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
+					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+
+		List<CrmTaskResponseDtoV2> content = entityManager.createQuery(query)
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+		countQuery.select(cb.count(countRoot))
+			.where(buildRelatedTaskPredicates(cb, countRoot, params).toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
+	}
+
+	private Selection<CrmTaskResponseDtoV2> buildTaskProjectionSelection(CriteriaBuilder cb, Root<CrmTask> task) {
+		Join<CrmTask, CrmTaskType> type = task.join(CrmTask_.type, JoinType.LEFT);
+		Join<CrmTask, Employee> owner = task.join(CrmTask_.owner, JoinType.LEFT);
+		Join<CrmTask, CrmCompany> company = task.join(CrmTask_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+		Join<CrmTask, CrmContact> contact = task.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+		contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmContact, Employee> contactOwner = contact.join(CrmContact_.owner, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmDealStage> dealStage = deal.join(CrmDeal_.stage, JoinType.LEFT);
+		Join<CrmDeal, Employee> dealOwner = deal.join(CrmDeal_.owner, JoinType.LEFT);
+		Join<CrmDeal, CrmCompany> dealCompany = deal.join(CrmDeal_.company, JoinType.LEFT);
+		dealCompany.on(cb.isFalse(dealCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> dealContactCompany = dealContact.join(CrmContact_.company, JoinType.LEFT);
+		dealContactCompany.on(cb.isFalse(dealContactCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmContact, Employee> dealContactOwner = dealContact.join(CrmContact_.owner, JoinType.LEFT);
+
+		return cb.construct(CrmTaskResponseDtoV2.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
+				task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted), task.get(CrmTask_.dueAt),
+				task.get(Auditable_.lastModifiedDate), task.get(CrmTask_.notes),
+				cb.construct(CrmTaskTypeResponseDto.class, type.get(CrmTaskType_.id), type.get(CrmTaskType_.name),
+						type.get(CrmTaskType_.orderIndex)),
+				buildOwnerSelection(cb, owner),
+				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
+						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
+				buildContactSelection(cb, contact, contactCompany, contactOwner),
+				cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+						deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
+						deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt),
+						cb.construct(CrmDealStageResponseDto.class, dealStage.get(CrmDealStage_.id),
+								dealStage.get(CrmDealStage_.name), dealStage.get(CrmDealStage_.color),
+								dealStage.get(CrmDealStage_.orderIndex), dealStage.get(CrmDealStage_.description),
+								dealStage.get(CrmDealStage_.stageType)),
+						buildOwnerSelection(cb, dealOwner),
+						cb.construct(CrmCompanyResponseDto.class, dealCompany.get(CrmCompany_.id),
+								dealCompany.get(CrmCompany_.name), dealCompany.get(CrmCompany_.industry),
+								dealCompany.get(CrmCompany_.website), dealCompany.get(CrmCompany_.address),
+								dealCompany.get(CrmCompany_.contactNumber)),
+						buildContactSelection(cb, dealContact, dealContactCompany, dealContactOwner)));
+	}
+
+	private Selection<CrmContactResponseDtoV2> buildContactSelection(CriteriaBuilder cb, Join<?, CrmContact> contact,
+			Join<CrmContact, CrmCompany> contactCompany, Join<CrmContact, Employee> contactOwner) {
+		return cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
+				contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
+				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
+				cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
+						contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
+						contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
+						contactCompany.get(CrmCompany_.contactNumber)),
+				buildOwnerSelection(cb, contactOwner));
+	}
+
+	private Selection<CrmOwnerResponseDto> buildOwnerSelection(CriteriaBuilder cb, Join<?, Employee> owner) {
+		return cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
+				owner.get(Employee_.lastName), owner.get(Employee_.authPic));
 	}
 
 	private List<Predicate> buildTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root, CrmTaskFilterParams params) {
