@@ -99,7 +99,26 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_COLOR_CODE_INVALID("api.error.leave.policy-leave-type-color-code-invalid"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_MIN_DURATION_REQUIRED("api.error.leave.policy-leave-type-min-duration-required"),
 	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_INACTIVE("api.error.leave.policy-leave-type-already-inactive"),
-	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active");
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_ALREADY_ACTIVE("api.error.leave.policy-leave-type-already-active"),
+	// Policy leave errors
+	LEAVE_ERROR_POLICY_LEAVE_NOT_ENABLED("api.error.leave.policy-leave-not-enabled"),
+	LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED("api.error.leave.policy-leave-policy-not-assigned"),
+	LEAVE_ERROR_POLICY_LEAVE_POLICY_INACTIVE("api.error.leave.policy-leave-policy-inactive"),
+	LEAVE_ERROR_POLICY_LEAVE_TYPE_INACTIVE("api.error.leave.policy-leave-type-inactive"),
+	LEAVE_ERROR_POLICY_LEAVE_INVALID_DATE_RANGE("api.error.leave.policy-leave-invalid-date-range"),
+	LEAVE_ERROR_POLICY_LEAVE_OUTSIDE_POLICY_PERIOD("api.error.leave.policy-leave-outside-policy-period"),
+	LEAVE_ERROR_POLICY_LEAVE_NOT_APPLICABLE("api.error.leave.policy-leave-not-applicable"),
+	LEAVE_ERROR_POLICY_LEAVE_REQUEST_OVERLAP("api.error.leave.policy-leave-request-overlap"),
+	LEAVE_ERROR_POLICY_LEAVE_INSUFFICIENT_BALANCE("api.error.leave.policy-leave-insufficient-balance"),
+	LEAVE_ERROR_POLICY_LEAVE_MUST_INCLUDE_COMMENT("api.error.leave.policy-leave-must-include-comment"),
+	LEAVE_ERROR_POLICY_LEAVE_MUST_INCLUDE_ATTACHMENT("api.error.leave.policy-leave-must-include-attachment"),
+	LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_HALFDAY("api.error.leave.policy-leave-cannot-apply-halfday"),
+	LEAVE_ERROR_POLICY_LEAVE_CANNOT_APPLY_FULLDAY("api.error.leave.policy-leave-cannot-apply-fullday"),
+	LEAVE_ERROR_POLICY_LEAVE_DESCRIPTION_MAX_LENGTH("api.error.leave.policy-leave-description-max-length"),
+	LEAVE_ERROR_POLICY_LEAVE_HALFDAY_SINGLE_DATE_ONLY("api.error.leave.policy-leave-halfday-single-date-only"),
+	LEAVE_ERROR_POLICY_LEAVE_TOO_MANY_ATTACHMENTS("api.error.leave.policy-leave-too-many-attachments"),
+	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENTS_NOT_ALLOWED("api.error.leave.policy-leave-attachments-not-allowed"),
+	LEAVE_ERROR_POLICY_LEAVE_ATTACHMENT_URL_MAX_LENGTH("api.error.leave.policy-leave-attachment-url-max-length");
 
 	private final String messageKey;
 
