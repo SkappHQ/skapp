@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
-import { ButtonStyle, ToastType } from "~community/common/enums/ComponentEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -31,11 +31,13 @@ const Module: NextPage = () => {
   const {
     data: initialData,
     isFetching,
-    isError
-  } = useGetUserRoleRestrictions(formattedModule);
+    refetch
+  } = useGetUserRoleRestrictions(formattedModule, false);
 
-  const onPrimaryButtonClick = () => {
-    if (isError || !initialData) {
+  const onPrimaryButtonClick = async () => {
+    const { data, isError } = await refetch();
+
+    if (isError || !data) {
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
@@ -65,7 +67,6 @@ const Module: NextPage = () => {
       pageHead={translateText(["userRoles.pageHead"])}
       title={translateText([`userRoles.${module}Title`])}
       primaryButtonText={translateText(["userRoles.setRestrictionsBtnText"])}
-      primaryButtonType={ButtonStyle.SECONDARY}
       primaryBtnIconName={IconName.RESTRICTIONS_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isFetching}

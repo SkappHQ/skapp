@@ -48,7 +48,7 @@ export const useGetUserRoleRestrictions = (
     queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(module),
     queryFn: () => getUserRoleRestrictions(module),
     enabled,
-    select: (data) => data
+    refetchOnWindowFocus: false
   });
 };
 
