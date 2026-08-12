@@ -1,14 +1,14 @@
 import { JSX } from "react";
 
-import LeaveAllocation from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocation";
-import LeaveRequests from "~community/leave/components/molecules/LeaveRequests/LeaveRequests";
 import EmployeeLeaveStatusPopupController from "~community/leave/components/organisms/EmployeeLeaveStatusPopupController/EmployeeLeaveStatusPopupController";
+import MyLeaveAllocationSection from "~community/leave/components/organisms/MyLeaveAllocationSection/MyLeaveAllocationSection";
+import MyLeaveRequestsSection from "~community/leave/components/organisms/MyLeaveRequestsSection/MyLeaveRequestsSection";
 
 const LeaveAllocationSummary = (): JSX.Element => {
   return (
     <>
-      <LeaveAllocation />
-      <LeaveRequests />
+      <MyLeaveAllocationSection />
+      <MyLeaveRequestsSection />
       <EmployeeLeaveStatusPopupController />
     </>
   );
