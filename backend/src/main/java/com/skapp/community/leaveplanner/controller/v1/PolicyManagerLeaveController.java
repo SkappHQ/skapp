@@ -41,7 +41,8 @@ public class PolicyManagerLeaveController {
 	}
 
 	@Operation(summary = "Get the pending leave requests assigned to the current manager",
-			description = "Unpaged feed backing the pending leave requests table and its quick actions")
+			description = "Unpaged feed backing the pending leave requests table and its quick actions. "
+					+ "Capped at the 200 earliest starting requests")
 	@GetMapping("/pending-requests")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getPendingPolicyLeaveRequestsAssignedToManager(

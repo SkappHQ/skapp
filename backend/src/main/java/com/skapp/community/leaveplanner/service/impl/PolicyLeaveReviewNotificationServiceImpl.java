@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Emails and in-app notifications for the policy leave review transitions. The legacy
@@ -38,35 +39,49 @@ public class PolicyLeaveReviewNotificationServiceImpl implements PolicyLeaveRevi
 
 	@Override
 	public void sendApprovedPolicyLeaveRequestNotifications(PolicyLeaveRequest leaveRequest) {
+		log.info("sendApprovedPolicyLeaveRequestNotifications: execution started");
+
 		boolean isSingleDay = isSingleDay(leaveRequest);
 		notifyEmployee(leaveRequest, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_APPROVED_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_APPROVED_MULTI_DAY_LEAVE);
 		notifyOtherManagers(leaveRequest,
 				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_APPROVED_SINGLE_DAY_LEAVE
 						: EmailBodyTemplates.LEAVE_MODULE_MANAGER_APPROVED_MULTI_DAY_LEAVE);
+
+		log.info("sendApprovedPolicyLeaveRequestNotifications: execution ended");
 	}
 
 	@Override
 	public void sendDeclinedPolicyLeaveRequestNotifications(PolicyLeaveRequest leaveRequest) {
+		log.info("sendDeclinedPolicyLeaveRequestNotifications: execution started");
+
 		boolean isSingleDay = isSingleDay(leaveRequest);
 		notifyEmployee(leaveRequest, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_DECLINED_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_DECLINED_MULTI_DAY_LEAVE);
 		notifyOtherManagers(leaveRequest,
 				isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_DECLINED_SINGLE_DAY_LEAVE
 						: EmailBodyTemplates.LEAVE_MODULE_MANAGER_DECLINED_MULTI_DAY_LEAVE);
+
+		log.info("sendDeclinedPolicyLeaveRequestNotifications: execution ended");
 	}
 
 	@Override
 	public void sendRevokedPolicyLeaveRequestNotifications(PolicyLeaveRequest leaveRequest) {
+		log.info("sendRevokedPolicyLeaveRequestNotifications: execution started");
+
 		boolean isSingleDay = isSingleDay(leaveRequest);
 		notifyEmployee(leaveRequest, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_REVOKED_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_REVOKED_MULTI_DAY_LEAVE);
 		notifyOtherManagers(leaveRequest, isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_MULTI_DAY_LEAVE);
+
+		log.info("sendRevokedPolicyLeaveRequestNotifications: execution ended");
 	}
 
 	@Override
 	public void sendCancelledPolicyLeaveRequestNotifications(PolicyLeaveRequest leaveRequest) {
+		log.info("sendCancelledPolicyLeaveRequestNotifications: execution started");
+
 		boolean isSingleDay = isSingleDay(leaveRequest);
 		Employee employee = leaveRequest.getEmployee();
 
@@ -80,14 +95,18 @@ public class PolicyLeaveReviewNotificationServiceImpl implements PolicyLeaveRevi
 		notificationService.createNotification(employee, resourceId(leaveRequest), NotificationType.LEAVE_REQUEST,
 				employeeTemplate, employeeFields, NotificationCategory.LEAVE);
 
-		LeaveEmailDynamicFields managerFields = baseFields(leaveRequest);
-		managerFields.setEmployeeName(fullName(employee));
-		managerFields.setEmployeesName(fullName(employee));
 		EmailBodyTemplates managerTemplate = isSingleDay
 				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_MULTIPLE_DAY_LEAVE;
 
-		dispatchToManagers(employeeManagerDao.findByEmployee(employee), leaveRequest, managerFields, managerTemplate);
+		dispatchToManagers(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+			LeaveEmailDynamicFields managerFields = baseFields(leaveRequest);
+			managerFields.setEmployeeName(fullName(employee));
+			managerFields.setEmployeesName(fullName(employee));
+			return managerFields;
+		}, managerTemplate);
+
+		log.info("sendCancelledPolicyLeaveRequestNotifications: execution ended");
 	}
 
 	private void notifyEmployee(PolicyLeaveRequest leaveRequest, EmailBodyTemplates template) {
@@ -112,31 +131,28 @@ public class PolicyLeaveReviewNotificationServiceImpl implements PolicyLeaveRevi
 	 */
 	@Override
 	public void sendNudgePolicyLeaveRequestManagerNotifications(PolicyLeaveRequest leaveRequest) {
-		Employee employee = leaveRequest.getEmployee();
+		log.info("sendNudgePolicyLeaveRequestManagerNotifications: execution started");
 
-		LeaveEmailDynamicFields fields = baseFields(leaveRequest);
-		fields.setEmployeeName(fullName(employee));
-		fields.setEmployeesName(fullName(employee));
-		fields.setComment(leaveRequest.getReviewerComment());
+		Employee employee = leaveRequest.getEmployee();
 
 		EmailBodyTemplates template = isSingleDay(leaveRequest)
 				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_SINGLE_DAY_LEAVE
 				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE;
 
-		dispatchToManagers(employeeManagerDao.findByEmployee(employee), leaveRequest, fields, template,
-				NotificationType.LEAVE_REQUEST_NUDGE);
+		dispatchToManagers(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+			LeaveEmailDynamicFields fields = baseFields(leaveRequest);
+			fields.setEmployeeName(fullName(employee));
+			fields.setEmployeesName(fullName(employee));
+			fields.setComment(leaveRequest.getReviewerComment());
+			return fields;
+		}, template, NotificationType.LEAVE_REQUEST_NUDGE);
+
+		log.info("sendNudgePolicyLeaveRequestManagerNotifications: execution ended");
 	}
 
 	private void notifyOtherManagers(PolicyLeaveRequest leaveRequest, EmailBodyTemplates template) {
 		Employee employee = leaveRequest.getEmployee();
 		Employee reviewer = leaveRequest.getReviewer();
-
-		LeaveEmailDynamicFields fields = baseFields(leaveRequest);
-		fields.setEmployeeName(fullName(employee));
-		fields.setComment(leaveRequest.getReviewerComment());
-		if (reviewer != null) {
-			fields.setManagerName(fullName(reviewer));
-		}
 
 		List<EmployeeManager> otherManagers = employeeManagerDao.findByEmployee(employee)
 			.stream()
@@ -144,18 +160,33 @@ public class PolicyLeaveReviewNotificationServiceImpl implements PolicyLeaveRevi
 					|| !employeeManager.getManager().getEmployeeId().equals(reviewer.getEmployeeId()))
 			.toList();
 
-		dispatchToManagers(otherManagers, leaveRequest, fields, template);
+		dispatchToManagers(otherManagers, leaveRequest, () -> {
+			LeaveEmailDynamicFields fields = baseFields(leaveRequest);
+			fields.setEmployeeName(fullName(employee));
+			fields.setComment(leaveRequest.getReviewerComment());
+			if (reviewer != null) {
+				fields.setManagerName(fullName(reviewer));
+			}
+			return fields;
+		}, template);
 	}
 
 	private void dispatchToManagers(List<EmployeeManager> managers, PolicyLeaveRequest leaveRequest,
-			LeaveEmailDynamicFields fields, EmailBodyTemplates template) {
-		dispatchToManagers(managers, leaveRequest, fields, template, NotificationType.LEAVE_REQUEST);
+			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template) {
+		dispatchToManagers(managers, leaveRequest, fieldsSupplier, template, NotificationType.LEAVE_REQUEST);
 	}
 
+	/**
+	 * The dynamic fields are rebuilt per recipient rather than mutated in place: the name
+	 * is recipient specific, so a shared instance would leak whichever name was set last
+	 * the moment the email or notification dispatch stops being synchronous.
+	 */
 	private void dispatchToManagers(List<EmployeeManager> managers, PolicyLeaveRequest leaveRequest,
-			LeaveEmailDynamicFields fields, EmailBodyTemplates template, NotificationType notificationType) {
+			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template,
+			NotificationType notificationType) {
 		PeopleUtil.filterManagersByLeaveRoles(managers).forEach(employeeManager -> {
 			Employee manager = employeeManager.getManager();
+			LeaveEmailDynamicFields fields = fieldsSupplier.get();
 			fields.setEmployeeOrManagerName(fullName(manager));
 			emailService.sendEmail(template, fields, manager.getUser().getEmail());
 			notificationService.createNotification(manager, resourceId(leaveRequest), notificationType, template,

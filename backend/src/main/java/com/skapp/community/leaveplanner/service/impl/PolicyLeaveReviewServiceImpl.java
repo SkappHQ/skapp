@@ -56,6 +56,10 @@ import java.util.Set;
  * There is deliberately no balance bookkeeping on a transition: policy balances are
  * derived by summing {@code PolicyLeaveConstant.BALANCE_HOLDING_STATUSES} rows, so moving
  * a request to DENIED / REVOKED / CANCELLED releases the days by itself.
+ * <p>
+ * Reaching for someone else's request answers 404 rather than the legacy flow's 400 with
+ * {@code COMMON_ERROR_UNAUTHORIZED_ACCESS}: the error must not confirm that a request the
+ * caller has no access to exists.
  */
 @Slf4j
 @Service
@@ -88,6 +92,8 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 			@NonNull PolicyManagerLeaveRequestFilterDto filterDto) {
 		log.info("getPolicyLeaveRequestsAssignedToManager: execution started");
 		requireLeavePoliciesEnabled();
+		validatePagination(filterDto.getPage(), filterDto.getSize());
+		validateSearchKeyword(filterDto.getSearchKeyword());
 
 		User currentUser = userService.getCurrentUser();
 
@@ -118,6 +124,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 	public ResponseEntityDto getPendingPolicyLeaveRequestsAssignedToManager(String searchKeyword) {
 		log.info("getPendingPolicyLeaveRequestsAssignedToManager: execution started");
 		requireLeavePoliciesEnabled();
+		validateSearchKeyword(searchKeyword);
 
 		User currentUser = userService.getCurrentUser();
 		List<PolicyLeaveRequest> pendingRequests = policyLeaveRequestDao
@@ -165,9 +172,13 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 		LeaveRequestStatus targetStatus = reviewRequestDto.getStatus();
 		validateTransition(MANAGER_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
 				LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_MANAGER);
-		validateReviewerComment(reviewRequestDto.getReviewerComment());
+		validateReviewerComment(reviewRequestDto.getReviewerComment(), targetStatus);
 
-		leaveRequest.setReviewerComment(StringUtils.trimToNull(reviewRequestDto.getReviewerComment()));
+		// An omitted comment leaves the one captured at approval time in place, matching
+		// the legacy updateLeaveRequestByManager.
+		if (StringUtils.isNotBlank(reviewRequestDto.getReviewerComment())) {
+			leaveRequest.setReviewerComment(reviewRequestDto.getReviewerComment().trim());
+		}
 		leaveRequest.setStatus(targetStatus);
 		leaveRequest.setReviewer(currentEmployee);
 		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
@@ -237,6 +248,11 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 					LeaveMessageConstant.LEAVE_ERROR_UNABLE_TO_NUDGE_PRE_APPROVED_DENIED_LEAVE_REQUEST);
 		}
 
+		Notification lastNudge = findLastNudge(id);
+		if (lastNudge != null && !isNudgeAllowed(lastNudge.getCreatedDate())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NUDGE_TOO_SOON);
+		}
+
 		policyLeaveReviewNotificationService.sendNudgePolicyLeaveRequestManagerNotifications(leaveRequest);
 
 		log.info("nudgePolicyLeaveRequestManagers: execution ended");
@@ -253,8 +269,7 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 		PolicyLeaveRequest leaveRequest = findPolicyLeaveRequestById(id);
 		authorizeOwner(leaveRequest, currentUser.getEmployee());
 
-		Notification lastNudge = notificationDao.findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(
-				String.valueOf(id), NotificationType.LEAVE_REQUEST_NUDGE);
+		Notification lastNudge = findLastNudge(id);
 
 		LeaveNotificationNudgeResponseDto nudgeStatus = new LeaveNotificationNudgeResponseDto();
 		if (lastNudge == null) {
@@ -267,6 +282,11 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 
 		log.info("getPolicyLeaveRequestNudgeStatus: execution ended");
 		return new ResponseEntityDto(false, nudgeStatus);
+	}
+
+	private Notification findLastNudge(Long id) {
+		return notificationDao.findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(String.valueOf(id),
+				NotificationType.LEAVE_REQUEST_NUDGE);
 	}
 
 	private boolean isNudgeAllowed(LocalDateTime lastNudgedDateTime) {
@@ -339,10 +359,30 @@ public class PolicyLeaveReviewServiceImpl implements PolicyLeaveReviewService {
 		}
 	}
 
-	private void validateReviewerComment(String reviewerComment) {
+	private void validateReviewerComment(String reviewerComment, LeaveRequestStatus targetStatus) {
+		if (targetStatus == LeaveRequestStatus.DENIED && StringUtils.isBlank(reviewerComment)) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_DECLINE_REASON_REQUIRED);
+		}
 		if (reviewerComment != null
 				&& reviewerComment.trim().length() > PolicyLeaveConstant.MAX_REVIEWER_COMMENT_LENGTH) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH);
+		}
+	}
+
+	private void validatePagination(int page, int size) {
+		if (page < 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE);
+		}
+		// A negative size is the documented unpaged case; zero only reaches
+		// PageRequest.of as an IllegalArgumentException, so it is rejected here.
+		if (size == 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE);
+		}
+	}
+
+	private void validateSearchKeyword(String searchKeyword) {
+		if (searchKeyword != null && searchKeyword.length() > PolicyLeaveConstant.MAX_SEARCH_KEYWORD_LENGTH) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_SEARCH_KEYWORD_MAX_LENGTH);
 		}
 	}
 

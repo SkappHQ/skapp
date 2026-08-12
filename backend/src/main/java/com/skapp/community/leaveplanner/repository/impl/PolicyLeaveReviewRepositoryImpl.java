@@ -2,6 +2,8 @@ package com.skapp.community.leaveplanner.repository.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
+import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
+import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
@@ -14,11 +16,13 @@ import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.EmployeeManager_;
 import com.skapp.community.peopleplanner.model.Employee_;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -51,7 +55,7 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
 		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(PolicyLeaveRequest_.id)))
 			.where(buildManagerPredicates(criteriaBuilder, countRoot, countRoot.join(PolicyLeaveRequest_.employee),
-					managerEmployeeId, filterDto)
+					countRoot.join(PolicyLeaveRequest_.policy, JoinType.LEFT), managerEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -61,11 +65,13 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT).fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+		Join<PolicyLeaveRequest, LeavePolicy> policy = fetchPolicy(root);
+		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 
 		criteriaQuery.select(root)
 			.distinct(true)
-			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), managerEmployeeId, filterDto)
+			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), policy, managerEmployeeId,
+					filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
@@ -84,7 +90,8 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT).fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+		Join<PolicyLeaveRequest, LeavePolicy> policy = fetchPolicy(root);
+		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 
 		PolicyManagerLeaveRequestFilterDto filterDto = new PolicyManagerLeaveRequestFilterDto();
 		filterDto.setStatus(List.of(LeaveRequestStatus.PENDING));
@@ -92,11 +99,15 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 
 		criteriaQuery.select(root)
 			.distinct(true)
-			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), managerEmployeeId, filterDto)
+			.where(buildManagerPredicates(criteriaBuilder, root, fetchEmployee(root), policy, managerEmployeeId,
+					filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)));
 
-		return entityManager.createQuery(criteriaQuery).getResultList();
+		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
+		query.setMaxResults(PolicyLeaveConstant.MAX_PENDING_REQUESTS);
+
+		return query.getResultList();
 	}
 
 	@Override
@@ -113,9 +124,20 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 		return (Join<PolicyLeaveRequest, Employee>) root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 	}
 
+	/**
+	 * Same reuse as {@link #fetchEmployee(Root)}: the leave type is fetched through the
+	 * policy join that the leave type filter then builds its predicate on.
+	 */
+	@SuppressWarnings("unchecked")
+	private Join<PolicyLeaveRequest, LeavePolicy> fetchPolicy(Root<PolicyLeaveRequest> root) {
+		Fetch<PolicyLeaveRequest, LeavePolicy> policy = root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT);
+		policy.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+		return (Join<PolicyLeaveRequest, LeavePolicy>) policy;
+	}
+
 	private List<Predicate> buildManagerPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
-			Join<PolicyLeaveRequest, Employee> employee, Long managerEmployeeId,
-			PolicyManagerLeaveRequestFilterDto filterDto) {
+			Join<PolicyLeaveRequest, Employee> employee, Join<PolicyLeaveRequest, LeavePolicy> policy,
+			Long managerEmployeeId, PolicyManagerLeaveRequestFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		Join<Employee, User> user = employee.join(Employee_.user);
@@ -132,10 +154,7 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 		}
 
 		if (!CollectionUtils.isEmpty(filterDto.getLeaveTypeId())) {
-			predicates.add(root.get(PolicyLeaveRequest_.policy)
-				.get(LeavePolicy_.leaveType)
-				.get(PolicyLeaveType_.id)
-				.in(filterDto.getLeaveTypeId()));
+			predicates.add(policy.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id).in(filterDto.getLeaveTypeId()));
 		}
 
 		if (filterDto.getStartDate() != null) {
@@ -149,14 +168,26 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 		}
 
 		if (filterDto.getSearchKeyword() != null && !filterDto.getSearchKeyword().trim().isEmpty()) {
-			String pattern = "%" + filterDto.getSearchKeyword().trim().toLowerCase() + "%";
-			predicates.add(criteriaBuilder.or(
-					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.firstName)), pattern),
-					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.middleName)), pattern),
-					criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.lastName)), pattern)));
+			predicates.add(findByEmailName(filterDto.getSearchKeyword().trim(), criteriaBuilder, employee, user));
 		}
 
 		return predicates;
+	}
+
+	/**
+	 * Matches the legacy leave request feed so the same search box behaves identically on
+	 * both manager tables: full name first, then work email, then last name.
+	 */
+	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder,
+			Join<PolicyLeaveRequest, Employee> employee, Join<Employee, User> user) {
+		String searchString = PeopleUtil.getSearchString(keyword);
+		return criteriaBuilder.or(
+				criteriaBuilder.like(criteriaBuilder
+					.lower(criteriaBuilder.concat(criteriaBuilder.concat(employee.get(Employee_.FIRST_NAME), " "),
+							employee.get(Employee_.LAST_NAME))),
+						searchString),
+				criteriaBuilder.like(criteriaBuilder.lower(user.get(User_.EMAIL)), searchString),
+				criteriaBuilder.like(criteriaBuilder.lower(employee.get(Employee_.LAST_NAME)), searchString));
 	}
 
 }

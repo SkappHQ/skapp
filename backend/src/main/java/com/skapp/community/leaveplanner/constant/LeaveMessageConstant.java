@@ -129,7 +129,11 @@ public enum LeaveMessageConstant implements MessageConstant {
 	LEAVE_ERROR_POLICY_LEAVE_ALREADY_IN_STATUS("api.error.leave.policy-leave-already-in-status"),
 	LEAVE_ERROR_POLICY_LEAVE_INFORMANT_CANNOT_REVIEW("api.error.leave.policy-leave-informant-cannot-review"),
 	LEAVE_ERROR_POLICY_LEAVE_DECLINE_REASON_REQUIRED("api.error.leave.policy-leave-decline-reason-required"),
-	LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH("api.error.leave.policy-leave-reviewer-comment-max-length");
+	LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH("api.error.leave.policy-leave-reviewer-comment-max-length"),
+	LEAVE_ERROR_POLICY_LEAVE_NUDGE_TOO_SOON("api.error.leave.policy-leave-nudge-too-soon"),
+	LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE("api.error.leave.policy-leave-invalid-page"),
+	LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE("api.error.leave.policy-leave-invalid-page-size"),
+	LEAVE_ERROR_POLICY_LEAVE_SEARCH_KEYWORD_MAX_LENGTH("api.error.leave.policy-leave-search-keyword-max-length");
 
 	private final String messageKey;
 
