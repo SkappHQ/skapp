@@ -1998,9 +1998,8 @@ public class PeopleServiceImpl implements PeopleService {
 			businessUnitDao.findByName(businessUnit)
 				.filter(unit -> unit.getName().equals(businessUnit))
 				.ifPresentOrElse(employee::setBusinessUnit, () -> {
-					throw new EntityNotFoundException(
-							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
-							new Object[] { businessUnit });
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+							new String[] { businessUnit });
 				});
 		}
 	}
@@ -2130,7 +2129,7 @@ public class PeopleServiceImpl implements PeopleService {
 					.filter(unit -> unit.getName().equals(businessUnit))
 					.isEmpty()) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
-					new Object[] { businessUnit }));
+					new String[] { businessUnit }));
 		}
 	}
 
