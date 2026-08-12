@@ -487,11 +487,7 @@
       "switchDealViewAriaLabel": "Switch deal view"
     },
     "kanban": {
-      "addDealBtn": "Add deal",
-      "toastMessages": {
-        "moveErrorTitle": "Failed to update the deal",
-        "moveErrorDescription": "Oops! Something went wrong. Please try again."
-      }
+      "addDealBtn": "Add deal"
     },
     "deleteDealModal": {
       "title": "Delete Deal",

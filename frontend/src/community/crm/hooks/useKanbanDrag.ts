@@ -39,7 +39,7 @@ interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
-  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
   const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
@@ -62,8 +62,8 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "moveErrorTitle"]),
-      description: translateText(["toastMessages", "moveErrorDescription"])
+      title: translateText(["toastMessages", "editErrorTitle"]),
+      description: translateText(["toastMessages", "editErrorDescription"])
     });
   };
 
