@@ -63,8 +63,7 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
       open: true,
       toastType: ToastType.ERROR,
       title: translateText(["toastMessages", "moveErrorTitle"]),
-      description: translateText(["toastMessages", "moveErrorDescription"]),
-      isIcon: true
+      description: translateText(["toastMessages", "moveErrorDescription"])
     });
   };
 
