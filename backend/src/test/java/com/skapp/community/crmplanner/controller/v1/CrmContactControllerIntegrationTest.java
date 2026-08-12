@@ -1201,6 +1201,37 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contact metrics by ID - Excludes another contact's deals and tasks")
+	void getContactMetricsById_OtherContactData_Excluded() throws Exception {
+		Long companyId = savedCompany("CorrelationCorp").getId();
+		Long contactId = savedNamedContact("CorrelationContact", companyId, "correlation.metrics@example.com").getId();
+		Long otherContactId = savedNamedContact("OtherContact", companyId, "other.correlation@example.com").getId();
+
+		CrmDealStage wonStage = savedStage(CrmDealStageType.WON);
+		savedDeal(contactId, companyId, wonStage, "400");
+		savedTask(contactId, false, LocalDateTime.now().plusDays(1));
+
+		savedDeal(otherContactId, companyId, wonStage, "999");
+		savedTask(otherContactId, false, LocalDateTime.now().plusDays(1));
+		savedTask(otherContactId, false, LocalDateTime.now().minusDays(1));
+
+		String content = performRequest(
+				get(BASE_PATH + "/" + contactId + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("['results'][0]['closedDealCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['openTasksCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['overdueTasksCount']").value(0))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("closed deal value excludes the other contact's deals")
+			.isEqualByComparingTo("400");
+	}
+
+	@Test
 	@DisplayName("Get contact metrics by ID with no deals or tasks - Returns zero metrics")
 	void getContactMetricsById_NoActivity_ReturnsZeroMetrics() throws Exception {
 		Long companyId = savedCompany("EmptyMetricsCorp").getId();
@@ -1220,7 +1251,25 @@ class CrmContactControllerIntegrationTest {
 	void getContactMetricsById_NotFound_ReturnsBadRequest() throws Exception {
 		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics by ID for a soft-deleted contact - Returns Bad Request")
+	void getContactMetricsById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany("DeletedMetricsCorp").getId();
+		CrmContact contact = savedContact(companyId, "deleted.metrics@example.com");
+		contact.setIsDeleted(true);
+		crmContactDao.save(contact);
+
+		performRequest(get(BASE_PATH + "/" + contact.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
 	}
 
 	@Test
