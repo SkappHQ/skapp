@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -78,6 +79,9 @@ public class DateTimeUtils {
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
 	private static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
+
+	private static final DateTimeFormatter DAY_MONTH_YEAR_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+		.withResolverStyle(ResolverStyle.STRICT);
 
 	public static final String TIMESTAMP_POSTFIX = "_";
 
@@ -143,6 +147,24 @@ public class DateTimeUtils {
 		catch (DateTimeParseException ex) {
 			throw new DateTimeParseException("Failed to parse date-time string: " + dateTimeStr, dateTimeStr,
 					ex.getErrorIndex());
+		}
+	}
+
+	/**
+	 * Convert a user supplied date string to LocalDate without throwing on bad input.
+	 * @param dateStr Date string in "dd/MM/yyyy" format.
+	 * @return LocalDate instance, or null when the string is blank or not a real calendar
+	 * date.
+	 */
+	public static LocalDate parseDayMonthYearDate(String dateStr) {
+		if (StringUtils.isNullOrBlank(dateStr)) {
+			return null;
+		}
+		try {
+			return LocalDate.parse(dateStr, DAY_MONTH_YEAR_FORMATTER);
+		}
+		catch (DateTimeParseException exception) {
+			return null;
 		}
 	}
 

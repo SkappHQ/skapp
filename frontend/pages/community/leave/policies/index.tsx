@@ -6,6 +6,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import BulkAssignPolicyModal from "~community/leave/components/molecules/BulkAssignPolicyModals/BulkAssignPolicyModal";
 import LeavePoliciesTable from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTable";
 import PolicyTypeSelectionModal from "~community/leave/components/molecules/PolicyTypeSelectionModal/PolicyTypeSelectionModal";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
@@ -18,6 +19,8 @@ const LeavePolicies: NextPage = () => {
   const canManagePolicies = useCanManageLeavePolicies();
 
   const [isPolicyTypeModalOpen, setIsPolicyTypeModalOpen] =
+    useState<boolean>(false);
+  const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] =
     useState<boolean>(false);
 
   const handleSelectPolicyType = (policyType: PolicyType): void => {
@@ -40,13 +43,15 @@ const LeavePolicies: NextPage = () => {
         canManagePolicies ? translateText(["createPolicyBtnTxt"]) : undefined
       }
       secondaryBtnText={
-        canManagePolicies ? translateText(["bulkUploadBtnTxt"]) : undefined
+        canManagePolicies ? translateText(["bulkAssignBtnTxt"]) : undefined
       }
+      secondaryBtnVariant="tertiary"
       secondaryBtnIconName={IconName.UP_ARROW_ICON}
       onPrimaryButtonClick={() => setIsPolicyTypeModalOpen(true)}
+      onSecondaryButtonClick={() => setIsBulkAssignModalOpen(true)}
       id={{
         primaryBtn: "create-leave-policy-btn",
-        secondaryBtn: "bulk-upload-leave-policy-btn"
+        secondaryBtn: "bulk-assign-leave-policy-btn"
       }}
     >
       <>
@@ -57,6 +62,10 @@ const LeavePolicies: NextPage = () => {
           isOpen={isPolicyTypeModalOpen}
           onClose={() => setIsPolicyTypeModalOpen(false)}
           onSelect={handleSelectPolicyType}
+        />
+        <BulkAssignPolicyModal
+          isOpen={isBulkAssignModalOpen}
+          onClose={() => setIsBulkAssignModalOpen(false)}
         />
       </>
     </ContentLayout>
