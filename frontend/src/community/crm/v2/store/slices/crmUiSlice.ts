@@ -10,6 +10,7 @@ const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
   contactIds: [] as number[],
   dealIds: [] as number[],
   taskIds: [] as number[],
+  stageIds: [] as number[],
 
   isCompanyModalOpen: false,
   companyModalType: CrmModalTypes.ADD_COMPANY_MODAL,
@@ -27,11 +28,6 @@ const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
   crmSidePanelType: null as CrmSidePanelTypes | null,
 
   preselectedStageId: null as number | null,
-
-  setCompanyIds: (companyIds: number[]) => set({ companyIds }),
-  setContactIds: (contactIds: number[]) => set({ contactIds }),
-  setDealIds: (dealIds: number[]) => set({ dealIds }),
-  setTaskIds: (taskIds: number[]) => set({ taskIds }),
 
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) =>
     set({ isCompanyModalOpen }),

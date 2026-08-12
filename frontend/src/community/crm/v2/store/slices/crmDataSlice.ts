@@ -45,7 +45,8 @@ const CrmDataSlice = (
 
   setOwners: (owners: Record<number, CrmOwnerEntity>) => set({ owners }),
 
-  setStages: (stages: Record<number, CrmStageEntity>) => set({ stages }),
+  setStages: (stages: Record<number, CrmStageEntity>, stageIds: number[]) =>
+    set({ stages, stageIds }),
 
   setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) =>
     set({ taskTypes })

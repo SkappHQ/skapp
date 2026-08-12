@@ -26,13 +26,11 @@ interface ActionTypes {
   setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
   setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds: number[]) => void;
   setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
-  setStages: (stages: Record<number, CrmStageEntity>) => void;
+  setStages: (
+    stages: Record<number, CrmStageEntity>,
+    stageIds: number[]
+  ) => void;
   setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) => void;
-
-  setCompanyIds: (companyIds: number[]) => void;
-  setContactIds: (contactIds: number[]) => void;
-  setDealIds: (dealIds: number[]) => void;
-  setTaskIds: (taskIds: number[]) => void;
 
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;
@@ -66,6 +64,7 @@ export interface CrmStore extends ActionTypes {
   contactIds: number[];
   dealIds: number[];
   taskIds: number[];
+  stageIds: number[];
 
   isCompanyModalOpen: boolean;
   companyModalType: CrmModalTypes;
