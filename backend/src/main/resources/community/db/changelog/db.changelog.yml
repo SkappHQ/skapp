@@ -64,3 +64,7 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-business-unit-id.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-com-work-location-add-is-deleted.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-com-work-location-geofence-drop-work-location-cascade.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-shr-com-work-location-ppl-holiday-drop-work-location-cascade.sql
