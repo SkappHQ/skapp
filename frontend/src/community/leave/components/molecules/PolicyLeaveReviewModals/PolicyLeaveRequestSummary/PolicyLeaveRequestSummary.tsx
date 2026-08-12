@@ -3,11 +3,9 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import PolicyLeaveAttachmentRow from "~community/leave/components/molecules/PolicyLeaveAttachmentRow/PolicyLeaveAttachmentRow";
 import StatusPopupColumn from "~community/leave/components/molecules/StatusPopupColumn/StatusPopupColumn";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
@@ -20,7 +18,10 @@ import {
   handleLeaveStatus,
   leaveStatusIconSelector
 } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
-import { toStatusPopupReviewer } from "~community/leave/utils/policyLeave/policyLeaveReviewUtils";
+import {
+  formatOptionalDate,
+  toStatusPopupReviewer
+} from "~community/leave/utils/policyLeave/policyLeaveReviewUtils";
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
@@ -155,22 +156,16 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
           )}
           durationDate={getStartEndDate(request.startDate, request.endDate)}
         />
-        {layout.showDateApplied && (
+        {layout.showDateApplied && request.createdDate && (
           <StatusPopupRow
             label={translateText(["myLeaveRequests", "dateApplied"])}
-            durationDate={convertDateToFormat(
-              new Date(request.createdDate ?? ""),
-              DAY_MONTH_YEAR_FORMAT
-            )}
+            durationDate={formatOptionalDate(request.createdDate)}
           />
         )}
-        {layout.showDateApproved && (
+        {layout.showDateApproved && request.reviewedDate && (
           <StatusPopupRow
             label={translateText(["myLeaveRequests", "dateApproved"])}
-            durationDate={convertDateToFormat(
-              new Date(request.reviewedDate ?? ""),
-              DAY_MONTH_YEAR_FORMAT
-            )}
+            durationDate={formatOptionalDate(request.reviewedDate)}
           />
         )}
         <StatusPopupRow

@@ -1,3 +1,5 @@
+import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
+import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import { PolicyLeaveReviewRequestParams } from "~community/leave/store/policyLeaveReviewStore";
 import { EmployeeLeaveRequestType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import {
@@ -17,6 +19,20 @@ export const getPolicyManagerLeaveRequestQueryParams = (
     startDate: startDate || undefined,
     endDate: endDate || undefined
   };
+};
+
+/**
+ * Auto approved requests carry no reviewed date, so the raw value is formatted only when
+ * it parses. Anything else renders as an empty chip rather than "Invalid DateTime".
+ */
+export const formatOptionalDate = (value: string | null): string => {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? ""
+    : convertDateToFormat(date, DAY_MONTH_YEAR_FORMAT);
 };
 
 /** StatusPopupRow types the reviewer with a non nullable avatar. */

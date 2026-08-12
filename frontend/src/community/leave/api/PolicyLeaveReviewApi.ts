@@ -1,6 +1,7 @@
 import {
   UseMutationResult,
   UseQueryResult,
+  skipToken,
   useMutation,
   useQuery,
   useQueryClient
@@ -84,13 +85,15 @@ export const useGetPolicyManagerLeaveRequestById = (
 ): UseQueryResult<PolicyLeaveRequestDetailType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.MANAGER_REQUEST(leaveRequestId),
-    queryFn: () =>
-      getPolicyLeaveRequestDetail(
-        policyLeaveReviewEndPoints.GET_MANAGER_POLICY_LEAVE_REQUEST(
-          leaveRequestId as number
-        )
-      ),
-    enabled: leaveRequestId !== null,
+    queryFn:
+      leaveRequestId === null
+        ? skipToken
+        : () =>
+            getPolicyLeaveRequestDetail(
+              policyLeaveReviewEndPoints.MANAGER_POLICY_LEAVE_REQUEST(
+                leaveRequestId
+              )
+            ),
     refetchOnWindowFocus: false
   });
 };
@@ -100,13 +103,13 @@ export const useGetMyPolicyLeaveRequestById = (
 ): UseQueryResult<PolicyLeaveRequestDetailType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.MY_REQUEST(leaveRequestId),
-    queryFn: () =>
-      getPolicyLeaveRequestDetail(
-        policyLeaveReviewEndPoints.GET_MY_POLICY_LEAVE_REQUEST(
-          leaveRequestId as number
-        )
-      ),
-    enabled: leaveRequestId !== null,
+    queryFn:
+      leaveRequestId === null
+        ? skipToken
+        : () =>
+            getPolicyLeaveRequestDetail(
+              policyLeaveReviewEndPoints.MY_POLICY_LEAVE_REQUEST(leaveRequestId)
+            ),
     refetchOnWindowFocus: false
   });
 };
@@ -117,7 +120,7 @@ const reviewPolicyLeaveRequest = async ({
   reviewerComment
 }: PolicyLeaveReviewPayload): Promise<PolicyLeaveRequestDetailType> => {
   const response = await authFetch.patch<PolicyLeaveRequestDetailResponse>(
-    policyLeaveReviewEndPoints.REVIEW_POLICY_LEAVE_REQUEST(leaveRequestId),
+    policyLeaveReviewEndPoints.MANAGER_POLICY_LEAVE_REQUEST(leaveRequestId),
     { status, reviewerComment }
   );
   return response.data.results[0];
@@ -156,7 +159,7 @@ const cancelMyPolicyLeaveRequest = async ({
   leaveRequestId
 }: PolicyLeaveCancelPayload): Promise<PolicyLeaveRequestDetailType> => {
   const response = await authFetch.patch<PolicyLeaveRequestDetailResponse>(
-    policyLeaveReviewEndPoints.CANCEL_MY_POLICY_LEAVE_REQUEST(leaveRequestId),
+    policyLeaveReviewEndPoints.MY_POLICY_LEAVE_REQUEST(leaveRequestId),
     { status: PolicyLeaveRequestStatus.CANCELLED }
   );
   return response.data.results[0];
@@ -207,8 +210,10 @@ export const useCheckPolicyLeaveAlreadyNudged = (
 ): UseQueryResult<PolicyLeaveNudgeStatusType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.NUDGE_STATUS(leaveRequestId),
-    queryFn: () => getPolicyLeaveRequestNudgeStatus(leaveRequestId as number),
-    enabled: leaveRequestId !== null,
+    queryFn:
+      leaveRequestId === null
+        ? skipToken
+        : () => getPolicyLeaveRequestNudgeStatus(leaveRequestId),
     refetchOnWindowFocus: false
   });
 };

@@ -2,6 +2,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
@@ -15,13 +16,13 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
-  closeModel: () => void;
+  closeModal: () => void;
   setPopupType: Dispatch<SetStateAction<string>>;
 }
 
 const PolicyLeaveDeclineModal: FC<Props> = ({
   request,
-  closeModel,
+  closeModal,
   setPopupType
 }) => {
   const translateText = useTranslator(
@@ -36,11 +37,11 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { mutate } = useReviewPolicyLeaveRequest(
+  const { mutate, isPending } = useReviewPolicyLeaveRequest(
     () => {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateText(["declineLeaveSuccessTitle"]),
         description: translateText(["declineLeaveSuccessDesc"]),
         isIcon: true
@@ -51,7 +52,7 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
     () => {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateText(["declineLeaveFailTitle"]),
         description: translateText(["declineLeaveFailDesc"]),
         isIcon: true
@@ -59,7 +60,7 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
     }
   );
 
-  const handelDecline = (): void => {
+  const handleDecline = (): void => {
     if (validateDescription(reason)) setError(true);
     else {
       setError(false);
@@ -87,7 +88,7 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
       <div className="flex flex-row gap-4 justify-end">
         <ButtonV2
           variant={"tertiary"}
-          onClick={closeModel}
+          onClick={closeModal}
           icon={<CloseIcon />}
           iconPosition="end"
         >
@@ -95,7 +96,8 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
         </ButtonV2>
         <ButtonV2
           variant={"error"}
-          onClick={handelDecline}
+          onClick={handleDecline}
+          isLoading={isPending}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
         >

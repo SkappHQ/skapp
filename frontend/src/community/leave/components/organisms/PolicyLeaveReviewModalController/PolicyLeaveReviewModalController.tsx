@@ -10,6 +10,14 @@ import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveR
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
+const STATUS_POPUP_TYPES: PolicyLeaveRequestStatus[] = [
+  PolicyLeaveRequestStatus.PENDING,
+  PolicyLeaveRequestStatus.DENIED,
+  PolicyLeaveRequestStatus.APPROVED,
+  PolicyLeaveRequestStatus.CANCELLED,
+  PolicyLeaveRequestStatus.REVOKED
+];
+
 const PolicyLeaveReviewModalController: FC = () => {
   const translateText = useTranslator(
     "leaveModule",
@@ -32,23 +40,21 @@ const PolicyLeaveReviewModalController: FC = () => {
   const { data: request } =
     useGetPolicyManagerLeaveRequestById(selectedRequestId);
 
-  const closeModel = (): void => {
+  const closeModal = (): void => {
     setPopupType("");
     closeManagerModal();
   };
 
+  // Only seeds the popup once per opening. Reviewing the request writes a fresh object
+  // into the query cache, so re-deriving from the status on every change would drop the
+  // manager straight back to the plain status popup.
   useEffect(() => {
-    if (!request) return;
-    if (request.status === PolicyLeaveRequestStatus.PENDING)
-      return setPopupType(PolicyLeaveRequestStatus.PENDING);
-    if (request.status === PolicyLeaveRequestStatus.DENIED)
-      return setPopupType(PolicyLeaveRequestStatus.DENIED);
-    if (request.status === PolicyLeaveRequestStatus.APPROVED)
-      return setPopupType(PolicyLeaveRequestStatus.APPROVED);
-    if (request.status === PolicyLeaveRequestStatus.CANCELLED)
-      return setPopupType(PolicyLeaveRequestStatus.CANCELLED);
-    if (request.status === PolicyLeaveRequestStatus.REVOKED)
-      return setPopupType(PolicyLeaveRequestStatus.REVOKED);
+    if (!isManagerModalOpen || !request) return;
+    setPopupType((currentPopupType) =>
+      currentPopupType === ""
+        ? (STATUS_POPUP_TYPES.find((status) => status === request.status) ?? "")
+        : currentPopupType
+    );
   }, [request, isManagerModalOpen]);
 
   const getModalTitle = (): string => {
@@ -89,7 +95,7 @@ const PolicyLeaveReviewModalController: FC = () => {
       return (
         <PolicyLeaveReviewResultModal
           request={request}
-          closeModel={closeModel}
+          closeModal={closeModal}
           popupType={popupType}
           setPopupType={setPopupType}
         />
@@ -98,7 +104,7 @@ const PolicyLeaveReviewModalController: FC = () => {
       return (
         <PolicyLeaveDeclineModal
           request={request}
-          closeModel={closeModel}
+          closeModal={closeModal}
           setPopupType={setPopupType}
         />
       );
@@ -108,7 +114,7 @@ const PolicyLeaveReviewModalController: FC = () => {
   return (
     <SmallModal
       isOpen={isManagerModalOpen && !!popupType}
-      onClose={closeModel}
+      onClose={closeModal}
       modalHeader={getModalTitle()}
       content={modalContent()}
     />

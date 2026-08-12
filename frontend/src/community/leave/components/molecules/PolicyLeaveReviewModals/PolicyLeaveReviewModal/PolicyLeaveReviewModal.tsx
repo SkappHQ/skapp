@@ -8,17 +8,21 @@ import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/Rea
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { FileTypes } from "~community/common/enums/CommonEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
-import { getPolicyLeaveDurationLabel } from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveRequestSummary/policyLeaveRequestDuration";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
 import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
-import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
+import {
+  PolicyLeaveAttachmentType,
+  PolicyLeaveRequestStatus
+} from "~community/leave/types/PolicyLeaveTypes";
 import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import { getPolicyLeaveDurationLabel } from "~community/leave/utils/policyLeave/policyLeaveDurationUtils";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
@@ -44,11 +48,11 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
 
-  const { mutate } = useReviewPolicyLeaveRequest(
+  const { mutate, isPending } = useReviewPolicyLeaveRequest(
     () => {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateText(["approveLeaveSuccessTitle"]),
         description: translateText(["approveLeaveSuccessDesc"]),
         isIcon: true
@@ -59,7 +63,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
     () => {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateText(["approveLeaveFailTitle"]),
         description: translateText(["approveLeaveFailDesc"]),
         isIcon: true
@@ -78,6 +82,11 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
   const handleDeclineModel = (): void => {
     setPopupType(PolicyLeaveReviewModalEnums.DECLINE);
   };
+
+  const getAttachmentLabel = (attachment: PolicyLeaveAttachmentType): string =>
+    attachment.originalFileName ||
+    getFileNameOfAttachmentFromUrl(attachment.fileUrl) ||
+    translateText(["uploadedAttachment"]);
 
   return (
     <div>
@@ -166,18 +175,12 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
                 {request.attachments.map((attachment) => (
                   <IconChip
                     accessibility={{
-                      ariaLabel: `Attachment ${
-                        attachment.originalFileName ||
-                        getFileNameOfAttachmentFromUrl(attachment.fileUrl) ||
-                        translateText(["uploadedAttachment"])
-                      }`
+                      ariaLabel: translateAria(["attachment"], {
+                        fileName: getAttachmentLabel(attachment)
+                      })
                     }}
                     key={attachment.id}
-                    label={
-                      attachment.originalFileName ||
-                      getFileNameOfAttachmentFromUrl(attachment.fileUrl) ||
-                      translateText(["uploadedAttachment"])
-                    }
+                    label={getAttachmentLabel(attachment)}
                     chipStyles={{
                       backgroundColor: "grey.100",
                       py: "0.75rem",
@@ -197,6 +200,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         <ButtonV2
           variant={"error"}
           onClick={handleDeclineModel}
+          disabled={isPending}
           aria-label={translateText(["cancelAreaLabel"])}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
@@ -205,6 +209,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
         </ButtonV2>
         <ButtonV2
           onClick={handleApprove}
+          isLoading={isPending}
           aria-label={translateText(["approveAreaLabel"])}
           icon={<CheckIcon />}
           iconPosition="end"

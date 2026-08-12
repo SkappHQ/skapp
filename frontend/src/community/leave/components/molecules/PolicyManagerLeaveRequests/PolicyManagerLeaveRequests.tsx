@@ -26,9 +26,11 @@ import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringC
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { PolicyManagerLeaveRequestType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
-import { requestTypeSelector } from "~community/leave/utils/LeaveRequestFilterActions";
 import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
-import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import {
+  getStartEndDate,
+  leaveStatusIconSelector
+} from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 import { getPolicyManagerLeaveRequestQueryParams } from "~community/leave/utils/policyLeave/policyLeaveReviewUtils";
 
 const chipClassName =
@@ -79,8 +81,12 @@ const PolicyManagerLeaveRequests: FC = () => {
     [requestParams]
   );
 
-  const { data: leaveRequests, isLoading } =
-    useGetPolicyManagerLeaveRequests(queryParams);
+  // The date range lands via the effect below, so the first render must not fire an
+  // unbounded request.
+  const { data: leaveRequests, isLoading } = useGetPolicyManagerLeaveRequests(
+    queryParams,
+    Boolean(queryParams.startDate && queryParams.endDate)
+  );
 
   const employeeLeaveRequests = leaveRequests?.items ?? [];
   const totalPages = leaveRequests?.totalPages;
@@ -159,7 +165,7 @@ const PolicyManagerLeaveRequests: FC = () => {
         status: (
           <div className={`${chipClassName} capitalize`}>
             <span role="img" aria-hidden="true">
-              {requestTypeSelector(employeeLeaveRequest.status)}
+              {leaveStatusIconSelector(employeeLeaveRequest.status)}
             </span>
             {employeeLeaveRequest.status.toLowerCase()}
           </div>

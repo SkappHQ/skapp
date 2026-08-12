@@ -82,13 +82,9 @@ export const policyLeaveEndPoints = {
 export const policyLeaveReviewEndPoints = {
   GET_MANAGER_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/requests`,
   GET_PENDING_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/pending-requests`,
-  GET_MANAGER_POLICY_LEAVE_REQUEST: (id: number): string =>
+  MANAGER_POLICY_LEAVE_REQUEST: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policy-leave/managers/${id}`,
-  REVIEW_POLICY_LEAVE_REQUEST: (id: number): string =>
-    `${moduleAPIPath.LEAVE}/policy-leave/managers/${id}`,
-  GET_MY_POLICY_LEAVE_REQUEST: (id: number): string =>
-    `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
-  CANCEL_MY_POLICY_LEAVE_REQUEST: (id: number): string =>
+  MY_POLICY_LEAVE_REQUEST: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
   NUDGE_POLICY_LEAVE_REQUEST_MANAGERS: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policy-leave/${id}/nudge`,

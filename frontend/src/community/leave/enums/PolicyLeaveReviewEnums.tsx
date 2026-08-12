@@ -1,8 +1,8 @@
 export enum PolicyLeaveReviewModalEnums {
-  DECLINE = "Decline popup",
-  APPROVED_STATUS = "Approved status popup",
-  DECLINE_STATUS = "Decline status popup",
-  CANCEL_REQUEST_POPUP = "CancelRequestPopup",
-  CANCELLED_SUMMARY = "CancelledSummery",
-  SUPERVISOR_NUDGED = "SupervisorNudged"
+  DECLINE = "DECLINE",
+  APPROVED_STATUS = "APPROVED_STATUS",
+  DECLINE_STATUS = "DECLINE_STATUS",
+  CANCEL_REQUEST_POPUP = "CANCEL_REQUEST_POPUP",
+  CANCELLED_SUMMARY = "CANCELLED_SUMMARY",
+  SUPERVISOR_NUDGED = "SUPERVISOR_NUDGED"
 }

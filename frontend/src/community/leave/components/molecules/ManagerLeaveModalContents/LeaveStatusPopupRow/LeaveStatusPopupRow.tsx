@@ -25,7 +25,6 @@ interface Props {
     | leaveRequestRowDataTypes;
   reviewer?: Manager;
   addLabel?: boolean;
-  ariaLabel?: string;
   icon?: string | JSX.Element;
   profilePicture?: string;
 }

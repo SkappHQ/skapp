@@ -9,6 +9,7 @@ import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/Icon
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/Table/Table";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -63,49 +64,53 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { mutate: approveLeaveRequest } = useReviewPolicyLeaveRequest(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: "success",
-        title: translateText(["RequestApproveTitle"]),
-        description: translateText(["RequestApproveDescription"]),
-        isIcon: true
-      });
-      sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_QUICK_APPROVED);
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["RequestApproveFailTitle"]),
-        description: translateText(["RequestApproveFailDescription"]),
-        isIcon: true
-      });
-    }
-  );
+  const { mutate: approveLeaveRequest, isPending: isApprovePending } =
+    useReviewPolicyLeaveRequest(
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: translateText(["RequestApproveTitle"]),
+          description: translateText(["RequestApproveDescription"]),
+          isIcon: true
+        });
+        sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_QUICK_APPROVED);
+      },
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText(["RequestApproveFailTitle"]),
+          description: translateText(["RequestApproveFailDescription"]),
+          isIcon: true
+        });
+      }
+    );
 
-  const { mutate: declineLeaveRequest } = useReviewPolicyLeaveRequest(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: "success",
-        title: translateText(["RequestDeclineTitle"]),
-        description: translateText(["RequestDeclineDescription"]),
-        isIcon: true
-      });
-      sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_QUICK_DECLINED);
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: "error",
-        title: translateText(["RequestDeclineFailTitle"]),
-        description: translateText(["RequestDeclineFailDescription"]),
-        isIcon: true
-      });
-    }
-  );
+  const { mutate: declineLeaveRequest, isPending: isDeclinePending } =
+    useReviewPolicyLeaveRequest(
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: translateText(["RequestDeclineTitle"]),
+          description: translateText(["RequestDeclineDescription"]),
+          isIcon: true
+        });
+        sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_QUICK_DECLINED);
+      },
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText(["RequestDeclineFailTitle"]),
+          description: translateText(["RequestDeclineFailDescription"]),
+          isIcon: true
+        });
+      }
+    );
+
+  const isReviewPending = isApprovePending || isDeclinePending;
 
   const handleLeaveRequestApproval = (leaveRequestId: number): void => {
     approveLeaveRequest({
@@ -164,6 +169,7 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
           <ButtonV2
             variant={"tertiary"}
             onClick={() => handleLeaveRequestDecline(request.leaveRequestId)}
+            disabled={isReviewPending}
             type={"reset"}
             size={"md"}
             icon={<Icon name={IconName.CLOSE_ICON} />}
@@ -174,6 +180,7 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
           <ButtonV2
             variant={"secondary"}
             onClick={() => handleLeaveRequestApproval(request.leaveRequestId)}
+            disabled={isReviewPending}
             type={"submit"}
             size={"md"}
             icon={<Icon name={IconName.CHECK_ICON} />}

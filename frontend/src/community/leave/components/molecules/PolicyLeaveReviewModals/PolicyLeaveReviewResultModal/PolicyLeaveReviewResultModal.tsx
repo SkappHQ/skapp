@@ -4,29 +4,33 @@ import { Dispatch, FC, SetStateAction } from "react";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { getAsDaysString } from "~community/common/utils/dateTimeUtils";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupRow from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupRow/LeaveStatusPopupRow";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
-import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import {
+  getStartEndDate,
+  handleLeaveStatus
+} from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
+import { getPolicyLeaveDurationLabel } from "~community/leave/utils/policyLeave/policyLeaveDurationUtils";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
-  closeModel: () => void;
+  closeModal: () => void;
   popupType: string;
   setPopupType: Dispatch<SetStateAction<string>>;
 }
 
 const PolicyLeaveReviewResultModal: FC<Props> = ({
   request,
-  closeModel,
+  closeModal,
   popupType,
   setPopupType
 }) => {
@@ -35,26 +39,29 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     "leaveRequests",
     "leaveManagerEmployee"
   );
+  const translateDurationText = useTranslator("leaveModule", "myRequests");
+  const commonTranslateText = useTranslator("words");
+
   const { setToastMessage } = useToast();
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { mutate } = useReviewPolicyLeaveRequest(
+  const { mutate, isPending } = useReviewPolicyLeaveRequest(
     () => {
       setPopupType("");
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateText(["revokeLeaveSuccessTitle"]),
         description: translateText(["revokeLeaveSuccessDesc"]),
         isIcon: true
       });
       sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_REVOKED);
-      closeModel();
+      closeModal();
     },
     () => {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateText(["revokeLeaveFailTitle"]),
         description: translateText(["revokeLeaveFailDesc"]),
         isIcon: true
@@ -62,7 +69,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     }
   );
 
-  const handelUndo = (): void => {
+  const handleUndo = (): void => {
     mutate({
       leaveRequestId: request.leaveRequestId,
       status: PolicyLeaveRequestStatus.REVOKED,
@@ -77,6 +84,14 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
   const isDenied =
     popupType === PolicyLeaveRequestStatus.DENIED ||
     popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS;
+
+  const resolvedStatus = ((): PolicyLeaveRequestStatus => {
+    if (isApproved) return PolicyLeaveRequestStatus.APPROVED;
+    if (popupType === PolicyLeaveRequestStatus.CANCELLED)
+      return PolicyLeaveRequestStatus.CANCELLED;
+    if (isDenied) return PolicyLeaveRequestStatus.DENIED;
+    return PolicyLeaveRequestStatus.REVOKED;
+  })();
 
   return (
     <div>
@@ -95,7 +110,12 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
         />
         <LeaveStatusPopupRow
           label={translateText(["duration"])}
-          durationByDays={getAsDaysString(request.durationDays)}
+          durationByDays={getPolicyLeaveDurationLabel(
+            request.durationDays,
+            request.leaveState,
+            translateDurationText,
+            commonTranslateText
+          )}
           durationDate={getStartEndDate(request.startDate, request.endDate)}
           styles={{ marginBottom: "1.25rem" }}
         />
@@ -103,21 +123,12 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           label={translateText(["type"])}
           iconType={request.leaveType.name}
           styles={{ marginBottom: "1.25rem" }}
-          aria-label={`Leave request type is ${request.leaveType.name}`}
           icon={request.leaveType.emojiCode}
         />
         <LeaveStatusPopupRow
           label={translateText(["status"])}
           styles={{ marginBottom: "1.25rem" }}
-          iconType={
-            isApproved
-              ? PolicyLeaveRequestStatus.APPROVED
-              : popupType === PolicyLeaveRequestStatus.CANCELLED
-                ? PolicyLeaveRequestStatus.CANCELLED
-                : isDenied
-                  ? PolicyLeaveRequestStatus.DENIED
-                  : PolicyLeaveRequestStatus.REVOKED
-          }
+          iconType={handleLeaveStatus(resolvedStatus)}
           icon={
             isApproved ? (
               <Icon name={IconName.APPROVED_STATUS_ICON} />
@@ -135,7 +146,8 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
         {isApproved && (
           <ButtonV2
             variant={"tertiary"}
-            onClick={handelUndo}
+            onClick={handleUndo}
+            isLoading={isPending}
             icon={<UndoIcon />}
             iconPosition="start"
           >
@@ -143,7 +155,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           </ButtonV2>
         )}
         <ButtonV2
-          onClick={closeModel}
+          onClick={closeModal}
           icon={<RightArrowIcon />}
           iconPosition="end"
         >

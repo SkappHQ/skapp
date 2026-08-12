@@ -1,6 +1,5 @@
 import { LeaveStates } from "~community/common/types/CommonTypes";
-
-type TranslateFn = (keys: string[], data?: Record<string, unknown>) => string;
+import { TranslateFn } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 /**
  * Mirrors the legacy `leaveRequestDataPreProcessor` duration label: a day count once the
@@ -8,7 +7,7 @@ type TranslateFn = (keys: string[], data?: Record<string, unknown>) => string;
  */
 export const getPolicyLeaveDurationLabel = (
   durationDays: number,
-  leaveState: LeaveStates | string,
+  leaveState: LeaveStates,
   translateText: TranslateFn,
   translateCommonText: TranslateFn
 ): string => {
