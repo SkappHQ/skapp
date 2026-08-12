@@ -61,14 +61,17 @@ const AttendanceConfiguration = (): JSX.Element => {
 
     setInitialConfig(configData);
     // The manual entry restriction saves itself and invalidates this query, so a refetch
-    // must only pick up that field. Replacing the whole object would silently discard
-    // unsaved edits made to the other settings on this page.
+    // must only pick up the fields that write owns. Replacing the whole object would
+    // silently discard unsaved edits made to the other settings on this page.
+    // Auto approval is included because enabling the restriction clears it in the same
+    // request, and a stale local value here would re-enable it on the next save.
     setConfig((prevConfig) =>
       prevConfig
         ? {
             ...prevConfig,
             isManualEntryRestrictionEnabled:
-              configData.isManualEntryRestrictionEnabled
+              configData.isManualEntryRestrictionEnabled,
+            isAutoApprovalForChanges: configData.isAutoApprovalForChanges
           }
         : configData
     );
@@ -152,28 +155,40 @@ const AttendanceConfiguration = (): JSX.Element => {
           )}
         </Box>
 
-        <Typography variant="h2" sx={classes.sectionTitle}>
-          {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
-        </Typography>
-        <Typography sx={classes.sectionDescription}>
-          {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
-        </Typography>
+        <ManualEntryRestrictionSettings
+          config={config}
+          initialConfig={initialConfig}
+        />
 
-        <Box sx={classes.container}>
-          {config && (
-            <SwitchRow
-              labelId="auto-approval-for-changes"
-              label={
-                attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
-              }
-              checked={config.isAutoApprovalForChanges}
-              wrapperStyles={classes.switchWrapper}
-              onChange={(checked) =>
-                handleSwitchChange("isAutoApprovalForChanges", checked)
-              }
-            />
-          )}
-        </Box>
+        {/* Auto approval only governs employee-submitted changes, and the manual entry
+            restriction removes those entirely, so the section has nothing left to
+            configure while the restriction is on. */}
+        {!config?.isManualEntryRestrictionEnabled && (
+          <>
+            <Typography variant="h2" sx={classes.sectionTitle}>
+              {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
+            </Typography>
+            <Typography sx={classes.sectionDescription}>
+              {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
+            </Typography>
+
+            <Box sx={classes.container}>
+              {config && (
+                <SwitchRow
+                  labelId="auto-approval-for-changes"
+                  label={
+                    attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
+                  }
+                  checked={config.isAutoApprovalForChanges}
+                  wrapperStyles={classes.switchWrapper}
+                  onChange={(checked) =>
+                    handleSwitchChange("isAutoApprovalForChanges", checked)
+                  }
+                />
+              )}
+            </Box>
+          </>
+        )}
 
         <GeoFencingSettings
           config={config}
@@ -185,11 +200,6 @@ const AttendanceConfiguration = (): JSX.Element => {
           config={config}
           initialConfig={initialConfig}
           onSwitchChange={handleSwitchChange}
-        />
-
-        <ManualEntryRestrictionSettings
-          config={config}
-          initialConfig={initialConfig}
         />
 
         <Stack direction="row" gap="0.75rem" sx={classes.buttonGroup}>
