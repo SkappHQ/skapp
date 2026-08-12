@@ -1,15 +1,15 @@
 import {
-  Dropdown,
-  InputField,
   Label,
   ProjectTableSkeletonLoader,
-  SearchIcon,
-  Table,
-  TableColumn
+  SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
 
-import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow
+} from "~community/common/components/organisms/TableView/types";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -24,7 +24,6 @@ import {
   DEFAULT_PAGE_SIZE
 } from "~community/crm/constants/contactConstants";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmContact } from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import {
@@ -36,7 +35,7 @@ export const ContactTable: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<number | undefined>(
+  const [selectedCompany, setSelectedCompany] = useState<string | undefined>(
     ALL_COMPANIES
   );
   const debouncedSearch = useDebounce(
@@ -44,8 +43,11 @@ export const ContactTable: FC = () => {
     CONTACT_SEARCH_DEBOUNCE_DELAY
   );
 
+  const companyId =
+    selectedCompany === ALL_COMPANIES ? undefined : Number(selectedCompany);
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, selectedCompany);
+    useGetContactMetrics(debouncedSearch, DEFAULT_PAGE_SIZE, companyId);
 
   const { data: companies } = useGetCrmCompanies(DEFAULT_COMPANY_PAGE_SIZE);
 
@@ -66,11 +68,8 @@ export const ContactTable: FC = () => {
     if (fetchedContacts) setContacts(fetchedContacts);
   }, [fetchedContacts]);
 
-  const hasActiveFilters =
-    debouncedSearch.trim() !== "" || selectedCompany !== undefined;
-  const emptyStateType = hasActiveFilters
-    ? EmptyStateTypeEnum.NO_SEARCH_RESULTS
-    : EmptyStateTypeEnum.NO_DATA;
+  const isEmptyFilterState =
+    debouncedSearch.trim() !== "" || selectedCompany !== ALL_COMPANIES;
 
   const companyOptions = [
     {
@@ -85,186 +84,157 @@ export const ContactTable: FC = () => {
     }))
   ];
 
-  const columns: TableColumn<CrmContact>[] = [
+  const columns = [
     {
-      columnAriaLabel: translateText(["table", "columns", "nameAriaLabel"]),
-      header: translateText(["table", "columns", "nameHeader"]),
-      key: "name",
-      render(value, row) {
-        return (
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="w-full truncate" title={value}>
-              {value}
-            </div>
-            <div
-              className="subtitle4 text-secondary-text w-full truncate"
-              title={row.company?.name ?? undefined}
-            >
-              {row.company?.name ?? "-"}
-            </div>
-          </div>
-        );
-      },
+      field: "name",
+      headerName: translateText(["table", "columns", "nameHeader"]),
       width: "17%"
     },
     {
-      columnAriaLabel: translateText(["table", "columns", "emailAriaLabel"]),
-      header: translateText(["table", "columns", "emailHeader"]),
-      key: "email",
-      render(value) {
-        return (
-          <div className="block w-full truncate" title={value}>
-            {value}
-          </div>
-        );
-      },
+      field: "email",
+      headerName: translateText(["table", "columns", "emailHeader"]),
       width: "21%"
     },
     {
-      columnAriaLabel: translateText(["table", "columns", "phoneAriaLabel"]),
-      header: translateText(["table", "columns", "phoneHeader"]),
-      key: "contactNumber",
-      render(value) {
-        return (
-          <div className="flex items-baseline">
-            {formatPhoneNumber(value as string | null)}
-          </div>
-        );
-      },
+      field: "contactNumber",
+      headerName: translateText(["table", "columns", "phoneHeader"]),
       width: "17%"
     },
     {
-      columnAriaLabel: translateText([
-        "table",
-        "columns",
-        "closedValueAriaLabel"
-      ]),
-      header: translateText(["table", "columns", "closedValueHeader"]),
-      key: "closedDealValue",
-      render(_value, row) {
-        return (
-          <div className="flex flex-col gap-1 text-right">
-            <div>{formatValue(row.closedDealValue?.toString() ?? null)}</div>
-            <div className="subtitle4 text-secondary-text">
-              {(row.closedDealCount ?? 0) > 0
-                ? `${row.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: row.closedDealCount })}`
-                : ""}
-            </div>
-          </div>
-        );
-      },
-      className: "text-right pr-[3%]",
-      width: "10%"
+      field: "closedDealValue",
+      headerName: translateText(["table", "columns", "closedValueHeader"]),
+      width: "10%",
+      align: "right" as const,
+      className: "pr-[3%]"
     },
     {
-      columnAriaLabel: translateText(["table", "columns", "tasksAriaLabel"]),
-      header: translateText(["table", "columns", "tasksHeader"]),
-      key: "openTasksCount",
-      render(_value, row) {
-        return (
-          <div className="flex flex-row items-center gap-2">
-            {formatTasks(row.openTasksCount)}
-            {(row.overdueTasksCount ?? 0) > 0 && (
-              <Label
-                backgroundColor="bg-semantic-red-background"
-                textColor="text-semantic-red-text"
-              >
-                {`${row.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
-              </Label>
-            )}
-          </div>
-        );
-      },
-      className: "pl-[6%]",
-      width: "20%"
+      field: "openTasksCount",
+      headerName: translateText(["table", "columns", "tasksHeader"]),
+      width: "20%",
+      className: "pl-[6%]"
     },
     {
-      columnAriaLabel: translateText([
-        "table",
-        "columns",
-        "contactOwnerAriaLabel"
-      ]),
-      header: translateText(["table", "columns", "contactOwnerHeader"]),
-      key: "owner",
-      render(_, row) {
-        return (
-          <OwnerAvatarChip
-            id={`contact-${row.id}-owner-${row.owner.employeeId}`}
-            owner={row.owner}
-            backgroundColor="bg-tertiary-background"
-          />
-        );
-      },
+      field: "owner",
+      headerName: translateText(["table", "columns", "contactOwnerHeader"]),
       width: "15%"
     }
   ];
 
-  const loadMore = async () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      await fetchNextPage();
-    }
+  const tableHeaders: GridHeader[] = columns.map((col) => ({
+    id: col.field,
+    label: col.headerName,
+    width: col.width,
+    align: col.align,
+    className: col.className
+  }));
+
+  const transformToTableRows = (): GridRow[] =>
+    (contacts ?? []).map((contact) => ({
+      id: contact.id,
+      ariaLabel: contact.name,
+      name: (
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="w-full truncate" title={contact.name}>
+            {contact.name}
+          </div>
+          <div
+            className="subtitle4 text-secondary-text w-full truncate"
+            title={contact.company?.name ?? undefined}
+          >
+            {contact.company?.name ?? "-"}
+          </div>
+        </div>
+      ),
+      email: (
+        <div className="block w-full truncate" title={contact.email}>
+          {contact.email}
+        </div>
+      ),
+      contactNumber: (
+        <div className="flex items-baseline">
+          {formatPhoneNumber(contact.contactNumber)}
+        </div>
+      ),
+      closedDealValue: (
+        <div className="flex flex-col gap-1 text-right">
+          <div>{formatValue(contact.closedDealValue?.toString() ?? null)}</div>
+          <div className="subtitle4 text-secondary-text">
+            {(contact.closedDealCount ?? 0) > 0
+              ? `${contact.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: contact.closedDealCount })}`
+              : ""}
+          </div>
+        </div>
+      ),
+      openTasksCount: (
+        <div className="flex flex-row items-center gap-2">
+          {formatTasks(contact.openTasksCount)}
+          {(contact.overdueTasksCount ?? 0) > 0 && (
+            <Label
+              backgroundColor="bg-semantic-red-background"
+              textColor="text-semantic-red-text"
+            >
+              {`${contact.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
+            </Label>
+          )}
+        </div>
+      ),
+      owner: (
+        <OwnerAvatarChip
+          id={`contact-${contact.id}-owner-${contact.owner.employeeId}`}
+          owner={contact.owner}
+          backgroundColor="bg-tertiary-background"
+        />
+      )
+    }));
+
+  const handleRowClick = (row: GridRow) => {
+    setSelectedContactId(Number(row.id));
+    openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-row gap-4 w-full h-[3rem] items-center justify-between">
-        <InputField
-          ariaLabelClearButton={translateText([
-            "table",
-            "clearButtonAriaLabel"
-          ])}
-          className="w-[25.75rem] h-[3rem]"
-          placeholder={translateText(["table", "search"])}
-          rightIcon={<SearchIcon />}
-          state="default"
-          type="search"
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-          customStyles={{ borderRadius: "rounded-[1.5rem]" }}
-        />
-        <Dropdown
-          ariaLabel={translateText(["table", "companyFilter", "ariaLabel"])}
-          className="rounded-full"
-          menuWidth="content"
-          options={companyOptions}
-          value={selectedCompany}
-          variant="secondary"
-          onChange={(value) => setSelectedCompany(value)}
-        />
-      </div>
-
-      <Table
-        columns={columns as TableColumn<any>[]}
-        data={contacts ?? []}
-        emptyStateType={emptyStateType}
-        isLoading={isLoading}
-        customSkeletonLoader={<ProjectTableSkeletonLoader rowCount={8} />}
-        height="37.2rem"
-        hasMore={hasNextPage}
-        onLoadMore={loadMore}
-        infiniteScrollLoadingMessage={translateText([
-          "table",
-          "infiniteScrollLoadingMessage"
-        ])}
-        noDataState={{
-          icon: <SearchIcon />,
-          title: translateText(["table", "emptyDataState", "title"]),
-          description: translateText(["table", "emptyDataState", "description"])
-        }}
-        noSearchResultsState={{
-          icon: <SearchIcon />,
-          title: translateText(["table", "emptySearchState", "title"]),
-          description: translateText([
-            "table",
-            "emptySearchState",
-            "description"
-          ])
-        }}
-        onRowClick={(row) => {
-          setSelectedContactId(row.id);
-          openCrmSidePanel(CrmSidePanelTypes.CONTACT_SIDE_PANEL);
-        }}
-      />
-    </div>
+    <TableView
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      isLoading={isLoading}
+      loader={<ProjectTableSkeletonLoader rowCount={8} />}
+      emptyState={{
+        icon: <SearchIcon />,
+        title: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "title"])
+          : translateText(["table", "emptyDataState", "title"]),
+        description: isEmptyFilterState
+          ? translateText(["table", "emptySearchState", "description"])
+          : translateText(["table", "emptyDataState", "description"])
+      }}
+      onRowClick={handleRowClick}
+      infiniteScroll={{
+        isEnabled: true,
+        height: "37.2rem",
+        hasMore: hasNextPage,
+        isFetchingNextPage,
+        onLoadMore: () => {
+          void fetchNextPage();
+        }
+      }}
+      toolbar={{
+        searchBar: {
+          value: searchTerm,
+          onChange: (event) => setSearchTerm(event.target.value),
+          placeholder: translateText(["table", "search"]),
+          "aria-label": translateText(["table", "search"]),
+          ariaLabelClearButton: translateText(["table", "clearButtonAriaLabel"])
+        },
+        dropdown: {
+          id: "crm-contacts-company-filter",
+          options: companyOptions,
+          value: selectedCompany,
+          onChange: (value) => setSelectedCompany(value),
+          width: "auto",
+          menuWidth: "content",
+          ariaLabel: translateText(["table", "companyFilter", "ariaLabel"])
+        }
+      }}
+    />
   );
 };

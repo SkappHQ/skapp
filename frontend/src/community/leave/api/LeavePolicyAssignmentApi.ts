@@ -11,10 +11,15 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import { leavePolicyAssignmentEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import {
   leaveAnalyticsQueryKeys,
-  leavePolicyAssignmentQueryKeys
+  leaveEntitlementQueryKeys,
+  leavePolicyAssignmentQueryKeys,
+  leavePolicyQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
 import {
   AssignLeavePolicyPayload,
+  BulkAssignPolicyApiResponse,
+  BulkAssignPolicyPayload,
+  BulkAssignPolicyResponse,
   EmployeeLeavePoliciesPage,
   EmployeeLeavePoliciesResponse,
   UnassignLeavePolicyPayload
@@ -81,6 +86,42 @@ export const useAssignLeavePolicy = (
           leaveAnalyticsQueryKeys.EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL
       });
       onSuccess();
+    },
+    onError
+  });
+};
+
+const bulkAssignLeavePolicies = async (
+  payload: BulkAssignPolicyPayload
+): Promise<BulkAssignPolicyResponse> => {
+  const response = await authFetch.post<BulkAssignPolicyApiResponse>(
+    leavePolicyAssignmentEndPoints.BULK_ASSIGN_LEAVE_POLICIES,
+    payload
+  );
+  return response.data.results[0];
+};
+
+export const useBulkAssignLeavePolicies = (
+  onSuccess: (assignmentResult: BulkAssignPolicyResponse) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  BulkAssignPolicyResponse,
+  AxiosError,
+  BulkAssignPolicyPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: bulkAssignLeavePolicies,
+    onSuccess: (assignmentResult) => {
+      queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
+      queryClient.invalidateQueries({
+        queryKey: leavePolicyAssignmentQueryKeys.ALL
+      });
+      queryClient.invalidateQueries({
+        queryKey: leaveEntitlementQueryKeys.LEAVE_ENTITLEMENTS()
+      });
+      onSuccess(assignmentResult);
     },
     onError
   });

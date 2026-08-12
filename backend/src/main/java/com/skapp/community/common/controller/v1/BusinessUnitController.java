@@ -27,7 +27,7 @@ public class BusinessUnitController {
 
 	@Operation(summary = "Get all business units",
 			description = "Retrieves the full list of business units, sorted alphabetically by name, for the Organization Configuration page.")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getAllBusinessUnits() {
 		ResponseEntityDto response = businessUnitService.getAllBusinessUnits();

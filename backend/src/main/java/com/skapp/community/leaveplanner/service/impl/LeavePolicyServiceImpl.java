@@ -214,13 +214,22 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getLeavePolicyConfig() {
 		log.info("getLeavePolicyConfig: execution started");
 
-		Optional<OrganizationConfig> existingConfig = organizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
-
-		boolean enabled = existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get());
+		boolean enabled = isLeavePoliciesEnabled();
 
 		log.info("getLeavePolicyConfig: execution ended");
 		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(enabled));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean isLeavePoliciesEnabled() {
+		log.info("isLeavePoliciesEnabled: execution started");
+		boolean enabled = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name())
+			.filter(this::isLeavePolicyEnabled)
+			.isPresent();
+		log.info("isLeavePoliciesEnabled: execution ended");
+		return enabled;
 	}
 
 	@Override

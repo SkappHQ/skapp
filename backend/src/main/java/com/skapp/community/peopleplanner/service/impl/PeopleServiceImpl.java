@@ -12,6 +12,7 @@ import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.NotificationSettingsResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
@@ -191,6 +192,8 @@ public class PeopleServiceImpl implements PeopleService {
 	private final JobTitleDao jobTitleDao;
 
 	private final WorkLocationDao workLocationDao;
+
+	private final BusinessUnitDao businessUnitDao;
 
 	private final EmployeePeriodDao employeePeriodDao;
 
@@ -445,6 +448,12 @@ public class PeopleServiceImpl implements PeopleService {
 						PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
 		}
 
+		// Business Unit
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null) {
+			processBusinessUnit(requestDto, employee);
+		}
+
 		// Identification and Diversity Details
 		CommonModuleUtils.setIfExists(
 				() -> requestDto.getEmployment().getIdentificationAndDiversityDetails().getEeoJobCategory(),
@@ -516,6 +525,24 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		return employee;
+	}
+
+	private void processBusinessUnit(CreateEmployeeRequestDto requestDto, Employee employee) {
+		Long businessUnitId = requestDto.getEmployment().getEmploymentDetails().getBusinessUnitId();
+		if (businessUnitId == null) {
+			return;
+		}
+
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		boolean canModifyBusinessUnit = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		if (!canModifyBusinessUnit) {
+			return;
+		}
+
+		employee.setBusinessUnit(businessUnitDao.findById(businessUnitId)
+			.orElseThrow(
+					() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND)));
 	}
 
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
@@ -1966,6 +1993,18 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 	}
 
+	public void setBulkEmployeeBusinessUnit(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		String businessUnit = employeeBulkDto.getBusinessUnit();
+		if (businessUnit != null && !businessUnit.isBlank()) {
+			businessUnitDao.findByName(businessUnit)
+				.filter(unit -> unit.getName().equals(businessUnit))
+				.ifPresentOrElse(employee::setBusinessUnit, () -> {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+							new String[] { businessUnit });
+				});
+		}
+	}
+
 	public List<EmployeeDetailedResponseDto> fetchEmployeeSearchData(Page<Employee> employees) {
 		List<EmployeeDetailedResponseDto> responseDtos = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -2082,6 +2121,16 @@ public class PeopleServiceImpl implements PeopleService {
 		if (workLocation != null && !workLocation.isBlank()
 				&& workLocationDao.findByNameIgnoreCaseAndIsDeletedFalse(workLocation.trim()).isEmpty()) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND));
+		}
+	}
+
+	public void validateBusinessUnitInBulk(String businessUnit, List<String> errors) {
+		if (businessUnit != null && !businessUnit.isBlank()
+				&& businessUnitDao.findByName(businessUnit)
+					.filter(unit -> unit.getName().equals(businessUnit))
+					.isEmpty()) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+					new String[] { businessUnit }));
 		}
 	}
 
@@ -2365,6 +2414,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setEmploymentAllocation(employeeBulkDto.getEmploymentAllocation());
 
 		setBulkEmployeeWorkLocation(employeeBulkDto, employee);
+		setBulkEmployeeBusinessUnit(employeeBulkDto, employee);
 
 		UserSettings userSettings = createNotificationSettingsForBulkUser(user);
 		user.setSettings(userSettings);
@@ -2758,6 +2808,7 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
+		validateBusinessUnitInBulk(employeeBulkDto.getBusinessUnit(), errors);
 		validatePayrollIdInBulk(employeeBulkDto.getPayrollId(), errors);
 		validateTinInBulk(employeeBulkDto.getTin(), errors);
 
