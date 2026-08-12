@@ -428,7 +428,7 @@
       },
       "toastMessages": {
         "editErrorTitle": "Failed to update deal",
-        "editErrorDescription": "Something went wrong. Please try again"
+        "editErrorDescription": "Oops! Something went wrong. Please try again"
       },
       "validations": {
         "dealNameRequired": "Deal name is required",
