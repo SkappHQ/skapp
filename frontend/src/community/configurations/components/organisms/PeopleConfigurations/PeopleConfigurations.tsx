@@ -18,7 +18,7 @@ import {
 import { BirthdayNotificationConfigType } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import GoogleWorkspaceSyncSettings from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
-import { useGoogleWorkspaceSyncSettingsStore } from "~enterprise/people/store/googleWorkspaceSyncSettingsStore";
+import { useEnterprisePeopleStore } from "~enterprise/people/store/enterprisePeopleStore";
 
 const PeopleConfigurations: FC = () => {
   const translateText = useTranslator(
@@ -38,14 +38,18 @@ const PeopleConfigurations: FC = () => {
     setIsWorkspaceResetTriggered,
     isWorkspaceDirty,
     isWorkspaceSubmitting
-  } = useGoogleWorkspaceSyncSettingsStore((store) => ({
+  } = useEnterprisePeopleStore((store) => ({
     setIsWorkspaceSaveTriggered: store.setIsPeopleWorkspaceSaveTriggered,
     setIsWorkspaceResetTriggered: store.setIsPeopleWorkspaceResetTriggered,
     isWorkspaceDirty: store.isPeopleWorkspaceDirty,
     isWorkspaceSubmitting: store.isPeopleWorkspaceSubmitting
   }));
 
-  const { data, isLoading, isError } = useGetBirthdayNotificationConfig();
+  const {
+    data: birthdayNotificationConfig,
+    isLoading,
+    isError
+  } = useGetBirthdayNotificationConfig();
 
   const handleSuccess = () => {
     setToastMessage({
@@ -71,16 +75,17 @@ const PeopleConfigurations: FC = () => {
   const birthdayFormik = useFormik<BirthdayNotificationConfigType>({
     enableReinitialize: true,
     initialValues: {
-      isTurnedOn: data?.isTurnedOn ?? false,
-      isTeamWide: data?.isTeamWide ?? false,
-      isOrganizationWide: data?.isOrganizationWide ?? false
+      isTurnedOn: birthdayNotificationConfig?.isTurnedOn ?? false,
+      isTeamWide: birthdayNotificationConfig?.isTeamWide ?? false,
+      isOrganizationWide: birthdayNotificationConfig?.isOrganizationWide ?? false
     },
     onSubmit: async (values) => {
       await updateConfigAsync(values);
     }
   });
 
-  const isBirthdaySectionLoaded = isError || (!isLoading && !!data);
+  const isBirthdaySectionLoaded =
+    isError || (!isLoading && !!birthdayNotificationConfig);
 
   const isWorkspaceChanged = canManageGoogleWorkspace && isWorkspaceDirty;
   const isAnyChanged = birthdayFormik.dirty || isWorkspaceChanged;
@@ -101,7 +106,7 @@ const PeopleConfigurations: FC = () => {
     }
   };
 
-  const subOptionsAriaMessage = data
+  const subOptionsAriaMessage = birthdayNotificationConfig
     ? translateText([
         "aria",
         birthdayFormik.values.isTurnedOn
@@ -123,7 +128,7 @@ const PeopleConfigurations: FC = () => {
         {subOptionsAriaMessage}
       </div>
 
-      {!isError && (isLoading || !data) && (
+      {!isError && (isLoading || !birthdayNotificationConfig) && (
         <div
           className="flex animate-pulse flex-col gap-6"
           role="status"
@@ -142,7 +147,7 @@ const PeopleConfigurations: FC = () => {
         </div>
       )}
 
-      {!isError && data && (
+      {!isError && birthdayNotificationConfig && (
         <div className="flex flex-col gap-6">
           <SwitchRow
             label={translateText(["mainToggleLabel"])}
