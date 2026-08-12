@@ -21,10 +21,4 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
-	/**
-	 * Hard cap on the unpaged pending review feed so one manager with a large backlog
-	 * cannot pull the whole table into memory.
-	 */
-	public static final int MAX_PENDING_REQUESTS = 200;
-
 }

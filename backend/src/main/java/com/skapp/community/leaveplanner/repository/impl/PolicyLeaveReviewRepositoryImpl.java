@@ -2,7 +2,6 @@ package com.skapp.community.leaveplanner.repository.impl;
 
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.User_;
-import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
@@ -104,10 +103,7 @@ public class PolicyLeaveReviewRepositoryImpl implements PolicyLeaveReviewReposit
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)));
 
-		TypedQuery<PolicyLeaveRequest> query = entityManager.createQuery(criteriaQuery);
-		query.setMaxResults(PolicyLeaveConstant.MAX_PENDING_REQUESTS);
-
-		return query.getResultList();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override
