@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.Validation;
@@ -399,6 +400,12 @@ public class Validations {
 	public static void validateWorkLocation(Long workLocationId, WorkLocationDao workLocationDao) {
 		if (workLocationId != null && !workLocationDao.existsById(workLocationId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+		}
+	}
+
+	public static void validateBusinessUnit(Long businessUnitId, BusinessUnitDao businessUnitDao) {
+		if (businessUnitId != null && !businessUnitDao.existsById(businessUnitId)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND);
 		}
 	}
 
