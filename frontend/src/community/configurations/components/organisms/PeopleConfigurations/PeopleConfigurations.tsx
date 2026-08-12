@@ -11,7 +11,6 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import {
   useGetBirthdayNotificationConfig,
   useUpdateBirthdayNotificationConfig
@@ -19,6 +18,7 @@ import {
 import { BirthdayNotificationConfigType } from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import GoogleWorkspaceSyncSettings from "~enterprise/configurations/components/organisms/GoogleWorkspaceSyncSettings/GoogleWorkspaceSyncSettings";
+import { useGoogleWorkspaceSyncSettingsStore } from "~enterprise/people/store/googleWorkspaceSyncSettingsStore";
 
 const PeopleConfigurations: FC = () => {
   const translateText = useTranslator(
@@ -38,7 +38,7 @@ const PeopleConfigurations: FC = () => {
     setIsWorkspaceResetTriggered,
     isWorkspaceDirty,
     isWorkspaceSubmitting
-  } = useConfigurationStore((store) => ({
+  } = useGoogleWorkspaceSyncSettingsStore((store) => ({
     setIsWorkspaceSaveTriggered: store.setIsPeopleWorkspaceSaveTriggered,
     setIsWorkspaceResetTriggered: store.setIsPeopleWorkspaceResetTriggered,
     isWorkspaceDirty: store.isPeopleWorkspaceDirty,
@@ -94,11 +94,7 @@ const PeopleConfigurations: FC = () => {
 
   const handleSaveAll = async () => {
     if (birthdayFormik.dirty) {
-      try {
-        await birthdayFormik.submitForm();
-      } catch {
-        
-      }
+      await birthdayFormik.submitForm();
     }
     if (isWorkspaceChanged) {
       setIsWorkspaceSaveTriggered(true);

@@ -8,10 +8,6 @@ interface actionTypes {
   setIsDealStageModalOpen: (isDealStageModalOpen: boolean) => void;
   setDealStageModalType: (dealStageModalType: CrmModalTypes) => void;
   setSelectedDealStageId: (stageId: number | null) => void;
-  setIsPeopleWorkspaceSaveTriggered: (isTriggered: boolean) => void;
-  setIsPeopleWorkspaceResetTriggered: (isTriggered: boolean) => void;
-  setIsPeopleWorkspaceDirty: (isDirty: boolean) => void;
-  setIsPeopleWorkspaceSubmitting: (isSubmitting: boolean) => void;
 }
 
 export interface ConfigurationStoreTypes extends actionTypes {
@@ -20,8 +16,4 @@ export interface ConfigurationStoreTypes extends actionTypes {
   isDealStageModalOpen: boolean;
   dealStageModalType: CrmModalTypes;
   selectedDealStageId: number | null;
-  isPeopleWorkspaceSaveTriggered: boolean;
-  isPeopleWorkspaceResetTriggered: boolean;
-  isPeopleWorkspaceDirty: boolean;
-  isPeopleWorkspaceSubmitting: boolean;
 }

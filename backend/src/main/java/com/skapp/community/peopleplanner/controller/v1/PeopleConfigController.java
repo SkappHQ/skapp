@@ -26,7 +26,7 @@ public class PeopleConfigController {
 	@Operation(summary = "Get birthday notification configuration",
 			description = "Returns the organization-wide configuration controlling birthday notifications.")
 	@GetMapping(value = "/birthday-notifications")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getBirthdayNotificationConfigs() {
 		ResponseEntityDto response = peopleConfigService.getBirthdayNotificationConfigs();
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -35,7 +35,7 @@ public class PeopleConfigController {
 	@Operation(summary = "Update birthday notification configuration",
 			description = "Partially updates the organization-wide configuration controlling birthday notifications.")
 	@PatchMapping(value = "/birthday-notifications")
-	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> updateBirthdayNotificationConfigs(
 			@RequestBody BirthdayNotificationConfigRequestDto requestDto) {
 		ResponseEntityDto response = peopleConfigService.updateBirthdayNotificationConfigs(requestDto);

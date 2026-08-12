@@ -14,10 +14,6 @@ export const useConfigurationStore = create<
     (set) => ({
       isUserRoleModalOpen: false,
       moduleType: Modules.NONE,
-      isPeopleWorkspaceSaveTriggered: false,
-      isPeopleWorkspaceResetTriggered: false,
-      isPeopleWorkspaceDirty: false,
-      isPeopleWorkspaceSubmitting: false,
       setIsUserRoleModalOpen: (status: boolean) =>
         set((state: ConfigurationStoreTypes) => ({
           ...state,
@@ -27,26 +23,6 @@ export const useConfigurationStore = create<
         set((state: ConfigurationStoreTypes) => ({
           ...state,
           moduleType: moduleType
-        })),
-      setIsPeopleWorkspaceSaveTriggered: (isTriggered: boolean) =>
-        set((state: ConfigurationStoreTypes) => ({
-          ...state,
-          isPeopleWorkspaceSaveTriggered: isTriggered
-        })),
-      setIsPeopleWorkspaceResetTriggered: (isTriggered: boolean) =>
-        set((state: ConfigurationStoreTypes) => ({
-          ...state,
-          isPeopleWorkspaceResetTriggered: isTriggered
-        })),
-      setIsPeopleWorkspaceDirty: (isDirty: boolean) =>
-        set((state: ConfigurationStoreTypes) => ({
-          ...state,
-          isPeopleWorkspaceDirty: isDirty
-        })),
-      setIsPeopleWorkspaceSubmitting: (isSubmitting: boolean) =>
-        set((state: ConfigurationStoreTypes) => ({
-          ...state,
-          isPeopleWorkspaceSubmitting: isSubmitting
         })),
       ...DealStageSlice(set)
     }),
