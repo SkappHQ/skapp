@@ -76,7 +76,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex max-h-[73vh] flex-col gap-4 overflow-y-auto pr-2">
       <div className="flex flex-col gap-1.5">
         <p className="body2 text-secondary-text">
           {translateText(["assignModal", "policyLabel"])}
