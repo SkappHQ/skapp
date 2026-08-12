@@ -96,7 +96,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
-		log.info("createContact: execution started");
+		CrmContact savedContact = persistNewContact(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public CrmContact persistNewContact(CrmContactCreateRequestDto requestDto) {
+		log.info("persistNewContact: execution started");
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId());
@@ -124,8 +131,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("createContact: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+		log.info("persistNewContact: execution ended");
+		return savedContact;
 	}
 
 	protected void validateContactCreationLimit() {
@@ -135,7 +142,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editContact(Long id, CrmContactEditRequestDto requestDto) {
-		log.info("editContact: execution started");
+		CrmContact savedContact = applyContactEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public CrmContact applyContactEdit(Long id, CrmContactEditRequestDto requestDto) {
+		log.info("applyContactEdit: execution started");
 
 		User currentUser = userService.getCurrentUser();
 
@@ -187,8 +201,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("editContact: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+		log.info("applyContactEdit: execution ended");
+		return savedContact;
 	}
 
 	@Override

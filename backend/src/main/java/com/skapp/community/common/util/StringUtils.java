@@ -3,6 +3,7 @@ package com.skapp.community.common.util;
 import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -36,6 +37,16 @@ public class StringUtils {
 
 	public static String escapeLikePattern(String input) {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
+	}
+
+	public static String normalizeName(String value) {
+		if (isNullOrBlank(value)) {
+			return "";
+		}
+
+		String collapsed = ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(value.strip()).replaceAll(" ");
+		String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
+		return ValidationConstant.DIACRITIC_MARK_PATTERN.matcher(decomposed).replaceAll("").toLowerCase();
 	}
 
 	public static String convertToCommaSeperatedString(Set<String> values) {

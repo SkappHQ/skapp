@@ -1,0 +1,18 @@
+package com.skapp.community.crmplanner.payload.response.v2;
+
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class CrmCompanyListItemDtoV2 {
+
+	private CrmCompanyResponseDto company;
+
+	private CrmCompanyMetrics metrics;
+
+}
