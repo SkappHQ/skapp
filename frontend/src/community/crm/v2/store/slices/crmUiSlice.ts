@@ -1,38 +1,63 @@
+import { SetType } from "~community/common/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { CrmUiSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
-export interface CrmUiSlice {
-  isCompanyModalOpen: boolean;
-  companyModalType: CrmModalTypes;
-  isContactModalOpen: boolean;
-  contactModalType: CrmModalTypes;
-  isTaskModalOpen: boolean;
-  taskModalType: CrmModalTypes;
+const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
+  companyIds: [] as number[],
+  contactIds: [] as number[],
+  dealIds: [] as number[],
+  taskIds: [] as number[],
 
-  selectedCompanyId: number | null;
-  selectedContactId: number | null;
-  selectedDealId: number | null;
-  selectedTaskId: number | null;
+  isCompanyModalOpen: false,
+  companyModalType: CrmModalTypes.ADD_COMPANY_MODAL,
+  isContactModalOpen: false,
+  contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
+  isTaskModalOpen: false,
+  taskModalType: CrmModalTypes.ADD_TASK_MODAL,
 
-  isCrmSidePanelOpen: boolean;
-  crmSidePanelType: CrmSidePanelTypes | null;
+  selectedCompanyId: null as number | null,
+  selectedContactId: null as number | null,
+  selectedDealId: null as number | null,
+  selectedTaskId: null as number | null,
 
-  preselectedStageId: number | null;
+  isCrmSidePanelOpen: false,
+  crmSidePanelType: null as CrmSidePanelTypes | null,
 
-  setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
-  setCompanyModalType: (companyModalType: CrmModalTypes) => void;
-  setIsContactModalOpen: (isContactModalOpen: boolean) => void;
-  setContactModalType: (contactModalType: CrmModalTypes) => void;
-  setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
-  setTaskModalType: (taskModalType: CrmModalTypes) => void;
+  preselectedStageId: null as number | null,
 
-  setSelectedCompanyId: (selectedCompanyId: number | null) => void;
-  setSelectedContactId: (selectedContactId: number | null) => void;
-  setSelectedDealId: (selectedDealId: number | null) => void;
-  setSelectedTaskId: (selectedTaskId: number | null) => void;
+  setCompanyIds: (companyIds: number[]) => set({ companyIds }),
+  setContactIds: (contactIds: number[]) => set({ contactIds }),
+  setDealIds: (dealIds: number[]) => set({ dealIds }),
+  setTaskIds: (taskIds: number[]) => set({ taskIds }),
 
-  openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) => void;
-  closeCrmSidePanel: () => void;
+  setIsCompanyModalOpen: (isCompanyModalOpen: boolean) =>
+    set({ isCompanyModalOpen }),
+  setCompanyModalType: (companyModalType: CrmModalTypes) =>
+    set({ companyModalType }),
+  setIsContactModalOpen: (isContactModalOpen: boolean) =>
+    set({ isContactModalOpen }),
+  setContactModalType: (contactModalType: CrmModalTypes) =>
+    set({ contactModalType }),
+  setIsTaskModalOpen: (isTaskModalOpen: boolean) => set({ isTaskModalOpen }),
+  setTaskModalType: (taskModalType: CrmModalTypes) => set({ taskModalType }),
 
-  setPreselectedStageId: (preselectedStageId: number | null) => void;
-}
+  setSelectedCompanyId: (selectedCompanyId: number | null) =>
+    set({ selectedCompanyId }),
+  setSelectedContactId: (selectedContactId: number | null) =>
+    set({ selectedContactId }),
+  setSelectedDealId: (selectedDealId: number | null) =>
+    set({ selectedDealId }),
+  setSelectedTaskId: (selectedTaskId: number | null) =>
+    set({ selectedTaskId }),
+
+  openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
+    set({ isCrmSidePanelOpen: true, crmSidePanelType }),
+  closeCrmSidePanel: () =>
+    set({ isCrmSidePanelOpen: false, crmSidePanelType: null }),
+
+  setPreselectedStageId: (preselectedStageId: number | null) =>
+    set({ preselectedStageId })
+});
+
+export default CrmUiSlice;

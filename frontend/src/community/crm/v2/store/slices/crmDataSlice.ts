@@ -1,3 +1,4 @@
+import { SetType } from "~community/common/types/CommonTypes";
 import {
   CrmBoardColumn,
   CrmCompanyEntity,
@@ -8,66 +9,46 @@ import {
   CrmTaskEntity,
   CrmTaskTypeEntity
 } from "~community/crm/types/CrmTypes";
+import { CrmDataSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
-export interface CrmDataSlice {
-  companies: Record<number, CrmCompanyEntity>;
-  companyIds: number[];
-
-  getCompanyById: (companyId: number) => CrmCompanyEntity | undefined;
+const CrmDataSlice = (
+  set: SetType<CrmDataSliceTypes>,
+  get: () => CrmDataSliceTypes
+) => ({
+  companies: {} as Record<number, CrmCompanyEntity>,
+  contacts: {} as Record<number, CrmContactEntity>,
+  deals: {} as Record<number, CrmDealEntity>,
+  board: {} as Record<number, CrmBoardColumn>,
+  tasks: {} as Record<number, CrmTaskEntity>,
+  owners: {} as Record<number, CrmOwnerEntity>,
+  stages: {} as Record<number, CrmStageEntity>,
+  taskTypes: {} as Record<number, CrmTaskTypeEntity>,
 
   setCompanies: (
     companies: Record<number, CrmCompanyEntity>,
-    companyIds?: number[]
-  ) => void;
-  removeCompany: (companyId: number) => void;
-
-  contacts: Record<number, CrmContactEntity>;
-  contactIds: number[];
-
-  getContactById: (contactId: number) => CrmContactEntity | undefined;
+    companyIds: number[]
+  ) => set({ companies, companyIds }),
 
   setContacts: (
     contacts: Record<number, CrmContactEntity>,
-    contactIds?: number[]
-  ) => void;
-  removeContact: (contactId: number) => void;
+    contactIds: number[]
+  ) => set({ contacts, contactIds }),
 
-  deals: Record<number, CrmDealEntity>;
-  dealIds: number[];
-  board: Record<number, CrmBoardColumn>;
+  setDeals: (deals: Record<number, CrmDealEntity>, dealIds: number[]) =>
+    set({ deals, dealIds }),
 
-  getDealById: (dealId: number) => CrmDealEntity | undefined;
+  setBoardColumn: (stageId: number, column: CrmBoardColumn) =>
+    set({ board: { ...get().board, [stageId]: column } }),
 
-  setDeals: (deals: Record<number, CrmDealEntity>, dealIds?: number[]) => void;
-  removeDeal: (dealId: number) => void;
+  setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds: number[]) =>
+    set({ tasks, taskIds }),
 
-  setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
-  moveDeal: (
-    dealId: number,
-    toStageId: number,
-    toIndex: number
-  ) => { previousDealId: number | null; nextDealId: number | null };
+  setOwners: (owners: Record<number, CrmOwnerEntity>) => set({ owners }),
 
-  tasks: Record<number, CrmTaskEntity>;
-  taskIds: number[];
+  setStages: (stages: Record<number, CrmStageEntity>) => set({ stages }),
 
-  getTaskById: (taskId: number) => CrmTaskEntity | undefined;
+  setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) =>
+    set({ taskTypes })
+});
 
-  setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds?: number[]) => void;
-  removeTask: (taskId: number) => void;
-
-  owners: Record<number, CrmOwnerEntity>;
-  stages: Record<number, CrmStageEntity>;
-  taskTypes: Record<number, CrmTaskTypeEntity>;
-
-  getOwnerById: (ownerId: number) => CrmOwnerEntity | undefined;
-  getStageById: (stageId: number) => CrmStageEntity | undefined;
-  getTaskTypeById: (taskTypeId: number) => CrmTaskTypeEntity | undefined;
-
-  setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
-
-  setStages: (stages: Record<number, CrmStageEntity>) => void;
-  removeStage: (stageId: number) => void;
-
-  setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) => void;
-}
+export default CrmDataSlice;
