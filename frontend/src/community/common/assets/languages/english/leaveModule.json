@@ -359,7 +359,6 @@
     "menuUnassign": "Unassign",
     "leavesRemainingLabel": "{{remaining}} / {{total}} days remaining",
     "entitlementTypeFlexible": "Flexible",
-    "balanceNotTracked": "— (not tracked)",
     "balanceNotTrackedLabel": "Balance is not tracked for flexible policies",
     "emptyStateTitle": "No policies assigned yet",
     "emptyStateDescription": "Assign a policy to get started.",

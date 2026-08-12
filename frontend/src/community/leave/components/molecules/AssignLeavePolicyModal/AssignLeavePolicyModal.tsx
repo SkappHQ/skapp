@@ -126,6 +126,13 @@ const AssignLeavePolicyModal: FC<Props> = ({
     ? DateTime.fromISO(previewStartISO).toFormat(MEDIUM_DATE_FORMAT)
     : "";
 
+  // Shown beside the Join Date radio so the date it resolves to is visible
+  // before choosing it. Empty until the employee loads, and for employees who
+  // have no join date yet — those are sent to SetJoinDateModal instead.
+  const joinDateLabel = joinedDate
+    ? DateTime.fromISO(joinedDate).toFormat(MEDIUM_DATE_FORMAT)
+    : "";
+
   const accrualPreview = useMemo(
     () =>
       selectedPolicy?.policyType === PolicyType.ACCRUAL
@@ -237,6 +244,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
             onPolicyChange={setSelectedPolicyId}
             effectiveDateType={effectiveDateType}
             onEffectiveDateTypeChange={handleEffectiveDateTypeChange}
+            joinDateLabel={joinDateLabel}
             specificDate={specificDate}
             specificDateError={specificDateError}
             onSpecificDateChange={handleSpecificDateChange}

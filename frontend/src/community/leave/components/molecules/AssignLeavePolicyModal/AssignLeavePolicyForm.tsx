@@ -33,6 +33,7 @@ interface Props {
   onPolicyChange: (value: string) => void;
   effectiveDateType: EffectiveDateType;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
+  joinDateLabel: string;
   specificDate: string;
   specificDateError: string;
   onSpecificDateChange: (isoDate: string) => void;
@@ -47,6 +48,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
   onPolicyChange,
   effectiveDateType,
   onEffectiveDateTypeChange,
+  joinDateLabel,
   specificDate,
   specificDateError,
   onSpecificDateChange,
@@ -116,8 +118,13 @@ const AssignLeavePolicyForm: FC<Props> = ({
               isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
               variant="dot"
             />
-            <span className="body1 text-black">
+            <span className="body1 flex items-center gap-1.5 text-black">
               {translateText(["assignModal", "joinDateOption"])}
+              {joinDateLabel && (
+                <span className="body2 text-secondary-text">
+                  ({joinDateLabel})
+                </span>
+              )}
             </span>
           </button>
           <button
