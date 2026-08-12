@@ -134,39 +134,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(content, pageable, getContactTotalCount(cb, filterDto));
 	}
 
-	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<?> query) {
-		Subquery<BigDecimal> dealValueSub = query.subquery(BigDecimal.class);
-		Root<CrmDeal> deal = dealValueSub.from(CrmDeal.class);
-		dealValueSub.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
-			.where(cb.equal(deal.get(CrmDeal_.contact), contact),
-					cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
-					cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-
-		return List.of(cb.desc(dealValueSub), cb.asc(contact.get(CrmContact_.id)));
-	}
-
-	private Predicate[] buildPredicates(CriteriaBuilder cb, Root<CrmContact> contact, Join<CrmContact, Employee> owner,
-			Join<CrmContact, CrmCompany> company, CrmContactMetricRequestDto filterDto) {
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-
-		String searchKeyword = filterDto.getSearchKeyword();
-		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
-			String likePattern = "%" + escaped + "%";
-			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
-					cb.like(cb.lower(owner.get(Employee_.firstName)), likePattern, '\\'),
-					cb.like(cb.lower(owner.get(Employee_.lastName)), likePattern, '\\')));
-		}
-
-		Long companyId = filterDto.getCompanyId();
-		if (companyId != null) {
-			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
-		}
-
-		return predicates.toArray(new Predicate[0]);
-	}
-
 	@Override
 	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -215,6 +182,39 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		query.where(cb.equal(contact.get(CrmContact_.id), contactId), cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
 		return Optional.ofNullable(entityManager.createQuery(query).getSingleResultOrNull());
+	}
+
+	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<?> query) {
+		Subquery<BigDecimal> dealValueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> deal = dealValueSub.from(CrmDeal.class);
+		dealValueSub.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(deal.get(CrmDeal_.contact), contact),
+					cb.equal(deal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+
+		return List.of(cb.desc(dealValueSub), cb.asc(contact.get(CrmContact_.id)));
+	}
+
+	private Predicate[] buildPredicates(CriteriaBuilder cb, Root<CrmContact> contact, Join<CrmContact, Employee> owner,
+			Join<CrmContact, CrmCompany> company, CrmContactMetricRequestDto filterDto) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+
+		String searchKeyword = filterDto.getSearchKeyword();
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
+			String likePattern = "%" + escaped + "%";
+			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+					cb.like(cb.lower(owner.get(Employee_.firstName)), likePattern, '\\'),
+					cb.like(cb.lower(owner.get(Employee_.lastName)), likePattern, '\\')));
+		}
+
+		Long companyId = filterDto.getCompanyId();
+		if (companyId != null) {
+			predicates.add(cb.equal(company.get(CrmCompany_.id), companyId));
+		}
+
+		return predicates.toArray(new Predicate[0]);
 	}
 
 	private Long getContactTotalCount(CriteriaBuilder cb, CrmContactMetricRequestDto filterDto) {
