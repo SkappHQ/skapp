@@ -50,11 +50,12 @@ export const useTimesheetRequestFilterState = (
 
   useEffect(() => {
     if (!shouldRegisterCleanup) return;
+    resetParams();
     return () => {
       cleanupParams();
       setDates(["", ""]);
     };
-  }, [shouldRegisterCleanup, cleanupParams, setDates]);
+  }, [shouldRegisterCleanup, resetParams, cleanupParams, setDates]);
 
   return {
     filterValues,

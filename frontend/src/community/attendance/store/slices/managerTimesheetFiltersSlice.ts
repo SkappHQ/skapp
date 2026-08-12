@@ -78,7 +78,7 @@ const managerTimesheetFiltersSlice = (
   restoreTimesheetRequestParams: () => {
     set((state) => ({
       timesheetRequestsFilters: {
-        status: [TimeSheetRequestStates.PENDING] as string[]
+        status: [] as string[]
       },
       timesheetRequestParams: {
         ...state.timesheetRequestParams,
