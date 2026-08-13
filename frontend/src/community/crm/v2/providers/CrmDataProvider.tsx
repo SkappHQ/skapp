@@ -4,58 +4,55 @@ import { FC, ReactNode, useEffect } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetBoardInitData } from "~community/crm/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import {
-  replaceStageIds,
   toContactsRecord,
   toOwnersRecord,
-  toStagesRecord,
-  toTaskTypesRecord
+  toStagesRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 import { isCrmRoute } from "~community/crm/v2/utils/crmRouteUtils";
 
-export const CrmDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
+interface CrmDataProviderProps {
+  children: ReactNode;
+}
+
+export const CrmDataProvider: FC<CrmDataProviderProps> = ({ children }) => {
   const { asPath } = useRouter();
   const translateText = useTranslator("crmModule", "common", "initData");
 
-  const { data, isLoading, error } = useGetBoardInitData(isCrmRoute(asPath));
-
   const {
     setStages,
-    setStageIds,
     setOwners,
     setContacts,
-    setTaskTypes,
     setCrmDataLoading,
     setCrmDataError
-  } = useCrmStoreV2((state) => ({
+  } = useCrmStoreV2((state: CrmStore) => ({
     setStages: state.setStages,
-    setStageIds: state.setStageIds,
     setOwners: state.setOwners,
     setContacts: state.setContacts,
-    setTaskTypes: state.setTaskTypes,
     setCrmDataLoading: state.setCrmDataLoading,
     setCrmDataError: state.setCrmDataError
   }));
 
-  useEffect(() => {
-    setCrmDataLoading(isLoading);
-  }, [isLoading]);
+  const { data, isLoading, isError, isSuccess } = useGetBoardInitData(
+    isCrmRoute(asPath)
+  );
 
   useEffect(() => {
-    if (error) {
+    setCrmDataLoading(isLoading);
+
+    if (isError) {
       setCrmDataError(translateText(["errorDescription"]));
       return;
     }
 
-    if (!data) return;
-
-    setStages(toStagesRecord(data.stages));
-    setStageIds(replaceStageIds(data.stages));
-    setOwners(toOwnersRecord(data.owners));
-    setContacts(toContactsRecord(data.contacts));
-    setTaskTypes(toTaskTypesRecord(data.taskTypes));
-    setCrmDataError(null);
-  }, [data, error]);
+    if (isSuccess) {
+      setStages(toStagesRecord(data.stages));
+      setOwners(toOwnersRecord(data.owners));
+      setContacts(toContactsRecord(data.contacts));
+      setCrmDataError(null);
+    }
+  }, [data, isLoading, isError, isSuccess]);
 
   return <>{children}</>;
 };
