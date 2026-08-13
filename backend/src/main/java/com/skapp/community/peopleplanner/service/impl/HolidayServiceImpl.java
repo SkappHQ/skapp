@@ -58,6 +58,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -124,11 +125,13 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public ResponseEntityDto saveBulkHolidays(HolidayBulkRequestDto holidayBulkRequestDto) {
 		log.info("saveBulkHolidays: execution started");
 
 		List<HolidayDtoStatusResponseDto> holidayDtoStatusList = new ArrayList<>();
-		List<Holiday> savableHolidays = new ArrayList<>();
+		List<Holiday> savedHolidays = new ArrayList<>();
+		Map<LocalDate, List<Holiday>> systemHolidaysByDate = new HashMap<>();
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
@@ -141,7 +144,8 @@ public class HolidayServiceImpl implements HolidayService {
 			try {
 
 				LocalDate holidayDate = DateTimeUtils.parseUtcDate(holidayDto.getDate());
-				List<Holiday> systemHolidays = holidayDao.findAllByIsActiveTrueAndDate(holidayDate);
+				List<Holiday> systemHolidays = systemHolidaysByDate.computeIfAbsent(holidayDate,
+						holidayDao::findAllByIsActiveTrueAndDate);
 
 				validateHolidayDto(holidayDto, holidayDate, systemHolidays, holidaysOnCurrentDate, holidaysOnPastDates,
 						holidayBulkRequestDto.getYear(), validWorkLocationNames);
@@ -151,9 +155,7 @@ public class HolidayServiceImpl implements HolidayService {
 				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocations(),
 						workLocationsByName);
 				holiday.setWorkLocations(workLocations);
-				Holiday savedHoliday = holidayDao.save(holiday);
-
-				savableHolidays.add(savedHoliday);
+				holidayDao.save(holiday);
 
 				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
 				leaveRequestFilterDto.setEndDate(holidayDate);
@@ -161,8 +163,10 @@ public class HolidayServiceImpl implements HolidayService {
 				List<LeaveRequest> leaveRequests = leaveRequestDao
 					.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
 				if (systemHolidays.isEmpty() && !leaveRequests.isEmpty()) {
-					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(savedHoliday, leaveRequest));
+					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(holiday, leaveRequest));
 				}
+
+				savedHolidays.add(holiday);
 			}
 			catch (ModuleException | DateTimeParseException e) {
 				log.warn("saveBulkHolidays: Found a record with error: {}", e.getMessage());
@@ -171,21 +175,21 @@ public class HolidayServiceImpl implements HolidayService {
 			}
 		});
 
-		if (savableHolidays.size() == 1) {
+		if (savedHolidays.size() == 1) {
 
-			Set<WorkLocation> holidayWorkLocations = savableHolidays.getFirst().getWorkLocations();
+			Set<WorkLocation> holidayWorkLocations = savedHolidays.getFirst().getWorkLocations();
 			Set<WorkLocation> workLocationsFilter = (holidayWorkLocations == null || holidayWorkLocations.isEmpty())
 					? null : holidayWorkLocations;
 
 			List<Employee> employees = employeeDao.findAllActiveEmployeesExcludingRole(Role.PM_GUEST_EMPLOYEE,
 					workLocationsFilter);
 
-			peopleEmailService.sendNewHolidayDeclarationEmail(savableHolidays.getFirst(), employees);
-			peopleNotificationService.sendNewHolidayDeclarationNotification(savableHolidays.getFirst(), employees);
+			peopleEmailService.sendNewHolidayDeclarationEmail(savedHolidays.getFirst(), employees);
+			peopleNotificationService.sendNewHolidayDeclarationNotification(savedHolidays.getFirst(), employees);
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(
-				holidayBulkRequestDto.getHolidayDtoList().size(), savableHolidays.size(),
+				holidayBulkRequestDto.getHolidayDtoList().size(), savedHolidays.size(),
 				holidaysOnCurrentDate.get() > 0, holidaysOnPastDates.get() > 0, holidayDtoStatusList);
 
 		log.info("saveBulkHolidays: execution ended");
