@@ -76,9 +76,9 @@ const managerTimesheetFiltersSlice = (
   },
 
   restoreTimesheetRequestParams: () => {
-    set((state) => ({
+    set((state): Partial<ManagerTimesheetFiltersSliceTypes> => ({
       timesheetRequestsFilters: {
-        status: [] as string[]
+        status: []
       },
       timesheetRequestParams: {
         ...state.timesheetRequestParams,
