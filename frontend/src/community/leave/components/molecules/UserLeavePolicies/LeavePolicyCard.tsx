@@ -77,7 +77,10 @@ const LeavePolicyCard: FC<Props> = ({
           </span>
           <span className="body2 truncate text-secondary-text">
             {isFlexiblePolicy
-              ? `${policy.policyName} · ${translateText(["entitlementTypeFlexible"])}`
+              ? translateText(["policyNameWithType"], {
+                  policyName: policy.policyName,
+                  entitlementType: translateText(["entitlementTypeFlexible"])
+                })
               : policy.policyName}
           </span>
         </div>

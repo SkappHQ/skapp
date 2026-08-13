@@ -11,7 +11,9 @@ import {
   useAssignLeavePolicy,
   useGetEmployeeLeavePolicies
 } from "~community/leave/api/LeavePolicyAssignmentApi";
-import AssignLeavePolicyForm from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
+import AssignLeavePolicyForm, {
+  PolicyOption
+} from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetJoinDateModal from "~community/leave/components/molecules/SetJoinDateModal/SetJoinDateModal";
 import {
   EffectiveDateType,
@@ -20,11 +22,12 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import { buildAccrualPreview } from "~community/leave/utils/accrualPreviewUtils";
+import { findSupersededAssignment } from "~community/leave/utils/leavePolicy/leavePolicyAssignmentUtils";
 import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 
 interface Props {
   employeeId: number;
-  employeeName?: string;
+  employeeName: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -33,9 +36,12 @@ interface Props {
 // single page, so the assign dropdown lists all active policies (never capped).
 const ASSIGNABLE_POLICIES_PAGE = -1;
 
-// Conflict detection compares the selected policy against every leave type the
-// employee already holds, so this page has to cover all of their assignments
-// rather than just the first page shown in the list.
+// Conflict detection needs every leave type the employee already holds, not
+// just the page shown in the list. `EmployeeLeavePolicyServiceImpl
+// #getEmployeeLeavePolicies` calls `PageRequest.of(page, size)` unguarded, so
+// the -1 "unpaged" escape hatch used above is not available here. The supersede
+// rule keeps at most one ACTIVE assignment per leave type, so this cap only
+// binds for a tenant with more than this many leave types.
 const EXISTING_ASSIGNMENTS_PAGE_SIZE = 100;
 
 const AssignLeavePolicyModal: FC<Props> = ({
@@ -80,7 +86,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
     [policyPages]
   );
 
-  const policyOptions = useMemo(
+  const policyOptions: PolicyOption[] = useMemo(
     () =>
       assignablePolicies.map((policy) => ({
         id: String(policy.id),
@@ -150,24 +156,26 @@ const AssignLeavePolicyModal: FC<Props> = ({
     isOpen
   );
 
-  // Assigning a policy supersedes whatever the employee already holds for that
-  // leave type. Re-selecting the policy they are already on is a no-op server
-  // side, so that case is not flagged as a replacement.
+  // Falls back to a generic subject rather than an empty string: the name is
+  // built from optional first/last name fields, and an empty subject would
+  // render the banner and toast as headless sentences.
+  const employeeSubject =
+    employeeName || translateText(["employeeFallbackSubject"]);
+
   const conflictWarning = useMemo(() => {
     if (!selectedPolicy) return "";
 
-    const replacedAssignment = existingAssignmentsPage?.items.find(
-      (assignment) =>
-        assignment.leaveTypeId === selectedPolicy.leaveTypeId &&
-        assignment.policyId !== selectedPolicy.id
+    const supersededAssignment = findSupersededAssignment(
+      existingAssignmentsPage?.items ?? [],
+      selectedPolicy
     );
-    if (!replacedAssignment) return "";
+    if (!supersededAssignment) return "";
 
     return translateText(["assignModal", "conflictWarning"], {
-      employeeName: employeeName ?? "",
-      leaveType: replacedAssignment.leaveTypeName
+      employeeName: employeeSubject,
+      leaveType: supersededAssignment.leaveTypeName
     });
-  }, [selectedPolicy, existingAssignmentsPage, employeeName, translateText]);
+  }, [selectedPolicy, existingAssignmentsPage, employeeSubject, translateText]);
 
   const handleEffectiveDateTypeChange = (type: EffectiveDateType): void => {
     setEffectiveDateType(type);
@@ -186,7 +194,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
       title: translateText(["assignSuccessTitle"]),
       description: translateText(["assignSuccessDescription"], {
         policyName: selectedPolicyName,
-        employeeName: employeeName ?? "",
+        employeeName: employeeSubject,
         effectiveDate: effectiveDateLabel
       }),
       isIcon: true
@@ -229,7 +237,11 @@ const AssignLeavePolicyModal: FC<Props> = ({
     });
   };
 
-  const isSaveDisabled = !selectedPolicyId || isPending;
+  // Gated on isEmployeeLoading too: needsJoinDate is forced false while the
+  // employee is in flight, so without this Save would post JOIN_DATE for an
+  // employee whose join date is still unknown and the server would 400 instead
+  // of the flow offering "Set a join date".
+  const isSaveDisabled = !selectedPolicyId || isPending || isEmployeeLoading;
 
   return (
     <>

@@ -7,7 +7,7 @@ import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAs
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
 import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePolicies";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
-import useIsLeavePoliciesEnabled from "~community/leave/hooks/useIsLeavePoliciesEnabled";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
@@ -36,7 +36,15 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
 
   const { isAtLeastCoreTier } = useTier();
 
-  const isLeavePoliciesEnabled = useIsLeavePoliciesEnabled();
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  // Either name part can be absent, so join the present ones rather than
+  // interpolating both — an absent part would otherwise leave a stray space
+  // inside the sentences the assign modal builds from this.
+  const employeeName = [employeeFirstName, employeeLastName]
+    .filter(Boolean)
+    .join(" ");
 
   const { resetLeaveRequestParams } = useLeaveStore((state) => state);
 
@@ -72,16 +80,15 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
         <>
           <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
 
-          {isLeavePoliciesEnabled ? (
-            <UserLeavePolicies
-              employeeId={selectedUser}
-              employeeName={`${employeeFirstName ?? ""} ${
-                employeeLastName ?? ""
-              }`}
-            />
-          ) : (
-            <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
-          )}
+          {!isLeavePolicyConfigLoading &&
+            (isLeavePoliciesEnabled ? (
+              <UserLeavePolicies
+                employeeId={selectedUser}
+                employeeName={employeeName}
+              />
+            ) : (
+              <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
+            ))}
 
           {leaveTypesList?.length > 0 && (
             <UserLeaveUtilization

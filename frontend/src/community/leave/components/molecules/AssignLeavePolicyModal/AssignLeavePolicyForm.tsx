@@ -20,7 +20,7 @@ import {
   EffectiveDateType
 } from "~community/leave/types/LeavePolicyTypes";
 
-interface PolicyOption {
+export interface PolicyOption {
   id: string;
   label: string;
   value: string;
@@ -75,6 +75,11 @@ const AssignLeavePolicyForm: FC<Props> = ({
   );
 
   return (
+    // The form owns its scroll because nothing above it does: SmallModal's
+    // content wrapper and BasicModal's container are both unbounded and
+    // overflow-visible, so a long accrual schedule would otherwise push the
+    // modal footer past the viewport. 73vh leaves room for the modal's header,
+    // footer and padding at the shortest supported viewport height.
     <div className="flex max-h-[73vh] flex-col gap-4 overflow-y-auto pr-2">
       <div className="flex flex-col gap-1.5">
         <p className="body2 text-secondary-text">
@@ -211,7 +216,6 @@ const AssignLeavePolicyForm: FC<Props> = ({
             }}
             headers={accrualHeaders}
             rows={accrualRows}
-            height="14rem"
           />
         </div>
       )}

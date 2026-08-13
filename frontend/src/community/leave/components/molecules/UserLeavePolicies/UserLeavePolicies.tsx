@@ -18,7 +18,7 @@ import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
-  employeeName?: string;
+  employeeName: string;
 }
 
 const POLICIES_PER_PAGE = 6;
@@ -79,7 +79,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
         {canManagePolicies && (
           <ButtonV2
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => setIsAssignModalOpen(true)}
           >
             {translateText(["assignPolicyBtnTxt"])}

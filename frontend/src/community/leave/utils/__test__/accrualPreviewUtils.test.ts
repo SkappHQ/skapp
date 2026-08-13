@@ -67,20 +67,22 @@ describe("buildAccrualPreview", () => {
     expect(rows[rows.length - 1].balance).toBe(5);
   });
 
-  it("is bounded by the preview row limit regardless of carry-over", () => {
+  it("stops at the accrual year when carry-over is disabled, continues when enabled", () => {
+    const quarterly = { frequency: AccrualFrequency.QUARTERLY };
+
     const noCarry = buildAccrualPreview(
-      basePolicy({ isCarryoverEnabled: false }),
+      basePolicy({ ...quarterly, isCarryoverEnabled: false }),
       "2024-07-01"
     );
     const withCarry = buildAccrualPreview(
-      basePolicy({ isCarryoverEnabled: true }),
+      basePolicy({ ...quarterly, isCarryoverEnabled: true }),
       "2024-07-01"
     );
 
-    // From Jul 2024 the row limit is reached before either the year boundary
-    // (carry-over off) or the open-ended projection (carry-over on) can bind.
-    expect(noCarry).toHaveLength(ACCRUAL_PREVIEW_ROW_LIMIT);
+    expect(noCarry).toHaveLength(2);
+    expect(noCarry[noCarry.length - 1].date).toBe("31 Dec 2024");
     expect(withCarry).toHaveLength(ACCRUAL_PREVIEW_ROW_LIMIT);
+    expect(withCarry.length).toBeGreaterThan(noCarry.length);
   });
 
   it("still previews when a waiting period pushes the first accrual into the next year", () => {
