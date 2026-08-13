@@ -10,8 +10,8 @@ export const useCrmStoreV2 = create<
   [["zustand/devtools", never]]
 >(
   devtools(
-    (set, get) => ({
-      ...CrmDataSlice(set, get),
+    (set) => ({
+      ...CrmDataSlice(set),
       ...CrmUiSlice(set)
     }),
     {

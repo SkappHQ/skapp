@@ -17,7 +17,7 @@ interface ActionTypes {
   setCompanies: (companies: Record<number, CrmCompanyEntity>) => void;
   setContacts: (contacts: Record<number, CrmContactEntity>) => void;
   setDeals: (deals: Record<number, CrmDealEntity>) => void;
-  setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
+  setBoardColumn: (board: Record<number, CrmBoardColumn>) => void;
   setTasks: (tasks: Record<number, CrmTaskEntity>) => void;
   setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
   setStages: (stages: Record<number, CrmStageEntity>) => void;

@@ -11,10 +11,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmDataSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
-const CrmDataSlice = (
-  set: SetType<CrmDataSliceTypes>,
-  get: () => CrmDataSliceTypes
-) => ({
+const CrmDataSlice = (set: SetType<CrmDataSliceTypes>) => ({
   companies: {} as Record<number, CrmCompanyEntity>,
   contacts: {} as Record<number, CrmContactEntity>,
   deals: {} as Record<number, CrmDealEntity>,
@@ -32,8 +29,7 @@ const CrmDataSlice = (
 
   setDeals: (deals: Record<number, CrmDealEntity>) => set({ deals }),
 
-  setBoardColumn: (stageId: number, column: CrmBoardColumn) =>
-    set({ board: { ...get().board, [stageId]: column } }),
+  setBoardColumn: (board: Record<number, CrmBoardColumn>) => set({ board }),
 
   setTasks: (tasks: Record<number, CrmTaskEntity>) => set({ tasks }),
 
