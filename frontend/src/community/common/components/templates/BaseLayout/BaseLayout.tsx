@@ -9,6 +9,7 @@ import ContentWithDrawer from "~community/common/components/organisms/ContentWit
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
 import BirthdayModalController from "~community/people/components/organisms/BirthdayModalController/BirthdayModalController";
 import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";
 import { setDeviceToken } from "~enterprise/common/api/setDeviceTokenApi";
@@ -109,7 +110,7 @@ const BaseLayout = ({ children }: Props) => {
 
   return (
     <>
-      {renderComponent}
+      <CrmDataProvider>{renderComponent}</CrmDataProvider>
       <CommonModalController />
       <BirthdayNotificationProvider>
         <BirthdayModalController />

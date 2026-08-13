@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
-import { FC, PropsWithChildren, useEffect } from "react";
+import { FC, ReactNode, useEffect } from "react";
 
-import ROUTES from "~community/common/constants/routes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetBoardInitData } from "~community/crm/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
@@ -10,18 +10,14 @@ import {
   toOwnersRecord,
   toStagesRecord,
   toTaskTypesRecord
-} from "~community/crm/v2/store/utils/crmEntityUtils";
-import { CrmInitDataResponse } from "~community/crm/v2/types/CrmTypes";
+} from "~community/crm/v2/utils/crmEntityUtils";
+import { isCrmRoute } from "~community/crm/v2/utils/crmRouteUtils";
 
-export const CrmDataProvider: FC<PropsWithChildren> = ({ children }) => {
-  const router = useRouter();
-  const isOnCrmRoute = router.pathname.startsWith(ROUTES.CRM.BASE);
+export const CrmDataProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const { asPath } = useRouter();
+  const translateText = useTranslator("crmModule", "common", "initData");
 
-  const { data, isLoading, error } = useGetBoardInitData(isOnCrmRoute) as {
-    data?: CrmInitDataResponse;
-    isLoading: boolean;
-    error: Error | null;
-  };
+  const { data, isLoading, error } = useGetBoardInitData(isCrmRoute(asPath));
 
   const {
     setStages,
@@ -31,32 +27,35 @@ export const CrmDataProvider: FC<PropsWithChildren> = ({ children }) => {
     setTaskTypes,
     setCrmDataLoading,
     setCrmDataError
-  } = useCrmStoreV2((state) => state);
+  } = useCrmStoreV2((state) => ({
+    setStages: state.setStages,
+    setStageIds: state.setStageIds,
+    setOwners: state.setOwners,
+    setContacts: state.setContacts,
+    setTaskTypes: state.setTaskTypes,
+    setCrmDataLoading: state.setCrmDataLoading,
+    setCrmDataError: state.setCrmDataError
+  }));
 
   useEffect(() => {
+    setCrmDataLoading(isLoading);
+  }, [isLoading]);
 
-    if (isLoading) {
-      setCrmDataLoading(true);
-      setCrmDataError(null);
-      return;
-    }
-
+  useEffect(() => {
     if (error) {
-      setCrmDataError(error.message || "Failed to load CRM data");
-      setCrmDataLoading(false);
+      setCrmDataError(translateText(["errorDescription"]));
       return;
     }
 
-    if (data) {
-      setStages(toStagesRecord(data.stages));
-      setStageIds(replaceStageIds(data.stages));
-      setOwners(toOwnersRecord(data.owners));
-      setContacts(toContactsRecord(data.contacts));
-      setTaskTypes(toTaskTypesRecord(data.taskTypes));
-      setCrmDataError(null);
-      setCrmDataLoading(false);
-    }
-  }, [data, isLoading, error, isOnCrmRoute]);
+    if (!data) return;
 
-  return children;
+    setStages(toStagesRecord(data.stages));
+    setStageIds(replaceStageIds(data.stages));
+    setOwners(toOwnersRecord(data.owners));
+    setContacts(toContactsRecord(data.contacts));
+    setTaskTypes(toTaskTypesRecord(data.taskTypes));
+    setCrmDataError(null);
+  }, [data, error]);
+
+  return <>{children}</>;
 };

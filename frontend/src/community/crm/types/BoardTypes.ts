@@ -1,11 +1,17 @@
 import { CrmPriorityEnum } from "../enums/common";
-import { CrmContactLookup, CrmDealStageType, CrmOwner } from "./CommonTypes";
+import {
+  CrmContactLookup,
+  CrmDealStageType,
+  CrmOwner,
+  CrmTaskCategory
+} from "./CommonTypes";
 
 export interface CrmBoardInitDataResponse {
   stages: CrmDealStageType[];
   contacts: CrmContactLookup[];
   owners: CrmOwner[];
   crmRoles: string[];
+  taskTypes: CrmTaskCategory[];
 }
 
 export interface CrmBoardDealResponseType {
