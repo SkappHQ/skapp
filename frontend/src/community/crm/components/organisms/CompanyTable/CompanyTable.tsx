@@ -29,12 +29,14 @@ export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
-  const trimmedSearch = debouncedSearch.trim();
-  const isEmptyFilterState = trimmedSearch !== "";
+  const debouncedSearch = useDebounce(
+    searchTerm.trim(),
+    COMPANY_NAME_DEBOUNCE_DELAY
+  );
+  const isEmptyFilterState = debouncedSearch !== "";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetCompanyMetrics(trimmedSearch, DEFAULT_PAGE_SIZE);
+    useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const { companies, setSelectedCompanyId, setCompanies, openCrmSidePanel } =
     useCrmStore((store) => ({
