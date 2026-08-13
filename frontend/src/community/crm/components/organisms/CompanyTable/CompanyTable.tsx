@@ -33,7 +33,7 @@ export const CompanyTable: FC = () => {
     searchTerm.trim(),
     COMPANY_NAME_DEBOUNCE_DELAY
   );
-  const isEmptyFilterState = debouncedSearch !== "";
+  const hasActiveSearch = debouncedSearch !== "";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
@@ -145,10 +145,10 @@ export const CompanyTable: FC = () => {
       loader={<ProjectTableSkeletonLoader rowCount={8} />}
       emptyState={{
         icon: <SearchIcon />,
-        title: isEmptyFilterState
+        title: hasActiveSearch
           ? translateText(["table", "emptySearchState", "title"])
           : translateText(["table", "emptyDataState", "title"]),
-        description: isEmptyFilterState
+        description: hasActiveSearch
           ? translateText(["table", "emptySearchState", "description"])
           : translateText(["table", "emptyDataState", "description"])
       }}
