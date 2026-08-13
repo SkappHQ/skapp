@@ -71,8 +71,6 @@ const PolicyManagerLeaveRequests: FC = () => {
     [reviewRequestParams]
   );
 
-  // The date range lands via the effect below, so the first render must not fire an
-  // unbounded request.
   const { data: leaveRequests, isLoading } = useGetPolicyManagerLeaveRequests(
     queryParams,
     Boolean(queryParams.startDate && queryParams.endDate)

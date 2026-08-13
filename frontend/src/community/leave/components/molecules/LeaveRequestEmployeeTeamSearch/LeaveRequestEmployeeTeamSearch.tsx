@@ -14,6 +14,10 @@ import { EmployeeTeamSearchResultType } from "~community/common/types/CommonType
 import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
+interface RowClickProps {
+  employeeId: number;
+}
+
 const LeaveRequestEmployeeTeamSearch: FC = () => {
   const translateText = useTranslator("leaveModule");
   const router = useRouter();
@@ -28,7 +32,7 @@ const LeaveRequestEmployeeTeamSearch: FC = () => {
   const { data: suggestions, isPending: isSuggestionsPending } =
     useGetEmployeesAndTeamsForAnalytics(searchTerm || " ");
 
-  const handleRowClick = async ({ employeeId }: { employeeId: number }) => {
+  const handleRowClick = async ({ employeeId }: RowClickProps) => {
     if (
       user?.roles?.includes(ManagerTypes.PEOPLE_MANAGER) ||
       user?.roles?.includes(AdminTypes.SUPER_ADMIN)
