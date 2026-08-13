@@ -753,6 +753,49 @@ class CrmCompanyControllerIntegrationTest {
 	@DisplayName("Get company metrics by ID that does not exist - Returns Bad Request")
 	void getCompanyMetricsById_NotFound_ReturnsBadRequest() throws Exception {
 		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+	// --- getCompanyById ---
+
+	@Test
+	@DisplayName("Get company by ID - Returns base company details")
+	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
+		CrmCompany company = new CrmCompany();
+		company.setName("DetailCoUnique");
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://detail.com");
+		company.setAddress("1 Detail St");
+		company.setContactNumber("94770000001");
+		company = crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("DetailCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://detail.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Detail St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000001"));
+	}
+
+	@Test
+	@DisplayName("Get company by ID that does not exist - Returns Bad Request")
+	void getCompanyById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/999999").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get company by ID for a soft-deleted company - Returns Bad Request")
+	void getCompanyById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmCompany company = createMetricsCompany("DeletedDetailCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
@@ -772,6 +815,16 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get company by ID without CRM role - Returns Forbidden")
+	void getCompanyById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmCompany company = createMetricsCompany("ForbiddenDetailCo");
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 	@Test
