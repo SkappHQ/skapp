@@ -1,6 +1,6 @@
 import { Box, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { Badge, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
 import { FC, JSX } from "react";
 
@@ -191,58 +191,72 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
       ),
       from: (
         <Box sx={classes.outerBoxWrapper}>
-          <Box sx={classes.innerBoxWrapper}>
-            {timesheetRequest?.initialClockIn &&
-              timesheetRequest.requestType ===
-                TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
-                <Typography
-                  variant="body2"
-                  sx={classes.startTimeTextStyles(timesheetRequest)}
-                >
-                  {timesheetRequest?.initialClockIn}
-                </Typography>
-              )}
-            {timesheetRequest?.requestedStartTime &&
-              timesheetRequest?.requestedStartTime !==
-                timesheetRequest?.initialClockIn && (
-                <Typography variant="body2" sx={classes.errorTextStyles}>
-                  {timesheetRequest?.requestedStartTime}
-                </Typography>
-              )}
-          </Box>
+          <Badge
+            backgroundColor="bg-tertiary-background"
+            textColor="text-secondary-text"
+          >
+            <Box sx={classes.timeBadgeContentStyles}>
+              {timesheetRequest?.initialClockIn &&
+                timesheetRequest.requestType ===
+                  TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
+                  <Typography
+                    variant="body2"
+                    sx={classes.startTimeTextStyles(timesheetRequest)}
+                  >
+                    {timesheetRequest?.initialClockIn}
+                  </Typography>
+                )}
+              {timesheetRequest?.requestedStartTime &&
+                timesheetRequest?.requestedStartTime !==
+                  timesheetRequest?.initialClockIn && (
+                  <Typography variant="body2" sx={classes.errorTextStyles}>
+                    {timesheetRequest?.requestedStartTime}
+                  </Typography>
+                )}
+            </Box>
+          </Badge>
         </Box>
       ),
       to: (
         <Box sx={classes.outerBoxWrapper}>
-          <Box sx={classes.innerBoxWrapper}>
-            {timesheetRequest?.initialClockOut &&
-              timesheetRequest.requestType ===
-                TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
-                <Typography
-                  variant="body2"
-                  sx={classes.endTimeTextStyles(timesheetRequest)}
-                >
-                  {timesheetRequest?.initialClockOut}
-                </Typography>
-              )}
-            {timesheetRequest?.requestedEndTime &&
-              timesheetRequest?.requestedEndTime !==
-                timesheetRequest?.initialClockOut && (
-                <Typography variant="body2" sx={classes.errorTextStyles}>
-                  {timesheetRequest?.requestedEndTime}
-                </Typography>
-              )}
-          </Box>
+          <Badge
+            backgroundColor="bg-tertiary-background"
+            textColor="text-secondary-text"
+          >
+            <Box sx={classes.timeBadgeContentStyles}>
+              {timesheetRequest?.initialClockOut &&
+                timesheetRequest.requestType ===
+                  TimeSheetRequestTypes.EDIT_RECORD_REQUEST && (
+                  <Typography
+                    variant="body2"
+                    sx={classes.endTimeTextStyles(timesheetRequest)}
+                  >
+                    {timesheetRequest?.initialClockOut}
+                  </Typography>
+                )}
+              {timesheetRequest?.requestedEndTime &&
+                timesheetRequest?.requestedEndTime !==
+                  timesheetRequest?.initialClockOut && (
+                  <Typography variant="body2" sx={classes.errorTextStyles}>
+                    {timesheetRequest?.requestedEndTime}
+                  </Typography>
+                )}
+            </Box>
+          </Badge>
         </Box>
       ),
       workedHours: (
         <Box sx={classes.workHoursBoxStyle}>
-          <Typography
-            variant="body2"
-            sx={classes.workHoursTextStyle(timesheetRequest, totalHours)}
+          <Badge
+            backgroundColor={
+              timesheetRequest?.workHours >= totalHours
+                ? "bg-tertiary-background"
+                : "bg-semantic-red-background"
+            }
+            textColor="text-secondary-text"
           >
             {formatDuration(timesheetRequest?.workHours)}
-          </Typography>
+          </Badge>
         </Box>
       ),
       status:
@@ -298,29 +312,15 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           </>
         ) : (
           <>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                gap: "0.5rem",
-                alignItems: "center",
-                backgroundColor: theme.palette.common.white,
-                borderRadius: "9.375rem",
-                margin: "0rem auto",
-                padding: "0.5rem 1rem"
-              }}
+            <Badge
+              backgroundColor="bg-tertiary-background"
+              textColor="text-secondary-text"
             >
-              <Box
-                sx={{
-                  width: "0.5rem",
-                  height: "0.5rem",
-                  borderRadius: "50%",
-                  backgroundColor: theme.palette.success.light
-                }}
-              />
+              <span role="img" aria-hidden="true">
+                {requestTypeSelector(timesheetRequest?.status)}
+              </span>
               {pascalCaseFormatter(timesheetRequest?.status)}
-            </Box>
+            </Badge>
             {timesheetRequest?.status === TimeSheetRequestStates.PENDING && (
               <Box sx={classes.kebabMenuBoxStyle}>
                 <KebabMenu

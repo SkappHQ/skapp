@@ -71,13 +71,13 @@ const TimesheetRequestFilterBody: FC<Props> = ({
         "aria-label": translateText(["applyBtnTxt"])
       }}
     >
-      <div className="flex flex-col gap-2">
-        <p className="subtitle1">{translateText(["dateRangeLabel"])}</p>
-        <DateRangePicker
-          value={selectedDateRange}
-          onChange={(range) => setSelectedDateRange(clampToCurrentYear(range))}
-        />
-      </div>
+      <DateRangePicker
+        label={translateText(["dateRangeLabel"])}
+        fromPlaceholder={translateText(["fromDatePlaceholder"])}
+        toPlaceholder={translateText(["toDatePlaceholder"])}
+        value={selectedDateRange}
+        onChange={(range) => setSelectedDateRange(clampToCurrentYear(range))}
+      />
       <SelectableItemList
         title={translateText(["statusFilterTitle"])}
         items={filterValues.status.map((status) => ({
