@@ -18,8 +18,6 @@ public interface PolicyLeaveService {
 
 	ResponseEntityDto getSupervisedPolicyLeaveRequests(PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto);
 
-	ResponseEntityDto getPendingSupervisedPolicyLeaveRequests(String searchKeyword);
-
 	ResponseEntityDto getPolicyLeaveRequestById(Long id);
 
 	ResponseEntityDto updatePolicyLeaveRequest(Long id, PolicyLeaveRequestUpdateDto policyLeaveRequestUpdateDto);

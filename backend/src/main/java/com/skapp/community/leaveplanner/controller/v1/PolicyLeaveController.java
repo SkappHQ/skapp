@@ -56,22 +56,13 @@ public class PolicyLeaveController {
 	}
 
 	@Operation(summary = "Get the policy leave requests raised by the people the current user supervises",
-			description = "Paged, sorted and filtered feed backing the all leave requests table")
+			description = "Paged, sorted and filtered feed backing the all leave requests table. "
+					+ "The pending requests table is the same feed filtered to PENDING with a negative size")
 	@GetMapping("/requests")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> getSupervisedPolicyLeaveRequests(
 			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
 		ResponseEntityDto response = policyLeaveService.getSupervisedPolicyLeaveRequests(policyLeaveRequestFilterDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get the pending policy leave requests awaiting the current user",
-			description = "Unpaged feed backing the pending leave requests table and its quick actions")
-	@GetMapping("/pending-requests")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
-	public ResponseEntity<ResponseEntityDto> getPendingSupervisedPolicyLeaveRequests(
-			@RequestParam(required = false) String searchKeyword) {
-		ResponseEntityDto response = policyLeaveService.getPendingSupervisedPolicyLeaveRequests(searchKeyword);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

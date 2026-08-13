@@ -118,29 +118,6 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public List<PolicyLeaveRequest> findPendingSupervisedRequests(Long supervisorEmployeeId, String searchKeyword) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
-		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		Join<PolicyLeaveRequest, LeavePolicy> policy = fetchPolicy(root);
-		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
-
-		PolicyLeaveRequestFilterDto filterDto = new PolicyLeaveRequestFilterDto();
-		filterDto.setStatus(List.of(LeaveRequestStatus.PENDING));
-		filterDto.setSearchKeyword(searchKeyword);
-
-		criteriaQuery.select(root)
-			.distinct(true)
-			.where(buildSupervisorPredicates(criteriaBuilder, root, fetchEmployee(root), policy,
-					supervisorEmployeeId, filterDto)
-				.toArray(new Predicate[0]));
-		criteriaQuery.orderBy(criteriaBuilder.asc(root.get(PolicyLeaveRequest_.startDate)));
-
-		return entityManager.createQuery(criteriaQuery).getResultList();
-	}
-
-	@Override
 	public Optional<PolicyLeaveRequest> findByIdForUpdate(Long id) {
 		return Optional.ofNullable(entityManager.find(PolicyLeaveRequest.class, id, LockModeType.PESSIMISTIC_WRITE));
 	}

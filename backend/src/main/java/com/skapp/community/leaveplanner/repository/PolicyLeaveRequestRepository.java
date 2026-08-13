@@ -19,8 +19,6 @@ public interface PolicyLeaveRequestRepository {
 	Page<PolicyLeaveRequest> findSupervisedRequests(Long supervisorEmployeeId,
 			PolicyLeaveRequestFilterDto filterDto, Pageable pageable);
 
-	List<PolicyLeaveRequest> findPendingSupervisedRequests(Long supervisorEmployeeId, String searchKeyword);
-
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
 	Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId, Collection<LeaveRequestStatus> statuses,

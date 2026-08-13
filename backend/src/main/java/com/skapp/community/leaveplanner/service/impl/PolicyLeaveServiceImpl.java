@@ -279,22 +279,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getPendingSupervisedPolicyLeaveRequests(String searchKeyword) {
-		log.info("getPendingSupervisedPolicyLeaveRequests: execution started");
-		requireLeavePoliciesEnabled();
-		validateSearchKeyword(searchKeyword);
-
-		User currentUser = userService.getCurrentUser();
-		List<PolicyLeaveRequest> pendingRequests = policyLeaveRequestDao
-			.findPendingSupervisedRequests(currentUser.getEmployee().getEmployeeId(), searchKeyword);
-
-		log.info("getPendingSupervisedPolicyLeaveRequests: execution ended");
-		return new ResponseEntityDto(false,
-				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(pendingRequests));
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public ResponseEntityDto getPolicyLeaveRequestById(@NonNull Long id) {
 		log.info("getPolicyLeaveRequestById: execution started");
 		requireLeavePoliciesEnabled();
