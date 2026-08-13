@@ -45,7 +45,10 @@ const LeavePolicyCard: FC<Props> = ({
               name={IconName.INFINITY_ICON}
               width="32"
               height="32"
-              ariaLabel={translateText(["balanceNotTrackedLabel"])}
+              svgProps={{
+                role: "img",
+                "aria-label": translateText(["balanceNotTrackedLabel"])
+              }}
             />
           </span>
         ) : (

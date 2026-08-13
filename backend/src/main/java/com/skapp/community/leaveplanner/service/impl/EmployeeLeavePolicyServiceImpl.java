@@ -47,6 +47,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		log.info("assignLeavePolicy: execution started");
 
+		EmployeeLeavePolicyUtil.validateRequiredFields(assignLeavePolicyRequestDto);
+
 		Employee employee = employeeDao.findByEmployeeId(assignLeavePolicyRequestDto.getEmployeeId())
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
 
@@ -92,6 +94,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	@Transactional
 	public ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
 		log.info("unassignLeavePolicy: execution started");
+
+		EmployeeLeavePolicyUtil.validateRequiredFields(unassignLeavePolicyRequestDto);
 
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),

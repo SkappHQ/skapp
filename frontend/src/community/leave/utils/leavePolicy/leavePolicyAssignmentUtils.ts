@@ -3,7 +3,6 @@ import {
   LeavePolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-
 export const findSupersededAssignment = (
   assignments: EmployeeLeavePolicyType[],
   selectedPolicy: LeavePolicyType

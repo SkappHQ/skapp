@@ -39,9 +39,6 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();
 
-  // Either name part can be absent, so join the present ones rather than
-  // interpolating both — an absent part would otherwise leave a stray space
-  // inside the sentences the assign modal builds from this.
   const employeeName = [employeeFirstName, employeeLastName]
     .filter(Boolean)
     .join(" ");

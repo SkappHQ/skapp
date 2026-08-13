@@ -49,7 +49,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			+ "(200, 'AssignCasual', 'U+1F334', '#4CAF50', 'FULL_DAY', false, false, false, false, true)";
 
 	// 500/501 are both ACTIVE accrual policies on leave type 100 (conflict pair);
-	// 502 is DEACTIVATED; 600 is an accrual policy on a different leave type (200);
+	// 502 is INACTIVE; 600 is an accrual policy on a different leave type (200);
 	// 700 is a FLEXIBLE policy on leave type 100 (assignable, tracks no balance).
 	private static final String SEED_POLICIES = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Annual Standard', 100, 'ACCRUAL', 'ACTIVE', false), "
@@ -233,6 +233,32 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
+		@DisplayName("Returns 400 when effectiveDateType is omitted")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_MissingEffectiveDateType_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"employeeId\": 1, \"policyId\": 500 }").andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns 400 when policyId is omitted")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_MissingPolicyId_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"employeeId\": 1, \"effectiveDateType\": \"JOIN_DATE\" }")
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns 400 when employeeId is omitted")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_MissingEmployeeId_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"policyId\": 500, \"effectiveDateType\": \"JOIN_DATE\" }")
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
 		@DisplayName("Leave admin assigns a flexible policy; window opens exactly as it does for accrual")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_FlexiblePolicy_ReturnsCreatedWindow() throws Exception {
@@ -243,6 +269,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].policyName").value("Annual Flexible"))
 				.andExpect(jsonPath("$.results[0].policyType").value("FLEXIBLE"))
 				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"))
+				.andExpect(jsonPath("$.results[0].effectiveDateType").value("JOIN_DATE"))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 		}
 

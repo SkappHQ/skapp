@@ -36,12 +36,6 @@ interface Props {
 // single page, so the assign dropdown lists all active policies (never capped).
 const ASSIGNABLE_POLICIES_PAGE = -1;
 
-// Conflict detection needs every leave type the employee already holds, not
-// just the page shown in the list. `EmployeeLeavePolicyServiceImpl
-// #getEmployeeLeavePolicies` calls `PageRequest.of(page, size)` unguarded, so
-// the -1 "unpaged" escape hatch used above is not available here. The supersede
-// rule keeps at most one ACTIVE assignment per leave type, so this cap only
-// binds for a tenant with more than this many leave types.
 const EXISTING_ASSIGNMENTS_PAGE_SIZE = 100;
 
 const AssignLeavePolicyModal: FC<Props> = ({
@@ -156,9 +150,6 @@ const AssignLeavePolicyModal: FC<Props> = ({
     isOpen
   );
 
-  // Falls back to a generic subject rather than an empty string: the name is
-  // built from optional first/last name fields, and an empty subject would
-  // render the banner and toast as headless sentences.
   const employeeSubject =
     employeeName || translateText(["employeeFallbackSubject"]);
 
@@ -237,10 +228,6 @@ const AssignLeavePolicyModal: FC<Props> = ({
     });
   };
 
-  // Gated on isEmployeeLoading too: needsJoinDate is forced false while the
-  // employee is in flight, so without this Save would post JOIN_DATE for an
-  // employee whose join date is still unknown and the server would 400 instead
-  // of the flow offering "Set a join date".
   const isSaveDisabled = !selectedPolicyId || isPending || isEmployeeLoading;
 
   return (
