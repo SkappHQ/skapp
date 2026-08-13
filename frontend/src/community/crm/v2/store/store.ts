@@ -2,17 +2,15 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
+
 import CrmDataSlice from "./slices/crmDataSlice";
 import CrmUiSlice from "./slices/crmUiSlice";
 
-export const useCrmStoreV2 = create<
-  CrmStore,
-  [["zustand/devtools", never]]
->(
+export const useCrmStoreV2 = create<CrmStore>()(
   devtools(
-    (set) => ({
-      ...CrmDataSlice(set),
-      ...CrmUiSlice(set)
+    (...args) => ({
+      ...CrmDataSlice(...args),
+      ...CrmUiSlice(...args)
     }),
     {
       name: "crmStoreV2",

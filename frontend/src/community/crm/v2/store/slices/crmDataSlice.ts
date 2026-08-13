@@ -1,4 +1,5 @@
-import { SetType } from "~community/common/types/CommonTypes";
+import { StateCreator } from "zustand";
+
 import {
   CrmBoardRecord,
   CrmCompanyRecord,
@@ -10,8 +11,14 @@ import {
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmDataSliceTypes } from "~community/crm/v2/types/SliceTypes";
+import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 
-const CrmDataSlice = (set: SetType<CrmDataSliceTypes>) => ({
+const CrmDataSlice: StateCreator<
+  CrmStore,
+  [["zustand/devtools", never]],
+  [],
+  CrmDataSliceTypes
+> = (set) => ({
   companies: {},
   contacts: {},
   deals: {},

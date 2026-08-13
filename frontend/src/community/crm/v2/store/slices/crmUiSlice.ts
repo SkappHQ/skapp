@@ -1,11 +1,18 @@
-import { SetType } from "~community/common/types/CommonTypes";
+import { StateCreator } from "zustand";
+
 import {
   CrmModalTypes,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import { CrmUiSliceTypes } from "~community/crm/v2/types/SliceTypes";
+import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 
-const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
+const CrmUiSlice: StateCreator<
+  CrmStore,
+  [["zustand/devtools", never]],
+  [],
+  CrmUiSliceTypes
+> = (set) => ({
   companyIds: [],
   contactIds: [],
   dealIds: [],
