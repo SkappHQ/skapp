@@ -4,6 +4,9 @@
       "placeholder": "None",
       "searchPlaceholder": "Search Owner",
       "noResults": "No results"
+    },
+    "initData": {
+      "errorDescription": "Something went wrong. Please try again"
     }
   },
   "breadcrumbs": {
