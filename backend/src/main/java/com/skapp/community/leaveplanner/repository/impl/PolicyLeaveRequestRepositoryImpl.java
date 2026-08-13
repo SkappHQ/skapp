@@ -87,7 +87,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
 		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(PolicyLeaveRequest_.id)))
 			.where(buildSupervisorPredicates(criteriaBuilder, countRoot, countRoot.join(PolicyLeaveRequest_.employee),
-					countRoot.join(PolicyLeaveRequest_.policy), supervisorEmployeeId, filterDto)
+					supervisorEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -97,13 +97,14 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		Join<PolicyLeaveRequest, LeavePolicy> policy = fetchPolicy(root);
+		fetchPolicy(root);
+		root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 		root.fetch(PolicyLeaveRequest_.reviewer, JoinType.LEFT);
 
 		criteriaQuery.select(root)
 			.distinct(true)
-			.where(buildSupervisorPredicates(criteriaBuilder, root, fetchEmployee(root), policy, supervisorEmployeeId,
-					filterDto)
+			.where(buildSupervisorPredicates(criteriaBuilder, root, root.join(PolicyLeaveRequest_.employee),
+					supervisorEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
@@ -155,24 +156,9 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
-	/**
-	 * The leave type is fetched through the policy join that the leave type filter then
-	 * builds its predicate on, so the policy table is joined once rather than twice.
-	 */
-	@SuppressWarnings("unchecked")
-	private Join<PolicyLeaveRequest, LeavePolicy> fetchPolicy(Root<PolicyLeaveRequest> root) {
+	private void fetchPolicy(Root<PolicyLeaveRequest> root) {
 		Fetch<PolicyLeaveRequest, LeavePolicy> policy = root.fetch(PolicyLeaveRequest_.policy, JoinType.LEFT);
 		policy.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
-		return (Join<PolicyLeaveRequest, LeavePolicy>) policy;
-	}
-
-	/**
-	 * Reuses the employee fetch join as a regular join so the supervisor scoped queries
-	 * do not join the employee table twice.
-	 */
-	@SuppressWarnings("unchecked")
-	private Join<PolicyLeaveRequest, Employee> fetchEmployee(Root<PolicyLeaveRequest> root) {
-		return (Join<PolicyLeaveRequest, Employee>) root.fetch(PolicyLeaveRequest_.employee, JoinType.INNER);
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
@@ -195,8 +181,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	private List<Predicate> buildSupervisorPredicates(CriteriaBuilder criteriaBuilder, Root<PolicyLeaveRequest> root,
-			Join<PolicyLeaveRequest, Employee> employee, Join<PolicyLeaveRequest, LeavePolicy> policy,
-			Long supervisorEmployeeId, PolicyLeaveRequestFilterDto filterDto) {
+			Join<PolicyLeaveRequest, Employee> employee, Long supervisorEmployeeId,
+			PolicyLeaveRequestFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		Join<Employee, User> user = employee.join(Employee_.user);
@@ -213,7 +199,10 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		if (!CollectionUtils.isEmpty(filterDto.getLeaveTypeId())) {
-			predicates.add(policy.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id).in(filterDto.getLeaveTypeId()));
+			predicates.add(root.get(PolicyLeaveRequest_.policy)
+				.get(LeavePolicy_.leaveType)
+				.get(PolicyLeaveType_.id)
+				.in(filterDto.getLeaveTypeId()));
 		}
 
 		if (filterDto.getStartDate() != null) {
@@ -233,10 +222,6 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		return predicates;
 	}
 
-	/**
-	 * Matches the legacy leave request feed so the same search box behaves identically on
-	 * both tables: full name first, then work email, then last name.
-	 */
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder,
 			Join<PolicyLeaveRequest, Employee> employee, Join<Employee, User> user) {
 		String searchString = PeopleUtil.getSearchString(keyword);

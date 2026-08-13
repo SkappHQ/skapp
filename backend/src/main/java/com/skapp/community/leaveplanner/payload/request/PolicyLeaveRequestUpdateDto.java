@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 public class PolicyLeaveRequestUpdateDto {
 
-	@NotNull
 	private LeaveRequestStatus status;
 
 	private String reviewerComment;
