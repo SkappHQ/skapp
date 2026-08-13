@@ -28,6 +28,12 @@ export const getDateFromTimeStamp = (timestamp: string): string => {
   return timestamp.split("T")[0];
 };
 
+export const getPreviousDayFormatted = (timestamp: string): string => {
+  return DateTime.fromISO(getDateFromTimeStamp(timestamp))
+    .minus({ days: 1 })
+    .toFormat(LONG_DATE_TIME_FORMAT);
+};
+
 export const getOrdinalIndicator = (day: number) => {
   if (day === 1 || day === 21 || day === 31) {
     return "st";

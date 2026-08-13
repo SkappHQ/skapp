@@ -1,6 +1,52 @@
+import { BulkStatusSummary } from "~community/common/types/BulkUploadTypes";
+
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FLEXIBLE = "FLEXIBLE"
+}
+
+export interface BulkAssignPolicyRow {
+  employeeName: string;
+  policyName: string;
+  effectiveDate: string;
+}
+
+export interface BulkAssignPolicyPayload {
+  assignments: BulkAssignPolicyRow[];
+}
+
+export interface BulkAssignPolicyErrorLog extends BulkAssignPolicyRow {
+  error: string;
+}
+
+export interface BulkAssignPolicyResponse {
+  bulkStatusSummary: BulkStatusSummary;
+  bulkRecordErrorLogs: BulkAssignPolicyErrorLog[];
+}
+
+export interface BulkAssignPolicyApiResponse {
+  results: BulkAssignPolicyResponse[];
+}
+
+export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
+
+export enum BulkAssignCsvError {
+  MISSING_COLUMNS = "MISSING_COLUMNS",
+  MALFORMED_ROWS = "MALFORMED_ROWS",
+  EMPTY_FILE = "EMPTY_FILE",
+  TOO_MANY_ROWS = "TOO_MANY_ROWS"
+}
+
+export interface BulkAssignCsvValidation {
+  error: BulkAssignCsvError | null;
+  missingColumns: string[];
+  payload: BulkAssignPolicyPayload | null;
+}
+
+export enum BulkAssignPolicySteps {
+  INSTRUCTIONS = "INSTRUCTIONS",
+  UPLOAD = "UPLOAD",
+  SUMMARY = "SUMMARY"
 }
 
 export enum LeavePolicyStatus {

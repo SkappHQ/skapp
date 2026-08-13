@@ -28,6 +28,8 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
 
   const { getStageByName } = useStageNameMapper();
 
+  const stageName = getStageByName(stage.name);
+
   return (
     <section
       ref={setNodeRef}
@@ -45,8 +47,12 @@ const DealStageLaneHeader: FC<DealStageLaneHeaderProps> = ({
 
       <div className="flex items-center justify-between gap-2 px-3 pt-3">
         <div className="min-w-0">
-          <h2 id={String(stage.id)} className="subtitle1 truncate capitalize">
-            {getStageByName(stage.name)}
+          <h2
+            id={`crm-stage-${stage.id}`}
+            className="subtitle1 truncate capitalize"
+            title={stageName}
+          >
+            {stageName}
           </h2>
           <p
             className={`body3 mt-0.5 text-secondary-icon ${

@@ -6,6 +6,9 @@
       "noResults": "No results"
     }
   },
+  "breadcrumbs": {
+    "crm": "CRM"
+  },
   "contacts": {
     "pageHead": "Contacts | Skapp",
     "title": "Contacts",
@@ -448,9 +451,7 @@
           "saveDeal": "Save deal",
           "cancelAddDeal": "Cancel adding deal",
           "contact": "Contact",
-          "clearContact": "Clear selected contact",
-          "saving": "Saving deal",
-          "loading": "Loading"
+          "clearContact": "Clear selected contact"
         },
         "validations": {
           "dealNameRequired": "Deal name is required",

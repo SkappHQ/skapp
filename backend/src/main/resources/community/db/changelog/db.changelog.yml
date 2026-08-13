@@ -56,3 +56,11 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-payroll-id-column.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-tin-column.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/common-ddl-script-v1-create-table-com-special-notification-status.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-create-table-com-business-unit.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-business-unit-id.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-lv-leave-request-attachment.sql

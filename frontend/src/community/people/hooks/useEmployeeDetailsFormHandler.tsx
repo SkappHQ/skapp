@@ -10,6 +10,7 @@ import React, {
   useState
 } from "react";
 
+import { useGetBusinessUnits } from "~community/common/api/BusinessUnitApi";
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -97,6 +98,8 @@ const useEmployeeDetailsFormHandler = ({
   const { isProTier } = useSessionData();
 
   const { data: workLocations } = useGetAllWorkLocations();
+
+  const { data: businessUnits } = useGetBusinessUnits();
 
   const workTimeZoneDictionary: Record<string, string> = timeZonesList.reduce<
     Record<string, string>
@@ -213,6 +216,21 @@ const useEmployeeDetailsFormHandler = ({
       employmentDetails: {
         ...employee?.employment?.employmentDetails,
         workLocationId: workLocationId
+      } as L3EmploymentDetailsType
+    });
+  };
+
+  const handleBusinessUnitChange = async (
+    e: SyntheticEvent,
+    value: DropdownListType
+  ): Promise<void> => {
+    const businessUnitId = Number(value.value);
+    setFieldError("businessUnitId", "");
+    await setFieldValue("businessUnitId", businessUnitId);
+    setEmploymentDetails({
+      employmentDetails: {
+        ...employee?.employment?.employmentDetails,
+        businessUnitId: businessUnitId
       } as L3EmploymentDetailsType
     });
   };
@@ -520,6 +538,7 @@ const useEmployeeDetailsFormHandler = ({
     selectedProbationEndDate,
     workTimeZoneDictionary,
     workLocations,
+    businessUnits,
     projectTeamList,
     primaryManagerSearchTerm,
     secondaryManagerSearchTerm,
@@ -538,6 +557,7 @@ const useEmployeeDetailsFormHandler = ({
     dateOnChange,
     handleWorkTimeZoneChange,
     handleWorkLocationChange,
+    handleBusinessUnitChange,
     onPrimaryManagerSearchChange,
     onSecondaryManagerSearchChange,
     handlePrimaryManagerSelect,

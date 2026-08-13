@@ -90,6 +90,19 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	}
 
 	@Override
+	public List<TimeRecord> findOpenTimeRecordsByDate(LocalDate date) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<TimeRecord> criteriaQuery = criteriaBuilder.createQuery(TimeRecord.class);
+		Root<TimeRecord> root = criteriaQuery.from(TimeRecord.class);
+
+		criteriaQuery.where(criteriaBuilder.equal(root.get(TimeRecord_.date), date),
+				criteriaBuilder.equal(root.get(TimeRecord_.isCompleted), false),
+				criteriaBuilder.isNotNull(root.get(TimeRecord_.clockInTime)));
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
 	public Optional<TimeRecord> findIncompleteClockOutTimeRecords(LocalDate lastClockInDate, Long employeeId) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<TimeRecord> criteriaQuery = criteriaBuilder.createQuery(TimeRecord.class);

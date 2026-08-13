@@ -1,10 +1,24 @@
+const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
   reactStrictMode: false,
+  assetPrefix: isEnterpriseMode ? "/auth" : undefined,
   async rewrites() {
-    const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
     return [
+      {
+        source: "/auth/signin",
+        destination: "/enterprise/auth/signin"
+      },
+      {
+        source: "/auth/oauth-consent",
+        destination: "/enterprise/auth/oauth-consent"
+      },
+      {
+        source: "/auth/redirect",
+        destination: "/enterprise/auth/redirect"
+      },
       {
         source: "/welcome",
         destination: "/community/welcome"
@@ -46,10 +60,6 @@ const nextConfig = {
         destination: isEnterpriseMode
           ? "/enterprise/signin"
           : "/community/signin"
-      },
-      {
-        source: "/oauth-consent",
-        destination: "/enterprise/oauth-consent"
       },
       {
         source: "/settings",
@@ -254,10 +264,6 @@ const nextConfig = {
       {
         source: "/redirect",
         destination: "/enterprise/redirect"
-      },
-      {
-        source: "/oauth-consent",
-        destination: "/enterprise/oauth-consent"
       },
       {
         source: "/verify/reset-password",
