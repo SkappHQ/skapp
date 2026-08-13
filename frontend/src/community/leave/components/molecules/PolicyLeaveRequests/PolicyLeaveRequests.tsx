@@ -15,7 +15,6 @@ import LeaveRequestDates from "~community/leave/components/molecules/LeaveReques
 import PolicyLeaveErrorState from "~community/leave/components/molecules/PolicyLeaveErrorState/PolicyLeaveErrorState";
 import PolicyLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyLeaveRequestFilterBody/PolicyLeaveRequestFilterBody";
 import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
-import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestType } from "~community/leave/types/PolicyLeaveTypes";
 import { leaveStatusIconSelector } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
@@ -25,12 +24,13 @@ const CHIP_CLASSES =
   "inline-flex w-fit items-center gap-2 rounded-[9.375rem] bg-tertiary-background px-4 py-2";
 
 const PolicyLeaveRequests: FC = () => {
-  const { selectedYear, requestParams, setRequestPage, setRequestSortKey } =
-    usePolicyLeaveStore((state) => state);
-
-  const openEmployeeModal = usePolicyLeaveReviewStore(
-    (state) => state.openEmployeeModal
-  );
+  const {
+    selectedYear,
+    requestParams,
+    setRequestPage,
+    setRequestSortKey,
+    openEmployeeModal
+  } = usePolicyLeaveStore((state) => state);
 
   const queryParams = useMemo(
     () => getPolicyLeaveRequestQueryParams(selectedYear, requestParams),

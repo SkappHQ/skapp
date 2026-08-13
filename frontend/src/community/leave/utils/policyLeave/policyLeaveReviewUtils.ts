@@ -1,9 +1,9 @@
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
-import { PolicyLeaveReviewRequestParams } from "~community/leave/store/policyLeaveReviewStore";
 import { EmployeeLeaveRequestType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import {
   PolicyLeaveReviewEmployeeType,
+  PolicyLeaveReviewRequestParams,
   PolicyManagerLeaveRequestQueryParams
 } from "~community/leave/types/PolicyLeaveReviewTypes";
 

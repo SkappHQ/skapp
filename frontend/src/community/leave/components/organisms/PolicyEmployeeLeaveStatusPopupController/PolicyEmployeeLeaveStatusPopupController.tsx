@@ -11,7 +11,7 @@ import {
   SUMMARY_POPUP_TYPES
 } from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeavePopupType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
@@ -23,7 +23,7 @@ const PolicyEmployeeLeaveStatusPopupController: FC = () => {
   const translateText = useTranslator("leaveModule", "myRequests");
 
   const { isEmployeeModalOpen, selectedRequestId, closeEmployeeModal } =
-    usePolicyLeaveReviewStore((state) => ({
+    usePolicyLeaveStore((state) => ({
       isEmployeeModalOpen: state.isEmployeeModalOpen,
       selectedRequestId: state.selectedRequestId,
       closeEmployeeModal: state.closeEmployeeModal

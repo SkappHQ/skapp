@@ -14,6 +14,41 @@ export type PolicyLeavePopupType =
   | PolicyLeaveRequestStatus
   | PolicyLeaveReviewModalEnums;
 
+export interface PolicyLeaveReviewFilters {
+  status: PolicyLeaveRequestStatus[];
+  leaveTypeId: number[];
+}
+
+export interface PolicyLeaveReviewRequestParams extends PolicyLeaveReviewFilters {
+  page: number;
+  size: number;
+  sortKey: SortKeyTypes;
+  sortOrder: SortOrderTypes;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface PolicyLeaveReviewSliceType {
+  isManagerModalOpen: boolean;
+  isEmployeeModalOpen: boolean;
+  selectedRequestId: number | null;
+  reviewRequestParams: PolicyLeaveReviewRequestParams;
+
+  openManagerModal: (leaveRequestId: number) => void;
+  closeManagerModal: () => void;
+  openEmployeeModal: (leaveRequestId: number) => void;
+  closeEmployeeModal: () => void;
+  setReviewRequestPage: (page: number) => void;
+  setReviewRequestSortKey: (
+    sortKey: SortKeyTypes,
+    sortOrder: SortOrderTypes
+  ) => void;
+  setReviewRequestStatusFilter: (status: PolicyLeaveRequestStatus[]) => void;
+  setReviewRequestFilters: (filters: PolicyLeaveReviewFilters) => void;
+  setReviewRequestDateRange: (startDate?: string, endDate?: string) => void;
+  resetReviewRequestFilters: () => void;
+}
+
 export interface PolicyLeaveSummaryLayout {
   descriptionKey?: string;
   containerMarginTop?: string;

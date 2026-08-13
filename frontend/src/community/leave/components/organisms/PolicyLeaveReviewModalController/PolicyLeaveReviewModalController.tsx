@@ -8,7 +8,7 @@ import PolicyLeaveReviewModal from "~community/leave/components/molecules/Policy
 import PolicyLeaveReviewResultModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveReviewResultModal/PolicyLeaveReviewResultModal";
 import { STATUS_POPUP_TYPES } from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeavePopupType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
@@ -20,7 +20,7 @@ const PolicyLeaveReviewModalController: FC = () => {
   );
 
   const { isManagerModalOpen, selectedRequestId, closeManagerModal } =
-    usePolicyLeaveReviewStore((state) => ({
+    usePolicyLeaveStore((state) => ({
       isManagerModalOpen: state.isManagerModalOpen,
       selectedRequestId: state.selectedRequestId,
       closeManagerModal: state.closeManagerModal

@@ -17,7 +17,7 @@ import {
   UNPAGINATED_PAGE,
   UNPAGINATED_SIZE
 } from "~community/leave/constants/policyLeaveTypeConstants";
-import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import { policyLeaveStatusFilters } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
@@ -38,12 +38,15 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
     "leaveRequestFilters"
   );
 
-  const { requestParams, setRequestFilters, resetRequestFilters } =
-    usePolicyLeaveReviewStore((state) => ({
-      requestParams: state.requestParams,
-      setRequestFilters: state.setRequestFilters,
-      resetRequestFilters: state.resetRequestFilters
-    }));
+  const {
+    reviewRequestParams,
+    setReviewRequestFilters,
+    resetReviewRequestFilters
+  } = usePolicyLeaveStore((state) => ({
+    reviewRequestParams: state.reviewRequestParams,
+    setReviewRequestFilters: state.setReviewRequestFilters,
+    resetReviewRequestFilters: state.resetReviewRequestFilters
+  }));
 
   const { data: leaveTypes } = useGetPolicyLeaveTypes({
     isActive: true,
@@ -53,9 +56,9 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
 
   const [selectedStatus, setSelectedStatus] = useState<
     PolicyLeaveRequestStatus[]
-  >(requestParams.status);
+  >(reviewRequestParams.status);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(() =>
-    requestParams.leaveTypeId.map(String)
+    reviewRequestParams.leaveTypeId.map(String)
   );
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     selectedDateRange
@@ -68,7 +71,7 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
     !dateRange?.to;
 
   const handleApply = () => {
-    setRequestFilters({
+    setReviewRequestFilters({
       status: selectedStatus,
       leaveTypeId: selectedTypes.map(Number)
     });
@@ -80,7 +83,7 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
     setSelectedStatus([]);
     setSelectedTypes([]);
     setDateRange(undefined);
-    resetRequestFilters();
+    resetReviewRequestFilters();
     onDateRangeChange(undefined);
     onClose();
   };

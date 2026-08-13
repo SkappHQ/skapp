@@ -26,7 +26,7 @@ import { useGetPolicyManagerLeaveRequests } from "~community/leave/api/PolicyLea
 import RequestDates from "~community/leave/components/molecules/LeaveRequestRow/RequestDates";
 import PolicyManagerLeaveRequestFilterBody from "~community/leave/components/molecules/PolicyManagerLeaveRequestFilterBody/PolicyManagerLeaveRequestFilterBody";
 import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
-import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
 import { PolicyManagerLeaveRequestType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
@@ -47,18 +47,18 @@ const PolicyManagerLeaveRequests: FC = () => {
   const translateCommonAria = useTranslator("commonAria", "components");
 
   const {
-    requestParams,
-    setRequestPage,
-    setRequestSortKey,
-    setRequestDateRange,
-    setRequestStatusFilter,
+    reviewRequestParams,
+    setReviewRequestPage,
+    setReviewRequestSortKey,
+    setReviewRequestDateRange,
+    setReviewRequestStatusFilter,
     openManagerModal
-  } = usePolicyLeaveReviewStore((state) => ({
-    requestParams: state.requestParams,
-    setRequestPage: state.setRequestPage,
-    setRequestSortKey: state.setRequestSortKey,
-    setRequestDateRange: state.setRequestDateRange,
-    setRequestStatusFilter: state.setRequestStatusFilter,
+  } = usePolicyLeaveStore((state) => ({
+    reviewRequestParams: state.reviewRequestParams,
+    setReviewRequestPage: state.setReviewRequestPage,
+    setReviewRequestSortKey: state.setReviewRequestSortKey,
+    setReviewRequestDateRange: state.setReviewRequestDateRange,
+    setReviewRequestStatusFilter: state.setReviewRequestStatusFilter,
     openManagerModal: state.openManagerModal
   }));
 
@@ -67,8 +67,8 @@ const PolicyManagerLeaveRequests: FC = () => {
   >(undefined);
 
   const queryParams = useMemo(
-    () => getPolicyManagerLeaveRequestQueryParams(requestParams),
-    [requestParams]
+    () => getPolicyManagerLeaveRequestQueryParams(reviewRequestParams),
+    [reviewRequestParams]
   );
 
   // The date range lands via the effect below, so the first render must not fire an
@@ -80,15 +80,15 @@ const PolicyManagerLeaveRequests: FC = () => {
 
   const employeeLeaveRequests = leaveRequests?.items ?? [];
   const totalPages = leaveRequests?.totalPages;
-  const currentPage = requestParams.page;
+  const currentPage = reviewRequestParams.page;
 
   const isDateRangeApplied = Boolean(
     selectedDateRange?.from && selectedDateRange?.to
   );
 
   const filterCount =
-    requestParams.status.length +
-    requestParams.leaveTypeId.length +
+    reviewRequestParams.status.length +
+    reviewRequestParams.leaveTypeId.length +
     (isDateRangeApplied ? 1 : 0);
 
   const columns = [
@@ -208,7 +208,7 @@ const PolicyManagerLeaveRequests: FC = () => {
   const handleSortChange = (value: string): void => {
     const sortKey = value as SortKeyTypes;
 
-    setRequestSortKey(
+    setReviewRequestSortKey(
       sortKey,
       sortKey === SortKeyTypes.START_DATE
         ? SortOrderTypes.ASC
@@ -221,8 +221,8 @@ const PolicyManagerLeaveRequests: FC = () => {
   };
 
   useEffect(() => {
-    setRequestStatusFilter([PolicyLeaveRequestStatus.PENDING]);
-  }, [setRequestStatusFilter]);
+    setReviewRequestStatusFilter([PolicyLeaveRequestStatus.PENDING]);
+  }, [setReviewRequestStatusFilter]);
 
   useEffect(() => {
     const selectedStartDate = selectedDateRange?.from
@@ -232,16 +232,21 @@ const PolicyManagerLeaveRequests: FC = () => {
       ? convertDateToFormat(selectedDateRange.to, DATE_FORMAT)
       : getDateForPeriod("year", "end");
 
-    setRequestDateRange(selectedStartDate, selectedEndDate);
-  }, [selectedDateRange, setRequestDateRange]);
+    setReviewRequestDateRange(selectedStartDate, selectedEndDate);
+  }, [selectedDateRange, setReviewRequestDateRange]);
 
   useEffect(() => {
     if (employeeLeaveRequests?.length === 0 && totalPages === 0) {
       if (currentPage !== 0) {
-        setRequestPage(currentPage - 1);
+        setReviewRequestPage(currentPage - 1);
       }
     }
-  }, [currentPage, employeeLeaveRequests?.length, setRequestPage, totalPages]);
+  }, [
+    currentPage,
+    employeeLeaveRequests?.length,
+    setReviewRequestPage,
+    totalPages
+  ]);
 
   return (
     <TableView
@@ -264,13 +269,13 @@ const PolicyManagerLeaveRequests: FC = () => {
       pagination={{
         totalPages,
         currentPage,
-        onPageChange: setRequestPage
+        onPageChange: setReviewRequestPage
       }}
       toolbar={{
         dropdown: {
           id: "all-leave-requests-sort",
           options: sortOptions,
-          value: requestParams.sortKey,
+          value: reviewRequestParams.sortKey,
           onChange: handleSortChange,
           renderSelectedValue: renderSelectedSortValue,
           width: "auto",
