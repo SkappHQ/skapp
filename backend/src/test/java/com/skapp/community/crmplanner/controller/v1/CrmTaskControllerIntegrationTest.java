@@ -951,14 +951,16 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create task with non-existent type id - Returns Internal Server Error")
-	void createTask_NonExistentTaskType_ReturnsInternalServerError() throws Exception {
+	@DisplayName("Create task with non-existent type id - Returns Bad Request")
+	void createTask_NonExistentTaskType_ReturnsBadRequest() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setTypeId(999999L);
 
 		performCreateRequest(dto).andDo(print())
-			.andExpect(status().isInternalServerError())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND)));
 	}
 
 	@Test

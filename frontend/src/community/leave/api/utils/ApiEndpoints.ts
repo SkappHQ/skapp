@@ -62,6 +62,7 @@ export const policyLeaveTypeEndPoints = {
 
 export const leavePolicyAssignmentEndPoints = {
   ASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  BULK_ASSIGN_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policy-assignments/bulk`,
   UNASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
   GET_EMPLOYEE_LEAVE_POLICIES: (
     employeeId: number,
@@ -69,6 +70,14 @@ export const leavePolicyAssignmentEndPoints = {
     size: number
   ): string =>
     `${moduleAPIPath.LEAVE}/policy-assignments/employee/${employeeId}?page=${page}&size=${size}`
+};
+
+export const policyLeaveEndPoints = {
+  GET_MY_POLICY_BALANCES: (year: string): string =>
+    `${moduleAPIPath.LEAVE}/policy-leave/balances?year=${year}`,
+  CHECK_POLICY_LEAVE_AVAILABILITY: `${moduleAPIPath.LEAVE}/policy-leave/availability`,
+  APPLY_POLICY_LEAVE: `${moduleAPIPath.LEAVE}/policy-leave`,
+  GET_MY_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave`
 };
 
 export const leaveEntitlementEndPoints = {
