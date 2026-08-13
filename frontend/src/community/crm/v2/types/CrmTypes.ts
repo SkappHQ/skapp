@@ -58,10 +58,11 @@ export interface CrmDealStageReorderRequest {
 
 // Responses
 
-export interface CrmBoardInitDataResponse {
+export interface CrmInitDataResponse {
   stages: CrmStageEntity[];
   contacts: CrmContactEntity[];
   owners: CrmOwnerEntity[];
+  taskTypes: CrmTaskTypeEntity[];
 }
 
 export interface CrmCompanyListResponse {
