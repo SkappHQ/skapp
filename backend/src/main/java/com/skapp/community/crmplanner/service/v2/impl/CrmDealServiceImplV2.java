@@ -24,8 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -47,21 +45,16 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
+		Page<CrmDealResponseDtoV2> dealsPage = crmDealDao.findDealsV2(filterDto, ownerId,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
-		List<CrmDealResponseDtoV2> deals = dealsPage.getContent()
-			.stream()
-			.map(deal -> CrmUtil.toDealResponseDtoV2(crmMapperV2, deal))
-			.toList();
-
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(deals);
+		pageDto.setItems(dealsPage.getContent());
 		pageDto.setCurrentPage(dealsPage.getNumber());
 		pageDto.setTotalItems(dealsPage.getTotalElements());
 		pageDto.setTotalPages(dealsPage.getTotalPages());
 
-		log.info("getDeals: execution ended with {} result(s)", deals.size());
+		log.info("getDeals: execution ended with {} result(s)", dealsPage.getNumberOfElements());
 		return new ResponseEntityDto(false, pageDto);
 	}
 
