@@ -48,6 +48,7 @@ export interface BulkUploadUser {
   probationEndDate: string | null;
   timeZone: string | null;
   workLocation: string | null;
+  businessUnit: string | null;
   employeeType: string | null;
   jobFamily: string | null;
   jobTitle: string | null;

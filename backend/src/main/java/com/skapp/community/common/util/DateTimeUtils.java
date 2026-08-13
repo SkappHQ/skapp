@@ -20,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -60,6 +61,8 @@ public class DateTimeUtils {
 
 	public static final int LAST_DAY = 31;
 
+	public static final MonthDay CALENDAR_YEAR_START = MonthDay.of(JANUARY, FIRST_DAY);
+
 	public static final float MILLISECONDS_IN_AN_HOUR = 1000 * 60 * 60.0f;
 
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -76,6 +79,9 @@ public class DateTimeUtils {
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
 	private static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
+
+	private static final DateTimeFormatter DAY_MONTH_YEAR_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+		.withResolverStyle(ResolverStyle.STRICT);
 
 	public static final String TIMESTAMP_POSTFIX = "_";
 
@@ -141,6 +147,24 @@ public class DateTimeUtils {
 		catch (DateTimeParseException ex) {
 			throw new DateTimeParseException("Failed to parse date-time string: " + dateTimeStr, dateTimeStr,
 					ex.getErrorIndex());
+		}
+	}
+
+	/**
+	 * Convert a user supplied date string to LocalDate without throwing on bad input.
+	 * @param dateStr Date string in "dd/MM/yyyy" format.
+	 * @return LocalDate instance, or null when the string is blank or not a real calendar
+	 * date.
+	 */
+	public static LocalDate parseDayMonthYearDate(String dateStr) {
+		if (StringUtils.isNullOrBlank(dateStr)) {
+			return null;
+		}
+		try {
+			return LocalDate.parse(dateStr, DAY_MONTH_YEAR_FORMATTER);
+		}
+		catch (DateTimeParseException exception) {
+			return null;
 		}
 	}
 
@@ -288,6 +312,24 @@ public class DateTimeUtils {
 	 */
 	public static LocalDate getUtcLocalDate(int year, int month, int day) {
 		return LocalDate.of(year, month, day);
+	}
+
+	/**
+	 * Returns the first day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 1 January of the given year.
+	 */
+	public static LocalDate getStartOfYear(int year) {
+		return LocalDate.of(year, JANUARY, FIRST_DAY);
+	}
+
+	/**
+	 * Returns the last day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 31 December of the given year.
+	 */
+	public static LocalDate getEndOfYear(int year) {
+		return LocalDate.of(year, DECEMBER, LAST_DAY);
 	}
 
 	/**
@@ -618,6 +660,16 @@ public class DateTimeUtils {
 		catch (DateTimeParseException e) {
 			return false;
 		}
+	}
+
+	/**
+	 * Parses a month-day string in "MM-dd" format.
+	 * @param monthDay The month-day string to parse.
+	 * @return The corresponding MonthDay.
+	 * @throws DateTimeParseException If the string is not a valid month-day.
+	 */
+	public static MonthDay parseMonthDay(String monthDay) {
+		return MonthDay.parse(monthDay, MONTH_DAY_FORMATTER);
 	}
 
 	public static boolean isValidDate(String dateStr) {

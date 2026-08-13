@@ -6,17 +6,18 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
-import { APP } from "~community/common/constants/stringConstants";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
+import {
+  isAuthHost,
+  isTenantSelectionHost
+} from "~enterprise/common/utils/tenantUtil";
 
 export default function Index() {
   const router = useRouter();
   const { user } = useAuth();
-
-  const tenantId = window.location.host.split(".")[0];
 
   const handleNavigation = useCallback(async () => {
     const isEnterprise = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
@@ -43,13 +44,22 @@ export default function Index() {
   }, []);
 
   const handleEnterpriseNavigation = async () => {
-    if (tenantId === APP) {
+    if (isAuthHost()) {
+      await router.replace({
+        pathname: ROUTES.AUTH.SIGNIN,
+        query: router.query
+      });
+      return;
+    }
+
+    if (isTenantSelectionHost()) {
       await signOut(false);
       await router.replace(ROUTES.AUTH.SIGNIN);
-    } else {
-      const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
-      await router.replace(route);
+      return;
     }
+
+    const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+    await router.replace(route);
   };
 
   const handleCommunityNavigation = async (

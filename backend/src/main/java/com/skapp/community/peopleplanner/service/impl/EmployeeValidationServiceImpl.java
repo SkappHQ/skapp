@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.type.Role;
@@ -50,6 +51,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 	private final WorkLocationDao workLocationDao;
 
+	private final BusinessUnitDao businessUnitDao;
+
 	@Override
 	public void validateCreateEmployeeRequestEmploymentDetails(EmployeeEmploymentDetailsDto employmentDetailsDto,
 			User user) {
@@ -83,6 +86,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 				Validations.validateWorkLocation(employmentDetailsDto.getEmploymentDetails().getWorkLocationId(),
 						workLocationDao);
+
+				Validations.validateBusinessUnit(employmentDetailsDto.getEmploymentDetails().getBusinessUnitId(),
+						businessUnitDao);
 
 				if (employmentDetailsDto.getEmploymentDetails() != null) {
 					// Check if a primary supervisor exists
