@@ -32,7 +32,7 @@ const DirectorySteppers = ({
 
   const { user } = useAuth();
 
-  const { isSuperAdmin, isPeopleAdmin, isESignSender } = useSessionData();
+  const { isSuperAdmin, isPeopleAdmin, userId } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
 
@@ -54,6 +54,8 @@ const DirectorySteppers = ({
   );
 
   const isEditView = !isIndividualView && !isAccountView;
+
+  const isOwnProfile = userId === employeeId;
 
   useEffect(() => {
     if (supervisedData && !supervisorDataLoading) {
@@ -97,8 +99,8 @@ const DirectorySteppers = ({
     user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [translateText(["editAllInfo", "timesheet"])]
       : []),
-    ...((isEditView && (isSuperAdmin || (isPeopleAdmin && isESignSender))) ||
-    (isAccountView && user?.roles?.includes(EmployeeTypes.ESIGN_EMPLOYEE))
+    ...(isAccountView ||
+    (isEditView && (isSuperAdmin || isPeopleAdmin || isOwnProfile))
       ? [translateText(["editAllInfo", "documents"])]
       : [])
   ];
