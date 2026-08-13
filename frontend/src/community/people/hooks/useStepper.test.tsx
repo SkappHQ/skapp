@@ -66,6 +66,30 @@ describe("useStepper", () => {
     ]);
   });
 
+  it("should flag the entitlements step as the last step when leave module is enabled", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
+
+    const { result, rerender } = renderHook(() => useStepper());
+
+    expect(result.current.isLastStep).toBe(false);
+
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(4));
+    rerender();
+
+    expect(result.current.isLastStep).toBe(true);
+  });
+
+  it("should flag the system permissions step as the last step when leave module is disabled", () => {
+    (useSessionData as jest.Mock).mockReturnValue({
+      isLeaveModuleEnabled: false
+    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
+
+    const { result } = renderHook(() => useStepper());
+
+    expect(result.current.isLastStep).toBe(true);
+  });
+
   it("should handle next step correctly", () => {
     const { result } = renderHook(() => useStepper());
 
@@ -104,6 +128,22 @@ describe("useStepper", () => {
     expect(mockSetActiveStep).toHaveBeenCalledWith(4);
     expect(mockSetCurrentStep).not.toHaveBeenCalled();
     expect(mockSetNextStep).not.toHaveBeenCalled();
+  });
+
+  it("should not go beyond the system permissions step when leave module is disabled", () => {
+    (useSessionData as jest.Mock).mockReturnValue({
+      isLeaveModuleEnabled: false
+    });
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
+
+    const { result } = renderHook(() => useStepper());
+
+    act(() => {
+      result.current.handleNext();
+    });
+
+    expect(mockSetActiveStep).toHaveBeenCalledWith(3);
+    expect(mockSetActiveStep).not.toHaveBeenCalledWith(4);
   });
 
   it("should handle previous step correctly", () => {

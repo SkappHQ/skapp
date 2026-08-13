@@ -41,6 +41,8 @@ const useStepper = () => {
     return steps;
   }, [isLeaveModuleEnabled, translateText]);
 
+  const isLastStep = activeStep === steps.length - 1;
+
   const goToStep = (step: number) => {
     setActiveStep(step);
 
@@ -62,7 +64,7 @@ const useStepper = () => {
     goToStep(prevStep);
   };
 
-  return { steps, activeStep, handleNext, handleBack };
+  return { steps, activeStep, isLastStep, handleNext, handleBack };
 };
 
 export default useStepper;

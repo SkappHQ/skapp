@@ -41,7 +41,7 @@ const AddSectionButtonWrapper = ({
     "commonText"
   );
 
-  const { handleBack, activeStep } = useStepper();
+  const { handleBack, activeStep, isLastStep } = useStepper();
 
   const { setToastMessage } = useToast();
 
@@ -150,7 +150,7 @@ const AddSectionButtonWrapper = ({
         </ButtonV2>
       )}
 
-      {activeStep === 4 ? (
+      {isLastStep ? (
         <ButtonV2
           variant={"primary"}
           onClick={handleSave}
