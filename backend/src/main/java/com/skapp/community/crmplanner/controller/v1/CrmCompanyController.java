@@ -80,6 +80,14 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get company by ID", description = "Returns the base details of a single company.")
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompanyById(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.getCompanyById(id);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Delete a company by ID", description = "Soft deletes company by ID if not already deleted")
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
