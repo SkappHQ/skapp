@@ -6,6 +6,8 @@ export type AttendanceConfigurationType = {
   isGeoFencingEnabled?: boolean;
   isClockInClockOutOnly: boolean;
   isFingerprintAttendanceEnabled: boolean;
+  /** When true, only Attendance Managers and above may add or edit time entries. */
+  isManualTimeEntryEnabled?: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {

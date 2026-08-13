@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
@@ -559,6 +560,7 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("editClockInClockOut: execution started");
 
+		validateManualEntryRestriction(currentUser);
 		validateRequestParameters(timeRequestDto);
 
 		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
@@ -602,6 +604,8 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("addManualEntryRequest: execution started");
+
+		validateManualEntryRestriction(currentUser);
 
 		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
@@ -2179,6 +2183,35 @@ public class TimeServiceImpl implements TimeService {
 
 	protected boolean isGeoFencingEnabled() {
 		return false;
+	}
+
+	/**
+	 * Restricting manual time entries and edits is an enterprise only setting, so the
+	 * community edition never enforces it.
+	 */
+	protected boolean isManualEntryRestrictionEnabled() {
+		return false;
+	}
+
+	/**
+	 * Blocks the current user from creating or editing time entries while the
+	 * organization level manual entry restriction is enabled. Attendance Managers,
+	 * Attendance Admins and Super Admins keep their access.
+	 * @param currentUser the authenticated user making the request.
+	 */
+	private void validateManualEntryRestriction(User currentUser) {
+		if (!isManualEntryRestrictionEnabled()) {
+			return;
+		}
+
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+
+		if (!isAuthorized) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
+		}
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

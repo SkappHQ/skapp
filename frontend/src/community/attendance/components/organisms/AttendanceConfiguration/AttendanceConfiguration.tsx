@@ -17,6 +17,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
+import ManualEntryRestrictionSettings from "~enterprise/configurations/components/organisms/ManualEntryRestrictionSettings/ManualEntryRestrictionSettings";
 
 import styles from "./styles";
 
@@ -56,10 +57,20 @@ const AttendanceConfiguration = (): JSX.Element => {
   );
 
   useEffect(() => {
-    if (configData) {
-      setConfig(configData);
-      setInitialConfig(configData);
-    }
+    if (!configData) return;
+
+    setInitialConfig(configData);
+    // The manual entry restriction saves itself and invalidates this query, so a refetch
+    // must only pick up the field that write owns. Replacing the whole object would
+    // silently discard unsaved edits made to the other settings on this page.
+    setConfig((prevConfig) =>
+      prevConfig
+        ? {
+            ...prevConfig,
+            isManualTimeEntryEnabled: configData.isManualTimeEntryEnabled
+          }
+        : configData
+    );
   }, [configData]);
 
   const handleSwitchChange = (
@@ -139,6 +150,11 @@ const AttendanceConfiguration = (): JSX.Element => {
             </>
           )}
         </Box>
+
+        <ManualEntryRestrictionSettings
+          config={config}
+          initialConfig={initialConfig}
+        />
 
         <Typography variant="h2" sx={classes.sectionTitle}>
           {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}

@@ -23,4 +23,6 @@ public class AttendanceConfigRequestDto {
 
 	private Boolean isFingerprintAttendanceEnabled;
 
+	private Boolean isManualTimeEntryEnabled;
+
 }
