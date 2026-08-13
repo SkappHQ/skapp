@@ -135,8 +135,6 @@ describe("useStepper", () => {
     expect(mockSetActiveStep).not.toHaveBeenCalledWith(5);
   });
 
-  // Entitlements has no EditPeopleFormTypes member, so stepSections has no
-  // entry for index 4 and the section stays on system permissions.
   it("should not change the section when moving to the entitlements step", () => {
     (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
 

@@ -32,10 +32,6 @@ const useFormChangeDetector = (
   );
 
   useEffect(() => {
-    // The add flow saves nothing until the last step, so initialEmployee stays
-    // at the empty default and the whole in progress employee decides whether
-    // there is anything to lose, not just the section on screen. It also has
-    // no payload to build, since nothing is patched while stepping through.
     if (isAddFlow) {
       setState({
         hasChanged: !isValueEqual(employee, initialEmployee),
