@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -9,6 +10,11 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -94,6 +100,61 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(deals, pageable, total);
+	}
+
+	@Override
+	public Page<CrmDealResponseDtoV2> findDealsV2(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDealResponseDtoV2> query = cb.createQuery(CrmDealResponseDtoV2.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.LEFT);
+		Join<CrmDeal, Employee> owner = deal.join(CrmDeal_.owner, JoinType.LEFT);
+		Join<CrmDeal, CrmCompany> company = deal.join(CrmDeal_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+		Join<CrmDeal, CrmContact> contact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
+		contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
+		Join<CrmContact, Employee> contactOwner = contact.join(CrmContact_.owner, JoinType.LEFT);
+
+		query.select(cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
+				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt),
+				cb.construct(CrmDealStageResponseDto.class, stage.get(CrmDealStage_.id), stage.get(CrmDealStage_.name),
+						stage.get(CrmDealStage_.color), stage.get(CrmDealStage_.orderIndex),
+						stage.get(CrmDealStage_.description), stage.get(CrmDealStage_.stageType)),
+				cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
+						owner.get(Employee_.lastName), owner.get(Employee_.authPic)),
+				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
+						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
+				cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
+						contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
+						contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
+						cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
+								contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
+								contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
+								contactCompany.get(CrmCompany_.contactNumber)),
+						cb.construct(CrmOwnerResponseDto.class, contactOwner.get(Employee_.employeeId),
+								contactOwner.get(Employee_.firstName), contactOwner.get(Employee_.lastName),
+								contactOwner.get(Employee_.authPic)))));
+
+		query.where(buildPredicates(cb, deal, filterDto, ownerId).toArray(new Predicate[0]));
+		query.orderBy(cb.asc(stage.get(CrmDealStage_.orderIndex)), cb.asc(deal.get(CrmDeal_.orderIndex)),
+				cb.asc(deal.get(CrmDeal_.id)));
+
+		List<CrmDealResponseDtoV2> content = entityManager.createQuery(query)
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
+		countQuery.select(cb.count(countRoot))
+			.where(buildPredicates(cb, countRoot, filterDto, ownerId).toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto,

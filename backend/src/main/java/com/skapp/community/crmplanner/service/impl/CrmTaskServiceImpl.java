@@ -152,7 +152,14 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto) {
-		log.info("createTask: execution started");
+		CrmTask savedTask = persistNewTask(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+	}
+
+	@Override
+	@Transactional
+	public CrmTask persistNewTask(CrmTaskCreateRequestDto requestDto) {
+		log.info("persistNewTask: execution started");
 
 		CrmValidations.validateTaskName(requestDto.getName());
 		CrmValidations.validateTaskTypeId(requestDto.getTypeId());
@@ -163,7 +170,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 		User currentUser = userService.getCurrentUser();
 		Employee owner = resolveTaskOwner(requestDto.getOwnerId(), currentUser);
 
-		CrmTaskType taskType = crmTaskTypeDao.getReferenceById(requestDto.getTypeId());
+		CrmTaskType taskType = crmTaskTypeDao.findById(requestDto.getTypeId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_TYPE_NOT_FOUND));
 
 		CrmTask task = new CrmTask();
 		task.setName(requestDto.getName());
@@ -196,8 +204,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		CrmTask savedTask = crmTaskDao.save(task);
 
-		log.info("createTask: execution ended with taskId={}", savedTask.getId());
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(savedTask));
+		log.info("persistNewTask: execution ended with taskId={}", savedTask.getId());
+		return savedTask;
 	}
 
 	protected void validateTaskCreationLimit() {
@@ -207,7 +215,14 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto) {
-		log.info("editTask: execution started");
+		CrmTask updatedTask = applyTaskEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+	}
+
+	@Override
+	@Transactional
+	public CrmTask applyTaskEdit(Long id, CrmTaskEditRequestDto requestDto) {
+		log.info("applyTaskEdit: execution started");
 
 		CrmTask task = crmTaskDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
@@ -284,8 +299,8 @@ public class CrmTaskServiceImpl implements CrmTaskService {
 
 		CrmTask updatedTask = crmTaskDao.save(task);
 
-		log.info("editTask: execution ended successfully");
-		return new ResponseEntityDto(false, crmMapper.crmTaskToCrmTaskResponseDto(updatedTask));
+		log.info("applyTaskEdit: execution ended successfully");
+		return updatedTask;
 	}
 
 	@Override
