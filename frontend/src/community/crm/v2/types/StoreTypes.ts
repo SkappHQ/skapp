@@ -1,12 +1,12 @@
 import {
-  CrmBoardColumn,
-  CrmCompanyEntity,
-  CrmContactEntity,
-  CrmDealEntity,
-  CrmOwnerEntity,
-  CrmStageEntity,
-  CrmTaskEntity,
-  CrmTaskTypeEntity
+  CrmBoardRecord,
+  CrmCompanyRecord,
+  CrmContactRecord,
+  CrmDealRecord,
+  CrmOwnerRecord,
+  CrmStageRecord,
+  CrmTaskRecord,
+  CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmModalTypes,
@@ -14,14 +14,14 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 
 interface ActionTypes {
-  setCompanies: (companies: Record<number, CrmCompanyEntity>) => void;
-  setContacts: (contacts: Record<number, CrmContactEntity>) => void;
-  setDeals: (deals: Record<number, CrmDealEntity>) => void;
-  setBoardColumn: (board: Record<number, CrmBoardColumn>) => void;
-  setTasks: (tasks: Record<number, CrmTaskEntity>) => void;
-  setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
-  setStages: (stages: Record<number, CrmStageEntity>) => void;
-  setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) => void;
+  setCompanies: (companies: CrmCompanyRecord) => void;
+  setContacts: (contacts: CrmContactRecord) => void;
+  setDeals: (deals: CrmDealRecord) => void;
+  setBoardColumn: (board: CrmBoardRecord) => void;
+  setTasks: (tasks: CrmTaskRecord) => void;
+  setOwners: (owners: CrmOwnerRecord) => void;
+  setStages: (stages: CrmStageRecord) => void;
+  setTaskTypes: (taskTypes: CrmTaskTypeRecord) => void;
 
   setCompanyIds: (companyIds: number[]) => void;
   setContactIds: (contactIds: number[]) => void;
@@ -48,14 +48,14 @@ interface ActionTypes {
 }
 
 export interface CrmStore extends ActionTypes {
-  companies: Record<number, CrmCompanyEntity>;
-  contacts: Record<number, CrmContactEntity>;
-  deals: Record<number, CrmDealEntity>;
-  board: Record<number, CrmBoardColumn>;
-  tasks: Record<number, CrmTaskEntity>;
-  owners: Record<number, CrmOwnerEntity>;
-  stages: Record<number, CrmStageEntity>;
-  taskTypes: Record<number, CrmTaskTypeEntity>;
+  companies: CrmCompanyRecord;
+  contacts: CrmContactRecord;
+  deals: CrmDealRecord;
+  board: CrmBoardRecord;
+  tasks: CrmTaskRecord;
+  owners: CrmOwnerRecord;
+  stages: CrmStageRecord;
+  taskTypes: CrmTaskTypeRecord;
 
   companyIds: number[];
   contactIds: number[];

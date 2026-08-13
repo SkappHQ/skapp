@@ -6,11 +6,11 @@ import {
 import { CrmUiSliceTypes } from "~community/crm/v2/types/SliceTypes";
 
 const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
-  companyIds: [] as number[],
-  contactIds: [] as number[],
-  dealIds: [] as number[],
-  taskIds: [] as number[],
-  stageIds: [] as number[],
+  companyIds: [],
+  contactIds: [],
+  dealIds: [],
+  taskIds: [],
+  stageIds: [],
 
   isCompanyModalOpen: false,
   companyModalType: CrmModalTypes.ADD_COMPANY_MODAL,
@@ -19,15 +19,15 @@ const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
 
-  selectedCompanyId: null as number | null,
-  selectedContactId: null as number | null,
-  selectedDealId: null as number | null,
-  selectedTaskId: null as number | null,
+  selectedCompanyId: null,
+  selectedContactId: null,
+  selectedDealId: null,
+  selectedTaskId: null,
 
   isCrmSidePanelOpen: false,
-  crmSidePanelType: null as CrmSidePanelTypes | null,
+  crmSidePanelType: null,
 
-  preselectedStageId: null as number | null,
+  preselectedStageId: null,
 
   setCompanyIds: (companyIds: number[]) => set({ companyIds }),
   setContactIds: (contactIds: number[]) => set({ contactIds }),
