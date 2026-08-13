@@ -80,7 +80,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -92,10 +91,6 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
-
-	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> REVIEWER_TRANSITIONS = buildReviewerTransitions();
-
-	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> OWNER_TRANSITIONS = buildOwnerTransitions();
 
 	private final UserService userService;
 
@@ -313,7 +308,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		LeaveRequestStatus targetStatus = updateDto.getStatus();
 
 		if (isOwnRequest(leaveRequest, currentEmployee)) {
-			validateTransition(OWNER_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
+			validateTransition(PolicyLeaveConstant.OWNER_STATUS_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
 					LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_EMPLOYEE);
 			leaveRequest.setStatus(targetStatus);
 
@@ -326,12 +321,10 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 
 		authorizeReviewer(leaveRequest, currentEmployee);
-		validateTransition(REVIEWER_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
+		validateTransition(PolicyLeaveConstant.REVIEWER_STATUS_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
 				LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_MANAGER);
 		validateReviewerComment(updateDto.getReviewerComment());
 
-		// An omitted comment leaves the one captured at approval time in place, matching
-		// the legacy updateLeaveRequestByManager.
 		if (StringUtils.isNotBlank(updateDto.getReviewerComment())) {
 			leaveRequest.setReviewerComment(updateDto.getReviewerComment().trim());
 		}
@@ -347,11 +340,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(reviewedLeaveRequest));
 	}
 
-	/**
-	 * Re-notifies the requester's supervisors about a request still awaiting review. Only
-	 * the employee who raised it may nudge, a decided request cannot be nudged, and the
-	 * throttle reads back the latest LEAVE_REQUEST_NUDGE notification for the request.
-	 */
 	@Override
 	@Transactional
 	public ResponseEntityDto nudgePolicyLeaveRequestManagers(@NonNull Long id) {
@@ -497,19 +485,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				&& reviewerComment.trim().length() > PolicyLeaveConstant.MAX_REVIEWER_COMMENT_LENGTH) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH);
 		}
-	}
-
-	private static Map<LeaveRequestStatus, Set<LeaveRequestStatus>> buildReviewerTransitions() {
-		Map<LeaveRequestStatus, Set<LeaveRequestStatus>> transitions = new EnumMap<>(LeaveRequestStatus.class);
-		transitions.put(LeaveRequestStatus.PENDING, Set.of(LeaveRequestStatus.APPROVED, LeaveRequestStatus.DENIED));
-		transitions.put(LeaveRequestStatus.APPROVED, Set.of(LeaveRequestStatus.REVOKED));
-		return Map.copyOf(transitions);
-	}
-
-	private static Map<LeaveRequestStatus, Set<LeaveRequestStatus>> buildOwnerTransitions() {
-		Map<LeaveRequestStatus, Set<LeaveRequestStatus>> transitions = new EnumMap<>(LeaveRequestStatus.class);
-		transitions.put(LeaveRequestStatus.PENDING, Set.of(LeaveRequestStatus.CANCELLED));
-		return Map.copyOf(transitions);
 	}
 
 	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment, int year,

@@ -37,7 +37,6 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +91,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
 		if (totalRows == 0) {
-			return new PageImpl<>(Collections.emptyList(), pageable, 0);
+			return new PageImpl<>(List.of(), pageable, 0);
 		}
 
 		CriteriaQuery<PolicyLeaveRequest> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveRequest.class);

@@ -88,7 +88,7 @@ public class PolicyLeaveController {
 	@Operation(summary = "Update the status of a policy leave request",
 			description = "The employee who raised it may cancel it while it is pending; "
 					+ "anyone supervising them may approve, decline or revoke it")
-	@PatchMapping(value = "/{id}")
+	@PatchMapping("/{id}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequest(@PathVariable Long id,
 			@RequestBody PolicyLeaveRequestUpdateDto policyLeaveRequestUpdateDto) {
