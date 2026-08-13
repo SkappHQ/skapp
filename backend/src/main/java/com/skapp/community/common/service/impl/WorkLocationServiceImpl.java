@@ -6,7 +6,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.payload.response.WorkLocationDetailResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseDto;
 import com.skapp.community.common.payload.response.WorkLocationNameAvailabilityResponseDto;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Holiday;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -241,18 +239,11 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	}
 
 	private void deleteFutureHolidaysSpecificToWorkLocation(Long workLocationId) {
-		List<Holiday> locationHolidays = holidayDao.findAllByIsActiveTrueAndWorkLocationsWorkLocationId(workLocationId);
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
-
-		List<Holiday> holidaysToDelete = locationHolidays.stream()
-			.filter(holiday -> holiday.getDate() != null && holiday.getDate().isAfter(currentDate))
-			.filter(holiday -> holiday.getWorkLocations()
-				.stream()
-				.allMatch(location -> location.getWorkLocationId().equals(workLocationId)))
-			.toList();
+		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId);
 
 		if (!holidaysToDelete.isEmpty()) {
-			holidayDao.deleteAll(holidaysToDelete);
+			holidaysToDelete.forEach(holiday -> holiday.setActive(false));
+			holidayDao.saveAll(holidaysToDelete);
 		}
 	}
 

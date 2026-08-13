@@ -91,7 +91,8 @@ public class WorkLocationController {
 	}
 
 	@Operation(summary = "Delete a work location",
-			description = "Deletes a work location along with its employee assignments and geo-fence.")
+			description = "Deletes a work location along with its employee assignments and geo-fence. "
+					+ "Future holidays scoped exclusively to this work location are also permanently removed.")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_ATTENDANCE_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<ResponseEntityDto> deleteWorkLocation(@PathVariable Long id) {
