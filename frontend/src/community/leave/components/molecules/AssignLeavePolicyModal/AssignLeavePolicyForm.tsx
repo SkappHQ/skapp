@@ -188,8 +188,6 @@ const AssignLeavePolicyForm: FC<Props> = ({
         )}
       </div>
 
-      {/* A flexible policy tracks no balance, so the accrual schedule is
-          replaced by a plain explanation — never by an input. */}
       {isFlexiblePolicy && (
         <InfoTipBanner
           status="info"

@@ -15,6 +15,7 @@ import AssignLeavePolicyForm, {
   PolicyOption
 } from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyForm";
 import SetJoinDateModal from "~community/leave/components/molecules/SetJoinDateModal/SetJoinDateModal";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   EffectiveDateType,
   LeavePolicyStatus,
@@ -31,12 +32,6 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// A negative size tells the backend to return every matching policy in a
-// single page, so the assign dropdown lists all active policies (never capped).
-const ASSIGNABLE_POLICIES_PAGE = -1;
-
-const EXISTING_ASSIGNMENTS_PAGE_SIZE = 100;
 
 const AssignLeavePolicyModal: FC<Props> = ({
   employeeId,
@@ -68,7 +63,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
   const { data: policyPages } = useGetLeavePoliciesInfinite({
     searchKeyword: "",
     leaveTypeId: "",
-    size: ASSIGNABLE_POLICIES_PAGE,
+    size: UNPAGINATED_SIZE,
     enabled: isOpen
   });
 
@@ -120,15 +115,10 @@ const AssignLeavePolicyModal: FC<Props> = ({
     [effectiveDateType, specificDate, joinedDate]
   );
 
-  // Save is only reachable once the effective date resolves — a specific date is
-  // validated below, and a missing join date swaps Save for "Set a join date".
   const effectiveDateLabel = previewStartISO
     ? DateTime.fromISO(previewStartISO).toFormat(MEDIUM_DATE_FORMAT)
     : "";
 
-  // Shown beside the Join Date radio so the date it resolves to is visible
-  // before choosing it. Empty until the employee loads, and for employees who
-  // have no join date yet — those are sent to SetJoinDateModal instead.
   const joinDateLabel = joinedDate
     ? DateTime.fromISO(joinedDate).toFormat(MEDIUM_DATE_FORMAT)
     : "";
@@ -146,7 +136,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
   const { data: existingAssignmentsPage } = useGetEmployeeLeavePolicies(
     employeeId,
     0,
-    EXISTING_ASSIGNMENTS_PAGE_SIZE,
+    UNPAGINATED_SIZE,
     isOpen
   );
 

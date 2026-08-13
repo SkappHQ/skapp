@@ -196,7 +196,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged()
+				: PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
 					pageable);
