@@ -87,53 +87,18 @@ describe("useFormChangeDetector", () => {
     expect(result.current.apiPayload).toEqual({});
   });
 
-  describe("add flow", () => {
-    const emptyEmployee = {
-      personal: { general: { firstName: "", lastName: "" } },
-      employment: {},
-      systemPermissions: {},
-      emergency: {}
-    };
-
-    const employeeWithPersonalDetails = {
-      ...emptyEmployee,
-      personal: { general: { firstName: "Ada", lastName: "Lovelace" } }
-    };
-
-    it("should report no change before anything is entered", () => {
-      (usePeopleStore as jest.Mock).mockReturnValue({
-        employee: emptyEmployee,
-        initialEmployee: emptyEmployee,
-        currentStep: "Personal"
-      });
-
-      const { result } = renderHook(() => useFormChangeDetector(true));
-      expect(result.current.hasChanged).toBe(false);
+  it("should detect personal details entered during the add flow", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue({
+      employee: {
+        personal: { general: { firstName: "Ada", lastName: "Lovelace" } }
+      },
+      initialEmployee: {
+        personal: { general: { firstName: "", lastName: "" } }
+      },
+      currentStep: "Personal"
     });
 
-    it.each(["Emergency", "Employment", "System Permissions"])(
-      "should still report a change on the %s step left empty",
-      (currentStep) => {
-        (usePeopleStore as jest.Mock).mockReturnValue({
-          employee: employeeWithPersonalDetails,
-          initialEmployee: emptyEmployee,
-          currentStep
-        });
-
-        const { result } = renderHook(() => useFormChangeDetector(true));
-        expect(result.current.hasChanged).toBe(true);
-      }
-    );
-
-    it("should not change the edit flow behaviour for the same state", () => {
-      (usePeopleStore as jest.Mock).mockReturnValue({
-        employee: employeeWithPersonalDetails,
-        initialEmployee: emptyEmployee,
-        currentStep: "Emergency"
-      });
-
-      const { result } = renderHook(() => useFormChangeDetector());
-      expect(result.current.hasChanged).toBe(false);
-    });
+    const { result } = renderHook(() => useFormChangeDetector());
+    expect(result.current.hasChanged).toBe(true);
   });
 });

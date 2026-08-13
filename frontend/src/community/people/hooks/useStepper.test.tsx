@@ -4,7 +4,6 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import { usePeopleStore } from "../store/store";
-import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
 import useStepper from "./useStepper";
 
 jest.mock("../store/store", () => ({
@@ -17,19 +16,20 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: jest.fn()
 }));
 
-type StepTransition = [number, number, EditPeopleFormTypes];
+type StepTransition = [number, number];
 
 const forwardSteps: StepTransition[] = [
-  [0, 1, EditPeopleFormTypes.emergency],
-  [1, 2, EditPeopleFormTypes.employment],
-  [2, 3, EditPeopleFormTypes.permission]
+  [0, 1],
+  [1, 2],
+  [2, 3],
+  [3, 4]
 ];
 
 const backwardSteps: StepTransition[] = [
-  [4, 3, EditPeopleFormTypes.permission],
-  [3, 2, EditPeopleFormTypes.employment],
-  [2, 1, EditPeopleFormTypes.emergency],
-  [1, 0, EditPeopleFormTypes.personal]
+  [4, 3],
+  [3, 2],
+  [2, 1],
+  [1, 0]
 ];
 
 describe("useStepper", () => {
@@ -107,7 +107,7 @@ describe("useStepper", () => {
 
   it.each(forwardSteps)(
     "should handle the next step correctly from step %i",
-    (activeStep, expectedStep, expectedSection) => {
+    (activeStep, expectedStep) => {
       (usePeopleStore as jest.Mock).mockReturnValue(mockStore(activeStep));
 
       const { result } = renderHook(() => useStepper());
@@ -117,10 +117,37 @@ describe("useStepper", () => {
       });
 
       expect(mockSetActiveStep).toHaveBeenCalledWith(expectedStep);
-      expect(mockSetCurrentStep).toHaveBeenCalledWith(expectedSection);
-      expect(mockSetNextStep).toHaveBeenCalledWith(expectedSection);
     }
   );
+
+  it.each(backwardSteps)(
+    "should handle the previous step correctly from step %i",
+    (activeStep, expectedStep) => {
+      (usePeopleStore as jest.Mock).mockReturnValue(mockStore(activeStep));
+
+      const { result } = renderHook(() => useStepper());
+
+      act(() => {
+        result.current.handleBack();
+      });
+
+      expect(mockSetActiveStep).toHaveBeenCalledWith(expectedStep);
+    }
+  );
+
+  it("should never write the edit flow section state", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(1));
+
+    const { result } = renderHook(() => useStepper());
+
+    act(() => {
+      result.current.handleNext();
+      result.current.handleBack();
+    });
+
+    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockSetNextStep).not.toHaveBeenCalled();
+  });
 
   it("should not go beyond the last step", () => {
     (usePeopleStore as jest.Mock).mockReturnValue(mockStore(4));
@@ -132,22 +159,6 @@ describe("useStepper", () => {
     });
 
     expect(mockSetActiveStep).not.toHaveBeenCalled();
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
-    expect(mockSetNextStep).not.toHaveBeenCalled();
-  });
-
-  it("should not change the section when moving to the entitlements step", () => {
-    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
-
-    const { result } = renderHook(() => useStepper());
-
-    act(() => {
-      result.current.handleNext();
-    });
-
-    expect(mockSetActiveStep).toHaveBeenCalledWith(4);
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
-    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
 
   it("should not go beyond the system permissions step when leave module is disabled", () => {
@@ -163,26 +174,7 @@ describe("useStepper", () => {
     });
 
     expect(mockSetActiveStep).not.toHaveBeenCalled();
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
-    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
-
-  it.each(backwardSteps)(
-    "should handle the previous step correctly from step %i",
-    (activeStep, expectedStep, expectedSection) => {
-      (usePeopleStore as jest.Mock).mockReturnValue(mockStore(activeStep));
-
-      const { result } = renderHook(() => useStepper());
-
-      act(() => {
-        result.current.handleBack();
-      });
-
-      expect(mockSetActiveStep).toHaveBeenCalledWith(expectedStep);
-      expect(mockSetCurrentStep).toHaveBeenCalledWith(expectedSection);
-      expect(mockSetNextStep).toHaveBeenCalledWith(expectedSection);
-    }
-  );
 
   it("should not go below the first step", () => {
     const { result } = renderHook(() => useStepper());
@@ -192,7 +184,5 @@ describe("useStepper", () => {
     });
 
     expect(mockSetActiveStep).not.toHaveBeenCalled();
-    expect(mockSetCurrentStep).not.toHaveBeenCalled();
-    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
 });

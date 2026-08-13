@@ -4,18 +4,9 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 import { usePeopleStore } from "../store/store";
-import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
-
-const stepSections: Partial<Record<number, EditPeopleFormTypes>> = {
-  0: EditPeopleFormTypes.personal,
-  1: EditPeopleFormTypes.emergency,
-  2: EditPeopleFormTypes.employment,
-  3: EditPeopleFormTypes.permission
-};
 
 const useStepper = () => {
-  const { activeStep, setActiveStep, setCurrentStep, setNextStep } =
-    usePeopleStore((state) => state);
+  const { activeStep, setActiveStep } = usePeopleStore((state) => state);
 
   const translateText = useTranslator(
     "peopleModule",
@@ -47,12 +38,6 @@ const useStepper = () => {
     if (stepIndex === activeStep) return;
 
     setActiveStep(stepIndex);
-
-    const section = stepSections[stepIndex];
-    if (section) {
-      setCurrentStep(section);
-      setNextStep(section);
-    }
   };
 
   const handleNext = () => {

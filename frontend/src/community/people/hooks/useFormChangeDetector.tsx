@@ -7,15 +7,12 @@ import {
   L1EmployeeType,
   L2EmploymentFormDetailsType
 } from "../types/PeopleTypes";
-import { isValueEqual } from "../utils/objectComparisonUtils";
 import { getEmergencyContactDetailsChanges } from "../utils/peopleEditFlowUtils/emergencyDetailsChangesUtils";
 import { getEmploymentDetailsChanges } from "../utils/peopleEditFlowUtils/employmentDetailsChangesUtils";
 import { getPersonalDetailsChanges } from "../utils/peopleEditFlowUtils/personalDetailsChangesUtils";
 import { getSystemPermissionsDetailsChanges } from "../utils/peopleEditFlowUtils/systemPermissionsChangesUtils";
 
-const useFormChangeDetector = (
-  isAddFlow: boolean = false
-): {
+const useFormChangeDetector = (): {
   hasChanged: boolean;
   apiPayload: L1EmployeeType;
 } => {
@@ -32,14 +29,6 @@ const useFormChangeDetector = (
   );
 
   useEffect(() => {
-    if (isAddFlow) {
-      setState({
-        hasChanged: !isValueEqual(employee, initialEmployee),
-        apiPayload: {}
-      });
-      return;
-    }
-
     let newApiPayload: L1EmployeeType = {};
 
     switch (currentStep) {
@@ -120,7 +109,7 @@ const useFormChangeDetector = (
       hasChanged: hasRealChanges,
       apiPayload: hasRealChanges ? newApiPayload : {}
     });
-  }, [currentStep, employee, initialEmployee, isAddFlow]);
+  }, [currentStep, employee, initialEmployee]);
 
   return state;
 };
