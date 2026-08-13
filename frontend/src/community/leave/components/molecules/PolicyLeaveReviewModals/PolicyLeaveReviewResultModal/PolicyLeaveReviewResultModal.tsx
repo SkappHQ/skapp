@@ -24,6 +24,19 @@ import { getPolicyLeaveDurationLabel } from "~community/leave/utils/policyLeave/
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
+type PolicyLeaveResultStatus =
+  | PolicyLeaveRequestStatus.APPROVED
+  | PolicyLeaveRequestStatus.DENIED
+  | PolicyLeaveRequestStatus.CANCELLED
+  | PolicyLeaveRequestStatus.REVOKED;
+
+const RESULT_STATUS_ICON_NAMES: Record<PolicyLeaveResultStatus, IconName> = {
+  [PolicyLeaveRequestStatus.APPROVED]: IconName.APPROVED_STATUS_ICON,
+  [PolicyLeaveRequestStatus.DENIED]: IconName.DENIED_STATUS_ICON,
+  [PolicyLeaveRequestStatus.CANCELLED]: IconName.CANCELLED_STATUS_ICON,
+  [PolicyLeaveRequestStatus.REVOKED]: IconName.REVOKED_STATUS_ICON
+};
+
 interface Props {
   request: PolicyLeaveRequestDetailType;
   closeModal: () => void;
@@ -99,7 +112,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     popupType === PolicyLeaveRequestStatus.DENIED ||
     popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS;
 
-  const resolvedStatus = ((): PolicyLeaveRequestStatus => {
+  const resolvedStatus = ((): PolicyLeaveResultStatus => {
     if (isApproved) return PolicyLeaveRequestStatus.APPROVED;
     if (popupType === PolicyLeaveRequestStatus.CANCELLED)
       return PolicyLeaveRequestStatus.CANCELLED;
@@ -159,17 +172,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           ])}
           styles={{ marginBottom: "1.25rem" }}
           iconType={handleLeaveStatus(resolvedStatus)}
-          icon={
-            isApproved ? (
-              <Icon name={IconName.APPROVED_STATUS_ICON} />
-            ) : isDenied ? (
-              <Icon name={IconName.DENIED_STATUS_ICON} />
-            ) : popupType === PolicyLeaveRequestStatus.REVOKED ? (
-              <Icon name={IconName.REVOKED_STATUS_ICON} />
-            ) : (
-              <Icon name={IconName.CANCELLED_STATUS_ICON} />
-            )
-          }
+          icon={<Icon name={RESULT_STATUS_ICON_NAMES[resolvedStatus]} />}
         />
       </div>
       <div className="flex flex-row gap-4 justify-end">
