@@ -753,6 +753,12 @@ class CrmCompanyControllerIntegrationTest {
 	@DisplayName("Get company metrics by ID that does not exist - Returns Bad Request")
 	void getCompanyMetricsById_NotFound_ReturnsBadRequest() throws Exception {
 		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
 	// --- getCompanyById ---
 
 	@Test
