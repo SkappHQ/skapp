@@ -34,7 +34,13 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleTokenRefresh = async () => {
-      await getNewAccessToken();
+      const refreshedAccessToken = await getNewAccessToken();
+
+      if (!refreshedAccessToken) {
+        await signOut();
+        return;
+      }
+
       await checkAuth();
       queryClient.invalidateQueries();
     };

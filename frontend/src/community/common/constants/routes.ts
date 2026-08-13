@@ -1,3 +1,9 @@
+import {
+  EmployeeTypes,
+  ManagerTypes,
+  RepresentativeTypes
+} from "~community/common/types/AuthTypes";
+
 const ROUTES = {
   AUTH: {
     SIGNUP: "/signup",
@@ -198,3 +204,33 @@ export const nonSuperAdminRestrictedRoutes = [
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
+
+export const moduleGuardedRoutes: {
+  routes: string[];
+  requiredRole: EmployeeTypes | ManagerTypes | RepresentativeTypes;
+}[] = [
+  {
+    routes: [ROUTES.CRM.BASE],
+    requiredRole: RepresentativeTypes.CRM_SALES_REPRESENTATIVE
+  },
+  {
+    routes: [ROUTES.INVOICE.BASE],
+    requiredRole: ManagerTypes.INVOICE_MANAGER
+  },
+  {
+    routes: [
+      ROUTES.PROJECTS.BASE,
+      ROUTES.PROJECTS.GUESTS,
+      ROUTES.PROJECTS.GUEST_REQUESTS
+    ],
+    requiredRole: EmployeeTypes.PM_EMPLOYEE
+  },
+  {
+    routes: [ROUTES.LEAVE.BASE],
+    requiredRole: EmployeeTypes.LEAVE_EMPLOYEE
+  },
+  {
+    routes: [ROUTES.TIMESHEET.BASE],
+    requiredRole: EmployeeTypes.ATTENDANCE_EMPLOYEE
+  }
+];
