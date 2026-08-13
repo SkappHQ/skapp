@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PolicyLeaveReviewRequestDto {
+public class PolicyLeaveRequestUpdateDto {
 
 	@NotNull
 	private LeaveRequestStatus status;

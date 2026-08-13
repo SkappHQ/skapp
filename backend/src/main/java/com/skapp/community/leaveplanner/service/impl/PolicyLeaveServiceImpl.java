@@ -1,12 +1,21 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.NotificationDao;
+import com.skapp.community.common.service.EmailService;
+import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.type.EmailBodyTemplates;
+import com.skapp.community.common.type.NotificationCategory;
+import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
@@ -17,12 +26,15 @@ import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequestAttachment;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
+import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeePolicyBalanceResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeaveNotificationNudgeResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.PolicyLeaveRequestResponseDto;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
@@ -37,6 +49,7 @@ import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveRequestSort;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
+import com.skapp.community.leaveplanner.type.ManagerType;
 import com.skapp.community.leaveplanner.type.PolicyBalanceDisabledReason;
 import com.skapp.community.leaveplanner.type.PolicyLeaveValidationFailure;
 import com.skapp.community.leaveplanner.type.PolicyType;
@@ -49,6 +62,7 @@ import com.skapp.community.peopleplanner.payload.response.EmployeeManagerRespons
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.service.PeopleService;
+import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
@@ -63,16 +77,27 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
+
+	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> REVIEWER_TRANSITIONS
+			= buildReviewerTransitions();
+
+	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> OWNER_TRANSITIONS
+			= buildOwnerTransitions();
 
 	private final UserService userService;
 
@@ -97,6 +122,14 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final LeaveEmailService leaveEmailService;
 
 	private final LeaveNotificationService leaveNotificationService;
+
+	private final EmailService emailService;
+
+	private final NotificationService notificationService;
+
+	private final NotificationDao notificationDao;
+
+	private final MessageUtil messageUtil;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -215,31 +248,302 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	public ResponseEntityDto getCurrentUserPolicyLeaveRequests(@NonNull PolicyLeaveRequestFilterDto filterDto) {
 		log.info("getCurrentUserPolicyLeaveRequests: execution started");
 		requireLeavePoliciesEnabled();
+		validatePagination(filterDto.getPage(), filterDto.getSize());
 
 		User currentUser = userService.getCurrentUser();
 		int resolvedYear = resolveYear(filterDto.getYear());
 
+		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
+				currentUser.getEmployee().getEmployeeId(), DateTimeUtils.getStartOfYear(resolvedYear),
+				DateTimeUtils.getEndOfYear(resolvedYear), filterDto, resolvePageable(filterDto));
+
+		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
+		return new ResponseEntityDto(false, toPageDto(leaveRequests));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getSupervisedPolicyLeaveRequests(@NonNull PolicyLeaveRequestFilterDto filterDto) {
+		log.info("getSupervisedPolicyLeaveRequests: execution started");
+		requireLeavePoliciesEnabled();
+		validatePagination(filterDto.getPage(), filterDto.getSize());
+		validateSearchKeyword(filterDto.getSearchKeyword());
+
+		User currentUser = userService.getCurrentUser();
+		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findSupervisedRequests(
+				currentUser.getEmployee().getEmployeeId(), filterDto, resolvePageable(filterDto));
+
+		log.info("getSupervisedPolicyLeaveRequests: execution ended");
+		return new ResponseEntityDto(false, toPageDto(leaveRequests));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPendingSupervisedPolicyLeaveRequests(String searchKeyword) {
+		log.info("getPendingSupervisedPolicyLeaveRequests: execution started");
+		requireLeavePoliciesEnabled();
+		validateSearchKeyword(searchKeyword);
+
+		User currentUser = userService.getCurrentUser();
+		List<PolicyLeaveRequest> pendingRequests = policyLeaveRequestDao
+			.findPendingSupervisedRequests(currentUser.getEmployee().getEmployeeId(), searchKeyword);
+
+		log.info("getPendingSupervisedPolicyLeaveRequests: execution ended");
+		return new ResponseEntityDto(false,
+				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(pendingRequests));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPolicyLeaveRequestById(@NonNull Long id) {
+		log.info("getPolicyLeaveRequestById: execution started");
+		requireLeavePoliciesEnabled();
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		PolicyLeaveRequest leaveRequest = policyLeaveRequestDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
+
+		if (!isOwnRequest(leaveRequest, currentEmployee)
+				&& !employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(
+						currentEmployee.getEmployeeId(), leaveRequest.getEmployee().getEmployeeId())) {
+			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		log.info("getPolicyLeaveRequestById: execution ended");
+		return new ResponseEntityDto(false,
+				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(leaveRequest));
+	}
+
+	/**
+	 * The owner may only cancel a pending request; anyone supervising the owner may approve,
+	 * decline or revoke it. No balance bookkeeping is needed on a transition: balances are
+	 * derived by summing {@link PolicyLeaveConstant#BALANCE_HOLDING_STATUSES} rows, so
+	 * leaving that set releases the days by itself.
+	 */
+	@Override
+	@Transactional
+	public ResponseEntityDto updatePolicyLeaveRequest(@NonNull Long id,
+			@NonNull PolicyLeaveRequestUpdateDto updateDto) {
+		log.info("updatePolicyLeaveRequest: execution started for request: {}", id);
+		requireLeavePoliciesEnabled();
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+
+		// The lock has to be the first load of the row: if a scoping query reads the entity
+		// first, the persistence context hands back that unlocked instance and the
+		// SELECT ... FOR UPDATE guards nothing.
+		PolicyLeaveRequest leaveRequest = policyLeaveRequestDao.findByIdForUpdate(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
+
+		LeaveRequestStatus targetStatus = updateDto.getStatus();
+
+		if (isOwnRequest(leaveRequest, currentEmployee)) {
+			validateTransition(OWNER_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
+					LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_EMPLOYEE);
+			leaveRequest.setStatus(targetStatus);
+
+			PolicyLeaveRequest cancelledLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
+			notifyCancelledLeaveRequest(cancelledLeaveRequest);
+
+			log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
+			return new ResponseEntityDto(false,
+					leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(cancelledLeaveRequest));
+		}
+
+		authorizeReviewer(leaveRequest, currentEmployee);
+		validateTransition(REVIEWER_TRANSITIONS, leaveRequest.getStatus(), targetStatus,
+				LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_STATUS_TRANSITION_MANAGER);
+		validateReviewerComment(updateDto.getReviewerComment());
+
+		// An omitted comment leaves the one captured at approval time in place, matching
+		// the legacy updateLeaveRequestByManager.
+		if (StringUtils.isNotBlank(updateDto.getReviewerComment())) {
+			leaveRequest.setReviewerComment(updateDto.getReviewerComment().trim());
+		}
+		leaveRequest.setStatus(targetStatus);
+		leaveRequest.setReviewer(currentEmployee);
+		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+
+		PolicyLeaveRequest reviewedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
+		notifyReviewedLeaveRequest(reviewedLeaveRequest);
+
+		log.info("updatePolicyLeaveRequest: execution ended for request: {}", id);
+		return new ResponseEntityDto(false,
+				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(reviewedLeaveRequest));
+	}
+
+	/**
+	 * Re-notifies the requester's supervisors about a request still awaiting review. Only
+	 * the employee who raised it may nudge, a decided request cannot be nudged, and the
+	 * throttle reads back the latest LEAVE_REQUEST_NUDGE notification for the request.
+	 */
+	@Override
+	@Transactional
+	public ResponseEntityDto nudgePolicyLeaveRequestManagers(@NonNull Long id) {
+		log.info("nudgePolicyLeaveRequestManagers: execution started");
+		requireLeavePoliciesEnabled();
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		PolicyLeaveRequest leaveRequest = policyLeaveRequestDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
+
+		if (!isOwnRequest(leaveRequest, currentEmployee)) {
+			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		if (leaveRequest.getStatus() != LeaveRequestStatus.PENDING) {
+			throw new ModuleException(
+					LeaveMessageConstant.LEAVE_ERROR_UNABLE_TO_NUDGE_PRE_APPROVED_DENIED_LEAVE_REQUEST);
+		}
+
+		Notification lastNudge = findLastNudge(id);
+		if (lastNudge != null && !isNudgeAllowed(lastNudge.getCreatedDate())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_NUDGE_TOO_SOON);
+		}
+
+		notifyNudgedLeaveRequest(leaveRequest);
+
+		log.info("nudgePolicyLeaveRequestManagers: execution ended");
+		return new ResponseEntityDto(messageUtil.getMessage(LeaveMessageConstant.LEAVE_SUCCESS_NUDGE_MANAGER), false);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getPolicyLeaveRequestNudgeStatus(@NonNull Long id) {
+		log.info("getPolicyLeaveRequestNudgeStatus: execution started");
+		requireLeavePoliciesEnabled();
+
+		Employee currentEmployee = userService.getCurrentUser().getEmployee();
+		PolicyLeaveRequest leaveRequest = policyLeaveRequestDao.findById(id)
+			.orElseThrow(
+					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
+
+		if (!isOwnRequest(leaveRequest, currentEmployee)) {
+			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		Notification lastNudge = findLastNudge(id);
+
+		LeaveNotificationNudgeResponseDto nudgeStatus = new LeaveNotificationNudgeResponseDto();
+		if (lastNudge == null) {
+			nudgeStatus.setIsNudge(true);
+		}
+		else {
+			nudgeStatus.setIsNudge(isNudgeAllowed(lastNudge.getCreatedDate()));
+			nudgeStatus.setLastNudgedDateTime(lastNudge.getCreatedDate());
+		}
+
+		log.info("getPolicyLeaveRequestNudgeStatus: execution ended");
+		return new ResponseEntityDto(false, nudgeStatus);
+	}
+
+	private Notification findLastNudge(Long id) {
+		return notificationDao.findFirstByResourceIdAndNotificationTypeOrderByCreatedDateDesc(String.valueOf(id),
+				NotificationType.LEAVE_REQUEST_NUDGE);
+	}
+
+	private boolean isNudgeAllowed(LocalDateTime lastNudgedDateTime) {
+		Duration sinceLastNudge = Duration.between(lastNudgedDateTime, DateTimeUtils.getCurrentUtcDateTime());
+		return sinceLastNudge.toHours() >= LeaveModuleConstant.HOURS_PER_DAY;
+	}
+
+	private Pageable resolvePageable(PolicyLeaveRequestFilterDto filterDto) {
 		LeaveRequestSort sortKey = filterDto.getSortKey() == null ? LeaveRequestSort.CREATED_DATE
 				: filterDto.getSortKey();
 		Sort.Direction sortOrder = filterDto.getSortOrder() == null ? Sort.Direction.DESC : filterDto.getSortOrder();
-
 		Sort sort = Sort.by(sortOrder, sortKey.toString());
-		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged(sort)
+
+		return filterDto.getSize() < 0 ? Pageable.unpaged(sort)
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
+	}
 
-		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
-				currentUser.getEmployee().getEmployeeId(), DateTimeUtils.getStartOfYear(resolvedYear),
-				DateTimeUtils.getEndOfYear(resolvedYear), filterDto, pageable);
-
+	private PageDto toPageDto(Page<PolicyLeaveRequest> leaveRequests) {
 		PageDto pageDto = new PageDto();
 		pageDto.setCurrentPage(leaveRequests.getNumber());
 		pageDto.setTotalPages(leaveRequests.getTotalPages());
 		pageDto.setTotalItems(leaveRequests.getTotalElements());
 		pageDto.setItems(
 				leaveMapper.policyLeaveRequestListToPolicyLeaveRequestResponseDtoList(leaveRequests.getContent()));
+		return pageDto;
+	}
 
-		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
-		return new ResponseEntityDto(false, pageDto);
+	private boolean isOwnRequest(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
+		return leaveRequest.getEmployee().getEmployeeId().equals(currentEmployee.getEmployeeId());
+	}
+
+	/**
+	 * A reviewer must be linked to the requester. Unlike the legacy flow, which rejects
+	 * anyone holding <em>any</em> INFORMANT row, only a reviewer whose links are
+	 * <em>all</em> INFORMANT is rejected, so someone who is both PRIMARY and INFORMANT can
+	 * still act.
+	 */
+	private void authorizeReviewer(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
+		List<EmployeeManager> links = employeeManagerDao.findByEmployee(leaveRequest.getEmployee())
+			.stream()
+			.filter(employeeManager -> employeeManager.getManager()
+				.getEmployeeId()
+				.equals(currentEmployee.getEmployeeId()))
+			.toList();
+
+		if (links.isEmpty()) {
+			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
+		}
+
+		boolean hasActionableLink = links.stream()
+			.anyMatch(employeeManager -> employeeManager.getManagerType() != ManagerType.INFORMANT);
+		if (!hasActionableLink) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INFORMANT_CANNOT_REVIEW);
+		}
+	}
+
+	private void validateTransition(Map<LeaveRequestStatus, Set<LeaveRequestStatus>> allowedTransitions,
+			LeaveRequestStatus currentStatus, LeaveRequestStatus targetStatus, LeaveMessageConstant messageConstant) {
+		if (currentStatus == targetStatus) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_ALREADY_IN_STATUS);
+		}
+		if (!allowedTransitions.getOrDefault(currentStatus, Set.of()).contains(targetStatus)) {
+			throw new ModuleException(messageConstant);
+		}
+	}
+
+	private void validatePagination(int page, int size) {
+		if (page < 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE);
+		}
+		// A negative size is the documented unpaged case; zero only reaches
+		// PageRequest.of as an IllegalArgumentException, so it is rejected here.
+		if (size == 0) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE);
+		}
+	}
+
+	private void validateSearchKeyword(String searchKeyword) {
+		if (searchKeyword != null && searchKeyword.length() > PolicyLeaveConstant.MAX_SEARCH_KEYWORD_LENGTH) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_SEARCH_KEYWORD_MAX_LENGTH);
+		}
+	}
+
+	private void validateReviewerComment(String reviewerComment) {
+		if (reviewerComment != null
+				&& reviewerComment.trim().length() > PolicyLeaveConstant.MAX_REVIEWER_COMMENT_LENGTH) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REVIEWER_COMMENT_MAX_LENGTH);
+		}
+	}
+
+	private static Map<LeaveRequestStatus, Set<LeaveRequestStatus>> buildReviewerTransitions() {
+		Map<LeaveRequestStatus, Set<LeaveRequestStatus>> transitions = new EnumMap<>(LeaveRequestStatus.class);
+		transitions.put(LeaveRequestStatus.PENDING, Set.of(LeaveRequestStatus.APPROVED, LeaveRequestStatus.DENIED));
+		transitions.put(LeaveRequestStatus.APPROVED, Set.of(LeaveRequestStatus.REVOKED));
+		return Map.copyOf(transitions);
+	}
+
+	private static Map<LeaveRequestStatus, Set<LeaveRequestStatus>> buildOwnerTransitions() {
+		Map<LeaveRequestStatus, Set<LeaveRequestStatus>> transitions = new EnumMap<>(LeaveRequestStatus.class);
+		transitions.put(LeaveRequestStatus.PENDING, Set.of(LeaveRequestStatus.CANCELLED));
+		return Map.copyOf(transitions);
 	}
 
 	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment, int year,
@@ -598,6 +902,143 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveNotificationService.sendReceivedLeaveRequestManagerNotification(employeeManagers, employee.getFirstName(),
 				employee.getLastName(), leaveRequest.getId(), leaveRequest.getLeaveState().toString(), leaveTypeName,
 				leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
+	}
+
+	/**
+	 * Emails and in app notifications for a reviewed request. The legacy counterparts in
+	 * {@code LeaveEmailServiceImpl} / {@code LeaveNotificationServiceImpl} only accept a
+	 * legacy {@code LeaveRequest}, so the policy flow dispatches through the shared
+	 * {@link EmailService} / {@link NotificationService} with the same templates.
+	 */
+	private void notifyReviewedLeaveRequest(PolicyLeaveRequest leaveRequest) {
+		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
+
+		switch (leaveRequest.getStatus()) {
+			case APPROVED -> notifyReviewOutcome(leaveRequest,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_APPROVED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_APPROVED_MULTI_DAY_LEAVE,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_APPROVED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_MANAGER_APPROVED_MULTI_DAY_LEAVE);
+			case DENIED -> notifyReviewOutcome(leaveRequest,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_DECLINED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_DECLINED_MULTI_DAY_LEAVE,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_DECLINED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_MANAGER_DECLINED_MULTI_DAY_LEAVE);
+			case REVOKED -> notifyReviewOutcome(leaveRequest,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_REVOKED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_REVOKED_MULTI_DAY_LEAVE,
+					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_SINGLE_DAY_LEAVE
+							: EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_MULTI_DAY_LEAVE);
+			default -> log.debug("notifyReviewedLeaveRequest: no notification for status: {}",
+					leaveRequest.getStatus());
+		}
+	}
+
+	private void notifyReviewOutcome(PolicyLeaveRequest leaveRequest, EmailBodyTemplates employeeTemplate,
+			EmailBodyTemplates supervisorTemplate) {
+		Employee employee = leaveRequest.getEmployee();
+		Employee reviewer = leaveRequest.getReviewer();
+
+		LeaveEmailDynamicFields employeeFields = leaveRequestEmailFields(leaveRequest);
+		employeeFields.setEmployeeOrManagerName(fullName(employee));
+		if (reviewer != null) {
+			employeeFields.setManagerName(fullName(reviewer));
+		}
+		emailService.sendEmail(employeeTemplate, employeeFields, employee.getUser().getEmail());
+		notificationService.createNotification(employee, leaveRequest.getId().toString(),
+				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
+
+		List<EmployeeManager> otherSupervisors = employeeManagerDao.findByEmployee(employee)
+			.stream()
+			.filter(employeeManager -> reviewer == null
+					|| !employeeManager.getManager().getEmployeeId().equals(reviewer.getEmployeeId()))
+			.toList();
+
+		notifySupervisors(otherSupervisors, leaveRequest, () -> {
+			LeaveEmailDynamicFields supervisorFields = leaveRequestEmailFields(leaveRequest);
+			supervisorFields.setEmployeeName(fullName(employee));
+			if (reviewer != null) {
+				supervisorFields.setManagerName(fullName(reviewer));
+			}
+			return supervisorFields;
+		}, supervisorTemplate);
+	}
+
+	private void notifyCancelledLeaveRequest(PolicyLeaveRequest leaveRequest) {
+		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
+		Employee employee = leaveRequest.getEmployee();
+
+		LeaveEmailDynamicFields employeeFields = leaveRequestEmailFields(leaveRequest);
+		employeeFields.setEmployeeOrManagerName(fullName(employee));
+		EmailBodyTemplates employeeTemplate = isSingleDay
+				? EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_CANCEL_MULTIPLE_DAY_LEAVE;
+
+		emailService.sendEmail(employeeTemplate, employeeFields, employee.getUser().getEmail());
+		notificationService.createNotification(employee, leaveRequest.getId().toString(),
+				NotificationType.LEAVE_REQUEST, employeeTemplate, employeeFields, NotificationCategory.LEAVE);
+
+		EmailBodyTemplates supervisorTemplate = isSingleDay
+				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_CANCEL_MULTIPLE_DAY_LEAVE;
+
+		notifySupervisors(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+			LeaveEmailDynamicFields supervisorFields = leaveRequestEmailFields(leaveRequest);
+			supervisorFields.setEmployeeName(fullName(employee));
+			supervisorFields.setEmployeesName(fullName(employee));
+			return supervisorFields;
+		}, supervisorTemplate);
+	}
+
+	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
+			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template) {
+		notifySupervisors(supervisors, leaveRequest, fieldsSupplier, template, NotificationType.LEAVE_REQUEST);
+	}
+
+	/**
+	 * The dynamic fields are rebuilt per recipient rather than mutated in place: the name
+	 * is recipient specific, so a shared instance would leak whichever name was set last
+	 * the moment the email or notification dispatch stops being synchronous.
+	 */
+	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
+			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template,
+			NotificationType notificationType) {
+		PeopleUtil.filterManagersByLeaveRoles(supervisors).forEach(employeeManager -> {
+			Employee supervisor = employeeManager.getManager();
+			LeaveEmailDynamicFields dynamicFields = fieldsSupplier.get();
+			dynamicFields.setEmployeeOrManagerName(fullName(supervisor));
+			emailService.sendEmail(template, dynamicFields, supervisor.getUser().getEmail());
+			notificationService.createNotification(supervisor, leaveRequest.getId().toString(), notificationType,
+					template, dynamicFields, NotificationCategory.LEAVE);
+		});
+	}
+
+	private void notifyNudgedLeaveRequest(PolicyLeaveRequest leaveRequest) {
+		Employee employee = leaveRequest.getEmployee();
+		EmailBodyTemplates template = leaveRequest.getStartDate().equals(leaveRequest.getEndDate())
+				? EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_SINGLE_DAY_LEAVE
+				: EmailBodyTemplates.LEAVE_MODULE_MANAGER_NUDGE_MULTI_DAY_LEAVE;
+
+		notifySupervisors(employeeManagerDao.findByEmployee(employee), leaveRequest, () -> {
+			LeaveEmailDynamicFields dynamicFields = leaveRequestEmailFields(leaveRequest);
+			dynamicFields.setEmployeeName(fullName(employee));
+			dynamicFields.setEmployeesName(fullName(employee));
+			return dynamicFields;
+		}, template, NotificationType.LEAVE_REQUEST_NUDGE);
+	}
+
+	private LeaveEmailDynamicFields leaveRequestEmailFields(PolicyLeaveRequest leaveRequest) {
+		LeaveEmailDynamicFields dynamicFields = new LeaveEmailDynamicFields();
+		dynamicFields.setLeaveDuration(String.valueOf(leaveRequest.getLeaveState()));
+		dynamicFields.setLeaveType(leaveRequest.getPolicy().getLeaveType().getName());
+		dynamicFields.setLeaveStartDate(leaveRequest.getStartDate().toString());
+		dynamicFields.setLeaveEndDate(leaveRequest.getEndDate().toString());
+		dynamicFields.setComment(leaveRequest.getReviewerComment());
+		return dynamicFields;
+	}
+
+	private String fullName(Employee employee) {
+		return employee.getFirstName() + " " + employee.getLastName();
 	}
 
 	private List<Holiday> getHolidaysForEmployee(Employee employee) {

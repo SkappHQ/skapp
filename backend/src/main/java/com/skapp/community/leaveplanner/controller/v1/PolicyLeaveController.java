@@ -2,10 +2,9 @@ package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
-import com.skapp.community.leaveplanner.payload.request.PolicyLeaveCancelRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
-import com.skapp.community.leaveplanner.service.PolicyLeaveReviewService;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestUpdateDto;
 import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,12 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/leave/policy-leave")
 @Tag(name = "Policy Leave Controller",
-		description = "Viewing leave policy balances and applying for leave against a specific policy")
+		description = "Viewing leave policy balances, applying for leave against a specific policy "
+				+ "and acting on the leave requests raised against those policies")
 public class PolicyLeaveController {
 
 	private final PolicyLeaveService policyLeaveService;
-
-	private final PolicyLeaveReviewService policyLeaveReviewService;
 
 	@Operation(summary = "Get the current user's leave policy balances",
 			description = "One card per assigned policy; policies sharing a leave type are never merged")
@@ -57,30 +55,23 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get one of the current user's leave requests",
-			description = "Includes the reviewer comment and any supporting documents")
-	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> getMyPolicyLeaveRequestById(@PathVariable Long id) {
-		ResponseEntityDto response = policyLeaveReviewService.getMyPolicyLeaveRequestById(id);
+	@Operation(summary = "Get the policy leave requests raised by the people the current user supervises",
+			description = "Paged, sorted and filtered feed backing the all leave requests table")
+	@GetMapping("/requests")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getSupervisedPolicyLeaveRequests(
+			@Valid PolicyLeaveRequestFilterDto policyLeaveRequestFilterDto) {
+		ResponseEntityDto response = policyLeaveService.getSupervisedPolicyLeaveRequests(policyLeaveRequestFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Nudge the managers reviewing one of the current user's pending requests",
-			description = "Re-sends the pending review email and notification to every leave manager of the requester")
-	@GetMapping("/{id}/nudge")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> nudgePolicyLeaveRequestManagers(@PathVariable Long id) {
-		ResponseEntityDto response = policyLeaveReviewService.nudgePolicyLeaveRequestManagers(id);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Check whether a request can be nudged again",
-			description = "A request can only be nudged once every 24 hours")
-	@GetMapping("/{id}/nudge/status")
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> getPolicyLeaveRequestNudgeStatus(@PathVariable Long id) {
-		ResponseEntityDto response = policyLeaveReviewService.getPolicyLeaveRequestNudgeStatus(id);
+	@Operation(summary = "Get the pending policy leave requests awaiting the current user",
+			description = "Unpaged feed backing the pending leave requests table and its quick actions")
+	@GetMapping("/pending-requests")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getPendingSupervisedPolicyLeaveRequests(
+			@RequestParam(required = false) String searchKeyword) {
+		ResponseEntityDto response = policyLeaveService.getPendingSupervisedPolicyLeaveRequests(searchKeyword);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -94,14 +85,41 @@ public class PolicyLeaveController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Cancel one of the current user's pending leave requests",
-			description = "Only a PENDING request can be cancelled by the employee who raised it")
+	@Operation(summary = "Get a single policy leave request",
+			description = "Available to the employee who raised it and to anyone supervising them")
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE','ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> getPolicyLeaveRequestById(@PathVariable Long id) {
+		ResponseEntityDto response = policyLeaveService.getPolicyLeaveRequestById(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Update the status of a policy leave request",
+			description = "The employee who raised it may cancel it while it is pending; "
+					+ "anyone supervising them may approve, decline or revoke it")
 	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE','ROLE_LEAVE_MANAGER')")
+	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequest(@PathVariable Long id,
+			@Valid @RequestBody PolicyLeaveRequestUpdateDto policyLeaveRequestUpdateDto) {
+		ResponseEntityDto response = policyLeaveService.updatePolicyLeaveRequest(id, policyLeaveRequestUpdateDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Nudge the supervisors of a pending leave request",
+			description = "Only the employee who raised the request may nudge, and only once a day")
+	@GetMapping("/{id}/nudge")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
-	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequestByEmployee(@PathVariable Long id,
-			@Valid @RequestBody PolicyLeaveCancelRequestDto policyLeaveCancelRequestDto) {
-		ResponseEntityDto response = policyLeaveReviewService.updatePolicyLeaveRequestByEmployee(id,
-				policyLeaveCancelRequestDto);
+	public ResponseEntity<ResponseEntityDto> nudgePolicyLeaveRequestManagers(@PathVariable Long id) {
+		ResponseEntityDto response = policyLeaveService.nudgePolicyLeaveRequestManagers(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check whether a leave request can be nudged again",
+			description = "Reports the last nudge and whether the daily throttle has elapsed")
+	@GetMapping("/{id}/nudge/status")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getPolicyLeaveRequestNudgeStatus(@PathVariable Long id) {
+		ResponseEntityDto response = policyLeaveService.getPolicyLeaveRequestNudgeStatus(id);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
