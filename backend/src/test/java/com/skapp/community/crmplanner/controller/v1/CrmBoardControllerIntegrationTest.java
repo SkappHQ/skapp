@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -445,6 +446,21 @@ class CrmBoardControllerIntegrationTest {
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	@Test
+	@DisplayName("Board init data - returns task types ordered by orderIndex")
+	void getBoardInitData_ReturnsTaskTypes() throws Exception {
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][?(@.name=='Call')]").exists())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['id']").value(taskType.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['name']").value("Call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['orderIndex']").value(1));
 	}
 
 	private CrmTask createTask(CrmDeal deal) {
