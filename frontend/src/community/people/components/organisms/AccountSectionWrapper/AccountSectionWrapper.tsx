@@ -5,6 +5,7 @@ import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { TeamNamesType } from "~community/people/types/TeamTypes";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
+import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
 import RouteChangeAreYouSureModal from "../../molecules/RouteChangeAreYouSureModal/RouteChangeAreYouSureModal";
@@ -31,8 +32,14 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
     setIsUnsavedModalSaveButtonClicked,
     setIsUnsavedModalDiscardButtonClicked,
     setEmployee,
-    setProjectTeamNames
+    setProjectTeamNames,
+    setNextStep
   } = usePeopleStore((state) => state);
+
+  useEffect(() => {
+    setCurrentStep(EditPeopleFormTypes.personal);
+    setNextStep(EditPeopleFormTypes.personal);
+  }, [setCurrentStep, setNextStep]);
 
   useEffect(() => {
     if (employeeData) {

@@ -6,6 +6,7 @@ import { useGetEmployee } from "~community/people/api/PeopleApi";
 import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
+import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
 import CancelChangesModal from "../../molecules/CancelChangesModal/CancelChangesModal";
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
@@ -40,8 +41,14 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
     setIsUnsavedModalDiscardButtonClicked,
     setEmployee,
     setIsCancelModalConfirmButtonClicked,
-    setIsCancelChangesModalOpen
+    setIsCancelChangesModalOpen,
+    setNextStep
   } = usePeopleStore((state) => state);
+
+  useEffect(() => {
+    setCurrentStep(EditPeopleFormTypes.personal);
+    setNextStep(EditPeopleFormTypes.personal);
+  }, [setCurrentStep, setNextStep]);
 
   useDefaultTabNavigation();
 
