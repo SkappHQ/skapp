@@ -20,6 +20,7 @@ import { theme } from "~community/common/theme/theme";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { MyAppPropsType } from "~community/common/types/CommonTypes";
 import { getDataFromLocalStorage } from "~community/common/utils/accessLocalStorage";
+import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
 import "~enterprise/common/components/atoms/driverJsPopover/styles.css";
 import AnnouncementWrapper from "~enterprise/common/components/organisms/AnnouncementWrapper/AnnouncementWrapper";
 import {
@@ -100,38 +101,45 @@ function MyApp({
           <WebSocketProvider>
             <ToastProvider>
               <TanStackProvider>
-                <ThemeProvider theme={newTheme}>
-                  <I18nextProvider i18n={i18n}>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
-                    <ReactQueryDevtools
-                      initialIsOpen={false}
-                      position="bottom"
-                    />
-                  </I18nextProvider>
-                </ThemeProvider>
+                <CrmDataProvider>
+                  <ThemeProvider theme={newTheme}>
+                    <I18nextProvider i18n={i18n}>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                      </ErrorBoundary>
+                      <ReactQueryDevtools
+                        initialIsOpen={false}
+                        position="bottom"
+                      />
+                    </I18nextProvider>
+                  </ThemeProvider>
+                </CrmDataProvider>
               </TanStackProvider>
             </ToastProvider>
           </WebSocketProvider>
         ) : (
           <ToastProvider>
             <TanStackProvider>
-              <ThemeProvider theme={newTheme}>
-                <I18nextProvider i18n={i18n}>
-                  <AnnouncementProvider>
-                    <ErrorBoundary FallbackComponent={Error}>
-                      <BaseLayout>
-                        <Component {...pageProps} />
-                      </BaseLayout>
-                    </ErrorBoundary>
-                    <AnnouncementWrapper />
-                  </AnnouncementProvider>
-                  <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-                </I18nextProvider>
-              </ThemeProvider>
+              <CrmDataProvider>
+                <ThemeProvider theme={newTheme}>
+                  <I18nextProvider i18n={i18n}>
+                    <AnnouncementProvider>
+                      <ErrorBoundary FallbackComponent={Error}>
+                        <BaseLayout>
+                          <Component {...pageProps} />
+                        </BaseLayout>
+                      </ErrorBoundary>
+                      <AnnouncementWrapper />
+                    </AnnouncementProvider>
+                    <ReactQueryDevtools
+                      initialIsOpen={false}
+                      position="bottom"
+                    />
+                  </I18nextProvider>
+                </ThemeProvider>
+              </CrmDataProvider>
             </TanStackProvider>
           </ToastProvider>
         )}

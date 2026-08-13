@@ -16,15 +16,15 @@ import {
 interface ActionTypes {
   setCompanies: (
     companies: Record<number, CrmCompanyEntity>,
-    companyIds: number[]
+    companyIds?: number[]
   ) => void;
   setContacts: (
     contacts: Record<number, CrmContactEntity>,
-    contactIds: number[]
+    contactIds?: number[]
   ) => void;
-  setDeals: (deals: Record<number, CrmDealEntity>, dealIds: number[]) => void;
+  setDeals: (deals: Record<number, CrmDealEntity>, dealIds?: number[]) => void;
   setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
-  setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds: number[]) => void;
+  setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds?: number[]) => void;
   setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
   setStages: (
     stages: Record<number, CrmStageEntity>,

@@ -6,6 +6,7 @@ import {
   CrmContactEntity,
   CrmDealEntity,
   CrmOwnerEntity,
+  CrmStageEntity,
   CrmTaskEntity,
   CrmTaskTypeEntity
 } from "./CrmCommonTypes";
@@ -56,6 +57,12 @@ export interface CrmDealStageReorderRequest {
 }
 
 // Responses
+
+export interface CrmBoardInitDataResponse {
+  stages: CrmStageEntity[];
+  contacts: CrmContactEntity[];
+  owners: CrmOwnerEntity[];
+}
 
 export interface CrmCompanyListResponse {
   items: CrmCompanyEntity[];
