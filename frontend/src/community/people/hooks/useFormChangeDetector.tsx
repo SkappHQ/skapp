@@ -7,12 +7,15 @@ import {
   L1EmployeeType,
   L2EmploymentFormDetailsType
 } from "../types/PeopleTypes";
+import { isValueEqual } from "../utils/objectComparisonUtils";
 import { getEmergencyContactDetailsChanges } from "../utils/peopleEditFlowUtils/emergencyDetailsChangesUtils";
 import { getEmploymentDetailsChanges } from "../utils/peopleEditFlowUtils/employmentDetailsChangesUtils";
 import { getPersonalDetailsChanges } from "../utils/peopleEditFlowUtils/personalDetailsChangesUtils";
 import { getSystemPermissionsDetailsChanges } from "../utils/peopleEditFlowUtils/systemPermissionsChangesUtils";
 
-const useFormChangeDetector = (): {
+const useFormChangeDetector = (
+  isAddFlow: boolean = false
+): {
   hasChanged: boolean;
   apiPayload: L1EmployeeType;
 } => {
@@ -29,6 +32,18 @@ const useFormChangeDetector = (): {
   );
 
   useEffect(() => {
+    // The add flow saves nothing until the last step, so initialEmployee stays
+    // at the empty default and the whole in progress employee decides whether
+    // there is anything to lose, not just the section on screen. It also has
+    // no payload to build, since nothing is patched while stepping through.
+    if (isAddFlow) {
+      setState({
+        hasChanged: !isValueEqual(employee, initialEmployee),
+        apiPayload: {}
+      });
+      return;
+    }
+
     let newApiPayload: L1EmployeeType = {};
 
     switch (currentStep) {
@@ -109,7 +124,7 @@ const useFormChangeDetector = (): {
       hasChanged: hasRealChanges,
       apiPayload: hasRealChanges ? newApiPayload : {}
     });
-  }, [currentStep, employee, initialEmployee]);
+  }, [currentStep, employee, initialEmployee, isAddFlow]);
 
   return state;
 };

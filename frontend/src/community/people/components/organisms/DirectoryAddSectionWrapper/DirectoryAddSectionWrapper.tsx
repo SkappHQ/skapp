@@ -34,7 +34,7 @@ const DirectoryAddSectionWrapper = () => {
         />
       </Box>
       <PeopleFormSections isAddFlow={true} />
-      <RouteChangeAreYouSureModal />
+      <RouteChangeAreYouSureModal isAddFlow />
     </>
   );
 };

@@ -17,6 +17,21 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: jest.fn()
 }));
 
+type StepTransition = [number, number, EditPeopleFormTypes];
+
+const forwardSteps: StepTransition[] = [
+  [0, 1, EditPeopleFormTypes.emergency],
+  [1, 2, EditPeopleFormTypes.employment],
+  [2, 3, EditPeopleFormTypes.permission]
+];
+
+const backwardSteps: StepTransition[] = [
+  [4, 3, EditPeopleFormTypes.permission],
+  [3, 2, EditPeopleFormTypes.employment],
+  [2, 1, EditPeopleFormTypes.emergency],
+  [1, 0, EditPeopleFormTypes.personal]
+];
+
 describe("useStepper", () => {
   const mockSetActiveStep = jest.fn();
   const mockSetCurrentStep = jest.fn();
@@ -90,19 +105,22 @@ describe("useStepper", () => {
     expect(result.current.isLastStep).toBe(true);
   });
 
-  it("should handle next step correctly", () => {
-    const { result } = renderHook(() => useStepper());
+  it.each(forwardSteps)(
+    "should handle the next step correctly from step %i",
+    (activeStep, expectedStep, expectedSection) => {
+      (usePeopleStore as jest.Mock).mockReturnValue(mockStore(activeStep));
 
-    act(() => {
-      result.current.handleNext();
-    });
+      const { result } = renderHook(() => useStepper());
 
-    expect(mockSetActiveStep).toHaveBeenCalledWith(1);
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(
-      EditPeopleFormTypes.emergency
-    );
-    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.emergency);
-  });
+      act(() => {
+        result.current.handleNext();
+      });
+
+      expect(mockSetActiveStep).toHaveBeenCalledWith(expectedStep);
+      expect(mockSetCurrentStep).toHaveBeenCalledWith(expectedSection);
+      expect(mockSetNextStep).toHaveBeenCalledWith(expectedSection);
+    }
+  );
 
   it("should not go beyond the last step", () => {
     (usePeopleStore as jest.Mock).mockReturnValue(mockStore(4));
@@ -113,10 +131,13 @@ describe("useStepper", () => {
       result.current.handleNext();
     });
 
+    expect(mockSetActiveStep).toHaveBeenCalledWith(4);
     expect(mockSetActiveStep).not.toHaveBeenCalledWith(5);
   });
 
-  it("should not change the section on the entitlements step", () => {
+  // Entitlements has no EditPeopleFormTypes member, so stepSections has no
+  // entry for index 4 and the section stays on system permissions.
+  it("should not change the section when moving to the entitlements step", () => {
     (usePeopleStore as jest.Mock).mockReturnValue(mockStore(3));
 
     const { result } = renderHook(() => useStepper());
@@ -146,21 +167,22 @@ describe("useStepper", () => {
     expect(mockSetActiveStep).not.toHaveBeenCalledWith(4);
   });
 
-  it("should handle previous step correctly", () => {
-    (usePeopleStore as jest.Mock).mockReturnValue(mockStore(2));
+  it.each(backwardSteps)(
+    "should handle the previous step correctly from step %i",
+    (activeStep, expectedStep, expectedSection) => {
+      (usePeopleStore as jest.Mock).mockReturnValue(mockStore(activeStep));
 
-    const { result } = renderHook(() => useStepper());
+      const { result } = renderHook(() => useStepper());
 
-    act(() => {
-      result.current.handleBack();
-    });
+      act(() => {
+        result.current.handleBack();
+      });
 
-    expect(mockSetActiveStep).toHaveBeenCalledWith(1);
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(
-      EditPeopleFormTypes.emergency
-    );
-    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.emergency);
-  });
+      expect(mockSetActiveStep).toHaveBeenCalledWith(expectedStep);
+      expect(mockSetCurrentStep).toHaveBeenCalledWith(expectedSection);
+      expect(mockSetNextStep).toHaveBeenCalledWith(expectedSection);
+    }
+  );
 
   it("should not go below the first step", () => {
     const { result } = renderHook(() => useStepper());
@@ -169,6 +191,11 @@ describe("useStepper", () => {
       result.current.handleBack();
     });
 
+    expect(mockSetActiveStep).toHaveBeenCalledWith(0);
     expect(mockSetActiveStep).not.toHaveBeenCalledWith(-1);
+    expect(mockSetCurrentStep).toHaveBeenCalledWith(
+      EditPeopleFormTypes.personal
+    );
+    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.personal);
   });
 });

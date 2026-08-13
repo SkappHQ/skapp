@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "../store/store";
 import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
 
-const stepSections: Record<number, EditPeopleFormTypes> = {
+const stepSections: Partial<Record<number, EditPeopleFormTypes>> = {
   0: EditPeopleFormTypes.personal,
   1: EditPeopleFormTypes.emergency,
   2: EditPeopleFormTypes.employment,

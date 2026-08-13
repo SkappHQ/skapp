@@ -55,6 +55,7 @@ const AddSectionButtonWrapper = ({
       description: translateText(["employeeAddSuccessToastDescription"])
     });
     setIsSuccess && setIsSuccess(true);
+    resetPeopleSlice();
     router.push(ROUTES.PEOPLE.DIRECTORY);
   };
 
@@ -73,9 +74,13 @@ const AddSectionButtonWrapper = ({
 
   const { mutate: createCustomSkills } = useCreateCustomSkills();
 
-  const { employee, profilePic, thumbnail, setCommonDetails } = usePeopleStore(
-    (state) => state
-  );
+  const {
+    employee,
+    profilePic,
+    thumbnail,
+    setCommonDetails,
+    resetPeopleSlice
+  } = usePeopleStore((state) => state);
 
   const environment = useGetEnvironment();
 

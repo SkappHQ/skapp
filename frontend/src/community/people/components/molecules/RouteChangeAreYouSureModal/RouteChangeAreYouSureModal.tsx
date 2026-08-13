@@ -6,8 +6,14 @@ import Modal from "~community/common/components/organisms/Modal/Modal";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
+import { usePeopleStore } from "~community/people/store/store";
+import { isValueEqual } from "~community/people/utils/objectComparisonUtils";
 
-const RouteChangeAreYouSureModal: React.FC = () => {
+interface Props {
+  isAddFlow?: boolean;
+}
+
+const RouteChangeAreYouSureModal: React.FC<Props> = ({ isAddFlow = false }) => {
   const [isAreYouSureModalOpen, setIsAreYouSureModalOpen] = useState(false);
   const allowRouteChangeRef = useRef<boolean>(false);
   const targetRouteRef = useRef<string>("");
@@ -19,7 +25,7 @@ const RouteChangeAreYouSureModal: React.FC = () => {
     "addResource",
     "commonText"
   );
-  const { hasChanged } = useFormChangeDetector();
+  const { hasChanged } = useFormChangeDetector(isAddFlow);
 
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
     if (hasChanged) {
@@ -28,10 +34,18 @@ const RouteChangeAreYouSureModal: React.FC = () => {
     }
   };
 
+  const hasUnsavedData = () => {
+    if (!isAddFlow) return hasChanged;
+
+    const { employee, initialEmployee } = usePeopleStore.getState();
+
+    return !isValueEqual(employee, initialEmployee);
+  };
+
   const handleRouteChange = (url: string) => {
     if (allowRouteChangeRef.current) return;
     targetRouteRef.current = url;
-    if (hasChanged && !isAreYouSureModalOpen) {
+    if (hasUnsavedData() && !isAreYouSureModalOpen) {
       setIsAreYouSureModalOpen(true);
       router.events.emit("routeChangeError");
       throw "routeChange aborted";
