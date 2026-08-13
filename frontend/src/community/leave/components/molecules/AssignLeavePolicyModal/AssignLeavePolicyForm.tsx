@@ -4,8 +4,7 @@ import {
   Dropdown,
   InfoTipBanner,
   InputField,
-  RadioButton,
-  Tooltip
+  RadioButton
 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
@@ -192,19 +191,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
       {/* A flexible policy tracks no balance, so the accrual schedule is
           replaced by a plain explanation — never by an input. */}
       {isFlexiblePolicy && (
-        <Tooltip
-          content={translateText(["assignModal", "flexibleInfoTooltip"])}
-          position="top"
-        >
-          <p
-            role="status"
-            aria-live="polite"
-            tabIndex={0}
-            className="body2 text-secondary-text"
-          >
-            {translateText(["assignModal", "flexibleInfoLabel"])}
-          </p>
-        </Tooltip>
+        <InfoTipBanner
+          status="info"
+          description={translateText(["assignModal", "flexibleInfoLabel"])}
+        />
       )}
 
       {accrualPreview.length > 0 && (

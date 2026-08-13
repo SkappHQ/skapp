@@ -375,7 +375,6 @@
       "specificDateRequired": "Please select an effective date",
       "accrualPreviewTitle": "Accrual schedule",
       "flexibleInfoLabel": "This is a flexible policy. Leave taken will be recorded but is not deducted from any balance.",
-      "flexibleInfoTooltip": "Leave taken under this policy is recorded for reporting but never deducted from a balance.",
       "conflictWarning": "{{employeeName}} already has a {{leaveType}} policy. Assigning this policy will replace their existing {{leaveType}} policy.",
       "colDate": "Date",
       "colDays": "Days",
