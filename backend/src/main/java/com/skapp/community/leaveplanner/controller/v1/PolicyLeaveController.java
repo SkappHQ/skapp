@@ -88,10 +88,10 @@ public class PolicyLeaveController {
 	@Operation(summary = "Update the status of a policy leave request",
 			description = "The employee who raised it may cancel it while it is pending; "
 					+ "anyone supervising them may approve, decline or revoke it")
-	@PatchMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE','ROLE_LEAVE_MANAGER')")
+	@PatchMapping(value = "/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> updatePolicyLeaveRequest(@PathVariable Long id,
-			@Valid @RequestBody PolicyLeaveRequestUpdateDto policyLeaveRequestUpdateDto) {
+			@RequestBody PolicyLeaveRequestUpdateDto policyLeaveRequestUpdateDto) {
 		ResponseEntityDto response = policyLeaveService.updatePolicyLeaveRequest(id, policyLeaveRequestUpdateDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

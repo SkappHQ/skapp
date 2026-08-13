@@ -16,8 +16,8 @@ public interface PolicyLeaveRequestRepository {
 	Page<PolicyLeaveRequest> findMyRequests(Long employeeId, LocalDate cycleStart, LocalDate cycleEnd,
 			PolicyLeaveRequestFilterDto filterDto, Pageable pageable);
 
-	Page<PolicyLeaveRequest> findSupervisedRequests(Long supervisorEmployeeId,
-			PolicyLeaveRequestFilterDto filterDto, Pageable pageable);
+	Page<PolicyLeaveRequest> findSupervisedRequests(Long supervisorEmployeeId, PolicyLeaveRequestFilterDto filterDto,
+			Pageable pageable);
 
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 

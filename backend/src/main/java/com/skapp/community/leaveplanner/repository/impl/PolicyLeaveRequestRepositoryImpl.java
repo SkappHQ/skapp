@@ -86,9 +86,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
 		Root<PolicyLeaveRequest> countRoot = countQuery.from(PolicyLeaveRequest.class);
 		countQuery.select(criteriaBuilder.countDistinct(countRoot.get(PolicyLeaveRequest_.id)))
-			.where(buildSupervisorPredicates(criteriaBuilder, countRoot,
-					countRoot.join(PolicyLeaveRequest_.employee), countRoot.join(PolicyLeaveRequest_.policy),
-					supervisorEmployeeId, filterDto)
+			.where(buildSupervisorPredicates(criteriaBuilder, countRoot, countRoot.join(PolicyLeaveRequest_.employee),
+					countRoot.join(PolicyLeaveRequest_.policy), supervisorEmployeeId, filterDto)
 				.toArray(new Predicate[0]));
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -103,8 +102,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		criteriaQuery.select(root)
 			.distinct(true)
-			.where(buildSupervisorPredicates(criteriaBuilder, root, fetchEmployee(root), policy,
-					supervisorEmployeeId, filterDto)
+			.where(buildSupervisorPredicates(criteriaBuilder, root, fetchEmployee(root), policy, supervisorEmployeeId,
+					filterDto)
 				.toArray(new Predicate[0]));
 		criteriaQuery.orderBy(QueryUtils.toOrders(pageable.getSort(), root, criteriaBuilder));
 
@@ -168,8 +167,8 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	/**
-	 * Reuses the employee fetch join as a regular join so the supervisor scoped queries do
-	 * not join the employee table twice.
+	 * Reuses the employee fetch join as a regular join so the supervisor scoped queries
+	 * do not join the employee table twice.
 	 */
 	@SuppressWarnings("unchecked")
 	private Join<PolicyLeaveRequest, Employee> fetchEmployee(Root<PolicyLeaveRequest> root) {
@@ -214,8 +213,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		}
 
 		if (!CollectionUtils.isEmpty(filterDto.getLeaveTypeId())) {
-			predicates
-				.add(policy.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id).in(filterDto.getLeaveTypeId()));
+			predicates.add(policy.get(LeavePolicy_.leaveType).get(PolicyLeaveType_.id).in(filterDto.getLeaveTypeId()));
 		}
 
 		if (filterDto.getStartDate() != null) {

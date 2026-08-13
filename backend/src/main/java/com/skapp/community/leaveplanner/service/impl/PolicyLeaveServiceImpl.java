@@ -93,11 +93,9 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
-	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> REVIEWER_TRANSITIONS
-			= buildReviewerTransitions();
+	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> REVIEWER_TRANSITIONS = buildReviewerTransitions();
 
-	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> OWNER_TRANSITIONS
-			= buildOwnerTransitions();
+	private static final Map<LeaveRequestStatus, Set<LeaveRequestStatus>> OWNER_TRANSITIONS = buildOwnerTransitions();
 
 	private final UserService userService;
 
@@ -270,8 +268,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		validateSearchKeyword(filterDto.getSearchKeyword());
 
 		User currentUser = userService.getCurrentUser();
-		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findSupervisedRequests(
-				currentUser.getEmployee().getEmployeeId(), filterDto, resolvePageable(filterDto));
+		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao
+			.findSupervisedRequests(currentUser.getEmployee().getEmployeeId(), filterDto, resolvePageable(filterDto));
 
 		log.info("getSupervisedPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false, toPageDto(leaveRequests));
@@ -289,8 +287,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
 
 		if (!isOwnRequest(leaveRequest, currentEmployee)
-				&& !employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(
-						currentEmployee.getEmployeeId(), leaveRequest.getEmployee().getEmployeeId())) {
+				&& !employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(currentEmployee.getEmployeeId(),
+						leaveRequest.getEmployee().getEmployeeId())) {
 			throw new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND);
 		}
 
@@ -299,12 +297,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				leaveMapper.policyLeaveRequestToPolicyLeaveRequestResponseDto(leaveRequest));
 	}
 
-	/**
-	 * The owner may only cancel a pending request; anyone supervising the owner may approve,
-	 * decline or revoke it. No balance bookkeeping is needed on a transition: balances are
-	 * derived by summing {@link PolicyLeaveConstant#BALANCE_HOLDING_STATUSES} rows, so
-	 * leaving that set releases the days by itself.
-	 */
 	@Override
 	@Transactional
 	public ResponseEntityDto updatePolicyLeaveRequest(@NonNull Long id,
@@ -314,9 +306,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		Employee currentEmployee = userService.getCurrentUser().getEmployee();
 
-		// The lock has to be the first load of the row: if a scoping query reads the entity
-		// first, the persistence context hands back that unlocked instance and the
-		// SELECT ... FOR UPDATE guards nothing.
 		PolicyLeaveRequest leaveRequest = policyLeaveRequestDao.findByIdForUpdate(id)
 			.orElseThrow(
 					() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_REQUEST_NOT_FOUND));
@@ -458,12 +447,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return leaveRequest.getEmployee().getEmployeeId().equals(currentEmployee.getEmployeeId());
 	}
 
-	/**
-	 * A reviewer must be linked to the requester. Unlike the legacy flow, which rejects
-	 * anyone holding <em>any</em> INFORMANT row, only a reviewer whose links are
-	 * <em>all</em> INFORMANT is rejected, so someone who is both PRIMARY and INFORMANT can
-	 * still act.
-	 */
 	private void authorizeReviewer(PolicyLeaveRequest leaveRequest, Employee currentEmployee) {
 		List<EmployeeManager> links = employeeManagerDao.findByEmployee(leaveRequest.getEmployee())
 			.stream()
@@ -497,8 +480,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		if (page < 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE);
 		}
-		// A negative size is the documented unpaged case; zero only reaches
-		// PageRequest.of as an IllegalArgumentException, so it is rejected here.
+
 		if (size == 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_PAGE_SIZE);
 		}
@@ -888,12 +870,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				leaveRequest.getStartDate(), leaveRequest.getEndDate(), isSingleDay);
 	}
 
-	/**
-	 * Emails and in app notifications for a reviewed request. The legacy counterparts in
-	 * {@code LeaveEmailServiceImpl} / {@code LeaveNotificationServiceImpl} only accept a
-	 * legacy {@code LeaveRequest}, so the policy flow dispatches through the shared
-	 * {@link EmailService} / {@link NotificationService} with the same templates.
-	 */
 	private void notifyReviewedLeaveRequest(PolicyLeaveRequest leaveRequest) {
 		boolean isSingleDay = leaveRequest.getStartDate().equals(leaveRequest.getEndDate());
 
@@ -913,8 +889,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 							: EmailBodyTemplates.LEAVE_MODULE_EMPLOYEE_REVOKED_MULTI_DAY_LEAVE,
 					isSingleDay ? EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_SINGLE_DAY_LEAVE
 							: EmailBodyTemplates.LEAVE_MODULE_MANAGER_REVOKED_MULTI_DAY_LEAVE);
-			default -> log.debug("notifyReviewedLeaveRequest: no notification for status: {}",
-					leaveRequest.getStatus());
+			default ->
+				log.debug("notifyReviewedLeaveRequest: no notification for status: {}", leaveRequest.getStatus());
 		}
 	}
 
@@ -979,11 +955,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		notifySupervisors(supervisors, leaveRequest, fieldsSupplier, template, NotificationType.LEAVE_REQUEST);
 	}
 
-	/**
-	 * The dynamic fields are rebuilt per recipient rather than mutated in place: the name
-	 * is recipient specific, so a shared instance would leak whichever name was set last
-	 * the moment the email or notification dispatch stops being synchronous.
-	 */
 	private void notifySupervisors(List<EmployeeManager> supervisors, PolicyLeaveRequest leaveRequest,
 			Supplier<LeaveEmailDynamicFields> fieldsSupplier, EmailBodyTemplates template,
 			NotificationType notificationType) {
