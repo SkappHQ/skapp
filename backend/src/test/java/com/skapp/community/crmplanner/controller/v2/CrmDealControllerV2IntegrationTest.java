@@ -247,6 +247,25 @@ class CrmDealControllerV2IntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deals - Masks soft-deleted company on deal and contact")
+	void getDeals_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("List Deleted Co V2");
+		CrmContact contact = savedContact(company, "deal.list.deleted.v2@example.com");
+		savedDeal("List Deleted Co Deal V2", stage, company, contact, 1L);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deleted Co Deal V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['company']['id']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['company']['id']").doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal and contact")
 	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
 		CrmDealStage stage = savedStage();
