@@ -325,11 +325,6 @@ export const policyLeaveReviewQueryKeys = {
     "manager-requests",
     queryParams
   ],
-  PENDING_REQUESTS: (searchKeyword: string) => [
-    ...policyLeaveReviewQueryKeys.ALL,
-    "pending-requests",
-    searchKeyword
-  ],
   MANAGER_REQUEST: (leaveRequestId: number | null) => [
     ...policyLeaveReviewQueryKeys.ALL,
     "manager-request",

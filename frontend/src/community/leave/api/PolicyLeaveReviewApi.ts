@@ -7,13 +7,18 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 
-import { ErrorResponse } from "~community/common/types/CommonTypes";
+import {
+  ErrorResponse,
+  SortKeyTypes,
+  SortOrderTypes
+} from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveReviewEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import {
   policyLeaveQueryKeys,
   policyLeaveReviewQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
+import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
   PolicyLeaveCancelPayload,
   PolicyLeaveNudgeStatusResponse,
@@ -21,7 +26,6 @@ import {
   PolicyLeaveRequestDetailResponse,
   PolicyLeaveRequestDetailType,
   PolicyLeaveReviewPayload,
-  PolicyManagerLeaveRequestListResponse,
   PolicyManagerLeaveRequestPageResponse,
   PolicyManagerLeaveRequestPageType,
   PolicyManagerLeaveRequestQueryParams,
@@ -51,23 +55,28 @@ export const useGetPolicyManagerLeaveRequests = (
   });
 };
 
-const getPendingPolicyLeaveRequests = async (
+/** The pending table is the supervisor feed filtered to PENDING and left unpaged. */
+const pendingQueryParams = (
   searchKeyword: string
-): Promise<PolicyManagerLeaveRequestType[]> => {
-  const response = await authFetch.get<PolicyManagerLeaveRequestListResponse>(
-    policyLeaveReviewEndPoints.GET_PENDING_POLICY_LEAVE_REQUESTS,
-    { params: { searchKeyword: searchKeyword || undefined } }
-  );
-  return response.data.results;
-};
+): PolicyManagerLeaveRequestQueryParams => ({
+  page: 0,
+  size: UNPAGINATED_SIZE,
+  sortKey: SortKeyTypes.START_DATE,
+  sortOrder: SortOrderTypes.ASC,
+  status: PolicyLeaveRequestStatus.PENDING,
+  searchKeyword: searchKeyword || undefined
+});
 
 export const useGetPendingPolicyLeaveRequests = (
   searchKeyword: string,
   enabled = true
 ): UseQueryResult<PolicyManagerLeaveRequestType[]> => {
+  const queryParams = pendingQueryParams(searchKeyword);
+
   return useQuery({
-    queryKey: policyLeaveReviewQueryKeys.PENDING_REQUESTS(searchKeyword),
-    queryFn: () => getPendingPolicyLeaveRequests(searchKeyword),
+    queryKey: policyLeaveReviewQueryKeys.MANAGER_REQUESTS(queryParams),
+    queryFn: async () =>
+      (await getPolicyManagerLeaveRequests(queryParams)).items,
     enabled,
     refetchOnWindowFocus: false
   });

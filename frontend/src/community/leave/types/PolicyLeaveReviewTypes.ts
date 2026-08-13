@@ -51,10 +51,6 @@ export interface PolicyManagerLeaveRequestPageResponse {
   results: PolicyManagerLeaveRequestPageType[];
 }
 
-export interface PolicyManagerLeaveRequestListResponse {
-  results: PolicyManagerLeaveRequestType[];
-}
-
 export interface PolicyLeaveRequestDetailResponse {
   results: PolicyLeaveRequestDetailType[];
 }
@@ -68,6 +64,7 @@ export interface PolicyManagerLeaveRequestQueryParams {
   leaveTypeId?: string;
   startDate?: string;
   endDate?: string;
+  searchKeyword?: string;
 }
 
 export interface PolicyLeaveReviewPayload {

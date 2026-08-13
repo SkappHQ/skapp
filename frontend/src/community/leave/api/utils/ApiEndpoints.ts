@@ -80,10 +80,9 @@ export const policyLeaveEndPoints = {
 };
 
 export const policyLeaveReviewEndPoints = {
-  GET_MANAGER_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/requests`,
-  GET_PENDING_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/managers/pending-requests`,
+  GET_MANAGER_POLICY_LEAVE_REQUESTS: `${moduleAPIPath.LEAVE}/policy-leave/requests`,
   MANAGER_POLICY_LEAVE_REQUEST: (id: number): string =>
-    `${moduleAPIPath.LEAVE}/policy-leave/managers/${id}`,
+    `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
   MY_POLICY_LEAVE_REQUEST: (id: number): string =>
     `${moduleAPIPath.LEAVE}/policy-leave/${id}`,
   NUDGE_POLICY_LEAVE_REQUEST_MANAGERS: (id: number): string =>
