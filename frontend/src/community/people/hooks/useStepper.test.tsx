@@ -131,8 +131,9 @@ describe("useStepper", () => {
       result.current.handleNext();
     });
 
-    expect(mockSetActiveStep).toHaveBeenCalledWith(4);
-    expect(mockSetActiveStep).not.toHaveBeenCalledWith(5);
+    expect(mockSetActiveStep).not.toHaveBeenCalled();
+    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
 
   it("should not change the section when moving to the entitlements step", () => {
@@ -161,8 +162,9 @@ describe("useStepper", () => {
       result.current.handleNext();
     });
 
-    expect(mockSetActiveStep).toHaveBeenCalledWith(3);
-    expect(mockSetActiveStep).not.toHaveBeenCalledWith(4);
+    expect(mockSetActiveStep).not.toHaveBeenCalled();
+    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
 
   it.each(backwardSteps)(
@@ -189,11 +191,8 @@ describe("useStepper", () => {
       result.current.handleBack();
     });
 
-    expect(mockSetActiveStep).toHaveBeenCalledWith(0);
-    expect(mockSetActiveStep).not.toHaveBeenCalledWith(-1);
-    expect(mockSetCurrentStep).toHaveBeenCalledWith(
-      EditPeopleFormTypes.personal
-    );
-    expect(mockSetNextStep).toHaveBeenCalledWith(EditPeopleFormTypes.personal);
+    expect(mockSetActiveStep).not.toHaveBeenCalled();
+    expect(mockSetCurrentStep).not.toHaveBeenCalled();
+    expect(mockSetNextStep).not.toHaveBeenCalled();
   });
 });

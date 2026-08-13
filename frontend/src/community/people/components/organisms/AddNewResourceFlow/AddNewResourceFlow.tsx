@@ -79,7 +79,7 @@ const AddNewResourceFlow = () => {
     return steps;
   }, [isLeaveModuleEnabled, translateText]);
 
-  const { activeStep, handleNext, handleBack } = useStepper(steps);
+  const { activeStep, handleNext, handleBack } = useStepper();
 
   const { getEmployeeObject } = useCreateEmployeeObject({
     replaceDefaultValuesWithEmptyStrings: true

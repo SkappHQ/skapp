@@ -43,10 +43,12 @@ const useStepper = () => {
 
   const isLastStep = activeStep === steps.length - 1;
 
-  const goToStep = (step: number) => {
-    setActiveStep(step);
+  const goToStep = (stepIndex: number) => {
+    if (stepIndex === activeStep) return;
 
-    const section = stepSections[step];
+    setActiveStep(stepIndex);
+
+    const section = stepSections[stepIndex];
     if (section) {
       setCurrentStep(section);
       setNextStep(section);
@@ -54,14 +56,14 @@ const useStepper = () => {
   };
 
   const handleNext = () => {
-    const nextStep =
+    const nextIndex =
       activeStep < steps.length - 1 ? activeStep + 1 : activeStep;
-    goToStep(nextStep);
+    goToStep(nextIndex);
   };
 
   const handleBack = () => {
-    const prevStep = activeStep > 0 ? activeStep - 1 : activeStep;
-    goToStep(prevStep);
+    const prevIndex = activeStep > 0 ? activeStep - 1 : activeStep;
+    goToStep(prevIndex);
   };
 
   return { steps, activeStep, isLastStep, handleNext, handleBack };
