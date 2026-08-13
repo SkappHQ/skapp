@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { Dispatch, FC, SetStateAction, useState } from "react";
+import { FC, useState } from "react";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -8,7 +8,10 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
+import {
+  PolicyLeavePopupType,
+  PolicyLeaveRequestDetailType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import { validateDescription } from "~community/leave/utils/LeavePreprocessors";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
@@ -17,7 +20,7 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 interface Props {
   request: PolicyLeaveRequestDetailType;
   closeModal: () => void;
-  setPopupType: Dispatch<SetStateAction<string>>;
+  setPopupType: (popupType: PolicyLeavePopupType) => void;
 }
 
 const PolicyLeaveDeclineModal: FC<Props> = ({
@@ -37,34 +40,35 @@ const PolicyLeaveDeclineModal: FC<Props> = ({
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { mutate, isPending } = useReviewPolicyLeaveRequest(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["declineLeaveSuccessTitle"]),
-        description: translateText(["declineLeaveSuccessDesc"]),
-        isIcon: true
-      });
-      sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_DECLINED);
-      setPopupType(PolicyLeaveReviewModalEnums.DECLINE_STATUS);
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["declineLeaveFailTitle"]),
-        description: translateText(["declineLeaveFailDesc"]),
-        isIcon: true
-      });
-    }
-  );
+  const { mutate: declineLeaveRequest, isPending } =
+    useReviewPolicyLeaveRequest(
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.SUCCESS,
+          title: translateText(["declineLeaveSuccessTitle"]),
+          description: translateText(["declineLeaveSuccessDesc"]),
+          isIcon: true
+        });
+        sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_DECLINED);
+        setPopupType(PolicyLeaveReviewModalEnums.DECLINE_STATUS);
+      },
+      () => {
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText(["declineLeaveFailTitle"]),
+          description: translateText(["declineLeaveFailDesc"]),
+          isIcon: true
+        });
+      }
+    );
 
   const handleDecline = (): void => {
     if (validateDescription(reason)) setError(true);
     else {
       setError(false);
-      mutate({
+      declineLeaveRequest({
         leaveRequestId: request.leaveRequestId,
         status: PolicyLeaveRequestStatus.DENIED,
         reviewerComment: reason

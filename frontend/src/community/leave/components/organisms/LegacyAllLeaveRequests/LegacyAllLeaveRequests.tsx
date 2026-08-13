@@ -5,15 +5,18 @@ import LeaveRequestEmployeeTeamSearch from "~community/leave/components/molecule
 import ManagerLeaveRequest from "~community/leave/components/molecules/ManagerLeaveRequests/ManagerLeaveRequest";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 import { useLeaveStore } from "~community/leave/store/store";
+import { LeaveStatusTypes } from "~community/leave/types/LeaveTypes";
 
 const LegacyAllLeaveRequests: FC = () => {
   const { data: assignedLeaveRequests, isLoading } =
     useGetManagerAssignedLeaveRequests();
 
-  const { setLeaveRequestParams } = useLeaveStore((state) => state);
+  const { setLeaveRequestParams } = useLeaveStore((state) => ({
+    setLeaveRequestParams: state.setLeaveRequestParams
+  }));
 
   useEffect(() => {
-    setLeaveRequestParams("status", ["PENDING"]);
+    setLeaveRequestParams("status", [LeaveStatusTypes.PENDING]);
   }, [setLeaveRequestParams]);
 
   return (

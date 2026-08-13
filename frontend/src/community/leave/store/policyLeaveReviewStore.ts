@@ -45,7 +45,7 @@ export interface PolicyLeaveReviewStore {
   openEmployeeModal: (leaveRequestId: number) => void;
   closeEmployeeModal: () => void;
   setRequestPage: (page: number) => void;
-  setRequestSortKey: (sortKey: SortKeyTypes) => void;
+  setRequestSortKey: (sortKey: SortKeyTypes, sortOrder: SortOrderTypes) => void;
   setRequestStatusFilter: (status: PolicyLeaveRequestStatus[]) => void;
   setRequestFilters: (filters: PolicyLeaveReviewFilters) => void;
   setRequestDateRange: (startDate?: string, endDate?: string) => void;
@@ -70,17 +70,12 @@ export const usePolicyLeaveReviewStore = create<PolicyLeaveReviewStore>()(
         set({ selectedRequestId: null, isEmployeeModalOpen: false }),
       setRequestPage: (page) =>
         set((state) => ({ requestParams: { ...state.requestParams, page } })),
-      setRequestSortKey: (sortKey) =>
+      setRequestSortKey: (sortKey, sortOrder) =>
         set((state) => ({
           requestParams: {
             ...state.requestParams,
             sortKey,
-            // Sorting by leave date shows the soonest leave first, the way the legacy
-            // manager list did it.
-            sortOrder:
-              sortKey === SortKeyTypes.START_DATE
-                ? SortOrderTypes.ASC
-                : SortOrderTypes.DESC,
+            sortOrder,
             page: 0
           }
         })),
@@ -101,8 +96,6 @@ export const usePolicyLeaveReviewStore = create<PolicyLeaveReviewStore>()(
         set((state) => ({
           requestParams: { ...state.requestParams, startDate, endDate, page: 0 }
         })),
-      // The date range stays owned by the date range effect in
-      // PolicyManagerLeaveRequests, so it is deliberately not reset here.
       resetRequestFilters: () =>
         set((state) => ({
           requestParams: {

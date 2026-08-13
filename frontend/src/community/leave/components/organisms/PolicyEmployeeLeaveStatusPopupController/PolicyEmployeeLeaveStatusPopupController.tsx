@@ -6,59 +6,45 @@ import { useGetMyPolicyLeaveRequestById } from "~community/leave/api/PolicyLeave
 import PolicyCancelLeaveModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyCancelLeaveModal/PolicyCancelLeaveModal";
 import PolicyEmployeeRequestModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyEmployeeRequestModal/PolicyEmployeeRequestModal";
 import PolicyLeaveRequestSummary from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveRequestSummary/PolicyLeaveRequestSummary";
+import {
+  STATUS_POPUP_TYPES,
+  SUMMARY_POPUP_TYPES
+} from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { PolicyLeavePopupType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
-const STATUS_POPUP_TYPES: PolicyLeaveRequestStatus[] = [
-  PolicyLeaveRequestStatus.PENDING,
-  PolicyLeaveRequestStatus.DENIED,
-  PolicyLeaveRequestStatus.APPROVED,
-  PolicyLeaveRequestStatus.CANCELLED,
-  PolicyLeaveRequestStatus.REVOKED
-];
-
-const SUMMARY_POPUP_TYPES: string[] = [
-  PolicyLeaveRequestStatus.APPROVED,
-  PolicyLeaveRequestStatus.DENIED,
-  PolicyLeaveRequestStatus.REVOKED,
-  PolicyLeaveRequestStatus.CANCELLED,
-  PolicyLeaveReviewModalEnums.CANCELLED_SUMMARY,
-  PolicyLeaveReviewModalEnums.SUPERVISOR_NUDGED
-];
-
 const PolicyEmployeeLeaveStatusPopupController: FC = () => {
-  const [popupType, setPopupType] = useState<string>("");
+  const [popupType, setPopupType] = useState<PolicyLeavePopupType>(
+    PolicyLeaveReviewModalEnums.NONE
+  );
 
   const translateText = useTranslator("leaveModule", "myRequests");
 
-  const isEmployeeModalOpen = usePolicyLeaveReviewStore(
-    (state) => state.isEmployeeModalOpen
-  );
-  const selectedRequestId = usePolicyLeaveReviewStore(
-    (state) => state.selectedRequestId
-  );
-  const closeEmployeeModal = usePolicyLeaveReviewStore(
-    (state) => state.closeEmployeeModal
-  );
+  const { isEmployeeModalOpen, selectedRequestId, closeEmployeeModal } =
+    usePolicyLeaveReviewStore((state) => ({
+      isEmployeeModalOpen: state.isEmployeeModalOpen,
+      selectedRequestId: state.selectedRequestId,
+      closeEmployeeModal: state.closeEmployeeModal
+    }));
 
-  const { data: request } = useGetMyPolicyLeaveRequestById(selectedRequestId);
+  const { data: myLeaveRequest } =
+    useGetMyPolicyLeaveRequestById(selectedRequestId);
 
-  // Only seeds the popup once per opening. Cancelling and nudging both push their own
-  // follow up popup, and reviewing the request writes a fresh object into the query
-  // cache, so re-deriving from the status on every change would drop the user straight
-  // back to the plain status popup.
   useEffect(() => {
-    if (!isEmployeeModalOpen || !request) return;
+    if (!isEmployeeModalOpen || !myLeaveRequest) return;
     setPopupType((currentPopupType) =>
-      currentPopupType === ""
-        ? (STATUS_POPUP_TYPES.find((status) => status === request.status) ?? "")
+      currentPopupType === PolicyLeaveReviewModalEnums.NONE
+        ? (STATUS_POPUP_TYPES.find(
+            (status) => status === myLeaveRequest.status
+          ) ?? PolicyLeaveReviewModalEnums.NONE)
         : currentPopupType
     );
-  }, [request, isEmployeeModalOpen]);
+  }, [myLeaveRequest, isEmployeeModalOpen]);
 
   const handleCloseModal = (): void => {
-    setPopupType("");
+    setPopupType(PolicyLeaveReviewModalEnums.NONE);
     closeEmployeeModal();
   };
 
@@ -87,7 +73,7 @@ const PolicyEmployeeLeaveStatusPopupController: FC = () => {
 
   return (
     <>
-      {isEmployeeModalOpen && popupType && request && (
+      {isEmployeeModalOpen && popupType && myLeaveRequest && (
         <ModalController
           isModalOpen={isEmployeeModalOpen}
           handleCloseModal={handleCloseModal}
@@ -96,21 +82,21 @@ const PolicyEmployeeLeaveStatusPopupController: FC = () => {
           <>
             {popupType === PolicyLeaveRequestStatus.PENDING && (
               <PolicyEmployeeRequestModal
-                request={request}
+                request={myLeaveRequest}
                 setPopupType={setPopupType}
               />
             )}
 
             {popupType === PolicyLeaveReviewModalEnums.CANCEL_REQUEST_POPUP && (
               <PolicyCancelLeaveModal
-                request={request}
+                request={myLeaveRequest}
                 setPopupType={setPopupType}
               />
             )}
 
             {SUMMARY_POPUP_TYPES.includes(popupType) && (
               <PolicyLeaveRequestSummary
-                request={request}
+                request={myLeaveRequest}
                 popupType={popupType}
                 handleRequestStatusPopup={handleCloseModal}
               />

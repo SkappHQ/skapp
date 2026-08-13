@@ -3,11 +3,27 @@ import {
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
+import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import {
   PolicyLeaveAttachmentType,
   PolicyLeaveRequestStatus,
   PolicyLeaveTypeDetailType
 } from "~community/leave/types/PolicyLeaveTypes";
+
+export type PolicyLeavePopupType =
+  | PolicyLeaveRequestStatus
+  | PolicyLeaveReviewModalEnums;
+
+export interface PolicyLeaveSummaryLayout {
+  descriptionKey?: string;
+  containerMarginTop?: string;
+  showDateApplied: boolean;
+  showDateApproved: boolean;
+  showReason: boolean;
+  showAttachments: boolean;
+  isRecipientTopAligned: boolean;
+  usesArrowRightIcon: boolean;
+}
 
 export interface PolicyLeaveReviewEmployeeType {
   employeeId: number;
@@ -71,10 +87,6 @@ export interface PolicyLeaveReviewPayload {
   leaveRequestId: number;
   status: PolicyLeaveRequestStatus;
   reviewerComment?: string;
-}
-
-export interface PolicyLeaveCancelPayload {
-  leaveRequestId: number;
 }
 
 export interface PolicyLeaveNudgeStatusType {

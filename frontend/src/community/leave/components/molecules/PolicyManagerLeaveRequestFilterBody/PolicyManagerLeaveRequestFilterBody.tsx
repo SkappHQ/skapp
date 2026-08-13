@@ -13,7 +13,10 @@ import {
 } from "~community/common/utils/commonUtil";
 import { clampToCurrentYear } from "~community/common/utils/dateTimeUtils";
 import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
-import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
+import {
+  UNPAGINATED_PAGE,
+  UNPAGINATED_SIZE
+} from "~community/leave/constants/policyLeaveTypeConstants";
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import { policyLeaveStatusFilters } from "~community/leave/utils/policyLeave/policyLeaveUtils";
@@ -35,19 +38,16 @@ const PolicyManagerLeaveRequestFilterBody: FC<Props> = ({
     "leaveRequestFilters"
   );
 
-  const requestParams = usePolicyLeaveReviewStore(
-    (state) => state.requestParams
-  );
-  const setRequestFilters = usePolicyLeaveReviewStore(
-    (state) => state.setRequestFilters
-  );
-  const resetRequestFilters = usePolicyLeaveReviewStore(
-    (state) => state.resetRequestFilters
-  );
+  const { requestParams, setRequestFilters, resetRequestFilters } =
+    usePolicyLeaveReviewStore((state) => ({
+      requestParams: state.requestParams,
+      setRequestFilters: state.setRequestFilters,
+      resetRequestFilters: state.resetRequestFilters
+    }));
 
   const { data: leaveTypes } = useGetPolicyLeaveTypes({
     isActive: true,
-    page: 0,
+    page: UNPAGINATED_PAGE,
     size: UNPAGINATED_SIZE
   });
 

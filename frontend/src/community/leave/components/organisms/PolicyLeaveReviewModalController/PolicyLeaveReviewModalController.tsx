@@ -6,17 +6,11 @@ import { useGetPolicyManagerLeaveRequestById } from "~community/leave/api/Policy
 import PolicyLeaveDeclineModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveDeclineModal/PolicyLeaveDeclineModal";
 import PolicyLeaveReviewModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveReviewModal/PolicyLeaveReviewModal";
 import PolicyLeaveReviewResultModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveReviewResultModal/PolicyLeaveReviewResultModal";
+import { STATUS_POPUP_TYPES } from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { usePolicyLeaveReviewStore } from "~community/leave/store/policyLeaveReviewStore";
+import { PolicyLeavePopupType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
-
-const STATUS_POPUP_TYPES: PolicyLeaveRequestStatus[] = [
-  PolicyLeaveRequestStatus.PENDING,
-  PolicyLeaveRequestStatus.DENIED,
-  PolicyLeaveRequestStatus.APPROVED,
-  PolicyLeaveRequestStatus.CANCELLED,
-  PolicyLeaveRequestStatus.REVOKED
-];
 
 const PolicyLeaveReviewModalController: FC = () => {
   const translateText = useTranslator(
@@ -25,34 +19,31 @@ const PolicyLeaveReviewModalController: FC = () => {
     "leaveModals"
   );
 
-  const isManagerModalOpen = usePolicyLeaveReviewStore(
-    (state) => state.isManagerModalOpen
-  );
-  const selectedRequestId = usePolicyLeaveReviewStore(
-    (state) => state.selectedRequestId
-  );
-  const closeManagerModal = usePolicyLeaveReviewStore(
-    (state) => state.closeManagerModal
-  );
+  const { isManagerModalOpen, selectedRequestId, closeManagerModal } =
+    usePolicyLeaveReviewStore((state) => ({
+      isManagerModalOpen: state.isManagerModalOpen,
+      selectedRequestId: state.selectedRequestId,
+      closeManagerModal: state.closeManagerModal
+    }));
 
-  const [popupType, setPopupType] = useState<string>("");
+  const [popupType, setPopupType] = useState<PolicyLeavePopupType>(
+    PolicyLeaveReviewModalEnums.NONE
+  );
 
   const { data: request } =
     useGetPolicyManagerLeaveRequestById(selectedRequestId);
 
   const closeModal = (): void => {
-    setPopupType("");
+    setPopupType(PolicyLeaveReviewModalEnums.NONE);
     closeManagerModal();
   };
 
-  // Only seeds the popup once per opening. Reviewing the request writes a fresh object
-  // into the query cache, so re-deriving from the status on every change would drop the
-  // manager straight back to the plain status popup.
   useEffect(() => {
     if (!isManagerModalOpen || !request) return;
     setPopupType((currentPopupType) =>
-      currentPopupType === ""
-        ? (STATUS_POPUP_TYPES.find((status) => status === request.status) ?? "")
+      currentPopupType === PolicyLeaveReviewModalEnums.NONE
+        ? (STATUS_POPUP_TYPES.find((status) => status === request.status) ??
+          PolicyLeaveReviewModalEnums.NONE)
         : currentPopupType
     );
   }, [request, isManagerModalOpen]);

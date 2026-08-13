@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 
 import CheckIcon from "~community/common/assets/Icons/CheckIcon";
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
@@ -15,7 +15,10 @@ import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveRev
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
-import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
+import {
+  PolicyLeavePopupType,
+  PolicyLeaveRequestDetailType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import {
   PolicyLeaveAttachmentType,
   PolicyLeaveRequestStatus
@@ -28,7 +31,7 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
-  setPopupType: Dispatch<SetStateAction<string>>;
+  setPopupType: (popupType: PolicyLeavePopupType) => void;
 }
 
 const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
@@ -37,7 +40,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
     "leaveRequests",
     "leaveManagerEmployee"
   );
-  const translateDurationText = useTranslator("leaveModule", "myRequests");
+  const translateLeaveModuleText = useTranslator("leaveModule");
   const commonTranslateText = useTranslator("words");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
@@ -146,8 +149,8 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
                 label={getPolicyLeaveDurationLabel(
                   request.durationDays,
                   request.leaveState,
-                  translateDurationText,
-                  commonTranslateText
+                  translateLeaveModuleText,
+                  commonTranslateText(["days"])
                 )}
                 chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
               />

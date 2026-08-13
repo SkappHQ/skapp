@@ -1,26 +1,19 @@
 import {
   UseMutationResult,
   UseQueryResult,
-  skipToken,
   useMutation,
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
 
-import {
-  ErrorResponse,
-  SortKeyTypes,
-  SortOrderTypes
-} from "~community/common/types/CommonTypes";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { policyLeaveReviewEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import {
   policyLeaveQueryKeys,
   policyLeaveReviewQueryKeys
 } from "~community/leave/api/utils/QueryKeys";
-import { UNPAGINATED_SIZE } from "~community/leave/constants/policyLeaveTypeConstants";
 import {
-  PolicyLeaveCancelPayload,
   PolicyLeaveNudgeStatusResponse,
   PolicyLeaveNudgeStatusType,
   PolicyLeaveRequestDetailResponse,
@@ -28,10 +21,8 @@ import {
   PolicyLeaveReviewPayload,
   PolicyManagerLeaveRequestPageResponse,
   PolicyManagerLeaveRequestPageType,
-  PolicyManagerLeaveRequestQueryParams,
-  PolicyManagerLeaveRequestType
+  PolicyManagerLeaveRequestQueryParams
 } from "~community/leave/types/PolicyLeaveReviewTypes";
-import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
 const getPolicyManagerLeaveRequests = async (
   queryParams: PolicyManagerLeaveRequestQueryParams
@@ -55,33 +46,6 @@ export const useGetPolicyManagerLeaveRequests = (
   });
 };
 
-/** The pending table is the supervisor feed filtered to PENDING and left unpaged. */
-const pendingQueryParams = (
-  searchKeyword: string
-): PolicyManagerLeaveRequestQueryParams => ({
-  page: 0,
-  size: UNPAGINATED_SIZE,
-  sortKey: SortKeyTypes.START_DATE,
-  sortOrder: SortOrderTypes.ASC,
-  status: PolicyLeaveRequestStatus.PENDING,
-  searchKeyword: searchKeyword || undefined
-});
-
-export const useGetPendingPolicyLeaveRequests = (
-  searchKeyword: string,
-  enabled = true
-): UseQueryResult<PolicyManagerLeaveRequestType[]> => {
-  const queryParams = pendingQueryParams(searchKeyword);
-
-  return useQuery({
-    queryKey: policyLeaveReviewQueryKeys.MANAGER_REQUESTS(queryParams),
-    queryFn: async () =>
-      (await getPolicyManagerLeaveRequests(queryParams)).items,
-    enabled,
-    refetchOnWindowFocus: false
-  });
-};
-
 const getPolicyLeaveRequestDetail = async (
   url: string
 ): Promise<PolicyLeaveRequestDetailType> => {
@@ -94,15 +58,13 @@ export const useGetPolicyManagerLeaveRequestById = (
 ): UseQueryResult<PolicyLeaveRequestDetailType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.MANAGER_REQUEST(leaveRequestId),
-    queryFn:
-      leaveRequestId === null
-        ? skipToken
-        : () =>
-            getPolicyLeaveRequestDetail(
-              policyLeaveReviewEndPoints.MANAGER_POLICY_LEAVE_REQUEST(
-                leaveRequestId
-              )
-            ),
+    queryFn: () =>
+      getPolicyLeaveRequestDetail(
+        policyLeaveReviewEndPoints.MANAGER_POLICY_LEAVE_REQUEST(
+          Number(leaveRequestId)
+        )
+      ),
+    enabled: leaveRequestId !== null,
     refetchOnWindowFocus: false
   });
 };
@@ -112,13 +74,13 @@ export const useGetMyPolicyLeaveRequestById = (
 ): UseQueryResult<PolicyLeaveRequestDetailType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.MY_REQUEST(leaveRequestId),
-    queryFn:
-      leaveRequestId === null
-        ? skipToken
-        : () =>
-            getPolicyLeaveRequestDetail(
-              policyLeaveReviewEndPoints.MY_POLICY_LEAVE_REQUEST(leaveRequestId)
-            ),
+    queryFn: () =>
+      getPolicyLeaveRequestDetail(
+        policyLeaveReviewEndPoints.MY_POLICY_LEAVE_REQUEST(
+          Number(leaveRequestId)
+        )
+      ),
+    enabled: leaveRequestId !== null,
     refetchOnWindowFocus: false
   });
 };
@@ -148,49 +110,6 @@ export const useReviewPolicyLeaveRequest = (
   return useMutation({
     mutationFn: reviewPolicyLeaveRequest,
     onSuccess: (data) => {
-      queryClient.setQueryData(
-        policyLeaveReviewQueryKeys.MANAGER_REQUEST(data.leaveRequestId),
-        data
-      );
-      queryClient.invalidateQueries({
-        queryKey: policyLeaveReviewQueryKeys.ALL
-      });
-      queryClient.invalidateQueries({ queryKey: policyLeaveQueryKeys.ALL });
-      onSuccess(data);
-    },
-    onError: (error: ErrorResponse) => {
-      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-    }
-  });
-};
-
-const cancelMyPolicyLeaveRequest = async ({
-  leaveRequestId
-}: PolicyLeaveCancelPayload): Promise<PolicyLeaveRequestDetailType> => {
-  const response = await authFetch.patch<PolicyLeaveRequestDetailResponse>(
-    policyLeaveReviewEndPoints.MY_POLICY_LEAVE_REQUEST(leaveRequestId),
-    { status: PolicyLeaveRequestStatus.CANCELLED }
-  );
-  return response.data.results[0];
-};
-
-export const useCancelMyPolicyLeaveRequest = (
-  onSuccess: (data: PolicyLeaveRequestDetailType) => void,
-  onError: (messageKey: string) => void
-): UseMutationResult<
-  PolicyLeaveRequestDetailType,
-  ErrorResponse,
-  PolicyLeaveCancelPayload
-> => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: cancelMyPolicyLeaveRequest,
-    onSuccess: (data) => {
-      queryClient.setQueryData(
-        policyLeaveReviewQueryKeys.MY_REQUEST(data.leaveRequestId),
-        data
-      );
       queryClient.invalidateQueries({
         queryKey: policyLeaveReviewQueryKeys.ALL
       });
@@ -219,10 +138,8 @@ export const useCheckPolicyLeaveAlreadyNudged = (
 ): UseQueryResult<PolicyLeaveNudgeStatusType> => {
   return useQuery({
     queryKey: policyLeaveReviewQueryKeys.NUDGE_STATUS(leaveRequestId),
-    queryFn:
-      leaveRequestId === null
-        ? skipToken
-        : () => getPolicyLeaveRequestNudgeStatus(leaveRequestId),
+    queryFn: () => getPolicyLeaveRequestNudgeStatus(Number(leaveRequestId)),
+    enabled: leaveRequestId !== null,
     refetchOnWindowFocus: false
   });
 };

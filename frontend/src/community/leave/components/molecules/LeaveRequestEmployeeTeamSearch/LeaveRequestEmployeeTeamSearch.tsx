@@ -3,35 +3,17 @@ import { FC, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import PeopleAndTeamAutocompleteSearch, {
-  OptionType
+  OptionType,
+  SearchOptionCategory
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { matchesLeadingWhitespace } from "~community/common/regex/regexPatterns";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import { EmployeeTeamSearchResultType } from "~community/common/types/CommonTypes";
 import { useGetEmployeesAndTeamsForAnalytics } from "~community/people/api/PeopleApi";
 import { usePeopleStore } from "~community/people/store/store";
 
-interface EmployeeSuggestion {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  authPic?: string | null;
-}
-
-interface TeamSuggestion {
-  teamId: number;
-  teamName: string;
-}
-
-interface EmployeeAndTeamSuggestions {
-  employeeResponseDtoList?: EmployeeSuggestion[];
-  teamResponseDtoList?: TeamSuggestion[];
-}
-
-/**
- * Employee and team search above the all leave requests table. Shared by the legacy and
- * the policy leave variants of the page so both render the same control.
- */
 const LeaveRequestEmployeeTeamSearch: FC = () => {
   const translateText = useTranslator("leaveModule");
   const router = useRouter();
@@ -62,46 +44,46 @@ const LeaveRequestEmployeeTeamSearch: FC = () => {
     }
   };
 
-  const options = useMemo(() => {
-    const employeeAndTeamSuggestions = suggestions as
-      | EmployeeAndTeamSuggestions
-      | undefined;
+  const employeeAndTeamOptions = useMemo(() => {
+    const employeeAndTeamSuggestions: EmployeeTeamSearchResultType | undefined =
+      suggestions;
 
-    const individualSuggestions =
-      employeeAndTeamSuggestions?.employeeResponseDtoList?.map((employee) => {
-        return {
-          value: employee.employeeId,
-          label: `${employee.firstName} ${employee.lastName}`,
-          category: "Individuals",
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          authPic: employee.authPic ?? undefined
-        };
-      });
+    const individualOptions =
+      employeeAndTeamSuggestions?.employeeResponseDtoList?.map((employee) => ({
+        value: employee.employeeId,
+        label: `${employee.firstName} ${employee.lastName}`,
+        category: SearchOptionCategory.INDIVIDUALS,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        authPic: employee.authPic ?? undefined
+      }));
 
-    const teamSuggestions =
-      employeeAndTeamSuggestions?.teamResponseDtoList?.map((team) => {
-        return {
-          value: team.teamId,
-          label: team.teamName,
-          category: "Teams",
-          teamName: team.teamName
-        };
-      });
+    const teamOptions = employeeAndTeamSuggestions?.teamResponseDtoList?.map(
+      (team) => ({
+        value: team.teamId,
+        label: team.teamName,
+        category: SearchOptionCategory.TEAMS,
+        teamName: team.teamName
+      })
+    );
 
-    return [...(individualSuggestions || []), ...(teamSuggestions || [])];
+    return [...(individualOptions || []), ...(teamOptions || [])];
   }, [suggestions]);
 
   const onSearchChange = async (value: OptionType | null) => {
-    if (value?.category === "Individuals") {
+    if (value?.category === SearchOptionCategory.INDIVIDUALS) {
       await handleRowClick({ employeeId: value.value });
     }
 
-    if (value?.category === "Teams") {
+    if (value?.category === SearchOptionCategory.TEAMS) {
       await router.push(
         `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/${value.value}?teamName=${encodeURIComponent(value.label)}`
       );
     }
+  };
+
+  const handleInputChange = (value: string): void => {
+    setSearchTerm(value.replace(matchesLeadingWhitespace(), ""));
   };
 
   return (
@@ -111,20 +93,16 @@ const LeaveRequestEmployeeTeamSearch: FC = () => {
         textField: "all-leave-requests-text-field"
       }}
       name="leaveRequestsSearch"
-      options={options}
+      options={employeeAndTeamOptions}
       value={null}
       inputValue={searchTerm}
       onChange={onSearchChange}
-      onInputChange={(value) => {
-        const formattedValue = value.replace(/^\s+/g, "");
-        setSearchTerm(formattedValue);
-      }}
+      onInputChange={handleInputChange}
       placeholder={translateText(["leaveRequests.search"])}
       isLoading={isSuggestionsPending}
       error={searchErrors}
       isDisabled={false}
       required={false}
-      label=""
     />
   );
 };

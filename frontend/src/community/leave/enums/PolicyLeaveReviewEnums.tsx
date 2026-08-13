@@ -1,4 +1,5 @@
 export enum PolicyLeaveReviewModalEnums {
+  NONE = "",
   DECLINE = "DECLINE",
   APPROVED_STATUS = "APPROVED_STATUS",
   DECLINE_STATUS = "DECLINE_STATUS",

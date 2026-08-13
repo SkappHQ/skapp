@@ -12,7 +12,10 @@ import type {
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { SortKeyTypes } from "~community/common/types/CommonTypes";
+import {
+  SortKeyTypes,
+  SortOrderTypes
+} from "~community/common/types/CommonTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
@@ -37,40 +40,27 @@ const chipClassName =
   "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
 
 const PolicyManagerLeaveRequests: FC = () => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "leaveRequests",
-    "leaveRequestTable"
-  );
-
-  const translateSortText = useTranslator(
-    "leaveModule",
-    "leaveRequests",
-    "leaveRequestSort"
-  );
+  const translateText = useTranslator("leaveModule", "leaveRequests");
 
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
   const translateCommonAria = useTranslator("commonAria", "components");
 
-  const requestParams = usePolicyLeaveReviewStore(
-    (state) => state.requestParams
-  );
-  const setRequestPage = usePolicyLeaveReviewStore(
-    (state) => state.setRequestPage
-  );
-  const setRequestSortKey = usePolicyLeaveReviewStore(
-    (state) => state.setRequestSortKey
-  );
-  const setRequestDateRange = usePolicyLeaveReviewStore(
-    (state) => state.setRequestDateRange
-  );
-  const setRequestStatusFilter = usePolicyLeaveReviewStore(
-    (state) => state.setRequestStatusFilter
-  );
-  const openManagerModal = usePolicyLeaveReviewStore(
-    (state) => state.openManagerModal
-  );
+  const {
+    requestParams,
+    setRequestPage,
+    setRequestSortKey,
+    setRequestDateRange,
+    setRequestStatusFilter,
+    openManagerModal
+  } = usePolicyLeaveReviewStore((state) => ({
+    requestParams: state.requestParams,
+    setRequestPage: state.setRequestPage,
+    setRequestSortKey: state.setRequestSortKey,
+    setRequestDateRange: state.setRequestDateRange,
+    setRequestStatusFilter: state.setRequestStatusFilter,
+    openManagerModal: state.openManagerModal
+  }));
 
   const [selectedDateRange, setSelectedDateRange] = useState<
     DateRange | undefined
@@ -102,10 +92,16 @@ const PolicyManagerLeaveRequests: FC = () => {
     (isDateRangeApplied ? 1 : 0);
 
   const columns = [
-    { field: "name", headerName: translateText(["name"]) },
-    { field: "duration", headerName: translateText(["duration"]) },
-    { field: "type", headerName: translateText(["type"]) },
-    { field: "status", headerName: translateText(["status"]) }
+    { field: "name", headerName: translateText(["leaveRequestTable", "name"]) },
+    {
+      field: "duration",
+      headerName: translateText(["leaveRequestTable", "duration"])
+    },
+    { field: "type", headerName: translateText(["leaveRequestTable", "type"]) },
+    {
+      field: "status",
+      headerName: translateText(["leaveRequestTable", "status"])
+    }
   ];
 
   const tableHeaders: GridHeader[] = columns.map((col) => ({
@@ -177,12 +173,12 @@ const PolicyManagerLeaveRequests: FC = () => {
   const sortOptions = [
     {
       id: SortKeyTypes.CREATED_DATE,
-      label: translateSortText(["dateRequested"]),
+      label: translateText(["leaveRequestSort", "dateRequested"]),
       value: SortKeyTypes.CREATED_DATE
     },
     {
       id: SortKeyTypes.START_DATE,
-      label: translateSortText(["leaveDate"]),
+      label: translateText(["leaveRequestSort", "leaveDate"]),
       value: SortKeyTypes.START_DATE
     }
   ];
@@ -196,7 +192,7 @@ const PolicyManagerLeaveRequests: FC = () => {
           sortBy: selectedOption?.label
         })}
       >
-        {translateSortText(["sortBy"])}
+        {translateText(["leaveRequestSort", "sortBy"])}
       </span>
     );
   };
@@ -210,15 +206,20 @@ const PolicyManagerLeaveRequests: FC = () => {
   );
 
   const handleSortChange = (value: string): void => {
-    setRequestSortKey(value as SortKeyTypes);
+    const sortKey = value as SortKeyTypes;
+
+    setRequestSortKey(
+      sortKey,
+      sortKey === SortKeyTypes.START_DATE
+        ? SortOrderTypes.ASC
+        : SortOrderTypes.DESC
+    );
   };
 
   const handleRowClick = (row: GridRow): void => {
     openManagerModal(Number(row.id));
   };
 
-  // The store outlives the page, so the status filter is seeded on every entry the way
-  // the legacy page did it.
   useEffect(() => {
     setRequestStatusFilter([PolicyLeaveRequestStatus.PENDING]);
   }, [setRequestStatusFilter]);
@@ -253,8 +254,11 @@ const PolicyManagerLeaveRequests: FC = () => {
       isLoading={isLoading}
       skeletonRows={LEAVE_REQUESTS_SKELETON_ROWS}
       emptyState={{
-        title: translateText(["noLeaveRequests"]),
-        description: translateText(["noLeaveRequestsManagerDetails"])
+        title: translateText(["leaveRequestTable", "noLeaveRequests"]),
+        description: translateText([
+          "leaveRequestTable",
+          "noLeaveRequestsManagerDetails"
+        ])
       }}
       onRowClick={handleRowClick}
       pagination={{

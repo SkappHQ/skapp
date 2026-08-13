@@ -1,5 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
 import UndoIcon from "~community/common/assets/Icons/UndoIcon";
@@ -11,7 +11,10 @@ import { IconName } from "~community/common/types/IconTypes";
 import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupRow from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupRow/LeaveStatusPopupRow";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
+import {
+  PolicyLeavePopupType,
+  PolicyLeaveRequestDetailType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import {
   getStartEndDate,
@@ -24,8 +27,8 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 interface Props {
   request: PolicyLeaveRequestDetailType;
   closeModal: () => void;
-  popupType: string;
-  setPopupType: Dispatch<SetStateAction<string>>;
+  popupType: PolicyLeavePopupType;
+  setPopupType: (popupType: PolicyLeavePopupType) => void;
 }
 
 const PolicyLeaveReviewResultModal: FC<Props> = ({
@@ -34,25 +37,28 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
   popupType,
   setPopupType
 }) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "leaveRequests",
-    "leaveManagerEmployee"
-  );
-  const translateDurationText = useTranslator("leaveModule", "myRequests");
+  const translateText = useTranslator("leaveModule");
   const commonTranslateText = useTranslator("words");
 
   const { setToastMessage } = useToast();
   const { sendEvent } = useGoogleAnalyticsEvent();
 
-  const { mutate, isPending } = useReviewPolicyLeaveRequest(
+  const { mutate: revokeLeaveRequest, isPending } = useReviewPolicyLeaveRequest(
     () => {
-      setPopupType("");
+      setPopupType(PolicyLeaveReviewModalEnums.NONE);
       setToastMessage({
         open: true,
         toastType: ToastType.SUCCESS,
-        title: translateText(["revokeLeaveSuccessTitle"]),
-        description: translateText(["revokeLeaveSuccessDesc"]),
+        title: translateText([
+          "leaveRequests",
+          "leaveManagerEmployee",
+          "revokeLeaveSuccessTitle"
+        ]),
+        description: translateText([
+          "leaveRequests",
+          "leaveManagerEmployee",
+          "revokeLeaveSuccessDesc"
+        ]),
         isIcon: true
       });
       sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_REVOKED);
@@ -62,15 +68,23 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText(["revokeLeaveFailTitle"]),
-        description: translateText(["revokeLeaveFailDesc"]),
+        title: translateText([
+          "leaveRequests",
+          "leaveManagerEmployee",
+          "revokeLeaveFailTitle"
+        ]),
+        description: translateText([
+          "leaveRequests",
+          "leaveManagerEmployee",
+          "revokeLeaveFailDesc"
+        ]),
         isIcon: true
       });
     }
   );
 
   const handleUndo = (): void => {
-    mutate({
+    revokeLeaveRequest({
       leaveRequestId: request.leaveRequestId,
       status: PolicyLeaveRequestStatus.REVOKED,
       reviewerComment: ""
@@ -97,7 +111,11 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
     <div>
       <div className="pt-3 pb-4">
         <LeaveStatusPopupRow
-          label={translateText(["member"])}
+          label={translateText([
+            "leaveRequests",
+            "leaveManagerEmployee",
+            "member"
+          ])}
           isRecipient={true}
           styles={{ marginBottom: "1.25rem" }}
           role="member"
@@ -109,24 +127,36 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           profilePicture={request.employee.authPic ?? ""}
         />
         <LeaveStatusPopupRow
-          label={translateText(["duration"])}
+          label={translateText([
+            "leaveRequests",
+            "leaveManagerEmployee",
+            "duration"
+          ])}
           durationByDays={getPolicyLeaveDurationLabel(
             request.durationDays,
             request.leaveState,
-            translateDurationText,
-            commonTranslateText
+            translateText,
+            commonTranslateText(["days"])
           )}
           durationDate={getStartEndDate(request.startDate, request.endDate)}
           styles={{ marginBottom: "1.25rem" }}
         />
         <LeaveStatusPopupRow
-          label={translateText(["type"])}
+          label={translateText([
+            "leaveRequests",
+            "leaveManagerEmployee",
+            "type"
+          ])}
           iconType={request.leaveType.name}
           styles={{ marginBottom: "1.25rem" }}
           icon={request.leaveType.emojiCode}
         />
         <LeaveStatusPopupRow
-          label={translateText(["status"])}
+          label={translateText([
+            "leaveRequests",
+            "leaveManagerEmployee",
+            "status"
+          ])}
           styles={{ marginBottom: "1.25rem" }}
           iconType={handleLeaveStatus(resolvedStatus)}
           icon={
@@ -151,7 +181,11 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
             icon={<UndoIcon />}
             iconPosition="start"
           >
-            {translateText(["revokeLeave"])}
+            {translateText([
+              "leaveRequests",
+              "leaveManagerEmployee",
+              "revokeLeave"
+            ])}
           </ButtonV2>
         )}
         <ButtonV2
@@ -159,7 +193,11 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
           icon={<RightArrowIcon />}
           iconPosition="end"
         >
-          {translateText(["proceedToDashboard"])}
+          {translateText([
+            "leaveRequests",
+            "leaveManagerEmployee",
+            "proceedToDashboard"
+          ])}
         </ButtonV2>
       </div>
     </div>

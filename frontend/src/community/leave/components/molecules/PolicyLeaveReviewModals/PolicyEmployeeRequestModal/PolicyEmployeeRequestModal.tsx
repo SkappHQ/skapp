@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -17,7 +17,10 @@ import PolicyLeaveAttachmentRow from "~community/leave/components/molecules/Poli
 import StatusPopupColumn from "~community/leave/components/molecules/StatusPopupColumn/StatusPopupColumn";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
+import {
+  PolicyLeavePopupType,
+  PolicyLeaveRequestDetailType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import {
   getStartEndDate,
   handleDurationDay,
@@ -28,7 +31,7 @@ import { toStatusPopupReviewer } from "~community/leave/utils/policyLeave/policy
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
-  setPopupType: Dispatch<SetStateAction<string>>;
+  setPopupType: (popupType: PolicyLeavePopupType) => void;
 }
 
 const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {

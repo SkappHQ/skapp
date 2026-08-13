@@ -21,10 +21,6 @@ export const getPolicyManagerLeaveRequestQueryParams = (
   };
 };
 
-/**
- * Auto approved requests carry no reviewed date, so the raw value is formatted only when
- * it parses. Anything else renders as an empty chip rather than "Invalid DateTime".
- */
 export const formatOptionalDate = (value: string | null): string => {
   if (!value) return "";
 

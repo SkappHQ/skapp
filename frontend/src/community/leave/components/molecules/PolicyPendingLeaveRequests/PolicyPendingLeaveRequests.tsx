@@ -2,7 +2,7 @@ import { Box, Stack } from "@mui/material";
 import { Theme, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useMemo } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -13,14 +13,25 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import {
+  SortKeyTypes,
+  SortOrderTypes
+} from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
 import { getEmoji } from "~community/common/utils/commonUtil";
 import {
-  useGetPendingPolicyLeaveRequests,
+  useGetPolicyManagerLeaveRequests,
   useReviewPolicyLeaveRequest
 } from "~community/leave/api/PolicyLeaveReviewApi";
+import {
+  UNPAGINATED_PAGE,
+  UNPAGINATED_SIZE
+} from "~community/leave/constants/policyLeaveTypeConstants";
 import { LEAVE_REQUESTS_URL } from "~community/leave/types/PendingLeaves";
-import { PolicyManagerLeaveRequestType } from "~community/leave/types/PolicyLeaveReviewTypes";
+import {
+  PolicyManagerLeaveRequestQueryParams,
+  PolicyManagerLeaveRequestType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -60,7 +71,19 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
     { id: "actions", label: "" }
   ];
 
-  const { data } = useGetPendingPolicyLeaveRequests(searchTerm || "");
+  const pendingRequestParams = useMemo<PolicyManagerLeaveRequestQueryParams>(
+    () => ({
+      page: UNPAGINATED_PAGE,
+      size: UNPAGINATED_SIZE,
+      sortKey: SortKeyTypes.START_DATE,
+      sortOrder: SortOrderTypes.ASC,
+      status: PolicyLeaveRequestStatus.PENDING,
+      searchKeyword: searchTerm || undefined
+    }),
+    [searchTerm]
+  );
+
+  const { data } = useGetPolicyManagerLeaveRequests(pendingRequestParams);
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
@@ -126,7 +149,7 @@ const PolicyPendingLeaveRequests: React.FC<Props> = ({ searchTerm }) => {
     });
   };
 
-  const leaveRequests = data || [];
+  const leaveRequests = data?.items ?? [];
 
   const tableRows = leaveRequests.map(
     (request: PolicyManagerLeaveRequestType) => ({

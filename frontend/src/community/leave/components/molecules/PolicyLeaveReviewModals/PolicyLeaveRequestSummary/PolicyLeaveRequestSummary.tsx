@@ -9,9 +9,11 @@ import { IconName } from "~community/common/types/IconTypes";
 import PolicyLeaveAttachmentRow from "~community/leave/components/molecules/PolicyLeaveAttachmentRow/PolicyLeaveAttachmentRow";
 import StatusPopupColumn from "~community/leave/components/molecules/StatusPopupColumn/StatusPopupColumn";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
-import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
-import { PolicyLeaveRequestDetailType } from "~community/leave/types/PolicyLeaveReviewTypes";
-import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
+import { SUMMARY_LAYOUTS } from "~community/leave/constants/policyLeaveReviewConstants";
+import {
+  PolicyLeavePopupType,
+  PolicyLeaveRequestDetailType
+} from "~community/leave/types/PolicyLeaveReviewTypes";
 import {
   getStartEndDate,
   handleDurationDay,
@@ -25,83 +27,9 @@ import {
 
 interface Props {
   request: PolicyLeaveRequestDetailType;
-  popupType: string;
+  popupType: PolicyLeavePopupType;
   handleRequestStatusPopup: () => void;
 }
-
-interface SummaryLayout {
-  descriptionKey?: string;
-  containerMarginTop?: string;
-  showDateApplied: boolean;
-  showDateApproved: boolean;
-  showReason: boolean;
-  showAttachments: boolean;
-  isRecipientTopAligned: boolean;
-  usesArrowRightIcon: boolean;
-}
-
-/**
- * One entry per legacy popup this summary replaces (`EmployeeLeave*StatusPopup`,
- * `EmployeeLeaveRequestCancelledPopup`, `EmployeeNudgeSupervisorPopup`). Each reproduces
- * the row set and spacing of its legacy counterpart, which differ per status.
- */
-const SUMMARY_LAYOUTS: Record<string, SummaryLayout> = {
-  [PolicyLeaveRequestStatus.APPROVED]: {
-    containerMarginTop: "1.25rem",
-    showDateApplied: true,
-    showDateApproved: true,
-    showReason: true,
-    showAttachments: true,
-    isRecipientTopAligned: true,
-    usesArrowRightIcon: false
-  },
-  [PolicyLeaveRequestStatus.DENIED]: {
-    containerMarginTop: "1rem",
-    showDateApplied: false,
-    showDateApproved: false,
-    showReason: false,
-    showAttachments: false,
-    isRecipientTopAligned: false,
-    usesArrowRightIcon: true
-  },
-  [PolicyLeaveRequestStatus.REVOKED]: {
-    showDateApplied: false,
-    showDateApproved: false,
-    showReason: false,
-    showAttachments: false,
-    isRecipientTopAligned: true,
-    usesArrowRightIcon: false
-  },
-  [PolicyLeaveRequestStatus.CANCELLED]: {
-    containerMarginTop: "1rem",
-    showDateApplied: false,
-    showDateApproved: false,
-    showReason: false,
-    showAttachments: true,
-    isRecipientTopAligned: false,
-    usesArrowRightIcon: true
-  },
-  [PolicyLeaveReviewModalEnums.CANCELLED_SUMMARY]: {
-    descriptionKey: "leaveRequestCancelledDescription",
-    containerMarginTop: "1.25rem",
-    showDateApplied: false,
-    showDateApproved: false,
-    showReason: false,
-    showAttachments: true,
-    isRecipientTopAligned: true,
-    usesArrowRightIcon: false
-  },
-  [PolicyLeaveReviewModalEnums.SUPERVISOR_NUDGED]: {
-    descriptionKey: "supervisorNudgedDescription",
-    containerMarginTop: "1.25rem",
-    showDateApplied: false,
-    showDateApproved: false,
-    showReason: false,
-    showAttachments: true,
-    isRecipientTopAligned: true,
-    usesArrowRightIcon: false
-  }
-};
 
 const PolicyLeaveRequestSummary: FC<Props> = ({
   request,
@@ -111,9 +39,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
   const theme: Theme = useTheme();
   const translateText = useTranslator("leaveModule", "myRequests");
 
-  const layout =
-    SUMMARY_LAYOUTS[popupType] ??
-    SUMMARY_LAYOUTS[PolicyLeaveRequestStatus.REVOKED];
+  const layout = SUMMARY_LAYOUTS[popupType];
 
   return (
     <>
