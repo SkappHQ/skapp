@@ -24,29 +24,22 @@ const CrmDataSlice = (
   stages: {} as Record<number, CrmStageEntity>,
   taskTypes: {} as Record<number, CrmTaskTypeEntity>,
 
-  setCompanies: (
-    companies: Record<number, CrmCompanyEntity>,
-    companyIds?: number[]
-  ) => set({ companies, ...(companyIds !== undefined && { companyIds }) }),
+  setCompanies: (companies: Record<number, CrmCompanyEntity>) =>
+    set({ companies }),
 
-  setContacts: (
-    contacts: Record<number, CrmContactEntity>,
-    contactIds?: number[]
-  ) => set({ contacts, ...(contactIds !== undefined && { contactIds }) }),
+  setContacts: (contacts: Record<number, CrmContactEntity>) =>
+    set({ contacts }),
 
-  setDeals: (deals: Record<number, CrmDealEntity>, dealIds?: number[]) =>
-    set({ deals, ...(dealIds !== undefined && { dealIds }) }),
+  setDeals: (deals: Record<number, CrmDealEntity>) => set({ deals }),
 
   setBoardColumn: (stageId: number, column: CrmBoardColumn) =>
     set({ board: { ...get().board, [stageId]: column } }),
 
-  setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds?: number[]) =>
-    set({ tasks, ...(taskIds !== undefined && { taskIds }) }),
+  setTasks: (tasks: Record<number, CrmTaskEntity>) => set({ tasks }),
 
   setOwners: (owners: Record<number, CrmOwnerEntity>) => set({ owners }),
 
-  setStages: (stages: Record<number, CrmStageEntity>, stageIds: number[]) =>
-    set({ stages, stageIds }),
+  setStages: (stages: Record<number, CrmStageEntity>) => set({ stages }),
 
   setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) =>
     set({ taskTypes })

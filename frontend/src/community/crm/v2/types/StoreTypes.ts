@@ -14,6 +14,7 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 
 interface ActionTypes {
+<<<<<<< HEAD
   setCompanies: (
     companies: Record<number, CrmCompanyEntity>,
     companyIds?: number[]
@@ -25,12 +26,22 @@ interface ActionTypes {
   setDeals: (deals: Record<number, CrmDealEntity>, dealIds?: number[]) => void;
   setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
   setTasks: (tasks: Record<number, CrmTaskEntity>, taskIds?: number[]) => void;
+=======
+  setCompanies: (companies: Record<number, CrmCompanyEntity>) => void;
+  setContacts: (contacts: Record<number, CrmContactEntity>) => void;
+  setDeals: (deals: Record<number, CrmDealEntity>) => void;
+  setBoardColumn: (stageId: number, column: CrmBoardColumn) => void;
+  setTasks: (tasks: Record<number, CrmTaskEntity>) => void;
+>>>>>>> 8f1f50d8aef2ade08222cc22d18aa452911d51c4
   setOwners: (owners: Record<number, CrmOwnerEntity>) => void;
-  setStages: (
-    stages: Record<number, CrmStageEntity>,
-    stageIds: number[]
-  ) => void;
+  setStages: (stages: Record<number, CrmStageEntity>) => void;
   setTaskTypes: (taskTypes: Record<number, CrmTaskTypeEntity>) => void;
+
+  setCompanyIds: (companyIds: number[]) => void;
+  setContactIds: (contactIds: number[]) => void;
+  setDealIds: (dealIds: number[]) => void;
+  setTaskIds: (taskIds: number[]) => void;
+  setStageIds: (stageIds: number[]) => void;
 
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) => void;
   setCompanyModalType: (companyModalType: CrmModalTypes) => void;

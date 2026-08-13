@@ -29,6 +29,12 @@ const CrmUiSlice = (set: SetType<CrmUiSliceTypes>) => ({
 
   preselectedStageId: null as number | null,
 
+  setCompanyIds: (companyIds: number[]) => set({ companyIds }),
+  setContactIds: (contactIds: number[]) => set({ contactIds }),
+  setDealIds: (dealIds: number[]) => set({ dealIds }),
+  setTaskIds: (taskIds: number[]) => set({ taskIds }),
+  setStageIds: (stageIds: number[]) => set({ stageIds }),
+
   setIsCompanyModalOpen: (isCompanyModalOpen: boolean) =>
     set({ isCompanyModalOpen }),
   setCompanyModalType: (companyModalType: CrmModalTypes) =>
