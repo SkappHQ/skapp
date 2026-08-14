@@ -13,7 +13,7 @@ const BirthdayCelebration = (): JSX.Element => {
       <g clipPath="url(#clip0_929_1835)">
         <path
           d="M-0.078125 42.69C-0.078125 19.113 19.0348 0 42.6119 0H498.022V603H42.6119C19.0349 603 -0.078125 583.887 -0.078125 560.31V42.69Z"
-          fill="#FFFBF0"
+          fill="var(--color-primary)"
         />
         <g clipPath="url(#clip1_929_1835)">
           <rect
