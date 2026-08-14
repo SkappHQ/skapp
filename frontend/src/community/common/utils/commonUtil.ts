@@ -624,3 +624,8 @@ export const concatStrings = (args: string[], separator: string = " ") =>
 
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(2);
+
+export const getEmployeeFullName = (
+  firstName?: string | null,
+  lastName?: string | null
+): string => concatStrings([firstName ?? "", lastName ?? ""].filter(Boolean));

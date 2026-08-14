@@ -1,6 +1,33 @@
 import { DateTime, Duration } from "luxon";
 
-import { TimeSlotsType } from "~community/attendance/types/timeSheetTypes";
+import {
+  DailyLogType,
+  TimeSlotsType
+} from "~community/attendance/types/timeSheetTypes";
+import { daysTypes } from "~community/common/constants/stringConstants";
+
+const WEEK_DAYS: daysTypes[] = [
+  daysTypes.MONDAY,
+  daysTypes.TUESDAY,
+  daysTypes.WEDNESDAY,
+  daysTypes.THURSDAY,
+  daysTypes.FRIDAY,
+  daysTypes.SATURDAY,
+  daysTypes.SUNDAY
+];
+
+// A day with no server-side record still needs a complete DailyLogType, because the
+// entry modal reads timeSlots without guarding for a missing array.
+export const createEmptyDailyLog = (date: string): DailyLogType => ({
+  timeRecordId: 0,
+  date,
+  day: WEEK_DAYS[DateTime.fromISO(date).weekday - 1],
+  workedHours: 0,
+  breakHours: 0,
+  timeSlots: [],
+  leaveRequest: null,
+  holiday: null
+});
 
 export const convertTo24HourByDateString = (date: string) => {
   const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });

@@ -36,8 +36,6 @@ const MyTimeSheet: NextPage = () => {
       }
       primaryButtonType={ButtonStyle.PRIMARY}
       onPrimaryButtonClick={() => {
-        // Clears any employee left over from a direct entry on All Timesheets so this
-        // always submits the current user's own request.
         setDirectEntryEmployee(null);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(

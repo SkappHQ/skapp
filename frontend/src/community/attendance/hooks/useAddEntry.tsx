@@ -155,6 +155,65 @@ const useAddEntry = () => {
     }
   };
 
+  /**
+   * Routes a self-service add through whichever confirmation has to come first: an
+   * ongoing session, a conflicting request, an existing entry, or a leave or holiday on
+   * that date. Falling past all of them submits the request for approval.
+   */
+  const routeSelfServiceAddEntry = (
+    values: TimeEntryFormValueType,
+    timeAvailability: TimeAvailabilityType,
+    dateTimeFromTime: string | null,
+    dateTimeToTime: string | null,
+    setFromDateTime: Dispatch<SetStateAction<string>>,
+    setToDateTime: Dispatch<SetStateAction<string>>
+  ) => {
+    const isOngoingSession =
+      (status === AttendanceSlotType.START ||
+        status === AttendanceSlotType.PAUSE ||
+        status === AttendanceSlotType.RESUME) &&
+      isToday(values?.timeEntryDate);
+
+    const stageDateTimes = () => {
+      setFromDateTime(dateTimeFromTime ?? "");
+      setToDateTime(dateTimeToTime ?? "");
+    };
+
+    const openModal = (modalType: EmployeeTimesheetModalTypes) => {
+      setIsEmployeeTimesheetModalOpen(true);
+      setEmployeeTimesheetModalType(modalType);
+    };
+
+    if (isOngoingSession) {
+      openModal(EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY);
+    } else if (
+      timeAvailability?.editTimeRequests ||
+      timeAvailability?.manualEntryRequests?.length
+    ) {
+      openModal(EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS);
+    } else if (timeAvailability?.timeSlotsExists) {
+      stageDateTimes();
+      openModal(EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS);
+    } else if (timeAvailability?.leaveRequest?.length) {
+      setTimeAvailabilityForPeriod(timeAvailability);
+      stageDateTimes();
+      openModal(EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY);
+    } else if (timeAvailability?.holiday?.length) {
+      setTimeAvailabilityForPeriod(timeAvailability);
+      stageDateTimes();
+      openModal(EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY);
+    } else {
+      manualEntryMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        zoneId: getCurrentTimeZone()
+      });
+      setIsEmployeeTimesheetModalOpen(false);
+    }
+
+    setCurrentAddTimeChanges(values);
+  };
+
   const handleTimeEntrySubmit = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
@@ -169,106 +228,70 @@ const useAddEntry = () => {
       values.timeEntryDate,
       values.toTime
     );
-    if (isDurationValid(values.fromTime, values.toTime)) {
-      // A direct entry writes to the target employee's timesheet without approval, so
-      // it bypasses the branching below, which exists to route the current user's own
-      // request. Whether it is an add or an edit follows from the record already there.
-      if (isDirectEntry && directEntryEmployee) {
-        const existingRecordId = selectedDailyRecord?.timeRecordId ?? undefined;
-        directEntryMutate({
-          employeeId: directEntryEmployee.employeeId,
-          isEdit: Boolean(existingRecordId),
-          payload: {
-            startTime: convertToUtc(dateTimeFromTime),
-            endTime: convertToUtc(dateTimeToTime),
-            recordId: existingRecordId,
-            zoneId: getCurrentTimeZone()
-          }
-        });
-        setIsEmployeeTimesheetModalOpen(false);
-        return;
-      }
 
-      if (
-        employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
-      ) {
-        if (
-          (status === AttendanceSlotType.START ||
-            status === AttendanceSlotType.PAUSE ||
-            status === AttendanceSlotType.RESUME) &&
-          isToday(values?.timeEntryDate)
-        ) {
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY
-          );
-        } else if (
-          timeAvailability?.editTimeRequests ||
-          timeAvailability?.manualEntryRequests?.length
-        ) {
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS
-          );
-        } else if (timeAvailability?.timeSlotsExists) {
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS
-          );
-        } else if (timeAvailability?.leaveRequest?.length) {
-          setTimeAvailabilityForPeriod(timeAvailability);
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY
-          );
-        } else if (timeAvailability?.holiday?.length) {
-          setTimeAvailabilityForPeriod(timeAvailability);
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-          );
-        } else {
-          manualEntryMutate({
-            startTime: convertToUtc(dateTimeFromTime),
-            endTime: convertToUtc(dateTimeToTime),
-            zoneId: getCurrentTimeZone()
-          });
-          setIsEmployeeTimesheetModalOpen(false);
+    if (!isDurationValid(values.fromTime, values.toTime)) return;
+
+    // A direct entry writes to the target employee's timesheet without approval, so it
+    // bypasses the routing below, which exists to route the current user's own request.
+    // Whether it is an add or an edit follows from the record already there.
+    if (isDirectEntry && directEntryEmployee) {
+      const existingRecordId = selectedDailyRecord?.timeRecordId ?? undefined;
+      directEntryMutate({
+        employeeId: directEntryEmployee.employeeId,
+        isEdit: Boolean(existingRecordId),
+        payload: {
+          startTime: convertToUtc(dateTimeFromTime),
+          endTime: convertToUtc(dateTimeToTime),
+          recordId: existingRecordId,
+          zoneId: getCurrentTimeZone()
         }
-        setCurrentAddTimeChanges(values);
-      } else if (
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-      ) {
-        manualEntryMutate({
-          startTime: convertToUtc(dateTimeFromTime),
-          endTime: convertToUtc(dateTimeToTime),
-          zoneId: getCurrentTimeZone()
-        });
-        setIsEmployeeTimesheetModalOpen(false);
-      } else if (
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-      ) {
-        editClockInOutMutate({
-          startTime: convertToUtc(dateTimeFromTime),
-          endTime: convertToUtc(dateTimeToTime),
-          recordId: selectedDailyRecord?.timeRecordId ?? undefined,
-          zoneId: getCurrentTimeZone()
-        });
-        setIsEmployeeTimesheetModalOpen(false);
-      }
+      });
+      setIsEmployeeTimesheetModalOpen(false);
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
+    ) {
+      routeSelfServiceAddEntry(
+        values,
+        timeAvailability,
+        dateTimeFromTime,
+        dateTimeToTime,
+        setFromDateTime,
+        setToDateTime
+      );
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+    ) {
+      manualEntryMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        zoneId: getCurrentTimeZone()
+      });
+      setIsEmployeeTimesheetModalOpen(false);
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
+    ) {
+      editClockInOutMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        recordId: selectedDailyRecord?.timeRecordId ?? undefined,
+        zoneId: getCurrentTimeZone()
+      });
+      setIsEmployeeTimesheetModalOpen(false);
     }
   };
 

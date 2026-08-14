@@ -153,10 +153,6 @@ export const useApproveDenyTimeRequest = (
     },
     onError: (error: ErrorResponse) => {
       onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-      // A rejected action usually means the row on screen no longer matches the server
-      // (most often auto-cancelled by a direct save), so the table is refreshed either
-      // way. A genuine 500 simply re-reads the request as still Pending, keeping it
-      // actionable for a retry.
       queryClient
         .invalidateQueries({
           queryKey: attendanceQueryKeys.getManagerRequests()

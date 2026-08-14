@@ -276,8 +276,6 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            // While the restriction is on, an authorized role turns each day cell into
-            // a direct add/edit entry point for the employee on that row.
             if (canDirectlyAddOrEditEntry && !isFutureDate) {
               const employeeId = employeeData?.employeeId;
               const employeeName = getEmployeeFullName(
