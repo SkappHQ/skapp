@@ -46,6 +46,7 @@ export type BulkAssignResourceHeaders = Record<
 
 export enum BulkAssignCsvError {
   MISSING_COLUMNS = "MISSING_COLUMNS",
+  UNEXPECTED_COLUMNS = "UNEXPECTED_COLUMNS",
   MALFORMED_ROWS = "MALFORMED_ROWS",
   EMPTY_FILE = "EMPTY_FILE",
   TOO_MANY_ROWS = "TOO_MANY_ROWS"
@@ -54,6 +55,7 @@ export enum BulkAssignCsvError {
 export interface BulkAssignCsvValidation {
   error: BulkAssignCsvError | null;
   missingColumns: string[];
+  unexpectedColumns: string[];
   payload: BulkAssignPolicyPayload | null;
 }
 

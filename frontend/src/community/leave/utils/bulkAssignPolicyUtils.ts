@@ -68,6 +68,16 @@ const getMissingBulkAssignHeaders = (
   );
 };
 
+const getUnexpectedBulkAssignHeaders = (
+  fields: string[],
+  headers: BulkAssignTemplateHeaders
+): string[] => {
+  const expected = new Set(toTemplateRowValues(headers).map(normalizeHeader));
+  return fields
+    .map((field) => field.trim())
+    .filter((field) => field !== "" && !expected.has(normalizeHeader(field)));
+};
+
 const buildBulkAssignPayload = (
   rows: Record<string, string | undefined>[],
   headers: BulkAssignTemplateHeaders
@@ -79,50 +89,53 @@ const buildBulkAssignPayload = (
   }))
 });
 
+const getBulkAssignCsvError = (
+  parseResult: ParseResult<Record<string, string>>,
+  missingColumns: string[],
+  unexpectedColumns: string[]
+): BulkAssignCsvError | null => {
+  if (missingColumns.length > 0) {
+    return BulkAssignCsvError.MISSING_COLUMNS;
+  }
+
+  if (unexpectedColumns.length > 0) {
+    return BulkAssignCsvError.UNEXPECTED_COLUMNS;
+  }
+
+  if (parseResult.errors.length > 0) {
+    return BulkAssignCsvError.MALFORMED_ROWS;
+  }
+
+  if (parseResult.data.length === 0) {
+    return BulkAssignCsvError.EMPTY_FILE;
+  }
+
+  if (parseResult.data.length > MAX_BULK_ASSIGN_ROWS) {
+    return BulkAssignCsvError.TOO_MANY_ROWS;
+  }
+
+  return null;
+};
+
 export const validateBulkAssignCsv = (
   parseResult: ParseResult<Record<string, string>>,
   headers: BulkAssignTemplateHeaders
 ): BulkAssignCsvValidation => {
-  const missingColumns = getMissingBulkAssignHeaders(
-    parseResult.meta.fields ?? [],
-    headers
+  const fields = parseResult.meta.fields ?? [];
+  const missingColumns = getMissingBulkAssignHeaders(fields, headers);
+  const unexpectedColumns = getUnexpectedBulkAssignHeaders(fields, headers);
+
+  const error = getBulkAssignCsvError(
+    parseResult,
+    missingColumns,
+    unexpectedColumns
   );
-  if (missingColumns.length > 0) {
-    return {
-      error: BulkAssignCsvError.MISSING_COLUMNS,
-      missingColumns,
-      payload: null
-    };
-  }
-
-  if (parseResult.errors.length > 0) {
-    return {
-      error: BulkAssignCsvError.MALFORMED_ROWS,
-      missingColumns: [],
-      payload: null
-    };
-  }
-
-  if (parseResult.data.length === 0) {
-    return {
-      error: BulkAssignCsvError.EMPTY_FILE,
-      missingColumns: [],
-      payload: null
-    };
-  }
-
-  if (parseResult.data.length > MAX_BULK_ASSIGN_ROWS) {
-    return {
-      error: BulkAssignCsvError.TOO_MANY_ROWS,
-      missingColumns: [],
-      payload: null
-    };
-  }
 
   return {
-    error: null,
-    missingColumns: [],
-    payload: buildBulkAssignPayload(parseResult.data, headers)
+    error,
+    missingColumns,
+    unexpectedColumns,
+    payload: error ? null : buildBulkAssignPayload(parseResult.data, headers)
   };
 };
 

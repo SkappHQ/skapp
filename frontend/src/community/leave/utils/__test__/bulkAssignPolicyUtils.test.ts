@@ -52,6 +52,7 @@ describe("validateBulkAssignCsv", () => {
     ).toEqual({
       error: null,
       missingColumns: [],
+      unexpectedColumns: [],
       payload: {
         assignments: [
           {
@@ -108,8 +109,39 @@ describe("validateBulkAssignCsv", () => {
     expect(validation).toEqual({
       error: BulkAssignCsvError.MISSING_COLUMNS,
       missingColumns: ["Policy ID", "Effective Date"],
+      unexpectedColumns: [],
       payload: null
     });
+  });
+
+  it("rejects a downloaded error report that is uploaded back", () => {
+    const validation = validateBulkAssignCsv(
+      buildParseResult(
+        [{ ...validRow, Error: "Employee not found" }],
+        ["Employee Email", "Policy ID", "Effective Date", "Error"]
+      ),
+      headers
+    );
+
+    expect(validation).toEqual({
+      error: BulkAssignCsvError.UNEXPECTED_COLUMNS,
+      missingColumns: [],
+      unexpectedColumns: ["Error"],
+      payload: null
+    });
+  });
+
+  it("ignores the blank trailing columns that spreadsheets export", () => {
+    const validation = validateBulkAssignCsv(
+      buildParseResult(
+        [validRow],
+        ["Employee Email", "Policy ID", "Effective Date", "", "  "]
+      ),
+      headers
+    );
+
+    expect(validation.error).toBeNull();
+    expect(validation.unexpectedColumns).toEqual([]);
   });
 
   it("rejects a file with rows that could not be parsed", () => {

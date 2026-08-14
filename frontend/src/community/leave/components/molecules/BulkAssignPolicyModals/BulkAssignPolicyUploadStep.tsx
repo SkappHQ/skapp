@@ -97,6 +97,10 @@ const BulkAssignPolicyUploadStep: FC<Props> = ({ onComplete, onBack }) => {
         return translateText(["missingColumnsError"], {
           columns: validation.missingColumns.join(CSV_DELIMITER)
         });
+      case BulkAssignCsvError.UNEXPECTED_COLUMNS:
+        return translateText(["unexpectedColumnsError"], {
+          columns: validation.unexpectedColumns.join(CSV_DELIMITER)
+        });
       case BulkAssignCsvError.MALFORMED_ROWS:
         return translateText(["malformedRowsError"]);
       case BulkAssignCsvError.EMPTY_FILE:
