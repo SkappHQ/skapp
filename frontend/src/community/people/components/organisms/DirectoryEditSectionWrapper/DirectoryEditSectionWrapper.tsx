@@ -48,7 +48,7 @@ const DirectoryEditSectionWrapper = ({ employeeId }: Props) => {
   useEffect(() => {
     setCurrentStep(EditPeopleFormTypes.personal);
     setNextStep(EditPeopleFormTypes.personal);
-  }, [setCurrentStep, setNextStep]);
+  }, []);
 
   useDefaultTabNavigation();
 

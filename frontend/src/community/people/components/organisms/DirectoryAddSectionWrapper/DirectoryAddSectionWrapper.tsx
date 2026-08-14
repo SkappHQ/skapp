@@ -15,14 +15,14 @@ const DirectoryAddSectionWrapper = () => {
 
   const { activeStep, steps } = useStepper();
 
-  const { setCurrentStep, setNextStep } = usePeopleStore((state) => state);
-
   useEffect(() => {
     return () => {
+      const { setCurrentStep, setNextStep } = usePeopleStore.getState();
+
       setCurrentStep(EditPeopleFormTypes.personal);
       setNextStep(EditPeopleFormTypes.personal);
     };
-  }, [setCurrentStep, setNextStep]);
+  }, []);
 
   return (
     <>
