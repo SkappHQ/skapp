@@ -1,6 +1,7 @@
 import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
+import { useShallow } from "zustand/react/shallow";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -74,11 +75,19 @@ const AddSectionButtonWrapper = ({
 
   const { mutate: createCustomSkills } = useCreateCustomSkills();
 
-  const employee = usePeopleStore((state) => state.employee);
-  const profilePic = usePeopleStore((state) => state.profilePic);
-  const thumbnail = usePeopleStore((state) => state.thumbnail);
-  const setCommonDetails = usePeopleStore((state) => state.setCommonDetails);
-  const resetPeopleSlice = usePeopleStore((state) => state.resetPeopleSlice);
+  const {
+    employee,
+    profilePic,
+    thumbnail,
+    setCommonDetails,
+    resetPeopleSlice
+  } = usePeopleStore((state) => ({
+    employee: state.employee,
+    profilePic: state.profilePic,
+    thumbnail: state.thumbnail,
+    setCommonDetails: state.setCommonDetails,
+    resetPeopleSlice: state.resetPeopleSlice
+  }));
 
   const environment = useGetEnvironment();
 

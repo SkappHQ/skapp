@@ -39,7 +39,7 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
   useEffect(() => {
     setCurrentStep(EditPeopleFormTypes.personal);
     setNextStep(EditPeopleFormTypes.personal);
-  }, [setCurrentStep, setNextStep]);
+  }, []);
 
   useEffect(() => {
     if (employeeData) {
