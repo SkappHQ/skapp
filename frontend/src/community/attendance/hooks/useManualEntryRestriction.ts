@@ -17,9 +17,6 @@ const useManualEntryRestriction = (): ManualEntryRestrictionResult => {
     isSuperAdmin || isAttendanceAdmin || isAttendanceManager
   );
 
-  // Fail closed: while the configuration is unknown (still loading or the
-  // request failed) keep manual entry restricted for everyone who cannot
-  // manage time entries, so the restriction is never lifted by a failed fetch.
   const isConfigUnavailable = isPending || isError;
 
   const isManualEntryRestricted =
