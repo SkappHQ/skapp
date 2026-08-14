@@ -94,11 +94,6 @@ const AttendanceConfiguration = (): JSX.Element => {
     return JSON.stringify(config) !== JSON.stringify(initialConfig);
   };
 
-  // Restricting manual entries leaves only Attendance Managers, Attendance Admins and
-  // Super Admins able to add or edit time entries, and their changes save immediately
-  // without approval. Auto approval has nothing left to act on, so the setting is hidden
-  // rather than shown with no effect. Its stored value is left untouched so turning the
-  // restriction back off restores the previous preference.
   const isManualEntryRestricted = Boolean(config?.isManualTimeEntryEnabled);
 
   return (
