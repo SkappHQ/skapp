@@ -46,7 +46,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
   return (
     <>
       {layout.descriptionKey && (
-        <p className="body1 text-zinc-700 mt-4" tabIndex={0}>
+        <p className="body1 text-zinc-700 mt-4">
           {translateText([layout.descriptionKey])}
         </p>
       )}

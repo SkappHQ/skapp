@@ -34,7 +34,7 @@ const PolicyLeaveAttachmentRow: FC<Props> = ({ attachments }) => {
   }
 
   return (
-    <div className="flex flex-col gap-2" tabIndex={0}>
+    <div className="flex flex-col gap-2">
       <p className="body1">{translateText(["attachments"])}</p>
       <div className="flex flex-wrap gap-2">
         {attachments.map((attachment, index) => (

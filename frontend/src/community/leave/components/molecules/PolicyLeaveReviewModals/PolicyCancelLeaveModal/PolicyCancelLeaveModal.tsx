@@ -44,7 +44,7 @@ const PolicyCancelLeaveModal: FC<Props> = ({ request, setPopupType }) => {
 
   return (
     <>
-      <p className="body1 text-zinc-700 mt-4" tabIndex={0}>
+      <p className="body1 text-zinc-700 mt-4">
         {translateText(["confirmCancelDescription"])}
       </p>
       <div className="mt-5">
