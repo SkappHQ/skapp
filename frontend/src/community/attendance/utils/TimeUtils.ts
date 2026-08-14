@@ -16,8 +16,6 @@ const WEEK_DAYS: daysTypes[] = [
   daysTypes.SUNDAY
 ];
 
-// A day with no server-side record still needs a complete DailyLogType, because the
-// entry modal reads timeSlots without guarding for a missing array.
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
   timeRecordId: 0,
   date,
