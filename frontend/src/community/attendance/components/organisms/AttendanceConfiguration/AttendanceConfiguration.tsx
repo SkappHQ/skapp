@@ -96,6 +96,13 @@ const AttendanceConfiguration = (): JSX.Element => {
     return JSON.stringify(config) !== JSON.stringify(initialConfig);
   };
 
+  // Restricting manual entries leaves only Attendance Managers, Attendance Admins and
+  // Super Admins able to add or edit time entries, and their changes save immediately
+  // without approval. Auto approval has nothing left to act on, so the setting is hidden
+  // rather than shown with no effect. Its stored value is left untouched so turning the
+  // restriction back off restores the previous preference.
+  const isManualEntryRestricted = Boolean(config?.isManualTimeEntryEnabled);
+
   return (
     <>
       <Box>
@@ -156,28 +163,32 @@ const AttendanceConfiguration = (): JSX.Element => {
           initialConfig={initialConfig}
         />
 
-        <Typography variant="h2" sx={classes.sectionTitle}>
-          {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
-        </Typography>
-        <Typography sx={classes.sectionDescription}>
-          {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
-        </Typography>
+        {!isManualEntryRestricted && (
+          <>
+            <Typography variant="h2" sx={classes.sectionTitle}>
+              {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
+            </Typography>
+            <Typography sx={classes.sectionDescription}>
+              {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
+            </Typography>
 
-        <Box sx={classes.container}>
-          {config && (
-            <SwitchRow
-              labelId="auto-approval-for-changes"
-              label={
-                attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
-              }
-              checked={config.isAutoApprovalForChanges}
-              wrapperStyles={classes.switchWrapper}
-              onChange={(checked) =>
-                handleSwitchChange("isAutoApprovalForChanges", checked)
-              }
-            />
-          )}
-        </Box>
+            <Box sx={classes.container}>
+              {config && (
+                <SwitchRow
+                  labelId="auto-approval-for-changes"
+                  label={
+                    attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
+                  }
+                  checked={config.isAutoApprovalForChanges}
+                  wrapperStyles={classes.switchWrapper}
+                  onChange={(checked) =>
+                    handleSwitchChange("isAutoApprovalForChanges", checked)
+                  }
+                />
+              )}
+            </Box>
+          </>
+        )}
 
         <GeoFencingSettings
           config={config}
