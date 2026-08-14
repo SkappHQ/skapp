@@ -96,7 +96,7 @@ const LeaveDashboard = (): JSX.Element => {
     todaysResourceAvailability?.[0]?.leaveRequests ??
     [];
 
-  const handleTodaysAvailabilityModalOpen = () => {
+  const handleTodaysAvailabilityModalOpen = (): void => {
     setTodaysAvailability(todaysAwayEmployees);
     setOnLeaveModalTitle(availabilityModalText(["awayToday"]));
     setIsOnLeaveModalOpen(true);

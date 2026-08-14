@@ -50,11 +50,7 @@ const AnalyticCard: FC<Props> = ({
             >
               {title}
             </Typography>
-            {isExpandable && (
-              <Box sx={{ cursor: "pointer" }}>
-                <Icon name={IconName.NEW_WINDOW_ICON} />
-              </Box>
-            )}
+            {isExpandable && <Icon name={IconName.NEW_WINDOW_ICON} />}
           </Box>
           <Box>{children}</Box>
         </>

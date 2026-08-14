@@ -31,7 +31,7 @@ const AttendanceCard: FC<Props> = ({
   const { setClockInType } = useAttendanceStore((state) => state);
   const theme = useTheme();
 
-  const handleCardClick = () => {
+  const handleCardClick = (): void => {
     type === ClockInOutGraphTypes.CLOCK_IN
       ? setClockInType({})
       : setClockInType({
@@ -78,9 +78,7 @@ const AttendanceCard: FC<Props> = ({
             >
               {title}
             </Typography>
-            <Box sx={{ cursor: "pointer" }}>
-              <Icon name={IconName.NEW_WINDOW_ICON} />
-            </Box>
+            <Icon name={IconName.NEW_WINDOW_ICON} />
           </Box>
           <Stack direction="row" justifyContent="left">
             <div style={{ display: "flex", alignItems: "baseline" }}>

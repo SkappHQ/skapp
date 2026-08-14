@@ -139,7 +139,7 @@ const LeaveManagerModalController = () => {
   if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL) {
     return (
       <LargeModal
-        isOpen={isManagerModalOpen && !!popupType}
+        isOpen={isManagerModalOpen}
         id="on-leave-modal"
         onClose={handelManagerModal}
         modalHeader={modalTitle}
