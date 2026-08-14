@@ -14,12 +14,7 @@ export interface CrmCompanyEntity {
   website?: string;
   address?: string;
   contactNumber?: string;
-  openTasksCount?: number;
-  overdue?: number;
-  openValue?: string;
-  accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
+  metrics?: CrmCompanyMetrics;
   contactIds?: number[];
   dealIds?: number[];
   taskIds?: number[];
@@ -47,13 +42,7 @@ export interface CrmContactEntity {
   lastModifiedDate?: string;
   companyId?: number;
   ownerId?: number;
-  totalRevenue?: string;
-  pipelineRevenue?: string;
-  activeDealsCount?: number;
-  openTasksCount?: number;
-  overdueTasksCount?: number;
-  closedDealValue?: string;
-  closedDealCount?: number;
+  metrics?: CrmContactMetrics;
   dealIds?: number[];
   taskIds?: number[];
 }
