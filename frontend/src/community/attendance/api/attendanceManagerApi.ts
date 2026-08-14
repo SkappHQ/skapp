@@ -125,7 +125,7 @@ export const useGetManagerTimeSheetRequests = () => {
 
 export const useApproveDenyTimeRequest = (
   onSuccess: () => void,
-  onError: () => void
+  onError: (error?: any) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -150,8 +150,22 @@ export const useApproveDenyTimeRequest = (
         })
         .catch(rejects);
     },
-    onError: () => {
-      onError();
+    onError: (error) => {
+      onError(error);
+      // A rejected action usually means the row on screen no longer matches the server
+      // (most often auto-cancelled by a direct save), so the table is refreshed either
+      // way. A genuine 500 simply re-reads the request as still Pending, keeping it
+      // actionable for a retry.
+      queryClient
+        .invalidateQueries({
+          queryKey: attendanceQueryKeys.getManagerRequests()
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
+        })
+        .catch(rejects);
     }
   });
 };
