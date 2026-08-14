@@ -1,9 +1,10 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { FC } from "react";
 
 import CopyIcon from "~community/common/assets/Icons/CopyIcon";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import { FileTypes } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { POLICY_LEAVE_ATTACHMENT_CHIP_STYLES } from "~community/leave/constants/policyLeaveReviewConstants";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
 import { PolicyLeaveAttachmentType } from "~community/leave/types/PolicyLeaveTypes";
 import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
@@ -12,13 +13,18 @@ interface Props {
   attachments?: PolicyLeaveAttachmentType[];
 }
 
-const PolicyLeaveAttachmentRow = ({ attachments }: Props) => {
-  const translateText = useTranslator("leaveModule", "myRequests");
+const PolicyLeaveAttachmentRow: FC<Props> = ({ attachments }) => {
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "myLeaveRequests"
+  );
   const translateAria = useTranslator(
     "leaveAria",
     "myRequests",
     "myLeaveRequests"
   );
+
   const { handleDownloadAttachment } = useDownloadAttachment({
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
@@ -28,28 +34,19 @@ const PolicyLeaveAttachmentRow = ({ attachments }: Props) => {
   }
 
   return (
-    <Stack
-      sx={{
-        gap: 1
-      }}
-      tabIndex={0}
-    >
-      <Typography variant="body2" sx={{ fontSize: "1rem" }}>
-        {translateText(["myLeaveRequests", "attachments"])}
-      </Typography>
-      <Box sx={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+    <div className="flex flex-col gap-2">
+      <p className="body1">{translateText(["attachments"])}</p>
+      <div className="flex flex-wrap gap-2">
         {attachments.map((attachment, index) => (
           <IconChip
             key={attachment.id}
             label={
               attachment.originalFileName ||
               getFileNameOfAttachmentFromUrl(attachment.fileUrl) ||
-              translateText(["myLeaveRequests", "uploadedAttachment"])
+              translateText(["uploadedAttachment"])
             }
             chipStyles={{
-              backgroundColor: "grey.100",
-              py: "0.75rem",
-              px: "0.75rem",
+              ...POLICY_LEAVE_ATTACHMENT_CHIP_STYLES,
               maxWidth: "7.828rem"
             }}
             icon={<CopyIcon />}
@@ -59,8 +56,8 @@ const PolicyLeaveAttachmentRow = ({ attachments }: Props) => {
             }}
           />
         ))}
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

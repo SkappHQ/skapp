@@ -1,4 +1,5 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -7,104 +8,75 @@ import PolicyCancelLeaveModal from "~community/leave/components/molecules/Policy
 import PolicyEmployeeRequestModal from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyEmployeeRequestModal/PolicyEmployeeRequestModal";
 import PolicyLeaveRequestSummary from "~community/leave/components/molecules/PolicyLeaveReviewModals/PolicyLeaveRequestSummary/PolicyLeaveRequestSummary";
 import {
-  STATUS_POPUP_TYPES,
+  EMPLOYEE_STATUS_MODAL_TITLE_KEYS,
   SUMMARY_POPUP_TYPES
 } from "~community/leave/constants/policyLeaveReviewConstants";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
+import usePolicyLeaveStatusPopup from "~community/leave/hooks/usePolicyLeaveStatusPopup";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
-import { PolicyLeavePopupType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import { PolicyLeaveRequestStatus } from "~community/leave/types/PolicyLeaveTypes";
 
 const PolicyEmployeeLeaveStatusPopupController: FC = () => {
-  const [popupType, setPopupType] = useState<PolicyLeavePopupType>(
-    PolicyLeaveReviewModalEnums.NONE
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "myLeaveRequests"
   );
 
-  const translateText = useTranslator("leaveModule", "myRequests");
-
   const { isEmployeeModalOpen, selectedRequestId, closeEmployeeModal } =
-    usePolicyLeaveStore((state) => ({
-      isEmployeeModalOpen: state.isEmployeeModalOpen,
-      selectedRequestId: state.selectedRequestId,
-      closeEmployeeModal: state.closeEmployeeModal
-    }));
+    usePolicyLeaveStore(
+      useShallow((state) => ({
+        isEmployeeModalOpen: state.isEmployeeModalOpen,
+        selectedRequestId: state.selectedRequestId,
+        closeEmployeeModal: state.closeEmployeeModal
+      }))
+    );
 
   const { data: myLeaveRequest } =
     useGetMyPolicyLeaveRequestById(selectedRequestId);
 
-  useEffect(() => {
-    if (!isEmployeeModalOpen || !myLeaveRequest) return;
-    setPopupType((currentPopupType) =>
-      currentPopupType === PolicyLeaveReviewModalEnums.NONE
-        ? (STATUS_POPUP_TYPES.find(
-            (status) => status === myLeaveRequest.status
-          ) ?? PolicyLeaveReviewModalEnums.NONE)
-        : currentPopupType
-    );
-  }, [myLeaveRequest, isEmployeeModalOpen]);
+  const { popupType, setPopupType, closePopup } = usePolicyLeaveStatusPopup({
+    isOpen: isEmployeeModalOpen,
+    requestStatus: myLeaveRequest?.status,
+    onClose: closeEmployeeModal
+  });
 
-  const handleCloseModal = (): void => {
-    setPopupType(PolicyLeaveReviewModalEnums.NONE);
-    closeEmployeeModal();
-  };
+  if (!isEmployeeModalOpen || !popupType || !myLeaveRequest) {
+    return null;
+  }
 
-  const getModalTitle = (): string => {
-    switch (popupType) {
-      case PolicyLeaveRequestStatus.APPROVED:
-        return translateText(["myLeaveRequests", "leaveApproved"]);
-      case PolicyLeaveRequestStatus.PENDING:
-        return translateText(["myLeaveRequests", "approvalPending"]);
-      case PolicyLeaveReviewModalEnums.SUPERVISOR_NUDGED:
-        return translateText(["myLeaveRequests", "supervisorNudged"]);
-      case PolicyLeaveRequestStatus.CANCELLED:
-        return translateText(["myLeaveRequests", "cancelledLeaveStatus"]);
-      case PolicyLeaveReviewModalEnums.CANCEL_REQUEST_POPUP:
-        return translateText(["myLeaveRequests", "confirmCancellation"]);
-      case PolicyLeaveReviewModalEnums.CANCELLED_SUMMARY:
-        return translateText(["myLeaveRequests", "leaveRequestCancelled"]);
-      case PolicyLeaveRequestStatus.REVOKED:
-        return translateText(["myLeaveRequests", "revokedLeaveStatus"]);
-      case PolicyLeaveRequestStatus.DENIED:
-        return translateText(["myLeaveRequests", "deniedLeaveStatus"]);
-      default:
-        return "";
-    }
-  };
+  const titleKey = EMPLOYEE_STATUS_MODAL_TITLE_KEYS[popupType];
 
   return (
-    <>
-      {isEmployeeModalOpen && popupType && myLeaveRequest && (
-        <ModalController
-          isModalOpen={isEmployeeModalOpen}
-          handleCloseModal={handleCloseModal}
-          modalTitle={getModalTitle()}
-        >
-          <>
-            {popupType === PolicyLeaveRequestStatus.PENDING && (
-              <PolicyEmployeeRequestModal
-                request={myLeaveRequest}
-                setPopupType={setPopupType}
-              />
-            )}
+    <ModalController
+      isModalOpen={isEmployeeModalOpen}
+      handleCloseModal={closePopup}
+      modalTitle={titleKey ? translateText([titleKey]) : ""}
+    >
+      <>
+        {popupType === PolicyLeaveRequestStatus.PENDING && (
+          <PolicyEmployeeRequestModal
+            request={myLeaveRequest}
+            setPopupType={setPopupType}
+          />
+        )}
 
-            {popupType === PolicyLeaveReviewModalEnums.CANCEL_REQUEST_POPUP && (
-              <PolicyCancelLeaveModal
-                request={myLeaveRequest}
-                setPopupType={setPopupType}
-              />
-            )}
+        {popupType === PolicyLeaveReviewModalEnums.CANCEL_REQUEST_POPUP && (
+          <PolicyCancelLeaveModal
+            request={myLeaveRequest}
+            setPopupType={setPopupType}
+          />
+        )}
 
-            {SUMMARY_POPUP_TYPES.includes(popupType) && (
-              <PolicyLeaveRequestSummary
-                request={myLeaveRequest}
-                popupType={popupType}
-                handleRequestStatusPopup={handleCloseModal}
-              />
-            )}
-          </>
-        </ModalController>
-      )}
-    </>
+        {SUMMARY_POPUP_TYPES.includes(popupType) && (
+          <PolicyLeaveRequestSummary
+            request={myLeaveRequest}
+            popupType={popupType}
+            handleRequestStatusPopup={closePopup}
+          />
+        )}
+      </>
+    </ModalController>
   );
 };
 

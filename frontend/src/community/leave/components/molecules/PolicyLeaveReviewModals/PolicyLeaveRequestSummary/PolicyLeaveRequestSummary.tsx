@@ -1,5 +1,3 @@
-import { Box, Typography } from "@mui/material";
-import { type Theme, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
@@ -36,66 +34,62 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
   popupType,
   handleRequestStatusPopup
 }) => {
-  const theme: Theme = useTheme();
-  const translateText = useTranslator("leaveModule", "myRequests");
+  const translateText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "myLeaveRequests"
+  );
+  const translateMyRequestsText = useTranslator("leaveModule", "myRequests");
 
   const layout = SUMMARY_LAYOUTS[popupType];
+
+  if (!layout) {
+    return null;
+  }
 
   return (
     <>
       {layout.descriptionKey && (
-        <Typography
-          variant="body1"
-          sx={{
-            color: theme.palette.grey[400],
-            marginTop: "1rem"
-          }}
-          tabIndex={0}
-        >
-          {translateText(["myLeaveRequests", layout.descriptionKey])}
-        </Typography>
+        <p className="body1 text-zinc-700 mt-4">
+          {translateText([layout.descriptionKey])}
+        </p>
       )}
-      <Box
-        sx={{
-          marginTop: layout.containerMarginTop,
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.25rem"
-        }}
+      <div
+        className={`flex flex-col gap-5 ${layout.containerMarginTopClass ?? ""}`}
       >
         <StatusPopupRow
-          label={translateText(["myLeaveRequests", "type"])}
+          label={translateText(["type"])}
           iconName={request.leaveType.name}
           icon={request.leaveType.emojiCode}
         />
         <StatusPopupRow
-          label={translateText(["myLeaveRequests", "status"])}
+          label={translateText(["status"])}
           iconName={handleLeaveStatus(request.status)}
           icon={leaveStatusIconSelector(request.status)}
         />
         <StatusPopupRow
-          label={translateText(["myLeaveRequests", "duration"])}
+          label={translateText(["duration"])}
           durationByDays={handleDurationDay(
             request.durationDays,
             request.leaveState,
-            translateText
+            translateMyRequestsText
           )}
           durationDate={getStartEndDate(request.startDate, request.endDate)}
         />
         {layout.showDateApplied && request.createdDate && (
           <StatusPopupRow
-            label={translateText(["myLeaveRequests", "dateApplied"])}
+            label={translateText(["dateApplied"])}
             durationDate={formatOptionalDate(request.createdDate)}
           />
         )}
         {layout.showDateApproved && request.reviewedDate && (
           <StatusPopupRow
-            label={translateText(["myLeaveRequests", "dateApproved"])}
+            label={translateText(["dateApproved"])}
             durationDate={formatOptionalDate(request.reviewedDate)}
           />
         )}
         <StatusPopupRow
-          label={translateText(["myLeaveRequests", "recipient"])}
+          label={translateText(["recipient"])}
           isRecipient={true}
           styles={
             layout.isRecipientTopAligned
@@ -110,7 +104,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
 
         {layout.showReason && (
           <StatusPopupColumn
-            label={translateText(["myLeaveRequests", "reason"])}
+            label={translateText(["reason"])}
             text={request.requestDesc ?? ""}
             isDisabled={true}
           />
@@ -122,7 +116,7 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
 
         <ButtonV2
           variant={"primary"}
-          onClick={() => handleRequestStatusPopup()}
+          onClick={handleRequestStatusPopup}
           icon={
             layout.usesArrowRightIcon ? (
               <ArrowRightIcon />
@@ -132,9 +126,9 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
           }
           iconPosition="end"
         >
-          {translateText(["myLeaveRequests", "proceedToHome"])}
+          {translateText(["proceedToHome"])}
         </ButtonV2>
-      </Box>
+      </div>
     </>
   );
 };
