@@ -52,8 +52,8 @@ public interface TimeMapper {
 	@Mapping(target = "initialClockOut", source = "clockOutTime")
 	@Mapping(target = "requestedStartTime", source = "requestedStartTime")
 	@Mapping(target = "requestedEndTime", source = "requestedEndTime")
-	@Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
 	@Mapping(target = "createdBy", ignore = true)
+	// Left to AuditingEntityListener, which stamps created_date on persist.
 	@Mapping(target = "createdDate", ignore = true)
 	@Mapping(target = "lastModifiedBy", ignore = true)
 	@Mapping(target = "lastModifiedDate", ignore = true)

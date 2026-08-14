@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { rejects } from "assert";
 
 import { employeeAttendanceEndpoints } from "~community/attendance/api/utils/attendanceEndPoints";
+import { epAttendanceEndpoints } from "~enterprise/attendance/api/utils/attendanceEndPoints";
 import { attendanceQueryKeys } from "~community/attendance/api/utils/attendanceQueryKeys";
 import {
   dailyLogPreProcessor,
@@ -275,7 +276,7 @@ export const useDirectTimeEntry = (
       isEdit,
       payload
     }: DirectTimeEntryVariablesType) => {
-      const url = employeeAttendanceEndpoints.DIRECT_TIME_ENTRY(employeeId);
+      const url = epAttendanceEndpoints.DIRECT_TIME_ENTRY(employeeId);
       return isEdit
         ? await authFetch.patch(url, payload)
         : await authFetch.post(url, payload);

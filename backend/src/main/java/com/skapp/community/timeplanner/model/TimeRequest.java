@@ -74,7 +74,4 @@ public class TimeRequest extends Auditable<String> {
 	@Column(name = "reviewed_at")
 	private LocalDateTime reviewedAt;
 
-	@Column(name = "created_date", updatable = false, nullable = false)
-	private LocalDateTime creationDate;
-
 }
