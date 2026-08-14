@@ -1,5 +1,6 @@
 package com.skapp.community.timeplanner.model;
 
+import com.skapp.community.common.model.Auditable;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.type.RequestStatus;
 import com.skapp.community.peopleplanner.type.RequestType;
@@ -25,7 +26,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Table(name = "time_request")
-public class TimeRequest {
+public class TimeRequest extends Auditable<String> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

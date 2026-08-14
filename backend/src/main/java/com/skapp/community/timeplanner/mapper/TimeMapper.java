@@ -53,6 +53,10 @@ public interface TimeMapper {
 	@Mapping(target = "requestedStartTime", source = "requestedStartTime")
 	@Mapping(target = "requestedEndTime", source = "requestedEndTime")
 	@Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+	@Mapping(target = "createdBy", ignore = true)
+	@Mapping(target = "createdDate", ignore = true)
+	@Mapping(target = "lastModifiedBy", ignore = true)
+	@Mapping(target = "lastModifiedDate", ignore = true)
 	TimeRequest timeRequestDtoToTimeRequest(TimeRequestDto timeRequestDto, RequestStatus requestStatus,
 			Employee employee, TimeRecord timeRecord, Long clockInTime, Long clockOutTime, Long requestedStartTime,
 			Long requestedEndTime);
@@ -75,6 +79,10 @@ public interface TimeMapper {
 	@Mapping(target = "createdBy", expression = "java(\"admin\")")
 	@Mapping(target = "lastModifiedBy", expression = "java(\"admin\")")
 	@Mapping(target = "createdDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+	// Ambiguous for the same reason once TimeRequest became auditable: both it and
+	// Employee expose lastModifiedDate. Pinned alongside createdDate above so the
+	// explicit values here stay internally consistent.
+	@Mapping(target = "lastModifiedDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
 	TimeRecord buildNewTimeRecord(Employee employee, TimeRequest timeRequest, DayOfWeek day, LocalDate date);
 
 	List<ManagerTimeRequestResponseDto> timeRequestListToManagerTimeRequestResponseDtoList(
