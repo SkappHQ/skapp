@@ -14,7 +14,10 @@ import PeopleLayout from "~community/common/components/templates/PeopleLayout/Pe
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import { roundNumberToX } from "~community/common/utils/commonUtil";
+import {
+  getEmployeeFullName,
+  roundNumberToX
+} from "~community/common/utils/commonUtil";
 import {
   getCurrentMonth,
   getMonthName,
@@ -43,12 +46,10 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
   const targetEmployee = useMemo(
     () => ({
       employeeId: selectedUser,
-      employeeName: [
+      employeeName: getEmployeeFullName(
         targetEmployeeDetails?.firstName,
         targetEmployeeDetails?.lastName
-      ]
-        .filter(Boolean)
-        .join(" ")
+      )
     }),
     [selectedUser, targetEmployeeDetails]
   );

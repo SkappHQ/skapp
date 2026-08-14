@@ -205,8 +205,6 @@
     "approveFailDes": "Failed to process this request. Please try again.",
     "staleRequestConflictTitle": "Oops! Something went wrong",
     "staleRequestConflictDes": "This request is no longer pending. It may have been cancelled or already resolved.",
-    "approveRequestTooltip": "Approve this time entry request",
-    "declineRequestTooltip": "Decline this time entry request",
     "declineSuccessTitle": "Request Declined",
     "declineSuccessDes": "{{name}}'s time entry request has been declined successfully.",
     "declineFailTitle": "Oops! Something went wrong",

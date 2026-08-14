@@ -10,6 +10,7 @@ import {
 import { TimeSheetRequestStates } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
+  DirectTimeEntryVariablesType,
   ManualEntryPayloadType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
@@ -20,6 +21,7 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
+  ErrorResponse,
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
@@ -264,7 +266,7 @@ export const useAddManualTimeEntry = (
 
 export const useDirectTimeEntry = (
   onSuccess: () => void,
-  onEnhancedError: (error: any) => void
+  onEnhancedError: (error: ErrorResponse) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -272,17 +274,13 @@ export const useDirectTimeEntry = (
       employeeId,
       isEdit,
       payload
-    }: {
-      employeeId: number;
-      isEdit: boolean;
-      payload: ManualEntryPayloadType;
-    }) => {
+    }: DirectTimeEntryVariablesType) => {
       const url = employeeAttendanceEndpoints.DIRECT_TIME_ENTRY(employeeId);
       return isEdit
         ? await authFetch.patch(url, payload)
         : await authFetch.post(url, payload);
     },
-    onError(error) {
+    onError(error: ErrorResponse) {
       onEnhancedError(error);
     },
     onSuccess() {
@@ -290,7 +288,7 @@ export const useDirectTimeEntry = (
       [
         attendanceQueryKeys.getManagerRecords(),
         attendanceQueryKeys.getManagerWorkSummary(),
-        ["employee-daily-log-by-employeeId"],
+        attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),
         attendanceQueryKeys.getEmployeeRequests()
       ].forEach((queryKey) => {
         queryClient

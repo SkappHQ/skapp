@@ -22,9 +22,12 @@ import {
   getDuration,
   isToday
 } from "~community/attendance/utils/TimeUtils";
+import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
+import { HTTP_CONFLICT } from "~community/common/constants/httpStatusCodes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
 const useAddEntry = () => {
@@ -71,7 +74,7 @@ const useAddEntry = () => {
     });
   };
   // Enhanced onError to handle "No manager Found" 400 error
-  const enhancedOnError = (error: any) => {
+  const enhancedOnError = (error: ErrorResponse) => {
     if (error?.response?.data?.results?.[0]?.message === "No managers found") {
       setToastMessage({
         open: true,
@@ -105,12 +108,12 @@ const useAddEntry = () => {
         }
       ),
       toastType: ToastType.SUCCESS,
-      autoHideDuration: 4000
+      autoHideDuration: TOAST_AUTO_HIDE_DURATION
     });
   };
 
-  const onDirectEntryError = (error: any) => {
-    const isConflict = error?.response?.status === 409;
+  const onDirectEntryError = (error: ErrorResponse) => {
+    const isConflict = error?.response?.status === HTTP_CONFLICT;
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntryErrorTitle"]),
@@ -274,11 +277,12 @@ const useAddEntry = () => {
     isGetTimeAvailabilityLoading: boolean
   ) => {
     const currentRecordStartTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots[0]?.startTime ?? ""
+      selectedDailyRecord?.timeSlots?.[0]?.startTime ?? ""
     );
     const currentRecordEndTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots[selectedDailyRecord?.timeSlots?.length - 1]
-        ?.endTime ?? ""
+      selectedDailyRecord?.timeSlots?.[
+        (selectedDailyRecord?.timeSlots?.length ?? 0) - 1
+      ]?.endTime ?? ""
     );
 
     if (

@@ -1,17 +1,12 @@
 import { useState } from "react";
 
+import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
+import { TIME_ERROR_TIME_REQUEST_CANNOT_EDIT } from "~community/common/constants/errorMessageKeys";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 
 import { useApproveDenyTimeRequest as useApproveDenyTimeRequestAPI } from "../api/attendanceManagerApi";
 import { TimeSheetRequestStates } from "../enums/timesheetEnums";
-
-// Returned when the request is no longer Pending, i.e. it was already resolved or was
-// auto-cancelled by a direct save for the same employee and date.
-const TIME_REQUEST_CANNOT_EDIT_MESSAGE_KEY =
-  "api.error.time.time-request-cannot-edit";
-
-const STALE_CONFLICT_TOAST_DURATION = 4000;
 
 const useApproveDenyTimeRequest = () => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
@@ -43,14 +38,12 @@ const useApproveDenyTimeRequest = () => {
     }
   };
 
-  const onError = (error?: any) => {
+  const onError = (messageKey: string) => {
     // The server rejects any transition out of a status that is no longer Pending, which
     // is what a row auto-cancelled by a direct save looks like from here. That is a
     // different situation from a failed write, so it gets its own message rather than
     // "please try again" on something retrying cannot fix.
-    const isStaleRequest =
-      error?.response?.data?.results?.[0]?.messageKey ===
-      TIME_REQUEST_CANNOT_EDIT_MESSAGE_KEY;
+    const isStaleRequest = messageKey === TIME_ERROR_TIME_REQUEST_CANNOT_EDIT;
 
     if (isStaleRequest) {
       setToastMessage({
@@ -58,7 +51,7 @@ const useApproveDenyTimeRequest = () => {
         toastType: "error",
         title: translateTexts(["staleRequestConflictTitle"]),
         description: translateTexts(["staleRequestConflictDes"]),
-        autoHideDuration: STALE_CONFLICT_TOAST_DURATION,
+        autoHideDuration: TOAST_AUTO_HIDE_DURATION,
         isIcon: true
       });
       return;

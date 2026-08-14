@@ -3,6 +3,7 @@ import { rejects } from "assert";
 
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
+  ErrorResponse,
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
@@ -125,7 +126,7 @@ export const useGetManagerTimeSheetRequests = () => {
 
 export const useApproveDenyTimeRequest = (
   onSuccess: () => void,
-  onError: (error?: any) => void
+  onError: (messageKey: string) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -150,8 +151,8 @@ export const useApproveDenyTimeRequest = (
         })
         .catch(rejects);
     },
-    onError: (error) => {
-      onError(error);
+    onError: (error: ErrorResponse) => {
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
       // A rejected action usually means the row on screen no longer matches the server
       // (most often auto-cancelled by a direct save), so the table is refreshed either
       // way. A genuine 500 simply re-reads the request as still Pending, keeping it

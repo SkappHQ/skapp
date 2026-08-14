@@ -10,8 +10,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const MyTimeSheet: NextPage = () => {
   const translateText = useTranslator("attendanceModule");
-  const { setIsEmployeeTimesheetModalOpen, setEmployeeTimesheetModalType } =
-    useAttendanceStore((state) => state);
+  const {
+    setIsEmployeeTimesheetModalOpen,
+    setEmployeeTimesheetModalType,
+    setDirectEntryEmployee
+  } = useAttendanceStore((state) => state);
   const { isManualEntryRestricted } = useManualEntryRestriction();
 
   return (
@@ -33,6 +36,9 @@ const MyTimeSheet: NextPage = () => {
       }
       primaryButtonType={ButtonStyle.PRIMARY}
       onPrimaryButtonClick={() => {
+        // Clears any employee left over from a direct entry on All Timesheets so this
+        // always submits the current user's own request.
+        setDirectEntryEmployee(null);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

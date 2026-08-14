@@ -21,7 +21,10 @@ import {
   getHeadersWithSubtitles,
   getHolidayDurationType
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
-import { formatDuration } from "~community/attendance/utils/TimeUtils";
+import {
+  createEmptyDailyLog,
+  formatDuration
+} from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -29,7 +32,11 @@ import Table from "~community/common/components/molecules/HtmlTable/Table";
 import { TableNames } from "~community/common/enums/Table";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
+import { getEmployeeFullName } from "~community/common/utils/commonUtil";
+import {
+  convertYYYYMMDDToDateTime,
+  formatDateWithOrdinalIndicator
+} from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
@@ -98,9 +105,7 @@ const EmployeeTimeRecordsTable = ({
       employeeId: pendingCell.employeeId,
       employeeName: pendingCell.employeeName
     });
-    setSelectedDailyRecord(
-      dayRecord ?? ({ date: pendingCell.date } as DailyLogType)
-    );
+    setSelectedDailyRecord(dayRecord ?? createEmptyDailyLog(pendingCell.date));
     setEmployeeTimesheetModalType(
       dayRecord?.timeRecordId && dayRecord?.timeSlots?.length
         ? EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
@@ -108,14 +113,7 @@ const EmployeeTimeRecordsTable = ({
     );
     setIsEmployeeTimesheetModalOpen(true);
     setPendingCell(null);
-  }, [
-    pendingCell,
-    pendingDayLogs,
-    setDirectEntryEmployee,
-    setSelectedDailyRecord,
-    setEmployeeTimesheetModalType,
-    setIsEmployeeTimesheetModalOpen
-  ]);
+  }, [pendingCell, pendingDayLogs]);
 
   const headers = useMemo(() => {
     return getHeadersWithSubtitles({
@@ -282,12 +280,10 @@ const EmployeeTimeRecordsTable = ({
             // a direct add/edit entry point for the employee on that row.
             if (canDirectlyAddOrEditEntry && !isFutureDate) {
               const employeeId = employeeData?.employeeId;
-              const employeeName = [
+              const employeeName = getEmployeeFullName(
                 employeeData?.firstName,
                 employeeData?.lastName
-              ]
-                .filter(Boolean)
-                .join(" ");
+              );
 
               if (employeeId) {
                 const openDirectEntry = () =>
@@ -303,7 +299,9 @@ const EmployeeTimeRecordsTable = ({
                     tabIndex={0}
                     aria-label={translateText(["directEntryCellLabel"], {
                       employeeName,
-                      date: timeSheetRecord.date
+                      date: formatDateWithOrdinalIndicator(
+                        new Date(timeSheetRecord.date)
+                      )
                     })}
                     className="cursor-pointer"
                     onClick={openDirectEntry}
