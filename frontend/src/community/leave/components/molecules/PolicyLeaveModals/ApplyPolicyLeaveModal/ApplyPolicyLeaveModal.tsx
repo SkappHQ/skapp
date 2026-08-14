@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -30,12 +31,14 @@ const ApplyPolicyLeaveModal: FC = () => {
     selectedDates,
     selectedDuration,
     setModalType
-  } = usePolicyLeaveStore((state) => ({
-    selectedPolicyBalance: state.selectedPolicyBalance,
-    selectedDates: state.selectedDates,
-    selectedDuration: state.selectedDuration,
-    setModalType: state.setModalType
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedPolicyBalance: state.selectedPolicyBalance,
+      selectedDates: state.selectedDates,
+      selectedDuration: state.selectedDuration,
+      setModalType: state.setModalType
+    }))
+  );
 
   const hasUnsavedChanges = usePolicyLeaveStore(selectHasUnsavedChanges);
 
@@ -63,6 +66,12 @@ const ApplyPolicyLeaveModal: FC = () => {
   if (!selectedPolicyBalance) {
     return null;
   }
+
+  const isSummaryVisible =
+    selectedDates.length > 0 &&
+    selectedDuration !== LeaveStates.NONE &&
+    !isCalendarSelectionInvalid &&
+    !availabilityError;
 
   const isSubmitDisabled =
     selectedDates.length === 0 ||
@@ -95,7 +104,7 @@ const ApplyPolicyLeaveModal: FC = () => {
           resourceAvailability={resourceAvailability}
           workingDays={workingDays}
           disabledDurationOptions={disabledDurationOptions}
-          isSummaryVisible={!isSubmitDisabled}
+          isSummaryVisible={isSummaryVisible}
         />
       </div>
       <div className="flex flex-row gap-3 mt-4 justify-end">

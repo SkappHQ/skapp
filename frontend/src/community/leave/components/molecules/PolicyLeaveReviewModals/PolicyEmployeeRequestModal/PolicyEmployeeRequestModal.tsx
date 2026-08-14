@@ -58,14 +58,14 @@ const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
       handlePolicyLeaveReviewToast({
         type: PolicyLeaveReviewToastEnums.NUDGE_SUCCESS,
         setToastMessage,
-        translateText: translateLeaveModuleText
+        translateLeaveModuleText
       });
     },
     () => {
       handlePolicyLeaveReviewToast({
         type: PolicyLeaveReviewToastEnums.NUDGE_ERROR,
         setToastMessage,
-        translateText: translateLeaveModuleText
+        translateLeaveModuleText
       });
     }
   );

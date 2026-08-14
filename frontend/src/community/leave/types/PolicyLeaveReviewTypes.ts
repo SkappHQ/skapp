@@ -55,6 +55,12 @@ export interface PolicyLeaveReviewSliceType {
   resetReviewRequestFilters: () => void;
 }
 
+export interface PolicyLeaveChipStyles {
+  backgroundColor: string;
+  py: string;
+  px?: string;
+}
+
 export interface PolicyLeaveSummaryLayout {
   descriptionKey?: string;
   containerMarginTopClass?: string;

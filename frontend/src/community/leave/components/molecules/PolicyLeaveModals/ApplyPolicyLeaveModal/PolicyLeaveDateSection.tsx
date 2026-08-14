@@ -1,4 +1,5 @@
 import { FC, useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import CalendarDateRangePicker from "~community/common/components/molecules/CalendarDateRangePicker/CalendarDateRangePicker";
 import { daysTypes } from "~community/common/constants/stringConstants";
@@ -34,22 +35,25 @@ const PolicyLeaveDateSection: FC<Props> = ({
   const translateAria = useTranslator("leaveAria", "applyLeave");
 
   const { selectedDates, formErrors, setSelectedDates, setSelectedMonth } =
-    usePolicyLeaveStore((state) => ({
-      selectedDates: state.selectedDates,
-      formErrors: state.formErrors,
-      setSelectedDates: state.setSelectedDates,
-      setSelectedMonth: state.setSelectedMonth
-    }));
+    usePolicyLeaveStore(
+      useShallow((state) => ({
+        selectedDates: state.selectedDates,
+        formErrors: state.formErrors,
+        setSelectedDates: state.setSelectedDates,
+        setSelectedMonth: state.setSelectedMonth
+      }))
+    );
 
   const dateFieldRef = useRef<HTMLFieldSetElement>(null);
 
   const dateError = formErrors?.selectedDates;
+  const hasDateError = Boolean(dateError);
 
   useEffect(() => {
-    if (dateError) {
+    if (hasDateError) {
       dateFieldRef.current?.focus();
     }
-  }, [dateError]);
+  }, [hasDateError]);
 
   return (
     <div className="flex flex-col gap-3">

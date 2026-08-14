@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { daysTypes } from "~community/common/constants/stringConstants";
 import { DurationSelectorDisabledOptions } from "~community/common/types/MoleculeTypes";
@@ -34,19 +35,21 @@ interface PolicyLeaveCalendarData {
 
 const usePolicyLeaveCalendarData = (): PolicyLeaveCalendarData => {
   const { selectedYear, selectedPolicyBalance, selectedDates } =
-    usePolicyLeaveStore((state) => ({
-      selectedYear: state.selectedYear,
-      selectedPolicyBalance: state.selectedPolicyBalance,
-      selectedDates: state.selectedDates
-    }));
+    usePolicyLeaveStore(
+      useShallow((state) => ({
+        selectedYear: state.selectedYear,
+        selectedPolicyBalance: state.selectedPolicyBalance,
+        selectedDates: state.selectedDates
+      }))
+    );
 
   const setSelectedDuration = usePolicyLeaveStore(
     (state) => state.setSelectedDuration
   );
 
-  const { startYear, endYear, spansTwoYears } = getPolicyPeriodYears(
-    selectedPolicyBalance,
-    selectedYear
+  const { startYear, endYear, spansTwoYears } = useMemo(
+    () => getPolicyPeriodYears(selectedPolicyBalance, selectedYear),
+    [selectedPolicyBalance, selectedYear]
   );
 
   const { data: timeConfig } = useDefaultCapacity();

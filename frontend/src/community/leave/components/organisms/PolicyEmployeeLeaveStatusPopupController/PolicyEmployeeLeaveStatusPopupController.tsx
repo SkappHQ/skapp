@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ModalController from "~community/common/components/organisms/ModalController/ModalController";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -23,11 +24,13 @@ const PolicyEmployeeLeaveStatusPopupController: FC = () => {
   );
 
   const { isEmployeeModalOpen, selectedRequestId, closeEmployeeModal } =
-    usePolicyLeaveStore((state) => ({
-      isEmployeeModalOpen: state.isEmployeeModalOpen,
-      selectedRequestId: state.selectedRequestId,
-      closeEmployeeModal: state.closeEmployeeModal
-    }));
+    usePolicyLeaveStore(
+      useShallow((state) => ({
+        isEmployeeModalOpen: state.isEmployeeModalOpen,
+        selectedRequestId: state.selectedRequestId,
+        closeEmployeeModal: state.closeEmployeeModal
+      }))
+    );
 
   const { data: myLeaveRequest } =
     useGetMyPolicyLeaveRequestById(selectedRequestId);

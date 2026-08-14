@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -53,17 +54,21 @@ const useApplyPolicyLeaveSubmit = ({
     formErrors,
     setFormErrors,
     setModalType
-  } = usePolicyLeaveStore((state) => ({
-    selectedYear: state.selectedYear,
-    selectedPolicyBalance: state.selectedPolicyBalance,
-    selectedDates: state.selectedDates,
-    selectedDuration: state.selectedDuration,
-    comment: state.comment,
-    attachments: state.attachments,
-    formErrors: state.formErrors,
-    setFormErrors: state.setFormErrors,
-    setModalType: state.setModalType
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedYear: state.selectedYear,
+      selectedPolicyBalance: state.selectedPolicyBalance,
+      selectedDates: state.selectedDates,
+      selectedDuration: state.selectedDuration,
+      comment: state.comment,
+      attachments: state.attachments,
+      formErrors: state.formErrors,
+      setFormErrors: state.setFormErrors,
+      setModalType: state.setModalType
+    }))
+  );
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const { mutateAsync: uploadAttachments } = useUploadImages();
 
@@ -118,9 +123,11 @@ const useApplyPolicyLeaveSubmit = ({
   }, [selectedDates, comment, attachments]);
 
   const submitPolicyLeave = async (): Promise<void> => {
-    if (!selectedPolicyBalance || !validate()) {
+    if (isSubmitting || !selectedPolicyBalance || !validate()) {
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const attachmentRefs = await uploadPolicyLeaveAttachments({
@@ -145,10 +152,15 @@ const useApplyPolicyLeaveSubmit = ({
         setToastMessage,
         translateText
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return { submitPolicyLeave, isApplyPending };
+  return {
+    submitPolicyLeave,
+    isApplyPending: isSubmitting || isApplyPending
+  };
 };
 
 export default useApplyPolicyLeaveSubmit;

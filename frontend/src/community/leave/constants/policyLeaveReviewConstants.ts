@@ -1,6 +1,7 @@
 import { IconName } from "~community/common/types/IconTypes";
 import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import {
+  PolicyLeaveChipStyles,
   PolicyLeavePopupType,
   PolicyLeaveResultStatus,
   PolicyLeaveSummaryLayout
@@ -17,12 +18,12 @@ export const RESULT_STATUS_ICON_NAMES: Record<
   [PolicyLeaveRequestStatus.REVOKED]: IconName.REVOKED_STATUS_ICON
 };
 
-export const POLICY_LEAVE_CHIP_STYLES = {
+export const POLICY_LEAVE_CHIP_STYLES: PolicyLeaveChipStyles = {
   backgroundColor: "grey.100",
   py: "0.75rem"
 };
 
-export const POLICY_LEAVE_ATTACHMENT_CHIP_STYLES = {
+export const POLICY_LEAVE_ATTACHMENT_CHIP_STYLES: PolicyLeaveChipStyles = {
   ...POLICY_LEAVE_CHIP_STYLES,
   px: "0.75rem"
 };
@@ -35,7 +36,9 @@ export const STATUS_POPUP_TYPES: PolicyLeaveRequestStatus[] = [
   PolicyLeaveRequestStatus.REVOKED
 ];
 
-export const SUMMARY_LAYOUTS: Record<string, PolicyLeaveSummaryLayout> = {
+export const SUMMARY_LAYOUTS: Partial<
+  Record<PolicyLeavePopupType, PolicyLeaveSummaryLayout>
+> = {
   [PolicyLeaveRequestStatus.APPROVED]: {
     containerMarginTopClass: "mt-5",
     showDateApplied: true,

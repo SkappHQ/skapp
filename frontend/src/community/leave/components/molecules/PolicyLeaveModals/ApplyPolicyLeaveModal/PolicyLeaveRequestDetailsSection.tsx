@@ -1,4 +1,5 @@
 import { ChangeEvent, FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import TextArea from "~community/common/components/atoms/TextArea/TextArea";
@@ -63,19 +64,23 @@ const PolicyLeaveRequestDetailsSection: FC<Props> = ({
     setComment,
     setAttachments,
     setModalType
-  } = usePolicyLeaveStore((state) => ({
-    selectedDates: state.selectedDates,
-    selectedDuration: state.selectedDuration,
-    comment: state.comment,
-    attachments: state.attachments,
-    formErrors: state.formErrors,
-    setSelectedDuration: state.setSelectedDuration,
-    setComment: state.setComment,
-    setAttachments: state.setAttachments,
-    setModalType: state.setModalType
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedDates: state.selectedDates,
+      selectedDuration: state.selectedDuration,
+      comment: state.comment,
+      attachments: state.attachments,
+      formErrors: state.formErrors,
+      setSelectedDuration: state.setSelectedDuration,
+      setComment: state.setComment,
+      setAttachments: state.setAttachments,
+      setModalType: state.setModalType
+    }))
+  );
 
-  const { data: storageAvailabilityData } = useStorageAvailability();
+  const { data: storageAvailabilityData } = useStorageAvailability(
+    policyBalance.leaveType.isAttachment
+  );
 
   const handleCommentChange = (
     event: ChangeEvent<HTMLTextAreaElement>

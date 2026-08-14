@@ -28,7 +28,7 @@ interface PolicyLeaveReviewToastConfig {
 interface HandlePolicyLeaveReviewToastProps {
   type: PolicyLeaveReviewToastEnums;
   setToastMessage: (value: SetStateAction<ToastProps>) => void;
-  translateText: TranslateFn;
+  translateLeaveModuleText: TranslateFn;
 }
 
 const managerKey = (key: string): string[] => [
@@ -102,15 +102,15 @@ const REVIEW_TOAST_CONFIG: Record<
 export const handlePolicyLeaveReviewToast = ({
   type,
   setToastMessage,
-  translateText
+  translateLeaveModuleText
 }: HandlePolicyLeaveReviewToastProps): void => {
   const config = REVIEW_TOAST_CONFIG[type];
 
   setToastMessage({
     open: true,
     toastType: config.toastType,
-    title: translateText(config.titleKey),
-    description: translateText(config.descriptionKey),
+    title: translateLeaveModuleText(config.titleKey),
+    description: translateLeaveModuleText(config.descriptionKey),
     isIcon: true
   });
 };
@@ -119,7 +119,7 @@ export const isApprovedPopupType = (popupType: PolicyLeavePopupType): boolean =>
   popupType === PolicyLeaveRequestStatus.APPROVED ||
   popupType === PolicyLeaveReviewModalEnums.APPROVED_STATUS;
 
-export const isDeniedPopupType = (popupType: PolicyLeavePopupType): boolean =>
+const isDeniedPopupType = (popupType: PolicyLeavePopupType): boolean =>
   popupType === PolicyLeaveRequestStatus.DENIED ||
   popupType === PolicyLeaveReviewModalEnums.DECLINE_STATUS;
 

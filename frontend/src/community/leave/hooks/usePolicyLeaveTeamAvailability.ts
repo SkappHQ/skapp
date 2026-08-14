@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { getMonthStartAndEndDates } from "~community/common/utils/dateTimeUtils";
 import { useGetResourceAvailability } from "~community/leave/api/MyRequestApi";
@@ -14,11 +15,11 @@ interface PolicyLeaveTeamAvailability {
 
 const usePolicyLeaveTeamAvailability = (): PolicyLeaveTeamAvailability => {
   const { selectedMonth, selectedTeam, setSelectedTeam } = usePolicyLeaveStore(
-    (state) => ({
+    useShallow((state) => ({
       selectedMonth: state.selectedMonth,
       selectedTeam: state.selectedTeam,
       setSelectedTeam: state.setSelectedTeam
-    })
+    }))
   );
 
   const { data: myTeams } = useGetMyTeams();

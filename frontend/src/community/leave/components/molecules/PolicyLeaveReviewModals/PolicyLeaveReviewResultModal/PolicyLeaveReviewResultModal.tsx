@@ -7,10 +7,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveStatusPopupRow from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupRow/LeaveStatusPopupRow";
 import { RESULT_STATUS_ICON_NAMES } from "~community/leave/constants/policyLeaveReviewConstants";
-import {
-  PolicyLeaveReviewModalEnums,
-  PolicyLeaveReviewToastEnums
-} from "~community/leave/enums/PolicyLeaveReviewEnums";
+import { PolicyLeaveReviewToastEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
 import usePolicyLeaveReviewAction from "~community/leave/hooks/usePolicyLeaveReviewAction";
 import {
   PolicyLeavePopupType,
@@ -32,14 +29,12 @@ interface Props {
   request: PolicyLeaveRequestDetailType;
   closeModal: () => void;
   popupType: PolicyLeavePopupType;
-  setPopupType: (popupType: PolicyLeavePopupType) => void;
 }
 
 const PolicyLeaveReviewResultModal: FC<Props> = ({
   request,
   closeModal,
-  popupType,
-  setPopupType
+  popupType
 }) => {
   const translateText = useTranslator(
     "leaveModule",
@@ -55,10 +50,7 @@ const PolicyLeaveReviewResultModal: FC<Props> = ({
       successToast: PolicyLeaveReviewToastEnums.REVOKE_SUCCESS,
       errorToast: PolicyLeaveReviewToastEnums.REVOKE_ERROR,
       analyticsEvent: GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_REVOKED,
-      onSuccess: () => {
-        setPopupType(PolicyLeaveReviewModalEnums.NONE);
-        closeModal();
-      }
+      onSuccess: closeModal
     });
 
   const handleUndo = (): void => {

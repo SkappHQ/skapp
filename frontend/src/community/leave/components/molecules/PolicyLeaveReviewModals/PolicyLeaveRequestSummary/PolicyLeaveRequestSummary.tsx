@@ -43,6 +43,10 @@ const PolicyLeaveRequestSummary: FC<Props> = ({
 
   const layout = SUMMARY_LAYOUTS[popupType];
 
+  if (!layout) {
+    return null;
+  }
+
   return (
     <>
       {layout.descriptionKey && (

@@ -27,7 +27,7 @@ const usePolicyLeaveReviewAction = ({
   analyticsEvent,
   onSuccess
 }: Props): PolicyLeaveReviewAction => {
-  const translateText = useTranslator("leaveModule");
+  const translateLeaveModuleText = useTranslator("leaveModule");
 
   const { setToastMessage } = useToast();
   const { sendEvent } = useGoogleAnalyticsEvent();
@@ -38,7 +38,7 @@ const usePolicyLeaveReviewAction = ({
       handlePolicyLeaveReviewToast({
         type: successToast,
         setToastMessage,
-        translateText
+        translateLeaveModuleText
       });
       sendEvent(analyticsEvent);
     },
@@ -46,7 +46,7 @@ const usePolicyLeaveReviewAction = ({
       handlePolicyLeaveReviewToast({
         type: errorToast,
         setToastMessage,
-        translateText
+        translateLeaveModuleText
       });
     }
   );
@@ -55,11 +55,7 @@ const usePolicyLeaveReviewAction = ({
     leaveRequestId: number,
     reviewerComment?: string
   ): void => {
-    mutate({
-      leaveRequestId,
-      status,
-      ...(reviewerComment === undefined ? {} : { reviewerComment })
-    });
+    mutate({ leaveRequestId, status, reviewerComment });
   };
 
   return { reviewRequest, isPending };

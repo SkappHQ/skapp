@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { LeaveStates } from "~community/common/types/CommonTypes";
 import { convertToYYYYMMDDFromDateTime } from "~community/common/utils/dateTimeUtils";
 import { useCheckPolicyLeaveAvailability } from "~community/leave/api/PolicyLeaveApi";
 import { usePolicyLeaveStore } from "~community/leave/store/policyLeaveStore";
+import { PolicyLeaveAvailabilityType } from "~community/leave/types/PolicyLeaveTypes";
 import { getAvailabilityErrorMessage } from "~community/leave/utils/policyLeave/policyLeaveUtils";
 
 const usePolicyLeaveAvailabilityCheck = (): string => {
@@ -18,19 +20,20 @@ const usePolicyLeaveAvailabilityCheck = (): string => {
     selectedPolicyBalance,
     selectedDates,
     selectedDuration,
-    availability,
-    setAvailability,
     setFormError
-  } = usePolicyLeaveStore((state) => ({
-    selectedPolicyBalance: state.selectedPolicyBalance,
-    selectedDates: state.selectedDates,
-    selectedDuration: state.selectedDuration,
-    availability: state.availability,
-    setAvailability: state.setAvailability,
-    setFormError: state.setFormError
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedPolicyBalance: state.selectedPolicyBalance,
+      selectedDates: state.selectedDates,
+      selectedDuration: state.selectedDuration,
+      setFormError: state.setFormError
+    }))
+  );
 
   const availabilityRequestIdRef = useRef<number>(0);
+
+  const [availability, setAvailability] =
+    useState<PolicyLeaveAvailabilityType | null>(null);
 
   const [hasAvailabilityCheckFailed, setHasAvailabilityCheckFailed] =
     useState<boolean>(false);

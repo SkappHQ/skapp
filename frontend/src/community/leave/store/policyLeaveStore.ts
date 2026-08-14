@@ -16,7 +16,6 @@ import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
 import { PolicyLeaveReviewSliceType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import {
   EmployeePolicyBalanceType,
-  PolicyLeaveAvailabilityType,
   PolicyLeaveRequestStatus
 } from "~community/leave/types/PolicyLeaveTypes";
 import { TeamNamesType } from "~community/people/types/TeamTypes";
@@ -67,7 +66,6 @@ export interface PolicyLeaveStore extends PolicyLeaveReviewSliceType {
   comment: string;
   attachments: FileUploadType[];
   formErrors: PolicyLeaveFormErrors;
-  availability: PolicyLeaveAvailabilityType | null;
   teamAvailabilityData: TeamAvailabilityDataType[];
 
   setModalType: (modalType: PolicyLeaveModalEnums) => void;
@@ -85,7 +83,6 @@ export interface PolicyLeaveStore extends PolicyLeaveReviewSliceType {
   setAttachments: (attachments: FileUploadType[]) => void;
   setFormError: (key: keyof PolicyLeaveFormErrors, value: string) => void;
   setFormErrors: (errors: PolicyLeaveFormErrors) => void;
-  setAvailability: (availability: PolicyLeaveAvailabilityType | null) => void;
   setTeamAvailabilityData: (data: TeamAvailabilityDataType[]) => void;
 }
 
@@ -98,7 +95,6 @@ const emptyForm = () => ({
   comment: "",
   attachments: [],
   formErrors: initialPolicyLeaveFormErrors,
-  availability: null,
   teamAvailabilityData: []
 });
 
@@ -168,7 +164,6 @@ export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
           formErrors: { ...state.formErrors, [key]: value }
         })),
       setFormErrors: (formErrors) => set({ formErrors }),
-      setAvailability: (availability) => set({ availability }),
       setTeamAvailabilityData: (teamAvailabilityData) =>
         set({ teamAvailabilityData })
     }),
