@@ -19,8 +19,7 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyListItemDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -122,11 +121,11 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	}
 
 	@Override
-	public Page<CrmCompanyListItemDtoV2> getCompanyMetricsV2(Pageable pageable, String searchKeyword) {
+	public Page<CrmCompanyMetricsResponseDtoV2> getCompanyMetricsV2(Pageable pageable, String searchKeyword) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmCompanyListItemDtoV2> query = cb.createQuery(CrmCompanyListItemDtoV2.class);
+		CriteriaQuery<CrmCompanyMetricsResponseDtoV2> query = cb.createQuery(CrmCompanyMetricsResponseDtoV2.class);
 		Root<CrmCompany> company = query.from(CrmCompany.class);
 
 		Subquery<Long> taskSubquery = query.subquery(Long.class);
@@ -172,10 +171,9 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(openCountDeal.get(CrmDeal_.isDeleted)),
 					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
-		query.select(cb.construct(CrmCompanyListItemDtoV2.class,
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
-						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
+		query.select(cb.construct(CrmCompanyMetricsResponseDtoV2.class, company.get(CrmCompany_.id),
+				company.get(CrmCompany_.name), company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+				company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber),
 				cb.construct(CrmCompanyMetrics.class, taskSubquery, overdueSubquery,
 						openValueSubquery.cast(String.class), accountValueSubquery.cast(String.class),
 						openCountSubquery, closedCountSubquery)));
@@ -183,7 +181,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		query.where(buildPredicates(cb, company, searchKeyword));
 		query.orderBy(buildOrderBy(cb, company, searchKeyword));
 
-		List<CrmCompanyListItemDtoV2> content = entityManager.createQuery(query)
+		List<CrmCompanyMetricsResponseDtoV2> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();

@@ -278,7 +278,7 @@ class CrmContactControllerV2IntegrationTest {
 	// --- getContactMetrics ---
 
 	@Test
-	@DisplayName("Get contact metrics - Returns page with nested contact and zero metrics when no deals or tasks")
+	@DisplayName("Get contact metrics - Returns page with flat contact fields and zero metrics when no deals or tasks")
 	void getContactMetrics_WithContacts_ReturnsNestedContactAndMetrics() throws Exception {
 		Long companyId = savedCompany("Metrics V2 Corp").getId();
 		Long contactId = savedContact(companyId, "ZeroMetricsContactV2Unique", "metrics.contact.v2@example.com")
@@ -288,9 +288,9 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['id']").value(contactId))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("ZeroMetricsContactV2Unique"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['company']['id']").value(companyId))
+			.andExpect(jsonPath("['results'][0]['items'][0]['id']").value(contactId))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("ZeroMetricsContactV2Unique"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['company']['id']").value(companyId))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealValue']").value("0"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(0))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(0))
@@ -341,7 +341,7 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['contact']['name']").value("NoCompanyContactV2Unique"));
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("NoCompanyContactV2Unique"));
 	}
 
 	@Test
