@@ -65,7 +65,8 @@ const AttendanceConfiguration = (): JSX.Element => {
       prevConfig
         ? {
             ...prevConfig,
-            isManualTimeEntryEnabled: configData.isManualTimeEntryEnabled
+            isManualTimeEntryRestrictionEnabled:
+              configData.isManualTimeEntryRestrictionEnabled
           }
         : configData
     );
@@ -94,7 +95,9 @@ const AttendanceConfiguration = (): JSX.Element => {
     return JSON.stringify(config) !== JSON.stringify(initialConfig);
   };
 
-  const isManualEntryRestricted = Boolean(config?.isManualTimeEntryEnabled);
+  const isManualEntryRestricted = Boolean(
+    config?.isManualTimeEntryRestrictionEnabled
+  );
 
   return (
     <>

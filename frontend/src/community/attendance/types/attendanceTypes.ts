@@ -7,7 +7,7 @@ export type AttendanceConfigurationType = {
   isClockInClockOutOnly: boolean;
   isFingerprintAttendanceEnabled: boolean;
   /** When true, only Attendance Managers and above may add or edit time entries. */
-  isManualTimeEntryEnabled?: boolean;
+  isManualTimeEntryRestrictionEnabled?: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {
