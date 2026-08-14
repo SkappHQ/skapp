@@ -26,7 +26,6 @@ import {
 import { validateDealAmount } from "~community/crm/utils/dealValidations";
 
 interface DealPropertiesSidebarProps {
-  isOpen?: boolean;
   onStageChange: (stageId: number) => void;
   onAmountChange: (amount: string) => void;
   onPriorityChange: (priority: CrmPriorityEnum) => void;
@@ -35,7 +34,6 @@ interface DealPropertiesSidebarProps {
 }
 
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
-  isOpen,
   onStageChange,
   onAmountChange,
   onPriorityChange,
@@ -112,9 +110,9 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   return (
     <div className="w-1/3 flex flex-col gap-4 shrink-0">
-      <div className="w-[219px] max-w-full">
+      <div className="w-full max-w-[13.688rem]">
         {isStagesLoading ? (
-          <SkeletonShape className="h-9 w-full" />
+          <SkeletonShape className="h-12 w-full" />
         ) : (
           <Dropdown
             options={stageOptions}
