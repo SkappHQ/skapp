@@ -1,7 +1,6 @@
 import { Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
-import { useShallow } from "zustand/react/shallow";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
