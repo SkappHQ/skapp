@@ -231,9 +231,6 @@ const useAddEntry = () => {
 
     if (!isDurationValid(values.fromTime, values.toTime)) return;
 
-    // A direct entry writes to the target employee's timesheet without approval, so it
-    // bypasses the routing below, which exists to route the current user's own request.
-    // Whether it is an add or an edit follows from the record already there.
     if (isDirectEntry && directEntryEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId ?? undefined;
       directEntryMutate({

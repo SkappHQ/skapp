@@ -39,10 +39,6 @@ const useApproveDenyTimeRequest = () => {
   };
 
   const onError = (messageKey: string) => {
-    // The server rejects any transition out of a status that is no longer Pending, which
-    // is what a row auto-cancelled by a direct save looks like from here. That is a
-    // different situation from a failed write, so it gets its own message rather than
-    // "please try again" on something retrying cannot fix.
     const isStaleRequest = messageKey === TIME_ERROR_TIME_REQUEST_CANNOT_EDIT;
 
     if (isStaleRequest) {
@@ -63,8 +59,6 @@ const useApproveDenyTimeRequest = () => {
         toastType: "error",
         title: translateTexts(["approveFailTitle"]),
         description: translateTexts(["approveFailDes"]),
-        // A failed action must not scroll past unnoticed while the row still needs
-        // resolving, so it stays until dismissed.
         autoHideDuration: null,
         isIcon: true
       });

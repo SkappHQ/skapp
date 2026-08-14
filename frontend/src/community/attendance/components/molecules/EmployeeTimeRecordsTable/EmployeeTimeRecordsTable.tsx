@@ -292,26 +292,19 @@ const EmployeeTimeRecordsTable = ({
                   });
 
                 finalCellData = (
-                  <div
-                    role="button"
-                    tabIndex={0}
+                  <button
+                    type="button"
                     aria-label={translateText(["directEntryCellLabel"], {
                       employeeName,
                       date: formatDateWithOrdinalIndicator(
                         new Date(timeSheetRecord.date)
                       )
                     })}
-                    className="cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-inherit"
                     onClick={openDirectEntry}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        openDirectEntry();
-                      }
-                    }}
                   >
                     {finalCellData}
-                  </div>
+                  </button>
                 );
               }
             }
