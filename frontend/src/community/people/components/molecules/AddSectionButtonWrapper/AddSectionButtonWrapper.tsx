@@ -41,7 +41,7 @@ const AddSectionButtonWrapper = ({
     "commonText"
   );
 
-  const { handleBack, activeStep } = useStepper();
+  const { handleBack, activeStep, isLastStep } = useStepper();
 
   const { setToastMessage } = useToast();
 
@@ -55,6 +55,7 @@ const AddSectionButtonWrapper = ({
       description: translateText(["employeeAddSuccessToastDescription"])
     });
     setIsSuccess && setIsSuccess(true);
+    resetPeopleSlice();
     router.push(ROUTES.PEOPLE.DIRECTORY);
   };
 
@@ -73,9 +74,19 @@ const AddSectionButtonWrapper = ({
 
   const { mutate: createCustomSkills } = useCreateCustomSkills();
 
-  const { employee, profilePic, thumbnail, setCommonDetails } = usePeopleStore(
-    (state) => state
-  );
+  const {
+    employee,
+    profilePic,
+    thumbnail,
+    setCommonDetails,
+    resetPeopleSlice
+  } = usePeopleStore((state) => ({
+    employee: state.employee,
+    profilePic: state.profilePic,
+    thumbnail: state.thumbnail,
+    setCommonDetails: state.setCommonDetails,
+    resetPeopleSlice: state.resetPeopleSlice
+  }));
 
   const environment = useGetEnvironment();
 
@@ -150,7 +161,7 @@ const AddSectionButtonWrapper = ({
         </ButtonV2>
       )}
 
-      {activeStep === 4 ? (
+      {isLastStep ? (
         <ButtonV2
           variant={"primary"}
           onClick={handleSave}
