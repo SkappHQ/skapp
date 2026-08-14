@@ -18,6 +18,7 @@ interface actionsTypes {
     selectedFilters: Record<string, string[]>
   ) => void;
   resetTimesheetRequestParams: () => void;
+  restoreTimesheetRequestParams: () => void;
   setTimesheetRequestSelectedDates: (value: string[]) => void;
   setTimesheetRequestPagination: (page: number) => void;
   setTimesheetAnalyticsSelectedDates: (value: string[]) => void;
