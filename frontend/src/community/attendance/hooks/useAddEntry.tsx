@@ -30,6 +30,21 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
+// The leave and holiday confirmations describe what is already on that date, so the
+// resolved availability has to survive until the modal renders.
+const CONFIRMATIONS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
+  EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+  EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+];
+
+// These confirmations submit the entry themselves once confirmed, so they need the
+// times the user entered rather than re-deriving them.
+const CONFIRMATIONS_CARRYING_ENTERED_TIMES: EmployeeTimesheetModalTypes[] = [
+  EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
+  EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+  EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+];
+
 const useAddEntry = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
   const { setToastMessage } = useToast();
@@ -156,9 +171,44 @@ const useAddEntry = () => {
   };
 
   /**
-   * Routes a self-service add through whichever confirmation has to come first: an
-   * ongoing session, a conflicting request, an existing entry, or a leave or holiday on
-   * that date. Falling past all of them submits the request for approval.
+   * Decides which confirmation a self-service add has to pass through first, in
+   * precedence order, or null when nothing blocks it and it can be submitted outright.
+   */
+  const getSelfServiceAddConfirmation = (
+    values: TimeEntryFormValueType,
+    timeAvailability: TimeAvailabilityType
+  ): EmployeeTimesheetModalTypes | null => {
+    const isOngoingSession =
+      (status === AttendanceSlotType.START ||
+        status === AttendanceSlotType.PAUSE ||
+        status === AttendanceSlotType.RESUME) &&
+      isToday(values?.timeEntryDate);
+
+    if (isOngoingSession) {
+      return EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY;
+    }
+    if (
+      timeAvailability?.editTimeRequests ||
+      timeAvailability?.manualEntryRequests?.length
+    ) {
+      return EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS;
+    }
+    if (timeAvailability?.timeSlotsExists) {
+      return EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS;
+    }
+    if (timeAvailability?.leaveRequest?.length) {
+      return EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY;
+    }
+    if (timeAvailability?.holiday?.length) {
+      return EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY;
+    }
+    return null;
+  };
+
+  /**
+   * Applies whatever the chosen confirmation needs: some carry the entered times over
+   * into the confirmation modal, and the leave and holiday ones also need the resolved
+   * availability kept so the modal can describe what is on that date.
    */
   const routeSelfServiceAddEntry = (
     values: TimeEntryFormValueType,
@@ -168,49 +218,33 @@ const useAddEntry = () => {
     setFromDateTime: Dispatch<SetStateAction<string>>,
     setToDateTime: Dispatch<SetStateAction<string>>
   ) => {
-    const isOngoingSession =
-      (status === AttendanceSlotType.START ||
-        status === AttendanceSlotType.PAUSE ||
-        status === AttendanceSlotType.RESUME) &&
-      isToday(values?.timeEntryDate);
+    const confirmation = getSelfServiceAddConfirmation(
+      values,
+      timeAvailability
+    );
 
-    const stageDateTimes = () => {
-      setFromDateTime(dateTimeFromTime ?? "");
-      setToDateTime(dateTimeToTime ?? "");
-    };
-
-    const openModal = (modalType: EmployeeTimesheetModalTypes) => {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(modalType);
-    };
-
-    if (isOngoingSession) {
-      openModal(EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY);
-    } else if (
-      timeAvailability?.editTimeRequests ||
-      timeAvailability?.manualEntryRequests?.length
-    ) {
-      openModal(EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS);
-    } else if (timeAvailability?.timeSlotsExists) {
-      stageDateTimes();
-      openModal(EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS);
-    } else if (timeAvailability?.leaveRequest?.length) {
-      setTimeAvailabilityForPeriod(timeAvailability);
-      stageDateTimes();
-      openModal(EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY);
-    } else if (timeAvailability?.holiday?.length) {
-      setTimeAvailabilityForPeriod(timeAvailability);
-      stageDateTimes();
-      openModal(EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY);
-    } else {
+    if (confirmation === null) {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
         zoneId: getCurrentTimeZone()
       });
       setIsEmployeeTimesheetModalOpen(false);
+      setCurrentAddTimeChanges(values);
+      return;
     }
 
+    if (CONFIRMATIONS_RETAINING_AVAILABILITY.includes(confirmation)) {
+      setTimeAvailabilityForPeriod(timeAvailability);
+    }
+
+    if (CONFIRMATIONS_CARRYING_ENTERED_TIMES.includes(confirmation)) {
+      setFromDateTime(dateTimeFromTime ?? "");
+      setToDateTime(dateTimeToTime ?? "");
+    }
+
+    setIsEmployeeTimesheetModalOpen(true);
+    setEmployeeTimesheetModalType(confirmation);
     setCurrentAddTimeChanges(values);
   };
 
