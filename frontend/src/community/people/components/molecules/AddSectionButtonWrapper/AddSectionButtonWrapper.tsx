@@ -74,13 +74,11 @@ const AddSectionButtonWrapper = ({
 
   const { mutate: createCustomSkills } = useCreateCustomSkills();
 
-  const {
-    employee,
-    profilePic,
-    thumbnail,
-    setCommonDetails,
-    resetPeopleSlice
-  } = usePeopleStore((state) => state);
+  const employee = usePeopleStore((state) => state.employee);
+  const profilePic = usePeopleStore((state) => state.profilePic);
+  const thumbnail = usePeopleStore((state) => state.thumbnail);
+  const setCommonDetails = usePeopleStore((state) => state.setCommonDetails);
+  const resetPeopleSlice = usePeopleStore((state) => state.resetPeopleSlice);
 
   const environment = useGetEnvironment();
 
