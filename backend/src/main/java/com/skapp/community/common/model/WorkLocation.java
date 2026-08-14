@@ -22,7 +22,7 @@ public class WorkLocation extends Auditable<String> {
 	@Column(name = "id", nullable = false, updatable = false)
 	private Long workLocationId;
 
-	@Column(name = "name", nullable = false, unique = true)
+	@Column(name = "name", nullable = false)
 	private String name;
 
 	@Column(name = "address")

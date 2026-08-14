@@ -16,6 +16,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -128,7 +129,13 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		predicates.add(criteriaBuilder.greaterThan(root.get(Holiday_.date), DateTimeUtils.getCurrentUtcDate()));
 		predicates.add(criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId));
 
-		predicates.add(criteriaBuilder.equal(criteriaBuilder.size(root.get(Holiday_.workLocations)), 1));
+		Subquery<Long> liveLocationCount = criteriaQuery.subquery(Long.class);
+		Root<Holiday> correlatedHoliday = liveLocationCount.correlate(root);
+		Join<Holiday, WorkLocation> liveLocationJoin = correlatedHoliday.join(Holiday_.workLocations, JoinType.INNER);
+		liveLocationCount.select(criteriaBuilder.count(liveLocationJoin));
+		liveLocationCount.where(criteriaBuilder.isFalse(liveLocationJoin.get(WorkLocation_.isDeleted)));
+
+		predicates.add(criteriaBuilder.equal(liveLocationCount, 1L));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);

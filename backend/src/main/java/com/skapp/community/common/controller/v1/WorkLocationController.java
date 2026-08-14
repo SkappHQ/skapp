@@ -5,7 +5,6 @@ import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.payload.request.WorkLocationRequestDto;
 import com.skapp.community.common.service.WorkLocationService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

@@ -33,9 +33,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
 
 		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
-		if (!predicates.isEmpty()) {
-			query.where(predicates.toArray(new Predicate[0]));
-		}
+		query.where(predicates.toArray(new Predicate[0]));
 
 		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
@@ -84,9 +82,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		countQuery.select(cb.count(countRoot));
 
 		List<Predicate> predicates = buildPredicates(cb, countRoot, workLocationFilterDto);
-		if (!predicates.isEmpty()) {
-			countQuery.where(predicates.toArray(new Predicate[0]));
-		}
+		countQuery.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(countQuery).getSingleResult();
 	}
