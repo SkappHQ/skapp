@@ -2185,20 +2185,10 @@ public class TimeServiceImpl implements TimeService {
 		return false;
 	}
 
-	/**
-	 * Restricting manual time entries and edits is an enterprise only setting, so the
-	 * community edition never enforces it.
-	 */
 	protected boolean isManualEntryRestrictionEnabled() {
 		return false;
 	}
 
-	/**
-	 * Blocks the current user from creating or editing time entries while the
-	 * organization level manual entry restriction is enabled. Attendance Managers,
-	 * Attendance Admins and Super Admins keep their access.
-	 * @param currentUser the authenticated user making the request.
-	 */
 	private void validateManualEntryRestriction(User currentUser) {
 		if (!isManualEntryRestrictionEnabled()) {
 			return;

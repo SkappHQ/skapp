@@ -29,7 +29,6 @@
     "manualEntryRestrictionTooltip": "When enabled, only Attendance Managers, Attendance Admins, and Super Admins can add or edit time entries. Their changes save immediately without approval.",
     "manualEntryRestrictionCoreTierTooltip": "This setting requires the Core plan or above.",
     "manualEntryRestrictionUpgradeTooltip": "Available on Core and Pro plans. Upgrade to unlock this setting.",
-    "manualEntryRestrictionUpgradeLink": "Upgrade",
     "manualEntryRestrictionModal": {
       "enableTitle": "Restrict manual time entries & edits?",
       "disableTitle": "Allow manual time entries & edits?",

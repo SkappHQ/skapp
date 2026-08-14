@@ -133,35 +133,37 @@ class AttendanceConfigServiceImplUnitTest {
 
 		assertTrue(captor.getAllValues()
 			.stream()
-			.anyMatch(config -> config.getAttendanceConfigType() == AttendanceConfigType.MANUAL_TIME_ENTRY_ENABLED
+			.anyMatch(config -> config
+				.getAttendanceConfigType() == AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED
 					&& "true".equals(config.getAttendanceConfigValue())));
 	}
 
 	@Test
 	void updateManualEntryRestrictionEnabled_savesRequestedValue() {
-		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.MANUAL_TIME_ENTRY_ENABLED))
-			.thenReturn(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_ENABLED, "true"));
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED, "true"));
 
 		attendanceConfigService.updateManualEntryRestrictionEnabled(false);
 
 		ArgumentCaptor<AttendanceConfig> captor = ArgumentCaptor.forClass(AttendanceConfig.class);
 		verify(attendanceConfigDao).save(captor.capture());
 
-		assertEquals(AttendanceConfigType.MANUAL_TIME_ENTRY_ENABLED, captor.getValue().getAttendanceConfigType());
+		assertEquals(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED,
+				captor.getValue().getAttendanceConfigType());
 		assertEquals("false", captor.getValue().getAttendanceConfigValue());
 	}
 
 	@Test
 	void getAllAttendanceConfigs_nonAdminReturnsManualEntryRestriction() {
 		when(userService.getCurrentUserRoles()).thenReturn(Set.of(Role.ATTENDANCE_EMPLOYEE.name()));
-		when(attendanceConfigDao.findAll())
-			.thenReturn(List.of(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_ENABLED, "true")));
+		when(attendanceConfigDao.findAll()).thenReturn(
+				List.of(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED, "true")));
 
 		AttendanceConfigRequestDto dto = (AttendanceConfigRequestDto) attendanceConfigService.getAllAttendanceConfigs()
 			.getResults()
 			.getFirst();
 
-		assertTrue(dto.getIsManualTimeEntryEnabled());
+		assertTrue(dto.getIsManualTimeEntryRestrictionEnabled());
 	}
 
 	@Test

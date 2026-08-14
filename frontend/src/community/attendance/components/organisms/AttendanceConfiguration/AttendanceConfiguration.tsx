@@ -60,9 +60,7 @@ const AttendanceConfiguration = (): JSX.Element => {
     if (!configData) return;
 
     setInitialConfig(configData);
-    // The manual entry restriction saves itself and invalidates this query, so a refetch
-    // must only pick up the field that write owns. Replacing the whole object would
-    // silently discard unsaved edits made to the other settings on this page.
+
     setConfig((prevConfig) =>
       prevConfig
         ? {
