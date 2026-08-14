@@ -172,8 +172,8 @@ class CrmCompanyControllerV2IntegrationTest {
 				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['website']").value("https://metrics-v2.com"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['address']").value("123 Metrics St"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openDeals']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDeals']").value(1));
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openDealsCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealsCount']").value(1));
 
 		String content = result.andReturn().getResponse().getContentAsString();
 		String openValue = JsonPath.read(content, "$.results[0].items[0].metrics.openValue");
@@ -196,7 +196,7 @@ class CrmCompanyControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdue']").value(1));
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(1));
 	}
 
 	@Test

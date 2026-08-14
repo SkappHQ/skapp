@@ -9,14 +9,14 @@ public class CrmCompanyMetrics {
 
 	private final Long openTasksCount;
 
-	private final Long overdue;
+	private final Long overdueTasksCount;
 
 	private final String openValue;
 
 	private final String accountValue;
 
-	private final Long openDeals;
+	private final Long openDealsCount;
 
-	private final Long closedDeals;
+	private final Long closedDealsCount;
 
 }
