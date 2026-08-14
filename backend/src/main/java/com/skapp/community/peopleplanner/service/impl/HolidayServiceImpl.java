@@ -186,8 +186,8 @@ public class HolidayServiceImpl implements HolidayService {
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(
-				holidayBulkRequestDto.getHolidayDtoList().size(), savedHolidays.size(),
-				holidaysOnCurrentDate.get() > 0, holidaysOnPastDates.get() > 0, holidayDtoStatusList);
+				holidayBulkRequestDto.getHolidayDtoList().size(), savedHolidays.size(), holidaysOnCurrentDate.get() > 0,
+				holidaysOnPastDates.get() > 0, holidayDtoStatusList);
 
 		log.info("saveBulkHolidays: execution ended");
 		return new ResponseEntityDto(false, responseDto);
