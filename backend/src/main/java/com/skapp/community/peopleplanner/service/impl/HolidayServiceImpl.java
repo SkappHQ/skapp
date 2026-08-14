@@ -58,7 +58,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +130,6 @@ public class HolidayServiceImpl implements HolidayService {
 
 		List<HolidayDtoStatusResponseDto> holidayDtoStatusList = new ArrayList<>();
 		List<Holiday> savedHolidays = new ArrayList<>();
-		Map<LocalDate, List<Holiday>> systemHolidaysByDate = new HashMap<>();
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
@@ -144,8 +142,7 @@ public class HolidayServiceImpl implements HolidayService {
 			try {
 
 				LocalDate holidayDate = DateTimeUtils.parseUtcDate(holidayDto.getDate());
-				List<Holiday> systemHolidays = systemHolidaysByDate.computeIfAbsent(holidayDate,
-						holidayDao::findAllByIsActiveTrueAndDate);
+				List<Holiday> systemHolidays = holidayDao.findAllByIsActiveTrueAndDate(holidayDate);
 
 				validateHolidayDto(holidayDto, holidayDate, systemHolidays, holidaysOnCurrentDate, holidaysOnPastDates,
 						holidayBulkRequestDto.getYear(), validWorkLocationNames);
