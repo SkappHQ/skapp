@@ -55,10 +55,21 @@ const AvailabilityCalendarCard = ({
     setTodaysAvailability: state.setTodaysAvailability
   }));
 
+  const getOnLeaveModalTitle = () => {
+    const today = DateTime.now().toFormat(DATE_FORMAT);
+    const yesterday = DateTime.now().minus({ days: 1 }).toFormat(DATE_FORMAT);
+    const tomorrow = DateTime.now().plus({ days: 1 }).toFormat(DATE_FORMAT);
+
+    if (actualDate === today) return translateText(["awayToday"]);
+    if (actualDate === yesterday) return translateText(["awayYesterday"]);
+    if (actualDate === tomorrow) return translateText(["awayTomorrow"]);
+    return translateText(["awayOnDate"], { date: actualDate });
+  };
+
   const handleOnLeaveModalOpen = () => {
     setIsManagerModal(true);
     setIsOnLeaveModalOpen(true);
-    setOnLeaveModalTitle(translateText(["onLeaveTitle"], { date: actualDate }));
+    setOnLeaveModalTitle(getOnLeaveModalTitle());
     setTodaysAvailability(onLeaveEmployees);
   };
 
