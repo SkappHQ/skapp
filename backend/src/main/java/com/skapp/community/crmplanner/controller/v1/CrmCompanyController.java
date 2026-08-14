@@ -71,6 +71,15 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get company metrics by ID",
+			description = "Returns the aggregated task and deal metrics for a single company.")
+	@GetMapping("/{id}/metrics")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompanyMetricsById(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.getCompanyMetricsById(id);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Search companies by domain",
 			description = "Returns companies whose website field contains the given domain")
 	@GetMapping("/search-by-domain")
