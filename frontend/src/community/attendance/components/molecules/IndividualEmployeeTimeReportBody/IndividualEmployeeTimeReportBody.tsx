@@ -7,6 +7,7 @@ import { useGetIndividualWorkHourGraphData } from "~community/attendance/api/att
 import WorkHourGraph from "~community/attendance/components/molecules/Graphs/WorkHourGraph";
 import TimeUtilizationCard from "~community/attendance/components/molecules/TimeUtilizationCard/TimeUtilizationCard";
 import TimesheetDailyRecordTable from "~community/attendance/components/molecules/TimesheetDailyRecordTable/TimesheetDailyRecordTable";
+import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
 import { TimeUtilizationTrendTypes } from "~community/attendance/types/timeSheetTypes";
 import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
@@ -19,6 +20,7 @@ import {
   getMonthName,
   getStartAndEndDateOfTheMonth
 } from "~community/common/utils/dateTimeUtils";
+import { useGetEmployeeById } from "~community/people/api/PeopleApi";
 import dailyLogMockData from "~enterprise/attendance/data/dailyLogMockData";
 import managerUtilizationMockData from "~enterprise/attendance/data/managerUtilizationMockData.json";
 import workHoursGraphMockData from "~enterprise/attendance/data/workHoursGraphMockData.json";
@@ -35,6 +37,21 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
   const { isAtLeastCoreTier } = useTier();
 
   const { employeeDetails } = useSessionData();
+
+  const { data: targetEmployeeDetails } = useGetEmployeeById(selectedUser);
+
+  const targetEmployee = useMemo(
+    () => ({
+      employeeId: selectedUser,
+      employeeName: [
+        targetEmployeeDetails?.firstName,
+        targetEmployeeDetails?.lastName
+      ]
+        .filter(Boolean)
+        .join(" ")
+    }),
+    [selectedUser, targetEmployeeDetails]
+  );
 
   const { isDrawerToggled } = useCommonStore((state) => ({
     isDrawerToggled: state.isDrawerExpanded
@@ -131,7 +148,9 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
               marginTop: "1.5rem"
             }}
           >
+            <EmployeeTimesheetPopupController />
             <TimesheetDailyRecordTable
+              targetEmployee={targetEmployee}
               dailyLogData={dailyLogs || []}
               downloadEmployeeDailyLogCsv={() => {
                 downloadEmployeeDailyLogCsv(

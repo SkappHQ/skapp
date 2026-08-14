@@ -127,6 +127,29 @@ public class TimeController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@Operation(summary = "Direct time entry",
+			description = "Creates or overwrites a time entry for an employee without routing it for approval. "
+					+ "Only available while the manual entry restriction is enabled, and limited to the acting "
+					+ "user's supervisory scope.")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER', 'ATTENDANCE_ADMIN')")
+	@PostMapping(value = "/employees/{employeeId}/direct-entry")
+	public ResponseEntity<ResponseEntityDto> addDirectTimeEntry(@PathVariable Long employeeId,
+			@RequestBody ManualEntryRequestDto timeRequestDto) {
+		ResponseEntityDto response = timeService.addDirectTimeEntry(employeeId, timeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@Operation(summary = "Direct time entry edit",
+			description = "Edits an existing time entry for an employee without routing it for approval. "
+					+ "Same availability and scope rules as the direct entry endpoint.")
+	@PreAuthorize("hasAnyRole('ATTENDANCE_MANAGER', 'ATTENDANCE_ADMIN')")
+	@PatchMapping(value = "/employees/{employeeId}/direct-entry")
+	public ResponseEntity<ResponseEntityDto> editDirectTimeEntry(@PathVariable Long employeeId,
+			@RequestBody EditTimeRequestDto timeRequestDto) {
+		ResponseEntityDto response = timeService.editDirectTimeEntry(employeeId, timeRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Time request update", description = "Update an existing time request")
 	@PreAuthorize("hasAnyRole('ATTENDANCE_EMPLOYEE')")
 	@PatchMapping(value = "/requests-update")

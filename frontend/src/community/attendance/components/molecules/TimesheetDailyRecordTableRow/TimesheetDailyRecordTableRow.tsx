@@ -17,10 +17,12 @@ import {
   holidayDurationSelector
 } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   DailyLogType,
+  DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
@@ -30,7 +32,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { getEmoji, mergeSx } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
@@ -45,10 +47,17 @@ import styles from "./styles";
 interface Props {
   record: DailyLogType;
   headerLength: number;
+  targetEmployee?: DirectEntryEmployeeType;
 }
 
-const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
+const TimesheetDailyRecordTableRow: FC<Props> = ({
+  record,
+  headerLength,
+  targetEmployee
+}) => {
   const { isFreeTier } = useSessionData();
+  const { isManualEntryRestricted, canDirectlyAddOrEditEntry } =
+    useManualEntryRestriction();
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -66,9 +75,14 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
     attendanceParams,
     setSelectedDailyRecord,
     setIsEmployeeTimesheetModalOpen,
-    setEmployeeTimesheetModalType
+    setEmployeeTimesheetModalType,
+    setDirectEntryEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+
+  const isRowInteractive = targetEmployee
+    ? canDirectlyAddOrEditEntry
+    : !isManualEntryRestricted;
 
   const handleEdit = useCallback(() => {
     setSelectedDailyRecord(record);
@@ -196,17 +210,39 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
     handleAvailability
   );
 
+  const handleRowActivate = () => {
+    if (!isRowInteractive) return;
+
+    setDirectEntryEmployee(targetEmployee ?? null);
+
+    if (targetEmployee) {
+      handleEdit();
+      return;
+    }
+
+    mutate();
+  };
+
   return (
     <Stack
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={classes.stackContainerStyle}
-      onClick={() => mutate()}
+      sx={mergeSx([
+        classes.stackContainerStyle,
+        !isRowInteractive ? classes.nonInteractiveStackStyle : undefined
+      ])}
+      onClick={handleRowActivate}
+      aria-disabled={!isRowInteractive}
+      title={
+        !isRowInteractive && !targetEmployee
+          ? translateText(["manualEntryRestrictedCellTooltip"])
+          : undefined
+      }
       tabIndex={getTabIndex(isFreeTier)}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {
-          mutate();
+          handleRowActivate();
         }
         if (shouldMoveUpward(e.key)) {
           const previousRow = e.currentTarget

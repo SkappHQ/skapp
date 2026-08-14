@@ -48,6 +48,10 @@ public interface TimeService {
 
 	ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto);
 
+	ResponseEntityDto addDirectTimeEntry(Long employeeId, ManualEntryRequestDto timeRequestDto);
+
+	ResponseEntityDto editDirectTimeEntry(Long employeeId, EditTimeRequestDto timeRequestDto);
+
 	ResponseEntityDto updateTimeRequests(UpdateTimeRequestsFilterDto updateTimeRequestsFilterDto);
 
 	ResponseEntityDto updateCurrentUserIncompleteTimeRecords(Long id, UpdateIncompleteTimeRecordsRequestDto requestDto);

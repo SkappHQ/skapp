@@ -1,11 +1,17 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useMemo } from "react";
+import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
 
+import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
-import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
+import {
+  EmployeeTimesheetModalTypes,
+  RecordLocationStatus
+} from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
+  DailyLogType,
   TimeRecordDataResponseType,
   TimeRecordDataType,
   TimeRecordType
@@ -27,6 +33,12 @@ import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
+
+interface PendingDirectEntryCell {
+  employeeId: number;
+  employeeName: string;
+  date: string;
+}
 
 interface Props {
   recordData: TimeRecordDataResponseType;
@@ -54,6 +66,56 @@ const EmployeeTimeRecordsTable = ({
   const { data: timeConfigData } = useDefaultCapacity();
 
   const { getHolidaysArrayByDate } = useGetHoliday();
+
+  const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
+
+  const {
+    setSelectedDailyRecord,
+    setDirectEntryEmployee,
+    setEmployeeTimesheetModalType,
+    setIsEmployeeTimesheetModalOpen
+  } = useAttendanceStore((state) => state);
+
+  const [pendingCell, setPendingCell] = useState<PendingDirectEntryCell | null>(
+    null
+  );
+
+  const { data: pendingDayLogs } = useGetDailyLogsByEmployeeId(
+    pendingCell?.date ?? "",
+    pendingCell?.date ?? "",
+    pendingCell?.employeeId ?? 0,
+    Boolean(pendingCell)
+  );
+
+  useEffect(() => {
+    if (!pendingCell || !pendingDayLogs) return;
+
+    const dayRecord = pendingDayLogs?.find(
+      (log: DailyLogType) => log.date === pendingCell.date
+    );
+
+    setDirectEntryEmployee({
+      employeeId: pendingCell.employeeId,
+      employeeName: pendingCell.employeeName
+    });
+    setSelectedDailyRecord(
+      dayRecord ?? ({ date: pendingCell.date } as DailyLogType)
+    );
+    setEmployeeTimesheetModalType(
+      dayRecord?.timeRecordId && dayRecord?.timeSlots?.length
+        ? EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
+        : EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+    );
+    setIsEmployeeTimesheetModalOpen(true);
+    setPendingCell(null);
+  }, [
+    pendingCell,
+    pendingDayLogs,
+    setDirectEntryEmployee,
+    setSelectedDailyRecord,
+    setEmployeeTimesheetModalType,
+    setIsEmployeeTimesheetModalOpen
+  ]);
 
   const headers = useMemo(() => {
     return getHeadersWithSubtitles({
@@ -216,6 +278,48 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
+            // While the restriction is on, an authorized role turns each day cell into
+            // a direct add/edit entry point for the employee on that row.
+            if (canDirectlyAddOrEditEntry && !isFutureDate) {
+              const employeeId = employeeData?.employeeId;
+              const employeeName = [
+                employeeData?.firstName,
+                employeeData?.lastName
+              ]
+                .filter(Boolean)
+                .join(" ");
+
+              if (employeeId) {
+                const openDirectEntry = () =>
+                  setPendingCell({
+                    employeeId,
+                    employeeName,
+                    date: timeSheetRecord.date
+                  });
+
+                finalCellData = (
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={translateText(["directEntryCellLabel"], {
+                      employeeName,
+                      date: timeSheetRecord.date
+                    })}
+                    className="cursor-pointer"
+                    onClick={openDirectEntry}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openDirectEntry();
+                      }
+                    }}
+                  >
+                    {finalCellData}
+                  </div>
+                );
+              }
+            }
+
             acc[timeSheetRecord.date] = finalCellData;
             return acc;
           },
@@ -251,7 +355,8 @@ const EmployeeTimeRecordsTable = ({
     theme,
     timeConfigData,
     getHolidaysArrayByDate,
-    translateText
+    translateText,
+    canDirectlyAddOrEditEntry
   ]);
 
   return (

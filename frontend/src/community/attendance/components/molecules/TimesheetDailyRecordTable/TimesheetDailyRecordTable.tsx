@@ -4,7 +4,10 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useRef, useState } from "react";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
-import { DailyLogType } from "~community/attendance/types/timeSheetTypes";
+import {
+  DailyLogType,
+  DirectEntryEmployeeType
+} from "~community/attendance/types/timeSheetTypes";
 import {
   generateTimeSlots,
   timeStringToDecimalHours
@@ -26,12 +29,14 @@ interface Props {
   dailyLogData: DailyLogType[];
   downloadEmployeeDailyLogCsv?: () => void;
   isDailyLogLoading?: boolean;
+  targetEmployee?: DirectEntryEmployeeType;
 }
 
 const TimesheetDailyRecordTable = ({
   dailyLogData,
   downloadEmployeeDailyLogCsv,
-  isDailyLogLoading
+  isDailyLogLoading,
+  targetEmployee
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
 
@@ -125,6 +130,7 @@ const TimesheetDailyRecordTable = ({
                   record={record}
                   key={record?.date}
                   headerLength={tableHeaders?.length}
+                  targetEmployee={targetEmployee}
                 />
               ))
             ) : (

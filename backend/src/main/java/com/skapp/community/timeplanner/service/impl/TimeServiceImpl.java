@@ -125,6 +125,7 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -635,6 +636,102 @@ public class TimeServiceImpl implements TimeService {
 
 		log.info("addManualEntryRequest: execution completed");
 		return new ResponseEntityDto(false, timeMapper.timeRequestToTimeRequestResponseDto(timeRequestToSave));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto editDirectTimeEntry(Long employeeId, EditTimeRequestDto timeRequestDto) {
+		User currentUser = userService.getCurrentUser();
+		log.info("editDirectTimeEntry: execution started");
+
+		Employee targetEmployee = employeeDao.findByEmployeeId(employeeId)
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		validateDirectEntryAccess(currentUser, targetEmployee);
+		validateRequestParameters(timeRequestDto);
+
+		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
+		if (timeRecord != null) {
+			validateTimeRecordForEmployee(timeRecord, timeRequestDto, targetEmployee);
+		}
+
+		supersedePendingRequests(targetEmployee, timeRequestDto);
+
+		TimeRequest timeRequestToSave = timeRequestBuilder(timeRequestDto, targetEmployee, timeRecord);
+		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
+
+		TimeRequestManagerPatchDto directApproval = new TimeRequestManagerPatchDto();
+		directApproval.setStatus(RequestStatus.APPROVED);
+		TimeRequest approvedRequest = handleEditTimeRecordRequests(timeRequestToSave, currentUser, directApproval);
+
+		log.info("editDirectTimeEntry: execution completed");
+		return new ResponseEntityDto(false, timeMapper.timeRequestToTimeRequestResponseDto(approvedRequest));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto addDirectTimeEntry(Long employeeId, ManualEntryRequestDto timeRequestDto) {
+		User currentUser = userService.getCurrentUser();
+		log.info("addDirectTimeEntry: execution started");
+
+		Employee targetEmployee = employeeDao.findByEmployeeId(employeeId)
+			.orElseThrow(() -> new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_EMPLOYEE_NOT_FOUND));
+
+		validateDirectEntryAccess(currentUser, targetEmployee);
+		validateRequestParameters(timeRequestDto);
+
+		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
+		if (timeRecord != null) {
+			validateTimeRecordForEmployee(timeRecord, timeRequestDto, targetEmployee);
+		}
+
+		supersedePendingRequests(targetEmployee, timeRequestDto);
+
+		TimeRequest timeRequestToSave = timeRequestBuilder(timeRequestDto, targetEmployee, timeRecord);
+		validateTimeRequestToSave(timeRequestToSave);
+		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
+
+		TimeRequestManagerPatchDto directApproval = new TimeRequestManagerPatchDto();
+		directApproval.setStatus(RequestStatus.APPROVED);
+		TimeRequest approvedRequest = handleManualTimeEntryRequests(timeRequestToSave, currentUser, directApproval);
+
+		log.info("addDirectTimeEntry: execution completed");
+		return new ResponseEntityDto(false, timeMapper.timeRequestToTimeRequestResponseDto(approvedRequest));
+	}
+
+	private void supersedePendingRequests(Employee targetEmployee, TimeRequestDto timeRequestDto) {
+		LocalDate entryDate = timeRequestDto.getStartTime().toLocalDate();
+		long dayStart = DateTimeUtils.localDateTimeToEpochMillis(entryDate.atStartOfDay());
+		long dayEnd = DateTimeUtils.localDateTimeToEpochMillis(entryDate.atTime(LocalTime.MAX));
+
+		List<TimeRequest> pendingRequests = timeRequestDao
+			.findByEmployeeEmployeeIdAndStatusAndRequestedStartTimeBetween(targetEmployee.getEmployeeId(),
+					RequestStatus.PENDING, dayStart, dayEnd);
+
+		for (TimeRequest pendingRequest : pendingRequests) {
+			if (!RequestStatus.PENDING.equals(pendingRequest.getStatus())) {
+				throw new ModuleException(TimeMessageConstant.TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED);
+			}
+
+			pendingRequest.setStatus(RequestStatus.CANCELLED);
+			timeRequestDao.save(pendingRequest);
+
+			timeEmailService.sendPendingTimeEntryRequestCancelledEmployeeEmail(pendingRequest);
+			attendanceNotificationService.sendPendingTimeEntryRequestCancelledEmployeeNotification(pendingRequest);
+		}
+	}
+
+	private void validateTimeRecordForEmployee(TimeRecord timeRecord, TimeRequestDto timeRequestDto,
+			Employee targetEmployee) {
+		if (!Objects.equals(timeRecord.getEmployee().getEmployeeId(), targetEmployee.getEmployeeId())) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_TIME_RECORD_EMPLOYEE_ID_MISMATCH,
+					new String[] { timeRequestDto.getRecordId().toString() });
+		}
+
+		if (!timeRequestDto.getStartTime().toLocalDate().equals(timeRecord.getDate())) {
+			throw new ModuleException(
+					TimeMessageConstant.TIME_ERROR_TIME_RECORD_DATE_AND_REQUEST_START_DATETIME_MISMATCH);
+		}
 	}
 
 	@Override
@@ -2202,6 +2299,40 @@ public class TimeServiceImpl implements TimeService {
 		if (!isAuthorized) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
 		}
+	}
+
+	/**
+	 * Mirrors canDirectlyAddOrEditEntry: a Super Admin or Attendance Admin may write for
+	 * anyone, an Attendance Manager only for themselves or an employee they supervise.
+	 * The supervisory relationship is read live rather than trusted from the request, so
+	 * a stale client cannot widen its own scope.
+	 * @param currentUser the authenticated user making the request.
+	 * @param targetEmployee the employee the entry is being written for.
+	 */
+	private void validateDirectEntryAccess(User currentUser, Employee targetEmployee) {
+		if (!isManualEntryRestrictionEnabled()) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_DIRECT_ENTRY_RESTRICTION_DISABLED);
+		}
+
+		Employee actingEmployee = currentUser.getEmployee();
+		EmployeeRole employeeRole = actingEmployee.getEmployeeRole();
+
+		if (Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())) {
+			return;
+		}
+
+		if (!Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole())) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
+		}
+
+		boolean isSelf = Objects.equals(actingEmployee.getEmployeeId(), targetEmployee.getEmployeeId());
+		if (isSelf || employeeManagerDao.existsByManagerEmployeeIdAndEmployeeEmployeeId(actingEmployee.getEmployeeId(),
+				targetEmployee.getEmployeeId())) {
+			return;
+		}
+
+		throw new ModuleException(TimeMessageConstant.TIME_ERROR_DIRECT_ENTRY_OUT_OF_SUPERVISORY_SCOPE);
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

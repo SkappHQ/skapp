@@ -262,6 +262,45 @@ export const useAddManualTimeEntry = (
   });
 };
 
+export const useDirectTimeEntry = (
+  onSuccess: () => void,
+  onEnhancedError: (error: any) => void
+) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      employeeId,
+      isEdit,
+      payload
+    }: {
+      employeeId: number;
+      isEdit: boolean;
+      payload: ManualEntryPayloadType;
+    }) => {
+      const url = employeeAttendanceEndpoints.DIRECT_TIME_ENTRY(employeeId);
+      return isEdit
+        ? await authFetch.patch(url, payload)
+        : await authFetch.post(url, payload);
+    },
+    onError(error) {
+      onEnhancedError(error);
+    },
+    onSuccess() {
+      onSuccess();
+      [
+        attendanceQueryKeys.getManagerRecords(),
+        attendanceQueryKeys.getManagerWorkSummary(),
+        ["employee-daily-log-by-employeeId"],
+        attendanceQueryKeys.getEmployeeRequests()
+      ].forEach((queryKey) => {
+        queryClient
+          .invalidateQueries({ queryKey, refetchType: "all" })
+          .catch(rejects);
+      });
+    }
+  });
+};
+
 export const useEditClockInOut = (
   onSuccess: () => void,
   onError: () => void

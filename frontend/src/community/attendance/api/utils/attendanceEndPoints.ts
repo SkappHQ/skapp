@@ -27,6 +27,8 @@ export const employeeAttendanceEndpoints = {
   EMPLOYEE_CANCEL_REQUEST: "/time/requests-update",
   ADD_MANUAL_ENTRY: "/time/manual-entry",
   EDIT_CLOCK_IN_OUT: "/time/request",
+  DIRECT_TIME_ENTRY: (employeeId: number) =>
+    `/time/employees/${employeeId}/direct-entry`,
   GET_EMPLOYEE_DAILY_LOG_BY_EMPLOYEE_ID: (employeeId: number) =>
     `/time/daily-time-records/${employeeId}`
 };

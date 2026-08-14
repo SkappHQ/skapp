@@ -50,6 +50,8 @@ export interface EmployeeTimesheetModalSliceType
     | "setTimeAvailabilityForPeriod"
     | "setCurrentAddTimeChanges"
     | "currentAddTimeChanges"
+    | "directEntryEmployee"
+    | "setDirectEntryEmployee"
   > {}
 
 export interface EmployeeTimesheetFilterSliceTypes

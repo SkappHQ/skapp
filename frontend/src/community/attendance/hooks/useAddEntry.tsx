@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 
 import {
   useAddManualTimeEntry,
+  useDirectTimeEntry,
   useEditClockInOut
 } from "~community/attendance/api/AttendanceEmployeeApi";
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
@@ -24,6 +25,7 @@ import {
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
 const useAddEntry = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -35,9 +37,12 @@ const useAddEntry = () => {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
     setTimeAvailabilityForPeriod,
-    setCurrentAddTimeChanges
+    setCurrentAddTimeChanges,
+    directEntryEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+
+  const isDirectEntry = Boolean(directEntryEmployee);
 
   const onSuccessManual = () => {
     setToastMessage({
@@ -67,15 +72,13 @@ const useAddEntry = () => {
   };
   // Enhanced onError to handle "No manager Found" 400 error
   const enhancedOnError = (error: any) => {
-    if (
-      error?.response?.data?.results?.[0]?.message === "No managers found"
-    ) {
+    if (error?.response?.data?.results?.[0]?.message === "No managers found") {
       setToastMessage({
-      open: true,
-      title: translateText(["addTimeEntryNoManagerErrorTitle"]),
-      description: translateText(["managerMissingErrorDes"]),
-      toastType: ToastType.ERROR
-    });
+        open: true,
+        title: translateText(["addTimeEntryNoManagerErrorTitle"]),
+        description: translateText(["managerMissingErrorDes"]),
+        toastType: ToastType.ERROR
+      });
     } else {
       setToastMessage({
         open: true,
@@ -85,6 +88,44 @@ const useAddEntry = () => {
       });
     }
   };
+
+  const onSuccessDirectEntry = (isEdit: boolean) => {
+    setToastMessage({
+      open: true,
+      title: translateText([
+        isEdit ? "directEntryUpdatedToastTitle" : "directEntryAddedToastTitle"
+      ]),
+      description: translateText(
+        [isEdit ? "directEntryUpdatedToastDes" : "directEntryAddedToastDes"],
+        {
+          employeeName: directEntryEmployee?.employeeName ?? "",
+          date: selectedDailyRecord?.date
+            ? formatDateWithOrdinalIndicator(new Date(selectedDailyRecord.date))
+            : ""
+        }
+      ),
+      toastType: ToastType.SUCCESS,
+      autoHideDuration: 4000
+    });
+  };
+
+  const onDirectEntryError = (error: any) => {
+    const isConflict = error?.response?.status === 409;
+    setToastMessage({
+      open: true,
+      title: translateText(["addTimeEntryErrorTitle"]),
+      description: translateText([
+        isConflict ? "directEntryConflictErrorDes" : "directEntrySaveErrorDes"
+      ]),
+      toastType: ToastType.ERROR,
+      autoHideDuration: null
+    });
+  };
+
+  const { mutate: directEntryMutate } = useDirectTimeEntry(
+    () => onSuccessDirectEntry(Boolean(selectedDailyRecord?.timeRecordId)),
+    onDirectEntryError
+  );
 
   const { mutate: manualEntryMutate } = useAddManualTimeEntry(
     onSuccessManual,
@@ -126,6 +167,25 @@ const useAddEntry = () => {
       values.toTime
     );
     if (isDurationValid(values.fromTime, values.toTime)) {
+      // A direct entry writes to the target employee's timesheet without approval, so
+      // it bypasses the branching below, which exists to route the current user's own
+      // request. Whether it is an add or an edit follows from the record already there.
+      if (isDirectEntry && directEntryEmployee) {
+        const existingRecordId = selectedDailyRecord?.timeRecordId ?? undefined;
+        directEntryMutate({
+          employeeId: directEntryEmployee.employeeId,
+          isEdit: Boolean(existingRecordId),
+          payload: {
+            startTime: convertToUtc(dateTimeFromTime),
+            endTime: convertToUtc(dateTimeToTime),
+            recordId: existingRecordId,
+            zoneId: getCurrentTimeZone()
+          }
+        });
+        setIsEmployeeTimesheetModalOpen(false);
+        return;
+      }
+
       if (
         employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

@@ -4,6 +4,8 @@ import useSessionData from "~community/common/hooks/useSessionData";
 
 export interface ManualEntryRestrictionResult {
   isManualEntryRestricted: boolean;
+  isRestrictionEnabled: boolean;
+  canDirectlyAddOrEditEntry: boolean;
 }
 
 const useManualEntryRestriction = (): ManualEntryRestrictionResult => {
@@ -19,12 +21,21 @@ const useManualEntryRestriction = (): ManualEntryRestrictionResult => {
 
   const isConfigUnavailable = isPending || isError;
 
-  const isManualEntryRestricted =
-    !canManageTimeEntries &&
-    (isConfigUnavailable ||
-      Boolean(attendanceConfig?.isManualTimeEntryRestrictionEnabled));
+  const isRestrictionEnabled = Boolean(
+    attendanceConfig?.isManualTimeEntryRestrictionEnabled
+  );
 
-  return { isManualEntryRestricted };
+  const isManualEntryRestricted =
+    !canManageTimeEntries && (isConfigUnavailable || isRestrictionEnabled);
+
+  const canDirectlyAddOrEditEntry =
+    !isConfigUnavailable && isRestrictionEnabled && canManageTimeEntries;
+
+  return {
+    isManualEntryRestricted,
+    isRestrictionEnabled,
+    canDirectlyAddOrEditEntry
+  };
 };
 
 export default useManualEntryRestriction;

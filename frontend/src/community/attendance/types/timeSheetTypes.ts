@@ -221,3 +221,8 @@ export const TimeUtilizationTrendTypes = {
   TREND_UP: "up",
   TREND_DOWN: "down"
 };
+
+export interface DirectEntryEmployeeType {
+  employeeId: number;
+  employeeName: string;
+}

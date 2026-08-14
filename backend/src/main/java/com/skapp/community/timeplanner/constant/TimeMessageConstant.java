@@ -50,6 +50,9 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_INVALID_TIME_BLOCKS("api.error.time.invalid-time-blocks"),
 	TIME_ERROR_MONTH_REQUIRED("api.error.time.month-required"),
 	TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED("api.error.time.time-request-permission.not.found"),
+	TIME_ERROR_DIRECT_ENTRY_OUT_OF_SUPERVISORY_SCOPE("api.error.time.direct-entry-out-of-supervisory-scope"),
+	TIME_ERROR_DIRECT_ENTRY_RESTRICTION_DISABLED("api.error.time.direct-entry-restriction-disabled"),
+	TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED("api.error.time.direct-entry-request-already-resolved"),
 	TIME_ERROR_PAUSE_RESUME_NOT_AVAILABLE("api.error.time.pause-resume-not-available");
 
 	private final String messageKey;
