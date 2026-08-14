@@ -37,7 +37,7 @@ public class EmployeeLeavePolicy extends Auditable<String> {
 	@JoinColumn(name = "employee_id", nullable = false)
 	private Employee employee;
 
-	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "policy_id", nullable = false)
 	private LeavePolicy policy;
 
