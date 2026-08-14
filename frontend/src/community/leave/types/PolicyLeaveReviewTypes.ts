@@ -14,6 +14,12 @@ export type PolicyLeavePopupType =
   | PolicyLeaveRequestStatus
   | PolicyLeaveReviewModalEnums;
 
+export type PolicyLeaveResultStatus =
+  | PolicyLeaveRequestStatus.APPROVED
+  | PolicyLeaveRequestStatus.DENIED
+  | PolicyLeaveRequestStatus.CANCELLED
+  | PolicyLeaveRequestStatus.REVOKED;
+
 export interface PolicyLeaveReviewFilters {
   status: PolicyLeaveRequestStatus[];
   leaveTypeId: number[];
@@ -51,7 +57,7 @@ export interface PolicyLeaveReviewSliceType {
 
 export interface PolicyLeaveSummaryLayout {
   descriptionKey?: string;
-  containerMarginTop?: string;
+  containerMarginTopClass?: string;
   showDateApplied: boolean;
   showDateApproved: boolean;
   showReason: boolean;

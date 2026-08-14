@@ -8,13 +8,18 @@ import ReadOnlyChip from "~community/common/components/atoms/Chips/BasicChip/Rea
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { FileTypes } from "~community/common/enums/CommonEnums";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
-import { useReviewPolicyLeaveRequest } from "~community/leave/api/PolicyLeaveReviewApi";
 import LeaveStatusPopupColumn from "~community/leave/components/molecules/ManagerLeaveModalContents/LeaveStatusPopupColumn/LeaveStatusPopupColumn";
-import { PolicyLeaveReviewModalEnums } from "~community/leave/enums/PolicyLeaveReviewEnums";
+import {
+  POLICY_LEAVE_ATTACHMENT_CHIP_STYLES,
+  POLICY_LEAVE_CHIP_STYLES
+} from "~community/leave/constants/policyLeaveReviewConstants";
+import {
+  PolicyLeaveReviewModalEnums,
+  PolicyLeaveReviewToastEnums
+} from "~community/leave/enums/PolicyLeaveReviewEnums";
 import { useDownloadAttachment } from "~community/leave/hooks/useDownloadAttachment";
+import usePolicyLeaveReviewAction from "~community/leave/hooks/usePolicyLeaveReviewAction";
 import {
   PolicyLeavePopupType,
   PolicyLeaveRequestDetailType
@@ -26,7 +31,6 @@ import {
 import { getFileNameOfAttachmentFromUrl } from "~community/leave/utils/getFileNameofAttachedFiles/getFileNamesofAttachments";
 import { getStartEndDate } from "~community/leave/utils/leaveRequest/LeaveRequestUtils";
 import { getPolicyLeaveDurationLabel } from "~community/leave/utils/policyLeave/policyLeaveDurationUtils";
-import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
 interface Props {
@@ -44,42 +48,21 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
   const commonTranslateText = useTranslator("words");
   const translateAria = useTranslator("leaveAria", "allLeaveRequests");
 
-  const { setToastMessage } = useToast();
-  const { sendEvent } = useGoogleAnalyticsEvent();
-
   const { handleDownloadAttachment } = useDownloadAttachment({
     fileType: FileTypes.LEAVE_ATTACHMENTS
   });
 
-  const { mutate, isPending } = useReviewPolicyLeaveRequest(
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.SUCCESS,
-        title: translateText(["approveLeaveSuccessTitle"]),
-        description: translateText(["approveLeaveSuccessDesc"]),
-        isIcon: true
-      });
-      sendEvent(GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPROVED);
-      setPopupType(PolicyLeaveReviewModalEnums.APPROVED_STATUS);
-    },
-    () => {
-      setToastMessage({
-        open: true,
-        toastType: ToastType.ERROR,
-        title: translateText(["approveLeaveFailTitle"]),
-        description: translateText(["approveLeaveFailDesc"]),
-        isIcon: true
-      });
-    }
-  );
+  const { reviewRequest: approveRequest, isPending } =
+    usePolicyLeaveReviewAction({
+      status: PolicyLeaveRequestStatus.APPROVED,
+      successToast: PolicyLeaveReviewToastEnums.APPROVE_SUCCESS,
+      errorToast: PolicyLeaveReviewToastEnums.APPROVE_ERROR,
+      analyticsEvent: GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_APPROVED,
+      onSuccess: () => setPopupType(PolicyLeaveReviewModalEnums.APPROVED_STATUS)
+    });
 
   const handleApprove = (): void => {
-    mutate({
-      leaveRequestId: request.leaveRequestId,
-      status: PolicyLeaveRequestStatus.APPROVED,
-      reviewerComment: ""
-    });
+    approveRequest(request.leaveRequestId, "");
   };
 
   const handleDeclineModel = (): void => {
@@ -127,7 +110,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
             label={request.leaveType.name}
             isTruncated={false}
             icon={request.leaveType.emojiCode}
-            chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
+            chipStyles={POLICY_LEAVE_CHIP_STYLES}
             tabIndex={-1}
           />
         </fieldset>
@@ -145,11 +128,11 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
                   translateLeaveModuleText,
                   commonTranslateText(["days"])
                 )}
-                chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
+                chipStyles={POLICY_LEAVE_CHIP_STYLES}
               />
               <ReadOnlyChip
                 label={getStartEndDate(request.startDate, request.endDate)}
-                chipStyles={{ backgroundColor: "grey.100", py: "0.75rem" }}
+                chipStyles={POLICY_LEAVE_CHIP_STYLES}
               />
             </div>
           </div>
@@ -177,11 +160,7 @@ const PolicyLeaveReviewModal: FC<Props> = ({ request, setPopupType }) => {
                     }}
                     key={attachment.id}
                     label={getAttachmentLabel(attachment)}
-                    chipStyles={{
-                      backgroundColor: "grey.100",
-                      py: "0.75rem",
-                      px: "0.75rem"
-                    }}
+                    chipStyles={POLICY_LEAVE_ATTACHMENT_CHIP_STYLES}
                     icon={<CopyIcon />}
                     onClick={() => handleDownloadAttachment(attachment.fileUrl)}
                   />

@@ -1,9 +1,15 @@
 import { SetStateAction } from "react";
 
+import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { ToastProps } from "~community/common/types/ToastTypes";
-import { SUCCESS_TOAST_DURATION_MS } from "~community/leave/constants/stringConstants";
+import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
+import { NINETY_PERCENT } from "~community/common/utils/getConstants";
+import {
+  SUCCESS_TOAST_DURATION_MS,
+  TOTAL_PERCENTAGE
+} from "~community/leave/constants/stringConstants";
 import {
   ApplyPolicyLeaveErrorKeys,
   LeaveStatusEnums
@@ -15,11 +21,13 @@ import {
   PolicyLeaveStore,
   initialPolicyLeaveFormErrors
 } from "~community/leave/store/policyLeaveStore";
+import { MyLeaveRequestPayloadType } from "~community/leave/types/MyRequests";
 import {
   EmployeePolicyBalanceType,
   PolicyBalanceDisabledReason,
   PolicyLeaveRequestQueryParams,
   PolicyLeaveRequestStatus,
+  PolicyLeaveRequestType,
   PolicyLeaveValidationFailure
 } from "~community/leave/types/PolicyLeaveTypes";
 
@@ -58,6 +66,17 @@ interface PolicyBalanceLabelProps {
   isUnlimited: boolean;
   isBalanceAvailable: boolean;
   translateText: TranslateFn;
+}
+
+interface PolicyPeriodYears {
+  startYear: string;
+  endYear: string;
+  spansTwoYears: boolean;
+}
+
+interface StorageFullProps {
+  environment: string | undefined;
+  availableSpace: number | undefined;
 }
 
 interface PolicyLeaveFormErrorsProps {
@@ -136,6 +155,66 @@ export const toLeaveStatus = (
       return null;
   }
 };
+
+export const getPolicyPeriodYears = (
+  policyBalance: EmployeePolicyBalanceType | null,
+  fallbackYear: string
+): PolicyPeriodYears => {
+  if (!policyBalance) {
+    return {
+      startYear: fallbackYear,
+      endYear: fallbackYear,
+      spansTwoYears: false
+    };
+  }
+
+  const startYear = convertYYYYMMDDToDateTime(
+    policyBalance.validFrom
+  ).year.toString();
+  const endYear = convertYYYYMMDDToDateTime(
+    policyBalance.validTo
+  ).year.toString();
+
+  return { startYear, endYear, spansTwoYears: startYear !== endYear };
+};
+
+export const mapToBlockingLeaveRequests = (
+  requests: PolicyLeaveRequestType[]
+): MyLeaveRequestPayloadType[] =>
+  requests.flatMap((request) => {
+    const status = toLeaveStatus(request.status);
+
+    if (!status) {
+      return [];
+    }
+
+    return [
+      {
+        leaveRequestId: request.leaveRequestId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        leaveType: {
+          typeId: request.leaveType.id,
+          name: request.leaveType.name,
+          emojiCode: request.leaveType.emojiCode,
+          colorCode: request.leaveType.colorCode
+        },
+        leaveState: request.leaveState,
+        status,
+        isViewed: request.isViewed,
+        durationDays: request.durationDays,
+        requestDesc: request.requestDesc ?? ""
+      }
+    ];
+  });
+
+export const getIsStorageFull = ({
+  environment,
+  availableSpace
+}: StorageFullProps): boolean =>
+  environment === appModes.COMMUNITY &&
+  availableSpace !== undefined &&
+  TOTAL_PERCENTAGE - availableSpace >= NINETY_PERCENT;
 
 export const getAvailabilityErrorMessage = ({
   failureReason,
