@@ -31,15 +31,35 @@ const AttendanceCard: FC<Props> = ({
   const { setClockInType } = useAttendanceStore((state) => state);
   const theme = useTheme();
 
+  const handleCardClick = () => {
+    type === ClockInOutGraphTypes.CLOCK_IN
+      ? setClockInType({})
+      : setClockInType({
+          "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
+        });
+
+    router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
+  };
+
   return (
     <>
       <Box
+        tabIndex={0}
+        role="button"
+        aria-label={iconAriaLabel}
         sx={{
           flex: 1,
           backgroundColor: "grey.50",
           p: 1.5,
           borderRadius: 1.5,
-          height: "100%"
+          height: "100%",
+          cursor: "pointer"
+        }}
+        onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (shouldActivateButton(e.key)) {
+            handleCardClick();
+          }
         }}
       >
         <>
@@ -58,32 +78,7 @@ const AttendanceCard: FC<Props> = ({
             >
               {title}
             </Typography>
-            <Box
-              tabIndex={0}
-              role="button"
-              aria-label={iconAriaLabel}
-              sx={{ cursor: "pointer" }}
-              onClick={() => {
-                type === ClockInOutGraphTypes.CLOCK_IN
-                  ? setClockInType({})
-                  : setClockInType({
-                      "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
-                    });
-
-                router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
-              }}
-              onKeyDown={(e) => {
-                if (shouldActivateButton(e.key)) {
-                  type === ClockInOutGraphTypes.CLOCK_IN
-                    ? setClockInType({})
-                    : setClockInType({
-                        "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
-                      });
-
-                  router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
-                }
-              }}
-            >
+            <Box sx={{ cursor: "pointer" }}>
               <Icon name={IconName.NEW_WINDOW_ICON} />
             </Box>
           </Box>

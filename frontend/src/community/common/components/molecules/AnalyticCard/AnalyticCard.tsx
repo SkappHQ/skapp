@@ -31,9 +31,10 @@ const AnalyticCard: FC<Props> = ({
   return (
     <>
       <Box
-        sx={classes.card}
+        sx={{ ...classes.card, cursor: isExpandable ? "pointer" : "default" }}
         tabIndex={accessibility?.tabIndex ?? -1}
         role={accessibility?.role ?? "group"}
+        onClick={isExpandable ? onExpand : undefined}
         onKeyDown={(e) => {
           if (shouldActivateButton(e.key)) {
             onExpand?.();
@@ -50,7 +51,7 @@ const AnalyticCard: FC<Props> = ({
               {title}
             </Typography>
             {isExpandable && (
-              <Box sx={{ cursor: "pointer" }} onClick={onExpand}>
+              <Box sx={{ cursor: "pointer" }}>
                 <Icon name={IconName.NEW_WINDOW_ICON} />
               </Box>
             )}
