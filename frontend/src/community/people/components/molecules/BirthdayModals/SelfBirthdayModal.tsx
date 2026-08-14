@@ -35,6 +35,7 @@ const SelfBirthdayModal: FC<Props> = ({
       position={position}
       total={total}
       onDismiss={onDismiss}
+      showConfetti
     />
   );
 };
