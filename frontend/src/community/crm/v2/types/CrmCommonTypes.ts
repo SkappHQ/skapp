@@ -23,11 +23,11 @@ export interface CrmCompanyEntity {
 export interface CrmCompanyMetrics {
   id?: number;
   openTasksCount?: number;
-  overdue?: number;
+  overdueCount?: number;
   openValue?: string;
   accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
+  openDealsCount?: number;
+  closedDealsCount?: number;
 }
 
 // Contact
