@@ -152,7 +152,7 @@ class CrmCompanyControllerV2IntegrationTest {
 
 	@Test
 	@DisplayName("Get company metrics - Returns flat company fields and nested metrics with seeded values")
-	void getCompanyMetrics_HappyPath_ReturnsNestedCompanyAndMetrics() throws Exception {
+	void getCompanyMetrics_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
 		CrmCompany company = savedCompany("MetricsCoV2Unique");
 		CrmContact contact = savedContact(company, "metrics.v2.unique@example.com");
 
@@ -172,6 +172,7 @@ class CrmCompanyControllerV2IntegrationTest {
 				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['website']").value("https://metrics-v2.com"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['address']").value("123 Metrics St"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['contactNumber']").value("94771234567"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openDealsCount']").value(1))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealsCount']").value(1));
 
