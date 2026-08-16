@@ -145,8 +145,8 @@ const EmploymentDetailsForm = ({
         setIsUnsavedModalSaveButtonClicked(false);
 
         handleMutate();
+        setEmployee(employee);
       }
-      setEmployee(employee);
     } else {
       setIsReinviteConfirmationModalOpen(false);
       setNextStep(currentStep);
