@@ -14,6 +14,7 @@ import {
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
+import { CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
 import {
   isDueToday,
   isDueTomorrow,
@@ -26,6 +27,7 @@ import {
 import {
   CrmContactEntity,
   CrmOwnerEntity,
+  CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
@@ -115,6 +117,45 @@ export const getContactFullName = (
   contact === undefined
     ? ""
     : [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+
+/**
+ * Builds the edit payload from only the fields the user actually changed.
+ * The form holds cleared fields as `null`; the entity is optional-only, so they
+ * are sent as `undefined`.
+ */
+export const getChangedTaskFields = (
+  newValues: CrmTaskFormTypes,
+  originalValues: CrmTaskFormTypes
+): Omit<CrmTaskEntity, "id"> => {
+  const changedFields: Omit<CrmTaskEntity, "id"> = {};
+
+  if (newValues.name !== originalValues.name) {
+    changedFields.name = newValues.name.trim();
+  }
+  if (newValues.type?.id !== originalValues.type?.id) {
+    changedFields.typeId = newValues.type?.id;
+  }
+  if (newValues.dueDate !== originalValues.dueDate) {
+    changedFields.dueAt = newValues.dueDate ?? undefined;
+  }
+  if (newValues.priority !== originalValues.priority) {
+    changedFields.priority = newValues.priority;
+  }
+  if (newValues.contactId !== originalValues.contactId) {
+    changedFields.contactId = newValues.contactId ?? undefined;
+  }
+  if (newValues.dealId !== originalValues.dealId) {
+    changedFields.dealId = newValues.dealId ?? undefined;
+  }
+  if (newValues.owner !== originalValues.owner) {
+    changedFields.ownerId = newValues.owner ?? undefined;
+  }
+  if (newValues.notes !== originalValues.notes) {
+    changedFields.notes = newValues.notes.trim();
+  }
+
+  return changedFields;
+};
 
 export interface GroupedTaskIds {
   overdue: number[];

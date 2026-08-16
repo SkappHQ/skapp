@@ -8,7 +8,9 @@ import {
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmTaskEntity,
-  CrmTaskRecord
+  CrmTaskRecord,
+  CrmTaskTypeEntity,
+  CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
 /**
@@ -93,6 +95,16 @@ export const toDealsFromTasks = (tasks: CrmTaskApiShape[]): CrmDealRecord => {
     const deal = task.deal;
     if (deal?.id === undefined) continue;
     record[deal.id] = deal;
+  }
+  return record;
+};
+
+export const toTaskTypesRecord = (
+  taskTypes: CrmTaskTypeEntity[]
+): CrmTaskTypeRecord => {
+  const record: CrmTaskTypeRecord = {};
+  for (const taskType of taskTypes) {
+    record[taskType.id] = taskType;
   }
   return record;
 };

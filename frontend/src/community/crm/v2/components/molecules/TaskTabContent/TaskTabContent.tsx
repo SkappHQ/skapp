@@ -20,6 +20,7 @@ import {
 } from "~community/crm/v2/api/TaskApi";
 import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
+import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   replaceTaskIds,
@@ -44,6 +45,9 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
 
   const tasks = useCrmStoreV2((state) => state.tasks);
   const taskIds = useCrmStoreV2((state) => state.taskIds);
+
+  // Loads the task types into the store so the row icons can resolve typeId.
+  useGetTaskTypeOptions(translateText);
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 

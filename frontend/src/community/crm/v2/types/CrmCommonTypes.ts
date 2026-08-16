@@ -133,7 +133,7 @@ export interface CrmTaskTypeEntity {
   orderIndex: number;
 }
 
-// Normalized store records 
+// Normalized store records
 
 export type CrmCompanyRecord = Record<number, CrmCompanyEntity>;
 export type CrmContactRecord = Record<number, CrmContactEntity>;
