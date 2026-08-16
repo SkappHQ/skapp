@@ -11,6 +11,7 @@ import DealsSection from "~community/crm/components/organisms/DealsSection/Deals
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -33,30 +34,30 @@ const Deals: NextPage = () => {
   };
 
   return (
-    <ContentLayout
-      breadcrumbs={[
-        { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["deals", "title"]) }
-      ]}
-      pageHead={translateText(["deals", "pageHead"])}
-      title={translateText(["deals", "title"])}
-      primaryButtonText={translateText(["deals", "addDealBtn"])}
-      primaryBtnIconName={IconName.ADD_ICON}
-      isPrimaryBtnLoading={isCheckingCrmLimit}
-      module={Modules.CRM}
-      onPrimaryButtonClick={handleAddDeal}
-    >
-      <>
-        <SidePanelWrapper
-          isOpen={isCrmSidePanelOpen}
-        >
-          {selectedDealId !== null && <DealSidePanel />}
-          <AddDealSidePanel />
-        </SidePanelWrapper>
-        <TaskModalController />
-        <DealsSection />
-      </>
-    </ContentLayout>
+    <CrmDataProvider>
+      <ContentLayout
+        breadcrumbs={[
+          { label: translateText(["breadcrumbs", "crm"]) },
+          { label: translateText(["deals", "title"]) }
+        ]}
+        pageHead={translateText(["deals", "pageHead"])}
+        title={translateText(["deals", "title"])}
+        primaryButtonText={translateText(["deals", "addDealBtn"])}
+        primaryBtnIconName={IconName.ADD_ICON}
+        isPrimaryBtnLoading={isCheckingCrmLimit}
+        module={Modules.CRM}
+        onPrimaryButtonClick={handleAddDeal}
+      >
+        <>
+          <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+            {selectedDealId !== null && <DealSidePanel />}
+            <AddDealSidePanel />
+          </SidePanelWrapper>
+          <TaskModalController />
+          <DealsSection />
+        </>
+      </ContentLayout>
+    </CrmDataProvider>
   );
 };
 

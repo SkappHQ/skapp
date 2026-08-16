@@ -11,6 +11,7 @@ import { ContactTable } from "~community/crm/components/organisms/ContactTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -33,31 +34,33 @@ const Contacts: NextPage = () => {
   };
 
   return (
-    <ContentLayout
-      breadcrumbs={[
-        { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["contacts", "title"]) }
-      ]}
-      pageHead={translateText(["contacts", "pageHead"])}
-      title={translateText(["contacts", "title"])}
-      primaryButtonText={translateText(["contacts", "addContactBtn"])}
-      primaryBtnIconName={IconName.ADD_ICON}
-      onPrimaryButtonClick={onPrimaryButtonClick}
-      isPrimaryBtnLoading={isCheckingCrmLimit}
-      module={Modules.CRM}
-    >
-      <>
-        {selectedContactId && (
-          <SidePanelWrapper>
-            <ContactSidePanel />
-          </SidePanelWrapper>
-        )}
+    <CrmDataProvider>
+      <ContentLayout
+        breadcrumbs={[
+          { label: translateText(["breadcrumbs", "crm"]) },
+          { label: translateText(["contacts", "title"]) }
+        ]}
+        pageHead={translateText(["contacts", "pageHead"])}
+        title={translateText(["contacts", "title"])}
+        primaryButtonText={translateText(["contacts", "addContactBtn"])}
+        primaryBtnIconName={IconName.ADD_ICON}
+        onPrimaryButtonClick={onPrimaryButtonClick}
+        isPrimaryBtnLoading={isCheckingCrmLimit}
+        module={Modules.CRM}
+      >
+        <>
+          {selectedContactId && (
+            <SidePanelWrapper>
+              <ContactSidePanel />
+            </SidePanelWrapper>
+          )}
 
-        <ContactModalController />
-        <TaskModalController />
-        <ContactTable />
-      </>
-    </ContentLayout>
+          <ContactModalController />
+          <TaskModalController />
+          <ContactTable />
+        </>
+      </ContentLayout>
+    </CrmDataProvider>
   );
 };
 

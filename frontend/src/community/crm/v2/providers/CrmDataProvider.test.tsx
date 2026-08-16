@@ -1,6 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, waitFor } from "@testing-library/react";
-import { useRouter } from "next/router";
 
 import { useGetBoardInitData } from "~community/crm/api/BoardApi";
 import {
@@ -10,12 +9,9 @@ import {
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmBoardInitDataResponse } from "~community/crm/v2/types/CrmTypes";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
+import { toStagesRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
 import { CrmDataProvider } from "./CrmDataProvider";
-
-jest.mock("next/router", () => ({
-  useRouter: jest.fn()
-}));
 
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (suffixes: string[]) => suffixes.join(".")
@@ -61,9 +57,6 @@ const initDataQueryResult = (overrides: InitDataQueryStub) => ({
   ...overrides
 });
 
-const routerResult = (asPath: string): ReturnType<typeof useRouter> =>
-  ({ asPath }) as ReturnType<typeof useRouter>;
-
 describe("CrmDataProvider", () => {
   const initialStoreState: CrmStore = useCrmStoreV2.getState();
 
@@ -71,18 +64,17 @@ describe("CrmDataProvider", () => {
     jest.clearAllMocks();
 
     useCrmStoreV2.setState(initialStoreState, true);
-    jest.mocked(useRouter).mockReturnValue(routerResult("/crm/deals"));
     mockUseGetBoardInitData.mockReturnValue(initDataQueryResult({}));
   });
 
-  it("enables the init-data query only when the current route is a CRM route", () => {
+  it("enables the init-data query while the store has no stages yet", () => {
     render(<CrmDataProvider>child</CrmDataProvider>);
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(true);
   });
 
-  it("disables the init-data query outside CRM routes", () => {
-    jest.mocked(useRouter).mockReturnValue(routerResult("/people"));
+  it("leaves the query disabled once the session has already initialised", () => {
+    useCrmStoreV2.getState().setStages(toStagesRecord(initData.stages));
 
     render(<CrmDataProvider>child</CrmDataProvider>);
 
