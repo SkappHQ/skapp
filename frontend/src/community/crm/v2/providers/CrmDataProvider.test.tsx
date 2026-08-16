@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/extend-expect";
 import { render, waitFor } from "@testing-library/react";
 
-import { useGetBoardInitData } from "~community/crm/api/BoardApi";
+import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import {
   CrmDealStageColorsEnum,
   CrmDealStageEnum
@@ -17,7 +17,7 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (suffixes: string[]) => suffixes.join(".")
 }));
 
-jest.mock("~community/crm/api/BoardApi", () => ({
+jest.mock("~community/crm/v2/api/BoardApi", () => ({
   useGetBoardInitData: jest.fn()
 }));
 
@@ -26,14 +26,17 @@ const initData: CrmBoardInitDataResponse = {
     {
       id: 1,
       name: "New",
-      description: null,
       color: CrmDealStageColorsEnum.SKY,
       orderIndex: 0,
       stageType: CrmDealStageEnum.INITIAL
     }
   ],
-  owners: [{ employeeId: 7, firstName: "Jane", lastName: null, authPic: null }],
-  contacts: [{ id: 3, name: "John Smith", companyId: 9 }]
+  owners: [{ employeeId: 7, firstName: "Jane", lastName: "Doe" }],
+  contacts: [{ id: 3, firstName: "John", lastName: "Smith", companyId: 9 }],
+  taskTypes: [
+    { id: 5, name: "CALL", orderIndex: 1 },
+    { id: 4, name: "EMAIL", orderIndex: 0 }
+  ]
 };
 
 interface InitDataQueryStub {
@@ -103,7 +106,6 @@ describe("CrmDataProvider", () => {
         1: {
           id: 1,
           name: "New",
-          description: null,
           color: CrmDealStageColorsEnum.SKY,
           orderIndex: 0,
           stageType: CrmDealStageEnum.INITIAL
@@ -113,10 +115,14 @@ describe("CrmDataProvider", () => {
 
     const state = useCrmStoreV2.getState();
     expect(state.owners).toEqual({
-      7: { employeeId: 7, firstName: "Jane", lastName: null, authPic: null }
+      7: { employeeId: 7, firstName: "Jane", lastName: "Doe" }
     });
     expect(state.contacts).toEqual({
-      3: { id: 3, name: "John Smith", companyId: 9 }
+      3: { id: 3, firstName: "John", lastName: "Smith", companyId: 9 }
+    });
+    expect(state.taskTypes).toEqual({
+      4: { id: 4, name: "EMAIL", orderIndex: 0 },
+      5: { id: 5, name: "CALL", orderIndex: 1 }
     });
     expect(state.crmDataLoading).toBe(false);
     expect(state.crmDataError).toBeNull();

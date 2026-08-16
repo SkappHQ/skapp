@@ -1,21 +1,39 @@
 import { useEffect } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetBoardInitData } from "~community/crm/api/BoardApi";
+import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import {
   toContactsRecord,
   toOwnersRecord,
-  toStagesRecord
+  toStagesRecord,
+  toTaskTypesRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 
 export const useCrmSession = (): void => {
   const translateText = useTranslator("crmModule", "common", "initData");
+  const errorDescription = translateText(["errorDescription"]);
 
-  const isInitialised = useCrmStoreV2(
-    (state: CrmStore) => Object.keys(state.stages).length > 0
-  );
+  const {
+    stages,
+    setStages,
+    setOwners,
+    setContacts,
+    setTaskTypes,
+    setCrmDataLoading,
+    setCrmDataError
+  } = useCrmStoreV2((state: CrmStore) => ({
+    stages: state.stages,
+    setStages: state.setStages,
+    setOwners: state.setOwners,
+    setContacts: state.setContacts,
+    setTaskTypes: state.setTaskTypes,
+    setCrmDataLoading: state.setCrmDataLoading,
+    setCrmDataError: state.setCrmDataError
+  }));
+
+  const isInitialised = Object.keys(stages).length > 0;
 
   const { data, isLoading, isError, isSuccess } =
     useGetBoardInitData(!isInitialised);
@@ -23,18 +41,10 @@ export const useCrmSession = (): void => {
   useEffect(() => {
     if (isInitialised) return;
 
-    const {
-      setStages,
-      setOwners,
-      setContacts,
-      setCrmDataLoading,
-      setCrmDataError
-    }: CrmStore = useCrmStoreV2.getState();
-
     setCrmDataLoading(isLoading);
 
     if (isError) {
-      setCrmDataError(translateText(["errorDescription"]));
+      setCrmDataError(errorDescription);
       return;
     }
 
@@ -42,7 +52,21 @@ export const useCrmSession = (): void => {
       setStages(toStagesRecord(data.stages ?? []));
       setOwners(toOwnersRecord(data.owners ?? []));
       setContacts(toContactsRecord(data.contacts ?? []));
+      setTaskTypes(toTaskTypesRecord(data.taskTypes ?? []));
       setCrmDataError(null);
     }
-  }, [data, isLoading, isError, isSuccess, isInitialised, translateText]);
+  }, [
+    data,
+    isLoading,
+    isError,
+    isSuccess,
+    isInitialised,
+    errorDescription,
+    setStages,
+    setOwners,
+    setContacts,
+    setTaskTypes,
+    setCrmDataLoading,
+    setCrmDataError
+  ]);
 };

@@ -4,7 +4,9 @@ import {
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,
-  CrmStageRecord
+  CrmStageRecord,
+  CrmTaskTypeEntity,
+  CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
@@ -31,6 +33,16 @@ export const toContactsRecord = (
   for (const contact of contacts) {
     if (contact.id === undefined) continue;
     record[contact.id] = contact;
+  }
+  return record;
+};
+
+export const toTaskTypesRecord = (
+  taskTypes: CrmTaskTypeEntity[]
+): CrmTaskTypeRecord => {
+  const record: CrmTaskTypeRecord = {};
+  for (const taskType of taskTypes) {
+    record[taskType.id] = taskType;
   }
   return record;
 };
