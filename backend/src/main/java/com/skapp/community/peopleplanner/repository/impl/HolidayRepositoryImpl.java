@@ -129,13 +129,13 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		predicates.add(criteriaBuilder.greaterThan(root.get(Holiday_.date), DateTimeUtils.getCurrentUtcDate()));
 		predicates.add(criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId));
 
-		Subquery<Long> liveLocationCount = criteriaQuery.subquery(Long.class);
-		Root<Holiday> correlatedHoliday = liveLocationCount.correlate(root);
+		Subquery<Long> workLocationCount = criteriaQuery.subquery(Long.class);
+		Root<Holiday> correlatedHoliday = workLocationCount.correlate(root);
 		Join<Holiday, WorkLocation> liveLocationJoin = correlatedHoliday.join(Holiday_.workLocations, JoinType.INNER);
-		liveLocationCount.select(criteriaBuilder.count(liveLocationJoin));
-		liveLocationCount.where(criteriaBuilder.isFalse(liveLocationJoin.get(WorkLocation_.isDeleted)));
+		workLocationCount.select(criteriaBuilder.count(liveLocationJoin));
+		workLocationCount.where(criteriaBuilder.isFalse(liveLocationJoin.get(WorkLocation_.isDeleted)));
 
-		predicates.add(criteriaBuilder.equal(liveLocationCount, 1L));
+		predicates.add(criteriaBuilder.equal(workLocationCount, 1L));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);

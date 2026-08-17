@@ -28,7 +28,7 @@ public class WorkLocation extends Auditable<String> {
 	@Column(name = "address")
 	private String address;
 
-	@Column(name = "is_deleted", nullable = false)
+	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
 
 }
