@@ -80,6 +80,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -137,10 +138,10 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
-		int resolvedYear = resolveYear(year);
 		boolean hasSupervisor = !peopleService.getCurrentEmployeeManagers().isEmpty();
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
+		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
 		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(currentUser.getEmployee().getEmployeeId(),
@@ -251,11 +252,13 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		validatePagination(filterDto.getPage(), filterDto.getSize());
 
 		User currentUser = userService.getCurrentUser();
-		int resolvedYear = resolveYear(filterDto.getYear());
+		MonthDay cycleAnchor = resolveCycleAnchor();
+		int resolvedYear = resolveCycleYear(filterDto.getYear(), DateTimeUtils.getCurrentUtcDate(), cycleAnchor);
+		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolvedYear, cycleAnchor);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
-				currentUser.getEmployee().getEmployeeId(), DateTimeUtils.getStartOfYear(resolvedYear),
-				DateTimeUtils.getEndOfYear(resolvedYear), filterDto, resolvePageable(filterDto));
+				currentUser.getEmployee().getEmployeeId(), cycle.getStartDate(), cycle.getEndDate(), filterDto,
+				resolvePageable(filterDto));
 
 		log.info("getCurrentUserPolicyLeaveRequests: execution ended");
 		return new ResponseEntityDto(false, toPageDto(leaveRequests));
@@ -730,9 +733,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			LeaveCycleDetailsDto leaveCycle = leaveCycleService.getLeaveCycleConfigs();
 			return MonthDay.of(leaveCycle.getStartMonth(), leaveCycle.getStartDate());
 		}
-		catch (Exception e) {
-			log.warn("resolveCycleAnchor: could not read the leave cycle config, using the calendar year: {}",
-					e.getMessage());
+		catch (NullPointerException | DateTimeException e) {
+			log.warn("resolveCycleAnchor: could not read the leave cycle config, using the calendar year", e);
 			return DateTimeUtils.CALENDAR_YEAR_START;
 		}
 	}
@@ -759,7 +761,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		PolicyLeaveUsageLookup usageLookup = (from, to) -> usedInWindow(assignment, from, to);
 		float accruedDays = accruedInCycle(assignment, cycle);
-		float accrualAllocation = PolicyLeaveAccrualUtil.applyAccrualCap(policy, accruedDays);
+		float accrualAllocation = PolicyLeaveAccrualUtil.accrualAllocationInCycle(policy, effectiveFrom, cycle);
 		float carriedOverDays = PolicyLeaveAccrualUtil.carriedOverInto(policy, effectiveFrom, cycle, cycleAnchor,
 				usageLookup);
 		float usableCarryoverDays = PolicyLeaveAccrualUtil.usableCarryoverDays(policy, cycle, carriedOverDays, asOf,
@@ -774,7 +776,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		balance.setCycleEnd(cycle.getEndDate());
 		balance.setUsableFrom(resolveUsableFrom(effectiveFrom, cycle));
 		balance.setAccruedDays(accruedDays);
-		balance.setCarriedOverDays(carriedOverDays);
+		balance.setCarriedOverDays(usableCarryoverDays);
 		balance.setTotalDaysAllocated(totalDaysAllocated);
 		balance.setTotalDaysUsed(totalDaysUsed);
 		balance.setBalanceInDays(totalDaysAllocated - totalDaysUsed);
@@ -796,7 +798,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	}
 
 	private float usedInWindow(EmployeeLeavePolicy assignment, LocalDate from, LocalDate to) {
-		Double totalDaysUsed = policyLeaveRequestDao.sumCommittedDaysForPolicyInCycle(
+		Double totalDaysUsed = policyLeaveRequestDao.sumCommittedDaysForPolicyInWindow(
 				assignment.getEmployee().getEmployeeId(), assignment.getPolicy().getId(),
 				PolicyLeaveConstant.BALANCE_HOLDING_STATUSES, from, to);
 		return totalDaysUsed == null ? 0f : totalDaysUsed.floatValue();
@@ -1028,8 +1030,19 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 	}
 
-	private int resolveYear(Integer year) {
-		return year == null ? DateTimeUtils.getCurrentUtcDate().getYear() : year;
+	/**
+	 * Resolves the requested year to the year the leave cycle starts in. A caller that
+	 * omits the year gets the cycle containing today, which is not the calendar year for
+	 * an organization whose leave cycle does not start on January 1.
+	 */
+	private int resolveCycleYear(Integer year, LocalDate today, MonthDay cycleAnchor) {
+		if (year == null) {
+			return PolicyLeaveAccrualUtil.resolveCycleContaining(today, cycleAnchor).getStartDate().getYear();
+		}
+		if (Math.abs((long) year - today.getYear()) > PolicyLeaveConstant.MAX_CYCLE_YEAR_OFFSET) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_INVALID_YEAR);
+		}
+		return year;
 	}
 
 	private boolean isHalfDay(LeaveState leaveState) {

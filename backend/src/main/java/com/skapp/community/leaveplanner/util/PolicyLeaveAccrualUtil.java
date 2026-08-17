@@ -1,7 +1,7 @@
 package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
+import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
@@ -99,13 +99,20 @@ public class PolicyLeaveAccrualUtil {
 		return Math.min(totalDaysAllocated, cap);
 	}
 
-	public static float capCarryover(LeavePolicy policy, float unusedDays) {
+	/**
+	 * Caps the days rolling out of one cycle at the policy's {@code maxCarryoverDays}. A
+	 * null ceiling means uncapped, which validation only permits when carryover is
+	 * disabled - {@code LeavePolicyValidationUtil.validateCarryoverSetup} requires the
+	 * ceiling whenever carryover is enabled. Must be applied to the result of
+	 * {@link #unusedAtCycleEnd}, not to a whole balance.
+	 */
+	private static float capCarryover(LeavePolicy policy, float unusedDays) {
 		float carriedOverDays = Math.max(0f, unusedDays);
 		Float maxCarryoverDays = policy.getMaxCarryoverDays();
 		return maxCarryoverDays == null ? carriedOverDays : Math.min(carriedOverDays, maxCarryoverDays);
 	}
 
-	public static LocalDate resolveCarryoverExpiry(LeavePolicy policy, PolicyLeaveDateWindowDto cycle) {
+	private static LocalDate resolveCarryoverExpiry(LeavePolicy policy, PolicyLeaveDateWindowDto cycle) {
 		if (neverExpires(policy)) {
 			return null;
 		}
@@ -117,7 +124,13 @@ public class PolicyLeaveAccrualUtil {
 		return expiresOn.isAfter(cycle.getEndDate()) ? cycle.getEndDate() : expiresOn;
 	}
 
-	public static boolean neverExpires(LeavePolicy policy) {
+	/**
+	 * An absent or blank expiry month-day means carried over days never expire, which is
+	 * the deliberate "Never expires" option offered when creating a policy. Carryover is
+	 * still bounded by the required {@code maxCarryoverDays} ceiling and by
+	 * {@link LeavePolicyConstant#MAX_CARRYOVER_LOOKBACK_CYCLES}.
+	 */
+	private static boolean neverExpires(LeavePolicy policy) {
 		return !DateTimeUtils.isValidMonthDay(policy.getCarryoverExpiryDate());
 	}
 
@@ -129,8 +142,7 @@ public class PolicyLeaveAccrualUtil {
 
 		int targetYear = cycle.getStartDate().getYear();
 		int firstYear = resolveCycleContaining(effectiveFrom, cycleAnchor).getStartDate().getYear();
-		int lookbackCycles = neverExpires(policy) ? PolicyLeaveConstant.MAX_CARRYOVER_LOOKBACK_CYCLES : 1;
-		int fromYear = Math.max(firstYear, targetYear - lookbackCycles);
+		int fromYear = Math.max(firstYear, targetYear - LeavePolicyConstant.MAX_CARRYOVER_LOOKBACK_CYCLES);
 
 		float carriedOverDays = 0f;
 		for (int year = fromYear; year < targetYear; year++) {

@@ -75,8 +75,11 @@ public class LeavePolicyValidationUtil {
 				&& !DateTimeUtils.isValidMonthDay(carryoverExpiryDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_EXPIRY_DATE_INVALID);
 		}
-		if (accrual.getMaxCarryoverDays() != null && (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
-				|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS)) {
+		if (accrual.getMaxCarryoverDays() == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_REQUIRED);
+		}
+		if (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
+				|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
 		}
 	}
