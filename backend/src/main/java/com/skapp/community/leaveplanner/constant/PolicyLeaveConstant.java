@@ -30,10 +30,6 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
-	/**
-	 * How many earlier cycles a never-expiring carryover is walked back through when it is
-	 * derived. Bounds the cost of the walk; an expiring carryover only ever needs one.
-	 */
 	public static final int MAX_CARRYOVER_LOOKBACK_CYCLES = 5;
 
 }

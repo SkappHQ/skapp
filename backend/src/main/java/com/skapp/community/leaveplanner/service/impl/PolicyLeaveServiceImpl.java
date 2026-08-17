@@ -725,12 +725,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				cycleAnchor, date);
 	}
 
-	/**
-	 * Reads the organization's leave cycle start month-day, which every policy's cycle is
-	 * anchored on. Falls back to the calendar year when the configuration is missing or
-	 * unreadable, so a broken config cannot take balances down.
-	 * @return The leave cycle start month-day.
-	 */
 	private MonthDay resolveCycleAnchor() {
 		try {
 			LeaveCycleDetailsDto leaveCycle = leaveCycleService.getLeaveCycleConfigs();
@@ -743,13 +737,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 	}
 
-	/**
-	 * Balances are derived, so every figure is evaluated as of a single point in time:
-	 * today for a balance card, the requested start date for an availability check.
-	 * @param date The date to evaluate as of.
-	 * @param cycle The cycle being evaluated.
-	 * @return The date pulled inside the cycle.
-	 */
 	private LocalDate clampToCycle(LocalDate date, PolicyLeaveDateWindowDto cycle) {
 		if (date.isBefore(cycle.getStartDate())) {
 			return cycle.getStartDate();

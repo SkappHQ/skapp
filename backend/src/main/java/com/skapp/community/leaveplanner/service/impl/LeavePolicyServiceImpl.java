@@ -356,10 +356,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
 	}
 
-	/**
-	 * A blank carryover expiry date means carried-over days never expire, so it is
-	 * normalised to null instead of being stored as an empty string.
-	 */
 	private String resolveCarryoverExpiryDate(boolean carryoverEnabled, LeavePolicyAccrualDetailDto accrualDto) {
 		if (!carryoverEnabled) {
 			return null;

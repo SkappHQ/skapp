@@ -24,10 +24,6 @@ class PolicyLeaveAccrualUtilCarryoverTest {
 
 	private static final MonthDay APRIL_CYCLE = MonthDay.of(4, 1);
 
-	/**
-	 * A yearly policy crediting 12 days at the end of the cycle, so a full prior cycle
-	 * always allocates 12 days.
-	 */
 	private LeavePolicy yearlyPolicy(Boolean carryoverEnabled, String carryoverExpiryDate, Float maxCarryoverDays) {
 		LeavePolicy policy = new LeavePolicy();
 		policy.setId(1L);
@@ -47,9 +43,6 @@ class PolicyLeaveAccrualUtilCarryoverTest {
 		return (from, to) -> 0f;
 	}
 
-	/**
-	 * Usage that all falls on a single date, so window filtering can be asserted.
-	 */
 	private PolicyLeaveUsageLookup usageOn(LocalDate takenOn, float days) {
 		return (from, to) -> takenOn.isBefore(from) || takenOn.isAfter(to) ? 0f : days;
 	}
@@ -88,8 +81,8 @@ class PolicyLeaveAccrualUtilCarryoverTest {
 		@Test
 		@DisplayName("Date before the April anchor - belongs to the previous cycle")
 		void resolveCycleContaining_DateBeforeAnchor_BelongsToPreviousCycle() {
-			PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil
-				.resolveCycleContaining(LocalDate.of(2026, 2, 10), APRIL_CYCLE);
+			PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(LocalDate.of(2026, 2, 10),
+					APRIL_CYCLE);
 
 			assertEquals(LocalDate.of(2025, 4, 1), cycle.getStartDate());
 			assertEquals(LocalDate.of(2026, 3, 31), cycle.getEndDate());
@@ -98,8 +91,8 @@ class PolicyLeaveAccrualUtilCarryoverTest {
 		@Test
 		@DisplayName("Date on the April anchor - belongs to the cycle it opens")
 		void resolveCycleContaining_DateOnAnchor_BelongsToOpenedCycle() {
-			PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil
-				.resolveCycleContaining(LocalDate.of(2026, 4, 1), APRIL_CYCLE);
+			PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycleContaining(LocalDate.of(2026, 4, 1),
+					APRIL_CYCLE);
 
 			assertEquals(LocalDate.of(2026, 4, 1), cycle.getStartDate());
 		}
