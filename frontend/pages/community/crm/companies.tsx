@@ -11,13 +11,15 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
+import { useCrmSession } from "~community/crm/v2/hooks/useCrmSession";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  useCrmSession();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
     useCrmStore((store) => ({
@@ -34,33 +36,31 @@ const Companies: NextPage = () => {
   };
 
   return (
-    <CrmDataProvider>
-      <ContentLayout
-        breadcrumbs={[
-          { label: translateText(["breadcrumbs", "crm"]) },
-          { label: translateText(["companies", "title"]) }
-        ]}
-        pageHead={translateText(["companies", "pageHead"])}
-        title={translateText(["companies", "title"])}
-        primaryButtonText={translateText(["companies", "addCompanyBtn"])}
-        primaryBtnIconName={IconName.ADD_ICON}
-        onPrimaryButtonClick={onPrimaryButtonClick}
-        isPrimaryBtnLoading={isCheckingCrmLimit}
-        module={Modules.CRM}
-      >
-        <>
-          {selectedCompanyId && (
-            <SidePanelWrapper>
-              <CompanySidePanel />
-            </SidePanelWrapper>
-          )}
+    <ContentLayout
+      breadcrumbs={[
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["companies", "title"]) }
+      ]}
+      pageHead={translateText(["companies", "pageHead"])}
+      title={translateText(["companies", "title"])}
+      primaryButtonText={translateText(["companies", "addCompanyBtn"])}
+      primaryBtnIconName={IconName.ADD_ICON}
+      onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
+    >
+      <>
+        {selectedCompanyId && (
+          <SidePanelWrapper>
+            <CompanySidePanel />
+          </SidePanelWrapper>
+        )}
 
-          <CompanyModalController />
-          <TaskModalController />
-          <CompanyTable />
-        </>
-      </ContentLayout>
-    </CrmDataProvider>
+        <CompanyModalController />
+        <TaskModalController />
+        <CompanyTable />
+      </>
+    </ContentLayout>
   );
 };
 

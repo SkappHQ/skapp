@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/extend-expect";
-import { render, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import {
   CrmDealStageColorsEnum,
@@ -11,10 +12,16 @@ import { CrmBoardInitDataResponse } from "~community/crm/v2/types/CrmTypes";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import { toStagesRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
-import { CrmDataProvider } from "./CrmDataProvider";
+import { useCrmSession } from "./useCrmSession";
 
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (suffixes: string[]) => suffixes.join(".")
+}));
+
+const mockSetToastMessage = jest.fn();
+
+jest.mock("~community/common/providers/ToastProvider", () => ({
+  useToast: () => ({ setToastMessage: mockSetToastMessage })
 }));
 
 jest.mock("~community/crm/v2/api/BoardApi", () => ({
@@ -46,10 +53,6 @@ interface InitDataQueryStub {
   isSuccess?: boolean;
 }
 
-/**
- * The board api still speaks the v1 response shape, so the query result is
- * stubbed rather than typed against it.
- */
 const mockUseGetBoardInitData = useGetBoardInitData as unknown as jest.Mock;
 
 const initDataQueryResult = (overrides: InitDataQueryStub) => ({
@@ -60,7 +63,7 @@ const initDataQueryResult = (overrides: InitDataQueryStub) => ({
   ...overrides
 });
 
-describe("CrmDataProvider", () => {
+describe("useCrmSession", () => {
   const initialStoreState: CrmStore = useCrmStoreV2.getState();
 
   beforeEach(() => {
@@ -70,28 +73,26 @@ describe("CrmDataProvider", () => {
     mockUseGetBoardInitData.mockReturnValue(initDataQueryResult({}));
   });
 
-  it("enables the init-data query while the store has no stages yet", () => {
-    render(<CrmDataProvider>child</CrmDataProvider>);
+  it("enables the init-data query until the session has initialised", () => {
+    renderHook(() => useCrmSession());
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(true);
   });
 
-  it("leaves the query disabled once the session has already initialised", () => {
-    useCrmStoreV2.getState().setStages(toStagesRecord(initData.stages));
+  it("leaves the query disabled once the session has initialised", () => {
+    useCrmStoreV2.getState().setCrmSessionInitialised(true);
 
-    render(<CrmDataProvider>child</CrmDataProvider>);
+    renderHook(() => useCrmSession());
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(false);
   });
 
-  it("pushes the loading flag into the store as the query's loading state changes", () => {
-    mockUseGetBoardInitData.mockReturnValue(
-      initDataQueryResult({ isLoading: true })
-    );
+  it("still fetches when another writer has already populated stages", () => {
+    useCrmStoreV2.getState().setStages(toStagesRecord(initData.stages));
 
-    render(<CrmDataProvider>child</CrmDataProvider>);
+    renderHook(() => useCrmSession());
 
-    expect(useCrmStoreV2.getState().crmDataLoading).toBe(true);
+    expect(useGetBoardInitData).toHaveBeenCalledWith(true);
   });
 
   it("normalizes a successful response into the store", async () => {
@@ -99,7 +100,7 @@ describe("CrmDataProvider", () => {
       initDataQueryResult({ data: initData, isSuccess: true })
     );
 
-    render(<CrmDataProvider>child</CrmDataProvider>);
+    renderHook(() => useCrmSession());
 
     await waitFor(() => {
       expect(useCrmStoreV2.getState().stages).toEqual({
@@ -124,23 +125,27 @@ describe("CrmDataProvider", () => {
       4: { id: 4, name: "EMAIL", orderIndex: 0 },
       5: { id: 5, name: "CALL", orderIndex: 1 }
     });
-    expect(state.crmDataLoading).toBe(false);
-    expect(state.crmDataError).toBeNull();
+    expect(state.crmSessionInitialised).toBe(true);
+    expect(mockSetToastMessage).not.toHaveBeenCalled();
   });
 
-  it("surfaces a translated error and leaves the entity records untouched when the query fails", async () => {
+  it("raises an error toast and leaves the entity records untouched when the query fails", () => {
     mockUseGetBoardInitData.mockReturnValue(
       initDataQueryResult({ isError: true })
     );
 
-    render(<CrmDataProvider>child</CrmDataProvider>);
+    renderHook(() => useCrmSession());
 
-    await waitFor(() => {
-      expect(useCrmStoreV2.getState().crmDataError).toBe("errorDescription");
+    expect(mockSetToastMessage).toHaveBeenCalledWith({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: "errorTitle",
+      description: "errorDescription"
     });
 
     const state = useCrmStoreV2.getState();
     expect(state.stages).toEqual({});
     expect(state.contacts).toEqual({});
+    expect(state.crmSessionInitialised).toBe(false);
   });
 });

@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
@@ -13,60 +15,49 @@ import {
 
 export const useCrmSession = (): void => {
   const translateText = useTranslator("crmModule", "common", "initData");
+  const errorTitle = translateText(["errorTitle"]);
   const errorDescription = translateText(["errorDescription"]);
 
+  const { setToastMessage } = useToast();
+
   const {
-    stages,
+    crmSessionInitialised,
     setStages,
     setOwners,
     setContacts,
     setTaskTypes,
-    setCrmDataLoading,
-    setCrmDataError
+    setCrmSessionInitialised
   } = useCrmStoreV2((state: CrmStore) => ({
-    stages: state.stages,
+    crmSessionInitialised: state.crmSessionInitialised,
     setStages: state.setStages,
     setOwners: state.setOwners,
     setContacts: state.setContacts,
     setTaskTypes: state.setTaskTypes,
-    setCrmDataLoading: state.setCrmDataLoading,
-    setCrmDataError: state.setCrmDataError
+    setCrmSessionInitialised: state.setCrmSessionInitialised
   }));
 
-  const isInitialised = Object.keys(stages).length > 0;
-
-  const { data, isLoading, isError, isSuccess } =
-    useGetBoardInitData(!isInitialised);
+  const { data, isError, isSuccess } = useGetBoardInitData(
+    !crmSessionInitialised
+  );
 
   useEffect(() => {
-    if (isInitialised) return;
+    if (crmSessionInitialised || !isSuccess) return;
 
-    setCrmDataLoading(isLoading);
+    setStages(toStagesRecord(data.stages));
+    setOwners(toOwnersRecord(data.owners));
+    setContacts(toContactsRecord(data.contacts));
+    setTaskTypes(toTaskTypesRecord(data.taskTypes));
+    setCrmSessionInitialised(true);
+  }, [data, isSuccess, crmSessionInitialised]);
 
-    if (isError) {
-      setCrmDataError(errorDescription);
-      return;
-    }
+  useEffect(() => {
+    if (!isError) return;
 
-    if (isSuccess) {
-      setStages(toStagesRecord(data.stages ?? []));
-      setOwners(toOwnersRecord(data.owners ?? []));
-      setContacts(toContactsRecord(data.contacts ?? []));
-      setTaskTypes(toTaskTypesRecord(data.taskTypes ?? []));
-      setCrmDataError(null);
-    }
-  }, [
-    data,
-    isLoading,
-    isError,
-    isSuccess,
-    isInitialised,
-    errorDescription,
-    setStages,
-    setOwners,
-    setContacts,
-    setTaskTypes,
-    setCrmDataLoading,
-    setCrmDataError
-  ]);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: errorTitle,
+      description: errorDescription
+    });
+  }, [isError, errorTitle, errorDescription, setToastMessage]);
 };

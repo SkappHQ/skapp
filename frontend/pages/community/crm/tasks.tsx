@@ -11,7 +11,7 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { CrmDataProvider } from "~community/crm/v2/providers/CrmDataProvider";
+import { useCrmSession } from "~community/crm/v2/hooks/useCrmSession";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -19,6 +19,8 @@ const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const containerRef = useRef<HTMLDivElement>(null);
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  useCrmSession();
 
   const {
     setIsTaskModalOpen,
@@ -54,36 +56,34 @@ const Tasks: NextPage = () => {
   }, []);
 
   return (
-    <CrmDataProvider>
-      <ContentLayout
-        breadcrumbs={[
-          { label: translateText(["breadcrumbs", "crm"]) },
-          { label: translateText(["tasks", "title"]) }
-        ]}
-        pageHead={translateText(["tasks", "pageHead"])}
-        title={translateText(["tasks", "title"])}
-        primaryButtonText={translateText(["tasks", "addTaskBtn"])}
-        primaryBtnIconName={IconName.ADD_ICON}
-        containerStyles={{
-          padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
-        }}
-        onPrimaryButtonClick={onPrimaryButtonClick}
-        isPrimaryBtnLoading={isCheckingCrmLimit}
-        module={Modules.CRM}
-      >
-        <>
-          {selectedTaskId && (
-            <SidePanelWrapper>
-              <TaskSidePanel />
-            </SidePanelWrapper>
-          )}
-          <div ref={containerRef} className="flex flex-col w-full gap-4">
-            <TaskModalController />
-            <TasksTable />
-          </div>
-        </>
-      </ContentLayout>
-    </CrmDataProvider>
+    <ContentLayout
+      breadcrumbs={[
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["tasks", "title"]) }
+      ]}
+      pageHead={translateText(["tasks", "pageHead"])}
+      title={translateText(["tasks", "title"])}
+      primaryButtonText={translateText(["tasks", "addTaskBtn"])}
+      primaryBtnIconName={IconName.ADD_ICON}
+      containerStyles={{
+        padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
+      }}
+      onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
+      module={Modules.CRM}
+    >
+      <>
+        {selectedTaskId && (
+          <SidePanelWrapper>
+            <TaskSidePanel />
+          </SidePanelWrapper>
+        )}
+        <div ref={containerRef} className="flex flex-col w-full gap-4">
+          <TaskModalController />
+          <TasksTable />
+        </div>
+      </>
+    </ContentLayout>
   );
 };
 
