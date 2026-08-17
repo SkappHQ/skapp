@@ -2,6 +2,7 @@ package com.skapp.community.leaveplanner.payload.response;
 
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,10 @@ import java.util.List;
 public class PolicyLeaveRequestResponseDto {
 
 	private Long leaveRequestId;
+
+	private EmployeeBasicDetailsResponseDto employee;
+
+	private EmployeeBasicDetailsResponseDto reviewer;
 
 	private Long policyId;
 
