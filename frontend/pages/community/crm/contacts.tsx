@@ -1,8 +1,11 @@
 import { NextPage } from "next";
+import { useEffect } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
@@ -19,7 +22,8 @@ const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  useCrmSession();
+  const { setToastMessage } = useToast();
+  const { isError: isCrmSessionError } = useCrmSession();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
     useCrmStore((store) => ({
@@ -34,6 +38,33 @@ const Contacts: NextPage = () => {
       setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
     });
   };
+
+  const crmSessionErrorTitle = translateText([
+    "common",
+    "initData",
+    "errorTitle"
+  ]);
+  const crmSessionErrorDescription = translateText([
+    "common",
+    "initData",
+    "errorDescription"
+  ]);
+
+  useEffect(() => {
+    if (!isCrmSessionError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: crmSessionErrorTitle,
+      description: crmSessionErrorDescription
+    });
+  }, [
+    isCrmSessionError,
+    crmSessionErrorTitle,
+    crmSessionErrorDescription,
+    setToastMessage
+  ]);
 
   return (
     <ContentLayout

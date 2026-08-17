@@ -1,8 +1,5 @@
 import { useEffect } from "react";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
@@ -13,13 +10,11 @@ import {
   toTaskTypesRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 
-export const useCrmSession = (): void => {
-  const translateText = useTranslator("crmModule", "common", "initData");
-  const errorTitle = translateText(["errorTitle"]);
-  const errorDescription = translateText(["errorDescription"]);
+export interface CrmSessionResult {
+  isError: boolean;
+}
 
-  const { setToastMessage } = useToast();
-
+export const useCrmSession = (): CrmSessionResult => {
   const {
     crmSessionInitialised,
     setStages,
@@ -50,14 +45,5 @@ export const useCrmSession = (): void => {
     setCrmSessionInitialised(true);
   }, [data, isSuccess, crmSessionInitialised]);
 
-  useEffect(() => {
-    if (!isError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: errorTitle,
-      description: errorDescription
-    });
-  }, [isError, errorTitle, errorDescription, setToastMessage]);
+  return { isError };
 };

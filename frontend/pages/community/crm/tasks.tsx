@@ -3,7 +3,9 @@ import { useEffect, useRef } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
@@ -20,7 +22,8 @@ const Tasks: NextPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  useCrmSession();
+  const { setToastMessage } = useToast();
+  const { isError: isCrmSessionError } = useCrmSession();
 
   const {
     setIsTaskModalOpen,
@@ -41,6 +44,33 @@ const Tasks: NextPage = () => {
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     });
   };
+
+  const crmSessionErrorTitle = translateText([
+    "common",
+    "initData",
+    "errorTitle"
+  ]);
+  const crmSessionErrorDescription = translateText([
+    "common",
+    "initData",
+    "errorDescription"
+  ]);
+
+  useEffect(() => {
+    if (!isCrmSessionError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: crmSessionErrorTitle,
+      description: crmSessionErrorDescription
+    });
+  }, [
+    isCrmSessionError,
+    crmSessionErrorTitle,
+    crmSessionErrorDescription,
+    setToastMessage
+  ]);
 
   useEffect(() => {
     const updateHeight = () => {

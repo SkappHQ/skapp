@@ -1,7 +1,6 @@
 import "@testing-library/jest-dom/extend-expect";
 import { renderHook, waitFor } from "@testing-library/react";
 
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import {
   CrmDealStageColorsEnum,
@@ -13,16 +12,6 @@ import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import { toStagesRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
 import { useCrmSession } from "./useCrmSession";
-
-jest.mock("~community/common/hooks/useTranslator", () => ({
-  useTranslator: () => (suffixes: string[]) => suffixes.join(".")
-}));
-
-const mockSetToastMessage = jest.fn();
-
-jest.mock("~community/common/providers/ToastProvider", () => ({
-  useToast: () => ({ setToastMessage: mockSetToastMessage })
-}));
 
 jest.mock("~community/crm/v2/api/BoardApi", () => ({
   useGetBoardInitData: jest.fn()
@@ -126,22 +115,16 @@ describe("useCrmSession", () => {
       5: { id: 5, name: "CALL", orderIndex: 1 }
     });
     expect(state.crmSessionInitialised).toBe(true);
-    expect(mockSetToastMessage).not.toHaveBeenCalled();
   });
 
-  it("raises an error toast and leaves the entity records untouched when the query fails", () => {
+  it("reports the failure and leaves the entity records untouched when the query fails", () => {
     mockUseGetBoardInitData.mockReturnValue(
       initDataQueryResult({ isError: true })
     );
 
-    renderHook(() => useCrmSession());
+    const { result } = renderHook(() => useCrmSession());
 
-    expect(mockSetToastMessage).toHaveBeenCalledWith({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: "errorTitle",
-      description: "errorDescription"
-    });
+    expect(result.current.isError).toBe(true);
 
     const state = useCrmStoreV2.getState();
     expect(state.stages).toEqual({});
