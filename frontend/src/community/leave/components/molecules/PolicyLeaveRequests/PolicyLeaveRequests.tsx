@@ -24,8 +24,13 @@ const CHIP_CLASSES =
   "inline-flex w-fit items-center gap-2 rounded-[9.375rem] bg-tertiary-background px-4 py-2";
 
 const PolicyLeaveRequests: FC = () => {
-  const { selectedYear, requestParams, setRequestPage, setRequestSortKey } =
-    usePolicyLeaveStore((state) => state);
+  const {
+    selectedYear,
+    requestParams,
+    setRequestPage,
+    setRequestSortKey,
+    openEmployeeModal
+  } = usePolicyLeaveStore((state) => state);
 
   const queryParams = useMemo(
     () => getPolicyLeaveRequestQueryParams(selectedYear, requestParams),
@@ -126,6 +131,14 @@ const PolicyLeaveRequests: FC = () => {
     <PolicyLeaveRequestFilterBody onClose={onClose} />
   );
 
+  const handleRowClick = (row: GridRow): void => {
+    openEmployeeModal(Number(row.id));
+  };
+
+  const handleSortChange = (value: string): void => {
+    setRequestSortKey(value as SortKeyTypes);
+  };
+
   if (isError) {
     return (
       <>
@@ -160,6 +173,7 @@ const PolicyLeaveRequests: FC = () => {
         title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
         description: translateText(["myLeaveRequests", "emptyLeaveRequestDes"])
       }}
+      onRowClick={handleRowClick}
       pagination={{
         totalPages: leaveRequests?.totalPages,
         currentPage: requestParams.page,
@@ -170,7 +184,7 @@ const PolicyLeaveRequests: FC = () => {
           id: "my-policy-leave-requests-sort",
           options: sortOptions,
           value: requestParams.sortKey,
-          onChange: (value: string) => setRequestSortKey(value as SortKeyTypes),
+          onChange: handleSortChange,
           renderSelectedValue: renderSelectedSortValue,
           width: "auto",
           menuWidth: "content",
