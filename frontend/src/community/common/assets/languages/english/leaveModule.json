@@ -433,6 +433,7 @@
         "frequencyRequired": "Please select an accrual frequency.",
         "waitingPeriodDaysRequired": "Please enter the number of waiting period days.",
         "accrualCapRequired": "Please enter the maximum accrual balance.",
+        "maxCarryOverDaysRequired": "Please enter the maximum number of carry over days.",
         "maxCarryOverDaysInvalid": "Maximum carry over days must be greater than 0 and at most 365."
       },
       "successToastTitle": "Policy Created",

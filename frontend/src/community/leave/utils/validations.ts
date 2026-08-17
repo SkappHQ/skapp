@@ -199,13 +199,17 @@ export const leavePolicyWizardValidation = (
           maxCarryOverDays: Yup.string().when("canCarryOver", {
             is: true,
             then: (schema) =>
-              schema.test(
-                "max-carryover-days-valid",
-                translateText(["errors", "maxCarryOverDaysInvalid"]),
-                (value) =>
-                  !value ||
-                  isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
-              )
+              schema
+                .required(
+                  translateText(["errors", "maxCarryOverDaysRequired"])
+                )
+                .test(
+                  "max-carryover-days-valid",
+                  translateText(["errors", "maxCarryOverDaysInvalid"]),
+                  (value) =>
+                    !value ||
+                    isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+                )
           })
         }
       : {})
