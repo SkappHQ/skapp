@@ -7,6 +7,8 @@ import SearchBox from "~community/common/components/molecules/SearchBox/SearchBo
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
+import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import PendingLeaveRequestTable from "~community/leave/components/molecules/PendingLeaveRequestTable/PendingLeaveRequestTable";
 
 const PendingLeave: NextPage = () => {
@@ -18,32 +20,36 @@ const PendingLeave: NextPage = () => {
   const router = useRouter();
 
   return (
-    <ContentLayout
-      breadcrumbs={[
-        {
-          label: translateBreadcrumbText(["analytics.stepLeave"])
-        },
-        {
-          label: translateBreadcrumbText(["leaveRequests.title"])
-        }
-      ]}
-      pageHead={translateText(["pageHead"])}
-      title={translateText(["title"])}
-      isDividerVisible={true}
-      isBackButtonVisible={true}
-      onBackClick={() => router.replace(ROUTES.DASHBOARD.BASE)}
+    <NotificationReadProvider
+      notificationType={NotificationSummaryType.LEAVE_REQUEST}
     >
-      <>
-        <Box mb={2}>
-          <SearchBox
-            value={searchTerm}
-            setSearchTerm={setSearchTerm}
-            placeHolder={translateText(["searchBoxPlaceholder"])}
-          />
-        </Box>
-        <PendingLeaveRequestTable searchTerm={searchTerm} />
-      </>
-    </ContentLayout>
+      <ContentLayout
+        breadcrumbs={[
+          {
+            label: translateBreadcrumbText(["analytics.stepLeave"])
+          },
+          {
+            label: translateBreadcrumbText(["leaveRequests.title"])
+          }
+        ]}
+        pageHead={translateText(["pageHead"])}
+        title={translateText(["title"])}
+        isDividerVisible={true}
+        isBackButtonVisible={true}
+        onBackClick={() => router.replace(ROUTES.DASHBOARD.BASE)}
+      >
+        <>
+          <Box mb={2}>
+            <SearchBox
+              value={searchTerm}
+              setSearchTerm={setSearchTerm}
+              placeHolder={translateText(["searchBoxPlaceholder"])}
+            />
+          </Box>
+          <PendingLeaveRequestTable searchTerm={searchTerm} />
+        </>
+      </ContentLayout>
+    </NotificationReadProvider>
   );
 };
 
