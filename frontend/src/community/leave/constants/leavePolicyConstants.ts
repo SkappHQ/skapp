@@ -69,13 +69,10 @@ export const accrualFrequencyItemList = [
   }
 ];
 
-// The carryover expiry is stored as a month-day so it recurs every leave cycle without
-// an admin re-entering it. A blank value means carried over days never expire.
 export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
 
 export const CARRYOVER_EXPIRY_DISPLAY_FORMAT = "dd MMMM";
 
-// A leap year, so 29 February survives a round trip through the picker.
 export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2024;
 
 export const firstAccrualItemList = [

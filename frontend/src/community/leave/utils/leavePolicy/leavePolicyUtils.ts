@@ -16,23 +16,13 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-/**
- * Turns the date the admin picked into the stored month-day. Only the month and day are
- * kept, so the expiry recurs every leave cycle instead of needing to be re-entered.
- */
 export const toCarryoverExpiryMonthDay = (isoDate: string): string => {
-  // setZone keeps the offset the picker emitted, so the month-day is the day the admin
-  // clicked rather than that day shifted into another zone.
   const pickedDate = DateTime.fromISO(isoDate, { setZone: true });
   return pickedDate.isValid
     ? pickedDate.toFormat(CARRYOVER_EXPIRY_DATE_FORMAT)
     : "";
 };
 
-/**
- * Reads a stored month-day back into a date the picker can show. It is resolved against a
- * leap year so 29 February is never dropped; the picker hides the year.
- */
 export const parseCarryoverExpiryDate = (
   monthDay: string
 ): DateTime | undefined => {
