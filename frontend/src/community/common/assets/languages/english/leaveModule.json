@@ -262,7 +262,7 @@
     "breadcrumbLeave": "Leave",
     "breadcrumbLeavePolicies": "Leave policies",
     "createPolicyBtnTxt": "Create policy",
-    "bulkAssignBtnTxt": "Bulk Upload",
+    "bulkAssignBtnTxt": "Bulk upload",
     "bulkAssignModal": {
       "title": "Bulk Assign Leave Policies",
       "addPoliciesTitle": "Add policies",
