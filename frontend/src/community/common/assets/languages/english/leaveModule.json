@@ -367,7 +367,7 @@
       "basicInfo": {
         "policyTypeTitle": "Policy type",
         "accrualTitle": "Accrual",
-        "accrualDescription": "Time taken is deducted from a balance that accrues on a schedule or is set manually",
+        "accrualDescription": "Time taken is deducted from a balance that accrues on a schedule or is set manually.",
         "flexibleTitle": "Flexible (unlimited)",
         "flexibleDescription": "There is no balance to deduct from, but I still want leave requests to be approved and tracked.",
         "basicDetailsTitle": "Basic details",

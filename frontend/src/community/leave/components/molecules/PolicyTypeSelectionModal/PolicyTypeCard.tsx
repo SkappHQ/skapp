@@ -22,7 +22,7 @@ const PolicyTypeCard: FC<Props> = ({ icon, title, description, onSelect }) => (
     className="flex-1 cursor-pointer rounded-xl aspect-133.75/109.5 bg-white hover:shadow-md hover:outline-primary-accent"
   >
     <div className="flex h-full flex-col items-center justify-center gap-8 text-center">
-      <span className="text-primary-accent" aria-hidden="true">
+      <span className="text-black" aria-hidden="true">
         {icon}
       </span>
       <span className="flex flex-col gap-4">
