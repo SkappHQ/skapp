@@ -15,6 +15,11 @@ import {
   MarkBirthdayNotificationsViewedResponse
 } from "~community/people/types/BirthdayNotificationTypes";
 import {
+  getDismissedEmployeeIds,
+  readDismissedCache,
+  writeDismissedCache
+} from "~community/people/utils/birthdayNotificationCacheUtils";
+import {
   buildBirthdayQueue,
   normalizeEmployeeId
 } from "~community/people/utils/birthdayNotificationUtils";
@@ -79,7 +84,16 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
       currentEmployeeId
     );
 
-    if (birthdayQueue.length === 0) {
+    const dismissedEmployeeIds = getDismissedEmployeeIds(
+      readDismissedCache(),
+      today,
+      userId
+    );
+    const pendingQueue = birthdayQueue.filter(
+      (entry) => !dismissedEmployeeIds.includes(entry.employee.employeeId)
+    );
+
+    if (pendingQueue.length === 0) {
       if (data.lastViewedDate !== today) {
         markViewed();
       }
@@ -91,12 +105,13 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
         ? document.activeElement
         : null;
     isShowingRef.current = true;
-    setQueue(birthdayQueue);
+    setQueue(pendingQueue);
     setCursor(0);
   }, [
     data,
     shouldEvaluate,
     today,
+    userId,
     currentEmployeeId,
     isCurrentEmployeeResolved,
     markViewed,
@@ -119,6 +134,25 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
   }, [markViewed]);
 
   const onDismiss = useCallback(() => {
+    const dismissedEntry = queue[cursor];
+
+    if (dismissedEntry && userId !== undefined) {
+      const existingDismissedIds = getDismissedEmployeeIds(
+        readDismissedCache(),
+        today,
+        userId
+      );
+      const dismissedEmployeeId = dismissedEntry.employee.employeeId;
+
+      if (!existingDismissedIds.includes(dismissedEmployeeId)) {
+        writeDismissedCache({
+          userId,
+          date: today,
+          dismissedEmployeeIds: [...existingDismissedIds, dismissedEmployeeId]
+        });
+      }
+    }
+
     const nextCursor = cursor + 1;
 
     if (nextCursor < queue.length) {
@@ -127,7 +161,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     }
 
     finishSequence();
-  }, [cursor, queue.length, finishSequence]);
+  }, [cursor, queue, userId, today, finishSequence]);
 
   useEffect(() => {
     if (evaluationTick === 0) return;
