@@ -1,12 +1,12 @@
 import { Avatar, LargeModal } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import BirthdayCelebration from "~community/people/assets/images/BirthdayCelebration";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
-import Confetti from "~enterprise/common/components/Confetti/Confetti";
+import Confetti from "~community/common/components/atoms/Confetti/Confetti";
 
 interface Props {
   id: string;
@@ -31,10 +31,21 @@ const BirthdayModalShell: FC<Props> = ({
 }) => {
   const translateAria = useTranslator("peopleAria", "birthdayNotifications");
   const imageUrl = useGetImageUrl(employee.authPic ?? "");
+  const [isConfettiVisible, setIsConfettiVisible] = useState(showConfetti);
+
+  useEffect(() => {
+    if (!showConfetti) return;
+
+    const timer = setTimeout(() => {
+      setIsConfettiVisible(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [showConfetti]);
 
   return (
     <>
-      {showConfetti && <Confetti />}
+      {isConfettiVisible && <Confetti />}
       <LargeModal
         id={id}
         isOpen
