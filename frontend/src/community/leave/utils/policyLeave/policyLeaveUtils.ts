@@ -23,7 +23,10 @@ import {
   PolicyLeaveValidationFailure
 } from "~community/leave/types/PolicyLeaveTypes";
 
-type TranslateFn = (key: string[], data?: Record<string, unknown>) => string;
+export type TranslateFn = (
+  key: string[],
+  data?: Record<string, unknown>
+) => string;
 
 interface DisabledReasonToastKeys {
   titleKey: string[];
