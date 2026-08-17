@@ -5,7 +5,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import {
   toContactsRecord,
   toOwnersRecord,
@@ -13,15 +12,13 @@ import {
   toTaskTypesRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 
-export interface UseInitializeCrmDataReturn {
+interface UseInitializeCrmDataReturn {
   isCrmInitialDataLoading: boolean;
   isCrmInitialDataError: boolean;
 }
 
 export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
   const translateText = useTranslator("crmModule", "common", "initData");
-  const crmDataErrorTitle = translateText(["errorTitle"]);
-  const crmDataErrorDescription = translateText(["errorDescription"]);
 
   const { setToastMessage } = useToast();
 
@@ -32,7 +29,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     setContacts,
     setTaskTypes,
     setIsCrmDataInitialized
-  } = useCrmStoreV2((state: CrmStore) => ({
+  } = useCrmStoreV2((state) => ({
     isCrmDataInitialized: state.isCrmDataInitialized,
     setStages: state.setStages,
     setOwners: state.setOwners,
@@ -45,6 +42,15 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     useGetBoardInitData(!isCrmDataInitialized);
 
   useEffect(() => {
+    if (isError) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["errorTitle"]),
+        description: translateText(["errorDescription"])
+      });
+    }
+
     if (isCrmDataInitialized || !isSuccess) return;
 
     setStages(toStagesRecord(data.stages));
@@ -52,18 +58,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     setContacts(toContactsRecord(data.contacts));
     setTaskTypes(toTaskTypesRecord(data.taskTypes));
     setIsCrmDataInitialized(true);
-  }, [data, isSuccess, isCrmDataInitialized]);
-
-  useEffect(() => {
-    if (!isError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: crmDataErrorTitle,
-      description: crmDataErrorDescription
-    });
-  }, [isError, crmDataErrorTitle, crmDataErrorDescription, setToastMessage]);
+  }, [data, isSuccess, isError, isCrmDataInitialized]);
 
   return {
     isCrmInitialDataLoading: isLoading,
