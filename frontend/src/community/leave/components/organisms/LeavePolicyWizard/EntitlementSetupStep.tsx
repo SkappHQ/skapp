@@ -71,7 +71,6 @@ const EntitlementSetupStep: FC<Props> = ({
             <InputField
               label={translateText(["employeesAccrueLabel"])}
               name="accrualDays"
-              type="number"
               value={formData.accrualDays}
               placeholder={translateText(["employeesAccruePlaceholder"])}
               state={
@@ -130,7 +129,6 @@ const EntitlementSetupStep: FC<Props> = ({
               <InputField
                 label={translateText(["waitingPeriodDaysLabel"])}
                 name="waitingPeriodDays"
-                type="number"
                 value={formData.waitingPeriodDays}
                 placeholder={translateText(["waitingPeriodDaysPlaceholder"])}
                 state={
@@ -168,7 +166,6 @@ const EntitlementSetupStep: FC<Props> = ({
               <InputField
                 label={translateText(["accrualCapDaysLabel"])}
                 name="accrualCapDays"
-                type="number"
                 value={formData.accrualCapDays}
                 placeholder={translateText(["accrualCapDaysPlaceholder"])}
                 state={
@@ -213,7 +210,6 @@ const EntitlementSetupStep: FC<Props> = ({
                 <InputField
                   label={translateText(["maxCarryOverDaysLabel"])}
                   name="maxCarryOverDays"
-                  type="number"
                   value={formData.maxCarryOverDays}
                   placeholder={translateText(["maxCarryOverDaysPlaceholder"])}
                   state={
