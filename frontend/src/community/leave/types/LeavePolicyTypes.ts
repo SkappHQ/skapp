@@ -213,7 +213,7 @@ export interface LeavePolicyMutationResponse {
 }
 
 export enum EffectiveDateType {
-  HIRE_DATE = "HIRE_DATE",
+  JOIN_DATE = "JOIN_DATE",
   SPECIFIC = "SPECIFIC"
 }
 

@@ -24,10 +24,10 @@ import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
+import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
-import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +70,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto assignLeavePolicy(AssignLeavePolicyRequestDto assignLeavePolicyRequestDto) {
 		log.info("assignLeavePolicy: execution started");
 
+		EmployeeLeavePolicyUtil.validateRequiredFields(assignLeavePolicyRequestDto);
+
 		Employee employee = employeeDao.findByEmployeeId(assignLeavePolicyRequestDto.getEmployeeId())
 			.orElseThrow(() -> new EntityNotFoundException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_NOT_FOUND));
 
@@ -78,10 +80,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		if (policy.getStatus() != LeavePolicyStatus.ACTIVE) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACTIVE);
-		}
-
-		if (policy.getPolicyType() != PolicyType.ACCRUAL) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_NOT_ACCRUAL);
 		}
 
 		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
@@ -179,6 +177,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto unassignLeavePolicy(UnassignLeavePolicyRequestDto unassignLeavePolicyRequestDto) {
 		log.info("unassignLeavePolicy: execution started");
 
+		EmployeeLeavePolicyUtil.validateRequiredFields(unassignLeavePolicyRequestDto);
+
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
@@ -196,7 +196,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged()
+				: PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
 			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
 					pageable);
@@ -258,7 +259,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 				return messageUtil.getMessage(LeaveMessageConstant.LEAVE_ERROR_BULK_HIRE_DATE_UNAVAILABLE,
 						new String[] { row.getEmployeeName() });
 			}
-			effectiveDateType = EffectiveDateType.HIRE_DATE;
+			effectiveDateType = EffectiveDateType.JOIN_DATE;
 			effectiveFrom = employee.getJoinDate();
 		}
 		else {
