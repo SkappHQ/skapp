@@ -52,6 +52,22 @@ const EntitlementSetupStep: FC<Props> = ({
     DateTime | undefined
   >(() => parseCarryoverExpiryDate(formData.carryoverExpiryDate));
 
+  const handleCarryOverChange = (value: boolean) => {
+    if (!value) {
+      setCarryoverExpiryDate(undefined);
+    }
+    onChange({
+      canCarryOver: value,
+      ...(value ? {} : { carryoverExpiryDate: "", maxCarryOverDays: "" })
+    });
+  };
+
+  const handleCarryoverExpiryDateChange = (newValue: string) => {
+    onChange({
+      carryoverExpiryDate: toCarryoverExpiryMonthDay(newValue)
+    });
+  };
+
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
@@ -197,17 +213,7 @@ const EntitlementSetupStep: FC<Props> = ({
             noLabel={translateText(["carryOverNo"])}
             yesLabel={translateText(["carryOverYes"])}
             value={formData.canCarryOver}
-            onChange={(value) => {
-              if (!value) {
-                setCarryoverExpiryDate(undefined);
-              }
-              onChange({
-                canCarryOver: value,
-                ...(value
-                  ? {}
-                  : { carryoverExpiryDate: "", maxCarryOverDays: "" })
-              });
-            }}
+            onChange={handleCarryOverChange}
           />
           {formData.canCarryOver && (
             <div className="flex flex-col gap-4 md:flex-row">
@@ -222,11 +228,7 @@ const EntitlementSetupStep: FC<Props> = ({
                   isYearHidden
                   selectedDate={carryoverExpiryDate}
                   setSelectedDate={setCarryoverExpiryDate}
-                  onchange={(newValue: string) =>
-                    onChange({
-                      carryoverExpiryDate: toCarryoverExpiryMonthDay(newValue)
-                    })
-                  }
+                  onchange={handleCarryoverExpiryDateChange}
                   componentStyle={{ mt: "0rem" }}
                 />
               </div>
