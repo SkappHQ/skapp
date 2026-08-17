@@ -48,6 +48,13 @@ export const parseCarryoverExpiryDate = (
   return expiryDate.isValid ? expiryDate : undefined;
 };
 
+export const getCarryoverExpiryReferenceDate = (): DateTime =>
+  DateTime.fromObject({
+    year: CARRYOVER_EXPIRY_REFERENCE_YEAR,
+    month: 1,
+    day: 1
+  });
+
 export const formatCarryoverExpiryDate = (monthDay: string): string =>
   parseCarryoverExpiryDate(monthDay)?.toFormat(
     CARRYOVER_EXPIRY_DISPLAY_FORMAT

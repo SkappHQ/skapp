@@ -14,6 +14,7 @@ import {
 import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
 import {
   buildTranslatedOptionList,
+  getCarryoverExpiryReferenceDate,
   parseCarryoverExpiryDate,
   toCarryoverExpiryMonthDay
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
@@ -228,6 +229,9 @@ const EntitlementSetupStep: FC<Props> = ({
                   isYearHidden
                   selectedDate={carryoverExpiryDate}
                   setSelectedDate={setCarryoverExpiryDate}
+                  initialMonthlyView={
+                    carryoverExpiryDate ?? getCarryoverExpiryReferenceDate()
+                  }
                   onchange={handleCarryoverExpiryDateChange}
                   componentStyle={{ mt: "0rem" }}
                 />
