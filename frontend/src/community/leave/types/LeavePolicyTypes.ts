@@ -50,7 +50,7 @@ export interface LeavePolicyType {
   waitingPeriodDays?: number | null;
   accrualCapDays?: number | null;
   isCarryoverEnabled?: boolean | null;
-  carryoverDate?: string | null;
+  carryoverExpiryDate?: string | null;
   maxCarryoverDays?: number | null;
   firstAccrual?: FirstAccrualType | null;
   accrualTiming?: AccrualTiming | null;
@@ -109,7 +109,7 @@ export interface LeavePolicyFormData {
   hasAccrualCap: boolean;
   accrualCapDays: string;
   canCarryOver: boolean;
-  carryOverDate: string;
+  carryoverExpiryDate: string;
   maxCarryOverDays: string;
   firstAccrual: string;
   receiveAccruedTime: string;
@@ -121,7 +121,7 @@ export interface AddLeavePolicyAccrualPayload {
   waitingPeriodDays?: number;
   accrualCapDays?: number;
   isCarryoverEnabled: boolean;
-  carryoverDate?: string;
+  carryoverExpiryDate?: string;
   maxCarryoverDays?: number;
   firstAccrual: string;
   accrualTiming: string;
@@ -156,7 +156,7 @@ export interface LeavePolicyResponseDto {
   waitingPeriodDays: number | null;
   accrualCapDays: number | null;
   isCarryoverEnabled: boolean | null;
-  carryoverDate: string | null;
+  carryoverExpiryDate: string | null;
   maxCarryoverDays: number | null;
   firstAccrual: FirstAccrualType | null;
   accrualTiming: AccrualTiming | null;

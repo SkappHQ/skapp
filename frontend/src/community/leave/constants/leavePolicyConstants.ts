@@ -69,12 +69,14 @@ export const accrualFrequencyItemList = [
   }
 ];
 
-export const carryoverDateItemList = [
-  { id: "january-1", labelKey: "january1", value: "01-01" },
-  { id: "april-1", labelKey: "april1", value: "04-01" },
-  { id: "july-1", labelKey: "july1", value: "07-01" },
-  { id: "october-1", labelKey: "october1", value: "10-01" }
-];
+// The carryover expiry is stored as a month-day so it recurs every leave cycle without
+// an admin re-entering it. A blank value means carried over days never expire.
+export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
+
+export const CARRYOVER_EXPIRY_DISPLAY_FORMAT = "dd MMMM";
+
+// A leap year, so 29 February survives a round trip through the picker.
+export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2024;
 
 export const firstAccrualItemList = [
   {
@@ -114,7 +116,7 @@ export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   hasAccrualCap: false,
   accrualCapDays: "",
   canCarryOver: false,
-  carryOverDate: "01-01",
+  carryoverExpiryDate: "",
   maxCarryOverDays: "",
   firstAccrual: FirstAccrualType.PRORATED,
   receiveAccruedTime: AccrualTiming.PERIOD_END

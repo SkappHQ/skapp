@@ -358,8 +358,9 @@
         "carryOverLabel": "Carry over",
         "carryOverNo": "No, it's use it or lose it",
         "carryOverYes": "Yes, time can be carried over",
-        "carryOverDateLabel": "Carryover date",
-        "carryOverDatePlaceholder": "Select date",
+        "carryoverExpiryDateLabel": "Carryover expiry date",
+        "carryoverExpiryDatePlaceholder": "Select expiry date",
+        "carryoverExpiryDateTooltip": "Carried over days are forfeited on this date in every leave cycle, so it only needs to be set once. Leave it empty if carried over days should never expire.",
         "maxCarryOverDaysLabel": "Maximum carry over days",
         "maxCarryOverDaysPlaceholder": "Enter days",
         "fineTuningTitle": "Fine tuning",
@@ -395,7 +396,8 @@
         "maxCarryOverDaysValue": "{{days}} Days",
         "waitingPeriodDaysValue": "Yes, {{days}} days",
         "accrualCapDaysValue": "Capped at {{days}} days",
-        "carryOverDateLabel": "Expiry Date",
+        "carryoverExpiryDateLabel": "Expiry Date",
+        "carryoverNeverExpires": "Never expires",
         "carryForwardTitle": "Carry Forward",
         "statusLabel": "Status",
         "activeStatus": "Active",
@@ -412,12 +414,6 @@
           "twiceAYear": "Twice a year",
           "yearly": "Yearly",
           "onAnniversary": "On anniversary"
-        },
-        "carryoverDate": {
-          "january1": "1st of January",
-          "april1": "1st of April",
-          "july1": "1st of July",
-          "october1": "1st of October"
         },
         "firstAccrual": {
           "prorated": "Prorated, based on the accrual period",
