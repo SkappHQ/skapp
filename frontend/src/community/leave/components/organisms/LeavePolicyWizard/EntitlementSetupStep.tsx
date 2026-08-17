@@ -93,7 +93,6 @@ const EntitlementSetupStep: FC<Props> = ({
             <InputField
               label={translateText(["employeesAccrueLabel"])}
               name="accrualDays"
-              type="number"
               value={formData.accrualDays}
               placeholder={translateText(["employeesAccruePlaceholder"])}
               state={
