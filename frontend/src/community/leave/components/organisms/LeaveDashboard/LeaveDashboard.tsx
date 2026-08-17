@@ -92,9 +92,7 @@ const LeaveDashboard = (): JSX.Element => {
   const todaysAwayEmployees: LeaveRequest[] =
     todaysResourceAvailability?.find(
       (record: ResourceAvailabilityRecord) => record.actualDate === today
-    )?.leaveRequests ??
-    todaysResourceAvailability?.[0]?.leaveRequests ??
-    [];
+    )?.leaveRequests ?? [];
 
   const handleTodaysAvailabilityModalOpen = (): void => {
     setTodaysAvailability(todaysAwayEmployees);

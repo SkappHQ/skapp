@@ -4,6 +4,7 @@ import { FC } from "react";
 
 import {
   ClockInOutGraphTypes,
+  ClockInSummaryFilterTypes,
   ClockInSummaryTypes
 } from "~community/attendance/enums/dashboardEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
@@ -32,11 +33,13 @@ const AttendanceCard: FC<Props> = ({
   const theme = useTheme();
 
   const handleCardClick = (): void => {
-    type === ClockInOutGraphTypes.CLOCK_IN
-      ? setClockInType({})
-      : setClockInType({
-          "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
-        });
+    type !== ClockInOutGraphTypes.CLOCK_IN
+      ? setClockInType({
+          [ClockInSummaryFilterTypes.CLOCK_INS]: [
+            ClockInSummaryTypes.LATE_CLOCK_INS
+          ]
+        })
+      : setClockInType({});
 
     router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
   };
