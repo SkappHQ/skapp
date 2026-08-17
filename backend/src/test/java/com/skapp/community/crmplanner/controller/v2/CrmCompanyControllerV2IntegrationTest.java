@@ -151,8 +151,8 @@ class CrmCompanyControllerV2IntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get company metrics - Returns nested company and metrics with seeded values")
-	void getCompanyMetrics_HappyPath_ReturnsNestedCompanyAndMetrics() throws Exception {
+	@DisplayName("Get company metrics - Returns flat company fields and nested metrics with seeded values")
+	void getCompanyMetrics_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
 		CrmCompany company = savedCompany("MetricsCoV2Unique");
 		CrmContact contact = savedContact(company, "metrics.v2.unique@example.com");
 
@@ -166,14 +166,15 @@ class CrmCompanyControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['id']").value(company.getId()))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['name']").value("MetricsCoV2Unique"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['industry']")
+			.andExpect(jsonPath("['results'][0]['items'][0]['id']").value(company.getId()))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("MetricsCoV2Unique"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['industry']")
 				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['website']").value("https://metrics-v2.com"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['address']").value("123 Metrics St"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openDeals']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDeals']").value(1));
+			.andExpect(jsonPath("['results'][0]['items'][0]['website']").value("https://metrics-v2.com"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['address']").value("123 Metrics St"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['contactNumber']").value("94771234567"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openDealsCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealsCount']").value(1));
 
 		String content = result.andReturn().getResponse().getContentAsString();
 		String openValue = JsonPath.read(content, "$.results[0].items[0].metrics.openValue");
@@ -196,7 +197,7 @@ class CrmCompanyControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdue']").value(1));
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(1));
 	}
 
 	@Test

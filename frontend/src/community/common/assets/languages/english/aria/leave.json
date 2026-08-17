@@ -35,6 +35,7 @@
     "allLeaveRequestTable": "Accessing All Leave Requests Table",
     "employeeName": "Employee name, {{firstName}} {{lastName}}",
     "leaveType": "Leave type, {{leaveType}}",
+    "attachment": "Attachment, {{fileName}}",
     "sort": "Sort by",
     "leaveRecordRow": "Leave request record for {{name}}, {{duration}} leave on {{date}} for {{leaveType}} leave, current status is {{leaveStatus}}. Click to open modal"
   },

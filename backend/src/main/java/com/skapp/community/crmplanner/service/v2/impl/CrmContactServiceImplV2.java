@@ -9,7 +9,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactListItemDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.service.v2.CrmContactServiceV2;
@@ -38,7 +38,7 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 		log.info("getContactMetrics: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContactListItemDtoV2> contactPage = crmContactDao.getContactMetricsV2(filterDto, pageable);
+		Page<CrmContactMetricsResponseDtoV2> contactPage = crmContactDao.getContactMetricsV2(filterDto, pageable);
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactPage.getContent());
