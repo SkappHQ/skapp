@@ -1,10 +1,19 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import useBulkAssignCsvHeaders from "~community/leave/hooks/useBulkAssignCsvHeaders";
+import { useGetLeavePoliciesInfinite } from "~community/leave/api/LeavePolicyApi";
+import { ASSIGNABLE_POLICIES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
+import useBulkAssignTemplateHeaders, {
+  useBulkAssignResourceHeaders
+} from "~community/leave/hooks/useBulkAssignTemplateHeaders";
+import {
+  LeavePolicyStatus,
+  LeavePolicyType,
+  PolicyType
+} from "~community/leave/types/LeavePolicyTypes";
 import { downloadBulkAssignPolicyTemplate } from "~community/leave/utils/bulkAssignPolicyUtils";
 
 interface Props {
@@ -18,13 +27,44 @@ const BulkAssignPolicyInstructionsStep: FC<Props> = ({ onContinue }) => {
     "bulkAssignModal"
   );
 
-  const csvHeaders = useBulkAssignCsvHeaders();
+  const templateHeaders = useBulkAssignTemplateHeaders();
+  const resourceHeaders = useBulkAssignResourceHeaders();
+
+  const { data: policyPages, isLoading } = useGetLeavePoliciesInfinite({
+    searchKeyword: "",
+    leaveTypeId: "",
+    size: ASSIGNABLE_POLICIES_PAGE_SIZE
+  });
+
+  // The resource tab lists what this upload can actually assign, which is the
+  // same set the single-assign modal offers.
+  const assignablePolicies: LeavePolicyType[] = useMemo(
+    () =>
+      (policyPages?.pages?.flatMap((page) => page?.items ?? []) ?? []).filter(
+        (policy) =>
+          policy.status === LeavePolicyStatus.ACTIVE &&
+          policy.policyType === PolicyType.ACCRUAL
+      ),
+    [policyPages]
+  );
 
   const handleTemplateDownload = (): void => {
-    downloadBulkAssignPolicyTemplate(csvHeaders, {
-      employeeName: translateText(["templateExampleEmployeeName"]),
-      policyName: translateText(["templateExamplePolicyName"]),
-      effectiveDate: translateText(["templateExampleEffectiveDate"])
+    downloadBulkAssignPolicyTemplate({
+      sheetNames: {
+        template: translateText(["templateSheetName"]),
+        resource: translateText(["resourceSheetName"])
+      },
+      headers: templateHeaders,
+      exampleRow: {
+        employeeEmail: translateText(["templateExampleEmployeeEmail"]),
+        policyId: String(
+          assignablePolicies[0]?.id ??
+            translateText(["templateExamplePolicyId"])
+        ),
+        effectiveDate: translateText(["templateExampleEffectiveDate"])
+      },
+      resourceHeaders,
+      policies: assignablePolicies
     });
   };
 
@@ -38,6 +78,8 @@ const BulkAssignPolicyInstructionsStep: FC<Props> = ({ onContinue }) => {
         <ButtonV2
           variant="tertiary"
           onClick={handleTemplateDownload}
+          isLoading={isLoading}
+          disabled={isLoading}
           icon={<Icon name={IconName.DOWNLOAD_ICON} />}
           iconPosition="end"
         >

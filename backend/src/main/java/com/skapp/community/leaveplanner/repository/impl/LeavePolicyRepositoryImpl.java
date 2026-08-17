@@ -6,7 +6,6 @@ import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyRepository;
-import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -60,16 +59,13 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 	}
 
 	@Override
-	public List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Set<String> names, LeavePolicyStatus status) {
+	public List<LeavePolicy> findByIdsWithLeaveType(Set<Long> ids) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeavePolicy> query = cb.createQuery(LeavePolicy.class);
 		Root<LeavePolicy> root = query.from(LeavePolicy.class);
 		root.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
 
-		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(names);
-		Predicate statusPredicate = cb.equal(root.get(LeavePolicy_.status), status);
-
-		query.select(root).where(cb.and(namePredicate, statusPredicate)).distinct(true);
+		query.select(root).where(root.get(LeavePolicy_.id).in(ids)).distinct(true);
 		return entityManager.createQuery(query).getResultList();
 	}
 
