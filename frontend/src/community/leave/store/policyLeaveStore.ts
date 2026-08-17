@@ -11,7 +11,9 @@ import {
 import { getCurrentMonth } from "~community/common/utils/dateTimeUtils";
 import { POLICY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { PolicyLeaveModalEnums } from "~community/leave/enums/PolicyLeaveEnums";
+import { policyLeaveReviewSlice } from "~community/leave/store/slices/policyLeaveReviewSlice";
 import { TeamAvailabilityDataType } from "~community/leave/types/MyRequests";
+import { PolicyLeaveReviewSliceType } from "~community/leave/types/PolicyLeaveReviewTypes";
 import {
   EmployeePolicyBalanceType,
   PolicyLeaveAvailabilityType,
@@ -52,7 +54,7 @@ export const initialPolicyLeaveRequestParams: PolicyLeaveRequestParams = {
   policyId: []
 };
 
-export interface PolicyLeaveStore {
+export interface PolicyLeaveStore extends PolicyLeaveReviewSliceType {
   modalType: PolicyLeaveModalEnums;
   isModalOpen: boolean;
   selectedYear: string;
@@ -103,6 +105,8 @@ const emptyForm = () => ({
 export const usePolicyLeaveStore = create<PolicyLeaveStore>()(
   devtools(
     (set) => ({
+      ...policyLeaveReviewSlice(set),
+
       modalType: PolicyLeaveModalEnums.NONE,
       isModalOpen: false,
       selectedYear: DateTime.now().year.toString(),

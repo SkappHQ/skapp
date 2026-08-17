@@ -44,7 +44,7 @@ const DealSidePanelSkeleton: FC = () => (
       </div>
 
       <div className="w-1/3 flex flex-col gap-4 shrink-0">
-        <div className="border border-secondary-accent rounded-lg px-3 py-2 flex items-center justify-between">
+        <div className="w-full max-w-[13.688rem] border border-secondary-accent rounded-lg px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <SkeletonShape circle className="h-2 w-2 shrink-0" />
             <SkeletonShape className="h-2.5 w-20" />

@@ -19,6 +19,11 @@ import Icon from "../../atoms/Icon/Icon";
 import AvatarChip from "../AvatarChip/AvatarChip";
 import styles from "./styles";
 
+export enum SearchOptionCategory {
+  INDIVIDUALS = "Individuals",
+  TEAMS = "Teams"
+}
+
 export interface OptionType {
   value: number;
   label: string;
@@ -45,7 +50,7 @@ interface Props {
   error?: string;
   isDisabled: boolean;
   required: boolean;
-  label: string;
+  label?: string;
   customStyles?: {
     label?: SxProps<Theme>;
   };
@@ -118,7 +123,7 @@ const PeopleAndTeamAutocompleteSearch = ({
         </li>
       )}
       renderOption={(props, option) => {
-        if (option.category === "Teams") {
+        if (option.category === SearchOptionCategory.TEAMS) {
           return (
             <Box component="li" {...props} sx={classes.optionWrapperWithoutBg}>
               <Typography variant="body1">{option.teamName}</Typography>

@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -105,6 +106,8 @@ class CrmBoardControllerIntegrationTest {
 
 	private CrmTaskType taskType;
 
+	private CrmTaskType emailTaskType;
+
 	@BeforeEach
 	void setup() {
 		adminToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
@@ -133,9 +136,14 @@ class CrmBoardControllerIntegrationTest {
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		crmContactDao.save(contact);
 
+		emailTaskType = new CrmTaskType();
+		emailTaskType.setName("Email");
+		emailTaskType.setOrderIndex(1);
+		emailTaskType = crmTaskTypeDao.save(emailTaskType);
+
 		taskType = new CrmTaskType();
 		taskType.setName("Call");
-		taskType.setOrderIndex(1);
+		taskType.setOrderIndex(2);
 		taskType = crmTaskTypeDao.save(taskType);
 	}
 
@@ -445,6 +453,39 @@ class CrmBoardControllerIntegrationTest {
 			.content(objectMapper.writeValueAsString(dto))
 			.accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(token)));
+	}
+
+	@Test
+	@DisplayName("Board init data - returns task types ordered by orderIndex")
+	void getBoardInitData_ReturnsTaskTypes() throws Exception {
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['crmRoles']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['id']").value(emailTaskType.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['name']").value("Email"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['orderIndex']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['id']").value(taskType.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['name']").value("Call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['orderIndex']").value(2));
+	}
+
+	@Test
+	@DisplayName("Board init data - without CRM role returns Forbidden")
+	void getBoardInitData_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String noCrmRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user4@gmail.com"),
+				1L);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(noCrmRoleToken))).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	private CrmTask createTask(CrmDeal deal) {
