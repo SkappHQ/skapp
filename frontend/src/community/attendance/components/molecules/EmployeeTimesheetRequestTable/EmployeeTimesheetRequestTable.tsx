@@ -225,9 +225,7 @@ const EmployeeTimesheetRequestTable: FC<Props> = ({
               backgroundColor="bg-tertiary-background"
               textColor="text-secondary-text"
             >
-              <span role="img" aria-hidden="true">
-                {requestTypeSelector(timesheetRequest?.status)}
-              </span>
+              <span>{requestTypeSelector(timesheetRequest?.status)}</span>
               {pascalCaseFormatter(timesheetRequest?.status)}
             </Badge>
             <Box sx={classes.kebabMenuBoxStyle}>

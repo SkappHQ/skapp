@@ -273,6 +273,7 @@ const ManagerLeaveRequest: FC<Props> = ({
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
+      minHeight="min-h-[450px]"
       skeletonRows={5}
       emptyState={{
         title: translateText(["noLeaveRequests"]),

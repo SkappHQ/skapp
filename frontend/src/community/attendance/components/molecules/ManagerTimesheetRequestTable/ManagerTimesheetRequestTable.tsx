@@ -352,6 +352,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         headers={tableHeaders}
         rows={transformToTableRows()}
         isLoading={isRequestLoading}
+        minHeight="min-h-[390px]"
         emptyState={{
           title: translateText(["emptyRequestTitle"]),
           description: translateText(["emptyRequestDesEmployee"])

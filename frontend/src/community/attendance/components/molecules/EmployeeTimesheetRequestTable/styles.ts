@@ -89,16 +89,6 @@ const styles = (theme: Theme) => ({
     },
     position: "relative"
   },
-  iconChipStyles: {
-    color: theme.palette.text.secondary,
-    minWidth: "6.875rem",
-    justifyContent: "center",
-    pr: "0rem",
-    [theme.breakpoints.down("lg")]: {
-      minWidth: "0rem",
-      gap: "1rem"
-    }
-  },
   kebabMenuBoxStyle: {
     position: "absolute",
     right: "10%",
