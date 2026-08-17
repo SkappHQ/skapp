@@ -56,6 +56,11 @@ export interface CrmDealStageReorderRequest {
 }
 
 // Responses
+export interface CrmTaskWithRelations extends CrmTaskEntity {
+  owner?: CrmOwnerEntity;
+  contact?: CrmContactEntity & { company?: CrmCompanyEntity };
+  deal?: CrmDealEntity;
+}
 
 export interface CrmCompanyListResponse {
   items: CrmCompanyEntity[];
@@ -100,7 +105,7 @@ export interface CrmDealsByStagesResponse {
 }
 
 export interface CrmTaskListResponse {
-  tasks: CrmTaskEntity[];
+  tasks: CrmTaskWithRelations[];
 }
 
 export interface CrmTaskTypeListResponse {
@@ -108,14 +113,14 @@ export interface CrmTaskTypeListResponse {
 }
 
 export interface CrmTaskCompletedListResponse {
-  items: CrmTaskEntity[];
+  items: CrmTaskWithRelations[];
   currentPage: number;
   totalItems: number;
   totalPages: number;
 }
 
 export interface CrmTaskRelatedListResponse {
-  items: CrmTaskEntity[];
+  items: CrmTaskWithRelations[];
   currentPage: number;
   totalItems: number;
   totalPages: number;

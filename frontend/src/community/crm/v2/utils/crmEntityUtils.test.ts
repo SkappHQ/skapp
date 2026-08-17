@@ -91,6 +91,13 @@ describe("related records lifted off tasks", () => {
     expect(toContactsFromTasks([apiTask])[3].companyId).toBe(11);
   });
 
+  it("keeps the nested company out of the stored contact", () => {
+    expect(toContactsFromTasks([apiTask])[3]).toEqual({
+      id: 3,
+      companyId: 11
+    });
+  });
+
   it("collects companies out of the nested contact", () => {
     expect(toCompaniesFromTasks([apiTask])).toEqual({
       11: { id: 11, name: "Acme" }

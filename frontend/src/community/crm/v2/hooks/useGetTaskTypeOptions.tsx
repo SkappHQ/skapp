@@ -7,19 +7,29 @@ import { CrmTaskTypeEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { toTaskTypesRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
 /**
- * Task types are a complete lookup set, so they are fetched once and kept in the
- * store. Everything that needs them - the type dropdown here, the row icons in
- * TaskRowContent - reads the same record rather than holding its own copy.
+ * Task types are a complete lookup set, so they are fetched once and kept in
+ * the store. `isTaskTypesInitialized` is what makes that true - it disables
+ * the query once the first fetch lands, so remounting this hook from the
+ * tasks list, the add-task form, or the edit-task form never re-fetches.
+ * Everything that needs task types reads the same store record rather than
+ * holding its own copy.
  */
 const useGetTaskTypeOptions = (translateText: TranslatorFunctionType) => {
   const taskTypes = useCrmStoreV2((state) => state.taskTypes);
+  const isTaskTypesInitialized = useCrmStoreV2(
+    (state) => state.isTaskTypesInitialized
+  );
 
-  const { data } = useGetTaskTypes(true);
+  const { data } = useGetTaskTypes(!isTaskTypesInitialized);
 
   useEffect(() => {
-    if (!data?.taskTypes) return;
-    useCrmStoreV2.getState().setTaskTypes(toTaskTypesRecord(data.taskTypes));
-  }, [data]);
+    if (isTaskTypesInitialized || !data?.taskTypes) return;
+
+    const { setTaskTypes, setIsTaskTypesInitialized } =
+      useCrmStoreV2.getState();
+    setTaskTypes(toTaskTypesRecord(data.taskTypes));
+    setIsTaskTypesInitialized(true);
+  }, [data, isTaskTypesInitialized]);
 
   const options = useMemo(
     () =>

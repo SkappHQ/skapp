@@ -1,35 +1,25 @@
 import {
-  CrmCompanyEntity,
   CrmCompanyRecord,
   CrmContactEntity,
   CrmContactRecord,
-  CrmDealEntity,
   CrmDealRecord,
-  CrmOwnerEntity,
   CrmOwnerRecord,
   CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeEntity,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
-
-/**
- * The task endpoints still nest the related records inside each task instead of
- * sending id references. They are typed with the entity each one becomes, since
- * every entity field is optional.
- */
-type CrmTaskApiShape = CrmTaskEntity & {
-  owner?: CrmOwnerEntity;
-  contact?: CrmContactEntity & { company?: CrmCompanyEntity };
-  deal?: CrmDealEntity;
-};
+import {
+  CrmContactResponse,
+  CrmTaskResponse
+} from "~community/crm/v2/types/CrmTypes";
 
 /**
  * Keeps only the id references on the task itself. The nested records are
  * lifted into their own store records by the `to*FromTasks` builders below, so
  * one payload never lands in two places.
  */
-export const toTaskEntity = (task: CrmTaskApiShape): CrmTaskEntity => ({
+export const toTaskEntity = (task: CrmTaskResponse): CrmTaskEntity => ({
   id: task.id,
   name: task.name,
   priority: task.priority,
@@ -43,7 +33,7 @@ export const toTaskEntity = (task: CrmTaskApiShape): CrmTaskEntity => ({
   dealId: task.deal?.id ?? task.dealId
 });
 
-export const toTasksRecord = (tasks: CrmTaskApiShape[]): CrmTaskRecord => {
+export const toTasksRecord = (tasks: CrmTaskResponse[]): CrmTaskRecord => {
   const record: CrmTaskRecord = {};
   for (const task of tasks) {
     if (task.id === undefined) continue;
@@ -52,7 +42,7 @@ export const toTasksRecord = (tasks: CrmTaskApiShape[]): CrmTaskRecord => {
   return record;
 };
 
-export const toOwnersFromTasks = (tasks: CrmTaskApiShape[]): CrmOwnerRecord => {
+export const toOwnersFromTasks = (tasks: CrmTaskResponse[]): CrmOwnerRecord => {
   const record: CrmOwnerRecord = {};
   for (const task of tasks) {
     const owner = task.owner;
@@ -62,23 +52,32 @@ export const toOwnersFromTasks = (tasks: CrmTaskApiShape[]): CrmOwnerRecord => {
   return record;
 };
 
+/**
+ * Drops the nested company so the stored contact keeps only its id reference,
+ * the same way `toTaskEntity` treats a task's relations.
+ */
+export const toContactEntity = ({
+  company,
+  ...contact
+}: CrmContactResponse): CrmContactEntity => ({
+  ...contact,
+  companyId: company?.id ?? contact.companyId
+});
+
 export const toContactsFromTasks = (
-  tasks: CrmTaskApiShape[]
+  tasks: CrmTaskResponse[]
 ): CrmContactRecord => {
   const record: CrmContactRecord = {};
   for (const task of tasks) {
     const contact = task.contact;
     if (contact?.id === undefined) continue;
-    record[contact.id] = {
-      ...contact,
-      companyId: contact.company?.id ?? contact.companyId
-    };
+    record[contact.id] = toContactEntity(contact);
   }
   return record;
 };
 
 export const toCompaniesFromTasks = (
-  tasks: CrmTaskApiShape[]
+  tasks: CrmTaskResponse[]
 ): CrmCompanyRecord => {
   const record: CrmCompanyRecord = {};
   for (const task of tasks) {
@@ -89,7 +88,7 @@ export const toCompaniesFromTasks = (
   return record;
 };
 
-export const toDealsFromTasks = (tasks: CrmTaskApiShape[]): CrmDealRecord => {
+export const toDealsFromTasks = (tasks: CrmTaskResponse[]): CrmDealRecord => {
   const record: CrmDealRecord = {};
   for (const task of tasks) {
     const deal = task.deal;
