@@ -34,7 +34,6 @@ export interface CrmCompanyMetrics {
 
 export interface CrmContactEntity {
   id?: number;
-  name?: string;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -81,7 +80,7 @@ export interface CrmDealEntity {
   companyId?: number;
   contactId?: number;
   ownerId?: number;
-  openTaskCount?: number;
+  taskCount?: number;
   taskIds?: number[];
 }
 
