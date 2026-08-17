@@ -377,7 +377,7 @@
         "leaveTypePlaceholder": "Select leave type"
       },
       "entitlementSetup": {
-        "accrualScheduleTitle": "Accrual Schedule",
+        "accrualScheduleTitle": "Accrual schedule",
         "employeesAccrueLabel": "Employees accrue",
         "employeesAccruePlaceholder": "Enter days",
         "frequencyLabel": "Frequency",
