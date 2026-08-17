@@ -69,4 +69,8 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-com-work-location-geofence-drop-work-location-cascade.sql
   - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-com-work-location-geofence-add-work-location-fk.sql
+  - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-shr-com-work-location-ppl-holiday-drop-work-location-cascade.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-shr-com-work-location-ppl-holiday-add-work-location-fk.sql
