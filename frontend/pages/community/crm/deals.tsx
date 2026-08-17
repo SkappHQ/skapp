@@ -7,7 +7,7 @@ import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
-import DealsKanbanBoardSkeleton from "~community/crm/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
+import DealsKanbanBoardSkeleton from "~community/crm/v2/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
