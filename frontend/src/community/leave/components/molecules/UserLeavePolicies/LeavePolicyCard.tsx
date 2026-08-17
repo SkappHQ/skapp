@@ -8,14 +8,8 @@ import {
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 
-export interface LeaveUsage {
-  remaining: number;
-  total: number;
-}
-
 interface Props {
   policy: EmployeeLeavePolicyType;
-  usage?: LeaveUsage;
   canManagePolicies: boolean;
   isKebabMenuOpen: boolean;
   onKebabToggle: (isOpen: boolean) => void;
@@ -24,7 +18,6 @@ interface Props {
 
 const LeavePolicyCard: FC<Props> = ({
   policy,
-  usage,
   canManagePolicies,
   isKebabMenuOpen,
   onKebabToggle,
@@ -46,22 +39,20 @@ const LeavePolicyCard: FC<Props> = ({
             <InfinityIcon width="32" height="32" />
           </span>
         ) : (
-          usage && (
-            <div
-              className="flex shrink-0 items-baseline gap-0.5"
-              aria-label={translateText(["leavesRemainingLabel"], {
-                remaining: usage.remaining,
-                total: usage.total
-              })}
-            >
-              <span className="text-2xl text-black">
-                {formatDays(usage.remaining)}
-              </span>
-              <span className="body2 text-secondary-text">
-                /{formatDays(usage.total)}
-              </span>
-            </div>
-          )
+          <div
+            className="flex shrink-0 items-baseline gap-0.5"
+            aria-label={translateText(["leavesRemainingLabel"], {
+              remaining: policy.balanceInDays,
+              total: policy.totalDaysAllocated
+            })}
+          >
+            <span className="text-2xl text-black">
+              {formatDays(policy.balanceInDays)}
+            </span>
+            <span className="body2 text-secondary-text">
+              /{formatDays(policy.totalDaysAllocated)}
+            </span>
+          </div>
         )}
         <div className="flex min-w-0 flex-col">
           <span className="body1 inline-flex items-center gap-2 truncate text-black">

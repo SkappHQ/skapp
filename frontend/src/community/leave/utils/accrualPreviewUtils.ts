@@ -27,8 +27,9 @@ interface ScheduleConfig {
   lastYear: number | null;
 }
 
-const roundToTwoDecimals = (value: number): number =>
-  Math.round(value * 100) / 100;
+// Half a day is the smallest leave increment, so every accrued figure the
+// preview shows is rounded the same way the backend rounds what it credits.
+const roundToHalfDay = (value: number): number => Math.round(value * 2) / 2;
 
 const eventDateFor = (
   isAtPeriodStart: boolean,
@@ -55,7 +56,7 @@ const firstPeriodDays = (
     fullPeriodDays > 0
       ? Math.min(1, Math.max(0, coveredDays / fullPeriodDays))
       : 1;
-  return roundToTwoDecimals(perPeriod * coverageFraction);
+  return roundToHalfDay(perPeriod * coverageFraction);
 };
 
 const calendarEvents = (
@@ -135,11 +136,12 @@ const toPreviewRows = (
   const rows: AccrualPreviewRow[] = [];
   let balance = 0;
   for (const event of accrualEvents) {
-    balance = roundToTwoDecimals(balance + event.days);
+    const days = roundToHalfDay(event.days);
+    balance = roundToHalfDay(balance + days);
     if (capDays != null) balance = Math.min(balance, capDays);
     rows.push({
       date: event.date.toFormat(MEDIUM_DATE_FORMAT),
-      days: roundToTwoDecimals(event.days),
+      days,
       balance
     });
     if (capDays != null && balance >= capDays) break;

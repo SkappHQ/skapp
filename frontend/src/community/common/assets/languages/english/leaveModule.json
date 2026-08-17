@@ -495,7 +495,7 @@
     "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
   },
   "leavePolicyAssignment": {
-    "sectionTitle": "Leave policies",
+    "sectionTitle": "Leave Policies",
     "assignPolicyBtnTxt": "Assign policy",
     "menuUnassign": "Unassign",
     "leavesRemainingLabel": "{{remaining}} / {{total}} days remaining",
@@ -513,10 +513,12 @@
       "policyPlaceholder": "Select a policy",
       "effectiveDateLabel": "Policy becomes effective on",
       "joinDateOption": "Join Date",
+      "joinDateOptionTooltip": "Accruals will be calculated from the employee's join date forward.",
       "specificDateOption": "Specific Date",
       "specificDatePlaceholder": "Select a date",
       "specificDateRequired": "Please select an effective date",
       "accrualPreviewTitle": "Accrual schedule",
+      "accrualPreviewTooltip": "This is a projection based on the selected policy and effective date. Actual balances may vary.",
       "flexibleInfoLabel": "This is a flexible policy. Leave taken will be recorded but is not deducted from any balance.",
       "conflictWarning": "{{employeeName}} already has a {{leaveType}} policy. Assigning this policy will replace their existing {{leaveType}} policy.",
       "colDate": "Date",
@@ -524,6 +526,7 @@
       "colBalance": "Balance",
       "setJoinDateBtnTxt": "Set a join date",
       "saveBtnTxt": "Save",
+      "saveDisabledTooltip": "Select a policy to continue.",
       "cancelBtnTxt": "Cancel"
     },
     "setJoinDateModal": {

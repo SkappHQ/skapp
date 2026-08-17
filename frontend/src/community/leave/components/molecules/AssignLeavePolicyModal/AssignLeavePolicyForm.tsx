@@ -4,7 +4,8 @@ import {
   Dropdown,
   InfoTipBanner,
   InputField,
-  RadioButton
+  RadioButton,
+  Tooltip
 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
@@ -104,28 +105,33 @@ const AssignLeavePolicyForm: FC<Props> = ({
           aria-label={translateText(["assignModal", "effectiveDateLabel"])}
           className="flex flex-col gap-2"
         >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
-            onClick={() =>
-              onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
-            }
-            className="flex w-fit cursor-pointer items-center gap-3"
+          <Tooltip
+            content={translateText(["assignModal", "joinDateOptionTooltip"])}
+            position="right"
           >
-            <RadioButton
-              isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
-              variant="dot"
-            />
-            <span className="body1 flex items-center gap-1.5 text-black">
-              {translateText(["assignModal", "joinDateOption"])}
-              {joinDateLabel && (
-                <span className="body2 text-secondary-text">
-                  ({joinDateLabel})
-                </span>
-              )}
-            </span>
-          </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
+              onClick={() =>
+                onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
+              }
+              className="flex w-fit cursor-pointer items-center gap-3"
+            >
+              <RadioButton
+                isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
+                variant="dot"
+              />
+              <span className="body1 flex items-center gap-1.5 text-black">
+                {translateText(["assignModal", "joinDateOption"])}
+                {joinDateLabel && (
+                  <span className="body2 text-secondary-text">
+                    ({joinDateLabel})
+                  </span>
+                )}
+              </span>
+            </button>
+          </Tooltip>
           <button
             type="button"
             role="radio"
@@ -197,9 +203,14 @@ const AssignLeavePolicyForm: FC<Props> = ({
 
       {accrualPreview.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="body2 text-secondary-text">
-            {translateText(["assignModal", "accrualPreviewTitle"])}
-          </p>
+          <Tooltip
+            content={translateText(["assignModal", "accrualPreviewTooltip"])}
+            position="right"
+          >
+            <p className="body2 text-secondary-text">
+              {translateText(["assignModal", "accrualPreviewTitle"])}
+            </p>
+          </Tooltip>
           <TableView
             ariaLabel={{
               regionAriaLabel: translateText([

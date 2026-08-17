@@ -261,6 +261,9 @@ const AssignLeavePolicyModal: FC<Props> = ({
                 onClick: handleSave,
                 disabled: isSaveDisabled,
                 isLoading: isPending,
+                title: selectedPolicyId
+                  ? undefined
+                  : translateText(["assignModal", "saveDisabledTooltip"]),
                 children: translateText(["assignModal", "saveBtnTxt"])
               }
         }}
