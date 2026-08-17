@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
@@ -24,16 +25,22 @@ public class PolicyLeaveBalanceServiceImpl implements PolicyLeaveBalanceService 
 	@Override
 	@Transactional(readOnly = true)
 	public PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year) {
-		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycle(year));
+		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycle(year),
+				DateTimeUtils.getCurrentUtcDate());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public PolicyLeaveBalanceDto calculateBalanceForDate(EmployeeLeavePolicy assignment, LocalDate date) {
-		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date));
+		LocalDate creditedUpTo = DateTimeUtils.getCurrentUtcDate();
+		if (date.isAfter(creditedUpTo)) {
+			creditedUpTo = date;
+		}
+		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date), creditedUpTo);
 	}
 
-	private PolicyLeaveBalanceDto calculateBalance(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle) {
+	private PolicyLeaveBalanceDto calculateBalance(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
+			LocalDate creditedUpTo) {
 		LeavePolicy policy = assignment.getPolicy();
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
@@ -46,9 +53,13 @@ public class PolicyLeaveBalanceServiceImpl implements PolicyLeaveBalanceService 
 		}
 
 		LocalDate accrualStartDate = PolicyLeaveAccrualUtil.resolveAccrualStartDate(policy, effectiveFrom);
-		float accruedDays = PolicyLeaveAccrualUtil.roundToHalfDay(
+
+		float accruedDays = PolicyLeaveAccrualUtil
+			.roundToHalfDay(PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, creditedUpTo));
+		float accruedDaysForCycle = PolicyLeaveAccrualUtil.roundToHalfDay(
 				PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.getEndDate()));
-		float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, accruedDays);
+		float usableDays = PolicyLeaveAccrualUtil.applyAccrualCap(policy, accruedDays);
+		float totalDaysAllocated = PolicyLeaveAccrualUtil.applyAccrualCap(policy, accruedDaysForCycle);
 		float totalDaysUsed = totalDaysUsedInCycle(assignment, cycle);
 
 		PolicyLeaveBalanceDto balance = new PolicyLeaveBalanceDto();
@@ -60,7 +71,7 @@ public class PolicyLeaveBalanceServiceImpl implements PolicyLeaveBalanceService 
 		balance.setAccruedDays(accruedDays);
 		balance.setTotalDaysAllocated(totalDaysAllocated);
 		balance.setTotalDaysUsed(totalDaysUsed);
-		balance.setBalanceInDays(totalDaysAllocated - totalDaysUsed);
+		balance.setBalanceInDays(Math.max(0f, usableDays - totalDaysUsed));
 		balance.setUnlimited(false);
 		balance.setDerived(true);
 		return balance;
