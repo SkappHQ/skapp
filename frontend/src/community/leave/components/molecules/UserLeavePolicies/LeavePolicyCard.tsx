@@ -1,9 +1,7 @@
-import { Card, KebabMenu } from "@rootcodelabs/skapp-ui";
+import { Card, InfinityIcon, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { IconName } from "~community/common/types/IconTypes";
 import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
 import {
   EmployeeLeavePolicyType,
@@ -40,16 +38,12 @@ const LeavePolicyCard: FC<Props> = ({
     <Card className="flex h-full flex-row items-center justify-between gap-4 bg-white p-6!">
       <div className="flex min-w-0 flex-row items-center gap-6">
         {isFlexiblePolicy ? (
-          <span className="shrink-0 text-secondary-text">
-            <Icon
-              name={IconName.INFINITY_ICON}
-              width="32"
-              height="32"
-              svgProps={{
-                role: "img",
-                "aria-label": translateText(["balanceNotTrackedLabel"])
-              }}
-            />
+          <span
+            className="shrink-0 text-secondary-text"
+            role="img"
+            aria-label={translateText(["balanceNotTrackedLabel"])}
+          >
+            <InfinityIcon width="32" height="32" />
           </span>
         ) : (
           usage && (

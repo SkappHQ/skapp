@@ -75,7 +75,6 @@ import DefaultHandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
-import InfinityIcon from "~community/common/assets/Icons/InfinityIcon";
 import InfoIcon from "~community/common/assets/Icons/InfoIcon";
 import InformationIcon from "~community/common/assets/Icons/InformationIcon";
 import InitialsIcon from "~community/common/assets/Icons/InitialsIcon";
@@ -341,8 +340,7 @@ export const IconMapping: Partial<
   [IconName.BANKID_VERIFY_SUCCESS_ICON]: BankIdVerifySuccessIcon,
   [IconName.BANKID_VERIFY_FAILED_ICON]: BankIdVerifyFailedIcon,
   [IconName.LOCAL_PHONE_ICON]: LocalPhoneIcon,
-  [IconName.REACTIVATE_USER_ICON]: ReactivateUserIcon,
-  [IconName.INFINITY_ICON]: InfinityIcon
+  [IconName.REACTIVATE_USER_ICON]: ReactivateUserIcon
   // Add more icons here as needed
 };
 
