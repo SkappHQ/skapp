@@ -38,7 +38,7 @@ const BirthdayModalShell: FC<Props> = ({
 
     const timer = setTimeout(() => {
       setIsConfettiVisible(false);
-    }, 2000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [showConfetti]);
