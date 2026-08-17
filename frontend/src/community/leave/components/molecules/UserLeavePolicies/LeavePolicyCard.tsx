@@ -1,4 +1,4 @@
-import { Card, InfinityIcon, KebabMenu } from "@rootcodelabs/skapp-ui";
+import { InfinityIcon, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";

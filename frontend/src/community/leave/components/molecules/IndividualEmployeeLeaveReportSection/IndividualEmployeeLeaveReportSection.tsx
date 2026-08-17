@@ -7,6 +7,7 @@ import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAs
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
 import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePolicies";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
+import { USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
@@ -84,7 +85,10 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
                 employeeName={employeeName}
               />
             ) : (
-              <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
+              <UserAssignedLeaveTypes
+                employeeId={selectedUser}
+                pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
+              />
             ))}
 
           {leaveTypesList?.length > 0 && (
