@@ -10,39 +10,45 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
-  const record: CrmStageRecord = {};
+  const stageRecord: CrmStageRecord = {};
   for (const stage of stages) {
-    if (stage.id === undefined) continue;
-    record[stage.id] = stage;
+    if (stage.id != null) {
+      stageRecord[stage.id] = stage;
+    }
   }
-  return record;
+  return stageRecord;
 };
 
 export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
-  const record: CrmOwnerRecord = {};
+  const ownerRecord: CrmOwnerRecord = {};
   for (const owner of owners) {
-    record[owner.employeeId] = owner;
+    if (owner.employeeId != null) {
+      ownerRecord[owner.employeeId] = owner;
+    }
   }
-  return record;
+  return ownerRecord;
 };
 
 export const toContactsRecord = (
   contacts: CrmContactEntity[]
 ): CrmContactRecord => {
-  const record: CrmContactRecord = {};
+  const contactRecord: CrmContactRecord = {};
   for (const contact of contacts) {
-    if (contact.id === undefined) continue;
-    record[contact.id] = contact;
+    if (contact.id != null) {
+      contactRecord[contact.id] = contact;
+    }
   }
-  return record;
+  return contactRecord;
 };
 
 export const toTaskTypesRecord = (
   taskTypes: CrmTaskTypeEntity[]
 ): CrmTaskTypeRecord => {
-  const record: CrmTaskTypeRecord = {};
+  const taskTypeRecord: CrmTaskTypeRecord = {};
   for (const taskType of taskTypes) {
-    record[taskType.id] = taskType;
+    if (taskType.id != null) {
+      taskTypeRecord[taskType.id] = taskType;
+    }
   }
-  return record;
+  return taskTypeRecord;
 };

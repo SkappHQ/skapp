@@ -57,7 +57,7 @@ export interface CrmUiSliceTypes {
 
   preselectedStageId: number | null;
 
-  crmSessionInitialised: boolean;
+  isCrmDataInitialized: boolean;
 
   setCompanyIds: (companyIds: number[]) => void;
   setContactIds: (contactIds: number[]) => void;
@@ -82,5 +82,5 @@ export interface CrmUiSliceTypes {
 
   setPreselectedStageId: (preselectedStageId: number | null) => void;
 
-  setCrmSessionInitialised: (crmSessionInitialised: boolean) => void;
+  setIsCrmDataInitialized: (isCrmDataInitialized: boolean) => void;
 }

@@ -1,11 +1,9 @@
+import { ProjectTableSkeletonLoader } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
-import { useEffect } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
@@ -14,7 +12,7 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { useCrmSession } from "~community/crm/v2/hooks/useCrmSession";
+import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -22,8 +20,7 @@ const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setToastMessage } = useToast();
-  const { isError: isCrmSessionError } = useCrmSession();
+  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
     useCrmStore((store) => ({
@@ -38,33 +35,6 @@ const Companies: NextPage = () => {
       setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
     });
   };
-
-  const crmSessionErrorTitle = translateText([
-    "common",
-    "initData",
-    "errorTitle"
-  ]);
-  const crmSessionErrorDescription = translateText([
-    "common",
-    "initData",
-    "errorDescription"
-  ]);
-
-  useEffect(() => {
-    if (!isCrmSessionError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: crmSessionErrorTitle,
-      description: crmSessionErrorDescription
-    });
-  }, [
-    isCrmSessionError,
-    crmSessionErrorTitle,
-    crmSessionErrorDescription,
-    setToastMessage
-  ]);
 
   return (
     <ContentLayout
@@ -89,7 +59,11 @@ const Companies: NextPage = () => {
 
         <CompanyModalController />
         <TaskModalController />
-        <CompanyTable />
+        {isCrmInitialDataLoading ? (
+          <ProjectTableSkeletonLoader rowCount={8} />
+        ) : (
+          <CompanyTable />
+        )}
       </>
     </ContentLayout>
   );

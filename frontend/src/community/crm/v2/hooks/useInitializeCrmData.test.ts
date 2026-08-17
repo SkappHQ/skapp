@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/extend-expect";
 import { renderHook, waitFor } from "@testing-library/react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import {
   CrmDealStageColorsEnum,
@@ -11,7 +12,17 @@ import { CrmBoardInitDataResponse } from "~community/crm/v2/types/CrmTypes";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
 import { toStagesRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
-import { useCrmSession } from "./useCrmSession";
+import { useInitializeCrmData } from "./useInitializeCrmData";
+
+jest.mock("~community/common/hooks/useTranslator", () => ({
+  useTranslator: () => (suffixes: string[]) => suffixes.join(".")
+}));
+
+const mockSetToastMessage = jest.fn();
+
+jest.mock("~community/common/providers/ToastProvider", () => ({
+  useToast: () => ({ setToastMessage: mockSetToastMessage })
+}));
 
 jest.mock("~community/crm/v2/api/BoardApi", () => ({
   useGetBoardInitData: jest.fn()
@@ -52,7 +63,7 @@ const initDataQueryResult = (overrides: InitDataQueryStub) => ({
   ...overrides
 });
 
-describe("useCrmSession", () => {
+describe("useInitializeCrmData", () => {
   const initialStoreState: CrmStore = useCrmStoreV2.getState();
 
   beforeEach(() => {
@@ -62,16 +73,16 @@ describe("useCrmSession", () => {
     mockUseGetBoardInitData.mockReturnValue(initDataQueryResult({}));
   });
 
-  it("enables the init-data query until the session has initialised", () => {
-    renderHook(() => useCrmSession());
+  it("enables the init-data query until CRM data has initialized", () => {
+    renderHook(() => useInitializeCrmData());
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(true);
   });
 
-  it("leaves the query disabled once the session has initialised", () => {
-    useCrmStoreV2.getState().setCrmSessionInitialised(true);
+  it("leaves the query disabled once CRM data has initialized", () => {
+    useCrmStoreV2.getState().setIsCrmDataInitialized(true);
 
-    renderHook(() => useCrmSession());
+    renderHook(() => useInitializeCrmData());
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(false);
   });
@@ -79,9 +90,19 @@ describe("useCrmSession", () => {
   it("still fetches when another writer has already populated stages", () => {
     useCrmStoreV2.getState().setStages(toStagesRecord(initData.stages));
 
-    renderHook(() => useCrmSession());
+    renderHook(() => useInitializeCrmData());
 
     expect(useGetBoardInitData).toHaveBeenCalledWith(true);
+  });
+
+  it("returns the query's loading state for the page to render its skeleton", () => {
+    mockUseGetBoardInitData.mockReturnValue(
+      initDataQueryResult({ isLoading: true })
+    );
+
+    const { result } = renderHook(() => useInitializeCrmData());
+
+    expect(result.current.isCrmInitialDataLoading).toBe(true);
   });
 
   it("normalizes a successful response into the store", async () => {
@@ -89,7 +110,7 @@ describe("useCrmSession", () => {
       initDataQueryResult({ data: initData, isSuccess: true })
     );
 
-    renderHook(() => useCrmSession());
+    renderHook(() => useInitializeCrmData());
 
     await waitFor(() => {
       expect(useCrmStoreV2.getState().stages).toEqual({
@@ -114,21 +135,27 @@ describe("useCrmSession", () => {
       4: { id: 4, name: "EMAIL", orderIndex: 0 },
       5: { id: 5, name: "CALL", orderIndex: 1 }
     });
-    expect(state.crmSessionInitialised).toBe(true);
+    expect(state.isCrmDataInitialized).toBe(true);
+    expect(mockSetToastMessage).not.toHaveBeenCalled();
   });
 
-  it("reports the failure and leaves the entity records untouched when the query fails", () => {
+  it("raises an error toast and leaves the entity records untouched when the query fails", () => {
     mockUseGetBoardInitData.mockReturnValue(
       initDataQueryResult({ isError: true })
     );
 
-    const { result } = renderHook(() => useCrmSession());
+    renderHook(() => useInitializeCrmData());
 
-    expect(result.current.isError).toBe(true);
+    expect(mockSetToastMessage).toHaveBeenCalledWith({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: "errorTitle",
+      description: "errorDescription"
+    });
 
     const state = useCrmStoreV2.getState();
     expect(state.stages).toEqual({});
     expect(state.contacts).toEqual({});
-    expect(state.crmSessionInitialised).toBe(false);
+    expect(state.isCrmDataInitialized).toBe(false);
   });
 });

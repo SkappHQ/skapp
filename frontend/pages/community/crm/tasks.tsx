@@ -3,17 +3,16 @@ import { useEffect, useRef } from "react";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import TaskTabSkeleton from "~community/crm/components/molecules/TaskTabContent/TaskTabSkeleton";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanel";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { useCrmSession } from "~community/crm/v2/hooks/useCrmSession";
+import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -22,8 +21,7 @@ const Tasks: NextPage = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { setToastMessage } = useToast();
-  const { isError: isCrmSessionError } = useCrmSession();
+  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const {
     setIsTaskModalOpen,
@@ -44,33 +42,6 @@ const Tasks: NextPage = () => {
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     });
   };
-
-  const crmSessionErrorTitle = translateText([
-    "common",
-    "initData",
-    "errorTitle"
-  ]);
-  const crmSessionErrorDescription = translateText([
-    "common",
-    "initData",
-    "errorDescription"
-  ]);
-
-  useEffect(() => {
-    if (!isCrmSessionError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: crmSessionErrorTitle,
-      description: crmSessionErrorDescription
-    });
-  }, [
-    isCrmSessionError,
-    crmSessionErrorTitle,
-    crmSessionErrorDescription,
-    setToastMessage
-  ]);
 
   useEffect(() => {
     const updateHeight = () => {
@@ -110,7 +81,7 @@ const Tasks: NextPage = () => {
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
-          <TasksTable />
+          {isCrmInitialDataLoading ? <TaskTabSkeleton /> : <TasksTable />}
         </div>
       </>
     </ContentLayout>
