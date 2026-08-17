@@ -83,10 +83,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     router.push(ROUTES.LEAVE.LEAVE_POLICIES);
   };
 
-  const handleBackToPolicyType = (): void => {
-    router.push(ROUTES.LEAVE.LEAVE_POLICIES);
-  };
-
   const handleSuccess = (): void => {
     setToastMessage({
       open: true,
@@ -136,9 +132,12 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   const isLastStep =
     !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
 
+  const isFirstStep =
+    !isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO;
+
   const handleBack = (): void => {
-    if (!isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
-      handleBackToPolicyType();
+    if (isFirstStep) {
+      handleCancel();
     } else {
       setActiveStep((previous) => previous - 1);
     }
@@ -220,12 +219,12 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
         <ButtonV2
           variant="tertiary"
           size="md"
-          icon={<ArrowLeftIcon />}
+          icon={!isFirstStep ? <ArrowLeftIcon /> : undefined}
           iconPosition="start"
           onClick={handleBack}
           disabled={isPending}
         >
-          {translateText(["backBtnTxt"])}
+          {translateText([isFirstStep ? "cancelBtnTxt" : "backBtnTxt"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
