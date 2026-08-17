@@ -21,11 +21,6 @@ public interface PolicyLeaveRequestRepository {
 
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
-	/**
-	 * Sums the days held by balance affecting requests whose start date falls inside the
-	 * window. The predicate matches on the start date only, so a request that begins
-	 * inside the window and ends outside it is counted in full.
-	 */
 	Double sumCommittedDaysForPolicyInWindow(Long employeeId, Long policyId, Collection<LeaveRequestStatus> statuses,
 			LocalDate windowStart, LocalDate windowEnd);
 

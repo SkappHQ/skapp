@@ -99,13 +99,6 @@ public class PolicyLeaveAccrualUtil {
 		return Math.min(totalDaysAllocated, cap);
 	}
 
-	/**
-	 * Caps the days rolling out of one cycle at the policy's {@code maxCarryoverDays}. A
-	 * null ceiling means uncapped, which validation only permits when carryover is
-	 * disabled - {@code LeavePolicyValidationUtil.validateCarryoverSetup} requires the
-	 * ceiling whenever carryover is enabled. Must be applied to the result of
-	 * {@link #unusedAtCycleEnd}, not to a whole balance.
-	 */
 	private static float capCarryover(LeavePolicy policy, float unusedDays) {
 		float carriedOverDays = Math.max(0f, unusedDays);
 		Float maxCarryoverDays = policy.getMaxCarryoverDays();
@@ -124,12 +117,6 @@ public class PolicyLeaveAccrualUtil {
 		return expiresOn.isAfter(cycle.getEndDate()) ? cycle.getEndDate() : expiresOn;
 	}
 
-	/**
-	 * An absent or blank expiry month-day means carried over days never expire, which is
-	 * the deliberate "Never expires" option offered when creating a policy. Carryover is
-	 * still bounded by the required {@code maxCarryoverDays} ceiling and by
-	 * {@link LeavePolicyConstant#MAX_CARRYOVER_LOOKBACK_CYCLES}.
-	 */
 	private static boolean neverExpires(LeavePolicy policy) {
 		return !DateTimeUtils.isValidMonthDay(policy.getCarryoverExpiryDate());
 	}

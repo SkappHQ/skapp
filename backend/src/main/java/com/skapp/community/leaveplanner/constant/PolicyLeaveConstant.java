@@ -30,11 +30,6 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
-	/**
-	 * How far either side of the current year a requested leave cycle year may sit.
-	 * Guards the cycle resolution arithmetic, which throws a {@code DateTimeException} on
-	 * years outside the supported range.
-	 */
 	public static final int MAX_CYCLE_YEAR_OFFSET = 10;
 
 }

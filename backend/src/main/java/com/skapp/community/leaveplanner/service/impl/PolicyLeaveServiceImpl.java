@@ -1030,11 +1030,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return holidayDao.findAllByIsActiveTrueAndWorkLocationsIsEmpty();
 	}
 
-	/**
-	 * Resolves the requested year to the year the leave cycle starts in. A caller that
-	 * omits the year gets the cycle containing today, which is not the calendar year for
-	 * an organization whose leave cycle does not start on January 1.
-	 */
 	private int resolveCycleYear(Integer year, LocalDate today, MonthDay cycleAnchor) {
 		if (year == null) {
 			return PolicyLeaveAccrualUtil.resolveCycleContaining(today, cycleAnchor).getStartDate().getYear();
