@@ -15,6 +15,7 @@ import {
   MarkBirthdayNotificationsViewedResponse
 } from "~community/people/types/BirthdayNotificationTypes";
 import {
+  clearDismissedCache,
   getDismissedEmployeeIds,
   readDismissedCache,
   writeDismissedCache
@@ -72,6 +73,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     if (!shouldEvaluate) return;
     if (isShowingRef.current) return;
     if (!isCurrentEmployeeResolved) return;
+    if (userId === undefined) return;
 
     seededDataRef.current = data;
 
@@ -136,7 +138,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
   const onDismiss = useCallback(() => {
     const dismissedEntry = queue[cursor];
 
-    if (dismissedEntry && userId !== undefined) {
+    if (dismissedEntry && userId !== undefined && today) {
       const existingDismissedIds = getDismissedEmployeeIds(
         readDismissedCache(),
         today,
@@ -180,6 +182,7 @@ const useBirthdayNotifications = (): BirthdayNotificationsType => {
     restoreFocusRef.current = null;
     setQueue([]);
     setCursor(0);
+    clearDismissedCache();
   }, [userId]);
 
   return {
