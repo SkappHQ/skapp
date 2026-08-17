@@ -40,6 +40,7 @@ interface Props {
   accrualPreview: AccrualPreviewRow[];
   isFlexiblePolicy: boolean;
   conflictWarning: string;
+  joinDateWarning: string;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -54,7 +55,8 @@ const AssignLeavePolicyForm: FC<Props> = ({
   onSpecificDateChange,
   accrualPreview,
   isFlexiblePolicy,
-  conflictWarning
+  conflictWarning,
+  joinDateWarning
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
@@ -76,7 +78,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
   );
 
   return (
-    <div className="flex max-h-[73vh] flex-col gap-4 overflow-y-auto pr-2">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <p className="body2 text-secondary-text">
           {translateText(["assignModal", "policyLabel"])}
@@ -96,133 +98,139 @@ const AssignLeavePolicyForm: FC<Props> = ({
         <InfoTipBanner status="warning" description={conflictWarning} />
       )}
 
-      <div className="flex flex-col gap-2">
-        <p className="body2 text-secondary-text">
-          {translateText(["assignModal", "effectiveDateLabel"])}
-        </p>
-        <div
-          role="radiogroup"
-          aria-label={translateText(["assignModal", "effectiveDateLabel"])}
-          className="flex flex-col gap-2"
-        >
-          <Tooltip
-            content={translateText(["assignModal", "joinDateOptionTooltip"])}
-            position="right"
+      <div className="flex max-h-[55vh] flex-col gap-4 overflow-y-auto pr-2">
+        <div className="flex flex-col gap-2">
+          <p className="body2 text-secondary-text">
+            {translateText(["assignModal", "effectiveDateLabel"])}
+          </p>
+          {joinDateWarning && (
+            <InfoTipBanner status="warning" description={joinDateWarning} />
+          )}
+          <div
+            role="radiogroup"
+            aria-label={translateText(["assignModal", "effectiveDateLabel"])}
+            className="flex flex-col gap-2"
           >
+            <Tooltip
+              content={translateText(["assignModal", "joinDateOptionTooltip"])}
+              position="right"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
+                onClick={() =>
+                  onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
+                }
+                className="flex w-fit cursor-pointer items-center gap-3"
+              >
+                <RadioButton
+                  isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
+                  variant="dot"
+                />
+                <span className="body1 flex items-center gap-1.5 text-black">
+                  {translateText(["assignModal", "joinDateOption"])}
+                  {joinDateLabel && (
+                    <span className="body2 text-secondary-text">
+                      ({joinDateLabel})
+                    </span>
+                  )}
+                </span>
+              </button>
+            </Tooltip>
             <button
               type="button"
               role="radio"
-              aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
+              aria-checked={effectiveDateType === EffectiveDateType.SPECIFIC}
               onClick={() =>
-                onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
+                onEffectiveDateTypeChange(EffectiveDateType.SPECIFIC)
               }
               className="flex w-fit cursor-pointer items-center gap-3"
             >
               <RadioButton
-                isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
+                isSelected={effectiveDateType === EffectiveDateType.SPECIFIC}
                 variant="dot"
               />
-              <span className="body1 flex items-center gap-1.5 text-black">
-                {translateText(["assignModal", "joinDateOption"])}
-                {joinDateLabel && (
-                  <span className="body2 text-secondary-text">
-                    ({joinDateLabel})
-                  </span>
-                )}
+              <span className="body1 text-black">
+                {translateText(["assignModal", "specificDateOption"])}
               </span>
             </button>
-          </Tooltip>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={effectiveDateType === EffectiveDateType.SPECIFIC}
-            onClick={() =>
-              onEffectiveDateTypeChange(EffectiveDateType.SPECIFIC)
-            }
-            className="flex w-fit cursor-pointer items-center gap-3"
-          >
-            <RadioButton
-              isSelected={effectiveDateType === EffectiveDateType.SPECIFIC}
-              variant="dot"
-            />
-            <span className="body1 text-black">
-              {translateText(["assignModal", "specificDateOption"])}
-            </span>
-          </button>
+          </div>
+          {effectiveDateType === EffectiveDateType.SPECIFIC && (
+            <DatePicker
+              mode="single"
+              selected={
+                specificDate
+                  ? DateTime.fromISO(specificDate).toJSDate()
+                  : undefined
+              }
+              onSelect={(date?: Date) =>
+                onSpecificDateChange(
+                  date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
+                )
+              }
+              popperProps={{ position: "bottom-start" }}
+            >
+              <div>
+                <InputField
+                  name="specificDate"
+                  value={
+                    specificDate
+                      ? DateTime.fromISO(specificDate)
+                          .toJSDate()
+                          .toLocaleDateString()
+                      : ""
+                  }
+                  placeholder={translateText([
+                    "assignModal",
+                    "specificDatePlaceholder"
+                  ])}
+                  aria-label={translateText([
+                    "assignModal",
+                    "specificDatePlaceholder"
+                  ])}
+                  rightIcon={<CalendarIcon />}
+                  state={specificDateError ? "error" : "default"}
+                  errorMessage={specificDateError}
+                  fullWidth
+                  readOnly
+                />
+              </div>
+            </DatePicker>
+          )}
         </div>
-        {effectiveDateType === EffectiveDateType.SPECIFIC && (
-          <DatePicker
-            mode="single"
-            selected={
-              specificDate
-                ? DateTime.fromISO(specificDate).toJSDate()
-                : undefined
-            }
-            onSelect={(date?: Date) =>
-              onSpecificDateChange(
-                date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
-              )
-            }
-            popperProps={{ position: "bottom-start" }}
-          >
-            <div>
-              <InputField
-                name="specificDate"
-                value={
-                  specificDate
-                    ? DateTime.fromISO(specificDate)
-                        .toJSDate()
-                        .toLocaleDateString()
-                    : ""
-                }
-                placeholder={translateText([
+
+        {isFlexiblePolicy && (
+          <InfoTipBanner
+            status="info"
+            description={translateText(["assignModal", "flexibleInfoLabel"])}
+          />
+        )}
+
+        {accrualPreview.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <Tooltip
+              content={translateText(["assignModal", "accrualPreviewTooltip"])}
+              position="right"
+            >
+              <p className="body2 text-secondary-text">
+                {translateText(["assignModal", "accrualPreviewTitle"])}
+              </p>
+            </Tooltip>
+            <TableView
+              ariaLabel={{
+                regionAriaLabel: translateText([
                   "assignModal",
-                  "specificDatePlaceholder"
-                ])}
-                aria-label={translateText([
-                  "assignModal",
-                  "specificDatePlaceholder"
-                ])}
-                rightIcon={<CalendarIcon />}
-                state={specificDateError ? "error" : "default"}
-                errorMessage={specificDateError}
-                fullWidth
-                readOnly
-              />
-            </div>
-          </DatePicker>
+                  "accrualPreviewTitle"
+                ])
+              }}
+              headers={accrualHeaders}
+              rows={accrualRows}
+              minHeight="min-h-[200px]"
+            />
+          </div>
         )}
       </div>
-
-      {isFlexiblePolicy && (
-        <InfoTipBanner
-          status="info"
-          description={translateText(["assignModal", "flexibleInfoLabel"])}
-        />
-      )}
-
-      {accrualPreview.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <Tooltip
-            content={translateText(["assignModal", "accrualPreviewTooltip"])}
-            position="right"
-          >
-            <p className="body2 text-secondary-text">
-              {translateText(["assignModal", "accrualPreviewTitle"])}
-            </p>
-          </Tooltip>
-          <TableView
-            ariaLabel={{
-              regionAriaLabel: translateText([
-                "assignModal",
-                "accrualPreviewTitle"
-              ])
-            }}
-            headers={accrualHeaders}
-            rows={accrualRows}
-          />
-        </div>
-      )}
     </div>
   );
 };
