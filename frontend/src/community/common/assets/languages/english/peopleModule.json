@@ -212,7 +212,7 @@
     "teams": "Teams :",
     "joinedDate": "Joined Date :",
     "jobFamily": "Job Family :",
-    "systemPermissions": "System Permissions",
+    "systemPermissions": "Permissions",
     "primarySupervisor": "Primary Supervisor :",
     "entryAdded": "Entry added",
     "by": "by {{name}}",
