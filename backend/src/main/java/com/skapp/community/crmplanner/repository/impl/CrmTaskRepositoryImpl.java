@@ -16,6 +16,7 @@ import com.skapp.community.crmplanner.model.CrmTaskType_;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
@@ -28,18 +29,22 @@ import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
+import com.skapp.community.crmplanner.type.CrmTaskSort;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.AbstractQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Selection;
@@ -47,6 +52,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -54,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 import java.util.Map;
 import java.util.Optional;
 
@@ -218,20 +225,53 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public List<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDto filterDto) {
+	public Page<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDtoV2 filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		query.select(buildTaskProjectionSelection(cb, task));
 
-		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
+		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, filterDto.getIsCompleted(),
+				filterDto.getSearchKeyword(), filterDto.getContactId(), filterDto.getDealId(),
+				filterDto.getCompanyId());
 		query.where(buildTaskPredicates(cb, task, params).toArray(new Predicate[0]))
-			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
-					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
+			.orderBy(buildTaskOrder(cb, task, filterDto.getSortKey(), filterDto.getSortOrder()));
 
-		return entityManager.createQuery(query).getResultList();
+		TypedQuery<CrmTaskResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		if (pageable.isPaged()) {
+			typedQuery.setFirstResult((int) pageable.getOffset());
+			typedQuery.setMaxResults(pageable.getPageSize());
+		}
+		List<CrmTaskResponseDtoV2> content = typedQuery.getResultList();
+
+		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
+		countQuery.select(cb.count(countRoot))
+			.where(buildTaskPredicates(cb, countRoot, params).toArray(new Predicate[0]));
+		Long total = entityManager.createQuery(countQuery).getSingleResult();
+
+		return new PageImpl<>(content, pageable, total);
+	}
+
+	private List<Order> buildTaskOrder(CriteriaBuilder cb, Root<CrmTask> task, CrmTaskSort sortKey,
+			Sort.Direction sortOrder) {
+		Sort.Direction direction = sortOrder == null ? Sort.Direction.ASC : sortOrder;
+		CrmTaskSort key = sortKey == null ? CrmTaskSort.DUE_AT : sortKey;
+
+		List<Order> orders = new ArrayList<>();
+		if (key == CrmTaskSort.LAST_MODIFIED_DATE) {
+			Expression<?> lastModified = task.get(Auditable_.lastModifiedDate);
+			orders.add(direction.isAscending() ? cb.asc(lastModified) : cb.desc(lastModified));
+			orders.add(direction.isAscending() ? cb.asc(task.get(CrmTask_.id)) : cb.desc(task.get(CrmTask_.id)));
+		}
+		else {
+			orders.add(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)));
+			Expression<?> dueAt = task.get(CrmTask_.dueAt);
+			orders.add(direction.isAscending() ? cb.asc(dueAt) : cb.desc(dueAt));
+			orders.add(cb.asc(task.get(CrmTask_.id)));
+		}
+		return orders;
 	}
 
 	@Override
@@ -263,32 +303,62 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Page<CrmTaskResponseDtoV2> findRelatedTasksV2(CrmTaskRelatedFilterDto filterDto, Long ownerId,
-			Pageable pageable) {
+	public Page<CrmTaskResponseDtoV2> findRelatedTasksV2(Long taskId, Long ownerId, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		query.select(buildTaskProjectionSelection(cb, task));
-
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
-				ownerId);
-		query.where(buildRelatedTaskPredicates(cb, task, params).toArray(new Predicate[0]))
+		query.where(buildRelatedTaskPredicates(cb, query, task, taskId, ownerId).toArray(new Predicate[0]))
 			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
 					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
 
-		List<CrmTaskResponseDtoV2> content = entityManager.createQuery(query)
-			.setFirstResult((int) pageable.getOffset())
-			.setMaxResults(pageable.getPageSize())
-			.getResultList();
+		TypedQuery<CrmTaskResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		if (pageable.isPaged()) {
+			typedQuery.setFirstResult((int) pageable.getOffset());
+			typedQuery.setMaxResults(pageable.getPageSize());
+		}
+		List<CrmTaskResponseDtoV2> content = typedQuery.getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
 		countQuery.select(cb.count(countRoot))
-			.where(buildRelatedTaskPredicates(cb, countRoot, params).toArray(new Predicate[0]));
+			.where(buildRelatedTaskPredicates(cb, countQuery, countRoot, taskId, ownerId).toArray(new Predicate[0]));
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	private List<Predicate> buildRelatedTaskPredicates(CriteriaBuilder cb, AbstractQuery<?> outerQuery,
+			Root<CrmTask> root, Long taskId, Long ownerId) {
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
+		predicates.add(cb.notEqual(root.get(CrmTask_.id), taskId));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		Join<CrmTask, CrmCompany> companyJoin = root.join(CrmTask_.company, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+
+		predicates.add(cb.or(
+				cb.equal(companyJoin.get(CrmCompany_.id),
+						sourceLinkId(cb, outerQuery, taskId, src -> src.get(CrmTask_.company).get(CrmCompany_.id))),
+				cb.equal(dealJoin.get(CrmDeal_.id),
+						sourceLinkId(cb, outerQuery, taskId, src -> src.get(CrmTask_.deal).get(CrmDeal_.id))),
+				cb.equal(contactJoin.get(CrmContact_.id),
+						sourceLinkId(cb, outerQuery, taskId, src -> src.get(CrmTask_.contact).get(CrmContact_.id)))));
+
+		return predicates;
+	}
+
+	private Subquery<Long> sourceLinkId(CriteriaBuilder cb, AbstractQuery<?> outerQuery, Long taskId,
+			Function<Root<CrmTask>, Expression<Long>> linkIdSelector) {
+		Subquery<Long> subquery = outerQuery.subquery(Long.class);
+		Root<CrmTask> source = subquery.from(CrmTask.class);
+		return subquery.select(linkIdSelector.apply(source)).where(cb.equal(source.get(CrmTask_.id), taskId));
 	}
 
 	private Selection<CrmTaskResponseDtoV2> buildTaskProjectionSelection(CriteriaBuilder cb, Root<CrmTask> task) {
