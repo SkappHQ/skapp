@@ -79,12 +79,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <p className="body2 text-secondary-text">
-          {translateText(["assignModal", "policyLabel"])}
-        </p>
+      <div className="flex flex-col gap-1.5"> 
         <Dropdown
           id="assign-leave-policy-dropdown"
+          label={translateText(["assignModal", "policyLabel"])}
           ariaLabel={translateText(["assignModal", "policyLabel"])}
           value={selectedPolicyId}
           options={policyOptions}
@@ -113,7 +111,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
           >
             <Tooltip
               content={translateText(["assignModal", "joinDateOptionTooltip"])}
-              position="right"
+              position="bottom"
             >
               <button
                 type="button"
@@ -131,7 +129,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
                 <span className="body1 flex items-center gap-1.5 text-black">
                   {translateText(["assignModal", "joinDateOption"])}
                   {joinDateLabel && (
-                    <span className="body2 text-secondary-text">
+                    <span className="body2 text-black">
                       ({joinDateLabel})
                     </span>
                   )}
@@ -211,7 +209,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
           <div className="flex flex-col gap-2">
             <Tooltip
               content={translateText(["assignModal", "accrualPreviewTooltip"])}
-              position="right"
+              position="top"
             >
               <p className="body2 text-secondary-text">
                 {translateText(["assignModal", "accrualPreviewTitle"])}

@@ -499,8 +499,6 @@
     "assignPolicyBtnTxt": "Assign policy",
     "menuUnassign": "Unassign",
     "leavesRemainingLabel": "{{remaining}} / {{total}} days remaining",
-    "entitlementTypeFlexible": "Flexible",
-    "policyNameWithType": "{{policyName}} · {{entitlementType}}",
     "balanceNotTrackedLabel": "Balance is not tracked for flexible policies",
     "employeeFallbackSubject": "This employee",
     "emptyStateTitle": "No policies assigned yet",

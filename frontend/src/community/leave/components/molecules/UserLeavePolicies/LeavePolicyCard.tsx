@@ -28,7 +28,7 @@ const LeavePolicyCard: FC<Props> = ({
   const isFlexiblePolicy = policy.policyType === PolicyType.FLEXIBLE;
 
   return (
-    <Card className="flex h-full flex-row items-center justify-between gap-4 bg-white p-6!">
+    <Card className="flex h-[96px] flex-row items-center justify-between gap-4 bg-white p-6!">
       <div className="flex min-w-0 flex-row items-center gap-6">
         {isFlexiblePolicy ? (
           <span
@@ -46,30 +46,29 @@ const LeavePolicyCard: FC<Props> = ({
               total: policy.totalDaysAllocated
             })}
           >
-            <span className="text-2xl text-black">
+            <span className="h1b text-black">
               {formatDays(policy.balanceInDays)}
             </span>
-            <span className="body2 text-secondary-text">
+            <span className="body1 text-secondary-text">
               /{formatDays(policy.totalDaysAllocated)}
             </span>
           </div>
         )}
-        <div className="flex min-w-0 flex-col">
-          <span className="body1 inline-flex items-center gap-2 truncate text-black">
+        <div className="flex min-w-0 flex-col gap-2">
+          <span className="subtitle3 inline-flex items-center gap-3 truncate text-black">
             {policy.leaveTypeEmojiCode && (
-              <span role="img" aria-hidden="true">
+              <span
+                role="img"
+                aria-hidden="true"
+                className="size-5 shrink-0 text-xl leading-5"
+              >
                 {getEmoji(policy.leaveTypeEmojiCode)}
               </span>
             )}
             {policy.leaveTypeName}
           </span>
-          <span className="body2 truncate text-secondary-text">
-            {isFlexiblePolicy
-              ? translateText(["policyNameWithType"], {
-                  policyName: policy.policyName,
-                  entitlementType: translateText(["entitlementTypeFlexible"])
-                })
-              : policy.policyName}
+          <span className="body3 truncate text-secondary-text pl-1">
+            {policy.policyName}
           </span>
         </div>
       </div>
