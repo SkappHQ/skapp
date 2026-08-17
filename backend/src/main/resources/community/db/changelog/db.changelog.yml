@@ -64,5 +64,3 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-employee-add-business-unit-id.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-lv-leave-request-attachment.sql
-  - include:
-      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-leave-policy-rename-carryover-expiry-date.sql
