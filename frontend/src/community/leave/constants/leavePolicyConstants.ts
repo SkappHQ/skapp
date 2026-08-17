@@ -37,6 +37,8 @@ export const MAX_POLICY_DAYS = 365;
 
 export const MIN_POLICY_DAYS = 0.5;
 
+export const POLICY_DAYS_STEP = 0.5;
+
 export const MIN_ACCRUAL_CAP_DAYS = 1;
 
 export const MIN_WAITING_PERIOD_DAYS = 1;

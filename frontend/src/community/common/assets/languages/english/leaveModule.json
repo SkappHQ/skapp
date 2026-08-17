@@ -430,9 +430,12 @@
         "leaveTypeRequired": "Please select a leave type.",
         "accrualDaysRequired": "Please enter the number of days employees accrue.",
         "accrualDaysInvalid": "Days accrued must be greater than 0.",
+        "accrualDaysStepInvalid": "Days accrued must be in multiples of 0.5.",
         "frequencyRequired": "Please select an accrual frequency.",
         "waitingPeriodDaysRequired": "Please enter the number of waiting period days.",
+        "waitingPeriodDaysStepInvalid": "Waiting period days must be in multiples of 0.5.",
         "accrualCapRequired": "Please enter the maximum accrual balance.",
+        "accrualCapStepInvalid": "Maximum balance must be in multiples of 0.5.",
         "maxCarryOverDaysRequired": "Please enter the maximum number of carry over days.",
         "maxCarryOverDaysInvalid": "Maximum carry over days must be greater than 0 and at most 365."
       },
