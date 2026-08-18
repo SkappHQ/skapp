@@ -78,7 +78,6 @@ public interface TimeMapper {
 	@Mapping(target = "createdBy", expression = "java(\"admin\")")
 	@Mapping(target = "lastModifiedBy", expression = "java(\"admin\")")
 	@Mapping(target = "createdDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
-	@Mapping(target = "lastModifiedDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
 	TimeRecord buildNewTimeRecord(Employee employee, TimeRequest timeRequest, DayOfWeek day, LocalDate date);
 
 	List<ManagerTimeRequestResponseDto> timeRequestListToManagerTimeRequestResponseDtoList(
