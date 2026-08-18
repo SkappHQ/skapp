@@ -28,11 +28,6 @@ public interface PolicyLeaveService {
 
 	ResponseEntityDto getPolicyLeaveRequestNudgeStatus(Long id);
 
-	/**
-	 * Derives the leave balance of a managed assignment for the given leave cycle. The
-	 * caller must supply an assignment that is still attached to an open persistence
-	 * context.
-	 */
 	PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year);
 
 }

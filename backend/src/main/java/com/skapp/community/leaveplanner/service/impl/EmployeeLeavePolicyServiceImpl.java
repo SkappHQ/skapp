@@ -223,11 +223,6 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	/**
-	 * Adds the same derived leave balance the apply leave flow shows on its policy cards,
-	 * so the assigned policy cards report the employee's remaining days for the current
-	 * leave cycle instead of leaving the balance blank.
-	 */
 	private EmployeeLeavePolicyResponseDto toEmployeeLeavePolicyWithBalance(EmployeeLeavePolicy assignment, int year) {
 		EmployeeLeavePolicyResponseDto responseDto = leaveMapper
 			.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(assignment);

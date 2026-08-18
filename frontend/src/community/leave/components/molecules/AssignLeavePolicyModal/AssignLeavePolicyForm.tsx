@@ -61,21 +61,9 @@ const AssignLeavePolicyForm: FC<Props> = ({
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
   const accrualHeaders: GridHeader[] = [
-    {
-      id: "date",
-      label: translateText(["assignModal", "colDate"]),
-      className: "uppercase"
-    },
-    {
-      id: "days",
-      label: translateText(["assignModal", "colDays"]),
-      className: "uppercase"
-    },
-    {
-      id: "balance",
-      label: translateText(["assignModal", "colBalance"]),
-      className: "uppercase"
-    }
+    { id: "date", label: translateText(["assignModal", "colDate"]) },
+    { id: "days", label: translateText(["assignModal", "colDays"]) },
+    { id: "balance", label: translateText(["assignModal", "colBalance"]) }
   ];
 
   const accrualRows: GridRow[] = useMemo(
@@ -217,7 +205,7 @@ const AssignLeavePolicyForm: FC<Props> = ({
             content={translateText(["assignModal", "accrualPreviewTooltip"])}
             position="top"
           >
-            <p className="body2 text-secondary-text" tabIndex={0}>
+            <p className="body2 text-secondary-text">
               {translateText(["assignModal", "accrualPreviewTitle"])}
             </p>
           </Tooltip>

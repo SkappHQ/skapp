@@ -30,8 +30,6 @@ interface ScheduleConfig {
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;
 
-// The backend sums the raw per-period accrual and rounds the running total to
-// the nearest half day, so the balance column has to be rounded the same way.
 const roundToHalfDay = (value: number): number => Math.round(value * 2) / 2;
 
 const eventDateFor = (
