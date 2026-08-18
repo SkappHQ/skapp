@@ -556,7 +556,7 @@
       "emergency": "Emergency",
       "employment": "Employment",
       "entitlements": "Entitlements",
-      "systemPermissions": "System Permissions",
+      "systemPermissions": "Permissions",
       "entitlementErrorMessage": "Entitlements could not be added. Please try again later.",
       "resourceSuccessMessage": "Resource added successfully",
       "editToastTitle": "Updated successfully",
@@ -934,7 +934,7 @@
       "head": "Directory | Skapp"
     },
     "systemPermissions": {
-      "title": "System Permissions",
+      "title": "Permissions",
       "superAdmin": "Super Admin",
       "people": "People",
       "leave": "Leave",
