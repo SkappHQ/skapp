@@ -95,8 +95,8 @@ const Tooltip: FC<Props> = ({
       title={title}
       TransitionComponent={Fade}
       PopperProps={PopperProps}
-      {...(ariaLabel ? { "aria-label": ariaLabel } : {})}
-      {...(ariaDescription ? { "aria-description": ariaDescription } : {})}
+      ariaLabel={ariaLabel ?? ""}
+      aria-description={ariaDescription ?? ""}
       customstyles={{
         tooltip: {
           maxWidth: maxWidth,
