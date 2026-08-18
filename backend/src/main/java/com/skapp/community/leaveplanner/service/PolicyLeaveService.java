@@ -31,6 +31,8 @@ public interface PolicyLeaveService {
 
 	ResponseEntityDto getPolicyLeaveRequestNudgeStatus(Long id);
 
+	PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year);
+
 	Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId, List<EmployeeLeavePolicy> assignments,
 			int year);
 

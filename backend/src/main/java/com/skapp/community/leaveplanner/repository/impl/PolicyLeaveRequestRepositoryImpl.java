@@ -126,12 +126,25 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
+	public Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+
+		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
+					criteriaBuilder.equal(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id), policyId),
+					root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
+
+		return entityManager.createQuery(criteriaQuery).getSingleResult();
+	}
+
+	@Override
 	public Map<Long, Double> sumCommittedDaysForPoliciesInCycle(Long employeeId, Collection<Long> policyIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
-		if (CollectionUtils.isEmpty(policyIds)) {
-			return Map.of();
-		}
-
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();

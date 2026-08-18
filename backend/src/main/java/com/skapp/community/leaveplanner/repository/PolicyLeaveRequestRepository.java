@@ -22,6 +22,9 @@ public interface PolicyLeaveRequestRepository {
 
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
+	Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId, Collection<LeaveRequestStatus> statuses,
+			LocalDate cycleStart, LocalDate cycleEnd);
+
 	Map<Long, Double> sumCommittedDaysForPoliciesInCycle(Long employeeId, Collection<Long> policyIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd);
 
