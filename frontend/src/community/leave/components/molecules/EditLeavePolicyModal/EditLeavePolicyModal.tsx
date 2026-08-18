@@ -101,7 +101,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   const isChanged = values.policyName.trim() !== policy.name;
   const isSaveDisabled = isPending || !isChanged;
 
-  const handleDiscard = (): void => {
+  const handleCancel = (): void => {
     resetForm();
     onClose();
   };
@@ -113,7 +113,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   return (
     <SmallModal
       isOpen={isOpen}
-      onClose={handleDiscard}
+      onClose={handleCancel}
       modalHeader={translateText(["title"])}
       content={
         <div className="flex flex-col gap-4">
@@ -157,22 +157,18 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       buttons={{
         buttonLeft: {
           variant: "tertiary",
-          onClick: handleDiscard,
+          onClick: handleCancel,
           disabled: isPending,
           icon: <CloseIcon />,
           iconPosition: "end",
-          children: translateText(["discardBtnTxt"])
+          children: translateText(["cancelBtnTxt"])
         },
         buttonRight: {
           variant: "primary",
           onClick: handleSave,
           disabled: isSaveDisabled,
           isLoading: isPending,
-          icon: (
-            <SaveIcon
-              className={isSaveDisabled ? "opacity-50" : ""}
-            />
-          ),
+          icon: <SaveIcon className={isSaveDisabled ? "opacity-50" : ""} />,
           iconPosition: "end",
           children: translateText(["saveBtnTxt"])
         }

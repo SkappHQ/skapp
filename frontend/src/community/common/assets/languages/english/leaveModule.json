@@ -318,7 +318,7 @@
       "policyNameMaxLengthError": "Policy name cannot exceed 100 characters.",
       "leaveTypeLabel": "Leave type",
       "entitlementTypeLabel": "Entitlement type",
-      "discardBtnTxt": "Discard",
+      "cancelBtnTxt": "Cancel",
       "saveBtnTxt": "Save",
       "successToastTitle": "Policy updated",
       "successToastDescription": "\"{{policyName}}\" has been updated successfully.",

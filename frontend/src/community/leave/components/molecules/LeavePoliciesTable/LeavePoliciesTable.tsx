@@ -186,6 +186,14 @@ const LeavePoliciesTable: FC<Props> = ({
                     onToggle={(isOpen: boolean) =>
                       setOpenKebabMenuId(isOpen ? policy.id : null)
                     }
+                    className={{
+                      kebabMenu: {
+                        menuItem: {
+                          container: "justify-start",
+                          label: "text-left"
+                        }
+                      }
+                    }}
                     menuItems={[
                       {
                         id: `leave-policy-edit-${policy.id}`,

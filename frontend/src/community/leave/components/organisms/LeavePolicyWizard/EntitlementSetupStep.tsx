@@ -232,7 +232,6 @@ const EntitlementSetupStep: FC<Props> = ({
                   }
                   onchange={handleCarryoverExpiryDateChange}
                   componentStyle={{ mt: "0rem" }}
-                  className="rounded-lg"
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
