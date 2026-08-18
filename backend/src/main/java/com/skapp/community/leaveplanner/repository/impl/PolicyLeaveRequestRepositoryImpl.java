@@ -147,8 +147,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 	@Override
 	public Map<Long, List<PolicyLeaveUsageDto>> findCommittedUsageForPoliciesInWindow(Long employeeId,
-			Collection<Long> policyIds, Collection<LeaveRequestStatus> statuses, LocalDate windowStart,
-			LocalDate windowEnd) {
+			List<Long> policyIds, Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();

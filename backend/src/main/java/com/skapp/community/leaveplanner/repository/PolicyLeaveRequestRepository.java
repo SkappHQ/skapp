@@ -26,9 +26,8 @@ public interface PolicyLeaveRequestRepository {
 	List<PolicyLeaveUsageDto> findCommittedUsageForPolicyInWindow(Long employeeId, Long policyId,
 			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd);
 
-	Map<Long, List<PolicyLeaveUsageDto>> findCommittedUsageForPoliciesInWindow(Long employeeId,
-			Collection<Long> policyIds, Collection<LeaveRequestStatus> statuses, LocalDate windowStart,
-			LocalDate windowEnd);
+	Map<Long, List<PolicyLeaveUsageDto>> findCommittedUsageForPoliciesInWindow(Long employeeId, List<Long> policyIds,
+			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd);
 
 	List<PolicyLeaveRequest> findOverlappingRequests(Long employeeId, Collection<LeaveRequestStatus> statuses,
 			LocalDate startDate, LocalDate endDate);
