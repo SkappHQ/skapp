@@ -447,12 +447,12 @@
     },
     "birthdayNotificationSection": {
       "title": "Birthday Notification",
-      "description": "Control whether birthday notifications are sent across the organisation",
+      "description": "Control whether birthday notifications are sent across the organization",
       "mainToggleLabel": "Birthday notification",
       "teamToggleLabel": "Send notification to team only",
-      "organizationToggleLabel": "Send notification to entire organisation",
+      "organizationToggleLabel": "Send notification to entire organization",
       "teamToggleTooltip": "Notifies only the direct team members of the person whose birthday it is",
-      "organizationToggleTooltip": "Notifies all employees in the organisation, regardless of team",
+      "organizationToggleTooltip": "Notifies all employees in the organization, regardless of team",
       "toastMessages": {
         "successTitle": "Settings Updated",
         "successDescription": "Birthday notification settings have been updated successfully.",
@@ -462,9 +462,9 @@
       "aria": {
         "mainToggle": "Birthday notification",
         "teamToggle": "Send notification to team only",
-        "organizationToggle": "Send notification to entire organisation",
-        "subOptionsAvailable": "Team and organisation notification options are now available",
-        "subOptionsUnavailable": "Team and organisation notification options are now hidden",
+        "organizationToggle": "Send notification to entire organization",
+        "subOptionsAvailable": "Team and organization notification options are now available",
+        "subOptionsUnavailable": "Team and organization notification options are now hidden",
         "loading": "Loading birthday notification settings"
       }
     }
