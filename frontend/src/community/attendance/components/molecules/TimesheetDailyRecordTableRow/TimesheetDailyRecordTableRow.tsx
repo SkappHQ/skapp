@@ -25,7 +25,11 @@ import {
   DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
-import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
+import {
+  formatDuration,
+  getTimeEntryModalType,
+  isToday
+} from "~community/attendance/utils/TimeUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -86,43 +90,12 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
 
   const handleEdit = useCallback(() => {
     setSelectedDailyRecord(record);
-    if (
-      !record?.timeRecordId &&
-      (record.leaveRequest || record?.holiday) &&
-      !record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY
-      );
-    } else if (
-      record?.timeRecordId &&
-      (record.leaveRequest || record?.holiday) &&
-      record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-      );
-    } else if (
-      record?.timeRecordId &&
-      !record.leaveRequest &&
-      record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
-      );
-    } else if (
-      !record?.timeRecordId &&
-      !record.leaveRequest &&
-      !record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-      );
-    }
+
+    const modalType = getTimeEntryModalType(record);
+    if (modalType === null) return;
+
+    setIsEmployeeTimesheetModalOpen(true);
+    setEmployeeTimesheetModalType(modalType);
   }, [
     record,
     setIsEmployeeTimesheetModalOpen,

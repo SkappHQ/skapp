@@ -1,5 +1,6 @@
 import { DateTime, Duration } from "luxon";
 
+import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import {
   DailyLogType,
   TimeSlotsType
@@ -26,6 +27,29 @@ export const createEmptyDailyLog = (date: string): DailyLogType => ({
   leaveRequest: null,
   holiday: null
 });
+
+export const getTimeEntryModalType = (
+  record: DailyLogType
+): EmployeeTimesheetModalTypes | null => {
+  const hasRecord = Boolean(record?.timeRecordId);
+  const hasSlots = Boolean(record?.timeSlots?.length);
+  const hasLeaveOrHoliday = Boolean(record?.leaveRequest || record?.holiday);
+
+  if (!hasRecord && hasLeaveOrHoliday && !hasSlots) {
+    return EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY;
+  }
+  if (hasRecord && hasLeaveOrHoliday && hasSlots) {
+    return EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY;
+  }
+
+  if (hasRecord && !record?.leaveRequest && hasSlots) {
+    return EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY;
+  }
+  if (!hasRecord && !record?.leaveRequest && !hasSlots) {
+    return EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE;
+  }
+  return null;
+};
 
 export const convertTo24HourByDateString = (date: string) => {
   const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });

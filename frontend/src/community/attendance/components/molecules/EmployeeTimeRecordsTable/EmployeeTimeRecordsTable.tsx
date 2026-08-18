@@ -4,10 +4,7 @@ import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
-import {
-  EmployeeTimesheetModalTypes,
-  RecordLocationStatus
-} from "~community/attendance/enums/timesheetEnums";
+import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
@@ -23,7 +20,8 @@ import {
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
-  formatDuration
+  formatDuration,
+  getTimeEntryModalType
 } from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
@@ -122,22 +120,22 @@ const EmployeeTimeRecordsTable = ({
 
     // Gated on the fetch settling rather than on data being present: the preprocessor
     // yields undefined for a day with no records, which is a valid Add case.
-    const dayRecord = pendingDayLogs?.find(
-      (log: DailyLogType) => log.date === pendingCell.date
-    );
+    const dayRecord =
+      pendingDayLogs?.find((log: DailyLogType) => log.date === pendingCell.date) ??
+      createEmptyDailyLog(pendingCell.date);
+
+    const modalType = getTimeEntryModalType(dayRecord);
+
+    setPendingCell(null);
+    if (modalType === null) return;
 
     setDirectEntryEmployee({
       employeeId: pendingCell.employeeId,
       employeeName: pendingCell.employeeName
     });
-    setSelectedDailyRecord(dayRecord ?? createEmptyDailyLog(pendingCell.date));
-    setEmployeeTimesheetModalType(
-      dayRecord?.timeRecordId && dayRecord?.timeSlots?.length
-        ? EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
-        : EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-    );
+    setSelectedDailyRecord(dayRecord);
+    setEmployeeTimesheetModalType(modalType);
     setIsEmployeeTimesheetModalOpen(true);
-    setPendingCell(null);
   }, [
     pendingCell,
     pendingDayLogs,
