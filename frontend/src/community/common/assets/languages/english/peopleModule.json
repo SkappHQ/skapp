@@ -212,7 +212,7 @@
     "teams": "Teams :",
     "joinedDate": "Joined Date :",
     "jobFamily": "Job Family :",
-    "systemPermissions": "System Permissions",
+    "systemPermissions": "Permissions",
     "primarySupervisor": "Primary Supervisor :",
     "entryAdded": "Entry added",
     "by": "by {{name}}",
@@ -556,7 +556,7 @@
       "emergency": "Emergency",
       "employment": "Employment",
       "entitlements": "Entitlements",
-      "systemPermissions": "System Permissions",
+      "systemPermissions": "Permissions",
       "entitlementErrorMessage": "Entitlements could not be added. Please try again later.",
       "resourceSuccessMessage": "Resource added successfully",
       "editToastTitle": "Updated successfully",
@@ -775,6 +775,7 @@
       "probationEndDate": "Probation end date",
       "workTimeZone": "Work time zone",
       "workLocation": "Work location",
+      "businessUnit": "Business unit",
       "enterEmployeeNo": "Enter employee number",
       "enterWorkEmail": "Enter work email",
       "selectEmploymentStatus": "Select employment status",
@@ -791,6 +792,7 @@
       "selectProbationEndDate": "Select probation end date",
       "selectWorkTimeZone": "Select work time zone",
       "selectWorkLocation": "Select work location",
+      "selectBusinessUnit": "Select business unit",
       "noSearchResults": "No Results Found",
       "requireEmployeeNoError": "Please enter the employee no",
       "validEmployeeNoError": "Please enter a valid employee number",
@@ -932,7 +934,7 @@
       "head": "Directory | Skapp"
     },
     "systemPermissions": {
-      "title": "System Permissions",
+      "title": "Permissions",
       "superAdmin": "Super Admin",
       "people": "People",
       "leave": "Leave",
@@ -1160,5 +1162,15 @@
     "crmSalesManagerLimitationDescription": "Only one CRM Sales Manager account is allowed.",
     "crmSalesRepresentativeLimitationTitle": "CRM Sales Representative Limit Reached",
     "crmSalesRepresentativeLimitationDescription": "Only one CRM Sales Representative account is allowed."
+  },
+  "birthdayNotifications": {
+    "self": {
+      "heading": "Happy birthday, {{name}}!",
+      "body": "Wishing you a fantastic year ahead, filled with success and happiness. You make this team brighter every single day."
+    },
+    "colleague": {
+      "heading": "Today is {{name}}'s birthday!",
+      "body": "Take a moment to send your birthday wishes and help make their day a little more special."
+    }
   }
 }

@@ -1,9 +1,12 @@
-import { Card, KebabMenu } from "@rootcodelabs/skapp-ui";
+import { InfinityIcon, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
-import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
+import {
+  EmployeeLeavePolicyType,
+  PolicyType
+} from "~community/leave/types/LeavePolicyTypes";
 
 export interface LeaveUsage {
   remaining: number;
@@ -29,24 +32,36 @@ const LeavePolicyCard: FC<Props> = ({
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
+  const isFlexiblePolicy = policy.policyType === PolicyType.FLEXIBLE;
+
   return (
-    <Card className="flex flex-row items-center justify-between gap-4 bg-white p-6!">
+    <Card className="flex h-full flex-row items-center justify-between gap-4 bg-white p-6!">
       <div className="flex min-w-0 flex-row items-center gap-6">
-        {usage && (
-          <div
-            className="flex shrink-0 items-baseline gap-0.5"
-            aria-label={translateText(["leavesRemainingLabel"], {
-              remaining: usage.remaining,
-              total: usage.total
-            })}
+        {isFlexiblePolicy ? (
+          <span
+            className="shrink-0 text-secondary-text"
+            role="img"
+            aria-label={translateText(["balanceNotTrackedLabel"])}
           >
-            <span className="text-2xl text-black">
-              {formatDays(usage.remaining)}
-            </span>
-            <span className="body2 text-secondary-text">
-              /{formatDays(usage.total)}
-            </span>
-          </div>
+            <InfinityIcon width="32" height="32" />
+          </span>
+        ) : (
+          usage && (
+            <div
+              className="flex shrink-0 items-baseline gap-0.5"
+              aria-label={translateText(["leavesRemainingLabel"], {
+                remaining: usage.remaining,
+                total: usage.total
+              })}
+            >
+              <span className="text-2xl text-black">
+                {formatDays(usage.remaining)}
+              </span>
+              <span className="body2 text-secondary-text">
+                /{formatDays(usage.total)}
+              </span>
+            </div>
+          )
         )}
         <div className="flex min-w-0 flex-col">
           <span className="body1 inline-flex items-center gap-2 truncate text-black">
@@ -58,7 +73,12 @@ const LeavePolicyCard: FC<Props> = ({
             {policy.leaveTypeName}
           </span>
           <span className="body2 truncate text-secondary-text">
-            {policy.policyName}
+            {isFlexiblePolicy
+              ? translateText(["policyNameWithType"], {
+                  policyName: policy.policyName,
+                  entitlementType: translateText(["entitlementTypeFlexible"])
+                })
+              : policy.policyName}
           </span>
         </div>
       </div>

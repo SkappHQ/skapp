@@ -36,17 +36,35 @@
     "fingerprintDeviceAddButton": "Add device",
     "fingerprintDeviceEditAriaLabel": "Edit device",
     "fingerprintDeviceDeleteAriaLabel": "Delete device",
+    "deviceVendors": {
+      "zkteco": "ZKTeco",
+      "hikvision": "Hikvision"
+    },
     "fingerprintDeviceModal": {
       "addTitle": "Add Fingerprint Device",
       "editTitle": "Edit Fingerprint Device",
       "nameLabel": "Device name",
       "serialLabel": "Serial number",
+      "vendorLabel": "Device vendor",
+      "vendorLockedHelperText": "The device vendor cannot be changed after the device is added.",
+      "workLocationLabel": "Work location",
+      "workLocationPlaceholder": "Select a work location",
+      "workLocationHelperText": "Punches from this device are recorded at the selected work location.",
+      "webhookUsernameLabel": "Webhook username",
+      "webhookPasswordLabel": "Webhook password",
+      "webhookPasswordUnchangedPlaceholder": "Leave blank to keep the current password",
+      "webhookHelperText": "Set these as the HTTP listening host credentials on the device so it can send events to Skapp.",
       "saveButton": "Save",
       "cancelButton": "Cancel",
       "validations": {
         "nameRequired": "Device name is required",
         "serialRequired": "Serial number is required",
-        "serialExists": "A device with this serial number already exists"
+        "serialExists": "A device with this serial number already exists",
+        "webhookUsernameRequired": "Webhook username is required",
+        "webhookUsernameExists": "A device with this webhook username already exists",
+        "webhookPasswordRequired": "Webhook password is required",
+        "webhookPasswordTooShort": "Webhook password must be at least 12 characters",
+        "webhookCredentialTooLong": "Webhook credentials cannot exceed 100 characters"
       },
       "toasts": {
         "addSuccessTitle": "Device Added",
@@ -120,6 +138,8 @@
     "weekTabTxt": "This Week",
     "monthTabTxt": "This Month",
     "dateRangeLabel": "Date:",
+    "fromDatePlaceholder": "From",
+    "toDatePlaceholder": "To",
     "noTeamTxt": "No teams assigned",
     "allLabel": "All Employees",
     "globalSearchPlaceholder": "Search employee",

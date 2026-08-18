@@ -8,10 +8,13 @@ import { FC, MouseEvent, useState } from "react";
 
 import { TableViewProps } from "./types";
 
+const EMPTY_STATE_MIN_HEIGHT = "min-h-80";
+
 const TableView: FC<TableViewProps> = ({
   heading,
   tableName,
   ariaLabel,
+  variant,
   headers,
   rows,
   isLoading,
@@ -31,10 +34,13 @@ const TableView: FC<TableViewProps> = ({
 
   const isOpen = anchorEl !== null;
   const isFilterEnabled = filter;
+  const filterContent = filter?.filterContent;
+  const isFilterInteractive = !!filterContent && !filter?.isDisabled;
   const isToolbarVisible = toolbar !== undefined || isFilterEnabled;
   const isInfiniteScroll = infiniteScroll?.isEnabled;
   const isPaginated = !isInfiniteScroll && pagination;
   const popoverId = filter?.popoverId;
+  const isEmptyStateVisible = !isLoading && rows.length === 0;
 
   const closePopover = () => setAnchorEl(null);
 
@@ -48,20 +54,23 @@ const TableView: FC<TableViewProps> = ({
     ariaLabelledBy: filter?.popoverAriaLabelledBy
   };
 
-  const togglePopover = (event: MouseEvent<HTMLElement>) =>
+  const togglePopover = (event: MouseEvent<HTMLElement>) => {
+    if (!isFilterInteractive) return;
     setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
 
   const mergedAriaLabel = {
     regionAriaLabel: ariaLabel?.regionAriaLabel,
     paginationAriaLabel: ariaLabel?.paginationAriaLabel,
     previousPageLabel: ariaLabel?.previousPageLabel,
     nextPageLabel: ariaLabel?.nextPageLabel,
-    getPageAriaLabel: ariaLabel?.getPageAriaLabel
+    getPageAriaLabel: ariaLabel?.getPageAriaLabel,
+    pageSizeAriaLabel: ariaLabel?.pageSizeAriaLabel
   };
 
   return (
     <div className={`flex w-full flex-col gap-3 ${className}`}>
-      {heading && <h2 className="h2 my-4">{heading}</h2>}
+      {heading && <h2 className="h2 mt-4 mb-1">{heading}</h2>}
 
       {isToolbarVisible && (
         <TableToolBar
@@ -70,9 +79,10 @@ const TableView: FC<TableViewProps> = ({
             isFilterEnabled
               ? {
                   onClick: togglePopover,
+                  disabled: filter?.isDisabled,
                   "aria-label": filter?.filterButtonAriaLabel,
-                  "aria-expanded": isOpen,
-                  "aria-haspopup": "dialog",
+                  "aria-expanded": isFilterInteractive ? isOpen : undefined,
+                  "aria-haspopup": isFilterInteractive ? "dialog" : undefined,
                   badge: {
                     count: filter?.filterCount ?? 0,
                     show: (filter?.filterCount ?? 0) > 0
@@ -86,6 +96,7 @@ const TableView: FC<TableViewProps> = ({
       <TableV2
         tableName={tableName}
         ariaLabel={mergedAriaLabel}
+        variant={variant}
         headers={headers}
         rows={rows}
         isLoading={isLoading}
@@ -93,7 +104,7 @@ const TableView: FC<TableViewProps> = ({
         loader={loader}
         emptyState={emptyState}
         onRowClick={onRowClick}
-        className={minHeight}
+        className={isEmptyStateVisible ? EMPTY_STATE_MIN_HEIGHT : minHeight}
         height={isInfiniteScroll ? infiniteScroll?.height : height}
         hasMore={isInfiniteScroll ? infiniteScroll?.hasMore : undefined}
         isFetchingNextPage={
@@ -106,9 +117,12 @@ const TableView: FC<TableViewProps> = ({
         totalPages={isPaginated ? pagination?.totalPages : undefined}
         currentPage={isPaginated ? pagination?.currentPage : undefined}
         onPageChange={isPaginated ? pagination?.onPageChange : undefined}
+        pageSizeSelector={
+          isPaginated ? pagination?.pageSizeSelector : undefined
+        }
       />
 
-      {isFilterEnabled && (
+      {isFilterInteractive && (
         <Popper
           open={isOpen}
           anchorEl={anchorEl}
@@ -117,7 +131,7 @@ const TableView: FC<TableViewProps> = ({
           containerClassName="rounded-4 shadow-lg"
           {...popperProps}
         >
-          {filter?.filterContent({ onClose: closePopover })}
+          {filterContent({ onClose: closePopover })}
         </Popper>
       )}
     </div>

@@ -3,6 +3,7 @@ package com.skapp.community.common.util;
 import com.skapp.community.common.constant.ValidationConstant;
 import lombok.experimental.UtilityClass;
 
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -24,8 +25,28 @@ public class StringUtils {
 		return string == null || string.isBlank();
 	}
 
+	/**
+	 * Removes NUL characters from a string. Some hardware pads a payload with NUL bytes,
+	 * which a parser then rejects.
+	 * @param value the string to clean
+	 * @return the string without NUL characters, or null if the input was null
+	 */
+	public static String removeNullCharacters(String value) {
+		return value == null ? null : value.replace("\0", "");
+	}
+
 	public static String escapeLikePattern(String input) {
 		return ValidationConstant.LIKE_WILDCARD_PATTERN.matcher(input).replaceAll("\\\\$1");
+	}
+
+	public static String normalizeName(String value) {
+		if (isNullOrBlank(value)) {
+			return "";
+		}
+
+		String collapsed = ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(value.strip()).replaceAll(" ");
+		String decomposed = Normalizer.normalize(collapsed, Normalizer.Form.NFD);
+		return ValidationConstant.DIACRITIC_MARK_PATTERN.matcher(decomposed).replaceAll("").toLowerCase();
 	}
 
 	public static String convertToCommaSeperatedString(Set<String> values) {

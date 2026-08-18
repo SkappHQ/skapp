@@ -216,8 +216,8 @@ const SystemPermissionFormSection = ({
         setIsUnsavedModalSaveButtonClicked(false);
 
         handleMutate();
+        setEmployee(employee);
       }
-      setEmployee(employee);
     }
   };
   const onCancel = () => {

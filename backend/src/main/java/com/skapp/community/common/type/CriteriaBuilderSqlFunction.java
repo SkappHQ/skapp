@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CriteriaBuilderSqlFunction {
 
-	GROUP_CONCAT("GROUP_CONCAT"), DISTINCT("DISTINCT"), CONCAT("CONCAT"), YEAR("YEAR"), DATE_FORMAT("DATE_FORMAT"),;
+	GROUP_CONCAT("GROUP_CONCAT"), DISTINCT("DISTINCT"), CONCAT("CONCAT"), YEAR("YEAR"), DATE_FORMAT("DATE_FORMAT"),
+	MONTH("MONTH"), DAY("DAY"),;
 
 	private final String functionName;
 

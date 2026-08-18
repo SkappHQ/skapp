@@ -93,7 +93,6 @@ const EntitlementSetupStep: FC<Props> = ({
             <InputField
               label={translateText(["employeesAccrueLabel"])}
               name="accrualDays"
-              type="number"
               value={formData.accrualDays}
               placeholder={translateText(["employeesAccruePlaceholder"])}
               state={
@@ -127,6 +126,7 @@ const EntitlementSetupStep: FC<Props> = ({
                 onChange({ accrualFrequency: value })
               }
               width="100%"
+              className="rounded-lg"
             />
           </div>
         </div>
@@ -152,7 +152,6 @@ const EntitlementSetupStep: FC<Props> = ({
               <InputField
                 label={translateText(["waitingPeriodDaysLabel"])}
                 name="waitingPeriodDays"
-                type="number"
                 value={formData.waitingPeriodDays}
                 placeholder={translateText(["waitingPeriodDaysPlaceholder"])}
                 state={
@@ -190,7 +189,6 @@ const EntitlementSetupStep: FC<Props> = ({
               <InputField
                 label={translateText(["accrualCapDaysLabel"])}
                 name="accrualCapDays"
-                type="number"
                 value={formData.accrualCapDays}
                 placeholder={translateText(["accrualCapDaysPlaceholder"])}
                 state={
@@ -234,13 +232,13 @@ const EntitlementSetupStep: FC<Props> = ({
                   }
                   onchange={handleCarryoverExpiryDateChange}
                   componentStyle={{ mt: "0rem" }}
+                  className="rounded-lg"
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
                 <InputField
                   label={translateText(["maxCarryOverDaysLabel"])}
                   name="maxCarryOverDays"
-                  type="number"
                   value={formData.maxCarryOverDays}
                   placeholder={translateText(["maxCarryOverDaysPlaceholder"])}
                   state={
@@ -261,18 +259,14 @@ const EntitlementSetupStep: FC<Props> = ({
               </div>
             </div>
           )}
-        </div>
-      </WizardSection>
-
-      <WizardSection title={translateText(["fineTuningTitle"])}>
-        <div className="flex max-w-3xl flex-col gap-4">
           <Dropdown
             id="leave-policy-first-accrual"
             label={translateText(["firstAccrualLabel"])}
             value={formData.firstAccrual}
             options={firstAccrualOptions}
             onChange={(value: string) => onChange({ firstAccrual: value })}
-            width="100%"
+            width="50%"
+            className="rounded-lg"
           />
           <Dropdown
             id="leave-policy-receive-accrued-time"
@@ -282,7 +276,8 @@ const EntitlementSetupStep: FC<Props> = ({
             onChange={(value: string) =>
               onChange({ receiveAccruedTime: value })
             }
-            width="100%"
+            width="50%"
+            className="rounded-lg"
           />
         </div>
       </WizardSection>

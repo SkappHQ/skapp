@@ -552,7 +552,7 @@ public class LeaveServiceImpl implements LeaveService {
 				responseDto.setActualDate(current);
 				responseDto.setDayOfWeek(dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toUpperCase());
 
-				List<Holiday> holidays = holidayDao.findAllByDateAndIsActiveTrue(current);
+				List<Holiday> holidays = holidayDao.findAllByIsActiveTrueAndDate(current);
 				List<HolidayBasicDetailsResponseDto> holidayResponseDtos = peopleMapper
 					.holidaysToHolidayBasicDetailsResponseDtos(holidays);
 				responseDto.setHolidays(holidayResponseDtos);

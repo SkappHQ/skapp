@@ -16,8 +16,8 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -91,10 +91,51 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
 
-		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-		predicates.add(criteriaBuilder.or(
-				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+		predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<Holiday> findAllActiveHolidaysByDateAndWorkLocationId(LocalDate date, Long workLocationId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
+		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.date), date));
+
+		predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
+
+		criteriaQuery.where(predicates.toArray(new Predicate[0]));
+		criteriaQuery.distinct(true);
+
+		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
+		Root<Holiday> root = criteriaQuery.from(Holiday.class);
+		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.INNER);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
+		predicates.add(criteriaBuilder.greaterThan(root.get(Holiday_.date), DateTimeUtils.getCurrentUtcDate()));
+		predicates.add(criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId));
+
+		Subquery<Long> workLocationCount = criteriaQuery.subquery(Long.class);
+		Root<Holiday> correlatedHoliday = workLocationCount.correlate(root);
+		Join<Holiday, WorkLocation> liveLocationJoin = correlatedHoliday.join(Holiday_.workLocations, JoinType.INNER);
+		workLocationCount.select(criteriaBuilder.count(liveLocationJoin));
+		workLocationCount.where(criteriaBuilder.isFalse(liveLocationJoin.get(WorkLocation_.isDeleted)));
+
+		predicates.add(criteriaBuilder.equal(workLocationCount, 1L));
 
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		criteriaQuery.distinct(true);
@@ -131,19 +172,21 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			predicates.add(datePredicate);
 
 			Long workLocationId = holidayFilterDto.getWorkLocationId();
-			if (workLocationId == null) {
-				predicates.add(criteriaBuilder.isEmpty(root.get(Holiday_.workLocations)));
-			}
-			else if (!workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
-				Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
-				predicates.add(criteriaBuilder.or(
-						criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
-						criteriaBuilder.isEmpty(root.get(Holiday_.workLocations))));
+			if (workLocationId != null && !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
+				predicates.add(buildWorkLocationPredicate(criteriaBuilder, root, workLocationId));
 				criteriaQuery.distinct(true);
 			}
 		}
 
 		return predicates;
+	}
+
+	private static Predicate buildWorkLocationPredicate(CriteriaBuilder criteriaBuilder, Root<Holiday> root,
+			Long workLocationId) {
+		Join<Holiday, WorkLocation> workLocationJoin = root.join(Holiday_.workLocations, JoinType.LEFT);
+		return criteriaBuilder.or(
+				criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId),
+				criteriaBuilder.isEmpty(root.get(Holiday_.workLocations)));
 	}
 
 }

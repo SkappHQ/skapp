@@ -62,6 +62,7 @@ export const policyLeaveTypeEndPoints = {
 
 export const leavePolicyAssignmentEndPoints = {
   ASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
+  BULK_ASSIGN_LEAVE_POLICIES: `${moduleAPIPath.LEAVE}/policy-assignments/bulk`,
   UNASSIGN_LEAVE_POLICY: `${moduleAPIPath.LEAVE}/policy-assignments`,
   GET_EMPLOYEE_LEAVE_POLICIES: (
     employeeId: number,

@@ -2,6 +2,6 @@ package com.skapp.community.timeplanner.type;
 
 public enum TimeRecordSource {
 
-	WEB, FINGERPRINT_DEVICE
+	WEB, FINGERPRINT_DEVICE, SYSTEM
 
 }

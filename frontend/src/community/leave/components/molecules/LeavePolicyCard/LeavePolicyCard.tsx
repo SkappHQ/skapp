@@ -118,15 +118,10 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
         })}
       >
         <Stack sx={classes.leftContent}>
-          <Stack>
-            <Typography variant="body1" sx={classes.policyName}>
-              {policyName} &nbsp;
-              {isMouseOn && isActionable && getEmoji(leaveType.emojiCode)}
-            </Typography>
-            <Typography variant="caption" sx={classes.leaveTypeName}>
-              {leaveType.name}
-            </Typography>
-          </Stack>
+          <Typography variant="body1">
+            {leaveType.name} &nbsp;
+            {isMouseOn && isActionable && getEmoji(leaveType.emojiCode)}
+          </Typography>
           <Stack>
             <Stack sx={classes.amount}>
               <Typography

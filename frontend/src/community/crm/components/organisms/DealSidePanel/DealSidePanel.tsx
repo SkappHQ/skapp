@@ -210,7 +210,6 @@ const DealSidePanel: FC = () => {
                 </div>
               </div>
               <DealPropertiesSidebar
-                isOpen={isOpen}
                 onStageChange={(stageId) => updateDeal({ stageId })}
                 onAmountChange={(amount) => updateDeal({ amount })}
                 onPriorityChange={(priority) => updateDeal({ priority })}

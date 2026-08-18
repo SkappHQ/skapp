@@ -246,6 +246,78 @@
       "cancelButton": "Cancel"
     }
   },
+  "businessUnit": {
+    "title": "Business Units",
+    "addButton": "Add unit",
+    "emptyState": {
+      "title": "No Business Units",
+      "description": "No business units created yet"
+    },
+    "card": {
+      "editAction": "Edit unit",
+      "deleteAction": "Delete unit",
+      "actionsMenuAriaLabel": "Actions for {{name}}"
+    },
+    "form": {
+      "addModalTitle": "Add Business Unit",
+      "editModalTitle": "Edit Business Unit",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter business unit name",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add a description (optional)",
+      "saveButton": "Save",
+      "cancelButton": "Cancel"
+    },
+    "validations": {
+      "nameRequired": "Please enter a business unit name",
+      "nameTooLong": "Business unit name must be 100 characters or fewer",
+      "nameExists": "A business unit with this name already exists",
+      "descriptionTooLong": "Description must be 250 characters or fewer"
+    },
+    "deleteModal": {
+      "title": "Delete Business Unit",
+      "confirmDescription": "Are you sure you want to delete \"{{name}}\"? This cannot be undone.",
+      "assignedDescription_one": "{{count}} employee is currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
+      "assignedDescription_other": "{{count}} employees are currently assigned to \"{{name}}\". You can transfer them to another business unit, or leave them unassigned.",
+      "noOtherUnitsDescription_one": "{{count}} employee is currently assigned to \"{{name}}\". Since no other business units exist, this employee will be unassigned if you continue.",
+      "noOtherUnitsDescription_other": "{{count}} employees are currently assigned to \"{{name}}\". Since no other business units exist, these employees will be unassigned if you continue.",
+      "transferToLabel": "Transfer to:",
+      "transferTooltip": "Choose another business unit to move these employees to, or leave them unassigned.",
+      "transferTooltipAriaLabel": "Transfer target information",
+      "unassignOption": "Don't transfer (unassign)",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel"
+    },
+    "toasts": {
+      "createSuccess": {
+        "title": "Business Unit Created",
+        "description": "\"{{name}}\" has been created successfully."
+      },
+      "updateSuccess": {
+        "title": "Business Unit Updated",
+        "description": "\"{{name}}\" has been updated successfully."
+      },
+      "deleteSuccess": {
+        "title": "Business Unit Deleted",
+        "description": "'{{name}}' has been deleted successfully."
+      },
+      "deleteAndTransferSuccess": {
+        "description_one": "'{{name}}' has been deleted and {{count}} employee transferred to '{{target}}'.",
+        "description_other": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
+      },
+      "deleteAndUnassignSuccess": {
+        "description_one": "'{{name}}' has been deleted. {{count}} employee is now unassigned.",
+        "description_other": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
+      },
+      "error": {
+        "title": "Oops! Something went wrong",
+        "description": "Failed to save business unit. Please try again."
+      },
+      "deleteError": {
+        "description": "Failed to delete business unit. Please try again."
+      }
+    }
+  },
   "crm": {
     "pageHead": "CRM Configurations | Skapp",
     "title": "CRM Configurations",
@@ -366,6 +438,35 @@
       "successDescription": "Leave policies have been enabled successfully. You can now create and assign policies.",
       "errorTitle": "Oops! Something went wrong",
       "errorDescription": "Failed to enable Leave Policies. Please try again or contact support."
+    }
+  },
+  "people": {
+    "buttons": {
+      "cancel": "Cancel",
+      "save": "Save changes"
+    },
+    "birthdayNotificationSection": {
+      "title": "Birthday Notification",
+      "description": "Control whether birthday notifications are sent across the organisation",
+      "mainToggleLabel": "Birthday notification",
+      "teamToggleLabel": "Send notification to team only",
+      "organizationToggleLabel": "Send notification to entire organisation",
+      "teamToggleTooltip": "Notifies only the direct team members of the person whose birthday it is",
+      "organizationToggleTooltip": "Notifies all employees in the organisation, regardless of team",
+      "toastMessages": {
+        "successTitle": "Settings Updated",
+        "successDescription": "Birthday notification settings have been updated successfully.",
+        "errorTitle": "Oops! Something went wrong",
+        "errorDescription": "Failed to update settings. Please try again."
+      },
+      "aria": {
+        "mainToggle": "Birthday notification",
+        "teamToggle": "Send notification to team only",
+        "organizationToggle": "Send notification to entire organisation",
+        "subOptionsAvailable": "Team and organisation notification options are now available",
+        "subOptionsUnavailable": "Team and organisation notification options are now hidden",
+        "loading": "Loading birthday notification settings"
+      }
     }
   }
 }

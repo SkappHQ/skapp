@@ -14,7 +14,7 @@ const managerTimesheetFiltersSlice = (
   set: SetType<ManagerTimesheetFiltersSliceTypes>
 ): ManagerTimesheetFiltersSliceTypes => ({
   timesheetRequestsFilters: {
-    status: []
+    status: [TimeSheetRequestStates.PENDING]
   },
   timesheetRequestSelectedDates: [],
   timesheetRequestParams: {
@@ -70,6 +70,19 @@ const managerTimesheetFiltersSlice = (
       timesheetRequestParams: {
         ...state.timesheetRequestParams,
         status: "",
+        page: 1
+      }
+    }));
+  },
+
+  restoreTimesheetRequestParams: () => {
+    set((state): Partial<ManagerTimesheetFiltersSliceTypes> => ({
+      timesheetRequestsFilters: {
+        status: []
+      },
+      timesheetRequestParams: {
+        ...state.timesheetRequestParams,
+        status: TimeSheetRequestStates.PENDING,
         page: 1
       }
     }));

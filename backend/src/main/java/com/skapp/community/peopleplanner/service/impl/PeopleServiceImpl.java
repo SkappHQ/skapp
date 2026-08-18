@@ -7,19 +7,24 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.model.UserSettings;
+import com.skapp.community.common.payload.SpecialNotificationConfig;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.NotificationSettingsResponseDto;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
+import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
 import com.skapp.community.common.service.impl.AsyncEmailServiceImpl;
 import com.skapp.community.common.type.LoginMethod;
 import com.skapp.community.common.type.NotificationSettingsType;
 import com.skapp.community.common.type.Role;
+import com.skapp.community.common.type.SpecialNotificationType;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.AuthUtil;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -84,6 +89,8 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalGeneralDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalSocialMediaDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.AnalyticsSearchResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationResponseDto;
+import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
@@ -117,6 +124,7 @@ import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.service.RolesService;
 import com.skapp.community.peopleplanner.service.EmployeeSkillService;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.type.BirthdayNotificationScope;
 import com.skapp.community.peopleplanner.type.BulkItemStatus;
 import com.skapp.community.peopleplanner.type.EmployeePeriodSort;
 import com.skapp.community.peopleplanner.type.EmployeeSkillType;
@@ -144,6 +152,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -183,6 +193,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 	private final WorkLocationDao workLocationDao;
 
+	private final BusinessUnitDao businessUnitDao;
+
 	private final EmployeePeriodDao employeePeriodDao;
 
 	private final EmployeeTeamDao employeeTeamDao;
@@ -214,6 +226,10 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeExportMapperService employeeExportMapperService;
 
 	private final EmployeeSkillService employeeSkillService;
+
+	private final SpecialNotificationService specialNotificationService;
+
+	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional
@@ -425,10 +441,17 @@ public class PeopleServiceImpl implements PeopleService {
 		if (requestDto != null && requestDto.getEmployment() != null
 				&& requestDto.getEmployment().getEmploymentDetails() != null
 				&& requestDto.getEmployment().getEmploymentDetails().getWorkLocationId() != null) {
-			employee.setWorkLocation(
-					workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
-						.orElseThrow(() -> new EntityNotFoundException(
-								PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
+			employee.setWorkLocation(workLocationDao
+				.findByWorkLocationIdAndIsDeletedFalse(
+						requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
+		}
+
+		// Business Unit
+		if (requestDto != null && requestDto.getEmployment() != null
+				&& requestDto.getEmployment().getEmploymentDetails() != null) {
+			processBusinessUnit(requestDto, employee);
 		}
 
 		// Identification and Diversity Details
@@ -502,6 +525,24 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		return employee;
+	}
+
+	private void processBusinessUnit(CreateEmployeeRequestDto requestDto, Employee employee) {
+		Long businessUnitId = requestDto.getEmployment().getEmploymentDetails().getBusinessUnitId();
+		if (businessUnitId == null) {
+			return;
+		}
+
+		Set<String> userRoles = userService.getCurrentUserRoles();
+		boolean canModifyBusinessUnit = userRoles.contains(AuthUtil.withRolePrefix(Role.SUPER_ADMIN))
+				|| userRoles.contains(AuthUtil.withRolePrefix(Role.PEOPLE_ADMIN));
+		if (!canModifyBusinessUnit) {
+			return;
+		}
+
+		employee.setBusinessUnit(businessUnitDao.findById(businessUnitId)
+			.orElseThrow(
+					() -> new EntityNotFoundException(CommonMessageConstant.COMMON_ERROR_BUSINESS_UNIT_NOT_FOUND)));
 	}
 
 	private void processPayrollIdAndTin(CreateEmployeeRequestDto requestDto, Employee employee) {
@@ -1538,6 +1579,82 @@ public class PeopleServiceImpl implements PeopleService {
 		return new ResponseEntityDto(messageUtil.getMessage(successMessage), false);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getTodayBirthdayNotifications() {
+		log.info("getTodayBirthdayNotifications: execution started");
+
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+		if (!Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			log.info("getTodayBirthdayNotifications: birthday notifications are turned off");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(null, List.of()));
+		}
+
+		Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+		LocalDate today = resolveBirthdayNotificationDate();
+		LocalDate lastViewedDate = specialNotificationService
+			.getLastViewedDate(currentEmployeeId, SpecialNotificationType.BIRTHDAY)
+			.orElse(null);
+
+		if (lastViewedDate != null && lastViewedDate.isEqual(today)) {
+			log.info("getTodayBirthdayNotifications: execution ended");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
+		}
+
+		BirthdayNotificationScope birthdayNotificationScope = resolveBirthdayNotificationScope(
+				birthdayNotificationConfig);
+		List<Employee> employeesWithBirthdays = employeeDao.findEmployeeBirthdaysOnByViewerAndScope(today,
+				currentEmployeeId, birthdayNotificationScope);
+
+		if (employeesWithBirthdays.isEmpty()) {
+			log.info("getTodayBirthdayNotifications: execution ended");
+			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
+		}
+
+		List<EmployeeBasicDetailsResponseDto> response = employeesWithBirthdays.stream()
+			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
+			.toList();
+
+		log.info("getTodayBirthdayNotifications: execution ended");
+		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto markTodayBirthdayNotificationsAsViewed() {
+		log.info("markTodayBirthdayNotificationsAsViewed: execution started");
+
+		LocalDate today = resolveBirthdayNotificationDate();
+
+		SpecialNotificationConfig birthdayNotificationConfig = specialNotificationService
+			.getSpecialNotificationConfig(SpecialNotificationType.BIRTHDAY);
+
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTurnedOn())) {
+			Long currentEmployeeId = userService.getCurrentUser().getEmployee().getEmployeeId();
+			specialNotificationService.markNotificationAsViewed(currentEmployeeId, SpecialNotificationType.BIRTHDAY,
+					today);
+		}
+
+		log.info("markTodayBirthdayNotificationsAsViewed: execution ended");
+		return new ResponseEntityDto(false, new BirthdayNotificationViewedResponseDto(today));
+	}
+
+	private BirthdayNotificationScope resolveBirthdayNotificationScope(
+			SpecialNotificationConfig birthdayNotificationConfig) {
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsOrganizationWide())) {
+			return BirthdayNotificationScope.ORGANIZATION;
+		}
+		if (Boolean.TRUE.equals(birthdayNotificationConfig.getIsTeamWide())) {
+			return BirthdayNotificationScope.TEAM;
+		}
+		return BirthdayNotificationScope.SELF;
+	}
+
+	private LocalDate resolveBirthdayNotificationDate() {
+		return LocalDate.now(ZoneId.of(organizationService.getOrganizationTimeZone()));
+	}
+
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
 			PrimarySupervisorTransferDto primarySupervisorTransferRequest) {
 		if (primarySupervisorTransferRequest.getEmployeeId() == null) {
@@ -1868,10 +1985,22 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void setBulkEmployeeWorkLocation(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getWorkLocation() != null && !employeeBulkDto.getWorkLocation().isBlank()) {
-			workLocationDao.findByNameIgnoreCase(employeeBulkDto.getWorkLocation())
+			workLocationDao.findByNameIgnoreCaseAndIsDeletedFalse(employeeBulkDto.getWorkLocation())
 				.ifPresentOrElse(employee::setWorkLocation, () -> {
 					throw new EntityNotFoundException(
 							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+				});
+		}
+	}
+
+	public void setBulkEmployeeBusinessUnit(EmployeeBulkDto employeeBulkDto, Employee employee) {
+		String businessUnit = employeeBulkDto.getBusinessUnit();
+		if (businessUnit != null && !businessUnit.isBlank()) {
+			businessUnitDao.findByName(businessUnit)
+				.filter(unit -> unit.getName().equals(businessUnit))
+				.ifPresentOrElse(employee::setBusinessUnit, () -> {
+					throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+							new String[] { businessUnit });
 				});
 		}
 	}
@@ -1990,8 +2119,18 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void validateWorkLocationInBulk(String workLocation, List<String> errors) {
 		if (workLocation != null && !workLocation.isBlank()
-				&& workLocationDao.findByNameIgnoreCase(workLocation.trim()).isEmpty()) {
+				&& workLocationDao.findByNameIgnoreCaseAndIsDeletedFalse(workLocation.trim()).isEmpty()) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND));
+		}
+	}
+
+	public void validateBusinessUnitInBulk(String businessUnit, List<String> errors) {
+		if (businessUnit != null && !businessUnit.isBlank()
+				&& businessUnitDao.findByName(businessUnit)
+					.filter(unit -> unit.getName().equals(businessUnit))
+					.isEmpty()) {
+			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND,
+					new String[] { businessUnit }));
 		}
 	}
 
@@ -2275,6 +2414,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setEmploymentAllocation(employeeBulkDto.getEmploymentAllocation());
 
 		setBulkEmployeeWorkLocation(employeeBulkDto, employee);
+		setBulkEmployeeBusinessUnit(employeeBulkDto, employee);
 
 		UserSettings userSettings = createNotificationSettingsForBulkUser(user);
 		user.setSettings(userSettings);
@@ -2668,6 +2808,7 @@ public class PeopleServiceImpl implements PeopleService {
 		}
 
 		validateWorkLocationInBulk(employeeBulkDto.getWorkLocation(), errors);
+		validateBusinessUnitInBulk(employeeBulkDto.getBusinessUnit(), errors);
 		validatePayrollIdInBulk(employeeBulkDto.getPayrollId(), errors);
 		validateTinInBulk(employeeBulkDto.getTin(), errors);
 

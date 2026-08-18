@@ -28,6 +28,12 @@ export const getDateFromTimeStamp = (timestamp: string): string => {
   return timestamp.split("T")[0];
 };
 
+export const getPreviousDayFormatted = (timestamp: string): string => {
+  return DateTime.fromISO(getDateFromTimeStamp(timestamp))
+    .minus({ days: 1 })
+    .toFormat(LONG_DATE_TIME_FORMAT);
+};
+
 export const getOrdinalIndicator = (day: number) => {
   if (day === 1 || day === 21 || day === 31) {
     return "st";
@@ -365,6 +371,15 @@ export const getMonthStartAndEndDates = (month: number) => {
 
 export const getCurrentDateAtMidnight = () => {
   return DateTime.now().startOf("day");
+};
+
+export const getRelativeDates = () => {
+  const now = DateTime.now();
+  return {
+    today: now.toFormat(DATE_FORMAT),
+    yesterday: now.minus({ days: 1 }).toFormat(DATE_FORMAT),
+    tomorrow: now.plus({ days: 1 }).toFormat(DATE_FORMAT)
+  };
 };
 
 export const getDayDifference = (from: DateTime, to: DateTime): number => {
