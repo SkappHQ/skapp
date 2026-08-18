@@ -4,7 +4,10 @@ import { DateTime } from "luxon";
 import { Dispatch, FC, SetStateAction, useEffect, useRef } from "react";
 
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
-import { ClockInSummaryTypes } from "~community/attendance/enums/dashboardEnums";
+import {
+  ClockInSummaryFilterTypes,
+  ClockInSummaryTypes
+} from "~community/attendance/enums/dashboardEnums";
 import FilterButton from "~community/common/components/molecules/AdvancedFilterButton/AdvancedFilterButton";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
@@ -236,7 +239,7 @@ const ClockInTable: FC<Props> = ({
   }, [isFetchingNextPage, hasNextPage]);
 
   const filterData = {
-    "Clock-ins": [
+    [ClockInSummaryFilterTypes.CLOCK_INS]: [
       {
         label: translateTexts([
           "dashboards.attendanceDashboard.clockInTableSummary.lateArrivals"
