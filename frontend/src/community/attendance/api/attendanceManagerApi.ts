@@ -129,6 +129,20 @@ export const useApproveDenyTimeRequest = (
   onError: (messageKey: string) => void
 ) => {
   const queryClient = useQueryClient();
+
+  const invalidateRequestQueries = () => {
+    queryClient
+      .invalidateQueries({
+        queryKey: attendanceQueryKeys.getManagerRequests()
+      })
+      .catch(rejects);
+    queryClient
+      .invalidateQueries({
+        queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
+      })
+      .catch(rejects);
+  };
+
   return useMutation({
     mutationFn: async (requestData: { id: number; status: string }) => {
       const url = managerAttendanceEndpoints.MANAGER_APPROVE_DENY_REQUESTS(
@@ -140,29 +154,11 @@ export const useApproveDenyTimeRequest = (
     },
     onSuccess: () => {
       onSuccess();
-      queryClient
-        .invalidateQueries({
-          queryKey: attendanceQueryKeys.getManagerRequests()
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
-          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
-        })
-        .catch(rejects);
+      invalidateRequestQueries();
     },
     onError: (error: ErrorResponse) => {
       onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
-      queryClient
-        .invalidateQueries({
-          queryKey: attendanceQueryKeys.getManagerRequests()
-        })
-        .catch(rejects);
-      queryClient
-        .invalidateQueries({
-          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
-        })
-        .catch(rejects);
+      invalidateRequestQueries();
     }
   });
 };
