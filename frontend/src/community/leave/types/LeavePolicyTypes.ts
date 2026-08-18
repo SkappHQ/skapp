@@ -234,6 +234,10 @@ export interface EmployeeLeavePolicyType {
   effectiveDateType: EffectiveDateType;
   effectiveFrom: string;
   status: EmployeeLeavePolicyStatus;
+  totalDaysAllocated: number;
+  totalDaysUsed: number;
+  balanceInDays: number;
+  isUnlimited: boolean;
 }
 
 export interface EmployeeLeavePoliciesPage {
