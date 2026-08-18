@@ -30,4 +30,8 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
+	public static final String SORT_BY_POLICY_NAME = "policy.name";
+
+	public static final String SORT_BY_EFFECTIVE_FROM = "effectiveFrom";
+
 }
