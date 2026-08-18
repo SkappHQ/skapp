@@ -23,14 +23,10 @@ const useManualEntryRestriction = (): ManualEntryRestrictionResult => {
     isSuperAdmin || isAttendanceAdmin || isAttendanceManager
   );
 
-  // Mirrors the server-side gate: the restriction is only enforced on Core and
-  // Pro tiers, so a stale config flag on a downgraded tenant must be ignored.
   const isRestrictionEnabled =
     isAtLeastCoreTier &&
     Boolean(attendanceConfig?.isManualTimeEntryRestrictionEnabled);
 
-  // Loading and error are reported separately so callers can show a pending
-  // state instead of a restriction the config has not actually confirmed.
   const isManualEntryRestricted = !canManageTimeEntries && isRestrictionEnabled;
 
   const canDirectlyAddOrEditEntry =
