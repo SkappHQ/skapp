@@ -1,0 +1,130 @@
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmCompanyEntity,
+  CrmCompanyRecord
+} from "~community/crm/v2/types/CrmCommonTypes";
+
+export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
+  const companies: CrmCompanyRecord = {};
+  const companyIds: number[] = [];
+
+  items.forEach((company) => {
+    if (company.id !== undefined) {
+      companies[company.id] = company;
+      companyIds.push(company.id);
+    }
+  });
+
+  return { companies, companyIds };
+};
+
+export interface CrmMetricItem {
+  id: string;
+  title: string;
+  amount?: string | number;
+  isCurrency?: boolean;
+}
+
+export const getCompanyMetricItems = (
+  company: CrmCompanyEntity,
+  translateText: TranslatorFunctionType
+): CrmMetricItem[] => [
+  {
+    id: "accountValue",
+    title: translateText(["metrics", "accountValue"]),
+    amount: company.metrics?.accountValue,
+    isCurrency: true
+  },
+  {
+    id: "openDeals",
+    title: translateText(["metrics", "openDeals"]),
+    amount: company.metrics?.openDeals
+  },
+  {
+    id: "closedDeals",
+    title: translateText(["metrics", "closedDeals"]),
+    amount: company.metrics?.closedDeals
+  }
+];
+
+export const getSelectedCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number | null
+) => {
+  if (companyId === null) return undefined;
+
+  return companies[companyId];
+};
+
+export const updateCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number,
+  updatedFields: CrmCompanyEntity
+): CrmCompanyRecord => ({
+  ...companies,
+  [companyId]: { ...companies[companyId], ...updatedFields }
+});
+
+export const removeCompany = (
+  companies: CrmCompanyRecord,
+  companyIds: number[],
+  companyId: number
+) => {
+  const remainingCompanies = { ...companies };
+  delete remainingCompanies[companyId];
+
+  return {
+    companies: remainingCompanies,
+    companyIds: companyIds.filter((id) => id !== companyId)
+  };
+};
+
+export const getCompanyFormInitialValues = (
+  company?: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: company?.name ?? "",
+  industry: company?.industry ?? CrmIndustryEnum.NONE,
+  website: company?.website ?? "",
+  address: company?.address ?? "",
+  contactNumber: company?.contactNumber ?? ""
+});
+
+export const getTrimmedCompanyValues = (
+  values: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: values.name?.trim(),
+  industry: values.industry,
+  website: values.website?.trim(),
+  address: values.address?.trim(),
+  contactNumber: values.contactNumber?.trim()
+});
+
+export const getChangedCompanyFields = (
+  initialValues: CrmCompanyEntity,
+  currentValues: CrmCompanyEntity
+): CrmCompanyEntity => {
+  const changedFields: CrmCompanyEntity = {};
+
+  if (currentValues.name !== initialValues.name) {
+    changedFields.name = currentValues.name;
+  }
+
+  if (currentValues.industry !== initialValues.industry) {
+    changedFields.industry = currentValues.industry;
+  }
+
+  if (currentValues.website !== initialValues.website) {
+    changedFields.website = currentValues.website;
+  }
+
+  if (currentValues.address !== initialValues.address) {
+    changedFields.address = currentValues.address;
+  }
+
+  if (currentValues.contactNumber !== initialValues.contactNumber) {
+    changedFields.contactNumber = currentValues.contactNumber;
+  }
+
+  return changedFields;
+};
