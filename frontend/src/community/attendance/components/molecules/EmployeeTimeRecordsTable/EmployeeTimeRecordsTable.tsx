@@ -1,6 +1,6 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, JSX, useEffect, useMemo, useRef, useState } from "react";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
@@ -98,6 +98,7 @@ const EmployeeTimeRecordsTable = ({
   const {
     data: pendingDayLogs,
     isFetching: isPendingDayFetching,
+    isSuccess: isPendingDaySuccess,
     isError: isPendingDayError
   } = useGetDailyLogsByEmployeeId(
     pendingCell?.date ?? "",
@@ -106,22 +107,42 @@ const EmployeeTimeRecordsTable = ({
     Boolean(pendingCell)
   );
 
+  // useTranslator returns a new function on every render, so it is held in a ref
+  // instead of being listed as a dependency below.
+  const translateTextRef = useRef(translateText);
+  translateTextRef.current = translateText;
+
+  // The effect opens a modal through the attendance store, and this component is
+  // subscribed to that whole store, so the resulting re-render can re-enter the
+  // effect before the setPendingCell(null) above has been flushed. This records
+  // the cell that has already been handled so it is only ever acted on once.
+  const handledCellRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!pendingCell) return;
+    if (!pendingCell) {
+      handledCellRef.current = null;
+      return;
+    }
+
+    const cellKey = `${pendingCell.employeeId}-${pendingCell.date}`;
+    if (handledCellRef.current === cellKey || isPendingDayFetching) return;
 
     if (isPendingDayError) {
+      handledCellRef.current = cellKey;
       setPendingCell(null);
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText(["addTimeEntryErrorTitle"]),
-        description: translateText(["directEntryDayLoadErrorDes"]),
+        title: translateTextRef.current(["addTimeEntryErrorTitle"]),
+        description: translateTextRef.current(["directEntryDayLoadErrorDes"]),
         autoHideDuration: TOAST_AUTO_HIDE_DURATION
       });
       return;
     }
 
-    if (isPendingDayFetching) return;
+    // A newly enabled query reports isFetching false for the render before the
+    // request starts, so the day is only read once this cell's fetch has settled.
+    if (!isPendingDaySuccess) return;
 
     const dayRecord =
       pendingDayLogs?.find(
@@ -130,6 +151,7 @@ const EmployeeTimeRecordsTable = ({
 
     const modalType = getTimeEntryModalType(dayRecord);
 
+    handledCellRef.current = cellKey;
     setPendingCell(null);
     if (modalType === null) return;
 
@@ -144,8 +166,8 @@ const EmployeeTimeRecordsTable = ({
     pendingCell,
     pendingDayLogs,
     isPendingDayFetching,
-    isPendingDayError,
-    translateText
+    isPendingDaySuccess,
+    isPendingDayError
   ]);
 
   const headers = useMemo(() => {
