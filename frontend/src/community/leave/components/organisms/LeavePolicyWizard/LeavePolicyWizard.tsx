@@ -6,7 +6,7 @@ import {
   IconButton
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { useFormik } from "formik";
+import { FormikProps, useFormik } from "formik";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
 
@@ -24,6 +24,7 @@ import {
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   getLeavePolicyErrorToastKeys,
+  isDuplicatePolicyNameError,
   mapLeavePolicyFormToPayload
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 import { leavePolicyWizardValidation } from "~community/leave/utils/validations";
@@ -73,6 +74,8 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
 
   const submittedNameRef = useRef<string>("");
 
+  const formikRef = useRef<FormikProps<LeavePolicyFormData> | null>(null);
+
   const steps = [
     translateText(["steps", "basicInfo"]),
     translateText(["steps", "entitlementSetup"]),
@@ -100,6 +103,16 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleError = (error: AxiosError): void => {
+    if (isDuplicatePolicyNameError(error)) {
+      formikRef.current?.setFieldTouched("policyName", true, false);
+      formikRef.current?.setFieldError(
+        "policyName",
+        translateText(["duplicateToastDescription"])
+      );
+      setActiveStep(LeavePolicyWizardSteps.BASIC_INFO);
+      return;
+    }
+
     const { title, description } = getLeavePolicyErrorToastKeys(error);
 
     setToastMessage({
@@ -124,6 +137,8 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       addLeavePolicy(mapLeavePolicyFormToPayload(values));
     }
   });
+
+  formikRef.current = formik;
 
   const handleFieldsChange = (values: Partial<LeavePolicyFormData>): void => {
     formik.setValues({ ...formik.values, ...values });

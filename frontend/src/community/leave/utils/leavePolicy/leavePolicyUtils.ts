@@ -19,6 +19,10 @@ interface LeavePolicyErrorToastKeys {
   description: string;
 }
 
+export const isDuplicatePolicyNameError = (error: AxiosError): boolean =>
+  (error?.response?.data as LeavePolicyErrorData | undefined)?.results?.[0]
+    ?.messageKey === LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS;
+
 export const getLeavePolicyErrorToastKeys = (
   error: AxiosError
 ): LeavePolicyErrorToastKeys => {
