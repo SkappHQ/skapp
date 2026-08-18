@@ -520,11 +520,10 @@
       "flexibleInfoLabel": "This is a flexible policy. Leave taken will be recorded but is not deducted from any balance.",
       "conflictWarning": "{{employeeName}} already has a {{leaveType}} policy. Assigning this policy will replace their existing {{leaveType}} policy.",
       "joinDateMissingLabel": "{{employeeName}} doesn't have a join date yet. Set one to accrue leave from their join date, or choose a specific date instead.",
-      "colDate": "DATE",
-      "colDays": "DAYS",
-      "colBalance": "BALANCE",
+      "colDate": "Date",
+      "colDays": "Days",
+      "colBalance": "Balance",
       "saveBtnTxt": "Save",
-      "saveDisabledTooltip": "Select a policy to continue.",
       "cancelBtnTxt": "Cancel"
     },
     "setJoinDateModal": {

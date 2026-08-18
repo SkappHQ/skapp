@@ -25,7 +25,7 @@ import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResp
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
-import com.skapp.community.leaveplanner.service.PolicyLeaveBalanceService;
+import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
@@ -64,7 +64,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 	private final LeaveMapper leaveMapper;
 
-	private final PolicyLeaveBalanceService policyLeaveBalanceService;
+	private final PolicyLeaveService policyLeaveService;
 
 	private final MessageUtil messageUtil;
 
@@ -232,7 +232,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		EmployeeLeavePolicyResponseDto responseDto = leaveMapper
 			.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(assignment);
 
-		PolicyLeaveBalanceDto balance = policyLeaveBalanceService.calculateBalanceForYear(assignment, year);
+		PolicyLeaveBalanceDto balance = policyLeaveService.calculateBalanceForYear(assignment, year);
 		responseDto.setTotalDaysAllocated(balance.getTotalDaysAllocated());
 		responseDto.setTotalDaysUsed(balance.getTotalDaysUsed());
 		responseDto.setBalanceInDays(balance.getBalanceInDays());
