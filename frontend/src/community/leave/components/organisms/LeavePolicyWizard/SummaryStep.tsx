@@ -4,7 +4,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import {
   accrualFrequencyItemList,
-  carryoverDateItemList,
   firstAccrualItemList,
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
@@ -12,7 +11,10 @@ import {
   LeavePolicyFormData,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
-import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import {
+  buildTranslatedOptionList,
+  formatCarryoverExpiryDate
+} from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import SummaryCard from "./SummaryCard";
 import SummaryItem from "./SummaryItem";
@@ -40,11 +42,6 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
-    (suffixes) => translateText(["options", ...suffixes])
-  );
-  const carryoverDateOptions = buildTranslatedOptionList(
-    carryoverDateItemList,
-    "carryoverDate",
     (suffixes) => translateText(["options", ...suffixes])
   );
   const firstAccrualOptions = buildTranslatedOptionList(
@@ -165,8 +162,12 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         />
         {formData.canCarryOver && (
           <SummaryItem
-            label={translateText(["summary", "carryOverDateLabel"])}
-            value={getOptionLabel(carryoverDateOptions, formData.carryOverDate)}
+            label={translateText(["summary", "carryoverExpiryDateLabel"])}
+            value={
+              formData.carryoverExpiryDate
+                ? formatCarryoverExpiryDate(formData.carryoverExpiryDate)
+                : translateText(["summary", "carryoverNeverExpires"])
+            }
           />
         )}
       </SummaryCard>

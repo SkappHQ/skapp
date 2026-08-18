@@ -22,6 +22,8 @@ export const REVERSE_DATE_FORMAT = "dd/MM/yyyy";
 export const MONTH_DATE_FORMAT = "dd/MM";
 
 export const MEDIUM_DATE_FORMAT = "dd MMM yyyy";
+
+export const FULL_MONTH_DATE_FORMAT = "dd MMMM";
 export const monthAbbreviations = [
   "Jan",
   "Feb",
