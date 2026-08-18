@@ -44,16 +44,12 @@ const BusinessUnitFormModal: FC<Props> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText([
-        "toasts",
-        isEdit ? "updateSuccess" : "createSuccess",
-        "title"
-      ]),
-      description: translateText([
-        "toasts",
-        isEdit ? "updateSuccess" : "createSuccess",
-        "description"
-      ])
+      title: isEdit
+        ? translateText(["toasts", "updateSuccess", "title"])
+        : translateText(["toasts", "createSuccess", "title"]),
+      description: isEdit
+        ? translateText(["toasts", "updateSuccess", "description"])
+        : translateText(["toasts", "createSuccess", "description"])
     });
     formik.resetForm();
     onClose();
