@@ -12,7 +12,7 @@ public interface CrmCompanyDao extends JpaRepository<CrmCompany, Long>, CrmCompa
 
 	Optional<CrmCompany> findByIdAndIsDeletedFalse(Long id);
 
-	List<CrmCompany> findByIdInAndIsDeletedFalse(List<Long> ids);
+	List<CrmCompany> findByIdInAndIsDeletedFalseOrderByIdAsc(List<Long> ids);
 
 	boolean existsByNameIgnoreCaseAndIsDeletedFalse(String name);
 

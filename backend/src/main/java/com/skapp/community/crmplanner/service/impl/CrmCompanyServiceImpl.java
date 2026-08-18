@@ -12,7 +12,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -145,7 +145,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getCompaniesByIds(CrmCompanyBatchRequestDto requestDto) {
+	public ResponseEntityDto getCompaniesByIds(CrmCompanyIdsRequestDto requestDto) {
 		log.info("getCompaniesByIds: execution started");
 
 		if (requestDto.getIds() == null || requestDto.getIds().isEmpty()) {
@@ -153,10 +153,10 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			return new ResponseEntityDto(false, Collections.emptyList());
 		}
 
-		List<CrmCompanyResponseDto> companies = crmCompanyDao.findByIdInAndIsDeletedFalse(requestDto.getIds())
-			.stream()
-			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
-			.toList();
+		CrmValidations.validateCompanyIds(requestDto.getIds());
+
+		List<CrmCompanyResponseDto> companies = crmCompanyMapper.crmCompaniesToCrmCompanyResponseDtos(
+				crmCompanyDao.findByIdInAndIsDeletedFalseOrderByIdAsc(requestDto.getIds()));
 
 		log.info("getCompaniesByIds: execution ended with {} result(s)", companies.size());
 		return new ResponseEntityDto(false, companies);
@@ -184,9 +184,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(requestDto.getDomain(),
 				requestDto.getLimit());
 
-		List<CrmCompanyResponseDto> companyDtos = companies.stream()
-			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
-			.toList();
+		List<CrmCompanyResponseDto> companyDtos = crmCompanyMapper.crmCompaniesToCrmCompanyResponseDtos(companies);
 
 		CrmCompanyDomainSearchResponseDto responseDto = new CrmCompanyDomainSearchResponseDto();
 		responseDto.setCompanies(companyDtos);

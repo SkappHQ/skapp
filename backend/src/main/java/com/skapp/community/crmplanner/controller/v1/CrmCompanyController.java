@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -101,9 +101,9 @@ public class CrmCompanyController {
 	@Operation(summary = "Get companies by ids",
 			description = "Returns the base details of the companies matching the given ids, "
 					+ "used to hydrate the client's company store. Soft-deleted companies are omitted.")
-	@PostMapping("/batch")
+	@PostMapping("/by-ids")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getCompaniesByIds(@RequestBody CrmCompanyBatchRequestDto requestDto) {
+	public ResponseEntity<ResponseEntityDto> getCompaniesByIds(@RequestBody CrmCompanyIdsRequestDto requestDto) {
 		ResponseEntityDto responseDto = companyService.getCompaniesByIds(requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}

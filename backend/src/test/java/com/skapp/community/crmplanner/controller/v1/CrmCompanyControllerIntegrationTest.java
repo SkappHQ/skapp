@@ -32,7 +32,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -65,9 +65,11 @@ import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.RESULTS_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -93,7 +95,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String EDIT_PATH = BASE_PATH + "/{id}";
 
-	private static final String BATCH_PATH = BASE_PATH + "/batch";
+	private static final String BY_IDS_PATH = BASE_PATH + "/by-ids";
 
 	private final JsonMapper objectMapper;
 
@@ -850,9 +852,9 @@ class CrmCompanyControllerIntegrationTest {
 	// --- getCompaniesByIds (batch) ---
 
 	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
-		CrmCompanyBatchRequestDto requestDto = new CrmCompanyBatchRequestDto();
+		CrmCompanyIdsRequestDto requestDto = new CrmCompanyIdsRequestDto();
 		requestDto.setIds(ids);
-		return performRequest(post(BATCH_PATH).contentType(MediaType.APPLICATION_JSON)
+		return performRequest(post(BY_IDS_PATH).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(requestDto))
 			.accept(MediaType.APPLICATION_JSON));
 	}
@@ -875,7 +877,7 @@ class CrmCompanyControllerIntegrationTest {
 		performBatchRequest(List.of(company.getId())).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
@@ -894,7 +896,36 @@ class CrmCompanyControllerIntegrationTest {
 		performBatchRequest(List.of(companyA.getId(), companyB.getId(), 999999L)).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(2));
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(2))
+			.andExpect(jsonPath(RESULTS_PATH + "[*]['id']",
+					containsInAnyOrder(companyA.getId().intValue(), companyB.getId().intValue())));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Duplicate ids return the company once")
+	void getCompaniesByIds_DuplicateIds_ReturnsCompanyOnce() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchDupCo");
+
+		performBatchRequest(List.of(company.getId(), company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns live company and excludes soft-deleted one in the same request")
+	void getCompaniesByIds_MixedLiveAndSoftDeleted_ReturnsOnlyLive() throws Exception {
+		CrmCompany live = savedBatchCompany("BatchLiveCo");
+		CrmCompany deleted = savedBatchCompany("BatchGoneCo");
+		deleted.setIsDeleted(true);
+		crmCompanyDao.save(deleted);
+
+		performBatchRequest(List.of(live.getId(), deleted.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(live.getId()));
 	}
 
 	@Test
@@ -907,7 +938,19 @@ class CrmCompanyControllerIntegrationTest {
 		performBatchRequest(List.of(company.getId())).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Non-positive id returns Bad Request")
+	void getCompaniesByIds_NonPositiveId_ReturnsBadRequest() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchInvalidCo");
+
+		performBatchRequest(List.of(company.getId(), -1L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
 	}
 
 	@Test
@@ -916,7 +959,16 @@ class CrmCompanyControllerIntegrationTest {
 		performBatchRequest(List.of()).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Null ids returns empty list")
+	void getCompaniesByIds_NullIds_ReturnsEmptyList() throws Exception {
+		performBatchRequest(null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
 	}
 
 	@Test
