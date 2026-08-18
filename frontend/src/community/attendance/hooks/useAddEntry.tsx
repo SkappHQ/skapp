@@ -23,8 +23,10 @@ import {
   isToday
 } from "~community/attendance/utils/TimeUtils";
 import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
-import { TIME_ERROR_MANUAL_ENTRY_RESTRICTED } from "~community/common/constants/errorMessageKeys";
-import { HTTP_CONFLICT } from "~community/common/constants/httpStatusCodes";
+import {
+  EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
+  TIME_ERROR_MANUAL_ENTRY_RESTRICTED
+} from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -139,7 +141,9 @@ const useAddEntry = () => {
   };
 
   const onDirectEntryError = (error: ErrorResponse) => {
-    const isConflict = error?.response?.status === HTTP_CONFLICT;
+    const isConflict =
+      error?.response?.data?.results?.[0]?.messageKey ===
+      EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntryErrorTitle"]),
