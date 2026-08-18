@@ -8,6 +8,8 @@ export const EMAIL_MAX_LENGTH = 100;
 export const BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY =
   "birthdayNotificationViewState";
 
+export const BIRTHDAY_DISMISSED_ENTRIES_CACHE_KEY = "birthdayDismissedEntries";
+
 export const PAYROLL_ID_LENGTH = 50;
 
 export const TIN_LENGTH = 50;
