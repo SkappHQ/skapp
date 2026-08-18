@@ -106,6 +106,23 @@ const PeopleConfigurations: FC = () => {
     }
   };
 
+  const handleBirthdayNotificationToggle = (checked: boolean): void => {
+    birthdayFormik.setFieldValue("isTurnedOn", checked);
+    if (checked) {
+      birthdayFormik.setFieldValue("isTeamWide", true);
+      birthdayFormik.setFieldValue("isOrganizationWide", true);
+    } else {
+      birthdayFormik.setFieldValue(
+        "isTeamWide",
+        birthdayFormik.initialValues.isTeamWide
+      );
+      birthdayFormik.setFieldValue(
+        "isOrganizationWide",
+        birthdayFormik.initialValues.isOrganizationWide
+      );
+    }
+  };
+
   const subOptionsAriaMessage = birthdayNotificationConfig
     ? translateText([
         "aria",
@@ -154,9 +171,7 @@ const PeopleConfigurations: FC = () => {
             labelId="birthday-notification"
             arialabel={translateText(["aria", "mainToggle"])}
             checked={birthdayFormik.values.isTurnedOn}
-            onChange={(checked) =>
-              birthdayFormik.setFieldValue("isTurnedOn", checked)
-            }
+            onChange={handleBirthdayNotificationToggle}
           />
           {birthdayFormik.values.isTurnedOn && (
             <>

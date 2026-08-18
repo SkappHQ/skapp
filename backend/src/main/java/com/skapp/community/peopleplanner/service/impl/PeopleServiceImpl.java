@@ -441,10 +441,11 @@ public class PeopleServiceImpl implements PeopleService {
 		if (requestDto != null && requestDto.getEmployment() != null
 				&& requestDto.getEmployment().getEmploymentDetails() != null
 				&& requestDto.getEmployment().getEmploymentDetails().getWorkLocationId() != null) {
-			employee.setWorkLocation(
-					workLocationDao.findById(requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
-						.orElseThrow(() -> new EntityNotFoundException(
-								PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
+			employee.setWorkLocation(workLocationDao
+				.findByWorkLocationIdAndIsDeletedFalse(
+						requestDto.getEmployment().getEmploymentDetails().getWorkLocationId())
+				.orElseThrow(() -> new EntityNotFoundException(
+						PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND)));
 		}
 
 		// Business Unit
@@ -1984,7 +1985,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void setBulkEmployeeWorkLocation(EmployeeBulkDto employeeBulkDto, Employee employee) {
 		if (employeeBulkDto.getWorkLocation() != null && !employeeBulkDto.getWorkLocation().isBlank()) {
-			workLocationDao.findByNameIgnoreCase(employeeBulkDto.getWorkLocation())
+			workLocationDao.findByNameIgnoreCaseAndIsDeletedFalse(employeeBulkDto.getWorkLocation())
 				.ifPresentOrElse(employee::setWorkLocation, () -> {
 					throw new EntityNotFoundException(
 							PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
@@ -2118,7 +2119,7 @@ public class PeopleServiceImpl implements PeopleService {
 
 	public void validateWorkLocationInBulk(String workLocation, List<String> errors) {
 		if (workLocation != null && !workLocation.isBlank()
-				&& workLocationDao.findByNameIgnoreCase(workLocation.trim()).isEmpty()) {
+				&& workLocationDao.findByNameIgnoreCaseAndIsDeletedFalse(workLocation.trim()).isEmpty()) {
 			errors.add(messageUtil.getMessage(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND));
 		}
 	}

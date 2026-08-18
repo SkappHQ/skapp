@@ -15,8 +15,7 @@ import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactListItemDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -75,9 +74,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public Page<CrmContactListItemDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto, Pageable pageable) {
+	public Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto,
+			Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmContactListItemDtoV2> query = cb.createQuery(CrmContactListItemDtoV2.class);
+		CriteriaQuery<CrmContactMetricsResponseDtoV2> query = cb.createQuery(CrmContactMetricsResponseDtoV2.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
@@ -111,22 +111,21 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
 
-		query.select(cb.construct(CrmContactListItemDtoV2.class, cb.construct(CrmContactResponseDtoV2.class,
-				contact.get(CrmContact_.id), contact.get(CrmContact_.name), contact.get(CrmContact_.email),
-				contact.get(CrmContact_.contactNumber), contact.get(CrmContact_.lastContactAt),
-				contact.get(Auditable_.lastModifiedDate),
+		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
+				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
 				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
 						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
 						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
 				cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
-						owner.get(Employee_.lastName), owner.get(Employee_.authPic))),
+						owner.get(Employee_.lastName), owner.get(Employee_.authPic)),
 				cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub, openTaskSub,
 						overdueTaskSub)));
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
 
-		List<CrmContactListItemDtoV2> content = entityManager.createQuery(query)
+		List<CrmContactMetricsResponseDtoV2> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();
