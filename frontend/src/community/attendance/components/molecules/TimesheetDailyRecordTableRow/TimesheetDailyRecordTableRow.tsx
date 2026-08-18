@@ -17,7 +17,6 @@ import {
   holidayDurationSelector
 } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
-import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
@@ -52,16 +51,16 @@ interface Props {
   record: DailyLogType;
   headerLength: number;
   targetEmployee?: DirectEntryEmployeeType;
+  isRowInteractive: boolean;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
   record,
   headerLength,
-  targetEmployee
+  targetEmployee,
+  isRowInteractive
 }) => {
   const { isFreeTier } = useSessionData();
-  const { isManualEntryRestricted, canDirectlyAddOrEditEntry } =
-    useManualEntryRestriction();
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -83,10 +82,6 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     setDirectEntryEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
-
-  const isRowInteractive = targetEmployee
-    ? canDirectlyAddOrEditEntry
-    : !isManualEntryRestricted;
 
   const handleEdit = useCallback(() => {
     setSelectedDailyRecord(record);

@@ -4,6 +4,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useRef, useState } from "react";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import {
   DailyLogType,
   DirectEntryEmployeeType
@@ -39,6 +40,12 @@ const TimesheetDailyRecordTable = ({
   targetEmployee
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
+  const { isManualEntryRestricted, canDirectlyAddOrEditEntry } =
+    useManualEntryRestriction();
+
+  const isRowInteractive = targetEmployee
+    ? canDirectlyAddOrEditEntry
+    : !isManualEntryRestricted;
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -131,6 +138,7 @@ const TimesheetDailyRecordTable = ({
                   key={record?.date}
                   headerLength={tableHeaders?.length}
                   targetEmployee={targetEmployee}
+                  isRowInteractive={isRowInteractive}
                 />
               ))
             ) : (
@@ -140,6 +148,8 @@ const TimesheetDailyRecordTable = ({
                     record={record}
                     key={record?.date}
                     headerLength={tableHeaders?.length}
+                    targetEmployee={targetEmployee}
+                    isRowInteractive={isRowInteractive}
                   />
                 ))}
               </Box>
