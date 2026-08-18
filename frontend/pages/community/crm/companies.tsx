@@ -1,4 +1,3 @@
-import { ProjectTableSkeletonLoader } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -12,15 +11,12 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Companies: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
-
-  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
     useCrmStore((store) => ({
@@ -59,11 +55,7 @@ const Companies: NextPage = () => {
 
         <CompanyModalController />
         <TaskModalController />
-        {isCrmInitialDataLoading ? (
-          <ProjectTableSkeletonLoader rowCount={8} />
-        ) : (
-          <CompanyTable />
-        )}
+        <CompanyTable />
       </>
     </ContentLayout>
   );

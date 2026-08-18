@@ -6,13 +6,11 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import TaskTabSkeleton from "~community/crm/components/molecules/TaskTabContent/TaskTabSkeleton";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/TaskSidePanel";
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -20,8 +18,6 @@ const Tasks: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const containerRef = useRef<HTMLDivElement>(null);
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
-
-  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const {
     setIsTaskModalOpen,
@@ -81,7 +77,7 @@ const Tasks: NextPage = () => {
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
           <TaskModalController />
-          {isCrmInitialDataLoading ? <TaskTabSkeleton /> : <TasksTable />}
+          <TasksTable />
         </div>
       </>
     </ContentLayout>

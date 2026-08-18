@@ -7,20 +7,16 @@ import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
 import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
 import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
-import DealsKanbanBoardSkeleton from "~community/crm/v2/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
 import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
-
-  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
     (store) => ({
@@ -51,16 +47,14 @@ const Deals: NextPage = () => {
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+        <SidePanelWrapper
+          isOpen={isCrmSidePanelOpen}
+        >
           {selectedDealId !== null && <DealSidePanel />}
           <AddDealSidePanel />
         </SidePanelWrapper>
         <TaskModalController />
-        {isCrmInitialDataLoading ? (
-          <DealsKanbanBoardSkeleton laneCount={4} cardCount={5} />
-        ) : (
-          <DealsSection />
-        )}
+        <DealsSection />
       </>
     </ContentLayout>
   );
