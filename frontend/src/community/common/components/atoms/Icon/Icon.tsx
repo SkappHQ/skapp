@@ -62,6 +62,7 @@ import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
 import EsignatureModuleIcon from "~community/common/assets/Icons/EsignatureModuleIcon";
 import ExpandIcon from "~community/common/assets/Icons/ExpandIcon";
+import ExportArrowIcon from "~community/common/assets/Icons/ExportArrowIcon";
 import EyeIcon from "~community/common/assets/Icons/EyeIcon";
 import FileIcon from "~community/common/assets/Icons/FileIcon";
 import FileUploadIcon from "~community/common/assets/Icons/FileUploadIcon";
@@ -200,6 +201,7 @@ export const IconMapping: Partial<
   [IconName.RIGHT_ARROW_ICON]: RightArrowIcon,
   [IconName.LEFT_ARROW_ICON]: LeftArrowIcon,
   [IconName.UP_ARROW_ICON]: UpArrowIcon,
+  [IconName.EXPORT_ARROW_ICON]: ExportArrowIcon,
   [IconName.CLOCK_ICON]: ClockIcon,
   [IconName.DROP_DOWN_ICON]: DropDownArrow,
   [IconName.CHECK_CIRCLE_ICON]: CheckCircleIcon,
