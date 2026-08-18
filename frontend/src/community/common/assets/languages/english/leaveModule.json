@@ -359,6 +359,7 @@
       "stepCount": "{{current}} of {{total}}",
       "closeBtnAriaLabel": "Close create policy",
       "backBtnTxt": "Back",
+      "cancelBtnTxt": "Cancel",
       "nextBtnTxt": "Next",
       "createPolicyBtnTxt": "Create policy",
       "editBtnTxt": "Edit",
