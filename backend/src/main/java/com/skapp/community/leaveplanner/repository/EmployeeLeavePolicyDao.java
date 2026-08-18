@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface EmployeeLeavePolicyDao extends JpaRepository<EmployeeLeavePolicy, Long> {
+public interface EmployeeLeavePolicyDao
+		extends JpaRepository<EmployeeLeavePolicy, Long>, EmployeeLeavePolicyRepository {
 
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(Long employeeId,
 			Long leaveTypeId, EmployeeLeavePolicyStatus status);

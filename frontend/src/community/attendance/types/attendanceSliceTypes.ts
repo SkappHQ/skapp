@@ -25,6 +25,7 @@ export interface ManagerTimesheetFiltersSliceTypes
     | "timesheetRequestsFilterValues"
     | "setTimesheetRequestsFilters"
     | "resetTimesheetRequestParams"
+    | "restoreTimesheetRequestParams"
     | "setTimesheetRequestSelectedDates"
     | "setTimesheetRequestPagination"
     | "timesheetAnalyticsParams"

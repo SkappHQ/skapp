@@ -2,6 +2,7 @@ import {
   CalendarIcon,
   DatePicker,
   Dropdown,
+  InfoTipBanner,
   InputField,
   RadioButton
 } from "@rootcodelabs/skapp-ui";
@@ -19,7 +20,7 @@ import {
   EffectiveDateType
 } from "~community/leave/types/LeavePolicyTypes";
 
-interface PolicyOption {
+export interface PolicyOption {
   id: string;
   label: string;
   value: string;
@@ -31,10 +32,13 @@ interface Props {
   onPolicyChange: (value: string) => void;
   effectiveDateType: EffectiveDateType;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
+  joinDateLabel: string;
   specificDate: string;
   specificDateError: string;
   onSpecificDateChange: (isoDate: string) => void;
   accrualPreview: AccrualPreviewRow[];
+  isFlexiblePolicy: boolean;
+  conflictWarning: string;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -43,16 +47,18 @@ const AssignLeavePolicyForm: FC<Props> = ({
   onPolicyChange,
   effectiveDateType,
   onEffectiveDateTypeChange,
+  joinDateLabel,
   specificDate,
   specificDateError,
   onSpecificDateChange,
-  accrualPreview
+  accrualPreview,
+  isFlexiblePolicy,
+  conflictWarning
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
   const accrualHeaders: GridHeader[] = [
     { id: "date", label: translateText(["assignModal", "colDate"]) },
-    { id: "action", label: translateText(["assignModal", "colAction"]) },
     { id: "days", label: translateText(["assignModal", "colDays"]) },
     { id: "balance", label: translateText(["assignModal", "colBalance"]) }
   ];
@@ -62,19 +68,14 @@ const AssignLeavePolicyForm: FC<Props> = ({
       accrualPreview.map((row, index) => ({
         id: index,
         date: <span className="body2 text-black">{row.date}</span>,
-        action: (
-          <span className="body2 text-black">
-            {translateText(["assignModal", "actionAccrued"])}
-          </span>
-        ),
         days: <span className="body2 text-black">{row.days}</span>,
         balance: <span className="body2 text-black">{row.balance}</span>
       })),
-    [accrualPreview, translateText]
+    [accrualPreview]
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex max-h-[73vh] flex-col gap-4 overflow-y-auto pr-2">
       <div className="flex flex-col gap-1.5">
         <p className="body2 text-secondary-text">
           {translateText(["assignModal", "policyLabel"])}
@@ -90,6 +91,10 @@ const AssignLeavePolicyForm: FC<Props> = ({
         />
       </div>
 
+      {conflictWarning && (
+        <InfoTipBanner status="warning" description={conflictWarning} />
+      )}
+
       <div className="flex flex-col gap-2">
         <p className="body2 text-secondary-text">
           {translateText(["assignModal", "effectiveDateLabel"])}
@@ -102,18 +107,23 @@ const AssignLeavePolicyForm: FC<Props> = ({
           <button
             type="button"
             role="radio"
-            aria-checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
+            aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
             onClick={() =>
-              onEffectiveDateTypeChange(EffectiveDateType.HIRE_DATE)
+              onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
             }
             className="flex w-fit cursor-pointer items-center gap-3"
           >
             <RadioButton
-              isSelected={effectiveDateType === EffectiveDateType.HIRE_DATE}
+              isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
               variant="dot"
             />
-            <span className="body1 text-black">
-              {translateText(["assignModal", "hireDateOption"])}
+            <span className="body1 flex items-center gap-1.5 text-black">
+              {translateText(["assignModal", "joinDateOption"])}
+              {joinDateLabel && (
+                <span className="body2 text-secondary-text">
+                  ({joinDateLabel})
+                </span>
+              )}
             </span>
           </button>
           <button
@@ -178,6 +188,13 @@ const AssignLeavePolicyForm: FC<Props> = ({
         )}
       </div>
 
+      {isFlexiblePolicy && (
+        <InfoTipBanner
+          status="info"
+          description={translateText(["assignModal", "flexibleInfoLabel"])}
+        />
+      )}
+
       {accrualPreview.length > 0 && (
         <div className="flex flex-col gap-2">
           <p className="body2 text-secondary-text">
@@ -192,7 +209,6 @@ const AssignLeavePolicyForm: FC<Props> = ({
             }}
             headers={accrualHeaders}
             rows={accrualRows}
-            height="14rem"
           />
         </div>
       )}

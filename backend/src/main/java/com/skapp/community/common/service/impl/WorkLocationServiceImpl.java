@@ -8,8 +8,15 @@ import com.skapp.community.common.payload.response.WorkLocationEmployeeResponseD
 import com.skapp.community.common.payload.response.WorkLocationNameAvailabilityResponseDto;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.model.Employee;
+import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
+import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.type.AccountStatus;
+import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
+import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
+import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.common.constant.CommonConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.model.WorkLocation;
@@ -40,6 +47,10 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 	private final EmployeeDao employeeDao;
 
+	private final HolidayDao holidayDao;
+
+	private final LeaveRequestDao leaveRequestDao;
+
 	private final MessageUtil messageUtil;
 
 	@Override
@@ -49,7 +60,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 
 		String workLocationName = workLocationRequestDto.getName();
 
-		if (workLocationDao.existsByNameIgnoreCase(workLocationName)) {
+		if (workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
@@ -71,13 +82,13 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto updateWorkLocation(Long id, WorkLocationRequestDto workLocationRequestDto) {
 		log.info("updateWorkLocation: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		String workLocationName = workLocationRequestDto.getName();
 
 		if (workLocationName != null && !workLocationName.equalsIgnoreCase(workLocation.getName())
-				&& workLocationDao.existsByNameIgnoreCase(workLocationName)) {
+				&& workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(workLocationName)) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_ALREADY_EXISTS);
 		}
 
@@ -105,11 +116,14 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto deleteWorkLocation(Long id) {
 		log.info("deleteWorkLocation: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
+		deleteFutureHolidaysSpecificToWorkLocation(id);
 		clearWorkLocationFromEmployees(id);
-		workLocationDao.delete(workLocation);
+
+		workLocation.setIsDeleted(true);
+		workLocationDao.save(workLocation);
 
 		log.info("deleteWorkLocation: execution ended");
 
@@ -177,7 +191,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 	public ResponseEntityDto getWorkLocationById(Long id) {
 		log.info("getWorkLocationById: execution started");
 
-		WorkLocation workLocation = workLocationDao.findById(id)
+		WorkLocation workLocation = workLocationDao.findByWorkLocationIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NOT_FOUND));
 
 		List<Employee> locationEmployees = employeeDao.findActiveEmployeesExcludingGuests(id);
@@ -231,6 +245,24 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 		}
 	}
 
+	private void deleteFutureHolidaysSpecificToWorkLocation(Long workLocationId) {
+		List<Holiday> holidaysToDelete = holidayDao.findFutureActiveHolidaysExclusiveToWorkLocation(workLocationId);
+
+		for (Holiday holiday : holidaysToDelete) {
+			LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
+			leaveRequestFilterDto.setStartDate(holiday.getDate());
+			leaveRequestFilterDto.setEndDate(holiday.getDate());
+			leaveRequestFilterDto.setStatus(List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED));
+			List<LeaveRequest> leaveRequests = leaveRequestDao.findAllLeaveRequestsByDateRange(leaveRequestFilterDto);
+			if (!leaveRequests.isEmpty()) {
+				throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_CANNOT_BE_DELETED_LEAVES_EXIST);
+			}
+		}
+
+		holidaysToDelete.forEach(holiday -> holiday.setActive(false));
+		holidayDao.saveAll(holidaysToDelete);
+	}
+
 	private void clearWorkLocationFromEmployees(Long workLocationId) {
 		List<Employee> employees = employeeDao.findByWorkLocationWorkLocationIdAndAccountStatusIn(workLocationId,
 				Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING));
@@ -253,7 +285,7 @@ public class WorkLocationServiceImpl implements WorkLocationService {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_WORK_LOCATION_NAME_LENGTH_EXCEEDED);
 		}
 
-		boolean isExists = workLocationDao.existsByNameIgnoreCase(name);
+		boolean isExists = workLocationDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
 
 		WorkLocationNameAvailabilityResponseDto responseDto = new WorkLocationNameAvailabilityResponseDto();
 		responseDto.setIsExists(isExists);

@@ -147,16 +147,7 @@ const toPreviewRows = (
   return rows;
 };
 
-/**
- * Projects the accrual schedule for an ACCRUAL policy entirely on the frontend:
- * one "Accrued" event per frequency period, adding accrualDays each time and
- * running a balance capped at accrualCapDays. The event date follows
- * accrualTiming, and — without carry-over — the projection stops at the first
- * accrual year. The first period is prorated when firstAccrual is PRORATED for
- * calendar-aligned frequencies only; interval frequencies (every other week,
- * twice a month, twice a year) always start a full period at the effective date.
- * Illustrative, not the authoritative server-side calculation.
- */
+
 export const buildAccrualPreview = (
   policy: LeavePolicyType,
   startISO?: string

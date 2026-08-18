@@ -10,7 +10,7 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
-export const ACCRUAL_PREVIEW_ROW_LIMIT = 12;
+export const ACCRUAL_PREVIEW_ROW_LIMIT = 4;
 
 export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
   DAILY: "day",
@@ -31,6 +31,8 @@ export const LEAVE_POLICY_PAGE_SIZE = 10;
 
 export const LEAVE_POLICY_SKELETON_ROW_COUNT = 8;
 
+export const USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE = 8;
+
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 
 export const MAX_POLICY_DAYS = 365;
@@ -40,6 +42,10 @@ export const MIN_POLICY_DAYS = 0.5;
 export const MIN_ACCRUAL_CAP_DAYS = 1;
 
 export const MIN_WAITING_PERIOD_DAYS = 1;
+
+export const MAX_BULK_ASSIGN_ROWS = 1000;
+
+export const CSV_DELIMITER = ",";
 
 export const accrualFrequencyItemList = [
   { id: "daily", labelKey: "daily", value: AccrualFrequency.DAILY },

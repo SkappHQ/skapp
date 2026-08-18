@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.repository;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import java.util.Map;
 public interface CrmDealRepository {
 
 	Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable);
+
+	Page<CrmDealResponseDtoV2> findDealsV2(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable);
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 

@@ -7,9 +7,9 @@ import lombok.Setter;
 @Setter
 public class CrmCompanyMetricRequestDto {
 
-	private int page;
+	private int page = 0;
 
-	private int size;
+	private int size = 10;
 
 	private String searchKeyword;
 

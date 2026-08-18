@@ -147,6 +147,15 @@ export const getEmploymentChanges = (
     changes.workLocationId = newEmployment?.workLocationId;
   }
 
+  if (
+    isFieldDifferentAndValid(
+      newEmployment?.businessUnitId,
+      previousEmployement?.businessUnitId
+    )
+  ) {
+    changes.businessUnitId = newEmployment?.businessUnitId;
+  }
+
   return changes;
 };
 

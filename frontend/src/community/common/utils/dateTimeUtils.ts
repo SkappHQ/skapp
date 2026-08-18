@@ -373,6 +373,15 @@ export const getCurrentDateAtMidnight = () => {
   return DateTime.now().startOf("day");
 };
 
+export const getRelativeDates = () => {
+  const now = DateTime.now();
+  return {
+    today: now.toFormat(DATE_FORMAT),
+    yesterday: now.minus({ days: 1 }).toFormat(DATE_FORMAT),
+    tomorrow: now.plus({ days: 1 }).toFormat(DATE_FORMAT)
+  };
+};
+
 export const getDayDifference = (from: DateTime, to: DateTime): number => {
   return to.startOf("day").diff(from.startOf("day"), "days").days;
 };

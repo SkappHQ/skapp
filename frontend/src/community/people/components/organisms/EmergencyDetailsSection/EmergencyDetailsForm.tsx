@@ -75,8 +75,8 @@ const EmergencyDetailsForm = ({
         setIsUnsavedModalSaveButtonClicked(false);
 
         handleMutate();
+        setEmployee(employee);
       }
-      setEmployee(employee);
     } else {
       setNextStep(currentStep);
       setIsUnsavedChangesModalOpen(false);
