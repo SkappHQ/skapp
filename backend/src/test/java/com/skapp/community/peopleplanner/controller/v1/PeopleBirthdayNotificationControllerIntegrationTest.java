@@ -276,7 +276,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns all matching employees, including pending ones, ordered by name")
+		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns matching employees ordered by name, excluding pending ones")
 		void getTodayBirthdayNotifications_WithOrganizationScope_ReturnsAllMatchingEmployeesOrderedByName()
 				throws Exception {
 			seedConfig(true, true, false);
@@ -291,10 +291,9 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			});
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
-				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(3))
-				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(SECOND_OUTSIDER_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(OUTSIDER_EMPLOYEE_ID.intValue()))
-				.andExpect(jsonPath(birthdayFieldPath(2, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
+				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(2))
+				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(OUTSIDER_EMPLOYEE_ID.intValue()))
+				.andExpect(jsonPath(birthdayFieldPath(1, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 		}
 
 		@Test
