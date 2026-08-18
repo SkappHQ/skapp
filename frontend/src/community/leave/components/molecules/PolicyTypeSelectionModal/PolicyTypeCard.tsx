@@ -19,7 +19,7 @@ const PolicyTypeCard: FC<Props> = ({ icon, title, description, onSelect }) => (
         onSelect();
       }
     }}
-    className="flex-1 cursor-pointer rounded-xl aspect-133.75/109.5 bg-white hover:shadow-md hover:outline-primary-accent"
+    className="flex-1 cursor-pointer rounded-xl aspect-133.75/109.5 bg-white hover:bg-tertiary-background"
   >
     <div className="flex h-full flex-col items-center justify-center gap-8 text-center">
       <span className="text-black" aria-hidden="true">
