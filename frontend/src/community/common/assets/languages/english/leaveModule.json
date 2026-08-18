@@ -490,7 +490,6 @@
     },
     "policyTypeHeader": "POLICY TYPE",
     "leaveTypeFilterLabel": "Leave Type",
-    "leaveTypeFilterAllOption": "All",
     "noSearchResultsTitle": "No policies found. Try a different search term.",
     "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
   },
