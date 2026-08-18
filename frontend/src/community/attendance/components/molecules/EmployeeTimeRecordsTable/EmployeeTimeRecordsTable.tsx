@@ -29,9 +29,12 @@ import { downloadManagerTimesheetCsv } from "~community/attendance/utils/Timeshe
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/HtmlTable/Table";
+import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { getEmployeeFullName } from "~community/common/utils/commonUtil";
 import {
   convertYYYYMMDDToDateTime,
@@ -76,6 +79,8 @@ const EmployeeTimeRecordsTable = ({
 
   const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
 
+  const { setToastMessage } = useToast();
+
   const {
     setSelectedDailyRecord,
     setDirectEntryEmployee,
@@ -87,7 +92,11 @@ const EmployeeTimeRecordsTable = ({
     null
   );
 
-  const { data: pendingDayLogs } = useGetDailyLogsByEmployeeId(
+  const {
+    data: pendingDayLogs,
+    isFetching: isPendingDayFetching,
+    isError: isPendingDayError
+  } = useGetDailyLogsByEmployeeId(
     pendingCell?.date ?? "",
     pendingCell?.date ?? "",
     pendingCell?.employeeId ?? 0,
@@ -95,8 +104,24 @@ const EmployeeTimeRecordsTable = ({
   );
 
   useEffect(() => {
-    if (!pendingCell || !pendingDayLogs) return;
+    if (!pendingCell) return;
 
+    if (isPendingDayError) {
+      setPendingCell(null);
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["addTimeEntryErrorTitle"]),
+        description: translateText(["directEntryDayLoadErrorDes"]),
+        autoHideDuration: TOAST_AUTO_HIDE_DURATION
+      });
+      return;
+    }
+
+    if (isPendingDayFetching) return;
+
+    // Gated on the fetch settling rather than on data being present: the preprocessor
+    // yields undefined for a day with no records, which is a valid Add case.
     const dayRecord = pendingDayLogs?.find(
       (log: DailyLogType) => log.date === pendingCell.date
     );
@@ -113,7 +138,13 @@ const EmployeeTimeRecordsTable = ({
     );
     setIsEmployeeTimesheetModalOpen(true);
     setPendingCell(null);
-  }, [pendingCell, pendingDayLogs]);
+  }, [
+    pendingCell,
+    pendingDayLogs,
+    isPendingDayFetching,
+    isPendingDayError,
+    translateText
+  ]);
 
   const headers = useMemo(() => {
     return getHeadersWithSubtitles({
@@ -291,6 +322,10 @@ const EmployeeTimeRecordsTable = ({
                     date: timeSheetRecord.date
                   });
 
+                const isCellLoading =
+                  pendingCell?.employeeId === employeeId &&
+                  pendingCell?.date === timeSheetRecord.date;
+
                 finalCellData = (
                   <button
                     type="button"
@@ -300,7 +335,13 @@ const EmployeeTimeRecordsTable = ({
                         new Date(timeSheetRecord.date)
                       )
                     })}
-                    className="flex w-full cursor-pointer items-center justify-center border-0 bg-transparent p-0 text-inherit"
+                    aria-busy={isCellLoading}
+                    disabled={isCellLoading}
+                    className={`flex w-full items-center justify-center border-0 bg-transparent p-0 text-inherit ${
+                      isCellLoading
+                        ? "cursor-wait opacity-50"
+                        : "cursor-pointer"
+                    }`}
                     onClick={openDirectEntry}
                   >
                     {finalCellData}
@@ -345,7 +386,8 @@ const EmployeeTimeRecordsTable = ({
     timeConfigData,
     getHolidaysArrayByDate,
     translateText,
-    canDirectlyAddOrEditEntry
+    canDirectlyAddOrEditEntry,
+    pendingCell
   ]);
 
   return (

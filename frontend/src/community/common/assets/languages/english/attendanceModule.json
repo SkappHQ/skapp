@@ -147,6 +147,7 @@
     "directEntryUpdatedToastTitle": "Time Entry Updated",
     "directEntryUpdatedToastDes": "The time entry for {{employeeName}} on {{date}} has been updated successfully.",
     "directEntrySaveErrorDes": "Failed to save the time entry. Please try again.",
+    "directEntryDayLoadErrorDes": "Couldn't load this day's time entry. Please try again.",
     "directEntryConflictErrorDes": "This entry has already been updated. Please refresh and try again.",
     "manualEntryRestrictedCellTooltip": "Manual time entries are managed by your Attendance Manager or Admin",
     "directEntryEmployeeLabel": "Employee",
