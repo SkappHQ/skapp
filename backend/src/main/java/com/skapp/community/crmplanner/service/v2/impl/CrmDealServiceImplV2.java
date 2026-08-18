@@ -11,6 +11,9 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
@@ -24,6 +27,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +42,31 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 	private final CrmMapperV2 crmMapperV2;
 
 	private final UserService userService;
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getBoardInitData() {
+		log.info("getBoardInitData: execution started");
+
+		ResponseEntityDto v1Response = crmDealService.getBoardInitData();
+		CrmBoardInitDataResponseDto v1InitData = (CrmBoardInitDataResponseDto) v1Response.getResults().getFirst();
+
+		List<CrmBoardContactResponseDtoV2> contacts = v1InitData.getContacts()
+			.stream()
+			.map(contact -> new CrmBoardContactResponseDtoV2(contact.getId(), contact.getName(),
+					contact.getCompany() == null ? null : contact.getCompany().getId()))
+			.toList();
+
+		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
+		responseDto.setStages(v1InitData.getStages());
+		responseDto.setContacts(contacts);
+		responseDto.setCrmRoles(v1InitData.getCrmRoles());
+		responseDto.setOwners(v1InitData.getOwners());
+		responseDto.setTaskTypes(v1InitData.getTaskTypes());
+
+		log.info("getBoardInitData: execution ended");
+		return new ResponseEntityDto(false, responseDto);
+	}
 
 	@Override
 	@Transactional(readOnly = true)
