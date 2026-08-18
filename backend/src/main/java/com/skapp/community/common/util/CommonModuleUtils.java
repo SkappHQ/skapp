@@ -3,7 +3,6 @@ package com.skapp.community.common.util;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.peopleplanner.model.Employee;
-import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -357,10 +356,6 @@ public class CommonModuleUtils {
 	public static boolean isGuestEmployee(Employee employee) {
 		return employee != null && employee.getEmployeeRole() != null
 				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();
-	}
-
-	public static boolean isPeopleAdmin(EmployeeRole employeeRole) {
-		return employeeRole != null && Role.PEOPLE_ADMIN == employeeRole.getPeopleRole();
 	}
 
 }
