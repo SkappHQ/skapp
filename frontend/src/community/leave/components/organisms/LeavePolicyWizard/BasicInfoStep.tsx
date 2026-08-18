@@ -78,6 +78,7 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
               errorMessage={leaveTypeError}
               onChange={handleLeaveTypeChange}
               width="100%"
+              className="rounded-lg"
             />
             {!isLoading && leaveTypeOptions.length === 0 && (
               <p role="alert" className="body2 text-semantic-amber-text">

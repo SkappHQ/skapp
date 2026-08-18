@@ -105,6 +105,7 @@ const EntitlementSetupStep: FC<Props> = ({
                 onChange({ accrualFrequency: value })
               }
               width="100%"
+              className="rounded-lg"
             />
           </div>
         </div>
@@ -207,6 +208,7 @@ const EntitlementSetupStep: FC<Props> = ({
                     onChange({ carryOverDate: value })
                   }
                   width="100%"
+                  className="rounded-lg"
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">
@@ -246,6 +248,7 @@ const EntitlementSetupStep: FC<Props> = ({
             options={firstAccrualOptions}
             onChange={(value: string) => onChange({ firstAccrual: value })}
             width="100%"
+            className="rounded-lg"
           />
           <Dropdown
             id="leave-policy-receive-accrued-time"
@@ -256,6 +259,7 @@ const EntitlementSetupStep: FC<Props> = ({
               onChange({ receiveAccruedTime: value })
             }
             width="100%"
+            className="rounded-lg"
           />
         </div>
       </WizardSection>
