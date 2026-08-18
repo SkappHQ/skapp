@@ -204,8 +204,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged()
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(employeeId,
-					EmployeeLeavePolicyStatus.ACTIVE, pageable);
+			.findByEmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
+					pageable);
 
 		List<EmployeeLeavePolicy> assignments = activeEmployeeLeavePolicies.getContent();
 		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(employeeId,
