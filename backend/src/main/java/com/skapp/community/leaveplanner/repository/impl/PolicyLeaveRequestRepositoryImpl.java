@@ -19,12 +19,14 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +40,9 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -139,6 +143,31 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), windowStart, windowEnd));
 
 		return entityManager.createQuery(criteriaQuery).getResultList();
+	}
+
+	@Override
+	public Map<Long, List<PolicyLeaveUsageDto>> findCommittedUsageForPoliciesInWindow(Long employeeId,
+			Collection<Long> policyIds, Collection<LeaveRequestStatus> statuses, LocalDate windowStart,
+			LocalDate windowEnd) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
+		Path<Long> policyId = root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id);
+
+		criteriaQuery
+			.multiselect(policyId, root.get(PolicyLeaveRequest_.startDate),
+					root.get(PolicyLeaveRequest_.durationDays).as(Double.class))
+			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
+					policyId.in(policyIds), root.get(PolicyLeaveRequest_.status).in(statuses),
+					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), windowStart, windowEnd));
+
+		Map<Long, List<PolicyLeaveUsageDto>> usagesByPolicyId = new HashMap<>();
+		for (Tuple result : entityManager.createQuery(criteriaQuery).getResultList()) {
+			usagesByPolicyId.computeIfAbsent(result.get(0, Long.class), key -> new ArrayList<>())
+				.add(new PolicyLeaveUsageDto(result.get(1, LocalDate.class), result.get(2, Double.class)));
+		}
+		return usagesByPolicyId;
 	}
 
 	@Override

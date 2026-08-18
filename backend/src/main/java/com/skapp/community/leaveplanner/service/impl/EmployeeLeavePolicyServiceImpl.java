@@ -208,8 +208,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 					EmployeeLeavePolicyStatus.ACTIVE, pageable);
 
 		List<EmployeeLeavePolicy> assignments = activeEmployeeLeavePolicies.getContent();
-		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(assignments,
-				null);
+		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(employeeId,
+				assignments, null);
 		List<EmployeeLeavePolicyResponseDto> items = assignments.stream()
 			.map(assignment -> toEmployeeLeavePolicyWithBalance(assignment,
 					balancesByAssignment.get(assignment.getId())))
