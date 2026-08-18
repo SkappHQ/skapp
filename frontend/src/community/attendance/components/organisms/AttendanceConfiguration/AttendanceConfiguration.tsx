@@ -21,11 +21,6 @@ import ManualEntryRestrictionSettings from "~enterprise/configurations/component
 
 import styles from "./styles";
 
-/**
- * Copies one field from the local config over the server copy. Generic over the key so
- * the value types stay tied to it — indexing with a plain keyof widens to a union of
- * every field's type and no longer assigns cleanly.
- */
 const retainLocalValue = <K extends keyof AttendanceConfigurationType>(
   target: AttendanceConfigurationType,
   source: AttendanceConfigurationType,
@@ -44,7 +39,6 @@ const AttendanceConfiguration = (): JSX.Element => {
 
   const { data: configData } = useGetAttendanceConfiguration();
   const onSuccess = () => {
-    // The edits are now the server's, so the next refetch should be taken wholesale.
     locallyEditedKeys.current.clear();
     setToastMessage({
       open: true,
@@ -70,11 +64,6 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-
-  // Switches the admin has changed but not yet saved. A refetch — on window focus, or
-  // from the manual entry toggle invalidating this query — must preserve those, but
-  // still take server values for everything else. Keeping stale values for untouched
-  // fields would make Save PATCH them back over a change made elsewhere.
   const locallyEditedKeys = useRef(
     new Set<keyof AttendanceConfigurationType>()
   );
