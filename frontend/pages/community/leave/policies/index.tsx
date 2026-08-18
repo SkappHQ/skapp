@@ -46,7 +46,7 @@ const LeavePolicies: NextPage = () => {
         canManagePolicies ? translateText(["bulkAssignBtnTxt"]) : undefined
       }
       secondaryBtnVariant="tertiary"
-      secondaryBtnIconName={IconName.UP_ARROW_ICON}
+      secondaryBtnIconName={IconName.EXPORT_ARROW_ICON}
       onPrimaryButtonClick={() => setIsPolicyTypeModalOpen(true)}
       onSecondaryButtonClick={() => setIsBulkAssignModalOpen(true)}
       id={{
