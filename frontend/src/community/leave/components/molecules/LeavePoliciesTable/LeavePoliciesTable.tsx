@@ -110,7 +110,10 @@ const LeavePoliciesTable: FC<Props> = ({
     size: LEAVE_POLICY_PAGE_SIZE
   });
 
-  const policies: LeavePolicyType[] = []
+  const policies: LeavePolicyType[] = useMemo(
+    () => policyPages?.pages?.flatMap((page) => page?.items ?? []) ?? [],
+    [policyPages]
+  );
 
   const handleActivate = useCallback(
     (policy: LeavePolicyType): void => {
@@ -284,8 +287,8 @@ const LeavePoliciesTable: FC<Props> = ({
                   ? [
                       {
                         label: translateText(["createPolicyBtnTxt"]),
-                        variant: "primary",
-                        onClick: onCreatePolicy
+                        onClick: onCreatePolicy,
+                        variant: "primary"
                       }
                     ]
                   : undefined
