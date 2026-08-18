@@ -73,8 +73,6 @@ export const accrualFrequencyItemList = [
 
 export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
 
-export const CARRYOVER_EXPIRY_DISPLAY_FORMAT = "dd MMMM";
-
 export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2025;
 
 export const firstAccrualItemList = [

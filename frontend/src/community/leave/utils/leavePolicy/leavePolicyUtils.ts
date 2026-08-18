@@ -5,9 +5,9 @@ import {
   COMMON_ERROR_ACCESS_DENIED,
   LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS
 } from "~community/common/constants/errorMessageKeys";
+import { FULL_MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
   CARRYOVER_EXPIRY_DATE_FORMAT,
-  CARRYOVER_EXPIRY_DISPLAY_FORMAT,
   CARRYOVER_EXPIRY_REFERENCE_YEAR
 } from "~community/leave/constants/leavePolicyConstants";
 import {
@@ -46,9 +46,7 @@ export const getCarryoverExpiryReferenceDate = (): DateTime =>
   });
 
 export const formatCarryoverExpiryDate = (monthDay: string): string =>
-  parseCarryoverExpiryDate(monthDay)?.toFormat(
-    CARRYOVER_EXPIRY_DISPLAY_FORMAT
-  ) ?? "";
+  parseCarryoverExpiryDate(monthDay)?.toFormat(FULL_MONTH_DATE_FORMAT) ?? "";
 
 interface LeavePolicyErrorData {
   results?: { messageKey?: string }[];

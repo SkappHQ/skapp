@@ -4,9 +4,9 @@ import { DateTime } from "luxon";
 import { ChangeEvent, FC, useState } from "react";
 
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
+import { FULL_MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  CARRYOVER_EXPIRY_DISPLAY_FORMAT,
   accrualFrequencyItemList,
   firstAccrualItemList,
   receiveAccruedTimeItemList
@@ -225,7 +225,7 @@ const EntitlementSetupStep: FC<Props> = ({
                     "carryoverExpiryDatePlaceholder"
                   ])}
                   tooltip={translateText(["carryoverExpiryDateTooltip"])}
-                  inputFormat={CARRYOVER_EXPIRY_DISPLAY_FORMAT}
+                  inputFormat={FULL_MONTH_DATE_FORMAT}
                   isYearHidden
                   selectedDate={carryoverExpiryDate}
                   setSelectedDate={setCarryoverExpiryDate}
