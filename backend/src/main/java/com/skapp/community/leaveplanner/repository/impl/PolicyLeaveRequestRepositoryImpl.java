@@ -7,6 +7,7 @@ import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -122,20 +123,22 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId,
-			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
+	public List<PolicyLeaveUsageDto> findCommittedUsageForPolicyInWindow(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		CriteriaQuery<PolicyLeaveUsageDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveUsageDto.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 
-		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveUsageDto.class, root.get(PolicyLeaveRequest_.startDate),
+					root.get(PolicyLeaveRequest_.durationDays)))
 			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
 					criteriaBuilder.equal(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id), policyId),
 					root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
+					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), windowStart, windowEnd));
 
-		return entityManager.createQuery(criteriaQuery).getSingleResult();
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override

@@ -1,19 +1,26 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikErrors, FormikTouched } from "formik";
-import { ChangeEvent, FC } from "react";
+import { DateTime } from "luxon";
+import { ChangeEvent, FC, useState } from "react";
 
+import InputDate from "~community/common/components/molecules/InputDate/InputDate";
+import { FULL_MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   accrualFrequencyItemList,
-  carryoverDateItemList,
   firstAccrualItemList,
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
 import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
-import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import {
+  buildTranslatedOptionList,
+  getCarryoverExpiryReferenceDate,
+  parseCarryoverExpiryDate,
+  toCarryoverExpiryMonthDay
+} from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
-import WizardSection from "./WizardSection";
 import RadioGroup from "./RadioGroup";
+import WizardSection from "./WizardSection";
 
 interface Props {
   formData: LeavePolicyFormData;
@@ -42,14 +49,29 @@ const EntitlementSetupStep: FC<Props> = ({
     "options"
   );
 
+  const [carryoverExpiryDate, setCarryoverExpiryDate] = useState<
+    DateTime | undefined
+  >(() => parseCarryoverExpiryDate(formData.carryoverExpiryDate));
+
+  const handleCarryOverChange = (value: boolean) => {
+    if (!value) {
+      setCarryoverExpiryDate(undefined);
+    }
+    onChange({
+      canCarryOver: value,
+      ...(value ? {} : { carryoverExpiryDate: "", maxCarryOverDays: "" })
+    });
+  };
+
+  const handleCarryoverExpiryDateChange = (newValue: string) => {
+    onChange({
+      carryoverExpiryDate: toCarryoverExpiryMonthDay(newValue)
+    });
+  };
+
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
-    translateOptions
-  );
-  const carryoverDateOptions = buildTranslatedOptionList(
-    carryoverDateItemList,
-    "carryoverDate",
     translateOptions
   );
   const firstAccrualOptions = buildTranslatedOptionList(
@@ -190,22 +212,26 @@ const EntitlementSetupStep: FC<Props> = ({
             noLabel={translateText(["carryOverNo"])}
             yesLabel={translateText(["carryOverYes"])}
             value={formData.canCarryOver}
-            onChange={(value) => onChange({ canCarryOver: value })}
+            onChange={handleCarryOverChange}
           />
           {formData.canCarryOver && (
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex flex-1 flex-col gap-1.5">
-                <Dropdown
-                  id="leave-policy-carryover-date"
-                  label={translateText(["carryOverDateLabel"])}
-                  value={formData.carryOverDate}
-                  placeholder={translateText(["carryOverDatePlaceholder"])}
-                  options={carryoverDateOptions}
-                  onChange={(value: string) =>
-                    onChange({ carryOverDate: value })
+                <InputDate
+                  label={translateText(["carryoverExpiryDateLabel"])}
+                  placeholder={translateText([
+                    "carryoverExpiryDatePlaceholder"
+                  ])}
+                  tooltip={translateText(["carryoverExpiryDateTooltip"])}
+                  inputFormat={FULL_MONTH_DATE_FORMAT}
+                  isYearHidden
+                  selectedDate={carryoverExpiryDate}
+                  setSelectedDate={setCarryoverExpiryDate}
+                  initialMonthlyView={
+                    carryoverExpiryDate ?? getCarryoverExpiryReferenceDate()
                   }
-                  width="100%"
-                  className="rounded-lg"
+                  onchange={handleCarryoverExpiryDateChange}
+                  componentStyle={{ mt: "0rem" }}
                 />
               </div>
               <div className="flex flex-1 flex-col gap-1.5">

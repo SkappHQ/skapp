@@ -25,7 +25,7 @@ const basePolicy = (
   waitingPeriodDays: null,
   accrualCapDays: null,
   isCarryoverEnabled: false,
-  carryoverDate: null,
+  carryoverExpiryDate: null,
   maxCarryoverDays: null,
   firstAccrual: FirstAccrualType.FULL,
   accrualTiming: AccrualTiming.PERIOD_END,
