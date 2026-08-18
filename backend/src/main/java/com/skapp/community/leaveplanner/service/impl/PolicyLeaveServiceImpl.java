@@ -788,10 +788,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.getEndDate()));
 	}
 
-	/**
-	 * Loads every committed request the balance walk can ask about in one query, so
-	 * replaying prior cycles for carryover costs no extra round trips.
-	 */
 	private PolicyLeaveUsageLookup buildUsageLookup(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
 			MonthDay cycleAnchor) {
 		LocalDate firstCycleStart = PolicyLeaveAccrualUtil
