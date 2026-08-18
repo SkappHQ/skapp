@@ -203,7 +203,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		Sort sort = Sort.by(Sort.Direction.DESC, PolicyLeaveConstant.SORT_BY_EFFECTIVE_FROM);
+		Sort sort = Sort.by(Sort.Direction.DESC, PolicyLeaveConstant.SORT_BY_EFFECTIVE_FROM,
+				PolicyLeaveConstant.SORT_BY_ID);
 		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged(sort)
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao

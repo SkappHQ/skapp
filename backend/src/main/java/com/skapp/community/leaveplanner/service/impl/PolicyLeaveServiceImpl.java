@@ -402,9 +402,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return new ResponseEntityDto(false, nudgeStatus);
 	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year) {
+	private PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year) {
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(year);
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 		LocalDate creditedUpTo = today.isBefore(cycle.getStartDate()) ? cycle.getEndDate() : today;

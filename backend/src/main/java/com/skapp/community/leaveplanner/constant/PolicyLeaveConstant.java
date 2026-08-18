@@ -32,4 +32,6 @@ public class PolicyLeaveConstant {
 
 	public static final String SORT_BY_EFFECTIVE_FROM = "effectiveFrom";
 
+	public static final String SORT_BY_ID = "id";
+
 }
