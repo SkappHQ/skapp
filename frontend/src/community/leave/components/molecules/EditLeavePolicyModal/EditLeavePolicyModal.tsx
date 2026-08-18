@@ -99,6 +99,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   }
 
   const isChanged = values.policyName.trim() !== policy.name;
+  const isSaveDisabled = isPending || !isChanged;
 
   const handleDiscard = (): void => {
     resetForm();
@@ -127,23 +128,24 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
             fullWidth
           />
           <div className="flex flex-col gap-1.5">
-            <p className="body2 text-secondary-text">
+            <p className="subtitle1 text-secondary-text">
               {translateText(["leaveTypeLabel"])}
             </p>
-            <div className="flex items-center rounded-lg bg-tertiary-background px-3 py-2">
+            <div className="flex items-center rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-2">
               <LeaveTypeChip
                 name={policy.leaveTypeName}
                 emojiCode={policy.leaveTypeEmoji}
                 className="bg-white px-4 py-2"
+                isDisabled
               />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <p className="body2 text-secondary-text">
+            <p className="subtitle1 text-secondary-text">
               {translateText(["entitlementTypeLabel"])}
             </p>
-            <div className="rounded-lg bg-tertiary-background px-3 py-3">
-              <p className="body1 text-secondary-text">
+            <div className="rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-3">
+              <p className="body1 text-tertiary-text">
                 {policy.policyType === PolicyType.ACCRUAL
                   ? translateCommonText(["accrual"])
                   : translateCommonText(["flexible"])}
@@ -164,9 +166,13 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
         buttonRight: {
           variant: "primary",
           onClick: handleSave,
-          disabled: isPending || !isChanged,
+          disabled: isSaveDisabled,
           isLoading: isPending,
-          icon: <SaveIcon />,
+          icon: (
+            <SaveIcon
+              className={isSaveDisabled ? "opacity-50" : ""}
+            />
+          ),
           iconPosition: "end",
           children: translateText(["saveBtnTxt"])
         }
