@@ -14,12 +14,7 @@ export interface CrmCompanyEntity {
   website?: string;
   address?: string;
   contactNumber?: string;
-  openTasksCount?: number;
-  overdue?: number;
-  openValue?: string;
-  accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
+  metrics?: CrmCompanyMetrics;
   contactIds?: number[];
   dealIds?: number[];
   taskIds?: number[];
@@ -28,11 +23,11 @@ export interface CrmCompanyEntity {
 export interface CrmCompanyMetrics {
   id?: number;
   openTasksCount?: number;
-  overdue?: number;
+  overdueCount?: number;
   openValue?: string;
   accountValue?: string;
-  openDeals?: number;
-  closedDeals?: number;
+  openDealsCount?: number;
+  closedDealsCount?: number;
 }
 
 // Contact
@@ -47,13 +42,7 @@ export interface CrmContactEntity {
   lastModifiedDate?: string;
   companyId?: number;
   ownerId?: number;
-  totalRevenue?: string;
-  pipelineRevenue?: string;
-  activeDealsCount?: number;
-  openTasksCount?: number;
-  overdueTasksCount?: number;
-  closedDealValue?: string;
-  closedDealCount?: number;
+  metrics?: CrmContactMetrics;
   dealIds?: number[];
   taskIds?: number[];
 }
@@ -91,7 +80,7 @@ export interface CrmDealEntity {
   companyId?: number;
   contactId?: number;
   ownerId?: number;
-  openTasksCount?: number;
+  taskCount?: number;
   taskIds?: number[];
 }
 
@@ -132,3 +121,14 @@ export interface CrmTaskTypeEntity {
   name: string;
   orderIndex: number;
 }
+
+// Normalized store records 
+
+export type CrmCompanyRecord = Record<number, CrmCompanyEntity>;
+export type CrmContactRecord = Record<number, CrmContactEntity>;
+export type CrmOwnerRecord = Record<number, CrmOwnerEntity>;
+export type CrmDealRecord = Record<number, CrmDealEntity>;
+export type CrmStageRecord = Record<number, CrmStageEntity>;
+export type CrmBoardRecord = Record<number, CrmBoardColumn>;
+export type CrmTaskRecord = Record<number, CrmTaskEntity>;
+export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;

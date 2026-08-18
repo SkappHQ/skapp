@@ -26,6 +26,8 @@ public class PolicyLeaveBalanceDto {
 
 	private float accruedDays;
 
+	private float carriedOverDays;
+
 	private float totalDaysAllocated;
 
 	private float totalDaysUsed;

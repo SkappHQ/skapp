@@ -18,7 +18,7 @@ import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
-  employeeName?: string;
+  employeeName: string;
 }
 
 const POLICIES_PER_PAGE = 6;
@@ -79,7 +79,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
         {canManagePolicies && (
           <ButtonV2
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => setIsAssignModalOpen(true)}
           >
             {translateText(["assignPolicyBtnTxt"])}
@@ -105,7 +105,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
       )}
 
       {hasPolicies && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {policies.map((policy) => (
             <LeavePolicyCard
               key={policy.id}
@@ -138,6 +138,7 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
 
       <AssignLeavePolicyModal
         employeeId={employeeId}
+        employeeName={employeeName}
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
       />

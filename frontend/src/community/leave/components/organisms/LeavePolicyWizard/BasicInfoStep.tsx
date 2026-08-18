@@ -54,23 +54,27 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
     <div className="flex flex-1 flex-col gap-8">
       <WizardSection title={translateText(["basicInfo", "basicDetailsTitle"])}>
         <div className="flex max-w-3xl flex-col gap-4">
-          <InputField
-            label={translateText(["basicInfo", "policyNameLabel"])}
-            name="policyName"
-            type="text"
-            value={formData.policyName}
-            placeholder={translateText(["basicInfo", "policyNamePlaceholder"])}
-            state={policyNameError ? "error" : "default"}
-            errorMessage={policyNameError}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              onChange({ policyName: event.target.value })
-            }
-            fullWidth
-          />
-          <div className="flex flex-col gap-1.5">
+          <div className="w-1/2">
+            <InputField
+              label={translateText(["basicInfo", "policyNameLabel"])}
+              name="policyName"
+              type="text"
+              required
+              value={formData.policyName}
+              placeholder={translateText(["basicInfo", "policyNamePlaceholder"])}
+              state={policyNameError ? "error" : "default"}
+              errorMessage={policyNameError}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                onChange({ policyName: event.target.value })
+              }
+              fullWidth
+            />
+          </div>
+          <div className="flex w-1/2 flex-col gap-1.5">
             <Dropdown
               id="leave-policy-leave-type"
               label={translateText(["basicInfo", "leaveTypeLabel"])}
+              required
               value={formData.leaveType}
               placeholder={translateText(["basicInfo", "leaveTypePlaceholder"])}
               options={leaveTypeOptions}
@@ -78,6 +82,7 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
               errorMessage={leaveTypeError}
               onChange={handleLeaveTypeChange}
               width="100%"
+              className="rounded-lg"
             />
             {!isLoading && leaveTypeOptions.length === 0 && (
               <p role="alert" className="body2 text-semantic-amber-text">

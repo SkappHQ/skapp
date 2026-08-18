@@ -247,7 +247,7 @@
     }
   },
   "businessUnit": {
-    "title": "Business Unit",
+    "title": "Business Units",
     "addButton": "Add unit",
     "emptyState": {
       "title": "No Business Units",
@@ -291,23 +291,23 @@
     "toasts": {
       "createSuccess": {
         "title": "Business Unit Created",
-        "description": "\"{{name}}\" has been created successfully."
+        "description": "The business unit has been created successfully."
       },
       "updateSuccess": {
         "title": "Business Unit Updated",
-        "description": "\"{{name}}\" has been updated successfully."
+        "description": "The business unit has been updated successfully."
       },
       "deleteSuccess": {
         "title": "Business Unit Deleted",
-        "description": "'{{name}}' has been deleted successfully."
+        "description": "The business unit has been deleted successfully."
       },
       "deleteAndTransferSuccess": {
-        "description_one": "'{{name}}' has been deleted and {{count}} employee transferred to '{{target}}'.",
-        "description_other": "'{{name}}' has been deleted and {{count}} employees transferred to '{{target}}'."
+        "description_one": "The business unit has been deleted and {{count}} employee transferred.",
+        "description_other": "The business unit has been deleted and {{count}} employees transferred."
       },
       "deleteAndUnassignSuccess": {
-        "description_one": "'{{name}}' has been deleted. {{count}} employee is now unassigned.",
-        "description_other": "'{{name}}' has been deleted. {{count}} employees are now unassigned."
+        "description_one": "The business unit has been deleted. {{count}} employee is now unassigned.",
+        "description_other": "The business unit has been deleted. {{count}} employees are now unassigned."
       },
       "error": {
         "title": "Oops! Something went wrong",

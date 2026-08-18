@@ -32,18 +32,26 @@ const useStepper = () => {
     return steps;
   }, [isLeaveModuleEnabled, translateText]);
 
+  const isLastStep = activeStep === steps.length - 1;
+
+  const goToStep = (stepIndex: number) => {
+    if (stepIndex === activeStep) return;
+
+    setActiveStep(stepIndex);
+  };
+
   const handleNext = () => {
-    const nextStep =
+    const nextIndex =
       activeStep < steps.length - 1 ? activeStep + 1 : activeStep;
-    setActiveStep(nextStep);
+    goToStep(nextIndex);
   };
 
   const handleBack = () => {
-    const prevStep = activeStep > 0 ? activeStep - 1 : activeStep;
-    setActiveStep(prevStep);
+    const prevIndex = activeStep > 0 ? activeStep - 1 : activeStep;
+    goToStep(prevIndex);
   };
 
-  return { steps, activeStep, handleNext, handleBack };
+  return { steps, activeStep, isLastStep, handleNext, handleBack };
 };
 
 export default useStepper;

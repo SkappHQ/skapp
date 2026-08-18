@@ -171,6 +171,8 @@
     "weekTabTxt": "This Week",
     "monthTabTxt": "This Month",
     "dateRangeLabel": "Date:",
+    "fromDatePlaceholder": "From",
+    "toDatePlaceholder": "To",
     "noTeamTxt": "No teams assigned",
     "allLabel": "All Employees",
     "globalSearchPlaceholder": "Search employee",
