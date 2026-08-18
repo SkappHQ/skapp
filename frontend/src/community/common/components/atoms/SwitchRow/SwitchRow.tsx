@@ -61,7 +61,7 @@ const SwitchRow: FC<SwitchComponentProps> = ({
             ...classes.label,
             color: disabled
               ? theme.palette.grey.A100
-              : theme.palette.common.black
+              : theme.palette.text.secondary
           }}
           id={labelId}
           component="label"
