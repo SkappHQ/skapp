@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode, useEffect, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -135,6 +135,18 @@ const LeaveManagerModalController = () => {
       return <OnLeaveModal />;
     return null;
   };
+
+  if (popupType === LeaveExtraPopupTypes.ON_LEAVE_MODAL) {
+    return (
+      <LargeModal
+        isOpen={isManagerModalOpen}
+        id="on-leave-modal"
+        onClose={handelManagerModal}
+        modalHeader={modalTitle}
+        content={modalContent()}
+      />
+    );
+  }
 
   return (
     <SmallModal

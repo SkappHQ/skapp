@@ -58,6 +58,7 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
             label={translateText(["basicInfo", "policyNameLabel"])}
             name="policyName"
             type="text"
+            required
             value={formData.policyName}
             placeholder={translateText(["basicInfo", "policyNamePlaceholder"])}
             state={policyNameError ? "error" : "default"}
@@ -71,6 +72,7 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
             <Dropdown
               id="leave-policy-leave-type"
               label={translateText(["basicInfo", "leaveTypeLabel"])}
+              required
               value={formData.leaveType}
               placeholder={translateText(["basicInfo", "leaveTypePlaceholder"])}
               options={leaveTypeOptions}
@@ -78,6 +80,7 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
               errorMessage={leaveTypeError}
               onChange={handleLeaveTypeChange}
               width="100%"
+              className="rounded-lg"
             />
             {!isLoading && leaveTypeOptions.length === 0 && (
               <p role="alert" className="body2 text-semantic-amber-text">

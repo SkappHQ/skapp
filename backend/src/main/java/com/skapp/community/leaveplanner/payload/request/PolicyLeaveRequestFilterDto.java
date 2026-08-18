@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -25,5 +26,13 @@ public class PolicyLeaveRequestFilterDto {
 	private List<LeaveRequestStatus> status;
 
 	private List<Long> policyId;
+
+	private List<Long> leaveTypeId;
+
+	private LocalDate startDate;
+
+	private LocalDate endDate;
+
+	private String searchKeyword;
 
 }

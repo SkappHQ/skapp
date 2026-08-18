@@ -10,7 +10,7 @@ import {
 
 export const MAX_POLICY_NAME_LENGTH = 100;
 
-export const ACCRUAL_PREVIEW_ROW_LIMIT = 12;
+export const ACCRUAL_PREVIEW_ROW_LIMIT = 4;
 
 export const CALENDAR_UNIT: Partial<Record<AccrualFrequency, CalendarUnit>> = {
   DAILY: "day",
@@ -29,7 +29,7 @@ export const INTERVAL_STEP: Partial<Record<AccrualFrequency, DurationLike>> = {
 
 export const LEAVE_POLICY_PAGE_SIZE = 10;
 
-export const LEAVE_POLICY_SKELETON_ROW_COUNT = 8;
+export const USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE = 8;
 
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 

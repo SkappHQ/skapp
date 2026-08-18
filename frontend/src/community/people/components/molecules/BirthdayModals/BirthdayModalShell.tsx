@@ -83,7 +83,7 @@ const BirthdayModalShell: FC<Props> = ({
                   : employee.firstName
               })}
             />
-            <h2 className="h1 leading-6 tracking-[0.07px] wrap-break-word text-black">
+            <h2 className="h1 line-clamp-2 w-full px-1 leading-tight tracking-[0.07px] wrap-break-word text-black">
               {heading}
             </h2>
             <p className="body2 max-w-104 leading-normal text-secondary-text">

@@ -56,8 +56,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			+ "(200, 'AssignCasual', 'U+1F334', '#4CAF50', 'FULL_DAY', false, false, false, false, true)";
 
 	// 500/501 are both ACTIVE accrual policies on leave type 100 (conflict pair);
-	// 502 is DEACTIVATED; 600 is an accrual policy on a different leave type (200);
-	// 700 is a FLEXIBLE policy (rejected this phase — accrual only).
+	// 502 is INACTIVE; 600 is an accrual policy on a different leave type (200);
+	// 700 is a FLEXIBLE policy on leave type 100 (assignable, tracks no balance).
 	private static final String SEED_POLICIES = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Annual Standard', 100, 'ACCRUAL', 'ACTIVE', false), "
 			+ "(501, 'Annual Senior', 100, 'ACCRUAL', 'ACTIVE', false), "
@@ -183,10 +183,10 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 	class AssignPolicyTests {
 
 		@Test
-		@DisplayName("Leave admin assigns a policy using the hire date; window opens on the employee's join date")
+		@DisplayName("Leave admin assigns a policy using the join date; window opens on the employee's join date")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void assign_HireDate_ReturnsCreatedWindowOnJoinDate() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(1, 500, "HIRE_DATE", null)).andDo(print())
+		void assign_JoinDate_ReturnsCreatedWindowOnJoinDate() throws Exception {
+			performAssign(leaveAdminToken(), assignBody(1, 500, "JOIN_DATE", null)).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results[0].employeeId").value(1))
@@ -195,7 +195,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].leaveTypeName").value("AssignAnnual"))
 				.andExpect(jsonPath("$.results[0].policyType").value("ACCRUAL"))
 				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"))
-				.andExpect(jsonPath("$.results[0].effectiveDateType").value("HIRE_DATE"))
+				.andExpect(jsonPath("$.results[0].effectiveDateType").value("JOIN_DATE"))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 		}
 
@@ -247,10 +247,10 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Returns 400 when hire date is requested but the employee has no join date")
+		@DisplayName("Returns 400 when the join date is requested but the employee has no join date")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, NULL_JOIN_DATE_EMPLOYEE_2 })
-		void assign_HireDateWithoutJoinDate_ReturnsBadRequest() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(2, 500, "HIRE_DATE", null)).andDo(print())
+		void assign_JoinDateWithoutJoinDate_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), assignBody(2, 500, "JOIN_DATE", null)).andDo(print())
 				.andExpect(status().isBadRequest());
 		}
 
@@ -258,16 +258,66 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@DisplayName("Returns 400 when the policy is not active")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_InactivePolicy_ReturnsBadRequest() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(1, 502, "HIRE_DATE", null)).andDo(print())
+			performAssign(leaveAdminToken(), assignBody(1, 502, "JOIN_DATE", null)).andDo(print())
 				.andExpect(status().isBadRequest());
 		}
 
 		@Test
-		@DisplayName("Returns 400 when assigning a flexible policy (accrual only this phase)")
+		@DisplayName("Returns 400 when effectiveDateType is omitted")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
-		void assign_FlexiblePolicy_ReturnsBadRequest() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(1, 700, "HIRE_DATE", null)).andDo(print())
+		void assign_MissingEffectiveDateType_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"employeeId\": 1, \"policyId\": 500 }").andDo(print())
 				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns 400 when policyId is omitted")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_MissingPolicyId_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"employeeId\": 1, \"effectiveDateType\": \"JOIN_DATE\" }")
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns 400 when employeeId is omitted")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_MissingEmployeeId_ReturnsBadRequest() throws Exception {
+			performAssign(leaveAdminToken(), "{ \"policyId\": 500, \"effectiveDateType\": \"JOIN_DATE\" }")
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Leave admin assigns a flexible policy; window opens exactly as it does for accrual")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
+		void assign_FlexiblePolicy_ReturnsCreatedWindow() throws Exception {
+			performAssign(leaveAdminToken(), assignBody(1, 700, "JOIN_DATE", null)).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].policyId").value(700))
+				.andExpect(jsonPath("$.results[0].policyName").value("Annual Flexible"))
+				.andExpect(jsonPath("$.results[0].policyType").value("FLEXIBLE"))
+				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"))
+				.andExpect(jsonPath("$.results[0].effectiveDateType").value("JOIN_DATE"))
+				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
+		}
+
+		@Test
+		@DisplayName("A flexible policy supersedes an existing accrual policy on the same leave type")
+		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, SEED_EXISTING_ASSIGNMENT })
+		void assign_FlexibleOverAccrualSameLeaveType_ClosesPreviousWindow() throws Exception {
+			// Employee 1 already has an open window on accrual policy 500 (leave type
+			// 100). Assigning flexible policy 700 (also leave type 100) must close it.
+			performAssign(leaveAdminToken(), assignBody(1, 700, "SPECIFIC", "2024-06-01")).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].policyId").value(700));
+
+			performGet(leaveAdminToken(), 1).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
+				.andExpect(jsonPath("$.results[0].items[0].policyId").value(700))
+				.andExpect(jsonPath("$.results[0].items[0].policyType").value("FLEXIBLE"));
 		}
 
 		@Test
@@ -288,7 +338,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@Test
 		@DisplayName("Returns 404 when the policy does not exist")
 		void assign_UnknownPolicy_ReturnsNotFound() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(1, 999, "HIRE_DATE", null)).andDo(print())
+			performAssign(leaveAdminToken(), assignBody(1, 999, "JOIN_DATE", null)).andDo(print())
 				.andExpect(status().isNotFound());
 		}
 
@@ -296,7 +346,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@DisplayName("Returns 404 when the employee does not exist")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES })
 		void assign_UnknownEmployee_ReturnsNotFound() throws Exception {
-			performAssign(leaveAdminToken(), assignBody(9999, 500, "HIRE_DATE", null)).andDo(print())
+			performAssign(leaveAdminToken(), assignBody(9999, 500, "JOIN_DATE", null)).andDo(print())
 				.andExpect(status().isNotFound());
 		}
 
@@ -413,8 +463,8 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 			// 1. Starts with no assignments.
 			performGet(token, 1).andExpect(status().isOk()).andExpect(jsonPath("$.results[0].items", hasSize(0)));
 
-			// 2. Assign policy 500 (leave type 100) on the hire date.
-			performAssign(token, assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isOk())
+			// 2. Assign policy 500 (leave type 100) on the join date.
+			performAssign(token, assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isOk())
 				.andExpect(jsonPath("$.results[0].policyId").value(500))
 				.andExpect(jsonPath("$.results[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 
@@ -463,7 +513,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@DisplayName("Leave employee cannot assign, unassign, or list")
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, DOWNGRADE_USER2_TO_EMPLOYEE })
 		void leaveEmployee_AllOperations_Forbidden() throws Exception {
-			performAssign(user2Token(), assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isForbidden());
+			performAssign(user2Token(), assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isForbidden());
 			performUnassign(user2Token(), unassignBody(1, 500)).andExpect(status().isForbidden());
 			performGet(user2Token(), 1).andExpect(status().isForbidden());
 		}
@@ -473,7 +523,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		@Sql(statements = { SEED_LEAVE_TYPES, SEED_POLICIES, USER2_PEOPLE_ADMIN_ONLY })
 		void peopleAdmin_ReadOnly() throws Exception {
 			performGet(user2Token(), 1).andDo(print()).andExpect(status().isOk());
-			performAssign(user2Token(), assignBody(1, 500, "HIRE_DATE", null)).andExpect(status().isForbidden());
+			performAssign(user2Token(), assignBody(1, 500, "JOIN_DATE", null)).andExpect(status().isForbidden());
 			performUnassign(user2Token(), unassignBody(1, 500)).andExpect(status().isForbidden());
 		}
 
@@ -482,7 +532,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 		void assign_NoAuth_ReturnsUnauthorized() throws Exception {
 			mvc.perform(post(ENDPOINT).contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaType.APPLICATION_JSON)
-				.content(assignBody(1, 500, "HIRE_DATE", null))).andDo(print()).andExpect(status().isUnauthorized());
+				.content(assignBody(1, 500, "JOIN_DATE", null))).andDo(print()).andExpect(status().isUnauthorized());
 		}
 
 	}
@@ -634,7 +684,7 @@ class EmployeeLeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath("$.results[0].bulkStatusSummary.failedCount").value(0));
 
 			performGet(leaveAdminToken(), 1).andExpect(status().isOk())
-				.andExpect(jsonPath("$.results[0].items[0].effectiveDateType").value("HIRE_DATE"))
+				.andExpect(jsonPath("$.results[0].items[0].effectiveDateType").value("JOIN_DATE"))
 				.andExpect(jsonPath("$.results[0].items[0].effectiveFrom").value(EMPLOYEE_1_JOIN_DATE));
 		}
 

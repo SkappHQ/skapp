@@ -113,6 +113,10 @@ export function matchWhitespace(): RegExp {
   return /\s/g;
 }
 
+export function matchesLeadingWhitespace(): RegExp {
+  return /^\s+/g;
+}
+
 export function removeNonAlphaNumericCharactersPattern(): RegExp {
   return /[^a-zA-Z0-9 ]/g;
 }

@@ -33,7 +33,7 @@ public class PolicyLeaveTypeController {
 					+ "A negative size returns every matching leave type unpaginated, which is how policy "
 					+ "creation dropdowns fetch the active types")
 	@GetMapping
-	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_MANAGER','ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getPolicyLeaveTypes(PolicyLeaveTypeFilterDto policyLeaveTypeFilterDto) {
 		ResponseEntityDto response = policyLeaveTypeService.getPolicyLeaveTypes(policyLeaveTypeFilterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);

@@ -3,7 +3,7 @@ package com.skapp.community.crmplanner.service.v2.impl;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyListItemDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.v2.CrmCompanyServiceV2;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class CrmCompanyServiceImplV2 implements CrmCompanyServiceV2 {
 		log.info("getCompanyMetrics: execution started");
 
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
-		Page<CrmCompanyListItemDtoV2> companyPage = crmCompanyDao.getCompanyMetricsV2(pageable,
+		Page<CrmCompanyMetricsResponseDtoV2> companyPage = crmCompanyDao.getCompanyMetricsV2(pageable,
 				requestDto.getSearchKeyword());
 
 		PageDto pageDto = new PageDto();
