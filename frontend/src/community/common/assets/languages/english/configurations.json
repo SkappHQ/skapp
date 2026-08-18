@@ -247,7 +247,7 @@
     }
   },
   "businessUnit": {
-    "title": "Business Unit",
+    "title": "Business Units",
     "addButton": "Add unit",
     "emptyState": {
       "title": "No Business Units",
