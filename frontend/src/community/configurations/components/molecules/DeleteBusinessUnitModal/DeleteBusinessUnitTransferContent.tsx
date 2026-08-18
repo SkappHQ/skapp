@@ -37,7 +37,7 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
     ...(otherUnits?.map((unit) => ({
       id: String(unit.businessUnitId),
       label: (
-        <span title={unit.name} className="min-w-0 flex-1 truncate text-left">
+        <span title={unit.name} className="min-w-0 flex-1 truncate">
           {unit.name}
         </span>
       ),
