@@ -25,7 +25,7 @@ const LeavePolicyCard: FC<Props> = ({
   const isFlexiblePolicy = policy.isUnlimited;
 
   return (
-    <Card className="flex min-h-[96px] flex-row items-center justify-between gap-4 bg-white p-6!">
+    <Card className="flex max-h-[96px] flex-row items-center justify-between gap-4 bg-white p-6!">
       <div className="flex min-w-0 flex-row items-center gap-6">
         {isFlexiblePolicy ? (
           <span
