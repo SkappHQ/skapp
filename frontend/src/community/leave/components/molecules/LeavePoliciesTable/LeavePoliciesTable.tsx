@@ -1,6 +1,13 @@
 import { KebabMenu } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { ChangeEvent, FC, useCallback, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -36,9 +43,13 @@ import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy
 
 interface Props {
   onCreatePolicy: () => void;
+  onEmptyStateChange?: (isEmpty: boolean) => void;
 }
 
-const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
+const LeavePoliciesTable: FC<Props> = ({
+  onCreatePolicy,
+  onEmptyStateChange
+}) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const canManagePolicies = useCanManageLeavePolicies();
   const { setToastMessage } = useToast();
@@ -203,6 +214,11 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   );
 
   const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);
+  const isEmpty = !isLoading && !isFiltering && policies.length === 0;
+
+  useEffect(() => {
+    onEmptyStateChange?.(isEmpty);
+  }, [isEmpty, onEmptyStateChange]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(event.target.value);
@@ -266,6 +282,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
             ? { title: translateText(["noSearchResultsTitle"]) }
             : {
                 title: translateText(["noPoliciesYetTitle"]),
+                description: translateText(["noPoliciesYetDescription"]),
                 actions: canManagePolicies
                   ? [
                       {
