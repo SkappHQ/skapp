@@ -7,6 +7,7 @@ import { JSX } from "react";
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getRelativeDates } from "~community/common/utils/dateTimeUtils";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
@@ -56,11 +57,9 @@ const AvailabilityCalendarCard = ({
   }));
 
   const getOnLeaveModalTitle = (): string => {
-    const now = DateTime.now();
-    const yesterday = now.minus({ days: 1 }).toFormat(DATE_FORMAT);
-    const tomorrow = now.plus({ days: 1 }).toFormat(DATE_FORMAT);
+    const { today, yesterday, tomorrow } = getRelativeDates();
 
-    if (isToday()) return translateText(["awayToday"]);
+    if (actualDate === today) return translateText(["awayToday"]);
     if (actualDate === yesterday) return translateText(["awayYesterday"]);
     if (actualDate === tomorrow) return translateText(["awayTomorrow"]);
     return translateText(["awayOnDate"], { date: actualDate });
