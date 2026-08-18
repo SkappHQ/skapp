@@ -242,7 +242,7 @@ const EntitlementSetupStep: FC<Props> = ({
             value={formData.firstAccrual}
             options={firstAccrualOptions}
             onChange={(value: string) => onChange({ firstAccrual: value })}
-            width="100%"
+            width="50%"
             className="rounded-lg"
           />
           <Dropdown
@@ -253,7 +253,7 @@ const EntitlementSetupStep: FC<Props> = ({
             onChange={(value: string) =>
               onChange({ receiveAccruedTime: value })
             }
-            width="100%"
+            width="50%"
             className="rounded-lg"
           />
         </div>
