@@ -8,6 +8,8 @@ import BirthdayCelebration from "~community/people/assets/images/BirthdayCelebra
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
 import Confetti from "~community/common/components/atoms/Confetti/Confetti";
 
+const CONFETTI_VISIBLE_DURATION_MS = 4000;
+
 interface Props {
   id: string;
   employee: EmployeeBirthdayType;
@@ -38,7 +40,7 @@ const BirthdayModalShell: FC<Props> = ({
 
     const timer = setTimeout(() => {
       setIsConfettiVisible(false);
-    }, 4000);
+    }, CONFETTI_VISIBLE_DURATION_MS);
 
     return () => clearTimeout(timer);
   }, [showConfetti]);
