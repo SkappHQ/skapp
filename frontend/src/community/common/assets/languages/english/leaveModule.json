@@ -91,7 +91,10 @@
       "awayMembers": "Away Members",
       "fullTeamAvailable": "Full team available",
       "fullTeamAway": "Full team away",
-      "onLeaveTitle": "On leave : {{date}}",
+      "awayToday": "Away Today",
+      "awayYesterday": "Away Yesterday",
+      "awayTomorrow": "Away Tomorrow",
+      "awayOnDate": "Away on {{date}}",
       "goBackBtn": "Go back"
     },
     "addAttachmentModal": {
@@ -377,7 +380,7 @@
         "leaveTypePlaceholder": "Select leave type"
       },
       "entitlementSetup": {
-        "accrualScheduleTitle": "Accrual Schedule",
+        "accrualScheduleTitle": "Accrual schedule",
         "employeesAccrueLabel": "Employees accrue",
         "employeesAccruePlaceholder": "Enter days",
         "frequencyLabel": "Frequency",
