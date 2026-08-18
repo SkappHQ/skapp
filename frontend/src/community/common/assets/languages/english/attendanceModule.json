@@ -207,7 +207,7 @@
     "staleRequestConflictDes": "This request is no longer pending. It may have been cancelled or already resolved.",
     "declineSuccessTitle": "Request Declined",
     "declineSuccessDes": "{{name}}'s time entry request has been declined successfully.",
-    "declineFailTitle": "Oops! Something went wrong",
+    "declineFailTitle": "Oops! Something went wrong.",
     "declineFailDes": "Failed to process this request. Please try again.",
     "requestTableManagerTitle": "Requests Awaiting for Approval",
     "requestTableEmployeeTitle": "Time entry Requests",
