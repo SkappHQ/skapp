@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useEffect, useRef, useState } from "react";
 
 import {
   useGetAttendanceConfiguration,
@@ -21,6 +21,19 @@ import ManualEntryRestrictionSettings from "~enterprise/configurations/component
 
 import styles from "./styles";
 
+/**
+ * Copies one field from the local config over the server copy. Generic over the key so
+ * the value types stay tied to it — indexing with a plain keyof widens to a union of
+ * every field's type and no longer assigns cleanly.
+ */
+const retainLocalValue = <K extends keyof AttendanceConfigurationType>(
+  target: AttendanceConfigurationType,
+  source: AttendanceConfigurationType,
+  key: K
+): void => {
+  target[key] = source[key];
+};
+
 const AttendanceConfiguration = (): JSX.Element => {
   const classes = styles();
   const [config, setConfig] = useState<AttendanceConfigurationType | null>(
@@ -31,6 +44,8 @@ const AttendanceConfiguration = (): JSX.Element => {
 
   const { data: configData } = useGetAttendanceConfiguration();
   const onSuccess = () => {
+    // The edits are now the server's, so the next refetch should be taken wholesale.
+    locallyEditedKeys.current.clear();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -56,26 +71,36 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceConfiguration"
   );
 
+  // Switches the admin has changed but not yet saved. A refetch — on window focus, or
+  // from the manual entry toggle invalidating this query — must preserve those, but
+  // still take server values for everything else. Keeping stale values for untouched
+  // fields would make Save PATCH them back over a change made elsewhere.
+  const locallyEditedKeys = useRef(
+    new Set<keyof AttendanceConfigurationType>()
+  );
+
   useEffect(() => {
     if (!configData) return;
 
     setInitialConfig(configData);
 
-    setConfig((prevConfig) =>
-      prevConfig
-        ? {
-            ...prevConfig,
-            isManualTimeEntryRestrictionEnabled:
-              configData.isManualTimeEntryRestrictionEnabled
-          }
-        : configData
-    );
+    setConfig((prevConfig) => {
+      if (!prevConfig) return configData;
+
+      const merged: AttendanceConfigurationType = { ...configData };
+      locallyEditedKeys.current.forEach((key) => {
+        retainLocalValue(merged, prevConfig, key);
+      });
+
+      return merged;
+    });
   }, [configData]);
 
   const handleSwitchChange = (
     key: keyof AttendanceConfigurationType,
     checked: boolean
   ) => {
+    locallyEditedKeys.current.add(key);
     setConfig((prevConfig) =>
       prevConfig ? { ...prevConfig, [key]: checked } : prevConfig
     );
@@ -88,6 +113,7 @@ const AttendanceConfiguration = (): JSX.Element => {
   };
 
   const handleCancelBtnClick = () => {
+    locallyEditedKeys.current.clear();
     setConfig(initialConfig);
   };
 

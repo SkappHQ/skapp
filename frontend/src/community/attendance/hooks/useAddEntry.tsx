@@ -31,15 +31,11 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
-// The leave and holiday confirmations describe what is already on that date, so the
-// resolved availability has to survive until the modal renders.
 const CONFIRMATIONS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
   EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
 ];
 
-// These confirmations submit the entry themselves once confirmed, so they need the
-// times the user entered rather than re-deriving them.
 const CONFIRMATIONS_CARRYING_ENTERED_TIMES: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
@@ -185,10 +181,6 @@ const useAddEntry = () => {
     }
   };
 
-  /**
-   * Decides which confirmation a self-service add has to pass through first, in
-   * precedence order, or null when nothing blocks it and it can be submitted outright.
-   */
   const getSelfServiceAddConfirmation = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType
@@ -220,11 +212,6 @@ const useAddEntry = () => {
     return null;
   };
 
-  /**
-   * Applies whatever the chosen confirmation needs: some carry the entered times over
-   * into the confirmation modal, and the leave and holiday ones also need the resolved
-   * availability kept so the modal can describe what is on that date.
-   */
   const routeSelfServiceAddEntry = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
