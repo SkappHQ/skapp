@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.payload.request.CrmDealBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -33,6 +34,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.List;
+
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -52,6 +55,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CrmDealControllerV2IntegrationTest {
 
 	private static final String BASE_PATH = "/v2/crm/deal";
+
+	/**
+	 * Mounted on the v1 controller so the v2 clients reach it through their /v1 base URL.
+	 */
+	private static final String BATCH_PATH = "/v1/crm/deal/batch";
 
 	private final MockMvc mvc;
 
@@ -347,6 +355,121 @@ class CrmDealControllerV2IntegrationTest {
 
 		performPostRequest(validPayload(stage.getId(), contact.getId())).andDo(print())
 			.andExpect(status().isForbidden());
+	}
+
+	// --- getDealsByIds (batch) ---
+
+	/**
+	 * The batch lookup is served by CrmDealServiceV2 and returns the v2 id-reference
+	 * shape, so it is covered here even though the route is mounted on the v1 controller
+	 * - the v2 frontend clients call it through the /v1 base URL.
+	 */
+	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
+		CrmDealBatchRequestDto requestDto = new CrmDealBatchRequestDto();
+		requestDto.setIds(ids);
+		return performRequest(post(BATCH_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(requestDto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	@Test
+	@DisplayName("Get deals by ids - Carries related records as id references only")
+	void getDealsByIds_HappyPath_ReturnsIdReferences() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Batch V2 Corp");
+		CrmContact contact = savedContact(company, "deal.batch.v2@example.com");
+		CrmDeal deal = savedDeal("Batch Deal V2", stage, company, contact, 1L);
+
+		performBatchRequest(List.of(deal.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(1))
+			.andExpect(jsonPath("['results'][0]['id']").value(deal.getId()))
+			.andExpect(jsonPath("['results'][0]['name']").value("Batch Deal V2"))
+			.andExpect(jsonPath("['results'][0]['amount']").value("5000"))
+			.andExpect(jsonPath("['results'][0]['stageId']").value(stage.getId()))
+			.andExpect(jsonPath("['results'][0]['ownerId']").value(1))
+			.andExpect(jsonPath("['results'][0]['companyId']").value(company.getId()))
+			.andExpect(jsonPath("['results'][0]['contactId']").value(contact.getId()))
+			.andExpect(jsonPath("['results'][0]['stage']").doesNotExist())
+			.andExpect(jsonPath("['results'][0]['owner']").doesNotExist())
+			.andExpect(jsonPath("['results'][0]['company']").doesNotExist())
+			.andExpect(jsonPath("['results'][0]['contact']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get deals by ids - Returns matching deals and ignores unknown ids")
+	void getDealsByIds_WithUnknownIds_ReturnsOnlyExisting() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Batch V2 Multi Co");
+		CrmContact contact = savedContact(company, "deal.batch.multi.v2@example.com");
+		CrmDeal dealA = savedDeal("Batch Deal A", stage, company, contact, 1L);
+		CrmDeal dealB = savedDeal("Batch Deal B", stage, company, contact, 1L);
+
+		performBatchRequest(List.of(dealA.getId(), dealB.getId(), 999999L)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(2));
+	}
+
+	@Test
+	@DisplayName("Get deals by ids - Excludes soft-deleted deals")
+	void getDealsByIds_SoftDeleted_Excluded() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Batch V2 Deleted Deal Co");
+		CrmContact contact = savedContact(company, "deal.batch.deleted.v2@example.com");
+		CrmDeal deal = savedDeal("Deleted Batch Deal", stage, company, contact, 1L);
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performBatchRequest(List.of(deal.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get deals by ids - Reports a soft-deleted company as no company at all")
+	void getDealsByIds_DealWithDeletedCompany_OmitsCompanyId() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Batch V2 Deleted Co");
+		CrmContact contact = savedContact(company, "deal.batch.deletedco.v2@example.com");
+		CrmDeal deal = savedDeal("Deal With Deleted Company", stage, company, contact, 1L);
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performBatchRequest(List.of(deal.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("['results'].length()").value(1))
+			.andExpect(jsonPath("['results'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get deals by ids - Empty ids returns empty list")
+	void getDealsByIds_EmptyIds_ReturnsEmptyList() throws Exception {
+		performBatchRequest(List.of()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get deals by ids as Sales Representative - Omits another owner's deal")
+	void getDealsByIds_SalesRepRequestingOthersDeal_OmitsIt() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Batch V2 Owner Scope Co");
+		CrmContact contact = savedContact(company, "deal.batch.scope.v2@example.com");
+		CrmDeal deal = savedDeal("Admin Owned Deal", stage, company, contact, 1L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performBatchRequest(List.of(deal.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results']").isEmpty());
 	}
 
 }

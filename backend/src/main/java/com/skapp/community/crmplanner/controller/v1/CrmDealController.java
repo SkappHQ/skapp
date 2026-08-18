@@ -1,10 +1,12 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.service.CrmDealService;
+import com.skapp.community.crmplanner.service.v2.CrmDealServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class CrmDealController {
 
 	private final CrmDealService crmDealService;
+
+	private final CrmDealServiceV2 crmDealServiceV2;
+
+	@Operation(summary = "Get deals by ids",
+			description = "Returns the base details of the deals matching the given ids, used to hydrate the "
+					+ "client's deal store. Related records are carried as id references only. Unknown, deleted "
+					+ "and - for a sales representative - other owners' deals are omitted.")
+	@PostMapping("/batch")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getDealsByIds(@RequestBody CrmDealBatchRequestDto requestDto) {
+		ResponseEntityDto response = crmDealServiceV2.getDealsByIds(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Check if a deal name exists",
 			description = "Check if a deal with the given name already exists")

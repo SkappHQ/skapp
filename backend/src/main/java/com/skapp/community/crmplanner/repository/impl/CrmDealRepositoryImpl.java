@@ -14,6 +14,7 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmDealListItemDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
@@ -155,6 +156,42 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	/**
+	 * Projects id references only - the caller resolves them against the entities it
+	 * already holds. Only the company needs a join, so that a soft deleted one is
+	 * reported as no company at all rather than as its id.
+	 */
+	@Override
+	public List<CrmDealListItemDtoV2> findDealsByIdsV2(List<Long> dealIds, Long ownerId) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDealListItemDtoV2> query = cb.createQuery(CrmDealListItemDtoV2.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+
+		Join<CrmDeal, CrmCompany> company = deal.join(CrmDeal_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+
+		query.select(cb.construct(CrmDealListItemDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
+				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), deal.get(CrmDeal_.stage).get(CrmDealStage_.id),
+				deal.get(CrmDeal_.owner).get(Employee_.employeeId), company.get(CrmCompany_.id),
+				deal.get(CrmDeal_.contact).get(CrmContact_.id)));
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+		predicates.add(deal.get(CrmDeal_.id).in(dealIds));
+		if (ownerId != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.where(predicates.toArray(new Predicate[0])).orderBy(cb.asc(deal.get(CrmDeal_.id)));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto,

@@ -8,9 +8,11 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.payload.request.CrmDealBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmDealListItemDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
@@ -23,6 +25,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -56,6 +61,30 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 		log.info("getDeals: execution ended with {} result(s)", dealsPage.getNumberOfElements());
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	/**
+	 * Hydrates the client's deal store for ids it already holds references to. Unknown,
+	 * soft deleted and - for a sales representative - other owners' deals are simply
+	 * absent from the response rather than reported as errors.
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getDealsByIds(CrmDealBatchRequestDto requestDto) {
+		log.info("getDealsByIds: execution started");
+
+		if (requestDto.getIds() == null || requestDto.getIds().isEmpty()) {
+			log.info("getDealsByIds: no ids provided, returning empty list");
+			return new ResponseEntityDto(false, Collections.emptyList());
+		}
+
+		User currentUser = userService.getCurrentUser();
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+
+		List<CrmDealListItemDtoV2> deals = crmDealDao.findDealsByIdsV2(requestDto.getIds(), ownerId);
+
+		log.info("getDealsByIds: execution ended with {} result(s)", deals.size());
+		return new ResponseEntityDto(false, deals);
 	}
 
 	@Override
