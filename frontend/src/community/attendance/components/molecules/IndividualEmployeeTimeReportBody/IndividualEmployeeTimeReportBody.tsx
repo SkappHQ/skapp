@@ -8,6 +8,7 @@ import WorkHourGraph from "~community/attendance/components/molecules/Graphs/Wor
 import TimeUtilizationCard from "~community/attendance/components/molecules/TimeUtilizationCard/TimeUtilizationCard";
 import TimesheetDailyRecordTable from "~community/attendance/components/molecules/TimesheetDailyRecordTable/TimesheetDailyRecordTable";
 import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { TimeUtilizationTrendTypes } from "~community/attendance/types/timeSheetTypes";
 import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
@@ -41,18 +42,23 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
 
   const { employeeDetails } = useSessionData();
 
-  const { data: targetEmployeeDetails } = useGetEmployeeById(selectedUser);
+  const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
 
-  const targetEmployee = useMemo(
-    () => ({
-      employeeId: selectedUser,
-      employeeName: getEmployeeFullName(
-        targetEmployeeDetails?.firstName,
-        targetEmployeeDetails?.lastName
-      )
-    }),
-    [selectedUser, targetEmployeeDetails]
+  const { data: targetEmployeeDetails } = useGetEmployeeById(
+    selectedUser,
+    canDirectlyAddOrEditEntry
   );
+
+  const targetEmployee = useMemo(() => {
+    const employeeName = getEmployeeFullName(
+      targetEmployeeDetails?.firstName,
+      targetEmployeeDetails?.lastName
+    );
+
+    return employeeName
+      ? { employeeId: selectedUser, employeeName }
+      : undefined;
+  }, [selectedUser, targetEmployeeDetails]);
 
   const { isDrawerToggled } = useCommonStore((state) => ({
     isDrawerToggled: state.isDrawerExpanded
