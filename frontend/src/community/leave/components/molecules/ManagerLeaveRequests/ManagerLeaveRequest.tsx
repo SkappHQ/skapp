@@ -85,9 +85,7 @@ const ManagerLeaveRequest: FC<Props> = ({
     leaveRequestsFilter: state.leaveRequestsFilter
   }));
 
-  const currentPage: number = useLeaveStore(
-    (state) => state.leaveRequestParams.page
-  ) as number;
+  const currentPage = useLeaveStore((state) => state.leaveRequestParams.page);
 
   const leaveRequestSort = leaveRequestParams.sortKey;
 
@@ -238,17 +236,10 @@ const ManagerLeaveRequest: FC<Props> = ({
   useEffect(() => {
     if (employeeLeaveRequests?.length === 0 && totalPages === 0) {
       if (currentPage !== 0) {
-        setLeaveRequestParams("page", (currentPage - 1).toString());
         setPagination(currentPage - 1);
       }
     }
-  }, [
-    currentPage,
-    employeeLeaveRequests?.length,
-    setLeaveRequestParams,
-    setPagination,
-    totalPages
-  ]);
+  }, [currentPage, employeeLeaveRequests?.length, setPagination, totalPages]);
 
   useEffect(() => {
     if (getLeaveByIdSuccess && getLeaveByIdData) {

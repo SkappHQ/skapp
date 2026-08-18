@@ -8,6 +8,8 @@ export const POLICY_LEAVE_REQUESTS_PER_PAGE = 10;
 
 export const MANAGER_LEAVE_REQUESTS_PER_PAGE = 6;
 
+export const MY_LEAVE_REQUESTS_PER_PAGE = 4;
+
 export const LEAVE_REQUESTS_SKELETON_ROWS = 5;
 
 export const MAX_ALLOWED_UPLOADS = 5;
