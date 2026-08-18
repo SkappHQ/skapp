@@ -36,7 +36,11 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
     },
     ...(otherUnits?.map((unit) => ({
       id: String(unit.businessUnitId),
-      label: unit.name,
+      label: (
+        <span title={unit.name} className="min-w-0 flex-1 truncate text-left">
+          {unit.name}
+        </span>
+      ),
       value: String(unit.businessUnitId)
     })) ?? [])
   ];
@@ -51,6 +55,7 @@ const DeleteBusinessUnitTransferContent: FC<Props> = ({
       </p>
       <Dropdown
         id="business-unit-transfer-target"
+        variant="jsx-content"
         label={translateText(["deleteModal", "transferToLabel"])}
         tooltipContent={translateText(["deleteModal", "transferTooltip"])}
         ariaLabelTooltipButton={translateText([
