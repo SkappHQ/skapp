@@ -33,7 +33,7 @@ const BirthdayModalShell: FC<Props> = ({
     <LargeModal
       id={id}
       isOpen
-      className="relative h-[603px] max-h-[85vh] w-[1107px] max-w-[92vw] overflow-hidden rounded-l-[42.69px] rounded-r-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.15)]"
+      className="relative h-auto min-h-[603px] max-h-[85vh] w-[1107px] max-w-[92vw] overflow-hidden rounded-l-[42.69px] rounded-r-[24px] shadow-[0_20px_40px_rgba(0,0,0,0.15)] [&_.overflow-y-auto]:overflow-visible"
       imagePosition="left"
       backdropVariant="dark"
       onClose={onDismiss}
@@ -45,7 +45,7 @@ const BirthdayModalShell: FC<Props> = ({
         </div>
       }
       content={
-        <div className="flex h-[555px] flex-col items-center justify-center gap-4 text-center">
+        <div className="flex min-h-[555px] flex-col items-center justify-center gap-4 text-center">
           {total > 1 && (
             <p className="sr-only">
               {translateAria(["notificationPosition"], {
@@ -66,7 +66,7 @@ const BirthdayModalShell: FC<Props> = ({
                 : employee.firstName
             })}
           />
-          <h2 className="h1 leading-6 tracking-[0.07px] wrap-break-word text-black">
+          <h2 className="h1 line-clamp-2 w-full pr-1 leading-tight tracking-[0.07px] break-words text-black">
             {heading}
           </h2>
           <p className="body2 max-w-104 leading-normal text-secondary-text">
