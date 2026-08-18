@@ -62,6 +62,11 @@ const EmployeeTimeRecordsTable = ({
   isRecordLoading
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const translateAria = useTranslator(
+    "attendanceAria",
+    "timesheet",
+    "employeeTimeRecordsTable"
+  );
 
   const theme: Theme = useTheme();
 
@@ -326,7 +331,7 @@ const EmployeeTimeRecordsTable = ({
                 finalCellData = (
                   <button
                     type="button"
-                    aria-label={translateText(["directEntryCellLabel"], {
+                    aria-label={translateAria(["directEntryCellLabel"], {
                       employeeName,
                       date: formatDateWithOrdinalIndicator(
                         new Date(timeSheetRecord.date)
@@ -383,6 +388,7 @@ const EmployeeTimeRecordsTable = ({
     timeConfigData,
     getHolidaysArrayByDate,
     translateText,
+    translateAria,
     canDirectlyAddOrEditEntry,
     pendingCell
   ]);

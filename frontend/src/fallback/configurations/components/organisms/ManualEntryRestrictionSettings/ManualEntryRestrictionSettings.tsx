@@ -3,9 +3,14 @@ import { AttendanceConfigurationType } from "~community/attendance/types/attenda
 interface Props {
   config: AttendanceConfigurationType | null;
   initialConfig: AttendanceConfigurationType | null;
+  onSaved: (checked: boolean) => void;
 }
 
-const ManualEntryRestrictionSettings = ({ config, initialConfig }: Props) => {
+const ManualEntryRestrictionSettings = ({
+  config,
+  initialConfig,
+  onSaved
+}: Props) => {
   return <></>;
 };
 

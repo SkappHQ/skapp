@@ -151,7 +151,6 @@
     "directEntryConflictErrorDes": "This entry has already been updated. Please refresh and try again.",
     "manualEntryRestrictedCellTooltip": "Manual time entries are managed by your Attendance Manager or Admin",
     "directEntryEmployeeLabel": "Employee",
-    "directEntryCellLabel": "Add or edit time entry for {{employeeName}}, {{date}}",
     "manualEntryRestrictedErrorDes": "You don't have permission to add or edit time entries. Contact your Attendance Manager or Admin.",
     "addTimeEntryNoManagerErrorTitle": "No supervisor has been assigned",
     "managerMissingErrorDes": "Please contact the administrator regarding your request",

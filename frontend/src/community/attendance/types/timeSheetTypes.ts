@@ -150,7 +150,7 @@ export interface HolidayType {
 }
 
 export interface DailyLogType {
-  timeRecordId: number;
+  timeRecordId: number | null;
   date: string;
   day: daysTypes;
   workedHours: number;

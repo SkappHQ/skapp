@@ -40,12 +40,17 @@ const TimesheetDailyRecordTable = ({
   targetEmployee
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
-  const { isManualEntryRestricted, canDirectlyAddOrEditEntry } =
-    useManualEntryRestriction();
+  const {
+    isManualEntryRestricted,
+    canDirectlyAddOrEditEntry,
+    isLoading: isRestrictionLoading
+  } = useManualEntryRestriction();
 
-  const isRowInteractive = targetEmployee
-    ? canDirectlyAddOrEditEntry
-    : !isManualEntryRestricted;
+  // Rows stay inert until the config resolves, so a click is never handled
+  // before we know whether the restriction applies.
+  const isRowInteractive =
+    !isRestrictionLoading &&
+    (targetEmployee ? canDirectlyAddOrEditEntry : !isManualEntryRestricted);
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -139,6 +144,7 @@ const TimesheetDailyRecordTable = ({
                   headerLength={tableHeaders?.length}
                   targetEmployee={targetEmployee}
                   isRowInteractive={isRowInteractive}
+                  isManualEntryRestricted={isManualEntryRestricted}
                 />
               ))
             ) : (
@@ -150,6 +156,7 @@ const TimesheetDailyRecordTable = ({
                     headerLength={tableHeaders?.length}
                     targetEmployee={targetEmployee}
                     isRowInteractive={isRowInteractive}
+                    isManualEntryRestricted={isManualEntryRestricted}
                   />
                 ))}
               </Box>

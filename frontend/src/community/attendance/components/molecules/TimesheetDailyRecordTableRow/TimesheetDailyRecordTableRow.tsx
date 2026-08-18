@@ -52,13 +52,15 @@ interface Props {
   headerLength: number;
   targetEmployee?: DirectEntryEmployeeType;
   isRowInteractive: boolean;
+  isManualEntryRestricted: boolean;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
   record,
   headerLength,
   targetEmployee,
-  isRowInteractive
+  isRowInteractive,
+  isManualEntryRestricted
 }) => {
   const { isFreeTier } = useSessionData();
 
@@ -203,7 +205,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       onClick={handleRowActivate}
       aria-disabled={!isRowInteractive}
       title={
-        !isRowInteractive && !targetEmployee
+        isManualEntryRestricted && !targetEmployee
           ? translateText(["manualEntryRestrictedCellTooltip"])
           : undefined
       }

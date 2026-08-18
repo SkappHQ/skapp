@@ -17,7 +17,8 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
     isEmployeeTimesheetModalOpen,
     employeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen,
-    setCurrentAddTimeChanges
+    setCurrentAddTimeChanges,
+    setDirectEntryEmployee
   } = useAttendanceStore((state) => state);
 
   const [fromDateTime, setFromDateTime] = useState<string>("");
@@ -56,6 +57,7 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
 
   const handelCloseModal = (): void => {
     setIsEmployeeTimesheetModalOpen(false);
+    setDirectEntryEmployee(null);
   };
 
   useEffect(() => {

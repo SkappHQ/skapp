@@ -95,6 +95,23 @@ const AttendanceConfiguration = (): JSX.Element => {
     );
   };
 
+  // The manual entry restriction saves itself through its own confirmation flow,
+  // so both copies of the config are moved onto the newly saved value: `config`
+  // keeps "Save changes" from PATCHing the stale value back before the
+  // invalidated query refetches, and `initialConfig` keeps the form unchanged.
+  const handleManualEntryRestrictionSaved = (checked: boolean) => {
+    setConfig((prevConfig) =>
+      prevConfig
+        ? { ...prevConfig, isManualTimeEntryRestrictionEnabled: checked }
+        : prevConfig
+    );
+    setInitialConfig((prevInitialConfig) =>
+      prevInitialConfig
+        ? { ...prevInitialConfig, isManualTimeEntryRestrictionEnabled: checked }
+        : prevInitialConfig
+    );
+  };
+
   const handleSaveBtnClick = () => {
     if (config) {
       updateConfig(config);
@@ -172,6 +189,7 @@ const AttendanceConfiguration = (): JSX.Element => {
         <ManualEntryRestrictionSettings
           config={config}
           initialConfig={initialConfig}
+          onSaved={handleManualEntryRestrictionSaved}
         />
 
         {!isManualEntryRestricted && (

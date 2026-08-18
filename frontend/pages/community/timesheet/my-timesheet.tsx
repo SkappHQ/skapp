@@ -15,7 +15,8 @@ const MyTimeSheet: NextPage = () => {
     setEmployeeTimesheetModalType,
     setDirectEntryEmployee
   } = useAttendanceStore((state) => state);
-  const { isManualEntryRestricted } = useManualEntryRestriction();
+  const { isManualEntryRestricted, isLoading: isRestrictionLoading } =
+    useManualEntryRestriction();
 
   return (
     <ContentLayout
@@ -35,6 +36,7 @@ const MyTimeSheet: NextPage = () => {
           : translateText(["timesheet.manualTimeEntryButtonTxt"])
       }
       primaryButtonType={ButtonStyle.PRIMARY}
+      isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
         setDirectEntryEmployee(null);
         setIsEmployeeTimesheetModalOpen(true);

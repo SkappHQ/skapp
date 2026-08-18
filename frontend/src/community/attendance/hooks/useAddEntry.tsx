@@ -272,7 +272,7 @@ const useAddEntry = () => {
     if (!isDurationValid(values.fromTime, values.toTime)) return;
 
     if (isDirectEntry && directEntryEmployee) {
-      const existingRecordId = selectedDailyRecord?.timeRecordId ?? undefined;
+      const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
       directEntryMutate({
         employeeId: directEntryEmployee.employeeId,
         isEdit: Boolean(existingRecordId),
@@ -325,7 +325,7 @@ const useAddEntry = () => {
       editClockInOutMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
-        recordId: selectedDailyRecord?.timeRecordId ?? undefined,
+        recordId: selectedDailyRecord?.timeRecordId || undefined,
         zoneId: getCurrentTimeZone()
       });
       setIsEmployeeTimesheetModalOpen(false);

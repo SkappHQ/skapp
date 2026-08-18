@@ -18,7 +18,7 @@ const WEEK_DAYS: daysTypes[] = [
 ];
 
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
-  timeRecordId: 0,
+  timeRecordId: null,
   date,
   day: WEEK_DAYS[DateTime.fromISO(date).weekday - 1],
   workedHours: 0,
