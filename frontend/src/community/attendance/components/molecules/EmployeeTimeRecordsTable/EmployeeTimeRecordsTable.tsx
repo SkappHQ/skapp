@@ -118,11 +118,10 @@ const EmployeeTimeRecordsTable = ({
 
     if (isPendingDayFetching) return;
 
-    // Gated on the fetch settling rather than on data being present: the preprocessor
-    // yields undefined for a day with no records, which is a valid Add case.
     const dayRecord =
-      pendingDayLogs?.find((log: DailyLogType) => log.date === pendingCell.date) ??
-      createEmptyDailyLog(pendingCell.date);
+      pendingDayLogs?.find(
+        (log: DailyLogType) => log.date === pendingCell.date
+      ) ?? createEmptyDailyLog(pendingCell.date);
 
     const modalType = getTimeEntryModalType(dayRecord);
 
