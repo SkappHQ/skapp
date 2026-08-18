@@ -236,11 +236,6 @@ const EntitlementSetupStep: FC<Props> = ({
               </div>
             </div>
           )}
-        </div>
-      </WizardSection>
-
-      <WizardSection title={translateText(["fineTuningTitle"])}>
-        <div className="flex max-w-3xl flex-col gap-4">
           <Dropdown
             id="leave-policy-first-accrual"
             label={translateText(["firstAccrualLabel"])}
