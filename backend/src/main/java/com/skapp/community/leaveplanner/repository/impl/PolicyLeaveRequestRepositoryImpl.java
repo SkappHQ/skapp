@@ -136,7 +136,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 
 		criteriaQuery
 			.select(criteriaBuilder.construct(PolicyLeaveUsageDto.class, root.get(PolicyLeaveRequest_.startDate),
-					root.get(PolicyLeaveRequest_.durationDays).as(Double.class)))
+					root.get(PolicyLeaveRequest_.durationDays)))
 			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
 					criteriaBuilder.equal(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id), policyId),
 					root.get(PolicyLeaveRequest_.status).in(statuses),
@@ -156,8 +156,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Path<Long> policyId = root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id);
 
 		criteriaQuery
-			.multiselect(policyId, root.get(PolicyLeaveRequest_.startDate),
-					root.get(PolicyLeaveRequest_.durationDays).as(Double.class))
+			.multiselect(policyId, root.get(PolicyLeaveRequest_.startDate), root.get(PolicyLeaveRequest_.durationDays))
 			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
 					policyId.in(policyIds), root.get(PolicyLeaveRequest_.status).in(statuses),
 					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), windowStart, windowEnd));
@@ -165,7 +164,7 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 		Map<Long, List<PolicyLeaveUsageDto>> usagesByPolicyId = new HashMap<>();
 		for (Tuple result : entityManager.createQuery(criteriaQuery).getResultList()) {
 			usagesByPolicyId.computeIfAbsent(result.get(0, Long.class), key -> new ArrayList<>())
-				.add(new PolicyLeaveUsageDto(result.get(1, LocalDate.class), result.get(2, Double.class)));
+				.add(new PolicyLeaveUsageDto(result.get(1, LocalDate.class), result.get(2, Float.class)));
 		}
 		return usagesByPolicyId;
 	}

@@ -860,7 +860,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		for (PolicyLeaveUsageDto usage : usages) {
 			if (usage.getDurationDays() != null && !usage.getStartDate().isBefore(from)
 					&& !usage.getStartDate().isAfter(to)) {
-				totalDaysUsed += usage.getDurationDays().floatValue();
+				totalDaysUsed += usage.getDurationDays();
 			}
 		}
 		return totalDaysUsed;
