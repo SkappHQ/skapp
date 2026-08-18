@@ -77,4 +77,4 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-leave-policy-rename-carryover-date.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time_request-add-auditable-columns.sql.sql
+      file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time_request-add-auditable-columns.sql
