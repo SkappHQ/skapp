@@ -307,7 +307,7 @@
     "active": "Active",
     "inactive": "Inactive",
     "accrual": "Accrual",
-    "flexible": "Flexible (unlimited)",
+    "flexible": "Flexible",
     "menuEdit": "Edit",
     "menuDeactivate": "Deactivate",
     "menuActivate": "Activate",
@@ -400,7 +400,6 @@
         "carryOverDatePlaceholder": "Select date",
         "maxCarryOverDaysLabel": "Maximum carry over days",
         "maxCarryOverDaysPlaceholder": "Enter days",
-        "fineTuningTitle": "Fine tuning",
         "firstAccrualLabel": "Employees' first accrual should be",
         "receiveAccruedTimeLabel": "Employees receive accrued time",
         "waitingPeriodDaysLabel": "Number of waiting period days",
@@ -492,11 +491,11 @@
       "cancelDismissBtnTxt": "Dismiss",
       "savingBtnTxt": "Saving..."
     },
-    "policyTypeHeader": "POLICY TYPE",
+    "entitlementTypeHeader": "ENTITLEMENT TYPE",
     "leaveTypeFilterLabel": "Leave Type",
-    "leaveTypeFilterAllOption": "All",
     "noSearchResultsTitle": "No policies found. Try a different search term.",
-    "noPoliciesYetTitle": "No leave policies yet. Create your first policy to get started."
+    "noPoliciesYetTitle": "No leave policies yet.",
+    "noPoliciesYetDescription": "Create your first policy to get started."
   },
   "leavePolicyAssignment": {
     "sectionTitle": "Leave policies",

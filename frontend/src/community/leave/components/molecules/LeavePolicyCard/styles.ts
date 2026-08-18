@@ -34,15 +34,6 @@ const styles = (theme: Theme): StyleProps => ({
     gap: "1.125rem",
     overflow: "hidden"
   },
-  policyName: {
-    fontWeight: 500,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  },
-  leaveTypeName: {
-    color: theme.palette.grey[700]
-  },
   amount: {
     flexDirection: "row",
     alignItems: "baseline"
