@@ -1,7 +1,6 @@
 package com.skapp.community.leaveplanner.util;
 
 import com.skapp.community.common.util.DateTimeUtils;
-import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.type.AccrualFrequency;
@@ -106,8 +105,8 @@ public class PolicyLeaveAccrualUtil {
 	}
 
 	private static LocalDate resolveCarryoverExpiry(LeavePolicy policy, PolicyLeaveDateWindowDto cycle) {
-		if (neverExpires(policy)) {
-			return null;
+		if (!DateTimeUtils.isValidMonthDay(policy.getCarryoverExpiryDate())) {
+			return cycle.getEndDate();
 		}
 		MonthDay monthDay = DateTimeUtils.parseMonthDay(policy.getCarryoverExpiryDate());
 		LocalDate expiresOn = monthDay.atYear(cycle.getStartDate().getYear());
@@ -115,10 +114,6 @@ public class PolicyLeaveAccrualUtil {
 			expiresOn = monthDay.atYear(cycle.getStartDate().getYear() + 1);
 		}
 		return expiresOn.isAfter(cycle.getEndDate()) ? cycle.getEndDate() : expiresOn;
-	}
-
-	private static boolean neverExpires(LeavePolicy policy) {
-		return !DateTimeUtils.isValidMonthDay(policy.getCarryoverExpiryDate());
 	}
 
 	public static float carriedOverInto(LeavePolicy policy, LocalDate effectiveFrom, PolicyLeaveDateWindowDto cycle,
@@ -129,10 +124,9 @@ public class PolicyLeaveAccrualUtil {
 
 		int targetYear = cycle.getStartDate().getYear();
 		int firstYear = resolveCycleContaining(effectiveFrom, cycleAnchor).getStartDate().getYear();
-		int fromYear = Math.max(firstYear, targetYear - LeavePolicyConstant.MAX_CARRYOVER_LOOKBACK_CYCLES);
 
 		float carriedOverDays = 0f;
-		for (int year = fromYear; year < targetYear; year++) {
+		for (int year = firstYear; year < targetYear; year++) {
 			PolicyLeaveDateWindowDto priorCycle = resolveCycle(year, cycleAnchor);
 			carriedOverDays = capCarryover(policy,
 					unusedAtCycleEnd(policy, effectiveFrom, priorCycle, carriedOverDays, usageLookup));
@@ -147,7 +141,7 @@ public class PolicyLeaveAccrualUtil {
 		}
 
 		LocalDate expiresOn = resolveCarryoverExpiry(policy, cycle);
-		if (expiresOn == null || !asOf.isAfter(expiresOn)) {
+		if (!asOf.isAfter(expiresOn)) {
 			return carriedOverDays;
 		}
 		return Math.min(carriedOverDays, usageLookup.usedBetween(cycle.getStartDate(), expiresOn));
@@ -160,7 +154,7 @@ public class PolicyLeaveAccrualUtil {
 		}
 
 		float accrualAllocation = accrualAllocationInCycle(policy, effectiveFrom, cycle);
-		float usableCarryoverDays = usableCarryoverDays(policy, cycle, carriedOverDays, cycle.getEndDate(),
+		float usableCarryoverDays = usableCarryoverDays(policy, cycle, carriedOverDays, cycle.getEndDate().plusDays(1),
 				usageLookup);
 		float totalDaysUsed = usageLookup.usedBetween(cycle.getStartDate(), cycle.getEndDate());
 		return Math.max(0f, accrualAllocation + usableCarryoverDays - totalDaysUsed);

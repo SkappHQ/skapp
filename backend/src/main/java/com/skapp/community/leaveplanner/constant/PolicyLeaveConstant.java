@@ -30,6 +30,4 @@ public class PolicyLeaveConstant {
 
 	public static final int MAX_SEARCH_KEYWORD_LENGTH = 100;
 
-	public static final int MAX_CYCLE_YEAR_OFFSET = 10;
-
 }

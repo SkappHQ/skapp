@@ -1,6 +1,7 @@
 package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import org.springframework.data.domain.Page;
@@ -21,8 +22,8 @@ public interface PolicyLeaveRequestRepository {
 
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
-	Double sumCommittedDaysForPolicyInWindow(Long employeeId, Long policyId, Collection<LeaveRequestStatus> statuses,
-			LocalDate windowStart, LocalDate windowEnd);
+	List<PolicyLeaveUsageDto> findCommittedUsageForPolicyInWindow(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd);
 
 	List<PolicyLeaveRequest> findOverlappingRequests(Long employeeId, Collection<LeaveRequestStatus> statuses,
 			LocalDate startDate, LocalDate endDate);

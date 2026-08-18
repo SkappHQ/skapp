@@ -17,6 +17,4 @@ public class LeavePolicyConstant {
 
 	public static final int MAX_BULK_ASSIGN_ROWS = 1000;
 
-	public static final int MAX_CARRYOVER_LOOKBACK_CYCLES = 5;
-
 }
