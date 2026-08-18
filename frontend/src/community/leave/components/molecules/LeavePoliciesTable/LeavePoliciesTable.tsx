@@ -120,7 +120,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     const baseHeaders: GridHeader[] = [
       { id: "policyName", label: translateText(["policyNameHeader"]) },
       { id: "leaveType", label: translateText(["leaveTypeHeader"]) },
-      { id: "policyType", label: translateText(["policyTypeHeader"]) },
+      { id: "entitlementType", label: translateText(["entitlementTypeHeader"]) },
       { id: "status", label: translateText(["statusHeader"]) }
     ];
 
@@ -151,7 +151,7 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
               emojiCode={policy.leaveTypeEmoji}
             />
           ),
-          policyType: (
+          entitlementType: (
             <span className="body1 text-black">
               {policy.policyType === PolicyType.ACCRUAL
                 ? translateText(["accrual"])
