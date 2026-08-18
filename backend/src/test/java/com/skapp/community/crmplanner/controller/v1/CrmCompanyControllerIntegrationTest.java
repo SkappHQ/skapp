@@ -32,6 +32,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -91,6 +92,8 @@ class CrmCompanyControllerIntegrationTest {
 	private static final String DELETE_PATH = BASE_PATH + "/{id}";
 
 	private static final String EDIT_PATH = BASE_PATH + "/{id}";
+
+	private static final String BATCH_PATH = BASE_PATH + "/batch";
 
 	private final JsonMapper objectMapper;
 
@@ -842,6 +845,86 @@ class CrmCompanyControllerIntegrationTest {
 		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isForbidden());
+	}
+
+	// --- getCompaniesByIds (batch) ---
+
+	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
+		CrmCompanyBatchRequestDto requestDto = new CrmCompanyBatchRequestDto();
+		requestDto.setIds(ids);
+		return performRequest(post(BATCH_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(requestDto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmCompany savedBatchCompany(String name) {
+		CrmCompany company = new CrmCompany();
+		company.setName(name);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://batch.com");
+		company.setAddress("1 Batch St");
+		company.setContactNumber("94770000010");
+		return crmCompanyDao.save(company);
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns base company fields for the requested id")
+	void getCompaniesByIds_HappyPath_ReturnsBaseFields() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchCoUnique");
+
+		performBatchRequest(List.of(company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://batch.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Batch St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000010"));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns matching companies and ignores unknown ids")
+	void getCompaniesByIds_WithUnknownIds_ReturnsOnlyExisting() throws Exception {
+		CrmCompany companyA = savedBatchCompany("BatchCoA");
+		CrmCompany companyB = savedBatchCompany("BatchCoB");
+
+		performBatchRequest(List.of(companyA.getId(), companyB.getId(), 999999L)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'].length()").value(2));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Excludes soft-deleted companies")
+	void getCompaniesByIds_SoftDeleted_Excluded() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchDeletedCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performBatchRequest(List.of(company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Empty ids returns empty list")
+	void getCompaniesByIds_EmptyIds_ReturnsEmptyList() throws Exception {
+		performBatchRequest(List.of()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids without CRM role - Returns Forbidden")
+	void getCompaniesByIds_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performBatchRequest(List.of(1L)).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

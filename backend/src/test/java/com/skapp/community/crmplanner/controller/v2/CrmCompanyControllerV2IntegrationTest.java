@@ -9,7 +9,6 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -34,17 +33,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,15 +54,11 @@ class CrmCompanyControllerV2IntegrationTest {
 
 	private static final String METRICS_PATH = "/v2/crm/company";
 
-	private static final String BATCH_PATH = "/v2/crm/company/batch";
-
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
 
 	private final UserDetailsService userDetailsService;
-
-	private final JsonMapper objectMapper;
 
 	private final CrmCompanyDao crmCompanyDao;
 
@@ -98,14 +90,6 @@ class CrmCompanyControllerV2IntegrationTest {
 			.param("size", "10")
 			.param("searchKeyword", searchKeyword)
 			.accept(MediaType.APPLICATION_JSON), authToken);
-	}
-
-	private ResultActions performBatchRequest(List<Long> ids, String token) throws Exception {
-		CrmCompanyBatchRequestDto requestDto = new CrmCompanyBatchRequestDto();
-		requestDto.setIds(ids);
-		return performRequest(post(BATCH_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(requestDto))
-			.accept(MediaType.APPLICATION_JSON), token);
 	}
 
 	private CrmCompany savedCompany(String name) {
@@ -246,69 +230,6 @@ class CrmCompanyControllerV2IntegrationTest {
 				noRoleToken)
 			.andDo(print())
 			.andExpect(status().isForbidden());
-	}
-
-	// --- getCompaniesByIds (batch) ---
-
-	@Test
-	@DisplayName("Get companies by ids - Returns base company fields for the requested id")
-	void getCompaniesByIds_HappyPath_ReturnsBaseFields() throws Exception {
-		CrmCompany company = savedCompany("BatchCoV2Unique");
-
-		performBatchRequest(List.of(company.getId()), authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(1))
-			.andExpect(jsonPath("['results'][0]['id']").value(company.getId()))
-			.andExpect(jsonPath("['results'][0]['name']").value("BatchCoV2Unique"))
-			.andExpect(
-					jsonPath("['results'][0]['industry']").value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath("['results'][0]['website']").value("https://metrics-v2.com"))
-			.andExpect(jsonPath("['results'][0]['address']").value("123 Metrics St"))
-			.andExpect(jsonPath("['results'][0]['contactNumber']").value("94771234567"));
-	}
-
-	@Test
-	@DisplayName("Get companies by ids - Returns matching companies and ignores unknown ids")
-	void getCompaniesByIds_WithUnknownIds_ReturnsOnlyExisting() throws Exception {
-		CrmCompany companyA = savedCompany("BatchCoV2A");
-		CrmCompany companyB = savedCompany("BatchCoV2B");
-
-		performBatchRequest(List.of(companyA.getId(), companyB.getId(), 999999L), authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(2));
-	}
-
-	@Test
-	@DisplayName("Get companies by ids - Excludes soft-deleted companies")
-	void getCompaniesByIds_SoftDeleted_Excluded() throws Exception {
-		CrmCompany company = savedCompany("BatchDeletedCoV2");
-		company.setIsDeleted(true);
-		crmCompanyDao.save(company);
-
-		performBatchRequest(List.of(company.getId()), authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get companies by ids - Empty ids returns empty list")
-	void getCompaniesByIds_EmptyIds_ReturnsEmptyList() throws Exception {
-		performBatchRequest(List.of(), authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get companies by ids without CRM role - Returns Forbidden")
-	void getCompaniesByIds_WithoutCrmRole_ReturnsForbidden() throws Exception {
-		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
-				1L);
-
-		performBatchRequest(List.of(1L), noRoleToken).andDo(print()).andExpect(status().isForbidden());
 	}
 
 }

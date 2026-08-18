@@ -12,6 +12,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -139,6 +141,25 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		log.info("getCompanyById: execution ended");
 		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompaniesByIds(CrmCompanyBatchRequestDto requestDto) {
+		log.info("getCompaniesByIds: execution started");
+
+		if (requestDto.getIds() == null || requestDto.getIds().isEmpty()) {
+			log.info("getCompaniesByIds: no ids provided, returning empty list");
+			return new ResponseEntityDto(false, Collections.emptyList());
+		}
+
+		List<CrmCompanyResponseDto> companies = crmCompanyDao.findByIdInAndIsDeletedFalse(requestDto.getIds())
+			.stream()
+			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
+			.toList();
+
+		log.info("getCompaniesByIds: execution ended with {} result(s)", companies.size());
+		return new ResponseEntityDto(false, companies);
 	}
 
 	@Override
