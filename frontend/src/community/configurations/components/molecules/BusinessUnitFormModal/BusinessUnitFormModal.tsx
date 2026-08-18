@@ -49,10 +49,11 @@ const BusinessUnitFormModal: FC<Props> = ({
         isEdit ? "updateSuccess" : "createSuccess",
         "title"
       ]),
-      description: translateText(
-        ["toasts", isEdit ? "updateSuccess" : "createSuccess", "description"],
-        { name: formik.values.name.trim() }
-      )
+      description: translateText([
+        "toasts",
+        isEdit ? "updateSuccess" : "createSuccess",
+        "description"
+      ])
     });
     formik.resetForm();
     onClose();
