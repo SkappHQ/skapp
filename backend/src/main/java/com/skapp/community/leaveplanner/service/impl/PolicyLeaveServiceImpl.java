@@ -81,7 +81,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -731,14 +730,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	}
 
 	private MonthDay resolveCycleAnchor() {
-		try {
-			LeaveCycleDetailsDto leaveCycle = leaveCycleService.getLeaveCycleConfigs();
-			return MonthDay.of(leaveCycle.getStartMonth(), leaveCycle.getStartDate());
-		}
-		catch (NullPointerException | DateTimeException e) {
-			log.warn("resolveCycleAnchor: could not read the leave cycle config, using the calendar year", e);
-			return DateTimeUtils.CALENDAR_YEAR_START;
-		}
+		LeaveCycleDetailsDto leaveCycle = leaveCycleService.getLeaveCycleConfigs();
+		return MonthDay.of(leaveCycle.getStartMonth(), leaveCycle.getStartDate());
 	}
 
 	private LocalDate clampToCycle(LocalDate date, PolicyLeaveDateWindowDto cycle) {
