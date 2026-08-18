@@ -2,16 +2,11 @@ package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface EmployeeLeavePolicyRepository {
 
 	List<EmployeeLeavePolicy> findByEmployeeIdsAndStatus(List<Long> employeeIds, EmployeeLeavePolicyStatus status);
-
-	Page<EmployeeLeavePolicy> findByEmployeeIdAndStatus(Long employeeId, EmployeeLeavePolicyStatus status,
-			Pageable pageable);
 
 }

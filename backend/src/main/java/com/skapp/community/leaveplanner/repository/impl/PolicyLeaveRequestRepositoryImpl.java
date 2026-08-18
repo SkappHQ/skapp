@@ -7,6 +7,7 @@ import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
+import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestRepository;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -18,14 +19,12 @@ import com.skapp.community.peopleplanner.type.AccountStatus;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +38,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -126,42 +123,22 @@ public class PolicyLeaveRequestRepositoryImpl implements PolicyLeaveRequestRepos
 	}
 
 	@Override
-	public Double sumCommittedDaysForPolicyInCycle(Long employeeId, Long policyId,
-			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
+	public List<PolicyLeaveUsageDto> findCommittedUsageForPolicyInWindow(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<Double> criteriaQuery = criteriaBuilder.createQuery(Double.class);
+		CriteriaQuery<PolicyLeaveUsageDto> criteriaQuery = criteriaBuilder.createQuery(PolicyLeaveUsageDto.class);
 		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
 
-		criteriaQuery.select(criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
+		criteriaQuery
+			.select(criteriaBuilder.construct(PolicyLeaveUsageDto.class, root.get(PolicyLeaveRequest_.startDate),
+					root.get(PolicyLeaveRequest_.durationDays).as(Double.class)))
 			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
 					criteriaBuilder.equal(root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id), policyId),
 					root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
+					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), windowStart, windowEnd));
 
-		return entityManager.createQuery(criteriaQuery).getSingleResult();
-	}
-
-	@Override
-	public Map<Long, Double> sumCommittedDaysForPoliciesInCycle(Long employeeId, Collection<Long> policyIds,
-			Collection<LeaveRequestStatus> statuses, LocalDate cycleStart, LocalDate cycleEnd) {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
-		Root<PolicyLeaveRequest> root = criteriaQuery.from(PolicyLeaveRequest.class);
-		Path<Long> policyId = root.get(PolicyLeaveRequest_.policy).get(LeavePolicy_.id);
-
-		criteriaQuery.multiselect(policyId, criteriaBuilder.sumAsDouble(root.get(PolicyLeaveRequest_.durationDays)))
-			.where(criteriaBuilder.equal(root.get(PolicyLeaveRequest_.employee).get(Employee_.employeeId), employeeId),
-					policyId.in(policyIds), root.get(PolicyLeaveRequest_.status).in(statuses),
-					criteriaBuilder.between(root.get(PolicyLeaveRequest_.startDate), cycleStart, cycleEnd));
-		criteriaQuery.groupBy(policyId);
-
-		Map<Long, Double> committedDaysByPolicyId = new HashMap<>();
-		for (Tuple result : entityManager.createQuery(criteriaQuery).getResultList()) {
-			committedDaysByPolicyId.put(result.get(0, Long.class), result.get(1, Double.class));
-		}
-		return committedDaysByPolicyId;
+		return entityManager.createQuery(criteriaQuery).getResultList();
 	}
 
 	@Override

@@ -58,7 +58,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
       payrollId,
       employeeIdForExistCheck
     );
-    
+
     const { data: tinValidation } = useCheckTinExists(
       tin,
       employeeIdForExistCheck
@@ -75,7 +75,7 @@ const IdentificationDetailsSection = forwardRef<FormMethods, Props>(
       () =>
         employee?.employment
           ?.identificationAndDiversityDetails as L3IdentificationAndDiversityDetailsType,
-      [employee]
+      [employee?.common?.employeeId]
     );
 
     const formik = useFormik({

@@ -2,6 +2,8 @@ package com.skapp.community.leaveplanner.repository;
 
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,6 +19,9 @@ public interface EmployeeLeavePolicyDao
 
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_IdAndStatus(Long employeeId, Long policyId,
 			EmployeeLeavePolicyStatus status);
+
+	Page<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(Long employeeId,
+			EmployeeLeavePolicyStatus status, Pageable pageable);
 
 	List<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(Long employeeId,
 			EmployeeLeavePolicyStatus status);

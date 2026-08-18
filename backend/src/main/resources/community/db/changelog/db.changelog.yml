@@ -74,3 +74,5 @@ databaseChangeLog:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-shr-com-work-location-ppl-holiday-drop-work-location-cascade.sql
   - include:
       file: classpath:community/db/changelog/ddl-script/people-ddl-script-v1-alter-table-shr-com-work-location-ppl-holiday-add-work-location-fk.sql
+  - include:
+      file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-alter-leave-policy-rename-carryover-date.sql

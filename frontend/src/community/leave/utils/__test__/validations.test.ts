@@ -6,6 +6,7 @@ import {
   addEditCustomLeaveAllocationValidationSchema,
   addLeaveTypeValidationSchema,
   customLeaveAllocationValidation,
+  leavePolicyWizardValidation,
   policyLeaveTypeValidationSchema
 } from "../validations";
 
@@ -331,5 +332,106 @@ describe("policyLeaveTypeValidationSchema", () => {
     await expect(
       schema.validate({ ...validData, minDuration: LeaveDurationTypes.NONE })
     ).rejects.toThrow("emptyLeaveDurationError");
+  });
+});
+
+describe("leavePolicyWizardValidation", () => {
+  const mockTranslateNestedText = (keys: string[]) => keys[keys.length - 1];
+
+  const schema = leavePolicyWizardValidation(mockTranslateNestedText, true);
+
+  const validData = {
+    policyName: "Annual Accrual",
+    leaveType: "1",
+    accrualDays: "1.5",
+    accrualFrequency: "MONTHLY",
+    hasWaitingPeriod: false,
+    waitingPeriodDays: "",
+    hasAccrualCap: false,
+    accrualCapDays: "",
+    canCarryOver: false,
+    maxCarryOverDays: ""
+  };
+
+  describe("waitingPeriodDays", () => {
+    it("should pass for a whole number of waiting period days", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "30"
+        })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should fail for a fractional number of waiting period days", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "1.5"
+        })
+      ).rejects.toThrow("waitingPeriodDaysNotWholeNumber");
+    });
+
+    it("should fail when waiting period days is below the minimum", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "0"
+        })
+      ).rejects.toThrow("waitingPeriodDaysRequired");
+    });
+
+    it("should ignore waiting period days when there is no waiting period", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: false,
+          waitingPeriodDays: "1.5"
+        })
+      ).resolves.toBeTruthy();
+    });
+  });
+
+  describe("maxCarryOverDays", () => {
+    it("should pass for a valid 0.5 step", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          canCarryOver: true,
+          maxCarryOverDays: "2.5"
+        })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should fail for a value that is not a multiple of 0.5", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          canCarryOver: true,
+          maxCarryOverDays: "1.7"
+        })
+      ).rejects.toThrow("maxCarryOverDaysStepInvalid");
+    });
+  });
+
+  describe("accrual day fields", () => {
+    it("should still accept 0.5 steps for accrual days", async () => {
+      await expect(
+        schema.validate({ ...validData, accrualDays: "0.5" })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should still accept 0.5 steps for the accrual cap", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasAccrualCap: true,
+          accrualCapDays: "10.5"
+        })
+      ).resolves.toBeTruthy();
+    });
   });
 });

@@ -10,7 +10,6 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
-import com.skapp.community.leaveplanner.constant.PolicyLeaveConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
@@ -39,7 +38,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -203,17 +201,15 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 	public ResponseEntityDto getEmployeeLeavePolicies(Long employeeId, EmployeeLeavePolicyFilterDto filterDto) {
 		log.info("getEmployeeLeavePolicies: execution started");
 
-		Sort sort = Sort.by(Sort.Direction.DESC, PolicyLeaveConstant.SORT_BY_EFFECTIVE_FROM,
-				PolicyLeaveConstant.SORT_BY_ID);
-		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged(sort)
-				: PageRequest.of(filterDto.getPage(), filterDto.getSize(), sort);
+		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged()
+				: PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
-			.findByEmployeeIdAndStatus(employeeId, EmployeeLeavePolicyStatus.ACTIVE, pageable);
+			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(employeeId,
+					EmployeeLeavePolicyStatus.ACTIVE, pageable);
 
-		int currentYear = DateTimeUtils.getCurrentUtcDate().getYear();
 		List<EmployeeLeavePolicy> assignments = activeEmployeeLeavePolicies.getContent();
-		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(employeeId,
-				assignments, currentYear);
+		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(assignments,
+				null);
 		List<EmployeeLeavePolicyResponseDto> items = assignments.stream()
 			.map(assignment -> toEmployeeLeavePolicyWithBalance(assignment,
 					balancesByAssignment.get(assignment.getId())))
