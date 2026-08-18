@@ -2200,7 +2200,7 @@ public class TimeServiceImpl implements TimeService {
 				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
 
 		if (!isAuthorized) {
-			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED);
 		}
 	}
 

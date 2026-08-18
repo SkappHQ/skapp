@@ -23,6 +23,7 @@ import {
   isToday
 } from "~community/attendance/utils/TimeUtils";
 import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
+import { TIME_ERROR_MANUAL_ENTRY_RESTRICTED } from "~community/common/constants/errorMessageKeys";
 import { HTTP_CONFLICT } from "~community/common/constants/httpStatusCodes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -90,6 +91,20 @@ const useAddEntry = () => {
   };
   // Enhanced onError to handle "No manager Found" 400 error
   const enhancedOnError = (error: ErrorResponse) => {
+    if (
+      error?.response?.data?.results?.[0]?.messageKey ===
+      TIME_ERROR_MANUAL_ENTRY_RESTRICTED
+    ) {
+      setToastMessage({
+        open: true,
+        title: translateText(["addTimeEntryErrorTitle"]),
+        description: translateText(["manualEntryRestrictedErrorDes"]),
+        autoHideDuration: TOAST_AUTO_HIDE_DURATION,
+        toastType: ToastType.ERROR
+      });
+      return;
+    }
+
     if (error?.response?.data?.results?.[0]?.message === "No managers found") {
       setToastMessage({
         open: true,
