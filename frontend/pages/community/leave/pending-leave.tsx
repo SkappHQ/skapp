@@ -9,7 +9,6 @@ import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
-import PendingLeaveRequestTable from "~community/leave/components/molecules/PendingLeaveRequestTable/PendingLeaveRequestTable";
 import PendingLeaveRequestsSection from "~community/leave/components/organisms/PendingLeaveRequestsSection/PendingLeaveRequestsSection";
 
 const PendingLeave: NextPage = () => {
@@ -47,11 +46,10 @@ const PendingLeave: NextPage = () => {
               placeHolder={translateText(["searchBoxPlaceholder"])}
             />
           </Box>
-          <PendingLeaveRequestTable searchTerm={searchTerm} />
+          <PendingLeaveRequestsSection searchTerm={searchTerm} />
         </>
       </ContentLayout>
     </NotificationReadProvider>
-    </ContentLayout>
   );
 };
 
