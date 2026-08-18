@@ -65,4 +65,4 @@ databaseChangeLog:
   - include:
       file: classpath:community/db/changelog/ddl-script/leave-ddl-script-v1-create-lv-leave-request-attachment.sql
   - include:
-      file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time-record-add-auditable-columns.sql
+      file: classpath:community/db/changelog/ddl-script/time-ddl-script-v1-alter-table-time_request-add-auditable-columns.sql.sql
