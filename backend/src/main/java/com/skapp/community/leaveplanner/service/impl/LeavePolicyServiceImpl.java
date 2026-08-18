@@ -347,13 +347,21 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getIsCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
-		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
+		leavePolicy.setCarryoverExpiryDate(resolveCarryoverExpiryDate(carryoverEnabled, accrualDto));
 		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);
 
 		leavePolicy.setFirstAccrual(
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
 		leavePolicy.setAccrualTiming(
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
+	}
+
+	private String resolveCarryoverExpiryDate(boolean carryoverEnabled, LeavePolicyAccrualDetailDto accrualDto) {
+		if (!carryoverEnabled) {
+			return null;
+		}
+		String carryoverExpiryDate = accrualDto.getCarryoverExpiryDate();
+		return carryoverExpiryDate == null || carryoverExpiryDate.isBlank() ? null : carryoverExpiryDate;
 	}
 
 }

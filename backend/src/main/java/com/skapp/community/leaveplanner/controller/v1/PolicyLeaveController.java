@@ -34,7 +34,10 @@ public class PolicyLeaveController {
 	private final PolicyLeaveService policyLeaveService;
 
 	@Operation(summary = "Get the current user's leave policy balances",
-			description = "One card per assigned policy; policies sharing a leave type are never merged")
+			description = "One card per assigned policy; policies sharing a leave type are never merged. "
+					+ "The year identifies the leave cycle that starts in that year, which is not the "
+					+ "calendar year when the organization's leave cycle does not start on January 1. "
+					+ "Omitting it returns the cycle containing today")
 	@GetMapping("/balances")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getCurrentUserPolicyBalances(
@@ -46,7 +49,9 @@ public class PolicyLeaveController {
 	@Operation(summary = "Get the current user's policy leave requests",
 			description = "Paged, sorted and filtered feed backing the My Requests table. "
 					+ "A negative size returns every matching request unpaginated, which is how the "
-					+ "apply leave calendar fetches the requests already raised for a year")
+					+ "apply leave calendar fetches the requests already raised for a year. "
+					+ "The year identifies the leave cycle that starts in that year, matching the "
+					+ "window the balance cards are calculated over")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
 	public ResponseEntity<ResponseEntityDto> getCurrentUserPolicyLeaveRequests(
