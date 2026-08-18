@@ -1681,7 +1681,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isTrue(userJoin.get(User_.isActive)));
-		predicates.add(cb.equal(root.get(Employee_.accountStatus), AccountStatus.ACTIVE));
+		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE)));
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(cb, roleJoin));
 
 		predicates.add(cb.isNotNull(personalInfoJoin.get(EmployeePersonalInfo_.birthDate)));
