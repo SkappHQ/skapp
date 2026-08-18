@@ -1,14 +1,13 @@
 import { Avatar, LargeModal } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
 
+import Confetti from "~community/common/components/atoms/Confetti/Confetti";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import BirthdayCelebration from "~community/people/assets/images/BirthdayCelebration";
+import { CONFETTI_VISIBLE_DURATION_MS } from "~community/people/constants/stringConstants";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
-import Confetti from "~community/common/components/atoms/Confetti/Confetti";
-
-const CONFETTI_VISIBLE_DURATION_MS = 4000;
 
 interface Props {
   id: string;

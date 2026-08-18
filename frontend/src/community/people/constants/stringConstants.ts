@@ -8,6 +8,8 @@ export const EMAIL_MAX_LENGTH = 100;
 export const BIRTHDAY_NOTIFICATION_VIEW_STATE_CACHE_KEY =
   "birthdayNotificationViewState";
 
+export const CONFETTI_VISIBLE_DURATION_MS = 4000;
+
 export const PAYROLL_ID_LENGTH = 50;
 
 export const TIN_LENGTH = 50;
