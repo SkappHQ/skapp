@@ -39,6 +39,7 @@ export interface CrmCompanyMetrics {
 
 export interface CrmContactEntity {
   id?: number;
+  name?: string;
   firstName?: string;
   lastName?: string;
   email?: string;

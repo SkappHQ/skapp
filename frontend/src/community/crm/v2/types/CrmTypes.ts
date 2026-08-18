@@ -6,6 +6,7 @@ import {
   CrmContactEntity,
   CrmDealEntity,
   CrmOwnerEntity,
+  CrmStageEntity,
   CrmTaskEntity,
   CrmTaskTypeEntity
 } from "./CrmCommonTypes";
@@ -55,6 +56,18 @@ export interface CrmDealStageReorderRequest {
   orderIndex: number;
 }
 
+// Batch-hydrate the companies referenced (by id) on loaded deals/board cards.
+export interface CrmCompanyBatchRequest {
+  ids: number[];
+}
+
+// Attached to each draggable card (`type: "deal"`) and each column droppable
+// (`type: "stage"`) so the drag handlers can resolve the target stage/kind.
+export interface CrmKanbanDragData {
+  stageId: number;
+  type: "stage" | "deal";
+}
+
 // Responses
 
 export interface CrmCompanyListResponse {
@@ -75,6 +88,13 @@ export interface CrmContactListResponse {
   totalPages: number;
 }
 
+export interface CrmBoardInitDataResponse {
+  stages: CrmStageEntity[];
+  contacts: CrmContactEntity[];
+  owners: CrmOwnerEntity[];
+  taskTypes: CrmTaskTypeEntity[];
+}
+
 export interface CrmOwnerListResponse {
   items: CrmOwnerEntity[];
   currentPage: number;
@@ -89,9 +109,24 @@ export interface CrmDealListResponse {
   totalPages: number;
 }
 
+// Slim, scalar board card returned by /board/deals-grouped-by-stages. Unlike the
+// v2 deal read it carries a `taskCount` (and no description/orderIndex/closingAt/
+// stageId — the stage is implied by the group). Mapped to CrmDealEntity in
+// boardUtil (taskCount -> openTasksCount, stageId stamped from the group).
+export interface CrmBoardDealResponse {
+  id: number;
+  name: string;
+  amount: string | null;
+  ownerId: number;
+  companyId: number | null;
+  contactId: number;
+  priority: CrmPriorityEnum;
+  taskCount: number;
+}
+
 export interface CrmDealsByStagesResponse {
   stageId: number;
-  deals: CrmDealEntity[];
+  deals: CrmBoardDealResponse[];
   totalCount: number;
   currentPage: number;
   totalPages: number;
@@ -123,6 +158,32 @@ export interface CrmTaskRelatedListResponse {
 
 export interface CrmExistsResponse {
   isExists: boolean;
+}
+
+// Contact lookup (typeahead) item + paginated response.
+export interface CrmContactLookupItem {
+  id: number;
+  name: string;
+  company: CrmCompanyEntity | null;
+}
+
+export interface CrmContactLookupResponse {
+  items: CrmContactLookupItem[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+// Formik shape for the add-deal form (scalar id fields are strings while the
+// user is selecting; converted to numbers in the create payload).
+export interface CrmDealAddFormTypes {
+  name: string;
+  stageId: string;
+  contactId: string;
+  ownerId: string;
+  priority: CrmPriorityEnum;
+  amount: string;
+  description: string;
 }
 
 // Filters

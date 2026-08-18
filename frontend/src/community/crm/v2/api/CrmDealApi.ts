@@ -1,0 +1,274 @@
+import {
+  UseMutationResult,
+  UseQueryResult,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
+import { AxiosError } from "axios";
+
+import authFetch, {
+  authFetchV2
+} from "~community/common/utils/axiosInterceptor";
+import {
+  CrmDealEntity,
+  CrmStageEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmDealFilterRequest,
+  CrmDealListResponse,
+  CrmDealStageReorderRequest,
+  CrmExistsResponse
+} from "~community/crm/v2/types/CrmTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
+
+import { crmDealEndpointsV1, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
+import { crmDealQueryKeys } from "./utils/QueryKeys";
+
+interface EditDealVariables {
+  id: number;
+  payload: CrmDealEntity;
+}
+
+interface UpdateDealStageVariables {
+  id: number;
+  payload: CrmStageEntity;
+}
+
+const fetchDeals = async (
+  filters: CrmDealFilterRequest
+): Promise<CrmDealListResponse> => {
+  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
+    params: filters
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealsInfinite = (
+  filters: CrmDealFilterRequest,
+  enabled?: boolean
+) =>
+  useInfiniteQuery({
+    enabled,
+    queryKey: crmDealQueryKeys.GET_DEALS(filters),
+    queryFn: ({ pageParam = 0 }) => fetchDeals({ ...filters, page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+    refetchOnWindowFocus: false
+  });
+
+const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
+  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealById = (
+  id: number,
+  enabled?: boolean
+): UseQueryResult<CrmDealEntity> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
+    queryFn: () => fetchDealById(id),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const createDeal = async (payload: CrmDealEntity): Promise<CrmDealEntity> => {
+  const response = await authFetchV2.post(
+    crmDealEndpointsV2.CREATE_DEAL,
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCreateDeal = (
+  onSuccess: (createdDeal: CrmDealEntity) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<CrmDealEntity, AxiosError, CrmDealEntity> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDeal,
+    onSuccess: (createdDeal) => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess(createdDeal);
+    },
+    onError
+  });
+};
+
+const editDeal = async ({
+  id,
+  payload
+}: EditDealVariables): Promise<CrmDealEntity> => {
+  const response = await authFetchV2.patch(
+    crmDealEndpointsV2.EDIT_DEAL(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useEditDeal = (
+  onSuccess: (updatedDeal: CrmDealEntity) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<CrmDealEntity, AxiosError, EditDealVariables> =>
+  useMutation({
+    mutationFn: editDeal,
+    onSuccess,
+    onError
+  });
+
+const checkDealNameExists = async (
+  name: string
+): Promise<CrmExistsResponse> => {
+  const response = await authFetch.get(
+    crmDealEndpointsV1.CHECK_DEAL_NAME_EXISTS,
+    { params: { name } }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCheckDealNameExists = (
+  name: string,
+  enabled: boolean
+): UseQueryResult<CrmExistsResponse> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.CHECK_DEAL_NAME_EXISTS(name),
+    queryFn: () => checkDealNameExists(name),
+    enabled
+  });
+
+const deleteDeal = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpointsV1.DELETE_DEAL(id));
+};
+
+export const useDeleteDeal = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<void, AxiosError, number> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDeal,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
+
+const fetchDealStages = async (): Promise<CrmStageEntity[]> => {
+  const response = await authFetch.get(crmDealEndpointsV1.DEAL_STAGES);
+  return response?.data?.results;
+};
+
+export const useGetDealStages = (
+  enabled?: boolean
+): UseQueryResult<CrmStageEntity[]> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.DEAL_STAGES,
+    queryFn: fetchDealStages,
+    enabled
+  });
+
+const createDealStage = async (
+  payload: CrmStageEntity
+): Promise<CrmStageEntity> => {
+  const response = await authFetch.post(
+    crmDealEndpointsV1.CREATE_DEAL_STAGE,
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useCreateDealStage = (
+  onSuccess: (createdStage: CrmStageEntity) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<CrmStageEntity, AxiosError, CrmStageEntity> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createDealStage,
+    onSuccess: (createdStage) => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess(createdStage);
+    },
+    onError
+  });
+};
+
+const updateDealStage = async ({
+  id,
+  payload
+}: UpdateDealStageVariables): Promise<CrmStageEntity> => {
+  const response = await authFetch.patch(
+    crmDealEndpointsV1.UPDATE_DEAL_STAGE(id),
+    payload
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useUpdateDealStage = (
+  onSuccess: (updatedStage: CrmStageEntity) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<CrmStageEntity, AxiosError, UpdateDealStageVariables> =>
+  useMutation({
+    mutationFn: updateDealStage,
+    onSuccess,
+    onError
+  });
+
+const reorderDealStages = async (
+  payload: CrmDealStageReorderRequest[]
+): Promise<CrmStageEntity[]> => {
+  const response = await authFetch.post(
+    crmDealEndpointsV1.REORDER_DEAL_STAGES,
+    payload
+  );
+  return response?.data?.results;
+};
+
+export const useReorderDealStages = (
+  onSuccess: (reorderedStages: CrmStageEntity[]) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<CrmStageEntity[], AxiosError, CrmDealStageReorderRequest[]> =>
+  useMutation({
+    mutationFn: reorderDealStages,
+    onSuccess,
+    onError
+  });
+
+const deleteDealStage = async (id: number): Promise<void> => {
+  await authFetch.delete(crmDealEndpointsV1.DELETE_DEAL_STAGE(id));
+};
+
+export const useDeleteDealStage = (
+  onSuccess: () => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<void, AxiosError, number> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteDealStage,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
+  });
+};
