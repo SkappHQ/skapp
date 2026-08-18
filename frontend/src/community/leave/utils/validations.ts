@@ -43,6 +43,16 @@ const isPolicyDaysStepValid = (value: string | undefined): boolean => {
   );
 };
 
+const isWholeNumberOfDays = (value: string | undefined): boolean => {
+  const numericValue = Number(value);
+  return (
+    value !== undefined &&
+    value !== "" &&
+    !Number.isNaN(numericValue) &&
+    Number.isInteger(numericValue)
+  );
+};
+
 export const customLeaveAllocationValidation = (
   translateText: TranslatorFunctionType
 ) =>
@@ -202,9 +212,9 @@ export const leavePolicyWizardValidation = (
                   (value) => isNumberInRange(value, MIN_WAITING_PERIOD_DAYS)
                 )
                 .test(
-                  "waiting-period-days-step-valid",
-                  translateText(["errors", "waitingPeriodDaysStepInvalid"]),
-                  (value) => !value || isPolicyDaysStepValid(value)
+                  "waiting-period-days-whole-number",
+                  translateText(["errors", "waitingPeriodDaysNotWholeNumber"]),
+                  (value) => !value || isWholeNumberOfDays(value)
                 )
           }),
           hasAccrualCap: Yup.boolean(),
@@ -237,6 +247,11 @@ export const leavePolicyWizardValidation = (
                   (value) =>
                     !value ||
                     isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+                )
+                .test(
+                  "max-carryover-days-step-valid",
+                  translateText(["errors", "maxCarryOverDaysStepInvalid"]),
+                  (value) => !value || isPolicyDaysStepValid(value)
                 )
           })
         }

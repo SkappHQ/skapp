@@ -433,11 +433,12 @@
         "accrualDaysStepInvalid": "Days accrued must be in multiples of 0.5.",
         "frequencyRequired": "Please select an accrual frequency.",
         "waitingPeriodDaysRequired": "Please enter the number of waiting period days.",
-        "waitingPeriodDaysStepInvalid": "Waiting period days must be in multiples of 0.5.",
+        "waitingPeriodDaysNotWholeNumber": "Waiting period days must be a whole number.",
         "accrualCapRequired": "Please enter the maximum accrual balance.",
         "accrualCapStepInvalid": "Maximum balance must be in multiples of 0.5.",
         "maxCarryOverDaysRequired": "Please enter the maximum number of carry over days.",
-        "maxCarryOverDaysInvalid": "Maximum carry over days must be greater than 0 and at most 365."
+        "maxCarryOverDaysInvalid": "Maximum carry over days must be greater than 0 and at most 365.",
+        "maxCarryOverDaysStepInvalid": "Maximum carry over days must be in multiples of 0.5."
       },
       "successToastTitle": "Policy Created",
       "successToastDescription": "\"{{policyName}}\" has been created successfully and is now active.",
