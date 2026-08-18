@@ -55,7 +55,7 @@ const DirectorySteppers = ({
   );
 
   const isEditView = !isIndividualView && !isAccountView;
-  const isSelfView = Number(employeeId) === Number(userId);
+  const isSelfView = employeeId === userId;
 
   useEffect(() => {
     if (supervisedData && !supervisorDataLoading) {
