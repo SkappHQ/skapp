@@ -1,3 +1,5 @@
+import { FC } from "react";
+
 import { AttendanceConfigurationType } from "~community/attendance/types/attendanceTypes";
 
 interface Props {
@@ -6,11 +8,7 @@ interface Props {
   onSaved: (checked: boolean) => void;
 }
 
-const ManualEntryRestrictionSettings = ({
-  config,
-  initialConfig,
-  onSaved
-}: Props) => {
+const ManualEntryRestrictionSettings: FC<Props> = () => {
   return <></>;
 };
 
