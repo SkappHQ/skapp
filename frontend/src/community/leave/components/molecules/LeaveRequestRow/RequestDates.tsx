@@ -40,6 +40,7 @@ const RequestDates: FC<Props> = ({ dates, days }) => {
         {dates}
       </Typography>
       <div
+        className="body2"
         style={{
           backgroundColor: theme.palette.common.white,
           borderRadius: "9.375rem",
