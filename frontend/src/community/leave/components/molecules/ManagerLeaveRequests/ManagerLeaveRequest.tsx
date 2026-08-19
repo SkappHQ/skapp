@@ -32,7 +32,7 @@ import { requestTypeSelector } from "~community/leave/utils/LeaveRequestFilterAc
 import { generateManagerLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
 
 const chipClassName =
-  "inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
+  "body2 inline-flex w-fit items-center gap-2 rounded-full bg-tertiary-background px-4 py-2";
 
 interface Props {
   employeeLeaveRequests: LeaveRequestItemsType[];
@@ -264,6 +264,7 @@ const ManagerLeaveRequest: FC<Props> = ({
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
+      minHeight="min-h-[450px]"
       skeletonRows={5}
       emptyState={{
         title: translateText(["noLeaveRequests"]),

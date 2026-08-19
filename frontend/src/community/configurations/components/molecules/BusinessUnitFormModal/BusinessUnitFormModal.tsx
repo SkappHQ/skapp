@@ -44,15 +44,12 @@ const BusinessUnitFormModal: FC<Props> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText([
-        "toasts",
-        isEdit ? "updateSuccess" : "createSuccess",
-        "title"
-      ]),
-      description: translateText(
-        ["toasts", isEdit ? "updateSuccess" : "createSuccess", "description"],
-        { name: formik.values.name.trim() }
-      )
+      title: isEdit
+        ? translateText(["toasts", "updateSuccess", "title"])
+        : translateText(["toasts", "createSuccess", "title"]),
+      description: isEdit
+        ? translateText(["toasts", "updateSuccess", "description"])
+        : translateText(["toasts", "createSuccess", "description"])
     });
     formik.resetForm();
     onClose();
@@ -122,6 +119,8 @@ const BusinessUnitFormModal: FC<Props> = ({
     onClose();
   };
 
+  const isSaveDisabled = isPending || !formik.dirty || !formik.isValid;
+
   return (
     <SmallModal
       isOpen={isOpen}
@@ -168,9 +167,9 @@ const BusinessUnitFormModal: FC<Props> = ({
         buttonRight: {
           variant: "primary",
           onClick: () => formik.handleSubmit(),
-          icon: <SaveIcon />,
+          icon: <SaveIcon className={isSaveDisabled ? "opacity-50" : ""} />,
           iconPosition: "end",
-          disabled: isPending,
+          disabled: isSaveDisabled,
           isLoading: isPending,
           children: translateText(["form", "saveButton"])
         }

@@ -57,6 +57,16 @@ const getMissingBulkAssignHeaders = (
   );
 };
 
+const getUnexpectedBulkAssignHeaders = (
+  fields: string[],
+  headers: BulkAssignCsvHeaders
+): string[] => {
+  const expected = new Set(toCsvValues(headers).map(normalizeHeader));
+  return fields.filter(
+    (field) => field.trim() !== "" && !expected.has(normalizeHeader(field))
+  );
+};
+
 const buildBulkAssignPayload = (
   rows: Record<string, string | undefined>[],
   headers: BulkAssignCsvHeaders
@@ -80,6 +90,20 @@ export const validateBulkAssignCsv = (
     return {
       error: BulkAssignCsvError.MISSING_COLUMNS,
       missingColumns,
+      unexpectedColumns: [],
+      payload: null
+    };
+  }
+
+  const unexpectedColumns = getUnexpectedBulkAssignHeaders(
+    parseResult.meta.fields ?? [],
+    headers
+  );
+  if (unexpectedColumns.length > 0) {
+    return {
+      error: BulkAssignCsvError.UNEXPECTED_COLUMNS,
+      missingColumns: [],
+      unexpectedColumns,
       payload: null
     };
   }
@@ -88,6 +112,7 @@ export const validateBulkAssignCsv = (
     return {
       error: BulkAssignCsvError.MALFORMED_ROWS,
       missingColumns: [],
+      unexpectedColumns: [],
       payload: null
     };
   }
@@ -96,6 +121,7 @@ export const validateBulkAssignCsv = (
     return {
       error: BulkAssignCsvError.EMPTY_FILE,
       missingColumns: [],
+      unexpectedColumns: [],
       payload: null
     };
   }
@@ -104,6 +130,7 @@ export const validateBulkAssignCsv = (
     return {
       error: BulkAssignCsvError.TOO_MANY_ROWS,
       missingColumns: [],
+      unexpectedColumns: [],
       payload: null
     };
   }
@@ -111,6 +138,7 @@ export const validateBulkAssignCsv = (
   return {
     error: null,
     missingColumns: [],
+    unexpectedColumns: [],
     payload: buildBulkAssignPayload(parseResult.data, headers)
   };
 };

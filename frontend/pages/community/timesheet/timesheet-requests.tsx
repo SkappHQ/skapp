@@ -39,6 +39,7 @@ const TimesheetRequestsPage: NextPage = () => {
       pageHead={translateText(["timesheet.timeEntryRequests.pageHead"])}
       title={translateText(["timesheet.timeEntryRequests.title"])}
       isDividerVisible={true}
+      dividerStyles={{ paddingBottom: "0rem" }}
       isBackButtonVisible={true}
       onBackClick={router.back}
     >

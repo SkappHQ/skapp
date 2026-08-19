@@ -109,7 +109,7 @@ const LeaveRequests: FC = () => {
           />
         ),
         type: (
-          <div style={classes.iconStyles}>
+          <div className="body2" style={classes.iconStyles}>
             <span role="img" aria-hidden="true">
               {getEmoji(employeeLeaveRequest.leaveType.emojiCode || "")}
             </span>
@@ -117,7 +117,10 @@ const LeaveRequests: FC = () => {
           </div>
         ),
         status: (
-          <div style={{ ...classes.iconStyles, textTransform: "capitalize" }}>
+          <div
+            className="body2"
+            style={{ ...classes.iconStyles, textTransform: "capitalize" }}
+          >
             <span role="img" aria-hidden="true">
               {leaveStatusIconSelector(employeeLeaveRequest.status)}
             </span>
@@ -186,7 +189,8 @@ const LeaveRequests: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      skeletonRows={5}
+      minHeight="min-h-[293px]"
+      skeletonRows={4}
       emptyState={{
         title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
         description: translateText(["myLeaveRequests", "emptyLeaveRequestDes"])

@@ -11,6 +11,10 @@ const styles = (theme: Theme): StyleProps => ({
       border: `.0625rem dashed ${theme.palette.grey.A100}`,
       borderRadius: 1
     },
+    "& .MuiStepConnector-root.Mui-active .MuiStepConnector-line, & .MuiStepConnector-root.Mui-completed .MuiStepConnector-line":
+      {
+        borderColor: theme.palette.primary.dark
+      },
     "& .MuiStepLabel-label": {
       fontWeight: 400,
       fontSize: ".875rem",

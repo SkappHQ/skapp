@@ -308,7 +308,7 @@ const InputDate: FC<Props> = ({
             id="emoji-field"
             title={tooltip}
             isDisabled={disabled}
-            aria-label={`${lowerCaseLabel} ${translateAria(["ariaLabel"])}`}
+            ariaLabel={`${lowerCaseLabel} ${translateAria(["ariaLabel"])}`}
           />
         )}
       </Stack>

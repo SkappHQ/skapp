@@ -112,7 +112,7 @@ const LeaveTypesTable = () => {
       rows={transformToTableRows()}
       isLoading={isLeaveTypesFetching}
       skeletonRows={6}
-      height="27.5rem"
+      height="30rem"
     />
   );
 };
