@@ -172,9 +172,6 @@ public interface LeaveMapper {
 	EmployeeLeavePolicyResponseDto employeeLeavePolicyToEmployeeLeavePolicyResponseDto(
 			EmployeeLeavePolicy employeeLeavePolicy);
 
-	List<EmployeeLeavePolicyResponseDto> employeeLeavePolicyListToEmployeeLeavePolicyResponseDtoList(
-			List<EmployeeLeavePolicy> employeeLeavePolicies);
-
 	List<PolicyLeaveTypeDetailResponseDto> policyLeaveTypeListToPolicyLeaveTypeDetailResponseDtoList(
 			List<PolicyLeaveType> policyLeaveTypes);
 

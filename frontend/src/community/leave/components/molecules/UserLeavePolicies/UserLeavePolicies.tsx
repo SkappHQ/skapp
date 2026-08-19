@@ -1,20 +1,15 @@
 import { ButtonV2, EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useState } from "react";
 
 import Pagination from "~community/common/components/atoms/Pagination/Pagination";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsApi";
 import { useGetEmployeeLeavePolicies } from "~community/leave/api/LeavePolicyAssignmentApi";
 import AssignLeavePolicyModal from "~community/leave/components/molecules/AssignLeavePolicyModal/AssignLeavePolicyModal";
 import UnassignLeavePolicyModal from "~community/leave/components/molecules/UnassignLeavePolicyModal/UnassignLeavePolicyModal";
-import LeavePolicyCard, {
-  LeaveUsage
-} from "~community/leave/components/molecules/UserLeavePolicies/LeavePolicyCard";
+import LeavePolicyCard from "~community/leave/components/molecules/UserLeavePolicies/LeavePolicyCard";
 import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
-import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
-import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;
@@ -26,7 +21,6 @@ const POLICIES_PER_PAGE = 6;
 const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
   const canManagePolicies = useCanManageLeavePolicies();
-  const { isAtLeastCoreTier } = useTier();
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState<boolean>(false);
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
@@ -52,30 +46,12 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
     }
   }, [totalPages, currentPage]);
 
-  const { data: entitlementData } = useGetEmployeeEntitlements(
-    employeeId,
-    isAtLeastCoreTier
-  );
-
-  const usageByLeaveType = useMemo(() => {
-    const map = new Map<string, LeaveUsage>();
-    (entitlementData ?? []).forEach(
-      (entitlement: LeaveEntitlementsCardType) => {
-        map.set(entitlement.leaveType.name, {
-          remaining: entitlement.balanceInDays,
-          total: entitlement.totalDaysAllocated
-        });
-      }
-    );
-    return map;
-  }, [entitlementData]);
-
   const hasPolicies = totalItems > 0;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-row items-center justify-between gap-3">
-        <h3 className="h3 text-black">{translateText(["sectionTitle"])}</h3>
+        <h2 className="h2 text-black">{translateText(["sectionTitle"])}</h2>
         {canManagePolicies && (
           <ButtonV2
             variant="primary"
@@ -110,7 +86,6 @@ const UserLeavePolicies: FC<Props> = ({ employeeId, employeeName }) => {
             <LeavePolicyCard
               key={policy.id}
               policy={policy}
-              usage={usageByLeaveType.get(policy.leaveTypeName)}
               canManagePolicies={canManagePolicies}
               isKebabMenuOpen={openKebabMenuId === policy.id}
               onKebabToggle={(isOpen: boolean) =>

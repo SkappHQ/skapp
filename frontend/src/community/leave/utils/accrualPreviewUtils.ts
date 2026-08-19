@@ -30,6 +30,8 @@ interface ScheduleConfig {
 const roundToTwoDecimals = (value: number): number =>
   Math.round(value * 100) / 100;
 
+const roundToHalfDay = (value: number): number => Math.round(value * 2) / 2;
+
 const eventDateFor = (
   isAtPeriodStart: boolean,
   isFirstPeriod: boolean,
@@ -55,7 +57,7 @@ const firstPeriodDays = (
     fullPeriodDays > 0
       ? Math.min(1, Math.max(0, coveredDays / fullPeriodDays))
       : 1;
-  return roundToTwoDecimals(perPeriod * coverageFraction);
+  return perPeriod * coverageFraction;
 };
 
 const calendarEvents = (
@@ -135,18 +137,17 @@ const toPreviewRows = (
   const rows: AccrualPreviewRow[] = [];
   let balance = 0;
   for (const event of accrualEvents) {
-    balance = roundToTwoDecimals(balance + event.days);
+    balance += event.days;
     if (capDays != null) balance = Math.min(balance, capDays);
     rows.push({
       date: event.date.toFormat(MEDIUM_DATE_FORMAT),
       days: roundToTwoDecimals(event.days),
-      balance
+      balance: roundToHalfDay(balance)
     });
     if (capDays != null && balance >= capDays) break;
   }
   return rows;
 };
-
 
 export const buildAccrualPreview = (
   policy: LeavePolicyType,

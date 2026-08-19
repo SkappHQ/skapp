@@ -623,7 +623,7 @@ export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
 
 export const formatDays = (value: number): string =>
-  Number.isInteger(value) ? String(value) : value.toFixed(2);
+  Number.isInteger(value) ? String(value) : value.toFixed(1);
 
 export const getEmployeeFullName = (
   firstName?: string | null,

@@ -27,9 +27,9 @@ import com.skapp.community.leaveplanner.model.PolicyLeaveRequestAttachment;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.LeaveCycleDetailsDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveBalanceDto;
-import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveDateWindowDto;
 import com.skapp.community.leaveplanner.payload.PolicyLeaveUsageDto;
+import com.skapp.community.leaveplanner.payload.email.LeaveEmailDynamicFields;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAttachmentDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveAvailabilityRequestDto;
 import com.skapp.community.leaveplanner.payload.request.PolicyLeaveRequestDto;
@@ -86,7 +86,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.MonthDay;
 import java.time.Year;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -410,6 +412,24 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		log.info("getPolicyLeaveRequestNudgeStatus: execution ended");
 		return new ResponseEntityDto(false, nudgeStatus);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Map<Long, PolicyLeaveBalanceDto> calculateBalancesForYear(Long employeeId,
+			List<EmployeeLeavePolicy> assignments, Integer year) {
+		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		MonthDay cycleAnchor = resolveCycleAnchor();
+		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
+				cycleAnchor);
+		LocalDate asOf = clampToCycle(today, cycle);
+
+		Map<Long, PolicyLeaveUsageLookup> usageLookups = buildUsageLookups(employeeId, assignments, cycle, cycleAnchor);
+
+		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = new LinkedHashMap<>();
+		assignments.forEach(assignment -> balancesByAssignment.put(assignment.getId(),
+				calculateBalance(assignment, cycle, cycleAnchor, asOf, () -> usageLookups.get(assignment.getId()))));
+		return balancesByAssignment;
 	}
 
 	private Notification findLastNudge(Long id) {
@@ -743,6 +763,12 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private PolicyLeaveBalanceDto calculateBalance(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
 			MonthDay cycleAnchor, LocalDate asOf) {
+		return calculateBalance(assignment, cycle, cycleAnchor, asOf,
+				() -> buildUsageLookup(assignment, cycle, cycleAnchor));
+	}
+
+	private PolicyLeaveBalanceDto calculateBalance(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
+			MonthDay cycleAnchor, LocalDate asOf, Supplier<PolicyLeaveUsageLookup> usageLookupSupplier) {
 		LeavePolicy policy = assignment.getPolicy();
 		LocalDate effectiveFrom = assignment.getEffectiveFrom();
 
@@ -754,7 +780,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			return emptyBalance(policy, effectiveFrom, cycle);
 		}
 
-		PolicyLeaveUsageLookup usageLookup = buildUsageLookup(assignment, cycle, cycleAnchor);
+		PolicyLeaveUsageLookup usageLookup = usageLookupSupplier.get();
 		float accruedDays = accruedInCycle(assignment, cycle);
 		float accrualAllocation = PolicyLeaveAccrualUtil.accrualAllocationInCycle(policy, effectiveFrom, cycle);
 		float carriedOverDays = PolicyLeaveAccrualUtil.carriedOverInto(policy, effectiveFrom, cycle, cycleAnchor,
@@ -788,6 +814,35 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				PolicyLeaveAccrualUtil.accruedWithinCycle(policy, accrualStartDate, cycle, cycle.getEndDate()));
 	}
 
+	private Map<Long, PolicyLeaveUsageLookup> buildUsageLookups(Long employeeId, List<EmployeeLeavePolicy> assignments,
+			PolicyLeaveDateWindowDto cycle, MonthDay cycleAnchor) {
+		if (assignments.isEmpty()) {
+			return Map.of();
+		}
+
+		LocalDate windowStart = cycle.getStartDate();
+		for (EmployeeLeavePolicy assignment : assignments) {
+			LocalDate firstCycleStart = PolicyLeaveAccrualUtil
+				.resolveCycleContaining(assignment.getEffectiveFrom(), cycleAnchor)
+				.getStartDate();
+			if (firstCycleStart.isBefore(windowStart)) {
+				windowStart = firstCycleStart;
+			}
+		}
+
+		Map<Long, List<PolicyLeaveUsageDto>> usagesByPolicyId = policyLeaveRequestDao
+			.findCommittedUsageForPoliciesInWindow(employeeId,
+					assignments.stream().map(assignment -> assignment.getPolicy().getId()).toList(),
+					PolicyLeaveConstant.BALANCE_HOLDING_STATUSES, windowStart, cycle.getEndDate());
+
+		Map<Long, PolicyLeaveUsageLookup> usageLookups = new HashMap<>();
+		assignments.forEach(assignment -> {
+			List<PolicyLeaveUsageDto> usages = usagesByPolicyId.getOrDefault(assignment.getPolicy().getId(), List.of());
+			usageLookups.put(assignment.getId(), (from, to) -> sumUsage(usages, from, to));
+		});
+		return usageLookups;
+	}
+
 	private PolicyLeaveUsageLookup buildUsageLookup(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
 			MonthDay cycleAnchor) {
 		LocalDate firstCycleStart = PolicyLeaveAccrualUtil
@@ -805,7 +860,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		for (PolicyLeaveUsageDto usage : usages) {
 			if (usage.getDurationDays() != null && !usage.getStartDate().isBefore(from)
 					&& !usage.getStartDate().isAfter(to)) {
-				totalDaysUsed += usage.getDurationDays().floatValue();
+				totalDaysUsed += usage.getDurationDays();
 			}
 		}
 		return totalDaysUsed;
