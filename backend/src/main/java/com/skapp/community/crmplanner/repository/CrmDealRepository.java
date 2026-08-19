@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.repository;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealListItemDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
@@ -19,7 +18,7 @@ public interface CrmDealRepository {
 
 	Page<CrmDealResponseDtoV2> findDealsV2(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable);
 
-	List<CrmDealListItemDtoV2> findDealsByIdsV2(List<Long> dealIds, Long ownerId);
+	List<CrmDeal> findDealsByIds(List<Long> dealIds, Long ownerId);
 
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 

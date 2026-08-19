@@ -7,7 +7,6 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
-import com.skapp.community.crmplanner.payload.request.CrmDealBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
@@ -33,8 +32,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.util.List;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -170,8 +167,8 @@ class CrmDealControllerV2IntegrationTest {
 	// --- createDeal ---
 
 	@Test
-	@DisplayName("Create deal - Returns Created with embedded stage, owner, company and contact-with-company")
-	void createDeal_HappyPath_ReturnsEmbeddedAssociations() throws Exception {
+	@DisplayName("Create deal - Returns Created with scalar stage, owner, company and contact ids")
+	void createDeal_HappyPath_ReturnsScalarAssociationIds() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal V2 Corp");
 		CrmContact contact = savedContact(company, "deal.create.v2@example.com");
@@ -182,25 +179,17 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal V2"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("5000"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['name']").value("V2 Stage"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['owner']['employeeId']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	// --- getDealById ---
 
 	@Test
-	@DisplayName("Get deal by ID - Returns embedded stage, owner, company and contact-with-company")
-	void getDealById_HappyPath_ReturnsEmbeddedAssociations() throws Exception {
+	@DisplayName("Get deal by ID - Returns scalar stage, owner, company and contact ids")
+	void getDealById_HappyPath_ReturnsScalarAssociationIds() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal Detail V2 Corp");
 		CrmContact contact = savedContact(company, "deal.detail.v2@example.com");
@@ -211,17 +200,14 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Saved Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['owner']['employeeId']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	@Test
-	@DisplayName("Get deals filtered by companyId - Returns paginated deals with embedded associations")
+	@DisplayName("Get deals filtered by companyId - Returns paginated deals with scalar association ids")
 	void getDeals_FilterByCompanyId_ReturnsMatchingDeals() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal List V2 Corp");
@@ -233,7 +219,8 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['company']['id']").value(company.getId()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactId']").value(contact.getId()));
 	}
 
 	@Test
@@ -255,7 +242,7 @@ class CrmDealControllerV2IntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get deals - Masks soft-deleted company on deal and contact")
+	@DisplayName("Get deals - Masks soft-deleted company on deal")
 	void getDeals_SoftDeletedCompany_MasksCompany() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("List Deleted Co V2");
@@ -269,12 +256,11 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deleted Co Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['company']['id']").doesNotExist())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['company']['id']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
 	}
 
 	@Test
-	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal and contact")
+	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal")
 	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deleted Co V2");
@@ -288,8 +274,7 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").doesNotExist())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -303,7 +288,7 @@ class CrmDealControllerV2IntegrationTest {
 	// --- editDeal ---
 
 	@Test
-	@DisplayName("Edit deal - Returns OK with updated deal and embedded associations")
+	@DisplayName("Edit deal - Returns OK with updated deal and scalar association ids")
 	void editDeal_HappyPath_ReturnsUpdatedDeal() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal Edit V2 Corp");
@@ -317,10 +302,10 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(company.getId()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	@Test
@@ -355,121 +340,6 @@ class CrmDealControllerV2IntegrationTest {
 
 		performPostRequest(validPayload(stage.getId(), contact.getId())).andDo(print())
 			.andExpect(status().isForbidden());
-	}
-
-	// --- getDealsByIds (batch) ---
-
-	/**
-	 * The batch lookup is served by CrmDealServiceV2 and returns the v2 id-reference
-	 * shape, so it is covered here even though the route is mounted on the v1 controller
-	 * - the v2 frontend clients call it through the /v1 base URL.
-	 */
-	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
-		CrmDealBatchRequestDto requestDto = new CrmDealBatchRequestDto();
-		requestDto.setIds(ids);
-		return performRequest(post(BATCH_PATH).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(requestDto))
-			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	@Test
-	@DisplayName("Get deals by ids - Carries related records as id references only")
-	void getDealsByIds_HappyPath_ReturnsIdReferences() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Batch V2 Corp");
-		CrmContact contact = savedContact(company, "deal.batch.v2@example.com");
-		CrmDeal deal = savedDeal("Batch Deal V2", stage, company, contact, 1L);
-
-		performBatchRequest(List.of(deal.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(1))
-			.andExpect(jsonPath("['results'][0]['id']").value(deal.getId()))
-			.andExpect(jsonPath("['results'][0]['name']").value("Batch Deal V2"))
-			.andExpect(jsonPath("['results'][0]['amount']").value("5000"))
-			.andExpect(jsonPath("['results'][0]['stageId']").value(stage.getId()))
-			.andExpect(jsonPath("['results'][0]['ownerId']").value(1))
-			.andExpect(jsonPath("['results'][0]['companyId']").value(company.getId()))
-			.andExpect(jsonPath("['results'][0]['contactId']").value(contact.getId()))
-			.andExpect(jsonPath("['results'][0]['stage']").doesNotExist())
-			.andExpect(jsonPath("['results'][0]['owner']").doesNotExist())
-			.andExpect(jsonPath("['results'][0]['company']").doesNotExist())
-			.andExpect(jsonPath("['results'][0]['contact']").doesNotExist());
-	}
-
-	@Test
-	@DisplayName("Get deals by ids - Returns matching deals and ignores unknown ids")
-	void getDealsByIds_WithUnknownIds_ReturnsOnlyExisting() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Batch V2 Multi Co");
-		CrmContact contact = savedContact(company, "deal.batch.multi.v2@example.com");
-		CrmDeal dealA = savedDeal("Batch Deal A", stage, company, contact, 1L);
-		CrmDeal dealB = savedDeal("Batch Deal B", stage, company, contact, 1L);
-
-		performBatchRequest(List.of(dealA.getId(), dealB.getId(), 999999L)).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results'].length()").value(2));
-	}
-
-	@Test
-	@DisplayName("Get deals by ids - Excludes soft-deleted deals")
-	void getDealsByIds_SoftDeleted_Excluded() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Batch V2 Deleted Deal Co");
-		CrmContact contact = savedContact(company, "deal.batch.deleted.v2@example.com");
-		CrmDeal deal = savedDeal("Deleted Batch Deal", stage, company, contact, 1L);
-		deal.setIsDeleted(true);
-		crmDealDao.save(deal);
-
-		performBatchRequest(List.of(deal.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get deals by ids - Reports a soft-deleted company as no company at all")
-	void getDealsByIds_DealWithDeletedCompany_OmitsCompanyId() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Batch V2 Deleted Co");
-		CrmContact contact = savedContact(company, "deal.batch.deletedco.v2@example.com");
-		CrmDeal deal = savedDeal("Deal With Deleted Company", stage, company, contact, 1L);
-		company.setIsDeleted(true);
-		crmCompanyDao.save(company);
-
-		performBatchRequest(List.of(deal.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("['results'].length()").value(1))
-			.andExpect(jsonPath("['results'][0]['companyId']").doesNotExist());
-	}
-
-	@Test
-	@DisplayName("Get deals by ids - Empty ids returns empty list")
-	void getDealsByIds_EmptyIds_ReturnsEmptyList() throws Exception {
-		performBatchRequest(List.of()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get deals by ids as Sales Representative - Omits another owner's deal")
-	void getDealsByIds_SalesRepRequestingOthersDeal_OmitsIt() throws Exception {
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Batch V2 Owner Scope Co");
-		CrmContact contact = savedContact(company, "deal.batch.scope.v2@example.com");
-		CrmDeal deal = savedDeal("Admin Owned Deal", stage, company, contact, 1L);
-
-		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		performBatchRequest(List.of(deal.getId())).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("['results']").isEmpty());
 	}
 
 }

@@ -175,6 +175,17 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDealIds(List<Long> dealIds) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return;
+		}
+		for (Long dealId : dealIds) {
+			if (dealId == null || dealId <= 0) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+			}
+		}
+	}
+
 	public static void validateAddress(String address) {
 		if (address == null || address.isBlank()) {
 			return;

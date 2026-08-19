@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.repository.impl;
 
-import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -10,11 +9,6 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealListItemDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
@@ -114,31 +108,11 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Join<CrmDeal, CrmCompany> company = deal.join(CrmDeal_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		Join<CrmDeal, CrmContact> contact = deal.join(CrmDeal_.contact, JoinType.LEFT);
-		Join<CrmContact, CrmCompany> contactCompany = contact.join(CrmContact_.company, JoinType.LEFT);
-		contactCompany.on(cb.isFalse(contactCompany.get(CrmCompany_.isDeleted)));
-		Join<CrmContact, Employee> contactOwner = contact.join(CrmContact_.owner, JoinType.LEFT);
 
 		query.select(cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
 				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
-				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt),
-				cb.construct(CrmDealStageResponseDto.class, stage.get(CrmDealStage_.id), stage.get(CrmDealStage_.name),
-						stage.get(CrmDealStage_.color), stage.get(CrmDealStage_.orderIndex),
-						stage.get(CrmDealStage_.description), stage.get(CrmDealStage_.stageType)),
-				cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
-						owner.get(Employee_.lastName), owner.get(Employee_.authPic)),
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
-						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
-				cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
-						contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
-						contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-						cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
-								contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
-								contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
-								contactCompany.get(CrmCompany_.contactNumber)),
-						cb.construct(CrmOwnerResponseDto.class, contactOwner.get(Employee_.employeeId),
-								contactOwner.get(Employee_.firstName), contactOwner.get(Employee_.lastName),
-								contactOwner.get(Employee_.authPic)))));
+				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), stage.get(CrmDealStage_.id),
+				owner.get(Employee_.employeeId), company.get(CrmCompany_.id), contact.get(CrmContact_.id)));
 
 		query.where(buildPredicates(cb, deal, filterDto, ownerId).toArray(new Predicate[0]));
 		query.orderBy(cb.asc(stage.get(CrmDealStage_.orderIndex)), cb.asc(deal.get(CrmDeal_.orderIndex)),
@@ -159,28 +133,23 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	/**
-	 * Projects id references only - the caller resolves them against the entities it
-	 * already holds. Only the company needs a join, so that a soft deleted one is
-	 * reported as no company at all rather than as its id.
+	 * Fetches the full entity graph so the caller can map each deal through the same
+	 * mapper used for a single deal lookup. Unknown, soft deleted and - for a sales
+	 * representative - other owners' deals are simply absent from the result.
 	 */
 	@Override
-	public List<CrmDealListItemDtoV2> findDealsByIdsV2(List<Long> dealIds, Long ownerId) {
+	public List<CrmDeal> findDealsByIds(List<Long> dealIds, Long ownerId) {
 		if (dealIds == null || dealIds.isEmpty()) {
 			return Collections.emptyList();
 		}
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmDealListItemDtoV2> query = cb.createQuery(CrmDealListItemDtoV2.class);
+		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
-
-		Join<CrmDeal, CrmCompany> company = deal.join(CrmDeal_.company, JoinType.LEFT);
-		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
-
-		query.select(cb.construct(CrmDealListItemDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
-				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
-				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), deal.get(CrmDeal_.stage).get(CrmDealStage_.id),
-				deal.get(CrmDeal_.owner).get(Employee_.employeeId), company.get(CrmCompany_.id),
-				deal.get(CrmDeal_.contact).get(CrmContact_.id)));
+		deal.fetch(CrmDeal_.stage, JoinType.INNER);
+		deal.fetch(CrmDeal_.owner, JoinType.INNER);
+		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
@@ -189,7 +158,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
 		}
 
-		query.where(predicates.toArray(new Predicate[0])).orderBy(cb.asc(deal.get(CrmDeal_.id)));
+		query.select(deal).where(predicates.toArray(new Predicate[0])).orderBy(cb.asc(deal.get(CrmDeal_.id)));
 
 		return entityManager.createQuery(query).getResultList();
 	}
