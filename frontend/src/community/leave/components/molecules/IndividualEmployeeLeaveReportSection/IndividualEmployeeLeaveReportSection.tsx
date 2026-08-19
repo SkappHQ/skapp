@@ -1,3 +1,4 @@
+import { Stack } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
@@ -74,15 +75,17 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
       containerStyles={classes.container}
       pageHead={translateText(["pageHead"])}
     >
-      <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
-        <>
-          {!isLeavePolicyConfigLoading &&
-            (isLeavePoliciesEnabled ? (
-              <UserLeavePolicies
-                employeeId={selectedUser}
-                employeeName={employeeName}
-              />
-            ) : (
+      <Stack sx={classes.sectionsWrapper}>
+        {!isLeavePolicyConfigLoading && isLeavePoliciesEnabled && (
+          <UserLeavePolicies
+            employeeId={selectedUser}
+            employeeName={employeeName}
+          />
+        )}
+
+        <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
+          <>
+            {!isLeavePolicyConfigLoading && !isLeavePoliciesEnabled && (
               <>
                 <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
                 <UserAssignedLeaveTypes
@@ -90,23 +93,24 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
                   pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
                 />
               </>
-            ))}
+            )}
 
-          {leaveTypesList?.length > 0 && (
-            <UserLeaveUtilization
+            {leaveTypesList?.length > 0 && (
+              <UserLeaveUtilization
+                employeeId={selectedUser}
+                leaveTypesList={leaveTypesList}
+              />
+            )}
+
+            <UserLeaveHistory
               employeeId={selectedUser}
               leaveTypesList={leaveTypesList}
+              employeeLastName={employeeLastName}
+              employeeFirstName={employeeFirstName}
             />
-          )}
-
-          <UserLeaveHistory
-            employeeId={selectedUser}
-            leaveTypesList={leaveTypesList}
-            employeeLastName={employeeLastName}
-            employeeFirstName={employeeFirstName}
-          />
-        </>
-      </UpgradeOverlay>
+          </>
+        </UpgradeOverlay>
+      </Stack>
     </PeopleLayout>
   );
 };
