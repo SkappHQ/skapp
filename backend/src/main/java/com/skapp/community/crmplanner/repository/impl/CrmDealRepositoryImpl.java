@@ -132,11 +132,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	/**
-	 * Fetches the full entity graph so the caller can map each deal through the same
-	 * mapper used for a single deal lookup. Unknown, soft deleted and - for a sales
-	 * representative - other owners' deals are simply absent from the result.
-	 */
 	@Override
 	public List<CrmDeal> findDealsByIds(List<Long> dealIds, Long ownerId) {
 		if (dealIds == null || dealIds.isEmpty()) {
