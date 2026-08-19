@@ -100,7 +100,10 @@ export interface CrmDealsByStagesResponse {
 }
 
 export interface CrmTaskListResponse {
-  tasks: CrmTaskEntity[];
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 export interface CrmTaskTypeListResponse {
@@ -187,9 +190,10 @@ export interface CrmTaskCompletedFilterRequest {
   size?: number;
 }
 
-export interface CrmTaskRelatedFilterRequest {
-  contactId?: number;
-  dealId?: number;
-  page?: number;
-  size?: number;
+export interface CrmDealsByIdsRequest {
+  ids: number[];
+}
+
+export interface CrmCompaniesByIdsRequest {
+  ids: number[];
 }
