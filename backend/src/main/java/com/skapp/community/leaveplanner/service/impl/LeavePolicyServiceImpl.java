@@ -214,13 +214,22 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getLeavePolicyConfig() {
 		log.info("getLeavePolicyConfig: execution started");
 
-		Optional<OrganizationConfig> existingConfig = organizationConfigDao
-			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
-
-		boolean enabled = existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get());
+		boolean enabled = isLeavePoliciesEnabled();
 
 		log.info("getLeavePolicyConfig: execution ended");
 		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(enabled));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean isLeavePoliciesEnabled() {
+		log.info("isLeavePoliciesEnabled: execution started");
+		boolean enabled = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name())
+			.filter(this::isLeavePolicyEnabled)
+			.isPresent();
+		log.info("isLeavePoliciesEnabled: execution ended");
+		return enabled;
 	}
 
 	@Override
@@ -338,13 +347,21 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getIsCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
-		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
+		leavePolicy.setCarryoverExpiryDate(resolveCarryoverExpiryDate(carryoverEnabled, accrualDto));
 		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);
 
 		leavePolicy.setFirstAccrual(
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
 		leavePolicy.setAccrualTiming(
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
+	}
+
+	private String resolveCarryoverExpiryDate(boolean carryoverEnabled, LeavePolicyAccrualDetailDto accrualDto) {
+		if (!carryoverEnabled) {
+			return null;
+		}
+		String carryoverExpiryDate = accrualDto.getCarryoverExpiryDate();
+		return carryoverExpiryDate == null || carryoverExpiryDate.isBlank() ? null : carryoverExpiryDate;
 	}
 
 }

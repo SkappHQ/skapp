@@ -18,7 +18,9 @@ const ROUTES = {
     FORGET_PASSWORD: "/forget-password",
     SYSTEM_UPDATE: "/system-update",
     OAUTH_AUTHORIZE: "/oauth2/authorize",
-    OAUTH_CONSENT: "/oauth-consent"
+    OAUTH_SIGNIN: "/auth/signin",
+    OAUTH_CONSENT: "/auth/oauth-consent",
+    OAUTH_REDIRECT: "/auth/redirect"
   },
   ORGANIZATION: {
     SETUP: "/setup-organization",
@@ -198,3 +200,8 @@ export const nonSuperAdminRestrictedRoutes = [
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
+
+export const oAuthCallbackRoutes = [
+  ROUTES.AUTH.OAUTH_AUTHORIZE,
+  ROUTES.AUTH.OAUTH_CONSENT
+];

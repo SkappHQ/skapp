@@ -2,8 +2,10 @@ import {
   CalendarIcon,
   DatePicker,
   Dropdown,
+  InfoTipBanner,
   InputField,
-  RadioButton
+  RadioButton,
+  Tooltip
 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
 import { FC, useMemo } from "react";
@@ -19,7 +21,7 @@ import {
   EffectiveDateType
 } from "~community/leave/types/LeavePolicyTypes";
 
-interface PolicyOption {
+export interface PolicyOption {
   id: string;
   label: string;
   value: string;
@@ -31,10 +33,14 @@ interface Props {
   onPolicyChange: (value: string) => void;
   effectiveDateType: EffectiveDateType;
   onEffectiveDateTypeChange: (type: EffectiveDateType) => void;
+  joinDateLabel: string;
   specificDate: string;
   specificDateError: string;
   onSpecificDateChange: (isoDate: string) => void;
   accrualPreview: AccrualPreviewRow[];
+  isFlexiblePolicy: boolean;
+  conflictWarning: string;
+  joinDateWarning: string;
 }
 
 const AssignLeavePolicyForm: FC<Props> = ({
@@ -43,16 +49,19 @@ const AssignLeavePolicyForm: FC<Props> = ({
   onPolicyChange,
   effectiveDateType,
   onEffectiveDateTypeChange,
+  joinDateLabel,
   specificDate,
   specificDateError,
   onSpecificDateChange,
-  accrualPreview
+  accrualPreview,
+  isFlexiblePolicy,
+  conflictWarning,
+  joinDateWarning
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
   const accrualHeaders: GridHeader[] = [
     { id: "date", label: translateText(["assignModal", "colDate"]) },
-    { id: "action", label: translateText(["assignModal", "colAction"]) },
     { id: "days", label: translateText(["assignModal", "colDays"]) },
     { id: "balance", label: translateText(["assignModal", "colBalance"]) }
   ];
@@ -62,38 +71,35 @@ const AssignLeavePolicyForm: FC<Props> = ({
       accrualPreview.map((row, index) => ({
         id: index,
         date: <span className="body2 text-black">{row.date}</span>,
-        action: (
-          <span className="body2 text-black">
-            {translateText(["assignModal", "actionAccrued"])}
-          </span>
-        ),
         days: <span className="body2 text-black">{row.days}</span>,
         balance: <span className="body2 text-black">{row.balance}</span>
       })),
-    [accrualPreview, translateText]
+    [accrualPreview]
   );
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <p className="body2 text-secondary-text">
-          {translateText(["assignModal", "policyLabel"])}
-        </p>
-        <Dropdown
-          id="assign-leave-policy-dropdown"
-          ariaLabel={translateText(["assignModal", "policyLabel"])}
-          value={selectedPolicyId}
-          options={policyOptions}
-          placeholder={translateText(["assignModal", "policyPlaceholder"])}
-          onChange={(value: string) => onPolicyChange(value)}
-          width="100%"
-        />
-      </div>
+      <Dropdown
+        id="assign-leave-policy-dropdown"
+        label={translateText(["assignModal", "policyLabel"])}
+        value={selectedPolicyId}
+        options={policyOptions}
+        placeholder={translateText(["assignModal", "policyPlaceholder"])}
+        onChange={(value: string) => onPolicyChange(value)}
+        width="100%"
+      />
+
+      {conflictWarning && (
+        <InfoTipBanner status="warning" description={conflictWarning} />
+      )}
 
       <div className="flex flex-col gap-2">
         <p className="body2 text-secondary-text">
           {translateText(["assignModal", "effectiveDateLabel"])}
         </p>
+        {joinDateWarning && (
+          <InfoTipBanner status="warning" description={joinDateWarning} />
+        )}
         <div
           role="radiogroup"
           aria-label={translateText(["assignModal", "effectiveDateLabel"])}
@@ -102,19 +108,27 @@ const AssignLeavePolicyForm: FC<Props> = ({
           <button
             type="button"
             role="radio"
-            aria-checked={effectiveDateType === EffectiveDateType.HIRE_DATE}
+            aria-checked={effectiveDateType === EffectiveDateType.JOIN_DATE}
             onClick={() =>
-              onEffectiveDateTypeChange(EffectiveDateType.HIRE_DATE)
+              onEffectiveDateTypeChange(EffectiveDateType.JOIN_DATE)
             }
             className="flex w-fit cursor-pointer items-center gap-3"
           >
             <RadioButton
-              isSelected={effectiveDateType === EffectiveDateType.HIRE_DATE}
+              isSelected={effectiveDateType === EffectiveDateType.JOIN_DATE}
               variant="dot"
             />
-            <span className="body1 text-black">
-              {translateText(["assignModal", "hireDateOption"])}
-            </span>
+            <Tooltip
+              content={translateText(["assignModal", "joinDateOptionTooltip"])}
+              position="bottom"
+            >
+              <span className="body1 flex items-center gap-1.5 text-black">
+                {translateText(["assignModal", "joinDateOption"])}
+                {joinDateLabel && (
+                  <span className="body2 text-black">({joinDateLabel})</span>
+                )}
+              </span>
+            </Tooltip>
           </button>
           <button
             type="button"
@@ -178,22 +192,36 @@ const AssignLeavePolicyForm: FC<Props> = ({
         )}
       </div>
 
+      {isFlexiblePolicy && (
+        <InfoTipBanner
+          status="info"
+          description={translateText(["assignModal", "flexibleInfoLabel"])}
+        />
+      )}
+
       {accrualPreview.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="body2 text-secondary-text">
-            {translateText(["assignModal", "accrualPreviewTitle"])}
-          </p>
-          <TableView
-            ariaLabel={{
-              regionAriaLabel: translateText([
-                "assignModal",
-                "accrualPreviewTitle"
-              ])
-            }}
-            headers={accrualHeaders}
-            rows={accrualRows}
-            height="14rem"
-          />
+          <Tooltip
+            content={translateText(["assignModal", "accrualPreviewTooltip"])}
+            position="top"
+          >
+            <p className="body2 text-secondary-text">
+              {translateText(["assignModal", "accrualPreviewTitle"])}
+            </p>
+          </Tooltip>
+          <div className="max-h-[40vh] overflow-y-auto pr-2">
+            <TableView
+              ariaLabel={{
+                regionAriaLabel: translateText([
+                  "assignModal",
+                  "accrualPreviewTitle"
+                ])
+              }}
+              headers={accrualHeaders}
+              rows={accrualRows}
+              minHeight="min-h-[200px]"
+            />
+          </div>
         </div>
       )}
     </div>

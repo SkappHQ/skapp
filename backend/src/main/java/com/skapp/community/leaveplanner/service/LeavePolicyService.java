@@ -23,4 +23,6 @@ public interface LeavePolicyService {
 
 	void setDefaultLeavePolicyConfig();
 
+	boolean isLeavePoliciesEnabled();
+
 }

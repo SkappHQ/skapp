@@ -6,6 +6,7 @@ import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType_;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.repository.LeavePolicyRepository;
+import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -55,6 +57,20 @@ public class LeavePolicyRepositoryImpl implements LeavePolicyRepository {
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	@Override
+	public List<LeavePolicy> findByNamesIgnoreCaseAndStatus(Set<String> names, LeavePolicyStatus status) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeavePolicy> query = cb.createQuery(LeavePolicy.class);
+		Root<LeavePolicy> root = query.from(LeavePolicy.class);
+		root.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		Predicate namePredicate = cb.lower(root.get(LeavePolicy_.name)).in(names);
+		Predicate statusPredicate = cb.equal(root.get(LeavePolicy_.status), status);
+
+		query.select(root).where(cb.and(namePredicate, statusPredicate)).distinct(true);
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<LeavePolicy> root,

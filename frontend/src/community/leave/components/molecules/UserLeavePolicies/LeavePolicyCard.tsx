@@ -1,18 +1,12 @@
-import { Card, KebabMenu } from "@rootcodelabs/skapp-ui";
+import { InfinityIcon, Card, KebabMenu } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { formatDays, getEmoji } from "~community/common/utils/commonUtil";
 import { EmployeeLeavePolicyType } from "~community/leave/types/LeavePolicyTypes";
 
-export interface LeaveUsage {
-  remaining: number;
-  total: number;
-}
-
 interface Props {
   policy: EmployeeLeavePolicyType;
-  usage?: LeaveUsage;
   canManagePolicies: boolean;
   isKebabMenuOpen: boolean;
   onKebabToggle: (isOpen: boolean) => void;
@@ -21,7 +15,6 @@ interface Props {
 
 const LeavePolicyCard: FC<Props> = ({
   policy,
-  usage,
   canManagePolicies,
   isKebabMenuOpen,
   onKebabToggle,
@@ -29,35 +22,49 @@ const LeavePolicyCard: FC<Props> = ({
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
 
+  const isFlexiblePolicy = policy.isUnlimited;
+
   return (
-    <Card className="flex flex-row items-center justify-between gap-4 bg-white p-6!">
+    <Card className="flex max-h-[96px] flex-row items-center justify-between gap-4 bg-white p-6!">
       <div className="flex min-w-0 flex-row items-center gap-6">
-        {usage && (
+        {isFlexiblePolicy ? (
+          <span
+            className="shrink-0 text-secondary-text"
+            role="img"
+            aria-label={translateText(["balanceNotTrackedLabel"])}
+          >
+            <InfinityIcon width="32" height="32" />
+          </span>
+        ) : (
           <div
             className="flex shrink-0 items-baseline gap-0.5"
             aria-label={translateText(["leavesRemainingLabel"], {
-              remaining: usage.remaining,
-              total: usage.total
+              remaining: formatDays(policy.balanceInDays),
+              total: formatDays(policy.totalDaysAllocated)
             })}
           >
-            <span className="text-2xl text-black">
-              {formatDays(usage.remaining)}
+            <span className="h1b text-black">
+              {formatDays(policy.balanceInDays)}
             </span>
-            <span className="body2 text-secondary-text">
-              /{formatDays(usage.total)}
+            <span className="body1 text-secondary-text">
+              /{formatDays(policy.totalDaysAllocated)}
             </span>
           </div>
         )}
-        <div className="flex min-w-0 flex-col">
-          <span className="body1 inline-flex items-center gap-2 truncate text-black">
+        <div className="flex min-w-0 flex-col gap-2">
+          <span className="subtitle3 inline-flex items-center gap-3 truncate text-black">
             {policy.leaveTypeEmojiCode && (
-              <span role="img" aria-hidden="true">
+              <span
+                role="img"
+                aria-hidden="true"
+                className="size-5 shrink-0 text-xl leading-5"
+              >
                 {getEmoji(policy.leaveTypeEmojiCode)}
               </span>
             )}
             {policy.leaveTypeName}
           </span>
-          <span className="body2 truncate text-secondary-text">
+          <span className="body3 truncate text-secondary-text pl-1">
             {policy.policyName}
           </span>
         </div>

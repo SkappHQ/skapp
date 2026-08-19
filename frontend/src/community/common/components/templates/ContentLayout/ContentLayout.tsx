@@ -10,7 +10,7 @@ import { type SxProps } from "@mui/system";
 import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { JSX, memo, useEffect, useMemo } from "react";
+import { ComponentProps, JSX, memo, useEffect, useMemo } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
@@ -58,6 +58,7 @@ interface Props {
   dividerStyles?: SxProps;
   children: JSX.Element;
   secondaryBtnText?: string;
+  secondaryBtnVariant?: ComponentProps<typeof ButtonV2>["variant"];
   primaryButtonText?: string | boolean;
   primaryBtnIconName?: IconName;
   secondaryBtnIconName?: IconName;
@@ -103,6 +104,7 @@ const ContentLayout = ({
   children,
   primaryButtonText,
   secondaryBtnText,
+  secondaryBtnVariant = "secondary",
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconFill,
@@ -340,7 +342,7 @@ const ContentLayout = ({
             {secondaryBtnText && (
               <ButtonV2
                 isFullWidth={isBelow600}
-                variant={"secondary"}
+                variant={secondaryBtnVariant}
                 size={"md"}
                 onClick={onSecondaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.secondaryButton}

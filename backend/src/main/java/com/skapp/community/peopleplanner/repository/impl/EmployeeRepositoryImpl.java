@@ -1241,6 +1241,35 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 	}
 
 	@Override
+	public List<Employee> findActiveEmployeesByExactNames(Set<String> names) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Employee> criteriaQuery = criteriaBuilder.createQuery(Employee.class);
+		Root<Employee> root = criteriaQuery.from(Employee.class);
+
+		List<Predicate> predicates = new ArrayList<>();
+
+		Join<Employee, User> userJoin = root.join(Employee_.user);
+		predicates.add(criteriaBuilder.notEqual(userJoin.get(User_.isActive), false));
+
+		Join<Employee, EmployeeRole> roleJoin = root.join(Employee_.employeeRole, JoinType.LEFT);
+		predicates.add(PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, roleJoin));
+
+		predicates.add(
+				criteriaBuilder
+					.lower(criteriaBuilder.concat(criteriaBuilder.concat(root.get(Employee_.FIRST_NAME), " "),
+							root.get(Employee_.LAST_NAME)))
+					.in(names));
+
+		Predicate[] predArray = new Predicate[predicates.size()];
+		predicates.toArray(predArray);
+		criteriaQuery.where(predArray);
+		criteriaQuery.select(root).distinct(true);
+		TypedQuery<Employee> typedQuery = entityManager.createQuery(criteriaQuery);
+		return typedQuery.getResultList();
+	}
+
+	@Override
 	public PrimarySecondaryOrTeamSupervisorResponseDto isPrimarySecondaryOrTeamSupervisor(Long employeeId,
 			Long currentEmployeeId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -1652,7 +1681,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(cb.isTrue(userJoin.get(User_.isActive)));
-		predicates.add(root.get(Employee_.accountStatus).in(Set.of(AccountStatus.ACTIVE, AccountStatus.PENDING)));
+		predicates.add(cb.equal(root.get(Employee_.accountStatus), AccountStatus.ACTIVE));
 		predicates.add(PeopleUtil.notGuestEmployeePredicate(cb, roleJoin));
 
 		predicates.add(cb.isNotNull(personalInfoJoin.get(EmployeePersonalInfo_.birthDate)));

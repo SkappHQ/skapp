@@ -24,6 +24,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
@@ -36,6 +37,7 @@ import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.util.CrmUtil;
@@ -79,6 +81,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final CrmTaskDao crmTaskDao;
 
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
 	private final MessageUtil messageUtil;
 
 	@Override
@@ -98,7 +102,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
-		log.info("createDeal: creating deal with name={}", requestDto.getName());
+		CrmDeal savedDeal = persistNewDeal(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public CrmDeal persistNewDeal(CrmDealCreateRequestDto requestDto) {
+		log.info("persistNewDeal: creating deal with name={}", requestDto.getName());
 
 		CrmValidations.validateDealName(requestDto.getName());
 		CrmValidations.validateDealDescription(requestDto.getDescription());
@@ -143,10 +154,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOwner(owner);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
-		log.info("createDeal: deal created with id={}", savedDeal.getId());
-		return new ResponseEntityDto(false, responseDto);
+		log.info("persistNewDeal: deal created with id={}", savedDeal.getId());
+		return savedDeal;
 	}
 
 	protected void validateDealCreationLimit() {
@@ -258,11 +268,15 @@ public class CrmDealServiceImpl implements CrmDealService {
 					o.getAuthPic()))
 			.toList();
 
+		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
+			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
+
 		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
 		responseDto.setOwners(owners);
+		responseDto.setTaskTypes(taskTypes);
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);
@@ -417,7 +431,14 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
-		log.info("editDeal: execution started");
+		CrmDeal savedDeal = applyDealEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public CrmDeal applyDealEdit(Long id, CrmDealEditRequestDto requestDto) {
+		log.info("applyDealEdit: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
@@ -490,10 +511,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
 
-		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
-
-		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, responseDto);
+		log.info("applyDealEdit: execution ended");
+		return savedDeal;
 	}
 
 	@Override

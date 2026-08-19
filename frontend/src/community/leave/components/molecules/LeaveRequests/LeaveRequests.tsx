@@ -15,6 +15,7 @@ import {
   useGetEmployeeLeaveRequests
 } from "~community/leave/api/MyRequestApi";
 import MyLeaveRequestFilterBody from "~community/leave/components/molecules/MyLeaveRequestFilterBody/MyLeaveRequestFilterBody";
+import { MY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequestDataType } from "~community/leave/types/EmployeeLeaveRequestTypes";
 import { generateMyLeaveRequestAriaLabel } from "~community/leave/utils/accessibilityUtils";
@@ -26,9 +27,8 @@ import styles from "./styles";
 const LeaveRequests: FC = () => {
   const classes = styles();
 
-  const currentPage = useLeaveStore((state) => state.leaveRequestParams.page);
-  const leaveRequestSort = useLeaveStore(
-    (state) => state.leaveRequestParams.sortKey
+  const { status, leaveType, page, sortKey } = useLeaveStore(
+    (state) => state.leaveRequestParams
   );
   const {
     setPagination,
@@ -40,7 +40,13 @@ const LeaveRequests: FC = () => {
     leaveRequestsFilter
   } = useLeaveStore((state) => state);
 
-  const { data: leaveRequests, isLoading } = useGetEmployeeLeaveRequests();
+  const { data: leaveRequests, isLoading } = useGetEmployeeLeaveRequests({
+    status,
+    leaveType,
+    page,
+    sortKey,
+    size: MY_LEAVE_REQUESTS_PER_PAGE
+  });
 
   const {
     refetch,
@@ -189,14 +195,14 @@ const LeaveRequests: FC = () => {
       onRowClick={handleRowClick}
       pagination={{
         totalPages: leaveRequests?.totalPages,
-        currentPage: currentPage as number,
+        currentPage: page,
         onPageChange: setPagination
       }}
       toolbar={{
         dropdown: {
           id: "my-leave-requests-sort",
           options: sortOptions,
-          value: leaveRequestSort,
+          value: sortKey,
           onChange: handleSortChange,
           renderSelectedValue: renderSelectedSortValue,
           width: "auto",

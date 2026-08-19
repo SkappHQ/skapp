@@ -1,3 +1,4 @@
+import { ACCRUAL_PREVIEW_ROW_LIMIT } from "~community/leave/constants/leavePolicyConstants";
 import {
   AccrualFrequency,
   AccrualTiming,
@@ -24,7 +25,7 @@ const basePolicy = (
   waitingPeriodDays: null,
   accrualCapDays: null,
   isCarryoverEnabled: false,
-  carryoverDate: null,
+  carryoverExpiryDate: null,
   maxCarryoverDays: null,
   firstAccrual: FirstAccrualType.FULL,
   accrualTiming: AccrualTiming.PERIOD_END,
@@ -48,11 +49,12 @@ describe("buildAccrualPreview", () => {
   it("accrues accrualDays each period and runs a cumulative balance", () => {
     const rows = buildAccrualPreview(basePolicy(), "2024-01-01");
 
-    // Twelve monthly period-ends, all within the (carry-over off) start year.
-    expect(rows).toHaveLength(12);
+    // Monthly period-ends within the (carry-over off) start year, truncated by
+    // ACCRUAL_PREVIEW_ROW_LIMIT before the year boundary is reached.
+    expect(rows).toHaveLength(ACCRUAL_PREVIEW_ROW_LIMIT);
     expect(rows[0].days).toBe(2);
     expect(rows[0].balance).toBe(2);
-    expect(rows[11].balance).toBe(24);
+    expect(rows[rows.length - 1].balance).toBe(2 * ACCRUAL_PREVIEW_ROW_LIMIT);
   });
 
   it("caps the running balance at accrualCapDays and stops", () => {
@@ -66,19 +68,21 @@ describe("buildAccrualPreview", () => {
   });
 
   it("stops at the accrual year when carry-over is disabled, continues when enabled", () => {
+    const quarterly = { frequency: AccrualFrequency.QUARTERLY };
+
     const noCarry = buildAccrualPreview(
-      basePolicy({ isCarryoverEnabled: false }),
+      basePolicy({ ...quarterly, isCarryoverEnabled: false }),
       "2024-07-01"
     );
     const withCarry = buildAccrualPreview(
-      basePolicy({ isCarryoverEnabled: true }),
+      basePolicy({ ...quarterly, isCarryoverEnabled: true }),
       "2024-07-01"
     );
 
-    // Jul..Dec 2024 only.
-    expect(noCarry).toHaveLength(6);
-    // Runs into the next year, bounded only by the preview row limit.
-    expect(withCarry).toHaveLength(12);
+    expect(noCarry).toHaveLength(2);
+    expect(noCarry[noCarry.length - 1].date).toBe("31 Dec 2024");
+    expect(withCarry).toHaveLength(ACCRUAL_PREVIEW_ROW_LIMIT);
+    expect(withCarry.length).toBeGreaterThan(noCarry.length);
   });
 
   it("still previews when a waiting period pushes the first accrual into the next year", () => {

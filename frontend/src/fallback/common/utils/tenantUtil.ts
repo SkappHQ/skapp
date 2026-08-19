@@ -10,6 +10,10 @@ export const isTenantSelectionHost = (): boolean => false;
 
 export const getTenantId = (): string => "";
 
+export const isNotOnAppSubdomain = (): boolean => false;
+
+export const getAppSubdomainUrl = (): string => "";
+
 export const getTenantHostUrl = (): string => "";
 
 export const getTenantQueryPath = (): string => "";

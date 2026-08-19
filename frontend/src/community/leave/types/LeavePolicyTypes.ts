@@ -1,6 +1,52 @@
+import { BulkStatusSummary } from "~community/common/types/BulkUploadTypes";
+
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FLEXIBLE = "FLEXIBLE"
+}
+
+export interface BulkAssignPolicyRow {
+  employeeName: string;
+  policyName: string;
+  effectiveDate: string;
+}
+
+export interface BulkAssignPolicyPayload {
+  assignments: BulkAssignPolicyRow[];
+}
+
+export interface BulkAssignPolicyErrorLog extends BulkAssignPolicyRow {
+  error: string;
+}
+
+export interface BulkAssignPolicyResponse {
+  bulkStatusSummary: BulkStatusSummary;
+  bulkRecordErrorLogs: BulkAssignPolicyErrorLog[];
+}
+
+export interface BulkAssignPolicyApiResponse {
+  results: BulkAssignPolicyResponse[];
+}
+
+export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
+
+export enum BulkAssignCsvError {
+  MISSING_COLUMNS = "MISSING_COLUMNS",
+  MALFORMED_ROWS = "MALFORMED_ROWS",
+  EMPTY_FILE = "EMPTY_FILE",
+  TOO_MANY_ROWS = "TOO_MANY_ROWS"
+}
+
+export interface BulkAssignCsvValidation {
+  error: BulkAssignCsvError | null;
+  missingColumns: string[];
+  payload: BulkAssignPolicyPayload | null;
+}
+
+export enum BulkAssignPolicySteps {
+  INSTRUCTIONS = "INSTRUCTIONS",
+  UPLOAD = "UPLOAD",
+  SUMMARY = "SUMMARY"
 }
 
 export enum LeavePolicyStatus {
@@ -50,7 +96,7 @@ export interface LeavePolicyType {
   waitingPeriodDays?: number | null;
   accrualCapDays?: number | null;
   isCarryoverEnabled?: boolean | null;
-  carryoverDate?: string | null;
+  carryoverExpiryDate?: string | null;
   maxCarryoverDays?: number | null;
   firstAccrual?: FirstAccrualType | null;
   accrualTiming?: AccrualTiming | null;
@@ -109,7 +155,7 @@ export interface LeavePolicyFormData {
   hasAccrualCap: boolean;
   accrualCapDays: string;
   canCarryOver: boolean;
-  carryOverDate: string;
+  carryoverExpiryDate: string;
   maxCarryOverDays: string;
   firstAccrual: string;
   receiveAccruedTime: string;
@@ -121,7 +167,7 @@ export interface AddLeavePolicyAccrualPayload {
   waitingPeriodDays?: number;
   accrualCapDays?: number;
   isCarryoverEnabled: boolean;
-  carryoverDate?: string;
+  carryoverExpiryDate?: string;
   maxCarryoverDays?: number;
   firstAccrual: string;
   accrualTiming: string;
@@ -156,7 +202,7 @@ export interface LeavePolicyResponseDto {
   waitingPeriodDays: number | null;
   accrualCapDays: number | null;
   isCarryoverEnabled: boolean | null;
-  carryoverDate: string | null;
+  carryoverExpiryDate: string | null;
   maxCarryoverDays: number | null;
   firstAccrual: FirstAccrualType | null;
   accrualTiming: AccrualTiming | null;
@@ -167,7 +213,7 @@ export interface LeavePolicyMutationResponse {
 }
 
 export enum EffectiveDateType {
-  HIRE_DATE = "HIRE_DATE",
+  JOIN_DATE = "JOIN_DATE",
   SPECIFIC = "SPECIFIC"
 }
 
@@ -188,6 +234,10 @@ export interface EmployeeLeavePolicyType {
   effectiveDateType: EffectiveDateType;
   effectiveFrom: string;
   status: EmployeeLeavePolicyStatus;
+  totalDaysAllocated: number;
+  totalDaysUsed: number;
+  balanceInDays: number;
+  isUnlimited: boolean;
 }
 
 export interface EmployeeLeavePoliciesPage {

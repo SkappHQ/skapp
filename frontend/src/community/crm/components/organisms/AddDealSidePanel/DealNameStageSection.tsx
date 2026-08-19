@@ -86,22 +86,24 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
         />
       </div>
       <div className="w-1/3 pt-6.5">
-        {isStagesLoading ? (
-          <MultipleSkeletons numOfSkeletons={1} height={38} />
-        ) : (
-          <Dropdown
-            options={stageOptions}
-            value={formik.values.stageId}
-            onChange={(v) => formik.setFieldValue("stageId", v)}
-            variant={stageDropdownVariant}
-            className="rounded-lg"
-            width="55%"
-            placeholder={translateText(["placeholders", "stage"])}
-            required
-            errorMessage={stageErrorMessage}
-            ariaLabel={translateText(["ariaLabels", "stage"])}
-          />
-        )}
+        <div className="w-full max-w-[13.688rem]">
+          {isStagesLoading ? (
+            <MultipleSkeletons numOfSkeletons={1} height={48} />
+          ) : (
+            <Dropdown
+              options={stageOptions}
+              value={formik.values.stageId}
+              onChange={(v) => formik.setFieldValue("stageId", v)}
+              variant={stageDropdownVariant}
+              className="rounded-lg"
+              width="100%"
+              placeholder={translateText(["placeholders", "stage"])}
+              required
+              errorMessage={stageErrorMessage}
+              ariaLabel={translateText(["ariaLabels", "stage"])}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
