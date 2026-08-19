@@ -95,7 +95,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String EDIT_PATH = BASE_PATH + "/{id}";
 
-	private static final String BY_IDS_PATH = BASE_PATH + "/by-ids";
+	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
 	private final JsonMapper objectMapper;
 

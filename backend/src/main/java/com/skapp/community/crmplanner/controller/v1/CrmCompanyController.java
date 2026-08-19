@@ -101,7 +101,7 @@ public class CrmCompanyController {
 	@Operation(summary = "Get companies by ids",
 			description = "Returns the base details of the companies matching the given ids, "
 					+ "used to hydrate the client's company store. Soft-deleted companies are omitted.")
-	@PostMapping("/by-ids")
+	@PostMapping("/ids")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompaniesByIds(@RequestBody CrmCompanyIdsRequestDto requestDto) {
 		ResponseEntityDto responseDto = companyService.getCompaniesByIds(requestDto);
