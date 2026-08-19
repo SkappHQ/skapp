@@ -7,8 +7,10 @@ import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAssignedLeaveTypes/UserAssignedLeaveTypes";
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
 import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePolicies";
+import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
 import { USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
@@ -38,8 +40,16 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
 
   const { isAtLeastCoreTier } = useTier();
 
+  const canViewLeavePolicies = useCanViewLeavePolicies();
+
   const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
     useLeavePoliciesEnabled();
+
+  const isPolicySectionLoading =
+    canViewLeavePolicies && isLeavePolicyConfigLoading;
+  const showLeavePolicies = canViewLeavePolicies && isLeavePoliciesEnabled;
+  const showAssignedLeaveTypes =
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled;
 
   const employeeName = [employeeFirstName, employeeLastName]
     .filter(Boolean)
@@ -76,7 +86,9 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
       pageHead={translateText(["pageHead"])}
     >
       <Stack sx={classes.sectionsWrapper}>
-        {!isLeavePolicyConfigLoading && isLeavePoliciesEnabled && (
+        {isPolicySectionLoading && <UserLeavePoliciesSkeleton />}
+
+        {showLeavePolicies && (
           <UserLeavePolicies
             employeeId={selectedUser}
             employeeName={employeeName}
@@ -85,7 +97,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
 
         <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
           <>
-            {!isLeavePolicyConfigLoading && !isLeavePoliciesEnabled && (
+            {showAssignedLeaveTypes && (
               <>
                 <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
                 <UserAssignedLeaveTypes
@@ -95,7 +107,7 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
               </>
             )}
 
-            {leaveTypesList?.length > 0 && (
+            {leaveTypesList.length > 0 && (
               <UserLeaveUtilization
                 employeeId={selectedUser}
                 leaveTypesList={leaveTypesList}
