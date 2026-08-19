@@ -22,6 +22,9 @@ const LeavePolicies: NextPage = () => {
     useState<boolean>(false);
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] =
     useState<boolean>(false);
+  const [isPoliciesEmpty, setIsPoliciesEmpty] = useState<boolean>(false);
+
+  const showTopActionButtons = canManagePolicies && !isPoliciesEmpty;
 
   const handleSelectPolicyType = (policyType: PolicyType): void => {
     setIsPolicyTypeModalOpen(false);
@@ -40,10 +43,10 @@ const LeavePolicies: NextPage = () => {
       pageHead={translateText(["pageHead"])}
       title={translateText(["title"])}
       primaryButtonText={
-        canManagePolicies ? translateText(["createPolicyBtnTxt"]) : undefined
+        showTopActionButtons ? translateText(["createPolicyBtnTxt"]) : undefined
       }
       secondaryBtnText={
-        canManagePolicies ? translateText(["bulkAssignBtnTxt"]) : undefined
+        showTopActionButtons ? translateText(["bulkAssignBtnTxt"]) : undefined
       }
       secondaryBtnVariant="tertiary"
       secondaryBtnIconName={IconName.EXPORT_ARROW_ICON}
@@ -57,6 +60,7 @@ const LeavePolicies: NextPage = () => {
       <>
         <LeavePoliciesTable
           onCreatePolicy={() => setIsPolicyTypeModalOpen(true)}
+          onEmptyStateChange={setIsPoliciesEmpty}
         />
         <PolicyTypeSelectionModal
           isOpen={isPolicyTypeModalOpen}

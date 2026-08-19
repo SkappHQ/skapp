@@ -70,14 +70,16 @@ public class LeavePolicyValidationUtil {
 	}
 
 	private static void validateCarryoverSetup(LeavePolicyAccrualDetailDto accrual) {
-		if (accrual.getCarryoverDate() == null || accrual.getCarryoverDate().isBlank()) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_REQUIRED);
+		String carryoverExpiryDate = accrual.getCarryoverExpiryDate();
+		if (carryoverExpiryDate != null && !carryoverExpiryDate.isBlank()
+				&& !DateTimeUtils.isValidMonthDay(carryoverExpiryDate)) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_EXPIRY_DATE_INVALID);
 		}
-		if (!DateTimeUtils.isValidMonthDay(accrual.getCarryoverDate())) {
-			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_CARRYOVER_DATE_INVALID);
+		if (accrual.getMaxCarryoverDays() == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_REQUIRED);
 		}
-		if (accrual.getMaxCarryoverDays() != null && (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
-				|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS)) {
+		if (accrual.getMaxCarryoverDays() < LeavePolicyConstant.MIN_DAYS
+				|| accrual.getMaxCarryoverDays() > LeavePolicyConstant.MAX_DAYS) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_MAX_CARRYOVER_DAYS_INVALID);
 		}
 	}

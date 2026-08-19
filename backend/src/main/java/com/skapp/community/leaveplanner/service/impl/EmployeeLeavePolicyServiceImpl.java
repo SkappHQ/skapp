@@ -25,7 +25,7 @@ import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResp
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
-import com.skapp.community.leaveplanner.service.PolicyLeaveBalanceService;
+import com.skapp.community.leaveplanner.service.PolicyLeaveService;
 import com.skapp.community.leaveplanner.type.EffectiveDateType;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.EmployeeLeavePolicyUtil;
@@ -64,7 +64,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 	private final LeaveMapper leaveMapper;
 
-	private final PolicyLeaveBalanceService policyLeaveBalanceService;
+	private final PolicyLeaveService policyLeaveService;
 
 	private final MessageUtil messageUtil;
 
@@ -204,13 +204,15 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		Pageable pageable = filterDto.getSize() < 0 ? Pageable.unpaged()
 				: PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<EmployeeLeavePolicy> activeEmployeeLeavePolicies = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByEffectiveFromDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
+			.findByEmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(employeeId, EmployeeLeavePolicyStatus.ACTIVE,
 					pageable);
 
-		int currentYear = DateTimeUtils.getCurrentUtcDate().getYear();
-		List<EmployeeLeavePolicyResponseDto> items = activeEmployeeLeavePolicies.getContent()
-			.stream()
-			.map(assignment -> toEmployeeLeavePolicyWithBalance(assignment, currentYear))
+		List<EmployeeLeavePolicy> assignments = activeEmployeeLeavePolicies.getContent();
+		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = policyLeaveService.calculateBalancesForYear(employeeId,
+				assignments, null);
+		List<EmployeeLeavePolicyResponseDto> items = assignments.stream()
+			.map(assignment -> toEmployeeLeavePolicyWithBalance(assignment,
+					balancesByAssignment.get(assignment.getId())))
 			.toList();
 
 		PageDto pageDto = new PageDto();
@@ -223,16 +225,11 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		return new ResponseEntityDto(false, pageDto);
 	}
 
-	/**
-	 * Adds the same derived leave balance the apply leave flow shows on its policy cards,
-	 * so the assigned policy cards report the employee's remaining days for the current
-	 * leave cycle instead of leaving the balance blank.
-	 */
-	private EmployeeLeavePolicyResponseDto toEmployeeLeavePolicyWithBalance(EmployeeLeavePolicy assignment, int year) {
+	private EmployeeLeavePolicyResponseDto toEmployeeLeavePolicyWithBalance(EmployeeLeavePolicy assignment,
+			PolicyLeaveBalanceDto balance) {
 		EmployeeLeavePolicyResponseDto responseDto = leaveMapper
 			.employeeLeavePolicyToEmployeeLeavePolicyResponseDto(assignment);
 
-		PolicyLeaveBalanceDto balance = policyLeaveBalanceService.calculateBalanceForYear(assignment, year);
 		responseDto.setTotalDaysAllocated(balance.getTotalDaysAllocated());
 		responseDto.setTotalDaysUsed(balance.getTotalDaysUsed());
 		responseDto.setBalanceInDays(balance.getBalanceInDays());

@@ -1,7 +1,6 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import BirthdayModalShell from "~community/people/components/molecules/BirthdayModals/BirthdayModalShell";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
 
@@ -27,14 +26,13 @@ const SelfBirthdayModal: FC<Props> = ({
       id={MODAL_ID}
       employee={employee}
       heading={translateText(["self", "heading"], {
-        name: employee.lastName
-          ? concatStrings([employee.firstName, employee.lastName])
-          : employee.firstName
+        name: employee.firstName
       })}
       body={translateText(["self", "body"])}
       position={position}
       total={total}
       onDismiss={onDismiss}
+      showConfetti
     />
   );
 };

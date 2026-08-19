@@ -1,5 +1,4 @@
 import {
-  CircleMinusIcon,
   CloseIcon,
   SmallModal,
   YellowWarningIcon
@@ -70,11 +69,6 @@ const EnableLeavePoliciesConfirmModal: FC<Props> = ({
           onClick: onConfirm,
           disabled: isEnabling,
           isLoading: isEnabling,
-          icon: (
-            <CircleMinusIcon
-              fill="var(--color-semantic-red-text)"
-            />
-          ),
           iconPosition: "end",
           title: isEnabling ? translateText(["confirmingTooltip"]) : undefined,
           children: isEnabling

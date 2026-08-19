@@ -29,8 +29,6 @@ export const INTERVAL_STEP: Partial<Record<AccrualFrequency, DurationLike>> = {
 
 export const LEAVE_POLICY_PAGE_SIZE = 10;
 
-export const LEAVE_POLICY_SKELETON_ROW_COUNT = 8;
-
 export const USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE = 8;
 
 export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
@@ -38,6 +36,8 @@ export const LEAVE_POLICY_SEARCH_DEBOUNCE_MS = 500;
 export const MAX_POLICY_DAYS = 365;
 
 export const MIN_POLICY_DAYS = 0.5;
+
+export const POLICY_DAYS_STEP = 0.5;
 
 export const MIN_ACCRUAL_CAP_DAYS = 1;
 
@@ -75,12 +75,9 @@ export const accrualFrequencyItemList = [
   }
 ];
 
-export const carryoverDateItemList = [
-  { id: "january-1", labelKey: "january1", value: "01-01" },
-  { id: "april-1", labelKey: "april1", value: "04-01" },
-  { id: "july-1", labelKey: "july1", value: "07-01" },
-  { id: "october-1", labelKey: "october1", value: "10-01" }
-];
+export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
+
+export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2025;
 
 export const firstAccrualItemList = [
   {
@@ -120,7 +117,7 @@ export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   hasAccrualCap: false,
   accrualCapDays: "",
   canCarryOver: false,
-  carryOverDate: "01-01",
+  carryoverExpiryDate: "",
   maxCarryOverDays: "",
   firstAccrual: FirstAccrualType.PRORATED,
   receiveAccruedTime: AccrualTiming.PERIOD_END

@@ -23,12 +23,12 @@ import {
 import { LeaveEntitlementBalanceType } from "~community/leave/types/LeaveEntitlementTypes";
 import {
   LeaveRequestPayloadType,
+  MyLeaveRequestParamsType,
   MyLeaveRequestPayloadType,
   ResourceAvailabilityParamTypes,
   ResourceAvailabilityPayload
 } from "~community/leave/types/MyRequests";
 
-import { useLeaveStore } from "../store/store";
 import { LeaveRequestItemsType } from "../types/LeaveRequestTypes";
 
 export const useGetLeaveAllocation = (selectedYear: string, enabled = true) => {
@@ -150,9 +150,9 @@ export const useApplyLeave = (
   });
 };
 
-export const useGetEmployeeLeaveRequests = () => {
-  const params = useLeaveStore((state) => state.leaveRequestParams);
-
+export const useGetEmployeeLeaveRequests = (
+  params: MyLeaveRequestParamsType
+) => {
   return useQuery({
     queryKey: [leaveQueryKeys.EMPLOYEE_LEAVE_REQUESTS, params],
     queryFn: async () => {
