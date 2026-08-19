@@ -76,8 +76,6 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
     >
       <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
         <>
-          <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
-
           {!isLeavePolicyConfigLoading &&
             (isLeavePoliciesEnabled ? (
               <UserLeavePolicies
@@ -85,10 +83,13 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
                 employeeName={employeeName}
               />
             ) : (
-              <UserAssignedLeaveTypes
-                employeeId={selectedUser}
-                pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
-              />
+              <>
+                <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
+                <UserAssignedLeaveTypes
+                  employeeId={selectedUser}
+                  pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
+                />
+              </>
             ))}
 
           {leaveTypesList?.length > 0 && (

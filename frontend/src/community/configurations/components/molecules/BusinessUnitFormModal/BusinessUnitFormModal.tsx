@@ -119,6 +119,8 @@ const BusinessUnitFormModal: FC<Props> = ({
     onClose();
   };
 
+  const isSaveDisabled = isPending || !formik.dirty || !formik.isValid;
+
   return (
     <SmallModal
       isOpen={isOpen}
@@ -165,9 +167,9 @@ const BusinessUnitFormModal: FC<Props> = ({
         buttonRight: {
           variant: "primary",
           onClick: () => formik.handleSubmit(),
-          icon: <SaveIcon />,
+          icon: <SaveIcon className={isSaveDisabled ? "opacity-50" : ""} />,
           iconPosition: "end",
-          disabled: isPending,
+          disabled: isSaveDisabled,
           isLoading: isPending,
           children: translateText(["form", "saveButton"])
         }
