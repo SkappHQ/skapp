@@ -32,12 +32,12 @@ interface UseKanbanDragV2Return {
   handleDragEnd: (event: DragEndEvent) => void;
 }
 
-// Optimistic Kanban drag on the normalized store. The board record is snapshot
-// on drag start; a reorder/move is applied to the store immediately, the
-// reorder/move endpoint is fired, and the snapshot is restored if that call
-// fails. All neighbour/insert-index math is computed against the snapshot's
-// dealId arrays (the moved deal is not yet re-inserted), matching the payload
-// the backend expects.
+// Optimistic Kanban drag on the normalized store. The board record and the
+// moved deal's stageId are snapshot on drag start; a reorder/move is applied to
+// the store immediately, the reorder/move endpoint is fired, and both snapshots
+// are restored if that call fails. All neighbour/insert-index math is computed
+// against the snapshot's dealId arrays (the moved deal is not yet re-inserted),
+// matching the payload the backend expects.
 export const useKanbanDragV2 = ({
   onError
 }: {
@@ -46,10 +46,28 @@ export const useKanbanDragV2 = ({
   const [activeDealId, setActiveDealId] = useState<number | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
   const snapshotRef = useRef<CrmBoardRecord | null>(null);
+  // The moved deal's stageId at drag start. A cross-stage move restamps
+  // deals[dealId].stageId (via moveDealBetweenColumns), so restoring the board
+  // alone would leave the deal record pointing at the failed target stage.
+  const dealStageSnapshotRef = useRef<{
+    id: number;
+    stageId: number | undefined;
+  } | null>(null);
 
   const rollback = (error: AxiosError): void => {
+    const store = useCrmStoreV2.getState();
     if (snapshotRef.current) {
-      useCrmStoreV2.getState().setBoardColumn(snapshotRef.current);
+      store.setBoardColumn(snapshotRef.current);
+    }
+    const dealSnapshot = dealStageSnapshotRef.current;
+    if (dealSnapshot) {
+      const deal = store.deals[dealSnapshot.id];
+      if (deal && deal.stageId !== dealSnapshot.stageId) {
+        store.setDeals({
+          ...store.deals,
+          [dealSnapshot.id]: { ...deal, stageId: dealSnapshot.stageId }
+        });
+      }
     }
     onError?.(error);
   };
@@ -59,8 +77,11 @@ export const useKanbanDragV2 = ({
   const { mutate: moveDealToStage } = useMoveDealBetweenStages(rollback);
 
   const handleDragStart = ({ active }: DragStartEvent): void => {
-    snapshotRef.current = useCrmStoreV2.getState().board;
-    setActiveDealId(Number(active.id));
+    const store = useCrmStoreV2.getState();
+    const id = Number(active.id);
+    snapshotRef.current = store.board;
+    dealStageSnapshotRef.current = { id, stageId: store.deals[id]?.stageId };
+    setActiveDealId(id);
   };
 
   const handleDragOver = ({ over }: DragOverEvent): void => {
