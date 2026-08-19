@@ -153,7 +153,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
 		}
 
-		query.select(deal).where(predicates.toArray(new Predicate[0])).orderBy(cb.asc(deal.get(CrmDeal_.id)));
+		query.select(deal).where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(query).getResultList();
 	}
