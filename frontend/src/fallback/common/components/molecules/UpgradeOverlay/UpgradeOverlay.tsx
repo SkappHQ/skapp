@@ -1,4 +1,4 @@
-import { SxProps } from "@mui/material";
+import { Stack, SxProps } from "@mui/material";
 import { JSX } from "react";
 
 interface Props {
@@ -6,8 +6,8 @@ interface Props {
   customContainerStyles?: SxProps;
 }
 
-const UpgradeOverlay = ({ children }: Props) => {
-  return <>{children}</>;
+const UpgradeOverlay = ({ children, customContainerStyles }: Props) => {
+  return <Stack sx={customContainerStyles}>{children}</Stack>;
 };
 
 export default UpgradeOverlay;
