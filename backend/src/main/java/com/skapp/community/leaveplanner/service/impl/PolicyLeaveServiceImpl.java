@@ -760,16 +760,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return MonthDay.of(leaveCycle.getStartMonth(), leaveCycle.getStartDate());
 	}
 
-	/**
-	 * Resolves the date accrual is measured up to for the given cycle. For the cycle
-	 * containing today, accrual stops at today so the balance reflects what the employee
-	 * has actually earned so far. A cycle that has not started yet has earned nothing,
-	 * and a zero allocation there would be meaningless, so the full cycle is projected by
-	 * measuring up to the cycle end instead.
-	 * @param today the current date
-	 * @param cycle the leave cycle the balance is being calculated for
-	 * @return the date accrual should be measured up to
-	 */
 	private LocalDate resolveAccrualAsOf(LocalDate today, PolicyLeaveDateWindowDto cycle) {
 		if (today.isBefore(cycle.getStartDate())) {
 			return cycle.getEndDate();
@@ -784,10 +774,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		return date.isAfter(cycle.getEndDate()) ? cycle.getEndDate() : date;
 	}
 
-	/**
-	 * @see #calculateBalance(EmployeeLeavePolicy, PolicyLeaveDateWindowDto, MonthDay,
-	 * LocalDate, LocalDate, Supplier)
-	 */
 	private PolicyLeaveBalanceDto calculateBalance(EmployeeLeavePolicy assignment, PolicyLeaveDateWindowDto cycle,
 			MonthDay cycleAnchor, LocalDate carryoverAsOf, LocalDate accrualAsOf) {
 		return calculateBalance(assignment, cycle, cycleAnchor, carryoverAsOf, accrualAsOf,
