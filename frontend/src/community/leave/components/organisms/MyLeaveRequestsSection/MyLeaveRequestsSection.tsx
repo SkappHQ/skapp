@@ -6,12 +6,9 @@ import PolicyLeaveRequests from "~community/leave/components/molecules/PolicyLea
 import PolicyEmployeeLeaveStatusPopupController from "~community/leave/components/organisms/PolicyEmployeeLeaveStatusPopupController/PolicyEmployeeLeaveStatusPopupController";
 import { LEAVE_REQUESTS_SKELETON_ROWS } from "~community/leave/constants/stringConstants";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import usePolicyLeaveYearSync from "~community/leave/hooks/usePolicyLeaveYearSync";
 
 const MyLeaveRequestsSection: FC = () => {
   const { isLeavePoliciesEnabled, isLoading } = useLeavePoliciesEnabled();
-
-  usePolicyLeaveYearSync();
 
   if (isLoading) {
     return <TableSkeleton rows={LEAVE_REQUESTS_SKELETON_ROWS} />;
