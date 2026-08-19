@@ -180,7 +180,8 @@ const LeaveRequests: FC = () => {
       headers={tableHeaders}
       rows={transformToTableRows()}
       isLoading={isLoading}
-      skeletonRows={5}
+      minHeight="min-h-[305px]"
+      skeletonRows={4}
       emptyState={{
         title: translateText(["myLeaveRequests", "emptyLeaveRequestTitle"]),
         description: translateText(["myLeaveRequests", "emptyLeaveRequestDes"])
