@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -10,6 +10,7 @@ import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanb
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/v2/enums/common";
 import { useDealsListV2 } from "~community/crm/v2/hooks/useDealsListV2";
+import { useHydrateCompanies } from "~community/crm/v2/hooks/useHydrateCompanies";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 
@@ -36,6 +37,19 @@ const DealsSectionV2: FC = () => {
       },
       activeView === DealViewEnum.LIST
     );
+
+  // Hydrate the `companies` record for every loaded deal — list and board, first
+  // page and load-more — off the `deals` the store keeps in `dealIds` order. The
+  // scalar deal payload carries only `companyId`, so board/table cards resolve
+  // `companies[deal.companyId]` against what this fills.
+  const companyIds = useMemo(
+    () =>
+      deals
+        .map((deal) => deal.companyId)
+        .filter((id): id is number => id != null),
+    [deals]
+  );
+  useHydrateCompanies(companyIds);
 
   const loadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {
