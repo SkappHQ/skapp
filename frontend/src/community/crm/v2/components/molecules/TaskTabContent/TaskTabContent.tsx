@@ -6,7 +6,6 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-// Presentational only - no store or v1 types, so it is reused as is.
 import TaskTabSkeleton from "~community/crm/components/molecules/TaskTabContent/TaskTabSkeleton";
 import {
   TASK_PAGE_SIZE,
@@ -45,10 +44,17 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
 
-  const { tasks, taskIds } = useCrmStoreV2((state) => ({
+  const { tasks, taskIds,deals,companies,setDeals,setCompanies,setTasks,setTaskIds } = useCrmStoreV2((state) => ({
     tasks: state.tasks,
-    taskIds: state.taskIds
+    taskIds: state.taskIds,
+    deals: state.deals,
+    companies: state.companies,
+    setDeals: state.setDeals,
+    setCompanies: state.setCompanies,
+    setTasks: state.setTasks,
+    setTaskIds: state.setTaskIds
   }));
+
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -79,18 +85,10 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     return openTaskData?.items ?? [];
   }, [isCompletedTab, completedTaskData, openTaskData]);
 
-  /**
-   * The response carries id references only, so the tasks go in as they are and
-   * the ids they point at are resolved by the batch lookups below. Switching
-   * tabs only swaps the displayed ids - the new tasks are merged in, so tasks
-   * already loaded from another tab stay in the record rather than being
-   * dropped.
-   */
+
   useEffect(() => {
     if (visibleTasks.length === 0) return;
-
-    const { tasks, setTasks, setTaskIds } = useCrmStoreV2.getState();
-
+    
     setTasks(mergeEntityRecord(tasks, toTasksRecord(visibleTasks)));
     setTaskIds(replaceTaskIds(visibleTasks));
   }, [visibleTasks]);
@@ -116,18 +114,17 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   );
 
   useEffect(() => {
-    if (!dealsData) return;
-    const { deals, setDeals } = useCrmStoreV2.getState();
-    setDeals(mergeEntityRecord(deals, toDealsRecord(dealsData)));
-  }, [dealsData]);
+    if (!dealsData && !companiesData) return;
 
-  useEffect(() => {
-    if (!companiesData) return;
-    const { companies, setCompanies } = useCrmStoreV2.getState();
-    setCompanies(
-      mergeEntityRecord(companies, toCompaniesRecord(companiesData))
-    );
-  }, [companiesData]);
+    if (dealsData) {
+      setDeals(mergeEntityRecord(deals, toDealsRecord(dealsData)));
+    }
+    if (companiesData) {
+      setCompanies(
+        mergeEntityRecord(companies, toCompaniesRecord(companiesData))
+      );
+    }
+  }, [dealsData, companiesData]);
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(

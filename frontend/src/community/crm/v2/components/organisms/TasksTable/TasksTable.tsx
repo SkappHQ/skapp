@@ -2,8 +2,8 @@ import { Tabs } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
 import TaskTabContent from "~community/crm/v2/components/molecules/TaskTabContent/TaskTabContent";
-import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useGetTasksTabs } from "~community/crm/v2/hooks/useGetTasksTabs";
+import { isCrmTaskTab } from "~community/crm/v2/utils/crmTaskUtils";
 
 const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
@@ -15,7 +15,9 @@ const TasksTable: FC = () => {
         <Tabs
           tabs={tabs}
           activeTabId={activeTab}
-          onTabChange={(id) => setActiveTab(id as CrmTaskTabEnum)}
+          onTabChange={(id) => {
+            if (isCrmTaskTab(id)) setActiveTab(id);
+          }}
         />
         <hr className="border-secondary-accent" />
       </div>

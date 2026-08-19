@@ -105,6 +105,9 @@ export const getTaskTypeName = (
 ): string | undefined =>
   typeId === undefined ? undefined : taskTypes[typeId]?.name;
 
+export const isCrmTaskTab = (value: string): value is CrmTaskTabEnum =>
+  (Object.values(CrmTaskTabEnum) as string[]).includes(value);
+
 export const getOwnerFullName = (owner: CrmOwnerEntity | undefined): string =>
   owner === undefined
     ? ""
