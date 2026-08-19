@@ -104,6 +104,44 @@ describe("buildAccrualPreview", () => {
     expect(rows[1].days).toBe(2);
   });
 
+  it("reports days as the change in the half-day-rounded balance", () => {
+    // 2.4 days/month prorated from 23 Aug is 0.75 raw, which rounds down to a
+    // 0.5 balance - the days column must say 0.5 too, not the raw 0.75.
+    const rows = buildAccrualPreview(
+      basePolicy({
+        accrualDays: 2.4,
+        firstAccrual: FirstAccrualType.PRORATED,
+        accrualTiming: AccrualTiming.PERIOD_START,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+
+    expect(rows[0]).toEqual({
+      date: "23 Aug 2026",
+      days: 0.5,
+      balance: 0.5
+    });
+  });
+
+  it("keeps the days column summing to the balance on every row", () => {
+    const rows = buildAccrualPreview(
+      basePolicy({
+        accrualDays: 2.4,
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+
+    let runningTotal = 0;
+    rows.forEach((row) => {
+      expect(row.days * 2).toBe(Math.round(row.days * 2));
+      runningTotal += row.days;
+      expect(runningTotal).toBe(row.balance);
+    });
+  });
+
   it("does not prorate interval frequencies even when firstAccrual is PRORATED", () => {
     const rows = buildAccrualPreview(
       basePolicy({

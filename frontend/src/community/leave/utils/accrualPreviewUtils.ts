@@ -27,9 +27,6 @@ interface ScheduleConfig {
   lastYear: number | null;
 }
 
-const roundToTwoDecimals = (value: number): number =>
-  Math.round(value * 100) / 100;
-
 const roundToHalfDay = (value: number): number => Math.round(value * 2) / 2;
 
 const eventDateFor = (
@@ -136,14 +133,17 @@ const toPreviewRows = (
 ): AccrualPreviewRow[] => {
   const rows: AccrualPreviewRow[] = [];
   let balance = 0;
+  let previousRoundedBalance = 0;
   for (const event of accrualEvents) {
     balance += event.days;
     if (capDays != null) balance = Math.min(balance, capDays);
+    const roundedBalance = roundToHalfDay(balance);
     rows.push({
       date: event.date.toFormat(MEDIUM_DATE_FORMAT),
-      days: roundToTwoDecimals(event.days),
-      balance: roundToHalfDay(balance)
+      days: roundedBalance - previousRoundedBalance,
+      balance: roundedBalance
     });
+    previousRoundedBalance = roundedBalance;
     if (capDays != null && balance >= capDays) break;
   }
   return rows;
