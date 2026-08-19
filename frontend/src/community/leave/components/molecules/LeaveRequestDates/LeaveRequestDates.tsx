@@ -35,6 +35,7 @@ const RequestDates: FC<Props> = ({ startDate, endDate, days }) => {
         {getStartEndDate(startDate, endDate)}
       </Typography>
       <div
+        className="body2"
         style={{
           backgroundColor: "var(--color-tertiary-background)",
           borderRadius: "9.375rem",
