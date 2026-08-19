@@ -110,7 +110,8 @@ class CrmTaskControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 
 		CrmContact contact = new CrmContact();
-		contact.setName("Task Test Contact");
+		contact.setFirstName("Task");
+		contact.setLastName("Test Contact");
 		contact.setEmail("task.contact@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contactId = crmContactDao.save(contact).getId();
@@ -252,7 +253,8 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Get tasks with search keyword matching contact name - Returns matching tasks")
 	void getTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
 		CrmContact contact = new CrmContact();
-		contact.setName("John Doe");
+		contact.setFirstName("John");
+		contact.setLastName("Doe");
 		contact.setEmail("john@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact = crmContactDao.save(contact);
@@ -286,7 +288,8 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Get tasks filtered by contactId - Returns only tasks linked to that contact")
 	void getTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
 		CrmContact other = new CrmContact();
-		other.setName("Other Contact");
+		other.setFirstName("Other");
+		other.setLastName("Contact");
 		other.setEmail("other@example.com");
 		other.setOwner(employeeDao.getReferenceById(1L));
 		Long otherContactId = crmContactDao.save(other).getId();
@@ -650,7 +653,8 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Get completed tasks with search keyword matching contact name - Returns matching tasks")
 	void getCompletedTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
 		CrmContact contact = new CrmContact();
-		contact.setName("Jane Smith");
+		contact.setFirstName("Jane");
+		contact.setLastName("Smith");
 		contact.setEmail("jane@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact = crmContactDao.save(contact);
@@ -700,7 +704,8 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Get completed tasks filtered by contactId - Returns only completed tasks for that contact")
 	void getCompletedTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
 		CrmContact other = new CrmContact();
-		other.setName("Other Completed Contact");
+		other.setFirstName("Other");
+		other.setLastName("Completed Contact");
 		other.setEmail("other.completed@example.com");
 		other.setOwner(employeeDao.getReferenceById(1L));
 		Long otherContactId = crmContactDao.save(other).getId();
@@ -977,7 +982,8 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Create task with deal belonging to different contact - Returns Bad Request")
 	void createTask_DealContactMismatch_ReturnsBadRequest() throws Exception {
 		CrmContact contactA = new CrmContact();
-		contactA.setName("Contact A");
+		contactA.setFirstName("Contact");
+		contactA.setLastName("A");
 		contactA.setEmail("contact.a@example.com");
 		contactA.setOwner(employeeDao.getReferenceById(1L));
 		contactA = crmContactDao.save(contactA);
@@ -1001,7 +1007,8 @@ class CrmTaskControllerIntegrationTest {
 		CrmCompany company = savedCompany("Consistent Company");
 
 		CrmContact contact = new CrmContact();
-		contact.setName("Consistent Contact");
+		contact.setFirstName("Consistent");
+		contact.setLastName("Contact");
 		contact.setEmail("consistent@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact.setCompany(company);
@@ -1347,7 +1354,8 @@ class CrmTaskControllerIntegrationTest {
 		CrmCompany company = savedCompany("Unlink Co");
 
 		CrmContact contact = new CrmContact();
-		contact.setName("Unlink Contact");
+		contact.setFirstName("Unlink");
+		contact.setLastName("Contact");
 		contact.setEmail("unlink.task@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		contact.setCompany(company);

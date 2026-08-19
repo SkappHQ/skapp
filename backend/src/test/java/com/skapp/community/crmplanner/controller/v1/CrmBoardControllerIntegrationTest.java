@@ -130,7 +130,8 @@ class CrmBoardControllerIntegrationTest {
 		crmCompanyDao.save(company);
 
 		contact = new CrmContact();
-		contact.setName("Board Test Contact");
+		contact.setFirstName("Board");
+		contact.setLastName("Test Contact");
 		contact.setEmail("board.contact@example.com");
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));

@@ -51,6 +51,7 @@ import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -233,9 +234,10 @@ class CrmContactControllerIntegrationTest {
 		return crmCompanyDao.save(company);
 	}
 
-	private CrmContact savedNamedContact(String name, Long companyId, String email) {
+	private CrmContact savedNamedContact(String firstName, String lastName, Long companyId, String email) {
 		CrmContact contact = new CrmContact();
-		contact.setName(name);
+		contact.setFirstName(firstName);
+		contact.setLastName(lastName);
 		contact.setEmail(email);
 		if (companyId != null) {
 			contact.setCompany(crmCompanyDao.getReferenceById(companyId));
@@ -246,7 +248,8 @@ class CrmContactControllerIntegrationTest {
 
 	private CrmContact savedContact(Long companyId, String email) {
 		CrmContact contact = new CrmContact();
-		contact.setName("Test Contact");
+		contact.setFirstName("Test");
+		contact.setLastName("Contact");
 		contact.setEmail(email);
 		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
 		contact.setOwner(employeeDao.getReferenceById(1L));
@@ -255,7 +258,8 @@ class CrmContactControllerIntegrationTest {
 
 	private CrmContactCreateRequestDto createValidPayload(Long companyId) {
 		CrmContactCreateRequestDto dto = new CrmContactCreateRequestDto();
-		dto.setName("Jane Smith");
+		dto.setFirstName("Jane");
+		dto.setLastName("Smith");
 		dto.setEmail("jane.smith@example.com");
 		dto.setCompanyId(companyId);
 		dto.setContactNumber("94771234567");
@@ -265,7 +269,8 @@ class CrmContactControllerIntegrationTest {
 
 	private CrmContactEditRequestDto editValidPayload(Long companyId) {
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
-		dto.setName("Jane Smith Updated");
+		dto.setFirstName("Jane");
+		dto.setLastName(JsonNullable.of("Smith Updated"));
 		dto.setEmail("jane.smith.updated@example.com");
 		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("94779999999");
@@ -287,7 +292,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Check contact email exists when found - Returns OK with true")
 	void checkContactEmailExists_Found_ReturnsOkWithTrue() throws Exception {
-		savedNamedContact("Existing Contact", null, "existing.contact@example.com");
+		savedNamedContact("Existing", "Contact", null, "existing.contact@example.com");
 
 		performGetExistsRequest("existing.contact@example.com").andDo(print())
 			.andExpect(status().isOk())
@@ -298,7 +303,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Check contact email exists is case-insensitive - Returns OK with true for different casing")
 	void checkContactEmailExists_CaseInsensitive_ReturnsOkWithTrue() throws Exception {
-		savedNamedContact("Case Contact", null, "case.contact@example.com");
+		savedNamedContact("Case", "Contact", null, "case.contact@example.com");
 
 		performGetExistsRequest("CASE.CONTACT@EXAMPLE.COM").andDo(print())
 			.andExpect(status().isOk())
@@ -309,7 +314,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Check contact email exists for soft-deleted contact - Returns OK with false")
 	void checkContactEmailExists_SoftDeletedContact_ReturnsOkWithFalse() throws Exception {
-		CrmContact contact = savedNamedContact("Deleted Contact", null, "deleted.contact@example.com");
+		CrmContact contact = savedNamedContact("Deleted", "Contact", null, "deleted.contact@example.com");
 		contact.setIsDeleted(true);
 		crmContactDao.save(contact);
 
@@ -357,7 +362,8 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(createValidPayload(companyId)).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Jane"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Smith"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"));
 	}
 
@@ -367,7 +373,8 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(createValidPayload(null)).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Jane"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Smith"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
 	}
@@ -387,7 +394,8 @@ class CrmContactControllerIntegrationTest {
 	void createContact_WithLeadingTrailingSpaces_SpacesTrimmed() throws Exception {
 		Long companyId = savedCompany().getId();
 		CrmContactCreateRequestDto dto = new CrmContactCreateRequestDto();
-		dto.setName("  John Doe  ");
+		dto.setFirstName("  John  ");
+		dto.setLastName("  Doe  ");
 		dto.setEmail("  john.doe@example.com  ");
 		dto.setCompanyId(companyId);
 		dto.setContactNumber("  9876543210  ");
@@ -396,17 +404,18 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("John Doe"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("John"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Doe"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("john.doe@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("9876543210"));
 	}
 
 	@Test
-	@DisplayName("Create contact with blank name - Returns Bad Request")
-	void createContact_BlankName_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create contact with blank first name - Returns Bad Request")
+	void createContact_BlankFirstName_ReturnsBadRequest() throws Exception {
 		Long companyId = savedCompany().getId();
 		CrmContactCreateRequestDto dto = createValidPayload(companyId);
-		dto.setName("");
+		dto.setFirstName("");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -426,22 +435,24 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create contact with apostrophe and comma in name - Returns Created")
-	void createContact_NameWithApostropheAndComma_ReturnsCreated() throws Exception {
+	@DisplayName("Create contact with apostrophe, hyphen and period in name - Returns Created")
+	void createContact_NameWithApostropheHyphenPeriod_ReturnsCreated() throws Exception {
 		CrmContactCreateRequestDto dto = createValidPayload(null);
-		dto.setName("O'Brien, Jane");
+		dto.setFirstName("Mary-Jane");
+		dto.setLastName("O'Brien Jr.");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("O'Brien, Jane"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Mary-Jane"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("O'Brien Jr."));
 	}
 
 	@Test
-	@DisplayName("Create contact with numbers in name - Returns Bad Request")
-	void createContact_NameWithNumbers_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create contact with comma in name - Returns Bad Request")
+	void createContact_NameWithComma_ReturnsBadRequest() throws Exception {
 		CrmContactCreateRequestDto dto = createValidPayload(null);
-		dto.setName("Jane Smith 123");
+		dto.setFirstName("Smith, Jane");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -449,11 +460,34 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Create contact with name containing invalid characters - Returns Bad Request")
-	void createContact_InvalidNameCharacters_ReturnsBadRequest() throws Exception {
+	@DisplayName("Create contact with numbers in first name - Returns Bad Request")
+	void createContact_FirstNameWithNumbers_ReturnsBadRequest() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setFirstName("Jane Smith 123");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create contact with first name containing invalid characters - Returns Bad Request")
+	void createContact_InvalidFirstNameCharacters_ReturnsBadRequest() throws Exception {
 		Long companyId = savedCompany().getId();
 		CrmContactCreateRequestDto dto = createValidPayload(companyId);
-		dto.setName("Jane@Smith!");
+		dto.setFirstName("Jane@Smith!");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create contact with last name containing invalid characters - Returns Bad Request")
+	void createContact_InvalidLastNameCharacters_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContactCreateRequestDto dto = createValidPayload(companyId);
+		dto.setLastName("Smith@Doe!");
 
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -496,8 +530,54 @@ class CrmContactControllerIntegrationTest {
 		performPatchRequest(contactId, editValidPayload(companyId)).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith Updated"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Jane"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Smith Updated"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith.updated@example.com"));
+	}
+
+	@Test
+	@DisplayName("Edit contact with explicit null lastName - Clears the last name")
+	void editContact_NullLastName_ClearsLastName() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "clear.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setLastName(JsonNullable.of(null));
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Test"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit contact with blank lastName - Clears the last name")
+	void editContact_BlankLastName_ClearsLastName() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "blank.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setLastName(JsonNullable.of(""));
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Edit contact omitting lastName - Leaves the existing last name unchanged")
+	void editContact_AbsentLastName_LeavesLastNameUnchanged() throws Exception {
+		Long companyId = savedCompany().getId();
+		Long contactId = savedContact(companyId, "keep.last.name@example.com").getId();
+
+		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
+		dto.setFirstName("Renamed");
+
+		performPatchRequest(contactId, dto).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Renamed"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Contact"));
 	}
 
 	@Test
@@ -507,7 +587,8 @@ class CrmContactControllerIntegrationTest {
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
 		CrmContactEditRequestDto dto = new CrmContactEditRequestDto();
-		dto.setName("  Updated Name  ");
+		dto.setFirstName("  Updated  ");
+		dto.setLastName(JsonNullable.of("  Name  "));
 		dto.setEmail("  updated.email@example.com  ");
 		dto.setCompanyId(JsonNullable.of(companyId));
 		dto.setContactNumber("  5551234567  ");
@@ -516,7 +597,8 @@ class CrmContactControllerIntegrationTest {
 		performPatchRequest(contactId, dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Updated"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Name"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("updated.email@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("5551234567"));
 	}
@@ -569,11 +651,13 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "original@example.com").getId();
 
-		// email, contactNumber, companyId, ownerId are omitted and stay untouched
-		performPatchRawRequest(contactId, "{\"name\": \"Updated Name Only\"}").andDo(print())
+		// lastName, email, contactNumber, companyId, ownerId are omitted and stay
+		// untouched
+		performPatchRawRequest(contactId, "{\"firstName\": \"Updated Name Only\"}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Updated Name Only"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
@@ -599,10 +683,10 @@ class CrmContactControllerIntegrationTest {
 
 		// An absent companyId deserializes to JsonNullable.undefined(), which is
 		// distinct from an explicit null, so the existing company link is kept
-		performPatchRawRequest(contactId, "{\"name\": \"Name Without Company\"}").andDo(print())
+		performPatchRawRequest(contactId, "{\"firstName\": \"Name Without Company\"}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Name Without Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
 	}
 
@@ -669,7 +753,8 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		// Contact owned by employee 2 (the rep)
 		CrmContact contact = new CrmContact();
-		contact.setName("Rep Owned");
+		contact.setFirstName("Rep");
+		contact.setLastName("Owned");
 		contact.setEmail("rep.owned@example.com");
 		contact.setCompany(crmCompanyDao.getReferenceById(companyId));
 		contact.setOwner(employeeDao.getReferenceById(2L));
@@ -906,7 +991,8 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(contactId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['firstName']").value("Test"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['lastName']").value("Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("detail.contact@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("0"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
@@ -1018,14 +1104,16 @@ class CrmContactControllerIntegrationTest {
 		CrmCompany company = savedCompany();
 
 		CrmContact contactA = new CrmContact();
-		contactA.setName("Lookup Contact A");
+		contactA.setFirstName("Lookup Contact");
+		contactA.setLastName("A");
 		contactA.setEmail("lookup.contact.a@example.com");
 		contactA.setCompany(company);
 		contactA.setOwner(employeeDao.getReferenceById(1L));
 		contactA = crmContactDao.save(contactA);
 
 		CrmContact contactB = new CrmContact();
-		contactB.setName("Lookup Contact B");
+		contactB.setFirstName("Lookup Contact");
+		contactB.setLastName("B");
 		contactB.setEmail("lookup.contact.b@example.com");
 		contactB.setCompany(company);
 		contactB.setOwner(employeeDao.getReferenceById(1L));
@@ -1047,42 +1135,45 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Lookup Contact A"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['firstName']").value("Lookup Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['lastName']").value("A"));
 	}
 
 	@Test
 	@DisplayName("Lookup contacts with keyword matching contact name only - Returns the contact")
 	void getContactsLookup_KeywordMatchesContactNameOnly_ReturnsContact() throws Exception {
 		Long companyId = savedCompany("Globex Corporation").getId();
-		savedNamedContact("John Doe", companyId, "john.doe@lookup.com");
+		savedNamedContact("John", "Doe", companyId, "john.doe@lookup.com");
 
 		performRequest(get(LOOKUP_PATH).param("searchKeyword", "john").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("John Doe"));
+			.andExpect(jsonPath("['results'][0]['items'][0]['firstName']").value("John"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['lastName']").value("Doe"));
 	}
 
 	@Test
 	@DisplayName("Lookup contact without a company matching by name - Not dropped by the company join")
 	void getContactsLookup_ContactWithoutCompany_MatchedByName() throws Exception {
-		savedNamedContact("Solo Contact", null, "solo@lookup.com");
+		savedNamedContact("Solo", "Contact", null, "solo@lookup.com");
 
 		performRequest(get(LOOKUP_PATH).param("searchKeyword", "solo").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("Solo Contact"));
+			.andExpect(jsonPath("['results'][0]['items'][0]['firstName']").value("Solo"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['lastName']").value("Contact"));
 	}
 
 	@Test
 	@DisplayName("Lookup without keyword - Contacts with and without company are returned and counted consistently")
 	void getContactsLookup_NoKeyword_CountsIncludeCompanylessContacts() throws Exception {
 		Long companyId = savedCompany("Globex Corporation").getId();
-		savedNamedContact("John Doe", companyId, "john.doe@lookup.com");
-		savedNamedContact("Solo Contact", null, "solo@lookup.com");
+		savedNamedContact("John", "Doe", companyId, "john.doe@lookup.com");
+		savedNamedContact("Solo", "Contact", null, "solo@lookup.com");
 
 		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isOk())

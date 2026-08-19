@@ -149,7 +149,8 @@ class CrmDealControllerIntegrationTest {
 
 	private CrmContact savedContact(CrmCompany company) {
 		CrmContact contact = new CrmContact();
-		contact.setName("Deal Test Contact");
+		contact.setFirstName("Deal");
+		contact.setLastName("Test Contact");
 		contact.setEmail("deal.contact@example.com");
 		contact.setCompany(company);
 		contact.setOwner(employeeDao.getReferenceById(1L));
@@ -232,14 +233,16 @@ class CrmDealControllerIntegrationTest {
 		CrmCompany company = savedCompany("Contact Filter Deal Company");
 
 		CrmContact contactA = new CrmContact();
-		contactA.setName("Contact A");
+		contactA.setFirstName("Contact");
+		contactA.setLastName("A");
 		contactA.setEmail("deal.filter.contact.a@example.com");
 		contactA.setCompany(company);
 		contactA.setOwner(employeeDao.getReferenceById(1L));
 		contactA = crmContactDao.save(contactA);
 
 		CrmContact contactB = new CrmContact();
-		contactB.setName("Contact B");
+		contactB.setFirstName("Contact");
+		contactB.setLastName("B");
 		contactB.setEmail("deal.filter.contact.b@example.com");
 		contactB.setCompany(company);
 		contactB.setOwner(employeeDao.getReferenceById(1L));
@@ -462,7 +465,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany newCompany = savedCompany("New Company");
 		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
+		newContact.setFirstName("New");
+		newContact.setLastName("Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -476,7 +480,8 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
 			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
+			.andExpect(jsonPath("$.results[0].contact.firstName").value("New"))
+			.andExpect(jsonPath("$.results[0].contact.lastName").value("Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value("New Company"));
 	}
 
@@ -492,7 +497,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany newCompany = savedCompany("New Corp");
 		CrmContact newContact = savedContact(newCompany);
-		newContact.setName("New Contact");
+		newContact.setFirstName("New");
+		newContact.setLastName("Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -501,7 +507,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
+			.andExpect(jsonPath("$.results[0].contact.firstName").value("New"))
+			.andExpect(jsonPath("$.results[0].contact.lastName").value("Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value("New Corp"));
 	}
 
@@ -516,7 +523,8 @@ class CrmDealControllerIntegrationTest {
 		deal = crmDealDao.save(deal);
 
 		CrmContact newContact = savedContact(null);
-		newContact.setName("No Company Contact");
+		newContact.setFirstName("No");
+		newContact.setLastName("Company Contact");
 		newContact = crmContactDao.save(newContact);
 
 		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
@@ -525,7 +533,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("No Company Contact"))
+			.andExpect(jsonPath("$.results[0].contact.firstName").value("No"))
+			.andExpect(jsonPath("$.results[0].contact.lastName").value("Company Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
 	}
 
@@ -541,7 +550,8 @@ class CrmDealControllerIntegrationTest {
 
 		CrmCompany deletedCompany = savedCompany("Deleted Corp");
 		CrmContact newContact = savedContact(deletedCompany);
-		newContact.setName("Deleted Company Contact");
+		newContact.setFirstName("Deleted");
+		newContact.setLastName("Company Contact");
 		newContact = crmContactDao.save(newContact);
 
 		// soft-delete the new contact's company
@@ -554,7 +564,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Deleted Company Contact"))
+			.andExpect(jsonPath("$.results[0].contact.firstName").value("Deleted"))
+			.andExpect(jsonPath("$.results[0].contact.lastName").value("Company Contact"))
 			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
 	}
 
@@ -586,8 +597,9 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("5000"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(deal.getContact().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(deal.getContact().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['firstName']").value("Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['lastName']").value("Test Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Deal Company"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(deal.getStage().getId().intValue()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())

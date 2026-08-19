@@ -75,6 +75,9 @@ public class CrmUtil {
 		if (hasDeletedCompany(deal)) {
 			dto.setCompanyName(null);
 		}
+		if (dto.getContact() != null && deal.getContact() != null && hasDeletedCompany(deal.getContact())) {
+			dto.getContact().setCompany(null);
+		}
 		return dto;
 	}
 

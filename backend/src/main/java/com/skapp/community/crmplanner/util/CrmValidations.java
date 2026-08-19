@@ -45,17 +45,31 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateContactName(String name) {
-		if (name == null || name.isBlank()) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);
+	public static void validateContactFirstName(String firstName) {
+		if (firstName == null || firstName.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_REQUIRED);
 		}
 
-		if (name.trim().length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_TOO_LONG);
+		if (firstName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_TOO_LONG);
 		}
 
-		if (!name.trim().matches(CrmConstants.CONTACT_NAME_REGEX)) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_INVALID);
+		if (!firstName.matches(CrmConstants.CONTACT_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_FIRST_NAME_INVALID);
+		}
+	}
+
+	public static void validateContactLastName(String lastName) {
+		if (lastName == null || lastName.isBlank()) {
+			return;
+		}
+
+		if (lastName.length() > CrmConstants.CONTACT_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_TOO_LONG);
+		}
+
+		if (!lastName.matches(CrmConstants.CONTACT_NAME_REGEX)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_LAST_NAME_INVALID);
 		}
 	}
 

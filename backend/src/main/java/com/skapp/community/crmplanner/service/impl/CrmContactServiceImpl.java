@@ -41,6 +41,7 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -106,8 +107,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public CrmContact persistNewContact(CrmContactCreateRequestDto requestDto) {
 		log.info("persistNewContact: execution started");
 
-		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
-				requestDto.getOwnerId());
+		validateContactPayload(requestDto.getFirstName(), requestDto.getLastName(), requestDto.getEmail(),
+				requestDto.getContactNumber(), requestDto.getOwnerId());
 		validateContactCreationLimit();
 
 		User currentUser = userService.getCurrentUser();
@@ -124,7 +125,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
-		contact.setName(requestDto.getName());
+		contact.setFirstName(requestDto.getFirstName());
+		contact.setLastName(StringUtils.trimToNull(requestDto.getLastName()));
 		contact.setEmail(lowercaseEmail);
 		contact.setContactNumber(requestDto.getContactNumber());
 		contact.setCompany(company);
@@ -161,9 +163,15 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EDIT_DENIED);
 		}
 
-		if (requestDto.getName() != null) {
-			CrmValidations.validateContactName(requestDto.getName());
-			contact.setName(requestDto.getName());
+		if (requestDto.getFirstName() != null) {
+			CrmValidations.validateContactFirstName(requestDto.getFirstName());
+			contact.setFirstName(requestDto.getFirstName());
+		}
+
+		if (requestDto.getLastName().isPresent()) {
+			String lastName = requestDto.getLastName().get();
+			CrmValidations.validateContactLastName(lastName);
+			contact.setLastName(StringUtils.trimToNull(lastName));
 		}
 
 		if (requestDto.getEmail() != null) {
@@ -390,8 +398,10 @@ public class CrmContactServiceImpl implements CrmContactService {
 		return new ResponseEntityDto(false, dto);
 	}
 
-	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId) {
-		CrmValidations.validateContactName(name);
+	private void validateContactPayload(String firstName, String lastName, String email, String contactNumber,
+			Long ownerId) {
+		CrmValidations.validateContactFirstName(firstName);
+		CrmValidations.validateContactLastName(lastName);
 		CrmValidations.validateContactEmail(email);
 		CrmValidations.validateContactNumber(contactNumber);
 		CrmValidations.validateOwnerId(ownerId);

@@ -203,7 +203,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
-			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.firstName)), likePattern, '\\'),
+					cb.like(cb.lower(contact.get(CrmContact_.lastName)), likePattern, '\\'),
+					cb.like(cb.lower(cb.concat(cb.concat(contact.get(CrmContact_.firstName), " "),
+							contact.get(CrmContact_.lastName))), likePattern, '\\'),
 					cb.like(cb.lower(owner.get(Employee_.firstName)), likePattern, '\\'),
 					cb.like(cb.lower(owner.get(Employee_.lastName)), likePattern, '\\')));
 		}
@@ -235,7 +238,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		contact.fetch(CrmContact_.company, JoinType.LEFT);
 
 		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.firstName))),
+				cb.asc(cb.lower(contact.get(CrmContact_.lastName))), cb.asc(contact.get(CrmContact_.id)));
 
 		return entityManager.createQuery(query).getResultList();
 	}
@@ -251,7 +255,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
 
 		query.where(predicates.toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.firstName))),
+				cb.asc(cb.lower(contact.get(CrmContact_.lastName))), cb.asc(contact.get(CrmContact_.id)));
 
 		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
@@ -269,7 +274,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword.trim().toLowerCase(Locale.ROOT));
 			String likePattern = "%" + escaped + "%";
-			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.name)), likePattern, '\\'),
+			predicates.add(cb.or(cb.like(cb.lower(contact.get(CrmContact_.firstName)), likePattern, '\\'),
+					cb.like(cb.lower(contact.get(CrmContact_.lastName)), likePattern, '\\'),
+					cb.like(cb.lower(cb.concat(cb.concat(contact.get(CrmContact_.firstName), " "),
+							contact.get(CrmContact_.lastName))), likePattern, '\\'),
 					cb.like(cb.lower(company.get(CrmCompany_.name)), likePattern, '\\')));
 		}
 

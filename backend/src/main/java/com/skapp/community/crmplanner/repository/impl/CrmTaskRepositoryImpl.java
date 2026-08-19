@@ -373,7 +373,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
 
 			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
-					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.firstName)), "%" + escaped + "%"),
+					cb.like(cb.lower(contactJoin.get(CrmContact_.lastName)), "%" + escaped + "%"),
+					cb.like(cb.lower(cb.concat(cb.concat(contactJoin.get(CrmContact_.firstName), " "),
+							contactJoin.get(CrmContact_.lastName))), "%" + escaped + "%"),
 					cb.like(cb.lower(dealJoin.get(CrmDeal_.name)), "%" + escaped + "%")));
 		}
 
