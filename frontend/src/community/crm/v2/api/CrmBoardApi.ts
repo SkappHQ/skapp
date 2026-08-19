@@ -34,7 +34,8 @@ export const useGetDealsGroupedByStages = (
   useQuery({
     queryKey: crmBoardQueryKeys.DEALS_GROUPED_BY_STAGES(params),
     queryFn: () => fetchDealsGroupedByStages(params),
-    enabled
+    enabled,
+    refetchOnWindowFocus: false
   });
 
 export const useFetchMoreStageDeals = (
