@@ -14,10 +14,6 @@ export const crmCompanyQueryKeys = {
   COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids]
 };
 
-export const crmContactQueryKeys = {
-  CONTACTS_BY_IDS: (ids: number[]) => ["crm-contacts-by-ids-v2", ids]
-};
-
 export const crmLookupQueryKeys = {
   CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-contact-lookup-v2",

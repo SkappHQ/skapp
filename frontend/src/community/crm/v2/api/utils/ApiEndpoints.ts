@@ -21,10 +21,6 @@ export const crmCompanyEndpointsV2 = {
   GET_COMPANIES_BY_IDS: `${moduleAPIPath.CRM}/company/batch`
 };
 
-export const crmContactEndpointsV2 = {
-  GET_CONTACTS_BY_IDS: `${moduleAPIPath.CRM}/contact/batch`
-};
-
 // Contact/owner lookups have no v2 route yet — the v2 hooks call these v1
 // endpoints and map the payloads to v2 entities (as the rest of the v2 module
 // does for board/exists/stage).

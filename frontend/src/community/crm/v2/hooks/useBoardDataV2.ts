@@ -4,13 +4,12 @@ import { useGetDealsGroupedByStages } from "../api/CrmBoardApi";
 import { useBoardStageIds } from "../store/selectors";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
 import { useHydrateCompanies } from "./useHydrateCompanies";
-import { useHydrateContacts } from "./useHydrateContacts";
 
 // Loads the board's first page: the stage columns come from the store (already
 // bootstrapped by CrmDataProvider on /crm routes), and the per-stage first page
-// of deals is fetched and ingested here. Companies and contacts referenced by
-// those cards are hydrated by id (they are not embedded on the scalar board
-// payload).
+// of deals is fetched and ingested here. Companies referenced by those cards are
+// hydrated by id (they are not embedded on the scalar board payload); contacts
+// are already seeded in full by the board init-data bootstrap.
 export const useBoardDataV2 = ({
   searchKeyword
 }: {
@@ -35,15 +34,6 @@ export const useBoardDataV2 = ({
     [data]
   );
   useHydrateCompanies(companyIds);
-
-  const contactIds = useMemo(
-    () =>
-      (data ?? [])
-        .flatMap((group) => group.deals.map((deal) => deal.contactId))
-        .filter((id): id is number => id != null),
-    [data]
-  );
-  useHydrateContacts(contactIds);
 
   return { stageIds, isLoading, isFetching };
 };
