@@ -9,7 +9,10 @@ import TimeUtilizationCard from "~community/attendance/components/molecules/Time
 import TimesheetDailyRecordTable from "~community/attendance/components/molecules/TimesheetDailyRecordTable/TimesheetDailyRecordTable";
 import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
-import { TimeUtilizationTrendTypes } from "~community/attendance/types/timeSheetTypes";
+import {
+  DirectEntryEmployeeType,
+  TimeUtilizationTrendTypes
+} from "~community/attendance/types/timeSheetTypes";
 import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -49,7 +52,7 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
     canDirectlyAddOrEditEntry
   );
 
-  const targetEmployee = useMemo(() => {
+  const targetEmployee = useMemo<DirectEntryEmployeeType | undefined>(() => {
     const employeeName = getEmployeeFullName(
       targetEmployeeDetails?.firstName,
       targetEmployeeDetails?.lastName

@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { rejects } from "assert";
 
 import { employeeAttendanceEndpoints } from "~community/attendance/api/utils/attendanceEndPoints";
-import { epAttendanceEndpoints } from "~enterprise/attendance/api/utils/attendanceEndPoints";
 import { attendanceQueryKeys } from "~community/attendance/api/utils/attendanceQueryKeys";
 import {
   dailyLogPreProcessor,
@@ -31,6 +30,7 @@ import {
   getLocalDate,
   getStartAndEndOfYear
 } from "~community/common/utils/dateTimeUtils";
+import { epAttendanceEndpoints } from "~enterprise/attendance/api/utils/attendanceEndPoints";
 
 export const useGetTodaysTimeRequestAvailability = () => {
   //const { setGeneralErrors } = useGeneralErrors();
@@ -243,7 +243,7 @@ export const useCancelTimeRequest = (
 
 export const useAddManualTimeEntry = (
   onSuccess: () => void,
-  onEnhancedError: (error: any) => void
+  onEnhancedError: (error: ErrorResponse) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -251,7 +251,7 @@ export const useAddManualTimeEntry = (
       const url = employeeAttendanceEndpoints.ADD_MANUAL_ENTRY;
       return await authFetch.post(url, data);
     },
-    onError(error) {
+    onError(error: ErrorResponse) {
       onEnhancedError(error);
     },
     onSuccess() {

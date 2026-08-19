@@ -205,7 +205,7 @@
     "approveSuccessTitle": "Request Approved",
     "approveSuccessDes": "{{name}}'s time entry request has been approved successfully.",
     "approveFailTitle": "Oops! Something went wrong.",
-    "approveFailDes": "Failed to approve {{name}}'s time entry request. Please try again.",
+    "approveFailDes": "Failed to approve this request. Please try again.",
     "staleRequestConflictTitle": "Oops! Something went wrong",
     "staleRequestConflictDes": "This request is no longer pending. It may have been cancelled or already resolved.",
     "declineSuccessTitle": "Request Declined",

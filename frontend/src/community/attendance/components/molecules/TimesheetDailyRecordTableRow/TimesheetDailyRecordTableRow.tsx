@@ -93,12 +93,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
 
     setIsEmployeeTimesheetModalOpen(true);
     setEmployeeTimesheetModalType(modalType);
-  }, [
-    record,
-    setIsEmployeeTimesheetModalOpen,
-    setSelectedDailyRecord,
-    setEmployeeTimesheetModalType
-  ]);
+  }, [record]);
 
   const getLeaveLength = (leaveState: string) => {
     if (leaveState === LeaveStates.FULL_DAY) {
@@ -183,13 +178,17 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   const handleRowActivate = () => {
     if (!isRowInteractive) return;
 
-    setDirectEntryEmployee(targetEmployee ?? null);
-
     if (targetEmployee) {
+      // handleEdit bails out when the record maps to no modal, so the store is
+      // only marked as a direct entry when a modal is actually going to open.
+      if (getTimeEntryModalType(record) === null) return;
+
+      setDirectEntryEmployee(targetEmployee);
       handleEdit();
       return;
     }
 
+    setDirectEntryEmployee(null);
     mutate();
   };
 

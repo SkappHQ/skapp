@@ -9,6 +9,7 @@ import useManualEntryRestriction from "~community/attendance/hooks/useManualEntr
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   DailyLogType,
+  DirectEntryEmployeeType,
   TimeRecordDataResponseType,
   TimeRecordDataType,
   TimeRecordType
@@ -42,9 +43,7 @@ import { useDefaultCapacity } from "~community/configurations/api/timeConfigurat
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
-interface PendingDirectEntryCell {
-  employeeId: number;
-  employeeName: string;
+interface PendingDirectEntryCell extends DirectEntryEmployeeType {
   date: string;
 }
 
@@ -70,8 +69,14 @@ const EmployeeTimeRecordsTable = ({
 
   const theme: Theme = useTheme();
 
-  const { timesheetAnalyticsParams, setTimesheetAnalyticsPagination } =
-    useAttendanceStore((state) => state);
+  const {
+    timesheetAnalyticsParams,
+    setTimesheetAnalyticsPagination,
+    setSelectedDailyRecord,
+    setDirectEntryEmployee,
+    setEmployeeTimesheetModalType,
+    setIsEmployeeTimesheetModalOpen
+  } = useAttendanceStore((state) => state);
 
   const { isFetching: isExportRecordDataLoading, refetch: refetchExportData } =
     useGetManagerTimeRecords(true);
@@ -83,13 +88,6 @@ const EmployeeTimeRecordsTable = ({
   const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
 
   const { setToastMessage } = useToast();
-
-  const {
-    setSelectedDailyRecord,
-    setDirectEntryEmployee,
-    setEmployeeTimesheetModalType,
-    setIsEmployeeTimesheetModalOpen
-  } = useAttendanceStore((state) => state);
 
   const [pendingCell, setPendingCell] = useState<PendingDirectEntryCell | null>(
     null
