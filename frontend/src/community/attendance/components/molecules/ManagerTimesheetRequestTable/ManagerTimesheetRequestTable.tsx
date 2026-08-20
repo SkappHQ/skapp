@@ -176,7 +176,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           avatarUrl={timesheetRequest?.employee?.authPic as string}
           isResponsiveLayout={true}
           chipStyles={{
-            maxWidth: "15.625rem"
+            maxWidth: "100%"
           }}
         />
       ),
