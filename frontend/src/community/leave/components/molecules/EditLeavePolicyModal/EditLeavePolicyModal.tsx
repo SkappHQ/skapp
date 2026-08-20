@@ -6,7 +6,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
-import { FC, useRef } from "react";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -43,16 +43,12 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   const translateCommonText = useTranslator("leaveModule", "leavePolicies");
   const { setToastMessage } = useToast();
 
-  const submittedNameRef = useRef<string>("");
-
   const onUpdateSuccess = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["successToastTitle"]),
-      description: translateText(["successToastDescription"], {
-        policyName: submittedNameRef.current
-      }),
+      description: translateText(["successToastDescription"]),
       isIcon: true
     });
     onClose();
@@ -80,7 +76,6 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       return;
     }
     const trimmedName = formValues.policyName.trim();
-    submittedNameRef.current = trimmedName;
     updateLeavePolicy({
       id: policy.id,
       payload: { name: trimmedName }
@@ -99,7 +94,8 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   }
 
   const isChanged = values.policyName.trim() !== policy.name;
-  const isSaveDisabled = isPending || !isChanged;
+  const hasError = Boolean(errors.policyName);
+  const isSaveDisabled = isPending || !isChanged || hasError;
 
   const handleCancel = (): void => {
     resetForm();

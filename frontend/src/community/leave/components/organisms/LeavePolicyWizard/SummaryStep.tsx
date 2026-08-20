@@ -133,34 +133,30 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         />
       </SummaryCard>
 
-      <SummaryCard
-        title={translateText(["summary", "carryForwardTitle"])}
-        onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
-      >
-        <SummaryItem
-          label={translateText(["summary", "statusLabel"])}
-          value={
-            <LeavePolicyStatusBadge
-              isActive={formData.canCarryOver}
-              text={
-                formData.canCarryOver
-                  ? translateText(["summary", "activeStatus"])
-                  : translateText(["summary", "inactiveStatus"])
-              }
-            />
-          }
-        />
-        <SummaryItem
-          label={translateText(["summary", "maxCarryOverDaysLabel"])}
-          value={
-            formData.canCarryOver && formData.maxCarryOverDays
-              ? translateText(["summary", "maxCarryOverDaysValue"], {
-                  days: formData.maxCarryOverDays
-                })
-              : translateText(["summary", "carryOverNoLimit"])
-          }
-        />
-        {formData.canCarryOver && (
+      {formData.canCarryOver && (
+        <SummaryCard
+          title={translateText(["summary", "carryForwardTitle"])}
+          onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
+        >
+          <SummaryItem
+            label={translateText(["summary", "statusLabel"])}
+            value={
+              <LeavePolicyStatusBadge
+                isActive
+                text={translateText(["summary", "activeStatus"])}
+              />
+            }
+          />
+          <SummaryItem
+            label={translateText(["summary", "maxCarryOverDaysLabel"])}
+            value={
+              formData.maxCarryOverDays
+                ? translateText(["summary", "maxCarryOverDaysValue"], {
+                    days: formData.maxCarryOverDays
+                  })
+                : translateText(["summary", "carryOverNoLimit"])
+            }
+          />
           <SummaryItem
             label={translateText(["summary", "carryoverExpiryDateLabel"])}
             value={
@@ -169,8 +165,8 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
                 : translateText(["summary", "carryoverNeverExpires"])
             }
           />
-        )}
-      </SummaryCard>
+        </SummaryCard>
+      )}
     </div>
   );
 };
