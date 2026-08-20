@@ -299,6 +299,7 @@ const Drawer = (): JSX.Element => {
                     }}
                     aria-expanded={isExpanded}
                     aria-controls={`sub-list-${routeId}`}
+                    aria-label={route?.name}
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
