@@ -24,6 +24,7 @@ import com.skapp.community.leaveplanner.payload.request.AllLeaveRequestsResponse
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestByIdResponseDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeRequestDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeRequestDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveEntitlementReportExportDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
@@ -127,6 +128,11 @@ public interface LeaveMapper {
 	LeaveType leaveTypeDtoToLeaveType(LeaveTypeRequestDto leaveTypeRequestDto);
 
 	LeaveTypeRequestDto leaveTypeToLeaveTypeDto(LeaveType leaveType);
+
+	@Mapping(target = "minDuration", source = "leaveDuration")
+	@Mapping(target = "isAttachmentMust", source = "isAttachmentMandatory")
+	@Mapping(target = "isCommentMust", source = "isCommentMandatory")
+	PolicyLeaveTypeRequestDto leaveTypeRequestDtoToPolicyLeaveTypeRequestDto(LeaveTypeRequestDto leaveTypeRequestDto);
 
 	List<LeaveTypeResponseDto> leaveTypeListToLeaveTypeResponseDtoList(List<LeaveType> leaveTypes);
 

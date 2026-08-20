@@ -83,6 +83,8 @@ const ManagerLeaveRequestFilterBody: FC<Props> = ({
       <div className="flex flex-col gap-2">
         <p className="subtitle1">{translateText(["dateTitle"])}</p>
         <DateRangePicker
+          fromPlaceholder={translateText(["fromDatePlaceholder"])}
+          toPlaceholder={translateText(["toDatePlaceholder"])}
           value={dateRange}
           onChange={(range) => setDateRange(clampToCurrentYear(range))}
         />

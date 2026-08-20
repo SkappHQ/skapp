@@ -1,3 +1,4 @@
+import { InfinityIcon } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -47,11 +48,17 @@ const PolicyLeaveBalanceCard = ({ policyBalance }: Props) => {
             <p className="body2">
               {translateText(["policyBalanceCard", "available"])}
             </p>
-            <p className="body2">
-              {policyBalance.isUnlimited || !policyBalance.isBalanceAvailable
-                ? balanceLabel
-                : `${balanceLabel} / ${policyBalance.totalDaysAllocated}`}
-            </p>
+            {policyBalance.isUnlimited ? (
+              <span role="img" aria-label={balanceLabel}>
+                <InfinityIcon width="32" height="32" />
+              </span>
+            ) : (
+              <p className="body2">
+                {!policyBalance.isBalanceAvailable
+                  ? balanceLabel
+                  : `${balanceLabel} / ${policyBalance.totalDaysAllocated}`}
+              </p>
+            )}
           </div>
           <div className={ROW_CLASSES}>
             <p className="body2">

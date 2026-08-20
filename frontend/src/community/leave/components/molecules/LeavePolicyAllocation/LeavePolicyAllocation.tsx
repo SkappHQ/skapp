@@ -70,10 +70,6 @@ const LeavePolicyAllocation: FC = () => {
     setCurrentPage(1);
   }, [isBelow600]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedYear]);
-
   const currentAllocations = useMemo(() => {
     const indexOfLastAllocation = currentPage * allocationsPerPage;
     const indexOfFirstAllocation = indexOfLastAllocation - allocationsPerPage;

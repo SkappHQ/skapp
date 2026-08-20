@@ -6,8 +6,12 @@ import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import BirthdayCelebration from "~community/people/assets/images/BirthdayCelebration";
-import { CONFETTI_VISIBLE_DURATION_MS } from "~community/people/constants/stringConstants";
+import {
+  AVATAR_SKELETON_TIMEOUT_MS,
+  CONFETTI_VISIBLE_DURATION_MS
+} from "~community/people/constants/stringConstants";
 import { EmployeeBirthdayType } from "~community/people/types/BirthdayNotificationTypes";
+import ImageSkeleton from "~enterprise/common/components/atoms/ImageSkeleton/ImageSkeleton";
 
 interface Props {
   id: string;
@@ -31,8 +35,9 @@ const BirthdayModalShell: FC<Props> = ({
   showConfetti = false
 }) => {
   const translateAria = useTranslator("peopleAria", "birthdayNotifications");
-  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+  const imageUrl = useGetImageUrl(employee.authPic ?? "", true);
   const [isConfettiVisible, setIsConfettiVisible] = useState(showConfetti);
+  const [isAvatarTimedOut, setIsAvatarTimedOut] = useState(false);
 
   useEffect(() => {
     if (!showConfetti) return;
@@ -43,6 +48,16 @@ const BirthdayModalShell: FC<Props> = ({
 
     return () => clearTimeout(timer);
   }, [showConfetti]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAvatarTimedOut(true);
+    }, AVATAR_SKELETON_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showAvatarSkeleton = !imageUrl && !isAvatarTimedOut;
 
   return (
     <>
@@ -71,18 +86,22 @@ const BirthdayModalShell: FC<Props> = ({
                 })}
               </p>
             )}
-            <Avatar
-              id={`${id}-avatar`}
-              size="2xl"
-              src={imageUrl ?? undefined}
-              firstName={employee.firstName}
-              lastName={employee.lastName}
-              alt={translateAria(["profilePhoto"], {
-                name: employee.lastName
-                  ? concatStrings([employee.firstName, employee.lastName])
-                  : employee.firstName
-              })}
-            />
+            {showAvatarSkeleton ? (
+              <ImageSkeleton className="h-32 w-32 rounded-full" />
+            ) : (
+              <Avatar
+                id={`${id}-avatar`}
+                size="2xl"
+                src={imageUrl ?? undefined}
+                firstName={employee.firstName}
+                lastName={employee.lastName}
+                alt={translateAria(["profilePhoto"], {
+                  name: employee.lastName
+                    ? concatStrings([employee.firstName, employee.lastName])
+                    : employee.firstName
+                })}
+              />
+            )}
             <h2 className="h1 line-clamp-2 w-full px-1 leading-tight tracking-[0.07px] wrap-break-word text-black">
               {heading}
             </h2>
