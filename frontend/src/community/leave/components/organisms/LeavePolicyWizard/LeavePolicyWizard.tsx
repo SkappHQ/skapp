@@ -235,8 +235,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   };
 
   const handleNext = async (): Promise<void> => {
-    // A second click while the availability check is still in flight would run
-    // the whole flow twice. isPending covers the create call itself.
     if (isAdvancingRef.current) {
       return;
     }
