@@ -9,6 +9,9 @@ import {
 } from "@dnd-kit/core";
 import { FC } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { DRAG_ACTIVATION_DISTANCE } from "~community/crm/constants/boardConstants";
 import DealStageLaneV2 from "~community/crm/v2/components/molecules/DealStageLaneV2/DealStageLaneV2";
 import { useBoardDataV2 } from "~community/crm/v2/hooks/useBoardDataV2";
@@ -34,6 +37,18 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
     useSensor(KeyboardSensor)
   );
 
+  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const { setToastMessage } = useToast();
+
+  const handleMoveError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "moveErrorTitle"]),
+      description: translateText(["toastMessages", "moveErrorDescription"])
+    });
+  };
+
   const { stageIds, isLoading } = useBoardDataV2({ searchKeyword });
 
   const {
@@ -42,7 +57,7 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
     handleDragStart,
     handleDragOver,
     handleDragEnd
-  } = useKanbanDragV2();
+  } = useKanbanDragV2({ onError: handleMoveError });
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 

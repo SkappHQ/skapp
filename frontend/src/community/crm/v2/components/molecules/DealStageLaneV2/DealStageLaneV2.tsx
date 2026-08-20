@@ -6,8 +6,10 @@ import {
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
@@ -42,6 +44,16 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   isAddDealDisabled = false
 }) => {
   const translateText = useTranslator("crmModule", "deals", "kanban");
+  const { setToastMessage } = useToast();
+
+  const handleLoadMoreError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "loadMoreErrorTitle"]),
+      description: translateText(["toastMessages", "loadMoreErrorDescription"])
+    });
+  };
 
   const stage = useStageById(stageId);
   const column = useBoardColumn(stageId);
@@ -74,7 +86,8 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   const { loadMore, isLoadingMore } = useLoadMoreStageDealsV2({
     stageId,
     currentPage,
-    searchKeyword
+    searchKeyword,
+    onError: handleLoadMoreError
   });
 
   const { loadingRef } = useInfiniteScroll({
