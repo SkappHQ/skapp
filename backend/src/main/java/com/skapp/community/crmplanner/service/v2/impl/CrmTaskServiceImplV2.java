@@ -5,6 +5,7 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmTask;
@@ -15,6 +16,7 @@ import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import com.skapp.community.crmplanner.service.v2.CrmTaskServiceV2;
+import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
@@ -39,6 +41,8 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	private final UserService userService;
 
+	private final PageTransformer pageTransformer;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getTasks(CrmTaskFilterDtoV2 filterDto) {
@@ -59,18 +63,16 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 	public ResponseEntityDto getRelatedTasks(Long id, int page, int size) {
 		log.info("getRelatedTasks: execution started");
 
-		CrmTask task = crmTaskDao.findByIdWithAssociations(id)
+		CrmTaskLinkRefs linkRefs = crmTaskDao.findTaskLinkRefsById(id)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, task.getOwner().getEmployeeId())) {
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, linkRefs.getOwnerId())) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
 		}
 
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(
-				task.getContact() == null ? null : task.getContact().getId(),
-				task.getDeal() == null ? null : task.getDeal().getId(), ownerId);
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(linkRefs.getContactId(), linkRefs.getDealId(), ownerId);
 		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(id, params, toPageable(page, size));
 
 		log.info("getRelatedTasks: execution ended");
@@ -117,15 +119,12 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 	}
 
 	private Pageable toPageable(int page, int size) {
-		return size < 0 ? Pageable.unpaged() : PageRequest.of(page, size);
+		return size <= 0 ? Pageable.unpaged() : PageRequest.of(Math.max(page, 0), size);
 	}
 
 	private PageDto toPageDto(Page<CrmTaskResponseDtoV2> taskPage) {
-		PageDto pageDto = new PageDto();
+		PageDto pageDto = pageTransformer.transform(taskPage);
 		pageDto.setItems(taskPage.getContent());
-		pageDto.setCurrentPage(taskPage.getNumber());
-		pageDto.setTotalItems(taskPage.getTotalElements());
-		pageDto.setTotalPages(taskPage.getTotalPages());
 		return pageDto;
 	}
 

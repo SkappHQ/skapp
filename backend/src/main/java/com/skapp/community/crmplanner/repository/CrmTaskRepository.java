@@ -7,6 +7,7 @@ import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
+import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,8 @@ public interface CrmTaskRepository {
 	Page<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDtoV2 filterDto, Pageable pageable);
 
 	Optional<CrmTask> findByIdWithAssociations(Long id);
+
+	Optional<CrmTaskLinkRefs> findTaskLinkRefsById(Long id);
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 

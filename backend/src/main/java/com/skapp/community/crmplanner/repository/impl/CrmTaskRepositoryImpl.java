@@ -20,6 +20,7 @@ import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
+import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.type.CrmTaskSort;
 import com.skapp.community.crmplanner.type.CrmTaskSummary;
@@ -181,6 +182,22 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		dealFetch.fetch(CrmDeal_.owner, JoinType.LEFT);
 
 		query.select(task).where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
+	public Optional<CrmTaskLinkRefs> findTaskLinkRefsById(Long id) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmTaskLinkRefs> query = cb.createQuery(CrmTaskLinkRefs.class);
+		Root<CrmTask> task = query.from(CrmTask.class);
+
+		Join<CrmTask, CrmContact> contact = task.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
+
+		query.select(cb.construct(CrmTaskLinkRefs.class, task.get(CrmTask_.owner).get(Employee_.employeeId),
+				contact.get(CrmContact_.id), deal.get(CrmDeal_.id)));
+		query.where(cb.equal(task.get(CrmTask_.id), id), cb.isFalse(task.get(CrmTask_.isDeleted)));
 
 		return entityManager.createQuery(query).getResultList().stream().findFirst();
 	}
@@ -364,8 +381,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getCompanyId() != null) {
-			Join<CrmTask, CrmCompany> companyJoin = root.join(CrmTask_.company, JoinType.LEFT);
-			predicates.add(cb.equal(companyJoin.get(CrmCompany_.id), params.getCompanyId()));
+			predicates.add(cb.equal(root.get(CrmTask_.company).get(CrmCompany_.id), params.getCompanyId()));
 		}
 
 		return predicates;

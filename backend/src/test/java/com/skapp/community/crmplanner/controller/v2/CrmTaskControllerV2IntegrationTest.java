@@ -5,6 +5,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
+import java.time.LocalDateTime;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -213,6 +214,32 @@ class CrmTaskControllerV2IntegrationTest {
 		return savedTaskWith(name, company, contact, null, isCompleted);
 	}
 
+	private CrmTask savedTaskOwnedBy(String name, Long ownerId) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(contact);
+		task.setCompany(company);
+		task.setOwner(employeeDao.getReferenceById(ownerId));
+		task.setIsCompleted(false);
+		return crmTaskDao.save(task);
+	}
+
+	private CrmTask savedTaskWithDueAt(String name, LocalDateTime dueAt) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(dueAt);
+		task.setContact(contact);
+		task.setCompany(company);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setIsCompleted(false);
+		return crmTaskDao.save(task);
+	}
+
 	private CrmTask savedTaskWith(String name, CrmCompany taskCompany, CrmContact taskContact, CrmDeal taskDeal,
 			boolean isCompleted) {
 		CrmTask task = new CrmTask();
@@ -231,7 +258,7 @@ class CrmTaskControllerV2IntegrationTest {
 	// --- createTask ---
 
 	@Test
-	@DisplayName("Create task with contact and deal - Returns Created with embedded type, owner, company, contact, deal")
+	@DisplayName("Create task with contact and deal - Returns Created with id references only")
 	void createTask_WithContactAndDeal_ReturnsIdReferences() throws Exception {
 		CrmDeal deal = savedDeal("Task Linked Deal V2");
 
@@ -404,6 +431,129 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
 	}
 
+	@Test
+	@DisplayName("Get tasks filtered by searchKeyword - Returns only tasks matching the keyword")
+	void getTasks_BySearchKeyword_ReturnsMatchingTasks() throws Exception {
+		savedTask("Alpha Report", false);
+		savedTask("Beta Report", false);
+
+		performRequest(get(BASE_PATH).param("searchKeyword", "Alpha").accept(MediaType.APPLICATION_JSON), authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Alpha Report"));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by dealId - Returns only tasks linked to that deal")
+	void getTasks_ByDealId_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Filter Deal V2");
+		savedTaskWith("Task On Deal", company, contact, deal, false);
+		savedTask("Task Without Deal", false);
+
+		performRequest(get(BASE_PATH).param("dealId", deal.getId().toString()).accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task On Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['dealId']").value(deal.getId()));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by companyId - Returns only tasks linked to that company")
+	void getTasks_ByCompanyId_ReturnsMatchingTasks() throws Exception {
+		CrmCompany otherCompany = new CrmCompany();
+		otherCompany.setName("Other Task Corp");
+		otherCompany.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		otherCompany = crmCompanyDao.save(otherCompany);
+
+		CrmContact otherContact = new CrmContact();
+		otherContact.setName("Other Contact");
+		otherContact.setEmail("other.contact.v2@example.com");
+		otherContact.setOwner(employeeDao.getReferenceById(1L));
+		otherContact.setCompany(otherCompany);
+		otherContact = crmContactDao.save(otherContact);
+
+		savedTask("Default Company Task", false);
+		savedTaskWith("Other Company Task", otherCompany, otherContact, null, false);
+
+		performRequest(
+				get(BASE_PATH).param("companyId", otherCompany.getId().toString()).accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Other Company Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(otherCompany.getId()));
+	}
+
+	@Test
+	@DisplayName("Get tasks sorted by due date descending - Returns the latest due date first")
+	void getTasks_SortByDueDateDesc_ReturnsLatestDueFirst() throws Exception {
+		savedTaskWithDueAt("Due Soon", DateTimeUtils.getCurrentUtcDateTime().plusDays(1));
+		savedTaskWithDueAt("Due Later", DateTimeUtils.getCurrentUtcDateTime().plusDays(30));
+
+		performRequest(
+				get(BASE_PATH).param("sortKey", "DUE_AT").param("sortOrder", "DESC").accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Due Later"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['name']").value("Due Soon"));
+	}
+
+	@Test
+	@DisplayName("Get tasks sorted by last modified date ascending - Returns the earliest modified first")
+	void getTasks_SortByLastModifiedAsc_ReturnsEarliestFirst() throws Exception {
+		savedTask("Modified First", true);
+		savedTask("Modified Second", true);
+
+		performRequest(get(BASE_PATH).param("isCompleted", "true")
+			.param("sortKey", "LAST_MODIFIED_DATE")
+			.param("sortOrder", "ASC")
+			.accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Modified First"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['name']").value("Modified Second"));
+	}
+
+	@Test
+	@DisplayName("Get tasks with size 0 - Returns every match unpaged rather than erroring")
+	void getTasks_SizeZero_ReturnsEveryMatch() throws Exception {
+		savedTask("Zero Size A", false);
+		savedTask("Zero Size B", false);
+		savedTask("Zero Size C", false);
+
+		performRequest(get(BASE_PATH).param("size", "0").accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get tasks as Sales Representative - Returns only the caller's own tasks")
+	void getTasks_AsSalesRep_ReturnsOnlyOwnTasks() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		savedTask("Admin Owned Task", false);
+		savedTaskOwnedBy("Rep Owned Task", 2L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep Owned Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['ownerId']").value(2));
+	}
+
 	// --- getRelatedTasks ---
 
 	@Test
@@ -554,6 +704,21 @@ class CrmTaskControllerV2IntegrationTest {
 			.longValue();
 		CrmTask updated = crmTaskDao.findById(updatedId).orElseThrow();
 		assertEquals("Updated Task V2", updated.getName());
+	}
+
+	@Test
+	@DisplayName("Get related tasks as Sales Representative for another owner's source task - Returns view-denied error")
+	void getRelatedTasks_SalesRepViewingOthersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmTask task = savedTask("Admin Owned Source Task V2", false);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetRelatedRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 	@Test
