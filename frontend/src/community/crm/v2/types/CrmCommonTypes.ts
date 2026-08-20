@@ -81,7 +81,7 @@ export interface CrmDealEntity {
   companyId?: number;
   contactId?: number;
   ownerId?: number;
-  taskCount?: number;
+  openTasksCount?: number;
   taskIds?: number[];
 }
 
