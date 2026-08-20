@@ -12,8 +12,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
-import { CrmDealStageColorsEnum as CrmDealStageColorsEnumV1 } from "~community/crm/enums/common";
+import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import DraggableDealCardV2 from "~community/crm/v2/components/molecules/DraggableDealCardV2/DraggableDealCardV2";
 import { useLoadMoreStageDealsV2 } from "~community/crm/v2/hooks/useLoadMoreStageDealsV2";
 import {
@@ -97,7 +96,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   });
 
   const stageColor = stage?.color
-    ? STAGE_COLOR_MAP[stage.color as unknown as CrmDealStageColorsEnumV1]
+    ? STAGE_COLOR_MAP[stage.color]
     : undefined;
 
   return (
