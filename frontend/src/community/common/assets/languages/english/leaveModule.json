@@ -401,7 +401,7 @@
         "carryOverYes": "Yes, time can be carried over",
         "carryoverExpiryDateLabel": "Carryover expiry date",
         "carryoverExpiryDatePlaceholder": "Select expiry date",
-        "carryoverExpiryDateTooltip": "Carried over days are forfeited on this date in the next leave cycle, so it only needs to be set once. Leave it empty if carried over days should expire on the last day of the next leave cycle.",
+        "carryoverExpiryDateTooltip": "Days carried over will expire on this date. Leave blank to automatically expire them on the last day of the next cycle.",
         "maxCarryOverDaysLabel": "Maximum carry over days",
         "maxCarryOverDaysPlaceholder": "Enter days",
         "firstAccrualLabel": "Employees' first accrual should be",
