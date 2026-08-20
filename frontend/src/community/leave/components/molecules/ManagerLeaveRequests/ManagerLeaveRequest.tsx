@@ -141,7 +141,7 @@ const ManagerLeaveRequest: FC<Props> = ({
               isResponsiveLayout
               chipStyles={{
                 width: "fit-content",
-                maxWidth: "15.625rem",
+                maxWidth: "100%",
                 justifyContent: "flex-start",
                 backgroundColor: "var(--color-tertiary-background)"
               }}
