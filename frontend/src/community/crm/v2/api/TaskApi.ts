@@ -13,13 +13,14 @@ import authFetch, {
 } from "~community/common/utils/axiosInterceptor";
 import { crmTaskEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
+import { UNPAGED_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmRelatedTasksFilterRequest,
+  CrmRelatedTasksRequest,
   CrmTaskCompletedFilterRequest,
-  CrmTaskCompletedListResponse,
   CrmTaskFilterRequest,
-  CrmTaskListResponse,
-  CrmTaskRelatedListResponse
+  CrmTaskListResponse
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
@@ -27,7 +28,14 @@ const fetchOpenTasks = async (
   filter: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
-    params: { ...filter, isCompleted: false, size: -1 }
+    params: {
+      searchKeyword: filter.searchKeyword,
+      contactId: filter.contactId,
+      dealId: filter.dealId,
+      companyId: filter.companyId,
+      isCompleted: false,
+      size: UNPAGED_SIZE
+    }
   });
   return response?.data?.results?.[0];
 };
@@ -45,9 +53,17 @@ export const useGetOpenTasks = (
 
 const fetchCompletedTasks = async (
   filter: CrmTaskCompletedFilterRequest
-): Promise<CrmTaskCompletedListResponse> => {
+): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
-    params: { ...filter, isCompleted: true }
+    params: {
+      page: filter.page,
+      size: filter.size,
+      searchKeyword: filter.searchKeyword,
+      contactId: filter.contactId,
+      dealId: filter.dealId,
+      companyId: filter.companyId,
+      isCompleted: true
+    }
   });
   return response?.data?.results?.[0];
 };
@@ -55,13 +71,20 @@ const fetchCompletedTasks = async (
 export const useGetCompletedTasks = (
   filter: CrmTaskCompletedFilterRequest,
   enabled: boolean
-): UseInfiniteQueryResult<InfiniteData<CrmTaskCompletedListResponse>> => {
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmTaskQueryKeys.COMPLETED_TASKS_BY_FILTER(filter),
     queryFn: ({ pageParam }) =>
-      fetchCompletedTasks({ ...filter, page: pageParam }),
-    getNextPageParam: (lastPage: CrmTaskCompletedListResponse) => {
+      fetchCompletedTasks({
+        page: pageParam,
+        size: filter.size,
+        searchKeyword: filter.searchKeyword,
+        contactId: filter.contactId,
+        dealId: filter.dealId,
+        companyId: filter.companyId
+      }),
+    getNextPageParam: (lastPage: CrmTaskListResponse) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
@@ -70,27 +93,25 @@ export const useGetCompletedTasks = (
 };
 
 const fetchRelatedTasks = async (
-  id: number,
-  page: number,
-  size: number
-): Promise<CrmTaskRelatedListResponse> => {
+  request: CrmRelatedTasksRequest
+): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(
-    crmTaskEndpoints.GET_RELATED_TASKS(id),
-    { params: { page, size } }
+    crmTaskEndpoints.GET_RELATED_TASKS(request.id),
+    { params: { page: request.page, size: request.size } }
   );
   return response?.data?.results?.[0];
 };
 
 export const useGetRelatedTasks = (
-  id: number,
-  size: number,
+  filter: CrmRelatedTasksFilterRequest,
   enabled: boolean
-): UseInfiniteQueryResult<InfiniteData<CrmTaskRelatedListResponse>> => {
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> => {
   return useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: crmTaskQueryKeys.RELATED_TASKS_BY_ID(id, size),
-    queryFn: ({ pageParam }) => fetchRelatedTasks(id, pageParam, size),
-    getNextPageParam: (lastPage: CrmTaskRelatedListResponse) => {
+    queryKey: crmTaskQueryKeys.RELATED_TASKS_BY_ID(filter.id, filter.size),
+    queryFn: ({ pageParam }) =>
+      fetchRelatedTasks({ id: filter.id, page: pageParam, size: filter.size }),
+    getNextPageParam: (lastPage: CrmTaskListResponse) => {
       const nextPage = lastPage.currentPage + 1;
       return nextPage < lastPage.totalPages ? nextPage : undefined;
     },
@@ -143,11 +164,6 @@ const updateTask = async ({
   return response?.data?.results?.[0];
 };
 
-/**
- * An edit changes one task that is already in the store, so the caller merges
- * the updated task the request returns rather than the lists being invalidated
- * and refetched.
- */
 export const useUpdateTask = (
   onSuccess?: (updatedTask: CrmTaskEntity) => void,
   onError?: () => void

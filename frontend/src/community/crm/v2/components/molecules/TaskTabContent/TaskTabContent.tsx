@@ -23,8 +23,8 @@ import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  collectTaskCompanyIds,
-  collectTaskDealIds,
+  collectMissingTaskCompanyIds,
+  collectMissingTaskDealIds,
   mergeEntityRecord,
   replaceTaskIds,
   toCompaniesRecord,
@@ -44,17 +44,25 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
 
-  const { tasks, taskIds,deals,companies,setDeals,setCompanies,setTasks,setTaskIds } = useCrmStoreV2((state) => ({
+  const {
+    tasks,
+    taskIds,
+    deals,
+    companies,
+    setTasks,
+    setTaskIds,
+    setDeals,
+    setCompanies
+  } = useCrmStoreV2((state) => ({
     tasks: state.tasks,
     taskIds: state.taskIds,
     deals: state.deals,
     companies: state.companies,
-    setDeals: state.setDeals,
-    setCompanies: state.setCompanies,
     setTasks: state.setTasks,
-    setTaskIds: state.setTaskIds
+    setTaskIds: state.setTaskIds,
+    setDeals: state.setDeals,
+    setCompanies: state.setCompanies
   }));
-
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -76,35 +84,21 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     isError: isOpenTasksError
   } = useGetOpenTasks({ searchKeyword: debouncedSearch }, !isCompletedTab);
 
-  const visibleTasks = useMemo(() => {
-    if (isCompletedTab) {
-      return (
-        completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? []
-      );
-    }
-    return openTaskData?.items ?? [];
-  }, [isCompletedTab, completedTaskData, openTaskData]);
+  const responseTasks = useMemo(
+    () =>
+      isCompletedTab
+        ? (completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [])
+        : (openTaskData?.items ?? []),
+    [isCompletedTab, completedTaskData, openTaskData]
+  );
 
-
-  useEffect(() => {
-    if (visibleTasks.length === 0) return;
-    
-    setTasks(mergeEntityRecord(tasks, toTasksRecord(visibleTasks)));
-    setTaskIds(replaceTaskIds(visibleTasks));
-  }, [visibleTasks]);
-
-  /**
-   * Contacts and owners are already in the store from the CRM lookup set, so
-   * only deals and companies have to be fetched for whatever the visible tasks
-   * reference.
-   */
   const dealIds = useMemo(
-    () => collectTaskDealIds(visibleTasks),
-    [visibleTasks]
+    () => collectMissingTaskDealIds(responseTasks, deals),
+    [responseTasks, deals]
   );
   const companyIds = useMemo(
-    () => collectTaskCompanyIds(visibleTasks),
-    [visibleTasks]
+    () => collectMissingTaskCompanyIds(responseTasks, companies),
+    [responseTasks, companies]
   );
 
   const { data: dealsData } = useGetDealsByIds(dealIds, dealIds.length > 0);
@@ -114,17 +108,21 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   );
 
   useEffect(() => {
-    if (!dealsData && !companiesData) return;
+    if (responseTasks.length > 0) {
+      setTasks(mergeEntityRecord(tasks, toTasksRecord(responseTasks)));
+      setTaskIds(replaceTaskIds(responseTasks));
+    }
 
     if (dealsData) {
       setDeals(mergeEntityRecord(deals, toDealsRecord(dealsData)));
     }
+
     if (companiesData) {
       setCompanies(
         mergeEntityRecord(companies, toCompaniesRecord(companiesData))
       );
     }
-  }, [dealsData, companiesData]);
+  }, [responseTasks, dealsData, companiesData]);
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(
