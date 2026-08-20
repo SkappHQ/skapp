@@ -13,7 +13,7 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { useGetOwnerLookupV2 } from "~community/crm/v2/api/CrmLookupApi";
+import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   buildOwnerOptions,

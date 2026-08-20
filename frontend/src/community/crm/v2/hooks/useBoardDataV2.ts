@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
 
-import { useGetDealsGroupedByStages } from "../api/CrmBoardApi";
+import { useGetDealsGroupedByStages } from "../api/BoardApi";
 import { useBoardStageIds } from "../store/selectors";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
 

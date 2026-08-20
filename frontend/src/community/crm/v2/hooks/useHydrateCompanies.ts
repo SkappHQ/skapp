@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 
-import { useGetCompaniesByIds } from "../api/CrmCompanyApi";
+import { useGetCompaniesByIds } from "../api/CompanyApi";
 import { useCrmStoreV2 } from "../store/store";
 import { upsertCompanies } from "../utils/companyUtil";
 

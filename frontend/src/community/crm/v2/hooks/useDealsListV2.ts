@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { useGetDealsInfinite } from "../api/CrmDealApi";
+import { useGetDealsInfinite } from "../api/DealApi";
 import { useCrmStoreV2 } from "../store/store";
 import { CrmDealEntity } from "../types/CrmCommonTypes";
 import { CrmDealFilterRequest } from "../types/CrmTypes";

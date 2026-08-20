@@ -12,7 +12,7 @@ import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSideP
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
-import { useEditDeal, useGetDealById } from "~community/crm/v2/api/CrmDealApi";
+import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
 import { useDealById } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";

@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
 
-import { useFetchMoreStageDeals } from "../api/CrmBoardApi";
+import { useFetchMoreStageDeals } from "../api/BoardApi";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
 
 // Appends the next page of one stage's deals to its column. The column's

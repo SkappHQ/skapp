@@ -9,7 +9,7 @@ import { useRef, useState } from "react";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
-} from "../api/CrmBoardApi";
+} from "../api/BoardApi";
 import { useCrmStoreV2 } from "../store/store";
 import { CrmBoardRecord } from "../types/CrmCommonTypes";
 import { CrmKanbanDragData } from "../types/CrmTypes";

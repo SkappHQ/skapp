@@ -15,7 +15,7 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { useGetContactLookupV2 } from "~community/crm/v2/api/CrmLookupApi";
+import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useDealById, useOrderedStages } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
