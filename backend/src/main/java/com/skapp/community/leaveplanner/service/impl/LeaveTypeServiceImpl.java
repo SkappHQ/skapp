@@ -14,10 +14,12 @@ import com.skapp.community.leaveplanner.model.LeaveType;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypePatchRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeaveTypeRequestDto;
+import com.skapp.community.leaveplanner.payload.request.PolicyLeaveTypeRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeaveTypeResponseDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
+import com.skapp.community.leaveplanner.service.PolicyLeaveTypeService;
 import com.skapp.community.leaveplanner.type.CalculationType;
 import com.skapp.community.leaveplanner.type.LeaveDuration;
 import com.skapp.community.leaveplanner.util.LeaveModuleUtil;
@@ -50,7 +52,10 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 	private final EmployeeDao employeeDao;
 
+	private final PolicyLeaveTypeService policyLeaveTypeService;
+
 	@Override
+	@Transactional
 	public ResponseEntityDto addLeaveType(LeaveTypeRequestDto leaveTypeRequestDto) {
 		log.info("addLeaveType: execution started");
 
@@ -59,6 +64,8 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 			LeaveType leaveType = leaveMapper.leaveTypeDtoToLeaveType(leaveTypeRequestDto);
 			leaveType = leaveTypeDao.save(leaveType);
+
+			addPolicyLeaveType(leaveTypeRequestDto);
 
 			leaveTypeRequestDto = leaveMapper.leaveTypeToLeaveTypeDto(leaveType);
 		}
@@ -211,6 +218,12 @@ public class LeaveTypeServiceImpl implements LeaveTypeService {
 
 		addLeaveType(annualLeaveType);
 		log.info("createDefaultLeaveType: execution ended");
+	}
+
+	private void addPolicyLeaveType(LeaveTypeRequestDto leaveTypeRequestDto) {
+		PolicyLeaveTypeRequestDto policyLeaveTypeRequestDto = leaveMapper
+			.leaveTypeRequestDtoToPolicyLeaveTypeRequestDto(leaveTypeRequestDto);
+		policyLeaveTypeService.addPolicyLeaveType(policyLeaveTypeRequestDto);
 	}
 
 	private void validateLeaveTypeConfigurations(LeaveTypePatchRequestDto leaveTypePatchRequestDto,
