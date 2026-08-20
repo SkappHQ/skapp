@@ -3,12 +3,12 @@ import { FC } from "react";
 import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 
-interface DealsKanbanBoardSkeletonProps {
+interface DealsKanbanBoardSkeletonV2Props {
   laneCount: number;
   cardCount: number;
 }
 
-const DealsKanbanBoardSkeleton: FC<DealsKanbanBoardSkeletonProps> = ({
+const DealsKanbanBoardSkeletonV2: FC<DealsKanbanBoardSkeletonV2Props> = ({
   laneCount,
   cardCount
 }) => (
@@ -37,4 +37,4 @@ const DealsKanbanBoardSkeleton: FC<DealsKanbanBoardSkeletonProps> = ({
   </div>
 );
 
-export default DealsKanbanBoardSkeleton;
+export default DealsKanbanBoardSkeletonV2;
