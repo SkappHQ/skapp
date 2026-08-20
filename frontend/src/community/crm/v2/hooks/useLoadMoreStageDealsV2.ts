@@ -1,4 +1,7 @@
 import { AxiosError } from "axios";
+import { useCallback } from "react";
+
+import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
 
 import { useFetchMoreStageDeals } from "../api/CrmBoardApi";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
@@ -22,9 +25,14 @@ export const useLoadMoreStageDealsV2 = ({
     (error) => onError?.(error)
   );
 
-  const loadMore = (): void => {
-    mutate({ stageIds: [stageId], searchKeyword, page: currentPage + 1 });
-  };
+  const loadMore = useCallback((): void => {
+    mutate({
+      stageIds: [stageId],
+      searchKeyword,
+      page: currentPage + 1,
+      limit: DEFAULT_BOARD_PAGE_SIZE
+    });
+  }, [stageId, currentPage, searchKeyword, mutate]);
 
   return { loadMore, isLoadingMore: isPending };
 };

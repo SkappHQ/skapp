@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
+
 import { useGetDealsGroupedByStages } from "../api/CrmBoardApi";
 import { useBoardStageIds } from "../store/selectors";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
@@ -18,7 +20,7 @@ export const useBoardDataV2 = ({
   const stageIds = useBoardStageIds();
 
   const { data, isLoading, isFetching } = useGetDealsGroupedByStages(
-    { stageIds, searchKeyword },
+    { stageIds, searchKeyword, limit: DEFAULT_BOARD_PAGE_SIZE },
     stageIds.length > 0
   );
 
