@@ -1304,7 +1304,7 @@ public class TimeServiceImpl implements TimeService {
 	private TimeConfig createTimeConfig(TimeConfigDto.DayCapacity timeConfig) {
 		TimeConfig newTimeConfig = new TimeConfig();
 		newTimeConfig.setDay(timeConfig.day());
-		newTimeConfig.setTimeBlocks(mapper.valueToTree(timeConfig.timeBlocks()));
+		newTimeConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		newTimeConfig.setTotalHours(timeConfig.totalHours());
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
@@ -1314,15 +1314,21 @@ public class TimeServiceImpl implements TimeService {
 		return newTimeConfig;
 	}
 
-	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
-		currentConfig.setTotalHours(timeConfig.totalHours());
+	private JsonNode resolveTimeBlocks(TimeConfigDto.DayCapacity timeConfig) {
+		if (timeConfig.timeBlocks() != null && !timeConfig.timeBlocks().isEmpty()) {
+			return mapper.valueToTree(timeConfig.timeBlocks());
+		}
 
 		Map<String, Float> hoursMap = new HashMap<>();
 		hoursMap.put(TimeBlocks.MORNING_HOURS.name(), timeConfig.totalHours() / 2);
 		hoursMap.put(TimeBlocks.EVENING_HOURS.name(), timeConfig.totalHours() / 2);
+		return createTimeConfigJsonNode(hoursMap);
+	}
 
-		currentConfig.setTimeBlocks((timeConfig.timeBlocks() != null) ? (mapper.valueToTree(timeConfig.timeBlocks()))
-				: (createTimeConfigJsonNode(hoursMap)));
+	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
+		currentConfig.setTotalHours(timeConfig.totalHours());
+
+		currentConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
 		currentConfig.setStartHour(hours);
