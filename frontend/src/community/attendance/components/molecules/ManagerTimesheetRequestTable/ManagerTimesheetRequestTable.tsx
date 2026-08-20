@@ -176,7 +176,9 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           avatarUrl={timesheetRequest?.employee?.authPic as string}
           isResponsiveLayout={true}
           chipStyles={{
-            maxWidth: "15.625rem"
+            width: "fit-content",
+            maxWidth: "100%",
+            backgroundColor: "var(--color-tertiary-background)"
           }}
         />
       ),
@@ -352,6 +354,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         headers={tableHeaders}
         rows={transformToTableRows()}
         isLoading={isRequestLoading}
+        skeletonRows={5}
         minHeight="min-h-[390px]"
         emptyState={{
           title: translateText(["emptyRequestTitle"]),
