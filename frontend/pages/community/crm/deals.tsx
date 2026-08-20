@@ -5,31 +5,32 @@ import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-// --- v2 (normalized store) deal surface ---
-import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSidePanelV2/AddDealSidePanelV2";
-import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
-import DealsKanbanBoardSkeleton from "~community/crm/v2/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
-import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+// --- v1 (legacy) deal surface — active until v2 go-live ---
+import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
+import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
+import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
-// --- v1 (legacy) deal surface — kept for quick fallback ---
-// import AddDealSidePanel from "~community/crm/components/organisms/AddDealSidePanel/AddDealSidePanel";
-// import DealSidePanel from "~community/crm/components/organisms/DealSidePanel/DealSidePanel";
-// import DealsSection from "~community/crm/components/organisms/DealsSection/DealsSection";
-// import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
-// import { useCrmStore } from "~community/crm/store/store";
-// import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
+// --- v2 (normalized store) deal surface — GO-LIVE: uncomment this block, swap the
+// active store/imports below to their v2 counterparts, and delete the v1 surface above ---
+// import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
+// import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSidePanelV2/AddDealSidePanelV2";
+// import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
+// import DealsKanbanBoardSkeleton from "~community/crm/v2/components/organisms/DealsKanbanBoard/DealsKanbanBoardSkeleton";
+// import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
+// import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+// import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 
 const Deals: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStoreV2(
+  const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
     (store) => ({
       openCrmSidePanel: store.openCrmSidePanel,
       selectedDealId: store.selectedDealId,
@@ -37,7 +38,8 @@ const Deals: NextPage = () => {
     })
   );
 
-  const { isCrmInitialDataLoading } = useInitializeCrmData();
+  // GO-LIVE: uncomment for the v2 board's initial data hydration.
+  // const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const handleAddDeal = () => {
     guardCrmCreate(CrmLimitResource.DEALS, () =>
@@ -59,7 +61,18 @@ const Deals: NextPage = () => {
       module={Modules.CRM}
       onPrimaryButtonClick={handleAddDeal}
     >
-      {/* --- v2 (normalized store) deal surface --- */}
+      {/* --- v1 (legacy) deal surface — active until v2 go-live --- */}
+      <>
+        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+          {selectedDealId !== null && <DealSidePanel />}
+          <AddDealSidePanel />
+        </SidePanelWrapper>
+        <TaskModalController />
+        <DealsSection />
+      </>
+
+      {/* --- v2 (normalized store) deal surface — GO-LIVE: uncomment (and swap the
+          store/imports above) to switch on, then remove the v1 surface ---
       <>
         <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
           {selectedDealId !== null && <DealSidePanelV2 />}
@@ -70,16 +83,6 @@ const Deals: NextPage = () => {
         ) : (
           <DealsSectionV2 />
         )}
-      </>
-
-      {/* --- v1 (legacy) deal surface — uncomment (and swap the store/imports above) to fall back ---
-      <>
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
-          {selectedDealId !== null && <DealSidePanel />}
-          <AddDealSidePanel />
-        </SidePanelWrapper>
-        <TaskModalController />
-        <DealsSection />
       </>
       */}
     </ContentLayout>
