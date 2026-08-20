@@ -51,7 +51,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
       });
     }
 
-    if (isCrmDataInitialized || !isSuccess) return;
+    if (isCrmDataInitialized || !isSuccess || !data) return;
 
     setStages(toStagesRecord(data.stages));
     setOwners(toOwnersRecord(data.owners));
