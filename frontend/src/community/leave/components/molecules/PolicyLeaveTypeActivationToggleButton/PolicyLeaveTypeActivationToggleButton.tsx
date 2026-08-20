@@ -1,8 +1,8 @@
 import {
-  CheckIcon,
   CloseIcon,
   InfoIcon,
   SmallModal,
+  TickIcon,
   Toggle,
   Tooltip
 } from "@rootcodelabs/skapp-ui";
@@ -143,7 +143,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
             onClick: handleConfirm,
             disabled: isPending,
             isLoading: isPending,
-            icon: <CheckIcon />,
+            icon: <TickIcon />,
             iconPosition: "end",
             children: translateText(["confirmAndSaveBtn"])
           }
