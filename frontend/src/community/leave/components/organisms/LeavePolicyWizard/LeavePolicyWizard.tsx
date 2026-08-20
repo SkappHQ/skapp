@@ -15,7 +15,10 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useAddLeavePolicy } from "~community/leave/api/LeavePolicyApi";
+import {
+  useAddLeavePolicy,
+  useCheckLeavePolicyNameAvailability
+} from "~community/leave/api/LeavePolicyApi";
 import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
@@ -73,6 +76,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     useState<boolean>(false);
 
   const formikRef = useRef<FormikProps<LeavePolicyFormData> | null>(null);
+  const isAdvancingRef = useRef<boolean>(false);
 
   const steps = [
     translateText(["steps", "basicInfo"]),
@@ -94,14 +98,18 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     handleClose();
   };
 
+  const showDuplicatePolicyNameError = (): void => {
+    formikRef.current?.setFieldTouched("policyName", true, false);
+    formikRef.current?.setFieldError(
+      "policyName",
+      translateText(["errors", "policyNameDuplicate"])
+    );
+    setActiveStep(LeavePolicyWizardSteps.BASIC_INFO);
+  };
+
   const handleError = (error: AxiosError): void => {
     if (isDuplicatePolicyNameError(error)) {
-      formikRef.current?.setFieldTouched("policyName", true, false);
-      formikRef.current?.setFieldError(
-        "policyName",
-        translateText(["duplicateToastDescription"])
-      );
-      setActiveStep(LeavePolicyWizardSteps.BASIC_INFO);
+      showDuplicatePolicyNameError();
       return;
     }
 
@@ -119,6 +127,11 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     handleSuccess,
     handleError
   );
+
+  const {
+    mutateAsync: checkPolicyNameAvailability,
+    isPending: isCheckingPolicyName
+  } = useCheckLeavePolicyNameAvailability();
 
   const formik = useFormik<LeavePolicyFormData>({
     initialValues: { ...leavePolicyFormInitialValues, policyType },
@@ -153,7 +166,41 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     }
   };
 
-  const handleNext = async (): Promise<void> => {
+  const isPolicyNameAvailable = async (): Promise<boolean> => {
+    const checkedName = formik.values.policyName.trim();
+    const checkedLeaveType = formik.values.leaveType;
+
+    try {
+      const { isAvailable } = await checkPolicyNameAvailability({
+        name: checkedName,
+        leaveTypeId: checkedLeaveType
+      });
+
+      const currentValues = formikRef.current?.values;
+      const isStale =
+        currentValues?.policyName.trim() !== checkedName ||
+        currentValues?.leaveType !== checkedLeaveType;
+
+      if (isStale) {
+        // The field was edited while the check was in flight, so this answer
+        // is about a name the user has moved on from. Stay put rather than
+        // flagging - or advancing - the wrong name.
+        return false;
+      }
+
+      if (!isAvailable) {
+        showDuplicatePolicyNameError();
+      }
+
+      return isAvailable;
+    } catch {
+      // The check is only a shortcut to an inline error. When it fails, let the
+      // create request run so the backend stays the authority on uniqueness.
+      return true;
+    }
+  };
+
+  const advanceWizard = async (): Promise<void> => {
     const currentStepFields = STEP_FIELDS[activeStep];
     const validationErrors = await formik.validateForm();
     const hasStepError = currentStepFields.some(
@@ -170,6 +217,13 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       return;
     }
 
+    if (
+      activeStep === LeavePolicyWizardSteps.BASIC_INFO &&
+      !(await isPolicyNameAvailable())
+    ) {
+      return;
+    }
+
     if (isLastStep) {
       if (!isPending) {
         await formik.submitForm();
@@ -178,6 +232,22 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     }
 
     setActiveStep((previous) => previous + 1);
+  };
+
+  const handleNext = async (): Promise<void> => {
+    // A second click while the availability check is still in flight would run
+    // the whole flow twice. isPending covers the create call itself.
+    if (isAdvancingRef.current) {
+      return;
+    }
+
+    isAdvancingRef.current = true;
+
+    try {
+      await advanceWizard();
+    } finally {
+      isAdvancingRef.current = false;
+    }
   };
 
   const handleEditFromSummary = (step: LeavePolicyWizardSteps): void => {
@@ -232,7 +302,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
           icon={!isFirstStep ? <ArrowLeftIcon /> : undefined}
           iconPosition="start"
           onClick={handleBack}
-          disabled={isPending}
+          disabled={isPending || isCheckingPolicyName}
         >
           {translateText([isFirstStep ? "cancelBtnTxt" : "backBtnTxt"])}
         </ButtonV2>
@@ -242,7 +312,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
           icon={!isLastStep ? <ArrowRightIcon /> : undefined}
           iconPosition="end"
           onClick={handleNext}
-          disabled={isPending}
+          disabled={isPending || isCheckingPolicyName}
         >
           {isLastStep
             ? translateText([isPending ? "savingBtnTxt" : "createPolicyBtnTxt"])
