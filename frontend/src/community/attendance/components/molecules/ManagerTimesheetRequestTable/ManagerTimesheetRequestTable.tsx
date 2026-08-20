@@ -177,7 +177,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           isResponsiveLayout={true}
           chipStyles={{
             width: "fit-content",
-            maxWidth: "15.625rem",
+            maxWidth: "100%",
             backgroundColor: "var(--color-tertiary-background)"
           }}
         />
