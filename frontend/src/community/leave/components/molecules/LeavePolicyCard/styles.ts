@@ -34,15 +34,6 @@ const styles = (theme: Theme): StyleProps => ({
     gap: "1.125rem",
     overflow: "hidden"
   },
-  policyName: {
-    fontWeight: 500,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  },
-  leaveTypeName: {
-    color: theme.palette.grey[700]
-  },
   amount: {
     flexDirection: "row",
     alignItems: "baseline"
@@ -50,11 +41,6 @@ const styles = (theme: Theme): StyleProps => ({
   heading: {
     fontWeight: 400,
     fontSize: "2.5rem",
-    lineHeight: "2.5rem"
-  },
-  unlimited: {
-    fontWeight: 500,
-    fontSize: "1.5rem",
     lineHeight: "2.5rem"
   },
   rightContent: {

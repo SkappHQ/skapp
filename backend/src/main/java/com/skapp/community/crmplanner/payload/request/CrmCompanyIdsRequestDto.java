@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CrmCompanyBatchRequestDto {
+public class CrmCompanyIdsRequestDto {
 
 	private List<Long> ids;
 

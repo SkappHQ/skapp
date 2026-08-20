@@ -25,16 +25,12 @@ const styles = (theme: Theme) => ({
     flex: 1,
     maxWidth: "auto"
   },
-  innerBoxWrapper: {
-    display: "flex",
+  timeBadgeContentStyles: {
+    display: "inline-flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: "0.5rem",
-    bgcolor: "white",
-    paddingX: "1.25rem",
-    paddingY: "0.625rem",
-    borderRadius: "4rem",
     [theme.breakpoints.down("md")]: {
       flexDirection: "column"
     }
@@ -81,24 +77,6 @@ const styles = (theme: Theme) => ({
     flex: 1,
     maxWidth: "auto"
   },
-  workHoursTextStyle: (
-    timesheetRequest: TimeRequestDataType,
-    totalHours: number
-  ) => ({
-    letterSpacing: "0.03em",
-    color: theme.palette.text.secondary,
-    whiteSpace: "nowrap",
-    textAlign: "center",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    backgroundColor:
-      timesheetRequest?.workHours >= totalHours
-        ? theme.palette.grey[200]
-        : theme.palette.error.main,
-    py: "0.25rem",
-    px: "1rem",
-    borderRadius: "4rem"
-  }),
   statusOuterBoxStyles: {
     display: "flex",
     flexDirection: "row",
@@ -110,16 +88,6 @@ const styles = (theme: Theme) => ({
       justifyContent: "center"
     },
     position: "relative"
-  },
-  iconChipStyles: {
-    color: theme.palette.text.secondary,
-    minWidth: "6.875rem",
-    justifyContent: "center",
-    pr: "0rem",
-    [theme.breakpoints.down("lg")]: {
-      minWidth: "0rem",
-      gap: "1rem"
-    }
   },
   kebabMenuBoxStyle: {
     position: "absolute",

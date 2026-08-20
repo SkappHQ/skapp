@@ -1,15 +1,11 @@
-import { DateTime, DurationLike } from "luxon";
+import { DateTime } from "luxon";
 
 import { MEDIUM_DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { ACCRUAL_PREVIEW_ROW_LIMIT } from "~community/leave/constants/leavePolicyConstants";
 import {
-  ACCRUAL_PREVIEW_ROW_LIMIT,
-  CALENDAR_UNIT,
-  INTERVAL_STEP
-} from "~community/leave/constants/leavePolicyConstants";
-import {
+  AccrualFrequency,
   AccrualPreviewRow,
   AccrualTiming,
-  CalendarUnit,
   FirstAccrualType,
   LeavePolicyType
 } from "~community/leave/types/LeavePolicyTypes";
@@ -17,6 +13,11 @@ import {
 interface AccrualEvent {
   date: DateTime;
   days: number;
+}
+
+interface AccrualPeriod {
+  start: DateTime;
+  end: DateTime;
 }
 
 interface ScheduleConfig {
@@ -27,39 +28,75 @@ interface ScheduleConfig {
   lastYear: number | null;
 }
 
-const roundToTwoDecimals = (value: number): number =>
-  Math.round(value * 100) / 100;
+const roundToHalfDay = (value: number): number => Math.round(value * 2) / 2;
 
-const eventDateFor = (
-  isAtPeriodStart: boolean,
-  isFirstPeriod: boolean,
+const toPeriod = (start: DateTime, end: DateTime): AccrualPeriod => ({
+  start,
+  end
+});
+
+const periodContaining = (
+  frequency: AccrualFrequency,
   accrualStartDate: DateTime,
-  periodStart: DateTime,
-  periodEnd: DateTime
-): DateTime => {
-  if (!isAtPeriodStart) return periodEnd;
-  return isFirstPeriod ? accrualStartDate : periodStart;
+  date: DateTime
+): AccrualPeriod => {
+  switch (frequency) {
+    case AccrualFrequency.DAILY:
+      return toPeriod(date, date);
+    case AccrualFrequency.WEEKLY: {
+      const start = date.startOf("week");
+      return toPeriod(start, start.plus({ weeks: 1 }).minus({ days: 1 }));
+    }
+    case AccrualFrequency.EVERY_OTHER_WEEK: {
+      const anchor = accrualStartDate.startOf("week");
+      const weeksElapsed = Math.floor(date.diff(anchor, "weeks").weeks);
+      const start = anchor.plus({ weeks: weeksElapsed - (weeksElapsed % 2) });
+      return toPeriod(start, start.plus({ weeks: 2 }).minus({ days: 1 }));
+    }
+    case AccrualFrequency.TWICE_A_MONTH:
+      return date.day <= 15
+        ? toPeriod(date.set({ day: 1 }), date.set({ day: 15 }))
+        : toPeriod(date.set({ day: 16 }), date.endOf("month").startOf("day"));
+    case AccrualFrequency.MONTHLY:
+      return toPeriod(
+        date.startOf("month"),
+        date.endOf("month").startOf("day")
+      );
+    case AccrualFrequency.QUARTERLY: {
+      const start = date.startOf("quarter");
+      return toPeriod(start, start.plus({ months: 3 }).minus({ days: 1 }));
+    }
+    case AccrualFrequency.TWICE_A_YEAR: {
+      const start = date.set({ month: date.month <= 6 ? 1 : 7, day: 1 });
+      return toPeriod(start, start.plus({ months: 6 }).minus({ days: 1 }));
+    }
+    case AccrualFrequency.YEARLY:
+      return toPeriod(date.startOf("year"), date.endOf("year").startOf("day"));
+    case AccrualFrequency.ON_ANNIVERSARY: {
+      const yearsElapsed = Math.floor(
+        date.diff(accrualStartDate, "years").years
+      );
+      return toPeriod(
+        accrualStartDate.plus({ years: yearsElapsed }),
+        accrualStartDate.plus({ years: yearsElapsed + 1 }).minus({ days: 1 })
+      );
+    }
+  }
 };
 
-const firstPeriodDays = (
-  perPeriod: number,
-  accrualStartDate: DateTime,
-  periodStart: DateTime,
-  periodEnd: DateTime,
-  calendarUnit: CalendarUnit
+const proration = (
+  period: AccrualPeriod,
+  accrualStartDate: DateTime
 ): number => {
-  const fullPeriodDays =
-    periodEnd.diff(periodStart.startOf(calendarUnit), "days").days + 1;
-  const coveredDays = periodEnd.diff(accrualStartDate, "days").days + 1;
-  const coverageFraction =
-    fullPeriodDays > 0
-      ? Math.min(1, Math.max(0, coveredDays / fullPeriodDays))
-      : 1;
-  return roundToTwoDecimals(perPeriod * coverageFraction);
+  if (accrualStartDate.toMillis() <= period.start.toMillis()) return 1;
+  const periodLength = period.end.diff(period.start, "days").days + 1;
+  const earnedLength = period.end.diff(accrualStartDate, "days").days + 1;
+  if (periodLength <= 0 || earnedLength <= 0) return 0;
+  return earnedLength / periodLength;
 };
 
-const calendarEvents = (
-  calendarUnit: CalendarUnit,
+const accrualEventsFor = (
+  frequency: AccrualFrequency,
   config: ScheduleConfig
 ): AccrualEvent[] => {
   const {
@@ -70,8 +107,7 @@ const calendarEvents = (
     lastYear
   } = config;
   const accrualEvents: AccrualEvent[] = [];
-  let periodStart = accrualStartDate;
-  let periodEnd = accrualStartDate.endOf(calendarUnit);
+  let period = periodContaining(frequency, accrualStartDate, accrualStartDate);
 
   for (
     let periodIndex = 0;
@@ -79,51 +115,25 @@ const calendarEvents = (
     periodIndex++
   ) {
     const isFirstPeriod = periodIndex === 0;
-    const eventDate = eventDateFor(
-      isAtPeriodStart,
-      isFirstPeriod,
-      accrualStartDate,
-      periodStart,
-      periodEnd
-    );
+    const creditDate = isAtPeriodStart ? period.start : period.end;
+    const eventDate =
+      creditDate.toMillis() < accrualStartDate.toMillis()
+        ? accrualStartDate
+        : creditDate;
     if (lastYear != null && eventDate.year > lastYear) break;
     const eventDays =
       isFirstPeriod && isFirstPeriodProrated
-        ? firstPeriodDays(
-            perPeriod,
-            accrualStartDate,
-            periodStart,
-            periodEnd,
-            calendarUnit
-          )
+        ? perPeriod * proration(period, accrualStartDate)
         : perPeriod;
     accrualEvents.push({ date: eventDate, days: eventDays });
-    periodStart = periodEnd.plus({ days: 1 }).startOf(calendarUnit);
-    periodEnd = periodStart.endOf(calendarUnit);
-  }
-  return accrualEvents;
-};
 
-const intervalEvents = (
-  interval: DurationLike,
-  config: ScheduleConfig
-): AccrualEvent[] => {
-  const { accrualStartDate, perPeriod, isAtPeriodStart, lastYear } = config;
-  const accrualEvents: AccrualEvent[] = [];
-  let periodStart = accrualStartDate;
-
-  for (
-    let periodIndex = 0;
-    periodIndex < ACCRUAL_PREVIEW_ROW_LIMIT;
-    periodIndex++
-  ) {
-    const nextPeriodStart = periodStart.plus(interval);
-    const eventDate = isAtPeriodStart
-      ? periodStart
-      : nextPeriodStart.minus({ days: 1 });
-    if (lastYear != null && eventDate.year > lastYear) break;
-    accrualEvents.push({ date: eventDate, days: perPeriod });
-    periodStart = nextPeriodStart;
+    const nextPeriod = periodContaining(
+      frequency,
+      accrualStartDate,
+      period.end.plus({ days: 1 })
+    );
+    if (nextPeriod.start.toMillis() <= period.start.toMillis()) break;
+    period = nextPeriod;
   }
   return accrualEvents;
 };
@@ -133,20 +143,29 @@ const toPreviewRows = (
   capDays: number | null
 ): AccrualPreviewRow[] => {
   const rows: AccrualPreviewRow[] = [];
+  let cycleYear: number | null = null;
   let balance = 0;
+  let previousRoundedBalance = 0;
   for (const event of accrualEvents) {
-    balance = roundToTwoDecimals(balance + event.days);
-    if (capDays != null) balance = Math.min(balance, capDays);
+    if (cycleYear != null && event.date.year !== cycleYear) {
+      balance = 0;
+      previousRoundedBalance = 0;
+    }
+    cycleYear = event.date.year;
+    balance += event.days;
+    const halfDayBalance = roundToHalfDay(balance);
+    const roundedBalance =
+      capDays != null ? Math.min(halfDayBalance, capDays) : halfDayBalance;
     rows.push({
       date: event.date.toFormat(MEDIUM_DATE_FORMAT),
-      days: roundToTwoDecimals(event.days),
-      balance
+      days: roundedBalance - previousRoundedBalance,
+      balance: roundedBalance
     });
-    if (capDays != null && balance >= capDays) break;
+    previousRoundedBalance = roundedBalance;
+    if (capDays != null && roundedBalance >= capDays) break;
   }
   return rows;
 };
-
 
 export const buildAccrualPreview = (
   policy: LeavePolicyType,
@@ -179,10 +198,5 @@ export const buildAccrualPreview = (
       ? policy.accrualCapDays
       : null;
 
-  const calendarUnit = CALENDAR_UNIT[frequency];
-  const accrualEvents = calendarUnit
-    ? calendarEvents(calendarUnit, config)
-    : intervalEvents(INTERVAL_STEP[frequency] ?? { months: 1 }, config);
-
-  return toPreviewRows(accrualEvents, capDays);
+  return toPreviewRows(accrualEventsFor(frequency, config), capDays);
 };

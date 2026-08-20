@@ -276,7 +276,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns all matching employees, including pending ones, ordered by name")
+		@DisplayName("Get today's birthdays with ORGANIZATION scope - Returns all matching employees ordered by name")
 		void getTodayBirthdayNotifications_WithOrganizationScope_ReturnsAllMatchingEmployeesOrderedByName()
 				throws Exception {
 			seedConfig(true, true, false);
@@ -285,10 +285,7 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 			giveBirthdayOn(SECOND_OUTSIDER_EMPLOYEE_ID, today);
 
 			mutateEmployee(OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("alpha"));
-			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID, employee -> {
-				employee.setFirstName("Alpha");
-				employee.setAccountStatus(AccountStatus.PENDING);
-			});
+			mutateEmployee(SECOND_OUTSIDER_EMPLOYEE_ID, employee -> employee.setFirstName("Alpha"));
 
 			assertSuccessful(performGetTodayRequest(currentUserToken))
 				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(3))

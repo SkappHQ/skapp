@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.controller.v2;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmCompanyBatchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyMetricRequestDto;
 import com.skapp.community.crmplanner.service.v2.CrmCompanyServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,8 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,16 +27,6 @@ public class CrmCompanyControllerV2 {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
 		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto);
-		return new ResponseEntity<>(responseDto, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get companies by ids",
-			description = "Returns the base details of the companies matching the given ids, "
-					+ "used to hydrate the client's company store. Soft-deleted companies are omitted.")
-	@PostMapping("/batch")
-	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getCompaniesByIds(@RequestBody CrmCompanyBatchRequestDto requestDto) {
-		ResponseEntityDto responseDto = companyService.getCompaniesByIds(requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

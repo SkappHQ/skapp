@@ -16,7 +16,8 @@ import {
   useGetAbsenceRate,
   useGetAvailability,
   useGetLeaveTypeBreakdownChartData,
-  useGetPendingLeavesData
+  useGetPendingLeavesData,
+  useGetResourceAvailability
 } from "~community/leave/api/LeaveDashboard";
 import AvailabilityCalendarWidget from "~community/leave/components/molecules/AvailabilityCalendar/AvailabilityCalendarWidget";
 import AvailableChip from "~community/leave/components/molecules/LeaveDashboardChips/AvailableChip";
@@ -24,6 +25,10 @@ import AwayChip from "~community/leave/components/molecules/LeaveDashboardChips/
 import HolidayChip from "~community/leave/components/molecules/LeaveDashboardChips/HolidayChip";
 import LeaveTypeBreakdownChart from "~community/leave/components/molecules/LeaveUtilizationGraph/LeaveTypeBreakdownChart";
 import { useLeaveStore } from "~community/leave/store/store";
+import {
+  LeaveRequest,
+  ResourceAvailabilityRecord
+} from "~community/leave/types/ResourceAvailabilityTypes";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
 
@@ -31,6 +36,11 @@ import styles from "./styles";
 
 const LeaveDashboard = (): JSX.Element => {
   const translateText = useTranslator("leaveModule", "dashboard");
+  const availabilityModalText = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "teamAvailabilityModal"
+  );
   const [teamId, setTeamId] = useState<string | number>("");
   const [teamName, setTeamName] = useState<string>(translateText(["all"]));
   const [isFetchingEnabled, setIsFetchingEnabled] = useState<boolean>(false);
@@ -41,12 +51,25 @@ const LeaveDashboard = (): JSX.Element => {
   const {
     viewedPendingLeaveCount,
     setViewedPendingLeaveCount,
-    setPendingLeaveCount
+    setPendingLeaveCount,
+    setIsManagerModal,
+    setIsOnLeaveModalOpen,
+    setOnLeaveModalTitle,
+    setTodaysAvailability
   } = useLeaveStore((state) => state);
+
+  const today = DateTime.now().toFormat(DATE_FORMAT);
 
   const { data: todaysAvailability } = useGetAvailability(
     teamId,
-    DateTime.now().toFormat(DATE_FORMAT),
+    today,
+    isFetchingEnabled
+  );
+
+  const { data: todaysResourceAvailability } = useGetResourceAvailability(
+    teamId,
+    today,
+    today,
     isFetchingEnabled
   );
   const { data: pendingLeaves } = useGetPendingLeavesData(teamId);
@@ -65,6 +88,18 @@ const LeaveDashboard = (): JSX.Element => {
 
   const newPendingRequests =
     pendingLeaves?.[0]?.items?.length - viewedPendingLeaveCount;
+
+  const todaysAwayEmployees: LeaveRequest[] =
+    todaysResourceAvailability?.find(
+      (record: ResourceAvailabilityRecord) => record.actualDate === today
+    )?.leaveRequests ?? [];
+
+  const handleTodaysAvailabilityModalOpen = (): void => {
+    setTodaysAvailability(todaysAwayEmployees);
+    setOnLeaveModalTitle(availabilityModalText(["awayToday"]));
+    setIsOnLeaveModalOpen(true);
+    setIsManagerModal(true);
+  };
 
   useEffect(() => {
     if (user) setIsFetchingEnabled(true);
@@ -138,7 +173,15 @@ const LeaveDashboard = (): JSX.Element => {
       </Box>
       <Grid container spacing={1}>
         <Grid sx={{ width: { xs: "100%", md: "32.5%" } }}>
-          <AnalyticCard title={translateText(["todayAvailability"]) ?? ""}>
+          <AnalyticCard
+            title={translateText(["todayAvailability"]) ?? ""}
+            isExpandable={!!todaysAvailability}
+            onExpand={handleTodaysAvailabilityModalOpen}
+            accessibility={{
+              tabIndex: 0,
+              role: "button"
+            }}
+          >
             {todaysAvailability && resourceDetails()}
           </AnalyticCard>
         </Grid>

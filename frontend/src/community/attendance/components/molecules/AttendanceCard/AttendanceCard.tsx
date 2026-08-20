@@ -4,6 +4,7 @@ import { FC } from "react";
 
 import {
   ClockInOutGraphTypes,
+  ClockInSummaryFilterTypes,
   ClockInSummaryTypes
 } from "~community/attendance/enums/dashboardEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
@@ -31,15 +32,37 @@ const AttendanceCard: FC<Props> = ({
   const { setClockInType } = useAttendanceStore((state) => state);
   const theme = useTheme();
 
+  const handleCardClick = (): void => {
+    type !== ClockInOutGraphTypes.CLOCK_IN
+      ? setClockInType({
+          [ClockInSummaryFilterTypes.CLOCK_INS]: [
+            ClockInSummaryTypes.LATE_CLOCK_INS
+          ]
+        })
+      : setClockInType({});
+
+    router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
+  };
+
   return (
     <>
       <Box
+        tabIndex={0}
+        role="button"
+        aria-label={iconAriaLabel}
         sx={{
           flex: 1,
           backgroundColor: "grey.50",
           p: 1.5,
           borderRadius: 1.5,
-          height: "100%"
+          height: "100%",
+          cursor: "pointer"
+        }}
+        onClick={handleCardClick}
+        onKeyDown={(e) => {
+          if (shouldActivateButton(e.key)) {
+            handleCardClick();
+          }
         }}
       >
         <>
@@ -58,34 +81,7 @@ const AttendanceCard: FC<Props> = ({
             >
               {title}
             </Typography>
-            <Box
-              tabIndex={0}
-              role="button"
-              aria-label={iconAriaLabel}
-              sx={{ cursor: "pointer" }}
-              onClick={() => {
-                type === ClockInOutGraphTypes.CLOCK_IN
-                  ? setClockInType({})
-                  : setClockInType({
-                      "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
-                    });
-
-                router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
-              }}
-              onKeyDown={(e) => {
-                if (shouldActivateButton(e.key)) {
-                  type === ClockInOutGraphTypes.CLOCK_IN
-                    ? setClockInType({})
-                    : setClockInType({
-                        "Clock-ins": [ClockInSummaryTypes.LATE_CLOCK_INS]
-                      });
-
-                  router.replace(ROUTES.DASHBOARD.ATTENDANCE.CLOCK_IN_SUMMARY);
-                }
-              }}
-            >
-              <Icon name={IconName.NEW_WINDOW_ICON} />
-            </Box>
+            <Icon name={IconName.NEW_WINDOW_ICON} />
           </Box>
           <Stack direction="row" justifyContent="left">
             <div style={{ display: "flex", alignItems: "baseline" }}>

@@ -1,6 +1,6 @@
 import { Box, Stack, Tooltip, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { InfinityIcon, ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { KeyboardEvent, MouseEvent, forwardRef, useState } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -118,24 +118,23 @@ const LeavePolicyCard = forwardRef<HTMLDivElement, Props>(
         })}
       >
         <Stack sx={classes.leftContent}>
-          <Stack>
-            <Typography variant="body1" sx={classes.policyName}>
-              {policyName} &nbsp;
-              {isMouseOn && isActionable && getEmoji(leaveType.emojiCode)}
-            </Typography>
-            <Typography variant="caption" sx={classes.leaveTypeName}>
-              {leaveType.name}
-            </Typography>
-          </Stack>
+          <Typography variant="body1">
+            {leaveType.name} &nbsp;
+            {isMouseOn && isActionable && getEmoji(leaveType.emojiCode)}
+          </Typography>
           <Stack>
             <Stack sx={classes.amount}>
-              <Typography
-                sx={isUnlimited ? classes.unlimited : classes.heading}
-              >
-                {balanceLabel}
-              </Typography>
-              {!isUnlimited && (
-                <Typography variant="body2">/ {totalDaysAllocated}</Typography>
+              {isUnlimited ? (
+                <Box component="span" role="img" aria-label={balanceLabel}>
+                  <InfinityIcon width="32" height="32" />
+                </Box>
+              ) : (
+                <>
+                  <Typography sx={classes.heading}>{balanceLabel}</Typography>
+                  <Typography variant="body2">
+                    / {totalDaysAllocated}
+                  </Typography>
+                </>
               )}
             </Stack>
             <Typography component="div" variant="caption">
