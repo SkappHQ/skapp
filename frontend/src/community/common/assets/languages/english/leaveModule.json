@@ -782,6 +782,8 @@
       "leaveTypeTitle": "Leave Type",
       "typeLeaveType": "type",
       "dateTitle": "Date",
+      "fromDatePlaceholder": "From",
+      "toDatePlaceholder": "To",
       "roleManagers": "managers",
       "applyButtonText": "Apply filters",
       "resetButtonText": "Reset filters"
