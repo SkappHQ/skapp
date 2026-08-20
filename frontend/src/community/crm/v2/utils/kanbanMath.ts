@@ -1,10 +1,6 @@
 import type { ClientRect } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
-// Kanban drag math for the v2 board, expressed over `number[]` deal-id arrays
-// (the store keeps `board[stageId].dealIds`, not deal objects). Ported from v1
-// `kanbanUtil` — same neighbour/insert-index logic, ids instead of slice deals.
-
 export interface CrmBoardNeighbours {
   previousDealId: number | null;
   nextDealId: number | null;
@@ -14,9 +10,6 @@ export interface CrmBoardReorderResult extends CrmBoardNeighbours {
   orderedDealIds: number[];
 }
 
-// Reorder within a single column. Returns the next id order plus the neighbours
-// of the moved deal at its landing position (for the reorder-within-stage
-// payload), or null when the move is a no-op / ids are missing.
 export const computeReorderWithinStage = (
   dealIds: number[],
   activeDealId: number,
@@ -39,8 +32,6 @@ export const computeReorderWithinStage = (
   };
 };
 
-// Index in the target column where the dragged card should land, disambiguating
-// above/below the hovered card by vertical centre when both rects are known.
 export const computeInsertIndex = (
   targetDealIds: number[],
   overDealId: number,
@@ -55,8 +46,6 @@ export const computeInsertIndex = (
   return overIndex;
 };
 
-// Resolve the insert index for a cross-stage move: dropping on the column
-// container itself appends; dropping over a card uses the centre comparison.
 export const resolveInsertIndex = (
   isOverStageContainer: boolean,
   targetDealIds: number[],
@@ -79,8 +68,6 @@ export const resolveInsertIndex = (
   );
 };
 
-// Neighbours around an insert index in the target column (for the
-// move-between-stages payload). Assumes the moved deal is not yet inserted.
 export const computeMoveNeighbors = (
   targetDealIds: number[],
   insertIndex: number

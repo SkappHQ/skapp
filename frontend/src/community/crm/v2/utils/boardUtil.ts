@@ -10,18 +10,6 @@ import {
 } from "../types/CrmTypes";
 import { upsertDeals } from "./dealUtil";
 
-// Board (Kanban) helpers for the v2 normalized store.
-//
-// The board never stores deal objects — each column keeps only ordered
-// `dealIds`, and the cards resolve against the shared `deals`/`owners`/
-// `contacts`/`companies` records at render. Every write is a read-modify-write
-// over the coarse `setBoardColumn` setter, which replaces the WHOLE `board`
-// record, so each helper computes the next board and sets it in one shot.
-
-// Slim scalar board card -> store entity. Stamps the stageId (implied by the
-// group, absent on the wire) and folds taskCount into openTasksCount. Fields the
-// board omits (description/orderIndex/closingAt) are left undefined so a
-// merge-by-id upsert preserves them from an existing full deal.
 export const mapBoardDealToEntity = (
   deal: CrmBoardDealResponse,
   stageId: number
@@ -44,16 +32,11 @@ const toColumn = (group: CrmDealsByStagesResponse): CrmBoardColumn => ({
   hasNextPage: group.hasNextPage
 });
 
-// Merge new ids after the existing ones, dropping any already present (paginated
-// pages can overlap).
 const appendDealIds = (existing: number[], incoming: number[]): number[] => {
   const seen = new Set(existing);
   return [...existing, ...incoming.filter((id) => !seen.has(id))];
 };
 
-// Ingest one or more stage groups. `append: false` (default) replaces each
-// column (first page / filter change); `append: true` appends to the existing
-// column's ids and refreshes its pagination meta (load-more).
 export const ingestBoardStageDeals = (
   groups: CrmDealsByStagesResponse[],
   { append = false }: { append?: boolean } = {}
@@ -76,17 +59,9 @@ export const ingestBoardStageDeals = (
   }
   store.setBoardColumn(nextBoard);
 
-  // Keep the flat `dealIds` ordering (what the list/table view reads) filled from
-  // the same load, so `dealIds` is the single thing the UI renders and switching
-  // to the list view needs no refetch. A full board load (append: false) replaces
-  // it with the board's flattened stage order; a per-stage load-more (append:
-  // true) appends the new ids (deduped).
   const incomingIds = entities
     .map((deal) => deal.id)
     .filter((id): id is number => id != null);
-  // Re-read dealIds from fresh state: the `store` snapshot above predates the
-  // upsertDeals/setBoardColumn writes, so the append path must merge against the
-  // current dealIds, matching the contract upsertDeals documents for itself.
   store.setDealIds(
     append
       ? appendDealIds(useCrmStoreV2.getState().dealIds, incomingIds)
@@ -94,7 +69,6 @@ export const ingestBoardStageDeals = (
   );
 };
 
-// Which stage column currently holds a given deal id (null if none).
 export const findStageIdByDealId = (
   board: CrmBoardRecord,
   dealId: number
@@ -105,7 +79,6 @@ export const findStageIdByDealId = (
   return null;
 };
 
-// Replace a single column's ordering (optimistic reorder within a stage).
 export const reorderDealInColumn = (
   stageId: number,
   orderedDealIds: number[]
@@ -119,9 +92,6 @@ export const reorderDealInColumn = (
   });
 };
 
-// Move a deal across two columns at `insertIndex` (optimistic cross-stage move).
-// Splices the id out of the source column and into the target, adjusts both
-// totals, and restamps the deal's stageId in the shared record.
 export const moveDealBetweenColumns = ({
   dealId,
   fromStageId,
@@ -164,8 +134,6 @@ export const moveDealBetweenColumns = ({
   }
 };
 
-// Add a freshly created deal to its stage column (id appended to the end).
-// Upserts the deal into the shared record first so the card can resolve.
 export const addDealToColumn = (deal: CrmDealEntity): void => {
   if (deal.id == null || deal.stageId == null) return;
   upsertDeals([deal]);
@@ -183,8 +151,6 @@ export const addDealToColumn = (deal: CrmDealEntity): void => {
   });
 };
 
-// Drop a deal id from whichever column holds it (board-only; removing it from
-// the shared `deals` record is a separate deal-level concern).
 export const removeDealFromBoard = (dealId: number): void => {
   const { board, setBoardColumn } = useCrmStoreV2.getState();
   let changed = false;
