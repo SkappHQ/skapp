@@ -1,7 +1,8 @@
 import { CircularProgress } from "@mui/material";
-import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
+import { Avatar, AvatarChip, Checkbox } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import {
+  FC,
   MouseEvent,
   useCallback,
   useEffect,
@@ -12,6 +13,7 @@ import {
 
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -32,12 +34,56 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
-import useS3Download from "~enterprise/common/hooks/useS3Download";
+
+const MAX_VISIBLE_AVATARS = 4;
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
 }
+
+const getEmployeeName = (employee: AllEmployeeDataType): string =>
+  concatStrings([employee.firstName, employee.lastName]).trim();
+
+const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
+  employee
+}) => {
+  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+
+  return (
+    <div className="w-fit min-w-0 max-w-full">
+      <AvatarChip
+        avatarProps={{
+          id: String(employee.employeeId),
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          src: imageUrl ?? "",
+          size: "sm"
+        }}
+        label={getEmployeeName(employee)}
+      />
+    </div>
+  );
+};
+
+const EmployeeGroupAvatar: FC<{ employee: AllEmployeeDataType }> = ({
+  employee
+}) => {
+  const imageUrl = useGetImageUrl(employee.authPic ?? "");
+  const employeeName = getEmployeeName(employee);
+
+  return (
+    <Avatar
+      id={String(employee.employeeId)}
+      firstName={employee.firstName}
+      lastName={employee.lastName}
+      src={imageUrl ?? ""}
+      alt={employeeName}
+      title={employeeName}
+      size="sm"
+    />
+  );
+};
 
 const WorkLocationEmployeeSelector = ({
   formik,
@@ -205,27 +251,6 @@ const WorkLocationEmployeeSelector = ({
     ? allEmployees.length
     : selectedIds.length;
 
-  const { s3FileUrls, downloadS3File } = useS3Download();
-
-  useEffect(() => {
-    for (const emp of [...selectedEmployees, ...displayEmployees]) {
-      if (emp.authPic && !s3FileUrls[emp.authPic]) {
-        downloadS3File({ filePath: emp.authPic, isProfilePic: true });
-      }
-    }
-  }, [selectedEmployees, displayEmployees]);
-
-  const getEmployeeAvatarProps = (emp: AllEmployeeDataType) => ({
-    id: String(emp.employeeId),
-    firstName: emp.firstName,
-    lastName: emp.lastName?.trim(),
-    src: emp.authPic ? s3FileUrls[emp.authPic] : undefined,
-    size: "sm" as const
-  });
-
-  const getEmployeeName = (emp: AllEmployeeDataType) =>
-    concatStrings([emp.firstName, emp.lastName?.trim() ?? ""]).trim();
-
   useEffect(() => {
     if (boxRef.current) {
       setBoxWidth(boxRef.current.clientWidth);
@@ -264,17 +289,8 @@ const WorkLocationEmployeeSelector = ({
     }
   };
 
-  const renderEmployeeChip = (emp: AllEmployeeDataType) => (
-    <div key={emp.employeeId} className="w-fit max-w-full min-w-0">
-      <AvatarChip
-        avatarProps={getEmployeeAvatarProps(emp)}
-        label={getEmployeeName(emp)}
-      />
-    </div>
-  );
-
   const renderAllEmployeesChip = () => {
-    const allEmployeesLabel = translateText(["form.allEmployees"]).trim();
+    const allEmployeesLabel = translateText(["form.allEmployees"]);
 
     return (
       <div className="w-fit max-w-full">
@@ -306,17 +322,34 @@ const WorkLocationEmployeeSelector = ({
     if (selectedCount <= 2) {
       return (
         <div className="flex min-w-0 gap-2">
-          {selectedEmployees.map(renderEmployeeChip)}
+          {selectedEmployees.map((emp) => (
+            <EmployeeAvatarChip key={emp.employeeId} employee={emp} />
+          ))}
         </div>
       );
     }
 
+    const visibleEmployees = selectedEmployees.slice(0, MAX_VISIBLE_AVATARS);
+    const remainingEmployees = selectedEmployees.slice(MAX_VISIBLE_AVATARS);
+
     return (
-      <AvatarGroup
-        avatars={selectedEmployees.map(getEmployeeAvatarProps)}
-        maxVisible={4}
-        ariaLabel={selectedEmployees.map(getEmployeeName).join(", ")}
-      />
+      <div
+        className="flex -space-x-3"
+        role="group"
+        aria-label={selectedEmployees.map(getEmployeeName).join(", ")}
+      >
+        {visibleEmployees.map((emp) => (
+          <EmployeeGroupAvatar key={emp.employeeId} employee={emp} />
+        ))}
+        {remainingEmployees.length > 0 && (
+          <Avatar
+            id="selected-employees-surplus"
+            count={remainingEmployees.length}
+            title={remainingEmployees.map(getEmployeeName).join(", ")}
+            size="sm"
+          />
+        )}
+      </div>
     );
   };
 
@@ -405,7 +438,7 @@ const WorkLocationEmployeeSelector = ({
                       }}
                     >
                       <Checkbox checked={true} />
-                      {renderEmployeeChip(emp)}
+                      <EmployeeAvatarChip employee={emp} />
                     </div>
                   );
                 })}
@@ -453,7 +486,7 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    {renderEmployeeChip(emp)}
+                    <EmployeeAvatarChip employee={emp} />
                   </div>
                 );
               })}
