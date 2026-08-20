@@ -8,6 +8,7 @@ import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { FC } from "react";
 
+import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -127,26 +128,38 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
             <p className="subtitle1 text-secondary-text">
               {translateText(["leaveTypeLabel"])}
             </p>
-            <div className="flex items-center rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-2">
-              <LeaveTypeChip
-                name={policy.leaveTypeName}
-                emojiCode={policy.leaveTypeEmoji}
-                className="bg-white px-4 py-2"
-                isDisabled
-              />
-            </div>
+            <Tooltip
+              id="edit-policy-leave-type-tooltip"
+              title={translateText(["leaveTypeTooltip"])}
+              spanStyles={{ width: "100%", cursor: "default" }}
+            >
+              <div className="flex items-center rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-2">
+                <LeaveTypeChip
+                  name={policy.leaveTypeName}
+                  emojiCode={policy.leaveTypeEmoji}
+                  className="bg-white px-4 py-2"
+                  isDisabled
+                />
+              </div>
+            </Tooltip>
           </div>
           <div className="flex flex-col gap-1.5">
             <p className="subtitle1 text-secondary-text">
               {translateText(["entitlementTypeLabel"])}
             </p>
-            <div className="rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-3">
-              <p className="body1 text-tertiary-text">
-                {policy.policyType === PolicyType.ACCRUAL
-                  ? translateCommonText(["accrual"])
-                  : translateCommonText(["flexible"])}
-              </p>
-            </div>
+            <Tooltip
+              id="edit-policy-entitlement-type-tooltip"
+              title={translateText(["entitlementTypeTooltip"])}
+              spanStyles={{ width: "100%", cursor: "default" }}
+            >
+              <div className="rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-3">
+                <p className="body1 text-tertiary-text">
+                  {policy.policyType === PolicyType.ACCRUAL
+                    ? translateCommonText(["accrual"])
+                    : translateCommonText(["flexible"])}
+                </p>
+              </div>
+            </Tooltip>
           </div>
         </div>
       }
