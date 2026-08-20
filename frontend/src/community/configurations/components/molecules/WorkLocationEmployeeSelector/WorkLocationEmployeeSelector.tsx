@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { Checkbox } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, AvatarGroup, Checkbox } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import {
   MouseEvent,
@@ -10,12 +10,11 @@ import {
   useState
 } from "react";
 
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   WorkLocationEmployee,
   WorkLocationFormValues
@@ -33,6 +32,7 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
+import useS3Download from "~enterprise/common/hooks/useS3Download";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -205,6 +205,27 @@ const WorkLocationEmployeeSelector = ({
     ? allEmployees.length
     : selectedIds.length;
 
+  const { s3FileUrls, downloadS3File } = useS3Download();
+
+  useEffect(() => {
+    for (const emp of [...selectedEmployees, ...displayEmployees]) {
+      if (emp.authPic && !s3FileUrls[emp.authPic]) {
+        downloadS3File({ filePath: emp.authPic, isProfilePic: true });
+      }
+    }
+  }, [selectedEmployees, displayEmployees]);
+
+  const getEmployeeAvatarProps = (emp: AllEmployeeDataType) => ({
+    id: String(emp.employeeId),
+    firstName: emp.firstName,
+    lastName: emp.lastName?.trim(),
+    src: emp.authPic ? s3FileUrls[emp.authPic] : undefined,
+    size: "sm" as const
+  });
+
+  const getEmployeeName = (emp: AllEmployeeDataType) =>
+    concatStrings([emp.firstName, emp.lastName?.trim() ?? ""]).trim();
+
   useEffect(() => {
     if (boxRef.current) {
       setBoxWidth(boxRef.current.clientWidth);
@@ -243,14 +264,31 @@ const WorkLocationEmployeeSelector = ({
     }
   };
 
-  const renderAllEmployeesChip = () => (
-    <AvatarChip
-      firstName={translateText(["form.allEmployees"]).trim()}
-      lastName=""
-      avatarUrl={undefined}
-      isTooltipEnabled
-    />
+  const renderEmployeeChip = (emp: AllEmployeeDataType) => (
+    <div key={emp.employeeId} className="w-fit max-w-full min-w-0">
+      <AvatarChip
+        avatarProps={getEmployeeAvatarProps(emp)}
+        label={getEmployeeName(emp)}
+      />
+    </div>
   );
+
+  const renderAllEmployeesChip = () => {
+    const allEmployeesLabel = translateText(["form.allEmployees"]).trim();
+
+    return (
+      <div className="w-fit max-w-full">
+        <AvatarChip
+          avatarProps={{
+            id: "all-employees",
+            firstName: allEmployeesLabel,
+            size: "sm"
+          }}
+          label={allEmployeesLabel}
+        />
+      </div>
+    );
+  };
 
   const renderTriggerContent = () => {
     if (selectedCount === 0) {
@@ -267,34 +305,17 @@ const WorkLocationEmployeeSelector = ({
 
     if (selectedCount <= 2) {
       return (
-        <div className="flex gap-2">
-          {selectedEmployees.map((emp) => (
-            <AvatarChip
-              key={emp.employeeId}
-              firstName={emp.firstName ?? ""}
-              lastName={(emp.lastName ?? "").trim()}
-              avatarUrl={emp.authPic}
-              isTooltipEnabled
-            />
-          ))}
+        <div className="flex min-w-0 gap-2">
+          {selectedEmployees.map(renderEmployeeChip)}
         </div>
       );
     }
 
-    const remainingEmployees = selectedEmployees.slice(3);
-    const remainingTitle = remainingEmployees
-      .map((emp) => `${emp.firstName ?? ""} ${(emp.lastName ?? "").trim()}`.trim())
-      .join(", ");
-
     return (
       <AvatarGroup
-        avatars={selectedEmployees.map((emp) => ({
-          firstName: emp.firstName ?? "",
-          lastName: (emp.lastName ?? "").trim(),
-          image: emp.authPic || null
-        }))}
-        max={4}
-        title={remainingTitle || undefined}
+        avatars={selectedEmployees.map(getEmployeeAvatarProps)}
+        maxVisible={4}
+        ariaLabel={selectedEmployees.map(getEmployeeName).join(", ")}
       />
     );
   };
@@ -351,7 +372,11 @@ const WorkLocationEmployeeSelector = ({
           setSearchTerm={setEmployeeSearchText}
           autoFocus
         />
-        <div ref={listRefCallback} role="listbox" className="max-h-56 overflow-y-auto">
+        <div
+          ref={listRefCallback}
+          role="listbox"
+          className="max-h-56 overflow-y-auto"
+        >
           {!isAllSelected && selectedEmployees.length > 0 && (
             <>
               {selectedEmployees
@@ -380,12 +405,7 @@ const WorkLocationEmployeeSelector = ({
                       }}
                     >
                       <Checkbox checked={true} />
-                      <AvatarChip
-                        firstName={emp.firstName ?? ""}
-                        lastName={(emp.lastName ?? "").trim()}
-                        avatarUrl={emp.authPic}
-                        isTooltipEnabled
-                      />
+                      {renderEmployeeChip(emp)}
                     </div>
                   );
                 })}
@@ -433,22 +453,16 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    <AvatarChip
-                      firstName={emp.firstName ?? ""}
-                      lastName={(emp.lastName ?? "").trim()}
-                      avatarUrl={emp.authPic}
-                      isTooltipEnabled
-                    />
+                    {renderEmployeeChip(emp)}
                   </div>
                 );
               })}
 
-          {employeeSearchText.length > 0 &&
-            displayEmployees.length === 0 && (
-              <p className="text-center text-secondary-text body2 py-4">
-                {translateText(["form.noSearchResults"])}
-              </p>
-            )}
+          {employeeSearchText.length > 0 && displayEmployees.length === 0 && (
+            <p className="text-center text-secondary-text body2 py-4">
+              {translateText(["form.noSearchResults"])}
+            </p>
+          )}
 
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">
