@@ -84,8 +84,13 @@ export const ingestBoardStageDeals = (
   const incomingIds = entities
     .map((deal) => deal.id)
     .filter((id): id is number => id != null);
+  // Re-read dealIds from fresh state: the `store` snapshot above predates the
+  // upsertDeals/setBoardColumn writes, so the append path must merge against the
+  // current dealIds, matching the contract upsertDeals documents for itself.
   store.setDealIds(
-    append ? appendDealIds(store.dealIds, incomingIds) : incomingIds
+    append
+      ? appendDealIds(useCrmStoreV2.getState().dealIds, incomingIds)
+      : incomingIds
   );
 };
 
