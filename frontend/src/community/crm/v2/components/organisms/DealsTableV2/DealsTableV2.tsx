@@ -6,7 +6,6 @@ import {
   ProjectTableSkeletonLoader
 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -59,14 +58,10 @@ const DealsTableV2: FC<Props> = ({
   const [containerRef, tableWidth] = useContainerWidth();
 
   // Records the row cells resolve their scalar FKs against.
-  const { stages, companies, contacts, owners } = useCrmStoreV2(
-    useShallow((state) => ({
-      stages: state.stages,
-      companies: state.companies,
-      contacts: state.contacts,
-      owners: state.owners
-    }))
-  );
+  const stages = useCrmStoreV2((state) => state.stages);
+  const companies = useCrmStoreV2((state) => state.companies);
+  const contacts = useCrmStoreV2((state) => state.contacts);
+  const owners = useCrmStoreV2((state) => state.owners);
 
   const columnHeaders = useMemo(
     (): Column<DealRow>[] => [

@@ -20,12 +20,9 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
 
   const { setToastMessage } = useToast();
 
-  const { selectedDealId, setSelectedDealId, closeCrmSidePanel } =
-    useCrmStoreV2((store) => ({
-      selectedDealId: store.selectedDealId,
-      setSelectedDealId: store.setSelectedDealId,
-      closeCrmSidePanel: store.closeCrmSidePanel
-    }));
+  const selectedDealId = useCrmStoreV2((store) => store.selectedDealId);
+  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
+  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
 
   const handleSuccess = (): void => {
     if (selectedDealId === null) return;

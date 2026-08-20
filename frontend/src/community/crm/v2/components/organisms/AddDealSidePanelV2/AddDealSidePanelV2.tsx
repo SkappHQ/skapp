@@ -47,17 +47,12 @@ const AddDealSidePanelV2: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookupItem | null>(null);
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    closeCrmSidePanel,
-    setPreselectedStageId
-  } = useCrmStoreV2((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setPreselectedStageId: store.setPreselectedStageId
-  }));
+  const isCrmSidePanelOpen = useCrmStoreV2((store) => store.isCrmSidePanelOpen);
+  const crmSidePanelType = useCrmStoreV2((store) => store.crmSidePanelType);
+  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
+  const setPreselectedStageId = useCrmStoreV2(
+    (store) => store.setPreselectedStageId
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

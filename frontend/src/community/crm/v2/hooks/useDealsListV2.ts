@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { useEffect, useMemo } from "react";
 
 import { useGetDealsInfinite } from "../api/DealApi";
 import { useCrmStoreV2 } from "../store/store";
@@ -19,12 +18,15 @@ export const useDealsListV2 = (
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useGetDealsInfinite(filters, enabled);
 
-  const deals = useCrmStoreV2(
-    useShallow((state) =>
-      state.dealIds
-        .map((id) => state.deals[id])
-        .filter((deal): deal is CrmDealEntity => Boolean(deal))
-    )
+  const dealIds = useCrmStoreV2((state) => state.dealIds);
+  const dealRecord = useCrmStoreV2((state) => state.deals);
+
+  const deals = useMemo(
+    () =>
+      dealIds
+        .map((id) => dealRecord[id])
+        .filter((deal): deal is CrmDealEntity => Boolean(deal)),
+    [dealIds, dealRecord]
   );
 
   useEffect(() => {

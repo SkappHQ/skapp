@@ -1,6 +1,5 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -47,13 +46,9 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const deal = useDealById(dealId);
   const stages = useOrderedStages();
 
-  const { contacts: contactRecord, companies, owners } = useCrmStoreV2(
-    useShallow((state) => ({
-      contacts: state.contacts,
-      companies: state.companies,
-      owners: state.owners
-    }))
-  );
+  const contactRecord = useCrmStoreV2((state) => state.contacts);
+  const companies = useCrmStoreV2((state) => state.companies);
+  const owners = useCrmStoreV2((state) => state.owners);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearchTerm = useDebounce(

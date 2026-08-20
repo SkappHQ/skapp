@@ -22,10 +22,8 @@ const DealsSectionV2: FC = () => {
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { setSelectedDealId, openCrmSidePanel } = useCrmStoreV2((store) => ({
-    setSelectedDealId: store.setSelectedDealId,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
+  const openCrmSidePanel = useCrmStoreV2((store) => store.openCrmSidePanel);
 
   const { deals, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDealsListV2(

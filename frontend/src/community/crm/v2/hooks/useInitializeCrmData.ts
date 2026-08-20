@@ -22,21 +22,16 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
 
   const { setToastMessage } = useToast();
 
-  const {
-    isCrmDataInitialized,
-    setStages,
-    setOwners,
-    setContacts,
-    setTaskTypes,
-    setIsCrmDataInitialized
-  } = useCrmStoreV2((state) => ({
-    isCrmDataInitialized: state.isCrmDataInitialized,
-    setStages: state.setStages,
-    setOwners: state.setOwners,
-    setContacts: state.setContacts,
-    setTaskTypes: state.setTaskTypes,
-    setIsCrmDataInitialized: state.setIsCrmDataInitialized
-  }));
+  const isCrmDataInitialized = useCrmStoreV2(
+    (state) => state.isCrmDataInitialized
+  );
+  const setStages = useCrmStoreV2((state) => state.setStages);
+  const setOwners = useCrmStoreV2((state) => state.setOwners);
+  const setContacts = useCrmStoreV2((state) => state.setContacts);
+  const setTaskTypes = useCrmStoreV2((state) => state.setTaskTypes);
+  const setIsCrmDataInitialized = useCrmStoreV2(
+    (state) => state.setIsCrmDataInitialized
+  );
 
   const { data, isLoading, isError, isSuccess } =
     useGetBoardInitData(!isCrmDataInitialized);

@@ -30,19 +30,11 @@ const DealSidePanelV2: FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { setToastMessage } = useToast();
 
-  const {
-    isCrmSidePanelOpen,
-    crmSidePanelType,
-    selectedDealId,
-    setSelectedDealId,
-    closeCrmSidePanel
-  } = useCrmStoreV2((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    selectedDealId: store.selectedDealId,
-    setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel
-  }));
+  const isCrmSidePanelOpen = useCrmStoreV2((store) => store.isCrmSidePanelOpen);
+  const crmSidePanelType = useCrmStoreV2((store) => store.crmSidePanelType);
+  const selectedDealId = useCrmStoreV2((store) => store.selectedDealId);
+  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
+  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
 
   const isOpen =
     isCrmSidePanelOpen &&
