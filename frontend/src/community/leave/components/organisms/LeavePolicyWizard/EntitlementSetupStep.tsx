@@ -231,6 +231,7 @@ const EntitlementSetupStep: FC<Props> = ({
                     carryoverExpiryDate ?? getCarryoverExpiryReferenceDate()
                   }
                   onchange={handleCarryoverExpiryDateChange}
+                  labelStyles={{ fontWeight: 500 }}
                   componentStyle={{ mt: "0rem" }}
                 />
               </div>
