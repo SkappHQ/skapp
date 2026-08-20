@@ -31,7 +31,7 @@ const ContentWithDrawer = ({ children }: Props) => {
 
   return (
     <>
-      <Stack sx={classes.protectedWrapper}>
+      <Stack id="content-with-drawer-root" sx={classes.protectedWrapper}>
         <Drawer />
         <Stack sx={classes.contentWrapper}>
           <AppBar />

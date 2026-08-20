@@ -44,6 +44,16 @@ const BirthdayModalShell: FC<Props> = ({
     return () => clearTimeout(timer);
   }, [showConfetti]);
 
+  useEffect(() => {
+    const mainContent = document.getElementById("content-with-drawer-root");
+
+    mainContent?.setAttribute("inert", "");
+
+    return () => {
+      mainContent?.removeAttribute("inert");
+    };
+  }, []);
+
   return (
     <>
       {isConfettiVisible && <Confetti />}
