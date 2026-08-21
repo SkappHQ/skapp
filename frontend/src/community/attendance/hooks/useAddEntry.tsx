@@ -21,7 +21,6 @@ import {
   getDuration,
   isToday
 } from "~community/attendance/utils/TimeUtils";
-import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
 import {
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
@@ -97,7 +96,7 @@ const useAddEntry = () => {
         open: true,
         title: translateText(["addTimeEntryErrorTitle"]),
         description: translateText(["manualEntryRestrictedErrorDes"]),
-        autoHideDuration: TOAST_AUTO_HIDE_DURATION,
+        autoHideDuration: null,
         toastType: ToastType.ERROR
       });
       return;
@@ -136,7 +135,7 @@ const useAddEntry = () => {
         }
       ),
       toastType: ToastType.SUCCESS,
-      autoHideDuration: TOAST_AUTO_HIDE_DURATION
+      autoHideDuration: null
     });
   };
 

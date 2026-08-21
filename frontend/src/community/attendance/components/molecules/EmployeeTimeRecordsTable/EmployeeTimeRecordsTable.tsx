@@ -28,7 +28,6 @@ import { downloadManagerTimesheetCsv } from "~community/attendance/utils/Timeshe
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/HtmlTable/Table";
-import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
@@ -131,7 +130,7 @@ const EmployeeTimeRecordsTable = ({
         toastType: ToastType.ERROR,
         title: translateText(["addTimeEntryErrorTitle"]),
         description: translateText(["directEntryDayLoadErrorDes"]),
-        autoHideDuration: TOAST_AUTO_HIDE_DURATION
+        autoHideDuration: null
       });
       return;
     }

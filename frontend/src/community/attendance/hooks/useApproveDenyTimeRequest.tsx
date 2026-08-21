@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { TOAST_AUTO_HIDE_DURATION } from "~community/common/constants/commonConstants";
 import { TIME_ERROR_TIME_REQUEST_CANNOT_EDIT } from "~community/common/constants/errorMessageKeys";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -47,7 +46,7 @@ const useApproveDenyTimeRequest = () => {
         toastType: "error",
         title: translateTexts(["staleRequestConflictTitle"]),
         description: translateTexts(["staleRequestConflictDes"]),
-        autoHideDuration: TOAST_AUTO_HIDE_DURATION,
+        autoHideDuration: null,
         isIcon: true
       });
       return;

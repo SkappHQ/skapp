@@ -44,7 +44,6 @@ export enum daysTypes {
   SUNDAY = "SUNDAY"
 }
 
-// Ordered to match Luxon's weekday numbering (1 = Monday ... 7 = Sunday).
 export const ORDERED_WEEK_DAYS: daysTypes[] = [
   daysTypes.MONDAY,
   daysTypes.TUESDAY,
