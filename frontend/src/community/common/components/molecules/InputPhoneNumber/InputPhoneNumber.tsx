@@ -8,6 +8,7 @@ import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { phoneNumberPattern } from "~community/common/regex/regexPatterns";
+import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 import {
   shouldActivateButton,
   shouldCloseDialog,
@@ -15,7 +16,6 @@ import {
 } from "~community/common/utils/keyboardUtils";
 
 import InputField from "../InputField/InputField";
-import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 
 interface Props {
   label: string;
@@ -63,6 +63,8 @@ const InputPhoneNumber: FC<Props> = ({
   const theme: Theme = useTheme();
   const phoneInputRef = useRef<any>(null);
 
+  const countryListLabel = translateText(["countryList"]);
+
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
       e.preventDefault();
@@ -87,6 +89,7 @@ const InputPhoneNumber: FC<Props> = ({
 
       if (list) {
         list.setAttribute("role", "listbox");
+        list.setAttribute("aria-label", countryListLabel);
       }
 
       options.forEach((el: any, index) => {
@@ -117,7 +120,7 @@ const InputPhoneNumber: FC<Props> = ({
 
     const interval = setInterval(handleDropdownAccessibility, 300);
     return () => clearInterval(interval);
-  }, [countryCodeValue]);
+  }, [countryCodeValue, countryListLabel]);
 
   return (
     // TODO: move styles to styles.ts
