@@ -104,6 +104,14 @@ const DropdownList: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
+  const accessibleName = ariaLabel || label;
+
+  const errorId = error ? `${inputName}-error` : undefined;
+
+  const menuListProps = accessibleName
+    ? { "aria-label": accessibleName }
+    : {};
+
   const handleChange = (
     event:
       | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -128,7 +136,12 @@ const DropdownList: FC<Props> = ({
           lineHeight={1.5}
           sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
         >
-          {label} {required && <span style={{ color: "red" }}>*</span>}
+          {label}{" "}
+          {required && (
+            <span aria-hidden="true" style={{ color: "red" }}>
+              *
+            </span>
+          )}
         </Typography>
         {tooltip && (
           <Tooltip
@@ -176,7 +189,8 @@ const DropdownList: FC<Props> = ({
                 maxHeight: 300,
                 zIndex: ZIndexEnums.NEWMODAL,
                 ...(enableTextWrapping ? { width: "max-content" } : {})
-              }
+              },
+              MenuListProps: menuListProps
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
@@ -184,8 +198,10 @@ const DropdownList: FC<Props> = ({
             }}
             fullWidth
             inputProps={{
-              "aria-label": ariaLabel || label,
-              "aria-required": required
+              "aria-label": accessibleName,
+              "aria-invalid": !!error,
+              "aria-required": required,
+              "aria-describedby": errorId
             }}
             displayEmpty={!!placeholder?.length}
             renderValue={
@@ -292,6 +308,7 @@ const DropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             multiple={isMultiValue}
+            MenuProps={{ MenuListProps: menuListProps }}
             sx={{
               flex: 1,
               "&& .MuiInputBase-input": {
@@ -301,8 +318,10 @@ const DropdownList: FC<Props> = ({
             }}
             fullWidth
             inputProps={{
-              "aria-label": ariaLabel || label,
-              "aria-required": required
+              "aria-label": accessibleName,
+              "aria-invalid": !!error,
+              "aria-required": required,
+              "aria-describedby": errorId
             }}
           >
             {showSpinnerWhenNoData ? (
@@ -320,6 +339,7 @@ const DropdownList: FC<Props> = ({
 
       {!!error && (
         <Typography
+          id={errorId}
           role="alert"
           aria-live="assertive"
           variant="body2"
