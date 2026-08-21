@@ -1,6 +1,6 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, JSX, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
@@ -111,19 +111,19 @@ const EmployeeTimeRecordsTable = ({
     Boolean(pendingCell)
   );
 
-  const handledCellRef = useRef<string | null>(null);
+  const [handledCell, setHandledCell] = useState<string | null>(null);
 
   useEffect(() => {
     if (!pendingCell) {
-      handledCellRef.current = null;
+      setHandledCell(null);
       return;
     }
 
     const cellKey = `${pendingCell.employeeId}-${pendingCell.date}`;
-    if (handledCellRef.current === cellKey || isPendingDayFetching) return;
+    if (handledCell === cellKey || isPendingDayFetching) return;
 
     if (isPendingDayError) {
-      handledCellRef.current = cellKey;
+      setHandledCell(cellKey);
       setPendingCell(null);
       setToastMessage({
         open: true,
@@ -144,7 +144,7 @@ const EmployeeTimeRecordsTable = ({
 
     const modalType = getTimeEntryModalType(dayRecord);
 
-    handledCellRef.current = cellKey;
+    setHandledCell(cellKey);
     setPendingCell(null);
     if (modalType === null) return;
 
@@ -160,7 +160,8 @@ const EmployeeTimeRecordsTable = ({
     pendingDayLogs,
     isPendingDayFetching,
     isPendingDaySuccess,
-    isPendingDayError
+    isPendingDayError,
+    handledCell
   ]);
 
   const headers = useMemo(() => {

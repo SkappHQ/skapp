@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, useEffect, useRef, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 
 import {
   useGetAttendanceConfiguration,
@@ -31,7 +31,7 @@ const AttendanceConfiguration = (): JSX.Element => {
 
   const { data: configData } = useGetAttendanceConfiguration();
   const onSuccess = () => {
-    locallyEditedKeys.current.clear();
+    setLocallyEditedKeys(new Set());
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -56,9 +56,9 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-  const locallyEditedKeys = useRef(
-    new Set<keyof AttendanceConfigurationType>()
-  );
+  const [locallyEditedKeys, setLocallyEditedKeys] = useState<
+    Set<keyof AttendanceConfigurationType>
+  >(new Set());
 
   useEffect(() => {
     if (!configData) return;
@@ -69,19 +69,19 @@ const AttendanceConfiguration = (): JSX.Element => {
       if (!prevConfig) return configData;
 
       const localEdits: Partial<AttendanceConfigurationType> = {};
-      locallyEditedKeys.current.forEach((key) => {
+      locallyEditedKeys.forEach((key) => {
         localEdits[key] = prevConfig[key];
       });
 
       return { ...configData, ...localEdits };
     });
-  }, [configData]);
+  }, [configData, locallyEditedKeys]);
 
   const handleSwitchChange = (
     key: keyof AttendanceConfigurationType,
     checked: boolean
   ) => {
-    locallyEditedKeys.current.add(key);
+    setLocallyEditedKeys((prevKeys) => new Set(prevKeys).add(key));
     setConfig((prevConfig) =>
       prevConfig ? { ...prevConfig, [key]: checked } : prevConfig
     );
@@ -107,7 +107,7 @@ const AttendanceConfiguration = (): JSX.Element => {
   };
 
   const handleCancelBtnClick = () => {
-    locallyEditedKeys.current.clear();
+    setLocallyEditedKeys(new Set());
     setConfig(initialConfig);
   };
 
