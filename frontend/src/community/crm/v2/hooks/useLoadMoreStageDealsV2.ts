@@ -6,9 +6,6 @@ import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants
 import { useFetchMoreStageDeals } from "../api/BoardApi";
 import { ingestBoardStageDeals } from "../utils/boardUtil";
 
-// Appends the next page of one stage's deals to its column. The column's
-// `currentPage`/`hasNextPage` come from the store (set by the last ingest); the
-// caller passes the page to request.
 export const useLoadMoreStageDealsV2 = ({
   stageId,
   currentPage,

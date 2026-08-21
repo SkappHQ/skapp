@@ -19,8 +19,6 @@ const fetchContactLookup = async (
   return response?.data?.results?.[0];
 };
 
-// Contact typeahead for the deal form. Calls the v1 /contact/lookup route; the
-// item shape ({ id, name, company }) already matches CrmContactLookupItem.
 export const useGetContactLookupV2 = (
   searchKeyword: string,
   size: number,
@@ -43,8 +41,6 @@ const fetchOwnerLookup = async (
   return response?.data?.results?.[0];
 };
 
-// Owner typeahead for the deal form. Calls the v1 /contact/owners route; items
-// are CrmOwnerEntity ({ employeeId, firstName, lastName, authPic }).
 export const useGetOwnerLookupV2 = (
   searchKeyword: string,
   size: number,

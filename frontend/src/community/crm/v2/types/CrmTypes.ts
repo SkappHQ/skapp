@@ -11,8 +11,6 @@ import {
   CrmTaskTypeEntity
 } from "./CrmCommonTypes";
 
-// Modals and side panels
-
 export enum CrmModalTypes {
   ADD_COMPANY_MODAL = "ADD_COMPANY_MODAL",
   ADD_CONTACT_MODAL = "ADD_CONTACT_MODAL",
@@ -36,8 +34,6 @@ export enum CrmSidePanelTypes {
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
 }
 
-// Requests
-
 export interface CrmDealReorderWithinStageRequest {
   dealId: number;
   previousDealId: number | null;
@@ -51,24 +47,19 @@ export interface CrmDealMoveBetweenStagesRequest {
   nextDealId: number | null;
 }
 
-export interface CrmDealStageReorderRequest {
+export interface CrmDealStageReorderItem {
   id: number;
   orderIndex: number;
 }
 
-// Batch-hydrate the companies referenced (by id) on loaded deals/board cards.
 export interface CrmCompanyBatchRequest {
   ids: number[];
 }
 
-// Attached to each draggable card (`type: "deal"`) and each column droppable
-// (`type: "stage"`) so the drag handlers can resolve the target stage/kind.
 export interface CrmKanbanDragData {
   stageId: number;
   type: "stage" | "deal";
 }
-
-// Responses
 
 export interface CrmCompanyListResponse {
   items: CrmCompanyEntity[];
@@ -109,18 +100,8 @@ export interface CrmDealListResponse {
   totalPages: number;
 }
 
-// Slim, scalar board card returned by /board/deals-grouped-by-stages. Unlike the
-// v2 deal read it carries a `taskCount` (and no description/orderIndex/closingAt/
-// stageId — the stage is implied by the group). Mapped to CrmDealEntity in
-// boardUtil (taskCount -> openTasksCount, stageId stamped from the group).
-export interface CrmBoardDealResponse {
+export interface CrmBoardDealResponse extends CrmDealEntity {
   id: number;
-  name: string;
-  amount: string | null;
-  ownerId: number;
-  companyId: number | null;
-  contactId: number;
-  priority: CrmPriorityEnum;
   taskCount: number;
 }
 
@@ -160,7 +141,6 @@ export interface CrmExistsResponse {
   isExists: boolean;
 }
 
-// Contact lookup (typeahead) item + paginated response.
 export interface CrmContactLookupItem {
   id: number;
   name: string;
@@ -173,20 +153,6 @@ export interface CrmContactLookupResponse {
   totalItems: number;
   totalPages: number;
 }
-
-// Formik shape for the add-deal form (scalar id fields are strings while the
-// user is selecting; converted to numbers in the create payload).
-export interface CrmDealAddFormTypes {
-  name: string;
-  stageId: string;
-  contactId: string;
-  ownerId: string;
-  priority: CrmPriorityEnum;
-  amount: string;
-  description: string;
-}
-
-// Filters
 
 export interface CrmCompanyFilterRequest {
   searchKeyword?: string;

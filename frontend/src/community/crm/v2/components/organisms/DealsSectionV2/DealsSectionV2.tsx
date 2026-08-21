@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -22,8 +23,12 @@ const DealsSectionV2: FC = () => {
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
-  const openCrmSidePanel = useCrmStoreV2((store) => store.openCrmSidePanel);
+  const { setSelectedDealId, openCrmSidePanel } = useCrmStoreV2(
+    useShallow((store) => ({
+      setSelectedDealId: store.setSelectedDealId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const { deals, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useDealsListV2(
@@ -36,10 +41,6 @@ const DealsSectionV2: FC = () => {
       activeView === DealViewEnum.LIST
     );
 
-  // Hydrate the `companies` record for every loaded deal — list and board, first
-  // page and load-more — off the `deals` the store keeps in `dealIds` order. The
-  // scalar deal payload carries only `companyId`, so board/table cards resolve
-  // `companies[deal.companyId]` against what this fills.
   const companyIds = useMemo(
     () =>
       deals
@@ -60,7 +61,6 @@ const DealsSectionV2: FC = () => {
     openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
   };
 
-  // Match the v1 section's dynamic height so the table/board fill the viewport.
   useEffect(() => {
     const updateHeight = () => {
       if (containerRef.current) {

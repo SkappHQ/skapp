@@ -5,7 +5,6 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useResolvedBoardCard } from "~community/crm/v2/store/selectors";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
-// The card rendered inside the DragOverlay while a deal is being dragged.
 const BoardCardOverlay: FC<{ dealId: number }> = ({ dealId }) => {
   const { deal, owner, contact, company } = useResolvedBoardCard(dealId);
   if (!deal) return null;
@@ -20,7 +19,7 @@ const BoardCardOverlay: FC<{ dealId: number }> = ({ dealId }) => {
         owner={owner}
         amount={deal.amount ?? ""}
         priority={deal.priority ?? CrmPriorityEnum.LOW}
-        taskCount={deal.openTasksCount}
+        taskCount={deal.taskCount}
       />
     </div>
   );

@@ -19,7 +19,7 @@ interface Props {
   contacts: CrmContactLookupItem[];
   selectedContact: CrmContactLookupItem | null;
   onChange: (contact: CrmContactLookupItem | null) => void;
-  onSearch: (term: string) => void;
+  onSearch: (searchTerm: string) => void;
   placeholder: string;
   searchPlaceholder: string;
   noResultsText: string;
@@ -38,9 +38,7 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
-  const getContactId = (contact: CrmContactLookupItem) => contact.id;
-
-  const options: DropdownOption[] = useMemo(
+  const dropdownOptions: DropdownOption[] = useMemo(
     () => buildContactOptions(contacts),
     [contacts]
   );
@@ -59,7 +57,7 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    onChange(findById(contacts, Number(id), getContactId));
+    onChange(findById(contacts, Number(id), (contact) => contact.id));
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
@@ -75,7 +73,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = findById(contacts, Number(option.id), getContactId);
+    const contact = findById(contacts, Number(option.id), (contact) => contact.id);
 
     return contact ? (
       <ContactOptionItem
@@ -89,7 +87,7 @@ const ContactPopupSearch: FC<Props> = ({
 
   return (
     <DropdownWithSearchablePopup
-      options={options}
+      options={dropdownOptions}
       value={selectedValue}
       onChange={handleChange}
       onSearch={onSearch}

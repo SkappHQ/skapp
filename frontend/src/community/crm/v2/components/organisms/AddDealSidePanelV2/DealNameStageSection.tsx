@@ -7,10 +7,10 @@ import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import { useOrderedStages } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmDealAddFormTypes } from "~community/crm/v2/types/CrmTypes";
+import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface DealNameStageSectionProps {
-  formik: FormikProps<CrmDealAddFormTypes>;
+  formik: FormikProps<CrmDealEntity>;
   isDuplicateName: boolean;
 }
 
@@ -44,12 +44,12 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
 
   useEffect(() => {
     if (preselectedStageId !== null) {
-      formik.setFieldValue("stageId", String(preselectedStageId));
+      formik.setFieldValue("stageId", preselectedStageId);
       return;
     }
 
     if (!formik.values.stageId && initialStageId !== undefined) {
-      formik.setFieldValue("stageId", String(initialStageId));
+      formik.setFieldValue("stageId", initialStageId);
     }
   }, [preselectedStageId, initialStageId]);
 
@@ -76,7 +76,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
           placeholder={translateText(["placeholders", "dealName"])}
           required
           name="name"
-          value={formik.values.name}
+          value={formik.values.name ?? ""}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
           state={nameErrorMessage ? "error" : "default"}
@@ -88,8 +88,10 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
       <div className="w-1/3 pt-6.5">
         <Dropdown
           options={stageOptions}
-          value={formik.values.stageId}
-          onChange={(v) => formik.setFieldValue("stageId", v)}
+          value={formik.values.stageId ? String(formik.values.stageId) : ""}
+          onChange={(v) =>
+            formik.setFieldValue("stageId", v ? Number(v) : undefined)
+          }
           variant={stageDropdownVariant}
           className="rounded-lg"
           width="55%"

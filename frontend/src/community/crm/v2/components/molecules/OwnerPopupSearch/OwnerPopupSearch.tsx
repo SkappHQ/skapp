@@ -55,7 +55,7 @@ const OwnerPopupSearch: FC<Props> = ({
     () => ownerLookupData?.items ?? [],
     [ownerLookupData?.items]
   );
-  const options: DropdownOption[] = useMemo(
+  const dropdownOptions: DropdownOption[] = useMemo(
     () =>
       buildOwnerOptions(users, selectedUser, (u) =>
         concatStrings([u.firstName, u.lastName ?? ""])
@@ -119,7 +119,7 @@ const OwnerPopupSearch: FC<Props> = ({
 
   return (
     <DropdownWithSearchablePopup
-      options={options}
+      options={dropdownOptions}
       value={selectedValue}
       onChange={handleChange}
       onSearch={setOwnerSearchTerm}

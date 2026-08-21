@@ -59,7 +59,7 @@ const DraggableDealCardV2: FC<DraggableDealCardV2Props> = ({
         owner={owner}
         amount={deal.amount ?? ""}
         priority={deal.priority ?? CrmPriorityEnum.LOW}
-        taskCount={deal.openTasksCount}
+        taskCount={deal.taskCount}
         onClick={() => onDealClick(dealId)}
       />
     </div>

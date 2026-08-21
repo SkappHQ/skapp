@@ -92,7 +92,7 @@ describe("board ingestion + mutation on the normalized store", () => {
     // reads), flattened in stage order
     expect(useCrmStoreV2.getState().dealIds).toEqual([1, 2, 3]);
 
-    // slim board card -> scalar entity: stageId stamped, taskCount -> openTasksCount
+    // slim board card -> scalar entity: stageId stamped from the group
     expect(deals[1]).toMatchObject<CrmDealEntity>({
       id: 1,
       name: "Deal 1",
@@ -100,7 +100,7 @@ describe("board ingestion + mutation on the normalized store", () => {
       ownerId: 10,
       companyId: 20,
       contactId: 30,
-      openTasksCount: 1,
+      taskCount: 1,
       priority: CrmPriorityEnum.MEDIUM
     });
 
@@ -126,7 +126,7 @@ describe("board ingestion + mutation on the normalized store", () => {
 
     const deal = useCrmStoreV2.getState().deals[1];
     // board-only fields applied...
-    expect(deal.openTasksCount).toBe(1);
+    expect(deal.taskCount).toBe(1);
     expect(deal.ownerId).toBe(10);
     // ...and list-only fields preserved
     expect(deal.description).toBe("long description");

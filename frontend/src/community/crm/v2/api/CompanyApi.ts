@@ -13,7 +13,7 @@ const fetchCompaniesByIds = async (
     crmCompanyEndpointsV1.GET_COMPANIES_BY_IDS,
     { ids }
   );
-  return response?.data?.results ?? [];
+  return response?.data?.results;
 };
 
 export const useGetCompaniesByIds = (

@@ -28,6 +28,7 @@ export const crmLookupQueryKeys = {
 };
 
 export const crmBoardQueryKeys = {
+  BOARD_INIT_DATA: ["crm-board-init-data-v2"],
   DEALS_GROUPED_BY_STAGES: (params: CrmDealsByStagesRequest) => [
     "crm-board-deals-grouped-by-stages-v2",
     params

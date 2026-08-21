@@ -5,8 +5,6 @@ import {
   CrmPriorityEnum
 } from "../enums/common";
 
-// Company
-
 export interface CrmCompanyEntity {
   id?: number;
   name?: string;
@@ -29,8 +27,6 @@ export interface CrmCompanyMetrics {
   openDealsCount?: number;
   closedDealsCount?: number;
 }
-
-// Contact
 
 export interface CrmContactEntity {
   id?: number;
@@ -67,8 +63,6 @@ export interface CrmOwnerEntity {
   authPic?: string;
 }
 
-// Deal
-
 export interface CrmDealEntity {
   id?: number;
   name?: string;
@@ -81,7 +75,7 @@ export interface CrmDealEntity {
   companyId?: number;
   contactId?: number;
   ownerId?: number;
-  openTasksCount?: number;
+  taskCount?: number;
   taskIds?: number[];
 }
 
@@ -100,8 +94,6 @@ export interface CrmBoardColumn {
   currentPage: number;
   hasNextPage: boolean;
 }
-
-// Task
 
 export interface CrmTaskEntity {
   id?: number;
@@ -122,8 +114,6 @@ export interface CrmTaskTypeEntity {
   name: string;
   orderIndex: number;
 }
-
-// Normalized store records 
 
 export type CrmCompanyRecord = Record<number, CrmCompanyEntity>;
 export type CrmContactRecord = Record<number, CrmContactEntity>;

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,15 +23,22 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
 
   const { setToastMessage } = useToast();
 
-  const isCrmDataInitialized = useCrmStoreV2(
-    (state) => state.isCrmDataInitialized
-  );
-  const setStages = useCrmStoreV2((state) => state.setStages);
-  const setOwners = useCrmStoreV2((state) => state.setOwners);
-  const setContacts = useCrmStoreV2((state) => state.setContacts);
-  const setTaskTypes = useCrmStoreV2((state) => state.setTaskTypes);
-  const setIsCrmDataInitialized = useCrmStoreV2(
-    (state) => state.setIsCrmDataInitialized
+  const {
+    isCrmDataInitialized,
+    setStages,
+    setOwners,
+    setContacts,
+    setTaskTypes,
+    setIsCrmDataInitialized
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      isCrmDataInitialized: store.isCrmDataInitialized,
+      setStages: store.setStages,
+      setOwners: store.setOwners,
+      setContacts: store.setContacts,
+      setTaskTypes: store.setTaskTypes,
+      setIsCrmDataInitialized: store.setIsCrmDataInitialized
+    }))
   );
 
   const { data, isLoading, isError, isSuccess } =

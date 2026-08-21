@@ -7,8 +7,6 @@ import {
 import { AxiosError } from "axios";
 
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { crmBoardEndpoints } from "~community/crm/api/utils/ApiEndpoints";
-import { crmBoardQueryKeys as crmBoardInitDataQueryKeys } from "~community/crm/api/utils/QueryKeys";
 import {
   CrmBoardInitDataResponse,
   CrmDealMoveBetweenStagesRequest,
@@ -21,7 +19,7 @@ import { crmBoardEndpointsV1 } from "./utils/ApiEndpoints";
 import { crmBoardQueryKeys } from "./utils/QueryKeys";
 
 const fetchBoardInitData = async (): Promise<CrmBoardInitDataResponse> => {
-  const response = await authFetch.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
+  const response = await authFetch.get(crmBoardEndpointsV1.GET_BOARD_INIT_DATA);
   return response?.data?.results?.[0];
 };
 
@@ -29,7 +27,7 @@ export const useGetBoardInitData = (
   enabled: boolean
 ): UseQueryResult<CrmBoardInitDataResponse> =>
   useQuery({
-    queryKey: crmBoardInitDataQueryKeys.BOARD_INIT_DATA,
+    queryKey: crmBoardQueryKeys.BOARD_INIT_DATA,
     queryFn: fetchBoardInitData,
     enabled
   });

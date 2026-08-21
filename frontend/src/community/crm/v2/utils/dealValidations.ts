@@ -21,13 +21,13 @@ export const dealNameValidation = (translator: TranslatorFunctionType) =>
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: dealNameValidation(translator),
-    stageId: Yup.string().required(
+    stageId: Yup.number().required(
       translator(["validations", "stageRequired"])
     ),
-    contactId: Yup.string().required(
+    contactId: Yup.number().required(
       translator(["validations", "contactRequired"])
     ),
-    ownerId: Yup.string().required(
+    ownerId: Yup.number().required(
       translator(["validations", "ownerRequired"])
     ),
     priority: Yup.mixed<CrmPriorityEnum>()

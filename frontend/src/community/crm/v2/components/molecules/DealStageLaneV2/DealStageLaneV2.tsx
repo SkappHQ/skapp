@@ -58,8 +58,6 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   const column = useBoardColumn(stageId);
   const deals = useBoardColumnDeals(stageId);
 
-  // Default stage names (LEAD/QUALIFIED/…) map to localized labels; custom names
-  // pass through unchanged.
   const { getStageByName } = useStageNameMapper();
   const stageName = getStageByName(stage?.name ?? "");
 

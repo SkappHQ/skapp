@@ -18,12 +18,12 @@ import {
 import {
   CrmDealFilterRequest,
   CrmDealListResponse,
-  CrmDealStageReorderRequest,
+  CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-import { crmDealEndpointsV1, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
+import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
 
 interface EditDealVariables {
@@ -133,7 +133,7 @@ const checkDealNameExists = async (
   name: string
 ): Promise<CrmExistsResponse> => {
   const response = await authFetch.get(
-    crmDealEndpointsV1.CHECK_DEAL_NAME_EXISTS,
+    crmDealEndpoints.CHECK_DEAL_NAME_EXISTS,
     { params: { name } }
   );
   return response?.data?.results?.[0];
@@ -150,7 +150,7 @@ export const useCheckDealNameExists = (
   });
 
 const deleteDeal = async (id: number): Promise<void> => {
-  await authFetch.delete(crmDealEndpointsV1.DELETE_DEAL(id));
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));
 };
 
 export const useDeleteDeal = (
@@ -171,7 +171,7 @@ export const useDeleteDeal = (
 };
 
 const fetchDealStages = async (): Promise<CrmStageEntity[]> => {
-  const response = await authFetch.get(crmDealEndpointsV1.DEAL_STAGES);
+  const response = await authFetch.get(crmDealEndpoints.DEAL_STAGES);
   return response?.data?.results;
 };
 
@@ -188,7 +188,7 @@ const createDealStage = async (
   payload: CrmStageEntity
 ): Promise<CrmStageEntity> => {
   const response = await authFetch.post(
-    crmDealEndpointsV1.CREATE_DEAL_STAGE,
+    crmDealEndpoints.CREATE_DEAL_STAGE,
     payload
   );
   return response?.data?.results?.[0];
@@ -216,7 +216,7 @@ const updateDealStage = async ({
   payload
 }: UpdateDealStageVariables): Promise<CrmStageEntity> => {
   const response = await authFetch.patch(
-    crmDealEndpointsV1.UPDATE_DEAL_STAGE(id),
+    crmDealEndpoints.UPDATE_DEAL_STAGE(id),
     payload
   );
   return response?.data?.results?.[0];
@@ -233,10 +233,10 @@ export const useUpdateDealStage = (
   });
 
 const reorderDealStages = async (
-  payload: CrmDealStageReorderRequest[]
+  payload: CrmDealStageReorderItem[]
 ): Promise<CrmStageEntity[]> => {
   const response = await authFetch.post(
-    crmDealEndpointsV1.REORDER_DEAL_STAGES,
+    crmDealEndpoints.REORDER_DEAL_STAGES,
     payload
   );
   return response?.data?.results;
@@ -245,7 +245,7 @@ const reorderDealStages = async (
 export const useReorderDealStages = (
   onSuccess: (reorderedStages: CrmStageEntity[]) => void,
   onError: (error: AxiosError) => void
-): UseMutationResult<CrmStageEntity[], AxiosError, CrmDealStageReorderRequest[]> =>
+): UseMutationResult<CrmStageEntity[], AxiosError, CrmDealStageReorderItem[]> =>
   useMutation({
     mutationFn: reorderDealStages,
     onSuccess,
@@ -253,7 +253,7 @@ export const useReorderDealStages = (
   });
 
 const deleteDealStage = async (id: number): Promise<void> => {
-  await authFetch.delete(crmDealEndpointsV1.DELETE_DEAL_STAGE(id));
+  await authFetch.delete(crmDealEndpoints.DELETE_DEAL_STAGE(id));
 };
 
 export const useDeleteDealStage = (

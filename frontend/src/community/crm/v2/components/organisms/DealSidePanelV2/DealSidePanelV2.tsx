@@ -1,6 +1,7 @@
 import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import type { InfiniteData } from "@tanstack/react-query";
 import { FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -30,11 +31,21 @@ const DealSidePanelV2: FC = () => {
   const { isCrmSalesManager } = useSessionData();
   const { setToastMessage } = useToast();
 
-  const isCrmSidePanelOpen = useCrmStoreV2((store) => store.isCrmSidePanelOpen);
-  const crmSidePanelType = useCrmStoreV2((store) => store.crmSidePanelType);
-  const selectedDealId = useCrmStoreV2((store) => store.selectedDealId);
-  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
-  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    selectedDealId,
+    setSelectedDealId,
+    closeCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId,
+      closeCrmSidePanel: store.closeCrmSidePanel
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

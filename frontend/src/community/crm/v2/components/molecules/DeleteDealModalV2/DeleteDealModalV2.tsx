@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -20,9 +21,14 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
 
   const { setToastMessage } = useToast();
 
-  const selectedDealId = useCrmStoreV2((store) => store.selectedDealId);
-  const setSelectedDealId = useCrmStoreV2((store) => store.setSelectedDealId);
-  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
+  const { selectedDealId, setSelectedDealId, closeCrmSidePanel } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        selectedDealId: store.selectedDealId,
+        setSelectedDealId: store.setSelectedDealId,
+        closeCrmSidePanel: store.closeCrmSidePanel
+      }))
+    );
 
   const handleSuccess = (): void => {
     if (selectedDealId === null) return;

@@ -6,6 +6,7 @@ import {
   ProjectTableSkeletonLoader
 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -47,8 +48,6 @@ const DealsTableV2: FC<Props> = ({
   onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
-  // Map default stage names (LEAD/QUALIFIED/…) to their localized labels; custom
-  // stage names pass through unchanged. Reuses the v1 i18n mapper.
   const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
@@ -57,11 +56,14 @@ const DealsTableV2: FC<Props> = ({
 
   const [containerRef, tableWidth] = useContainerWidth();
 
-  // Records the row cells resolve their scalar FKs against.
-  const stages = useCrmStoreV2((state) => state.stages);
-  const companies = useCrmStoreV2((state) => state.companies);
-  const contacts = useCrmStoreV2((state) => state.contacts);
-  const owners = useCrmStoreV2((state) => state.owners);
+  const { stages, companies, contacts, owners } = useCrmStoreV2(
+    useShallow((store) => ({
+      stages: store.stages,
+      companies: store.companies,
+      contacts: store.contacts,
+      owners: store.owners
+    }))
+  );
 
   const columnHeaders = useMemo(
     (): Column<DealRow>[] => [

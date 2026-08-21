@@ -25,7 +25,7 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
       avatarProps={{
         id,
         firstName: owner.firstName,
-        lastName: owner.lastName ?? undefined,
+        lastName: owner.lastName,
         src: imageUrl ?? undefined,
         size
       }}

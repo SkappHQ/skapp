@@ -6,17 +6,18 @@ import OwnerPopupSearch from "~community/crm/v2/components/molecules/OwnerPopupS
 import PriorityDropdown from "~community/crm/v2/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyField from "~community/crm/v2/components/molecules/PropertyField/PropertyField";
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
-import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import {
-  CrmContactLookupItem,
-  CrmDealAddFormTypes
-} from "~community/crm/v2/types/CrmTypes";
+  CrmDealEntity,
+  CrmOwnerEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmContactLookupItem } from "~community/crm/v2/types/CrmTypes";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface DealPropertiesSectionProps {
   translateText: (keys: string[]) => string;
-  formik: FormikProps<CrmDealAddFormTypes>;
+  formik: FormikProps<CrmDealEntity>;
   contacts: CrmContactLookupItem[];
   selectedContact: CrmContactLookupItem | null;
   setSelectedContact: (c: CrmContactLookupItem | null) => void;
@@ -52,22 +53,22 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   useEffect(() => {
     if (defaultOwner) {
       setSelectedOwner(defaultOwner);
-      setFieldValue("ownerId", String(defaultOwner.employeeId));
+      setFieldValue("ownerId", defaultOwner.employeeId);
     }
   }, [defaultOwner]);
 
   const handleOwnerChange = (u: CrmOwnerEntity | null) => {
     setSelectedOwner(u);
-    setFieldValue("ownerId", u ? String(u.employeeId) : "");
+    setFieldValue("ownerId", u ? u.employeeId : undefined);
   };
 
   const handleContactChange = (c: CrmContactLookupItem | null) => {
     setSelectedContact(c);
-    setFieldValue("contactId", c ? String(c.id) : "");
+    setFieldValue("contactId", c ? c.id : undefined);
   };
 
   const handlePriorityChange = (priority: string) => {
-    setFieldValue("priority", priority);
+    setFieldValue("priority", priority as CrmPriorityEnum);
   };
 
   return (
@@ -95,7 +96,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
 
       <PropertyField
         label={translateText(["labels", "value"])}
-        value={values.amount}
+        value={values.amount ?? ""}
         placeholder={translateText(["placeholders", "none"])}
         ariaLabel={translateText(["ariaLabels", "amount"])}
         validate={(value) => validateDealAmount(value, translateText)}
@@ -105,7 +106,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
 
       <PropertyRow label={translateText(["labels", "priority"])}>
         <PriorityDropdown
-          value={values.priority}
+          value={values.priority ?? CrmPriorityEnum.MEDIUM}
           onChange={handlePriorityChange}
         />
       </PropertyRow>

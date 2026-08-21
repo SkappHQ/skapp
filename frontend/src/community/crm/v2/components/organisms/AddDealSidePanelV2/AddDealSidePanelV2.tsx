@@ -1,6 +1,7 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -21,7 +22,6 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmContactLookupItem,
-  CrmDealAddFormTypes,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
@@ -30,11 +30,11 @@ import { ingestCreatedDeal } from "~community/crm/v2/utils/dealIngest";
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
 
-const initialValues: CrmDealAddFormTypes = {
+const initialValues: CrmDealEntity = {
   name: "",
-  stageId: "",
-  contactId: "",
-  ownerId: "",
+  stageId: undefined,
+  contactId: undefined,
+  ownerId: undefined,
   priority: CrmPriorityEnum.MEDIUM,
   amount: "",
   description: ""
@@ -47,11 +47,18 @@ const AddDealSidePanelV2: FC = () => {
   const [selectedContact, setSelectedContact] =
     useState<CrmContactLookupItem | null>(null);
 
-  const isCrmSidePanelOpen = useCrmStoreV2((store) => store.isCrmSidePanelOpen);
-  const crmSidePanelType = useCrmStoreV2((store) => store.crmSidePanelType);
-  const closeCrmSidePanel = useCrmStoreV2((store) => store.closeCrmSidePanel);
-  const setPreselectedStageId = useCrmStoreV2(
-    (store) => store.setPreselectedStageId
+  const {
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    closeCrmSidePanel,
+    setPreselectedStageId
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setPreselectedStageId: store.setPreselectedStageId
+    }))
   );
 
   const isOpen =
@@ -99,8 +106,8 @@ const AddDealSidePanelV2: FC = () => {
   );
 
   const handleSubmit = (
-    values: CrmDealAddFormTypes,
-    { setSubmitting }: FormikHelpers<CrmDealAddFormTypes>
+    values: CrmDealEntity,
+    { setSubmitting }: FormikHelpers<CrmDealEntity>
   ) => {
     setSubmitting(false);
 
@@ -109,10 +116,10 @@ const AddDealSidePanelV2: FC = () => {
     }
 
     const payload: CrmDealEntity = {
-      name: values.name.trim(),
-      stageId: Number(values.stageId),
-      contactId: Number(values.contactId),
-      ownerId: Number(values.ownerId),
+      name: values.name?.trim(),
+      stageId: values.stageId,
+      contactId: values.contactId,
+      ownerId: values.ownerId,
       priority: values.priority,
       amount: values.amount || undefined,
       description: values.description || undefined
@@ -121,7 +128,7 @@ const AddDealSidePanelV2: FC = () => {
     createDeal(payload);
   };
 
-  const formik = useFormik<CrmDealAddFormTypes>({
+  const formik = useFormik<CrmDealEntity>({
     initialValues,
     validationSchema: addDealValidations(translateText),
     validateOnChange: true,
@@ -131,17 +138,16 @@ const AddDealSidePanelV2: FC = () => {
 
   const { values, setFieldValue, resetForm, isSubmitting, submitForm } = formik;
 
-  const debouncedDealName = useDebounce(
-    values.name.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
+  const trimmedDealName = (values.name ?? "").trim();
+
+  const debouncedDealName = useDebounce(trimmedDealName, SEARCH_DEBOUNCE_DELAY);
 
   const { data: dealNameData, isFetching: isDealNameCheckFetching } =
     useCheckDealNameExists(debouncedDealName, debouncedDealName.length > 0);
 
   const isDealNameCheckUnresolved =
-    values.name.trim().length > 0 &&
-    (values.name.trim() !== debouncedDealName || isDealNameCheckFetching);
+    trimmedDealName.length > 0 &&
+    (trimmedDealName !== debouncedDealName || isDealNameCheckFetching);
 
   const handleDescriptionChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setFieldValue("description", e.target.value);

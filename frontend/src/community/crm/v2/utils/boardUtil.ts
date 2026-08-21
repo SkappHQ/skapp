@@ -21,7 +21,7 @@ export const mapBoardDealToEntity = (
   ownerId: deal.ownerId,
   companyId: deal.companyId ?? undefined,
   contactId: deal.contactId,
-  openTasksCount: deal.taskCount,
+  taskCount: deal.taskCount,
   stageId
 });
 

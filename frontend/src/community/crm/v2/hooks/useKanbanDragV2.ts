@@ -32,12 +32,6 @@ interface UseKanbanDragV2Return {
   handleDragEnd: (event: DragEndEvent) => void;
 }
 
-// Optimistic Kanban drag on the normalized store. The board record and the
-// moved deal's stageId are snapshot on drag start; a reorder/move is applied to
-// the store immediately, the reorder/move endpoint is fired, and both snapshots
-// are restored if that call fails. All neighbour/insert-index math is computed
-// against the snapshot's dealId arrays (the moved deal is not yet re-inserted),
-// matching the payload the backend expects.
 export const useKanbanDragV2 = ({
   onError
 }: {
