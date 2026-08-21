@@ -179,8 +179,6 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     if (!isRowInteractive) return;
 
     if (targetEmployee) {
-      // handleEdit bails out when the record maps to no modal, so the store is
-      // only marked as a direct entry when a modal is actually going to open.
       if (getTimeEntryModalType(record) === null) return;
 
       setDirectEntryEmployee(targetEmployee);

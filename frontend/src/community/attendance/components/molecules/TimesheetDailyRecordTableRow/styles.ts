@@ -21,8 +21,6 @@ const styles = (theme: Theme) => ({
     color: `${theme.palette.error.contrastText} !important`,
     background: "transparent !important"
   }),
-  // The hover affordance is omitted rather than overridden when the row is not
-  // interactive, so there is nothing to cancel out afterwards.
   stackContainerStyle: (isInteractive: boolean) => ({
     width: "max-content",
     height: "4rem",

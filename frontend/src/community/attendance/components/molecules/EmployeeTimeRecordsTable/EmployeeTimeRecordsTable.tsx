@@ -112,12 +112,6 @@ const EmployeeTimeRecordsTable = ({
     Boolean(pendingCell)
   );
 
-  // useTranslator returns a new function on every render, so it is held in a ref
-  // instead of being listed as a dependency below.
-  // The effect opens a modal through the attendance store, and this component is
-  // subscribed to that whole store, so the resulting re-render can re-enter the
-  // effect before the setPendingCell(null) above has been flushed. This records
-  // the cell that has already been handled so it is only ever acted on once.
   const handledCellRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -142,8 +136,6 @@ const EmployeeTimeRecordsTable = ({
       return;
     }
 
-    // A newly enabled query reports isFetching false for the render before the
-    // request starts, so the day is only read once this cell's fetch has settled.
     if (!isPendingDaySuccess) return;
 
     const dayRecord =

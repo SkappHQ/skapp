@@ -68,8 +68,6 @@ const AttendanceConfiguration = (): JSX.Element => {
     setConfig((prevConfig) => {
       if (!prevConfig) return configData;
 
-      // Collected as a partial and spread last, so the edited fields win over the
-      // server copy without assigning through a widened keyof index.
       const localEdits: Partial<AttendanceConfigurationType> = {};
       locallyEditedKeys.current.forEach((key) => {
         localEdits[key] = prevConfig[key];

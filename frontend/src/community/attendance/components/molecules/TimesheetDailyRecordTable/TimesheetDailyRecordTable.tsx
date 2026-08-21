@@ -46,8 +46,6 @@ const TimesheetDailyRecordTable = ({
     isLoading: isRestrictionLoading
   } = useManualEntryRestriction();
 
-  // Rows stay inert until the config resolves, so a click is never handled
-  // before we know whether the restriction applies.
   const isRowInteractive =
     !isRestrictionLoading &&
     (targetEmployee ? canDirectlyAddOrEditEntry : !isManualEntryRestricted);
