@@ -127,14 +127,15 @@ export const CompanyTable: FC = () => {
         openTasksCount: (
           <div className="flex flex-row items-center gap-2">
             {formatTableValue(metrics?.openTasksCount)}
-            {metrics?.overdue !== undefined && metrics.overdue > 0 && (
-              <Label
-                backgroundColor="bg-semantic-red-background"
-                textColor="text-semantic-red-text"
-              >
-                {`${metrics.overdue} ${translateText(["table", "overdueLabel"])}`}
-              </Label>
-            )}
+            {metrics?.overdueTasksCount !== undefined &&
+              metrics.overdueTasksCount > 0 && (
+                <Label
+                  backgroundColor="bg-semantic-red-background"
+                  textColor="text-semantic-red-text"
+                >
+                  {`${metrics.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
+                </Label>
+              )}
           </div>
         ),
         openValue: (
@@ -146,8 +147,9 @@ export const CompanyTable: FC = () => {
           <div className="flex flex-col gap-1 text-right">
             <div>{formatMonetaryValue(metrics?.accountValue)}</div>
             <div className="subtitle4 text-secondary-text">
-              {metrics?.closedDeals !== undefined && metrics.closedDeals > 0
-                ? `${metrics.closedDeals} ${translateText(["table", "closedDealsLabel"])}`
+              {metrics?.closedDealsCount !== undefined &&
+              metrics.closedDealsCount > 0
+                ? `${metrics.closedDealsCount} ${translateText(["table", "closedDealsLabel"])}`
                 : ""}
             </div>
           </div>

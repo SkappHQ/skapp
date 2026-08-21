@@ -6,6 +6,8 @@ interface CrmDeleteModalContentProps {
   isPending: boolean;
   confirmLabel: string;
   cancelLabel: string;
+  confirmAriaLabel?: string;
+  cancelAriaLabel?: string;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -15,6 +17,8 @@ const CrmDeleteModalContent: FC<CrmDeleteModalContentProps> = ({
   isPending,
   confirmLabel,
   cancelLabel,
+  confirmAriaLabel,
+  cancelAriaLabel,
   onConfirm,
   onClose
 }) => {
@@ -29,6 +33,7 @@ const CrmDeleteModalContent: FC<CrmDeleteModalContentProps> = ({
           icon={<CloseIcon />}
           iconPosition="end"
           disabled={isPending}
+          aria-label={cancelAriaLabel}
         >
           {cancelLabel}
         </ButtonV2>
@@ -46,6 +51,7 @@ const CrmDeleteModalContent: FC<CrmDeleteModalContentProps> = ({
           iconPosition="end"
           onClick={onConfirm}
           disabled={isPending}
+          aria-label={confirmAriaLabel}
         >
           {confirmLabel}
         </ButtonV2>

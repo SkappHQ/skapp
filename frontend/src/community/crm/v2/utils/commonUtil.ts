@@ -9,8 +9,11 @@ const isEmptyValue = (value?: string | number) =>
 export const formatTableValue = (value?: string | number, prefix = "") =>
   isEmptyValue(value) ? EMPTY_PLACEHOLDER : `${prefix}${value}`;
 
-export const formatMonetaryValue = (value?: string) =>
-  formatTableValue(value?.split(".")[0], CURRENCY_PREFIX);
+export const formatMonetaryValue = (value?: string) => {
+  if (isEmptyValue(value)) return EMPTY_PLACEHOLDER;
+
+  return `${CURRENCY_PREFIX}${value?.split(".")[0]}`;
+};
 
 export const formatMonetaryValueWithDecimals = (value?: string | number) =>
   isEmptyValue(value)

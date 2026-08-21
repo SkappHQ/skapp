@@ -23,7 +23,7 @@ export interface CrmCompanyEntity {
 export interface CrmCompanyMetrics {
   id?: number;
   openTasksCount?: number;
-  overdueCount?: number;
+  overdueTasksCount?: number;
   openValue?: string;
   accountValue?: string;
   openDealsCount?: number;
@@ -122,7 +122,7 @@ export interface CrmTaskTypeEntity {
   orderIndex: number;
 }
 
-// Normalized store records 
+// Normalized store records
 
 export type CrmCompanyRecord = Record<number, CrmCompanyEntity>;
 export type CrmContactRecord = Record<number, CrmContactEntity>;

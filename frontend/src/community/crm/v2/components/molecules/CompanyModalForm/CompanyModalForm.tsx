@@ -53,7 +53,9 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   );
 
   const isAlreadyNameExists =
-    trimmedName !== trimmedOriginalName && companyNameData?.isExists;
+    trimmedName === debouncedName &&
+    trimmedName !== trimmedOriginalName &&
+    companyNameData?.isExists;
 
   const nameError = isAlreadyNameExists
     ? translateText(["validations", "companyExists"])

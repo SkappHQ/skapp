@@ -1,10 +1,7 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
-export const crmCompanyEndpointsV2 = {
-  GET_COMPANIES: `${moduleAPIPath.CRM}/company`
-};
-
-export const crmCompanyEndpointsV1 = {
+export const crmCompanyEndpoints = {
+  GET_COMPANIES: `${moduleAPIPath.CRM}/company`,
   GET_COMPANY_BY_ID: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   GET_COMPANY_METRICS: (id: number) =>
     `${moduleAPIPath.CRM}/company/${id}/metrics`,

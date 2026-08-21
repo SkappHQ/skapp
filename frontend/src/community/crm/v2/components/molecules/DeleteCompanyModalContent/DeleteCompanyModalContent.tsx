@@ -96,6 +96,8 @@ const DeleteCompanyModalContent: FC = () => {
       isPending={isPending}
       confirmLabel={translateText(["buttons", "confirm"])}
       cancelLabel={translateText(["buttons", "cancel"])}
+      confirmAriaLabel={translateText(["ariaLabels", "confirm"])}
+      cancelAriaLabel={translateText(["ariaLabels", "cancel"])}
       onConfirm={handleDeleteCompany}
       onClose={handleCloseModal}
     />

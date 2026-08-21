@@ -11,10 +11,7 @@ import { AxiosError } from "axios";
 import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
-import {
-  crmCompanyEndpointsV1,
-  crmCompanyEndpointsV2
-} from "~community/crm/v2/api/utils/ApiEndpoints";
+import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import {
   CrmCompanyEntity,
@@ -35,7 +32,7 @@ interface EditCompanyVariables {
 const fetchCompanies = async (
   params: CrmCompanyFilterRequest
 ): Promise<CrmCompanyListResponse> => {
-  const response = await authFetchV2.get(crmCompanyEndpointsV2.GET_COMPANIES, {
+  const response = await authFetchV2.get(crmCompanyEndpoints.GET_COMPANIES, {
     params
   });
   return response?.data?.results?.[0];
@@ -59,7 +56,7 @@ export const useGetCompaniesInfinite = (
 
 const fetchCompanyById = async (id: number): Promise<CrmCompanyEntity> => {
   const response = await authFetch.get(
-    crmCompanyEndpointsV1.GET_COMPANY_BY_ID(id)
+    crmCompanyEndpoints.GET_COMPANY_BY_ID(id)
   );
   return response?.data?.results?.[0];
 };
@@ -76,7 +73,7 @@ export const useGetCompanyById = (
 
 const fetchCompanyMetrics = async (id: number): Promise<CrmCompanyMetrics> => {
   const response = await authFetch.get(
-    crmCompanyEndpointsV1.GET_COMPANY_METRICS(id)
+    crmCompanyEndpoints.GET_COMPANY_METRICS(id)
   );
   return response?.data?.results?.[0];
 };
@@ -95,7 +92,7 @@ const checkCompanyNameExists = async (
   name: string
 ): Promise<CrmExistsResponse> => {
   const response = await authFetch.get(
-    crmCompanyEndpointsV1.CHECK_COMPANY_NAME_EXISTS,
+    crmCompanyEndpoints.CHECK_COMPANY_NAME_EXISTS,
     { params: { name } }
   );
   return response?.data?.results?.[0];
@@ -115,7 +112,7 @@ const createCompany = async (
   payload: CrmCompanyEntity
 ): Promise<CrmCompanyEntity> => {
   const response = await authFetch.post(
-    crmCompanyEndpointsV1.CREATE_COMPANY,
+    crmCompanyEndpoints.CREATE_COMPANY,
     payload
   );
   return response?.data?.results?.[0];
@@ -144,7 +141,7 @@ const editCompany = async ({
   payload
 }: EditCompanyVariables): Promise<CrmCompanyEntity> => {
   const response = await authFetch.patch(
-    crmCompanyEndpointsV1.EDIT_COMPANY(id),
+    crmCompanyEndpoints.EDIT_COMPANY(id),
     payload
   );
   return response?.data?.results?.[0];
@@ -161,7 +158,7 @@ export const useEditCompany = (
   });
 
 const deleteCompany = async (id: number): Promise<void> => {
-  await authFetch.delete(crmCompanyEndpointsV1.DELETE_COMPANY(id));
+  await authFetch.delete(crmCompanyEndpoints.DELETE_COMPANY(id));
 };
 
 export const useDeleteCompany = (
