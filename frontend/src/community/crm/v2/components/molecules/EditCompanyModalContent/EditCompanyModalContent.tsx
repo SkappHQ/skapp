@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -23,12 +24,14 @@ const EditCompanyModalContent: FC = () => {
   const translateText = useTranslator("crmModule", "companies", "companyModal");
 
   const { companies, selectedCompanyId, setCompanies, setIsCompanyModalOpen } =
-    useCrmStoreV2((store) => ({
-      companies: store.companies,
-      selectedCompanyId: store.selectedCompanyId,
-      setCompanies: store.setCompanies,
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen
-    }));
+    useCrmStoreV2(
+      useShallow((store) => ({
+        companies: store.companies,
+        selectedCompanyId: store.selectedCompanyId,
+        setCompanies: store.setCompanies,
+        setIsCompanyModalOpen: store.setIsCompanyModalOpen
+      }))
+    );
 
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 

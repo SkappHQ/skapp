@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -25,13 +26,15 @@ const AddCompanyModalContent: FC = () => {
     setCompanies,
     setCompanyIds,
     setIsCompanyModalOpen
-  } = useCrmStoreV2((store) => ({
-    companies: store.companies,
-    companyIds: store.companyIds,
-    setCompanies: store.setCompanies,
-    setCompanyIds: store.setCompanyIds,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen
-  }));
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      companies: store.companies,
+      companyIds: store.companyIds,
+      setCompanies: store.setCompanies,
+      setCompanyIds: store.setCompanyIds,
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen
+    }))
+  );
 
   const formik = useFormik<CrmCompanyEntity>({
     initialValues: getCompanyFormInitialValues(),

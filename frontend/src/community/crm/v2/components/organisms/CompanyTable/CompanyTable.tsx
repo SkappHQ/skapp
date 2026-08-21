@@ -4,6 +4,7 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -42,14 +43,16 @@ export const CompanyTable: FC = () => {
     setCompanyIds,
     setSelectedCompanyId,
     openCrmSidePanel
-  } = useCrmStoreV2((store) => ({
-    companies: store.companies,
-    companyIds: store.companyIds,
-    setCompanies: store.setCompanies,
-    setCompanyIds: store.setCompanyIds,
-    setSelectedCompanyId: store.setSelectedCompanyId,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      companies: store.companies,
+      companyIds: store.companyIds,
+      setCompanies: store.setCompanies,
+      setCompanyIds: store.setCompanyIds,
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const companyFilters: CrmCompanyFilterRequest = {
     searchKeyword: debouncedSearch,
