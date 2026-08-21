@@ -1,4 +1,6 @@
 import {
+  InfiniteData,
+  UseInfiniteQueryResult,
   UseMutationResult,
   UseQueryResult,
   useInfiniteQuery,
@@ -39,11 +41,9 @@ const fetchCompanies = async (
 };
 
 export const useGetCompaniesInfinite = (
-  params: CrmCompanyFilterRequest,
-  enabled?: boolean
-) =>
+  params: CrmCompanyFilterRequest
+): UseInfiniteQueryResult<InfiniteData<CrmCompanyListResponse>, AxiosError> =>
   useInfiniteQuery({
-    enabled,
     queryKey: crmCompanyQueryKeys.LIST(params),
     queryFn: ({ pageParam }) => fetchCompanies({ ...params, page: pageParam }),
     initialPageParam: 0,
@@ -62,13 +62,11 @@ const fetchCompanyById = async (id: number): Promise<CrmCompanyEntity> => {
 };
 
 export const useGetCompanyById = (
-  id: number,
-  enabled?: boolean
+  id: number
 ): UseQueryResult<CrmCompanyEntity> =>
   useQuery({
     queryKey: crmCompanyQueryKeys.DETAIL(id),
-    queryFn: () => fetchCompanyById(id),
-    enabled
+    queryFn: () => fetchCompanyById(id)
   });
 
 const fetchCompanyMetrics = async (id: number): Promise<CrmCompanyMetrics> => {
@@ -79,13 +77,11 @@ const fetchCompanyMetrics = async (id: number): Promise<CrmCompanyMetrics> => {
 };
 
 export const useGetCompanyMetrics = (
-  id: number,
-  enabled?: boolean
+  id: number
 ): UseQueryResult<CrmCompanyMetrics> =>
   useQuery({
     queryKey: crmCompanyQueryKeys.METRICS(id),
-    queryFn: () => fetchCompanyMetrics(id),
-    enabled
+    queryFn: () => fetchCompanyMetrics(id)
   });
 
 const checkCompanyNameExists = async (

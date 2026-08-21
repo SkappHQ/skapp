@@ -90,12 +90,19 @@ const EditCompanyModalContent: FC = () => {
   const submitEditCompany = (values: CrmCompanyEntity) => {
     if (selectedCompanyId === null) return;
 
+    const changedFields = getChangedCompanyFields(
+      initialValues,
+      getTrimmedCompanyValues(values)
+    );
+
+    if (Object.keys(changedFields).length === 0) {
+      handleCloseModal();
+      return;
+    }
+
     const editCompanyVariables = {
       id: selectedCompanyId,
-      payload: getChangedCompanyFields(
-        initialValues,
-        getTrimmedCompanyValues(values)
-      )
+      payload: changedFields
     };
 
     editCompany(editCompanyVariables);
