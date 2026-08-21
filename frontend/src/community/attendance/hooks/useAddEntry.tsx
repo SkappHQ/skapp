@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction } from "react";
 
 import {
   useAddManualTimeEntry,
-  useDirectTimeEntry,
   useEditClockInOut
 } from "~community/attendance/api/AttendanceEmployeeApi";
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
@@ -32,6 +31,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+import { useDirectTimeEntry } from "~enterprise/attendance/api/AttendanceApi";
 
 const CONFIRMATIONS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,

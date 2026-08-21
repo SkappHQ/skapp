@@ -10,7 +10,6 @@ import {
 import { TimeSheetRequestStates } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
-  DirectTimeEntryVariablesType,
   ManualEntryPayloadType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
@@ -30,7 +29,6 @@ import {
   getLocalDate,
   getStartAndEndOfYear
 } from "~community/common/utils/dateTimeUtils";
-import { epAttendanceEndpoints } from "~enterprise/attendance/api/utils/attendanceEndPoints";
 
 export const useGetTodaysTimeRequestAvailability = () => {
   //const { setGeneralErrors } = useGeneralErrors();
@@ -261,41 +259,6 @@ export const useAddManualTimeEntry = (
           queryKey: attendanceQueryKeys.getEmployeeRequests()
         })
         .catch(rejects);
-    }
-  });
-};
-
-export const useDirectTimeEntry = (
-  onSuccess: () => void,
-  onEnhancedError: (error: ErrorResponse) => void
-) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async ({
-      employeeId,
-      isEdit,
-      payload
-    }: DirectTimeEntryVariablesType) => {
-      const url = epAttendanceEndpoints.DIRECT_TIME_ENTRY(employeeId);
-      return isEdit
-        ? await authFetch.patch(url, payload)
-        : await authFetch.post(url, payload);
-    },
-    onError(error: ErrorResponse) {
-      onEnhancedError(error);
-    },
-    onSuccess() {
-      onSuccess();
-      [
-        attendanceQueryKeys.getManagerRecords(),
-        attendanceQueryKeys.getManagerWorkSummary(),
-        attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),
-        attendanceQueryKeys.getEmployeeRequests()
-      ].forEach((queryKey) => {
-        queryClient
-          .invalidateQueries({ queryKey, refetchType: "all" })
-          .catch(rejects);
-      });
     }
   });
 };
