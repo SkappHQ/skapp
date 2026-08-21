@@ -21,14 +21,6 @@ import ManualEntryRestrictionSettings from "~enterprise/configurations/component
 
 import styles from "./styles";
 
-const retainLocalValue = <K extends keyof AttendanceConfigurationType>(
-  target: AttendanceConfigurationType,
-  source: AttendanceConfigurationType,
-  key: K
-): void => {
-  target[key] = source[key];
-};
-
 const AttendanceConfiguration = (): JSX.Element => {
   const classes = styles();
   const [config, setConfig] = useState<AttendanceConfigurationType | null>(
@@ -76,12 +68,14 @@ const AttendanceConfiguration = (): JSX.Element => {
     setConfig((prevConfig) => {
       if (!prevConfig) return configData;
 
-      const merged: AttendanceConfigurationType = { ...configData };
+      // Collected as a partial and spread last, so the edited fields win over the
+      // server copy without assigning through a widened keyof index.
+      const localEdits: Partial<AttendanceConfigurationType> = {};
       locallyEditedKeys.current.forEach((key) => {
-        retainLocalValue(merged, prevConfig, key);
+        localEdits[key] = prevConfig[key];
       });
 
-      return merged;
+      return { ...configData, ...localEdits };
     });
   }, [configData]);
 

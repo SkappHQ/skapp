@@ -35,7 +35,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { getEmoji, mergeSx } from "~community/common/utils/commonUtil";
+import { getEmoji } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
@@ -197,10 +197,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={mergeSx([
-        classes.stackContainerStyle,
-        !isRowInteractive ? classes.nonInteractiveStackStyle : undefined
-      ])}
+      sx={classes.stackContainerStyle(isRowInteractive)}
       onClick={handleRowActivate}
       aria-disabled={!isRowInteractive}
       title={

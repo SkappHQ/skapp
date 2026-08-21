@@ -21,7 +21,9 @@ const styles = (theme: Theme) => ({
     color: `${theme.palette.error.contrastText} !important`,
     background: "transparent !important"
   }),
-  stackContainerStyle: {
+  // The hover affordance is omitted rather than overridden when the row is not
+  // interactive, so there is nothing to cancel out afterwards.
+  stackContainerStyle: (isInteractive: boolean) => ({
     width: "max-content",
     height: "4rem",
     background: theme.palette.common.white,
@@ -32,26 +34,21 @@ const styles = (theme: Theme) => ({
     [theme.breakpoints.down("xl")]: {
       width: "max-content"
     },
-    cursor: "pointer",
-    "&:hover": {
-      background: theme.palette.grey[100],
-      "& > :first-child": {
-        background: theme.palette.grey[100]
-      }
-    },
+    cursor: isInteractive ? "pointer" : "default",
+    ...(isInteractive
+      ? {
+          "&:hover": {
+            background: theme.palette.grey[100],
+            "& > :first-child": {
+              background: theme.palette.grey[100]
+            }
+          }
+        }
+      : {}),
     "&:focus": {
       zIndex: ZIndexEnums.DEFAULT
     }
-  },
-  nonInteractiveStackStyle: {
-    cursor: "default",
-    "&:hover": {
-      background: theme.palette.common.white,
-      "& > :first-child": {
-        background: theme.palette.common.white
-      }
-    }
-  },
+  }),
   boxContainerStyle: (isDrawerToggled: boolean) => ({
     display: "flex",
     flexDirection: "row",

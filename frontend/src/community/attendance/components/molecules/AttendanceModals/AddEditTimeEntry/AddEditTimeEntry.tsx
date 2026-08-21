@@ -519,11 +519,9 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           icon={<Icon name={IconName.CHECK_ICON} />}
           iconPosition="end"
         >
-          {translateText([
-            directEntryEmployee
-              ? "directEntrySaveBtnTxt"
-              : "submitRequestBtnTxt"
-          ])}
+          {directEntryEmployee
+            ? translateText(["directEntrySaveBtnTxt"])
+            : translateText(["submitRequestBtnTxt"])}
         </ButtonV2>
       </div>
     </Form>

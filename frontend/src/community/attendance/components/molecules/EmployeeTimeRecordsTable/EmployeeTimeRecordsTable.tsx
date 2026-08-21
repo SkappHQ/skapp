@@ -76,7 +76,14 @@ const EmployeeTimeRecordsTable = ({
     setDirectEntryEmployee,
     setEmployeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen
-  } = useAttendanceStore((state) => state);
+  } = useAttendanceStore((state) => ({
+    timesheetAnalyticsParams: state.timesheetAnalyticsParams,
+    setTimesheetAnalyticsPagination: state.setTimesheetAnalyticsPagination,
+    setSelectedDailyRecord: state.setSelectedDailyRecord,
+    setDirectEntryEmployee: state.setDirectEntryEmployee,
+    setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
+    setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
+  }));
 
   const { isFetching: isExportRecordDataLoading, refetch: refetchExportData } =
     useGetManagerTimeRecords(true);
@@ -107,9 +114,6 @@ const EmployeeTimeRecordsTable = ({
 
   // useTranslator returns a new function on every render, so it is held in a ref
   // instead of being listed as a dependency below.
-  const translateTextRef = useRef(translateText);
-  translateTextRef.current = translateText;
-
   // The effect opens a modal through the attendance store, and this component is
   // subscribed to that whole store, so the resulting re-render can re-enter the
   // effect before the setPendingCell(null) above has been flushed. This records
@@ -131,8 +135,8 @@ const EmployeeTimeRecordsTable = ({
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateTextRef.current(["addTimeEntryErrorTitle"]),
-        description: translateTextRef.current(["directEntryDayLoadErrorDes"]),
+        title: translateText(["addTimeEntryErrorTitle"]),
+        description: translateText(["directEntryDayLoadErrorDes"]),
         autoHideDuration: TOAST_AUTO_HIDE_DURATION
       });
       return;
