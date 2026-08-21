@@ -72,8 +72,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] =
     useState<boolean>(false);
 
-  const submittedNameRef = useRef<string>("");
-
   const formikRef = useRef<FormikProps<LeavePolicyFormData> | null>(null);
 
   const steps = [
@@ -91,9 +89,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["successToastTitle"]),
-      description: translateText(["successToastDescription"], {
-        policyName: submittedNameRef.current
-      })
+      description: translateText(["successToastDescription"])
     });
     handleClose();
   };
@@ -129,7 +125,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     validationSchema: leavePolicyWizardValidation(translateText, isAccrual),
     validateOnBlur: false,
     onSubmit: (values) => {
-      submittedNameRef.current = values.policyName.trim();
       addLeavePolicy(mapLeavePolicyFormToPayload(values));
     }
   });

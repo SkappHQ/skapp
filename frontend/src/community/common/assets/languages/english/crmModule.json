@@ -4,6 +4,10 @@
       "placeholder": "None",
       "searchPlaceholder": "Search Owner",
       "noResults": "No results"
+    },
+    "initData": {
+      "errorTitle": "Couldn't load CRM data",
+      "errorDescription": "Something went wrong. Please try again"
     }
   },
   "breadcrumbs": {

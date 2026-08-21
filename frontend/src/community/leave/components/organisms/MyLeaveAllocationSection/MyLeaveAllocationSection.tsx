@@ -6,12 +6,9 @@ import LeaveAllocationSkeleton from "~community/leave/components/molecules/Leave
 import LeavePolicyAllocation from "~community/leave/components/molecules/LeavePolicyAllocation/LeavePolicyAllocation";
 import PolicyLeaveModalController from "~community/leave/components/organisms/PolicyLeaveModalController/PolicyLeaveModalController";
 import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
-import usePolicyLeaveYearSync from "~community/leave/hooks/usePolicyLeaveYearSync";
 
 const MyLeaveAllocationSection: FC = () => {
   const { isLeavePoliciesEnabled, isLoading } = useLeavePoliciesEnabled();
-
-  usePolicyLeaveYearSync();
 
   if (isLoading) {
     return (
