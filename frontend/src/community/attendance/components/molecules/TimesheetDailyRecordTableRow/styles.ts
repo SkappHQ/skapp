@@ -37,7 +37,7 @@ const styles = (theme: Theme) => ({
       ? {
           "&:hover": {
             background: theme.palette.grey[100],
-            "& > :first-child": {
+            "& [data-sticky-cell]": {
               background: theme.palette.grey[100]
             }
           }
