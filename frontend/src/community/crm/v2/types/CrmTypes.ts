@@ -97,21 +97,9 @@ export interface CrmOwnerListResponse {
   totalPages: number;
 }
 
-export interface CrmDealListResponse {
-  items: CrmDealEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface CrmBoardDealResponse extends CrmDealEntity {
-  id: number;
-  taskCount: number;
-}
-
 export interface CrmDealsByStagesResponse {
   stageId: number;
-  deals: CrmBoardDealResponse[];
+  deals: CrmDealEntity[];
   totalCount: number;
   currentPage: number;
   totalPages: number;

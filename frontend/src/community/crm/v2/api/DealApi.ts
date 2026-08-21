@@ -17,7 +17,6 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmDealFilterRequest,
-  CrmDealListResponse,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -38,7 +37,12 @@ interface UpdateDealStageVariables {
 
 const fetchDeals = async (
   filters: CrmDealFilterRequest
-): Promise<CrmDealListResponse> => {
+): Promise<{
+  items: CrmDealEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
     params: filters
   });

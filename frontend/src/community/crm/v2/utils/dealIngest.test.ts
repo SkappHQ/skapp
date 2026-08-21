@@ -1,14 +1,14 @@
 import { CrmPriorityEnum } from "../enums/common";
 import { useCrmStoreV2 } from "../store/store";
 import { CrmDealEntity } from "../types/CrmCommonTypes";
-import { CrmBoardDealResponse, CrmDealsByStagesResponse } from "../types/CrmTypes";
+import { CrmDealsByStagesResponse } from "../types/CrmTypes";
 import { ingestBoardStageDeals } from "./boardUtil";
 import { ingestCreatedDeal, ingestEditedDeal, removeDeal } from "./dealIngest";
 
 const STAGE_A = 1;
 const STAGE_B = 2;
 
-const boardDeal = (id: number): CrmBoardDealResponse => ({
+const boardDeal = (id: number): CrmDealEntity => ({
   id,
   name: `Deal ${id}`,
   amount: "100",
@@ -21,7 +21,7 @@ const boardDeal = (id: number): CrmBoardDealResponse => ({
 
 const group = (
   stageId: number,
-  deals: CrmBoardDealResponse[]
+  deals: CrmDealEntity[]
 ): CrmDealsByStagesResponse => ({
   stageId,
   deals,

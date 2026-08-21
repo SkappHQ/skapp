@@ -4,33 +4,8 @@ import {
   CrmBoardRecord,
   CrmDealEntity
 } from "../types/CrmCommonTypes";
-import {
-  CrmBoardDealResponse,
-  CrmDealsByStagesResponse
-} from "../types/CrmTypes";
+import { CrmDealsByStagesResponse } from "../types/CrmTypes";
 import { upsertDeals } from "./dealUtil";
-
-export const mapBoardDealToEntity = (
-  deal: CrmBoardDealResponse,
-  stageId: number
-): CrmDealEntity => ({
-  id: deal.id,
-  name: deal.name,
-  amount: deal.amount ?? undefined,
-  priority: deal.priority,
-  ownerId: deal.ownerId,
-  companyId: deal.companyId ?? undefined,
-  contactId: deal.contactId,
-  taskCount: deal.taskCount,
-  stageId
-});
-
-const toColumn = (group: CrmDealsByStagesResponse): CrmBoardColumn => ({
-  dealIds: group.deals.map((deal) => deal.id),
-  totalCount: group.totalCount,
-  currentPage: group.currentPage,
-  hasNextPage: group.hasNextPage
-});
 
 const appendDealIds = (existing: number[], incoming: number[]): number[] => {
   const seen = new Set(existing);
@@ -44,13 +19,20 @@ export const ingestBoardStageDeals = (
   const store = useCrmStoreV2.getState();
 
   const entities: CrmDealEntity[] = groups.flatMap((group) =>
-    group.deals.map((deal) => mapBoardDealToEntity(deal, group.stageId))
+    group.deals.map((deal) => ({ ...deal, stageId: group.stageId }))
   );
   upsertDeals(entities);
 
   const nextBoard: CrmBoardRecord = { ...store.board };
   for (const group of groups) {
-    const incoming = toColumn(group);
+    const incoming: CrmBoardColumn = {
+      dealIds: group.deals
+        .map((deal) => deal.id)
+        .filter((id): id is number => id != null),
+      totalCount: group.totalCount,
+      currentPage: group.currentPage,
+      hasNextPage: group.hasNextPage
+    };
     const existing = nextBoard[group.stageId];
     nextBoard[group.stageId] =
       append && existing

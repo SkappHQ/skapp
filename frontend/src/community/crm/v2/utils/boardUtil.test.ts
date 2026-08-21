@@ -5,7 +5,7 @@ import {
   CrmDealEntity,
   CrmOwnerEntity
 } from "../types/CrmCommonTypes";
-import { CrmBoardDealResponse, CrmDealsByStagesResponse } from "../types/CrmTypes";
+import { CrmDealsByStagesResponse } from "../types/CrmTypes";
 import {
   findStageIdByDealId,
   ingestBoardStageDeals,
@@ -28,8 +28,8 @@ const contact = (id: number): CrmContactEntity => ({ id, name: `Contact ${id}` }
 
 const boardDeal = (
   id: number,
-  overrides: Partial<CrmBoardDealResponse> = {}
-): CrmBoardDealResponse => ({
+  overrides: Partial<CrmDealEntity> = {}
+): CrmDealEntity => ({
   id,
   name: `Deal ${id}`,
   amount: "100",
@@ -43,7 +43,7 @@ const boardDeal = (
 
 const group = (
   stageId: number,
-  deals: CrmBoardDealResponse[],
+  deals: CrmDealEntity[],
   overrides: Partial<CrmDealsByStagesResponse> = {}
 ): CrmDealsByStagesResponse => ({
   stageId,
