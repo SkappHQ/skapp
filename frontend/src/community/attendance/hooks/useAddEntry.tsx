@@ -10,6 +10,7 @@ import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timeshe
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
+  DirectTimeEntryVariablesType,
   TimeAvailabilityType,
   TimeEntryFormValueType
 } from "~community/attendance/types/timeSheetTypes";
@@ -122,11 +123,14 @@ const useAddEntry = () => {
     }
   };
 
-  const onSuccessDirectEntry = (isEdit: boolean) => {
+  const onSuccessDirectEntry = (
+    isEdit: boolean,
+    variables: DirectTimeEntryVariablesType
+  ) => {
     const interpolations = {
-      employeeName: directEntryEmployee?.employeeName ?? "",
-      date: selectedDailyRecord?.date
-        ? formatDateWithOrdinalIndicator(new Date(selectedDailyRecord.date))
+      employeeName: variables.employeeName,
+      date: variables.entryDate
+        ? formatDateWithOrdinalIndicator(new Date(variables.entryDate))
         : ""
     };
 
@@ -159,12 +163,12 @@ const useAddEntry = () => {
   };
 
   const { mutate: addDirectEntryMutate } = useAddDirectTimeEntry(
-    () => onSuccessDirectEntry(false),
+    (variables) => onSuccessDirectEntry(false, variables),
     onDirectEntryError
   );
 
   const { mutate: editDirectEntryMutate } = useEditDirectTimeEntry(
-    () => onSuccessDirectEntry(true),
+    (variables) => onSuccessDirectEntry(true, variables),
     onDirectEntryError
   );
 
@@ -281,8 +285,10 @@ const useAddEntry = () => {
 
     if (isDirectEntry && directEntryEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
-      const variables = {
+      const variables: DirectTimeEntryVariablesType = {
         employeeId: directEntryEmployee.employeeId,
+        employeeName: directEntryEmployee.employeeName,
+        entryDate: selectedDailyRecord?.date ?? "",
         payload: {
           startTime: convertToUtc(dateTimeFromTime),
           endTime: convertToUtc(dateTimeToTime),
@@ -291,7 +297,6 @@ const useAddEntry = () => {
         }
       };
 
-      // An existing record for the day makes this an edit of it, not a new entry.
       if (existingRecordId) {
         editDirectEntryMutate(variables);
       } else {

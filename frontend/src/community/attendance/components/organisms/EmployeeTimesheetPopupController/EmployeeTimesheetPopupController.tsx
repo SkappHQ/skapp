@@ -57,14 +57,14 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
 
   const handelCloseModal = (): void => {
     setIsEmployeeTimesheetModalOpen(false);
-    setDirectEntryEmployee(null);
   };
 
   useEffect(() => {
     if (!isEmployeeTimesheetModalOpen) {
       setCurrentAddTimeChanges(undefined);
+      setDirectEntryEmployee(null);
     }
-  }, [isEmployeeTimesheetModalOpen, setCurrentAddTimeChanges]);
+  }, [isEmployeeTimesheetModalOpen]);
 
   const modalContent = (): JSX.Element => (
     <>
