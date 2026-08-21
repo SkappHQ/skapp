@@ -17,12 +17,12 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
-import { useDealById, useOrderedStages } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmContactLookupItem } from "~community/crm/v2/types/CrmTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
+import { getOrderedStages } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealPropertiesSidebarProps {
   dealId: number;
@@ -44,16 +44,18 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { getStageByName } = useStageNameMapper();
 
-  const deal = useDealById(dealId);
-  const stages = useOrderedStages();
+  const { deal, stagesRecord, contactRecord, companies, owners } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        deal: dealId != null ? store.deals[dealId] : undefined,
+        stagesRecord: store.stages,
+        contactRecord: store.contacts,
+        companies: store.companies,
+        owners: store.owners
+      }))
+    );
 
-  const { contactRecord, companies, owners } = useCrmStoreV2(
-    useShallow((store) => ({
-      contactRecord: store.contacts,
-      companies: store.companies,
-      owners: store.owners
-    }))
-  );
+  const stages = useMemo(() => getOrderedStages(stagesRecord), [stagesRecord]);
 
   const [contactSearchTerm, setContactSearchTerm] = useState("");
   const debouncedContactSearchTerm = useDebounce(

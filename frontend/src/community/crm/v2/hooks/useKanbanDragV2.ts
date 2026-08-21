@@ -12,6 +12,7 @@ import {
 } from "../api/BoardApi";
 import { useCrmStoreV2 } from "../store/store";
 import { CrmBoardRecord } from "../types/CrmCommonTypes";
+import { CrmKanbanDragType } from "../enums/common";
 import { CrmKanbanDragData } from "../types/CrmTypes";
 import {
   findStageIdByDealId,
@@ -104,7 +105,7 @@ export const useKanbanDragV2 = ({
     }
 
     const targetStageId = overData.stageId;
-    const isOverStageContainer = overData.type === "stage";
+    const isOverStageContainer = overData.type === CrmKanbanDragType.STAGE;
     const sourceDealIds = snapshot[sourceStageId]?.dealIds ?? [];
     const targetDealIds = snapshot[targetStageId]?.dealIds ?? [];
 

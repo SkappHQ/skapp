@@ -7,13 +7,19 @@ import {
   DEAL_PAGE_SIZE,
   DEAL_SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/dealConstants";
+import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
+import { useGetDealsInfinite } from "~community/crm/v2/api/DealApi";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
 import { CrmDealSortEnum, DealViewEnum } from "~community/crm/v2/enums/common";
-import { useDealsListV2 } from "~community/crm/v2/hooks/useDealsListV2";
-import { useHydrateCompanies } from "~community/crm/v2/hooks/useHydrateCompanies";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  getMissingCompanyIds,
+  upsertCompanies
+} from "~community/crm/v2/utils/companyUtil";
+import { ingestDeals } from "~community/crm/v2/utils/dealUtil";
+import { resolveDeals } from "~community/crm/v2/utils/selectorUtils";
 
 import DealsHeaderV2 from "./DealsHeaderV2";
 
@@ -23,23 +29,48 @@ const DealsSectionV2: FC = () => {
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { setSelectedDealId, openCrmSidePanel } = useCrmStoreV2(
+  const {
+    companies,
+    dealIds,
+    dealRecord,
+    setSelectedDealId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
     useShallow((store) => ({
+      companies: store.companies,
+      dealIds: store.dealIds,
+      dealRecord: store.deals,
       setSelectedDealId: store.setSelectedDealId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
   );
 
-  const { deals, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useDealsListV2(
-      {
-        size: DEAL_PAGE_SIZE,
-        sortKey: CrmDealSortEnum.STAGE_ORDER,
-        sortOrder: SortOrderTypes.ASC,
-        searchKeyword: debouncedSearch
-      },
-      activeView === DealViewEnum.LIST
-    );
+  const {
+    data,
+    isLoading,
+    hasNextPage: hasNextPageRaw,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useGetDealsInfinite(
+    {
+      size: DEAL_PAGE_SIZE,
+      sortKey: CrmDealSortEnum.STAGE_ORDER,
+      sortOrder: SortOrderTypes.ASC,
+      searchKeyword: debouncedSearch
+    },
+    activeView === DealViewEnum.LIST
+  );
+
+  const hasNextPage = Boolean(hasNextPageRaw);
+  const deals = useMemo(
+    () => resolveDeals(dealIds, dealRecord),
+    [dealIds, dealRecord]
+  );
+
+  useEffect(() => {
+    if (!data) return;
+    ingestDeals(data.pages.flatMap((page) => page.items));
+  }, [data]);
 
   const companyIds = useMemo(
     () =>
@@ -48,7 +79,22 @@ const DealsSectionV2: FC = () => {
         .filter((id): id is number => id != null),
     [deals]
   );
-  useHydrateCompanies(companyIds);
+
+  const missingCompanyIds = useMemo(
+    () => getMissingCompanyIds(companyIds, companies),
+    [companyIds, companies]
+  );
+
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
+  );
+
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      upsertCompanies(fetchedCompanies);
+    }
+  }, [fetchedCompanies]);
 
   const loadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {

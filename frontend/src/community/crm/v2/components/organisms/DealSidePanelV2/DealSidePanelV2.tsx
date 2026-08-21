@@ -15,7 +15,6 @@ import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
-import { useDealById } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
@@ -35,6 +34,7 @@ const DealSidePanelV2: FC = () => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     selectedDealId,
+    selectedDeal,
     setSelectedDealId,
     closeCrmSidePanel
   } = useCrmStoreV2(
@@ -42,6 +42,10 @@ const DealSidePanelV2: FC = () => {
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       selectedDealId: store.selectedDealId,
+      selectedDeal:
+        store.selectedDealId != null
+          ? store.deals[store.selectedDealId]
+          : undefined,
       setSelectedDealId: store.setSelectedDealId,
       closeCrmSidePanel: store.closeCrmSidePanel
     }))
@@ -64,8 +68,6 @@ const DealSidePanelV2: FC = () => {
   useEffect(() => {
     if (dealDetail) upsertDeals([dealDetail]);
   }, [dealDetail]);
-
-  const selectedDeal = useDealById(selectedDealId);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     ingestEditedDeal(updatedDeal);

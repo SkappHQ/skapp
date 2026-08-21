@@ -1,6 +1,10 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
-import { CrmDealSortEnum, CrmPriorityEnum } from "../enums/common";
+import {
+  CrmDealSortEnum,
+  CrmKanbanDragType,
+  CrmPriorityEnum
+} from "../enums/common";
 import {
   CrmCompanyEntity,
   CrmContactEntity,
@@ -58,7 +62,7 @@ export interface CrmCompanyBatchRequest {
 
 export interface CrmKanbanDragData {
   stageId: number;
-  type: "stage" | "deal";
+  type: CrmKanbanDragType;
 }
 
 export interface CrmCompanyListResponse {

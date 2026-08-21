@@ -13,6 +13,17 @@ export const toCompaniesRecord = (
   return companyRecord;
 };
 
+export const getMissingCompanyIds = (
+  companyIds: number[],
+  companies: CrmCompanyRecord
+): number[] => {
+  const unique = new Set<number>();
+  for (const id of companyIds) {
+    if (id != null && !companies[id]) unique.add(id);
+  }
+  return Array.from(unique).sort((a, b) => a - b);
+};
+
 export const upsertCompanies = (companies: CrmCompanyEntity[]): void => {
   const store = useCrmStoreV2.getState();
   const merged: CrmCompanyRecord = { ...store.companies };

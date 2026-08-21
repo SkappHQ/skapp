@@ -21,7 +21,7 @@ export interface DealCardV2Props {
   companyName?: string;
   owner?: CrmOwnerEntity;
   amount?: string;
-  priority: CrmPriorityEnum;
+  priority?: CrmPriorityEnum;
   taskCount?: number;
   ariaLabel?: string;
   onClick?: () => void;

@@ -4,24 +4,25 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
+import { useFetchMoreStageDeals } from "~community/crm/v2/api/BoardApi";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import DraggableDealCardV2 from "~community/crm/v2/components/molecules/DraggableDealCardV2/DraggableDealCardV2";
-import { useLoadMoreStageDealsV2 } from "~community/crm/v2/hooks/useLoadMoreStageDealsV2";
-import {
-  useBoardColumn,
-  useBoardColumnDeals,
-  useStageById
-} from "~community/crm/v2/store/selectors";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
+import { ingestBoardStageDeals } from "~community/crm/v2/utils/boardUtil";
 import { formatDealAmount } from "~community/crm/v2/utils/dealUtil";
+import { resolveColumnDeals } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealStageLaneV2Props {
   stageId: number;
@@ -54,14 +55,23 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
     });
   };
 
-  const stage = useStageById(stageId);
-  const column = useBoardColumn(stageId);
-  const deals = useBoardColumnDeals(stageId);
+  const { stage, column, dealRecord } = useCrmStoreV2(
+    useShallow((store) => ({
+      stage: store.stages[stageId],
+      column: store.board[stageId],
+      dealRecord: store.deals
+    }))
+  );
+
+  const deals = useMemo(
+    () => resolveColumnDeals(column, dealRecord),
+    [column, dealRecord]
+  );
 
   const { getStageByName } = useStageNameMapper();
   const stageName = getStageByName(stage?.name ?? "");
 
-  const dropData: CrmKanbanDragData = { type: "stage", stageId };
+  const dropData: CrmKanbanDragData = { type: CrmKanbanDragType.STAGE, stageId };
   const { setNodeRef } = useDroppable({
     id: `stage-${stageId}`,
     data: dropData
@@ -80,12 +90,20 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   const hasNextPage = column?.hasNextPage ?? false;
   const totalCount = column?.totalCount ?? 0;
 
-  const { loadMore, isLoadingMore } = useLoadMoreStageDealsV2({
-    stageId,
-    currentPage,
-    searchKeyword,
-    onError: handleLoadMoreError
-  });
+  const { mutate: fetchMoreStageDeals, isPending: isLoadingMore } =
+    useFetchMoreStageDeals(
+      (groups) => ingestBoardStageDeals(groups, { append: true }),
+      handleLoadMoreError
+    );
+
+  const loadMore = useCallback((): void => {
+    fetchMoreStageDeals({
+      stageIds: [stageId],
+      searchKeyword,
+      page: currentPage + 1,
+      limit: DEFAULT_BOARD_PAGE_SIZE
+    });
+  }, [stageId, currentPage, searchKeyword, fetchMoreStageDeals]);
 
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,

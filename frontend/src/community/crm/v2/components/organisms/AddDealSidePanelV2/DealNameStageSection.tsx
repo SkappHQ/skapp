@@ -1,13 +1,14 @@
 import { Dropdown, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { FC, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import { useOrderedStages } from "~community/crm/v2/store/selectors";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { getOrderedStages } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealEntity>;
@@ -28,8 +29,14 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
     nameErrorMessage = formik.errors.name;
   }
 
-  const stages = useOrderedStages();
-  const preselectedStageId = useCrmStoreV2((store) => store.preselectedStageId);
+  const { stagesRecord, preselectedStageId } = useCrmStoreV2(
+    useShallow((store) => ({
+      stagesRecord: store.stages,
+      preselectedStageId: store.preselectedStageId
+    }))
+  );
+
+  const stages = useMemo(() => getOrderedStages(stagesRecord), [stagesRecord]);
   const initialStageId = stages[0]?.id;
 
   let stageErrorMessage: string | undefined;

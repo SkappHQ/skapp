@@ -168,7 +168,7 @@ const AddDealSidePanelV2: FC = () => {
         isOpen={isOpen}
         onClose={handleClose}
         header={
-          <span className="pl-2 text-2xl font-bold text-black">
+          <span className="pl-2 h1 text-black">
             {translateText(["title"])}
           </span>
         }

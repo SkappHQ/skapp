@@ -1,12 +1,26 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import DealCardV2 from "~community/crm/v2/components/molecules/DealCardV2/DealCardV2";
-import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
-import { useResolvedBoardCard } from "~community/crm/v2/store/selectors";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
+import { resolveBoardCard } from "~community/crm/v2/utils/selectorUtils";
 
 const BoardCardOverlay: FC<{ dealId: number }> = ({ dealId }) => {
-  const { deal, owner, contact, company } = useResolvedBoardCard(dealId);
+  const { deal, owners, contacts, companies } = useCrmStoreV2(
+    useShallow((store) => ({
+      deal: store.deals[dealId],
+      owners: store.owners,
+      contacts: store.contacts,
+      companies: store.companies
+    }))
+  );
+
+  const { owner, contact, company } = useMemo(
+    () => resolveBoardCard(deal, owners, contacts, companies),
+    [deal, owners, contacts, companies]
+  );
+
   if (!deal) return null;
 
   return (
@@ -18,7 +32,7 @@ const BoardCardOverlay: FC<{ dealId: number }> = ({ dealId }) => {
         companyName={company?.name}
         owner={owner}
         amount={deal.amount ?? ""}
-        priority={deal.priority ?? CrmPriorityEnum.LOW}
+        priority={deal.priority}
         taskCount={deal.taskCount}
       />
     </div>

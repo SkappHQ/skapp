@@ -5,7 +5,7 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface PriorityLabelProps {
-  priority: CrmPriorityEnum;
+  priority?: CrmPriorityEnum;
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
