@@ -18,7 +18,7 @@ import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
-import { formatDealAmount } from "~community/crm/v2/utils/dealUtil";
+import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
 
 interface DealRow extends BaseRowData {
   id: string;

@@ -9,8 +9,8 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
 import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
 import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
@@ -18,8 +18,8 @@ import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDeal
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
-import { ingestEditedDeal } from "~community/crm/v2/utils/dealIngest";
-import { upsertDeals } from "~community/crm/v2/utils/dealUtil";
+import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
+import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -36,7 +36,11 @@ const DealSidePanelV2: FC = () => {
     selectedDealId,
     selectedDeal,
     setSelectedDealId,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    deals,
+    board,
+    setDeals,
+    setBoardColumn
   } = useCrmStoreV2(
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
@@ -47,7 +51,11 @@ const DealSidePanelV2: FC = () => {
           ? store.deals[store.selectedDealId]
           : undefined,
       setSelectedDealId: store.setSelectedDealId,
-      closeCrmSidePanel: store.closeCrmSidePanel
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      deals: store.deals,
+      board: store.board,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn
     }))
   );
 
@@ -66,11 +74,16 @@ const DealSidePanelV2: FC = () => {
   );
 
   useEffect(() => {
-    if (dealDetail) upsertDeals([dealDetail]);
+    if (dealDetail) {
+      const store = useCrmStoreV2.getState();
+      store.setDeals(mergeDeals(store.deals, [dealDetail]));
+    }
   }, [dealDetail]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
-    ingestEditedDeal(updatedDeal);
+    const next = ingestEditedDeal({ deals, board }, updatedDeal);
+    setDeals(next.deals);
+    setBoardColumn(next.board);
   };
 
   const handleError = (): void => {
@@ -99,8 +112,9 @@ const DealSidePanelV2: FC = () => {
   // useGetRelatedTasks is an infinite query; its declared type drops the
   // InfiniteData wrapper, so re-assert it to read the paginated `items`.
   const relatedTasks =
-    (relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined)
-      ?.pages.flatMap((page) => page.items) ?? [];
+    (
+      relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined
+    )?.pages.flatMap((page) => page.items) ?? [];
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 

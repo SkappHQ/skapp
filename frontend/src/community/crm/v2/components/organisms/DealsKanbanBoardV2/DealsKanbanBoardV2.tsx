@@ -73,7 +73,13 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
   );
 
   useEffect(() => {
-    if (boardData) ingestBoardStageDeals(boardData, { append: false });
+    if (boardData) {
+      const store = useCrmStoreV2.getState();
+      const next = ingestBoardStageDeals(store, boardData, { append: false });
+      store.setDeals(next.deals);
+      store.setBoardColumn(next.board);
+      store.setDealIds(next.dealIds);
+    }
   }, [boardData]);
 
   const {

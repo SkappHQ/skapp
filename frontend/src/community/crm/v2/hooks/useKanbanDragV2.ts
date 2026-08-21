@@ -5,14 +5,15 @@ import type {
 } from "@dnd-kit/core";
 import { AxiosError } from "axios";
 import { useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
 } from "../api/BoardApi";
+import { CrmKanbanDragType } from "../enums/common";
 import { useCrmStoreV2 } from "../store/store";
 import { CrmBoardRecord } from "../types/CrmCommonTypes";
-import { CrmKanbanDragType } from "../enums/common";
 import { CrmKanbanDragData } from "../types/CrmTypes";
 import {
   findStageIdByDealId,
@@ -49,17 +50,25 @@ export const useKanbanDragV2 = ({
     stageId: number | undefined;
   } | null>(null);
 
+  const { board, deals, setBoardColumn, setDeals } = useCrmStoreV2(
+    useShallow((store) => ({
+      board: store.board,
+      deals: store.deals,
+      setBoardColumn: store.setBoardColumn,
+      setDeals: store.setDeals
+    }))
+  );
+
   const rollback = (error: AxiosError): void => {
-    const store = useCrmStoreV2.getState();
     if (snapshotRef.current) {
-      store.setBoardColumn(snapshotRef.current);
+      setBoardColumn(snapshotRef.current);
     }
     const dealSnapshot = dealStageSnapshotRef.current;
     if (dealSnapshot) {
-      const deal = store.deals[dealSnapshot.id];
+      const deal = deals[dealSnapshot.id];
       if (deal && deal.stageId !== dealSnapshot.stageId) {
-        store.setDeals({
-          ...store.deals,
+        setDeals({
+          ...deals,
           [dealSnapshot.id]: { ...deal, stageId: dealSnapshot.stageId }
         });
       }
@@ -72,10 +81,9 @@ export const useKanbanDragV2 = ({
   const { mutate: moveDealToStage } = useMoveDealBetweenStages(rollback);
 
   const handleDragStart = ({ active }: DragStartEvent): void => {
-    const store = useCrmStoreV2.getState();
     const id = Number(active.id);
-    snapshotRef.current = store.board;
-    dealStageSnapshotRef.current = { id, stageId: store.deals[id]?.stageId };
+    snapshotRef.current = board;
+    dealStageSnapshotRef.current = { id, stageId: deals[id]?.stageId };
     setActiveDealId(id);
   };
 
@@ -123,7 +131,9 @@ export const useKanbanDragV2 = ({
         cleanup();
         return;
       }
-      reorderDealInColumn(sourceStageId, reorder.orderedDealIds);
+      setBoardColumn(
+        reorderDealInColumn(board, sourceStageId, reorder.orderedDealIds)
+      );
       reorderDealWithinStage({
         dealId: activeId,
         previousDealId: reorder.previousDealId,
@@ -141,12 +151,17 @@ export const useKanbanDragV2 = ({
         targetDealIds,
         insertIndex
       );
-      moveDealBetweenColumns({
-        dealId: activeId,
-        fromStageId: sourceStageId,
-        toStageId: targetStageId,
-        insertIndex
-      });
+      const next = moveDealBetweenColumns(
+        { board, deals },
+        {
+          dealId: activeId,
+          fromStageId: sourceStageId,
+          toStageId: targetStageId,
+          insertIndex
+        }
+      );
+      setBoardColumn(next.board);
+      setDeals(next.deals);
       moveDealToStage({
         dealId: activeId,
         newStageId: targetStageId,

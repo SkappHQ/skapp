@@ -17,16 +17,16 @@ export const crmDealEndpoints = {
   DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
 };
 
-export const crmCompanyEndpointsV1 = {
+export const crmCompanyEndpoints = {
   GET_COMPANIES_BY_IDS: `${moduleAPIPath.CRM}/company/ids`
 };
 
-export const crmLookupEndpointsV1 = {
+export const crmLookupEndpoints = {
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
-export const crmBoardEndpointsV1 = {
+export const crmBoardEndpoints = {
   GET_BOARD_INIT_DATA: `${moduleAPIPath.CRM}/board/init-data`,
   GET_DEALS_GROUPED_BY_STAGES: `${moduleAPIPath.CRM}/board/deals-grouped-by-stages`,
   REORDER_DEAL_WITHIN_STAGE: `${moduleAPIPath.CRM}/board/deal-reorder-within-stage`,

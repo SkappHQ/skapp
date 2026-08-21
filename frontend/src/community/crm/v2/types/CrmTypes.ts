@@ -139,13 +139,6 @@ export interface CrmContactLookupItem {
   company: CrmCompanyEntity | null;
 }
 
-export interface CrmContactLookupResponse {
-  items: CrmContactLookupItem[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
 export interface CrmCompanyFilterRequest {
   searchKeyword?: string;
   page?: number;

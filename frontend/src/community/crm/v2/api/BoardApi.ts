@@ -15,11 +15,11 @@ import {
   CrmDealsByStagesResponse
 } from "~community/crm/v2/types/CrmTypes";
 
-import { crmBoardEndpointsV1 } from "./utils/ApiEndpoints";
+import { crmBoardEndpoints } from "./utils/ApiEndpoints";
 import { crmBoardQueryKeys } from "./utils/QueryKeys";
 
 const fetchBoardInitData = async (): Promise<CrmBoardInitDataResponse> => {
-  const response = await authFetch.get(crmBoardEndpointsV1.GET_BOARD_INIT_DATA);
+  const response = await authFetch.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
   return response?.data?.results?.[0];
 };
 
@@ -36,7 +36,7 @@ const fetchDealsGroupedByStages = async (
   params: CrmDealsByStagesRequest
 ): Promise<CrmDealsByStagesResponse[]> => {
   const response = await authFetch.post(
-    crmBoardEndpointsV1.GET_DEALS_GROUPED_BY_STAGES,
+    crmBoardEndpoints.GET_DEALS_GROUPED_BY_STAGES,
     params
   );
   return response?.data?.results;
@@ -71,7 +71,7 @@ const reorderDealWithinStage = async (
   payload: CrmDealReorderWithinStageRequest
 ): Promise<void> => {
   await authFetch.patch(
-    crmBoardEndpointsV1.REORDER_DEAL_WITHIN_STAGE,
+    crmBoardEndpoints.REORDER_DEAL_WITHIN_STAGE,
     payload
   );
 };
@@ -88,7 +88,7 @@ const moveDealBetweenStages = async (
   payload: CrmDealMoveBetweenStagesRequest
 ): Promise<void> => {
   await authFetch.patch(
-    crmBoardEndpointsV1.MOVE_DEAL_BETWEEN_STAGES,
+    crmBoardEndpoints.MOVE_DEAL_BETWEEN_STAGES,
     payload
   );
 };

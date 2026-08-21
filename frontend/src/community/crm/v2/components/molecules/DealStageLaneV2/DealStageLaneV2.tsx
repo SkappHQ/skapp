@@ -11,17 +11,17 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import { useFetchMoreStageDeals } from "~community/crm/v2/api/BoardApi";
-import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import DraggableDealCardV2 from "~community/crm/v2/components/molecules/DraggableDealCardV2/DraggableDealCardV2";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
 import { ingestBoardStageDeals } from "~community/crm/v2/utils/boardUtil";
-import { formatDealAmount } from "~community/crm/v2/utils/dealUtil";
+import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
 import { resolveColumnDeals } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealStageLaneV2Props {
@@ -55,11 +55,25 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
     });
   };
 
-  const { stage, column, dealRecord } = useCrmStoreV2(
+  const {
+    stage,
+    column,
+    dealRecord,
+    board,
+    dealIds: boardDealIds,
+    setDeals,
+    setBoardColumn,
+    setDealIds
+  } = useCrmStoreV2(
     useShallow((store) => ({
       stage: store.stages[stageId],
       column: store.board[stageId],
-      dealRecord: store.deals
+      dealRecord: store.deals,
+      board: store.board,
+      dealIds: store.dealIds,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn,
+      setDealIds: store.setDealIds
     }))
   );
 
@@ -71,7 +85,10 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   const { getStageByName } = useStageNameMapper();
   const stageName = getStageByName(stage?.name ?? "");
 
-  const dropData: CrmKanbanDragData = { type: CrmKanbanDragType.STAGE, stageId };
+  const dropData: CrmKanbanDragData = {
+    type: CrmKanbanDragType.STAGE,
+    stageId
+  };
   const { setNodeRef } = useDroppable({
     id: `stage-${stageId}`,
     data: dropData
@@ -91,10 +108,16 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   const totalCount = column?.totalCount ?? 0;
 
   const { mutate: fetchMoreStageDeals, isPending: isLoadingMore } =
-    useFetchMoreStageDeals(
-      (groups) => ingestBoardStageDeals(groups, { append: true }),
-      handleLoadMoreError
-    );
+    useFetchMoreStageDeals((groups) => {
+      const next = ingestBoardStageDeals(
+        { deals: dealRecord, board, dealIds: boardDealIds },
+        groups,
+        { append: true }
+      );
+      setDeals(next.deals);
+      setBoardColumn(next.board);
+      setDealIds(next.dealIds);
+    }, handleLoadMoreError);
 
   const loadMore = useCallback((): void => {
     fetchMoreStageDeals({
@@ -111,9 +134,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
     onLoadMore: loadMore
   });
 
-  const stageColor = stage?.color
-    ? STAGE_COLOR_MAP[stage.color]
-    : undefined;
+  const stageColor = stage?.color ? STAGE_COLOR_MAP[stage.color] : undefined;
 
   return (
     <section

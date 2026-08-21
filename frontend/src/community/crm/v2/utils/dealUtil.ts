@@ -1,4 +1,3 @@
-import { useCrmStoreV2 } from "../store/store";
 import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
 
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
@@ -21,46 +20,30 @@ export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   return dealIds;
 };
 
-export const upsertDeals = (deals: CrmDealEntity[]): void => {
-  const store = useCrmStoreV2.getState();
-  const merged: CrmDealRecord = { ...store.deals };
-
-  for (const deal of deals) {
+export const mergeDeals = (
+  existing: CrmDealRecord,
+  incoming: CrmDealEntity[]
+): CrmDealRecord => {
+  const merged: CrmDealRecord = { ...existing };
+  for (const deal of incoming) {
     if (deal.id == null) continue;
     merged[deal.id] = { ...merged[deal.id], ...deal };
   }
-
-  store.setDeals(merged);
+  return merged;
 };
 
-export const formatDealAmount = (amount: string | null | undefined): string => {
-  if (amount == null || amount === "") return "-";
-  const parsed = Number.parseFloat(amount);
-  if (Number.isNaN(parsed) || parsed === 0) return "-";
-  return `$${parsed.toFixed(2)}`;
-};
+export const appendDealId = (dealIds: number[], id: number): number[] =>
+  dealIds.includes(id) ? dealIds : [...dealIds, id];
 
-export const ingestDeals = (deals: CrmDealEntity[]): void => {
-  upsertDeals(deals);
-  useCrmStoreV2.getState().setDealIds(toDealIds(deals));
-};
+export const removeDealId = (dealIds: number[], id: number): number[] =>
+  dealIds.filter((dealId) => dealId !== id);
 
-export const appendListDealId = (id: number): void => {
-  const { dealIds, setDealIds } = useCrmStoreV2.getState();
-  if (dealIds.includes(id)) return;
-  setDealIds([...dealIds, id]);
-};
-
-export const removeListDealId = (id: number): void => {
-  const { dealIds, setDealIds } = useCrmStoreV2.getState();
-  if (!dealIds.includes(id)) return;
-  setDealIds(dealIds.filter((dealId) => dealId !== id));
-};
-
-export const removeDealFromRecord = (id: number): void => {
-  const { deals, setDeals } = useCrmStoreV2.getState();
-  if (!(id in deals)) return;
+export const removeDealFromRecord = (
+  deals: CrmDealRecord,
+  id: number
+): CrmDealRecord => {
+  if (!(id in deals)) return deals;
   const next = { ...deals };
   delete next[id];
-  setDeals(next);
+  return next;
 };

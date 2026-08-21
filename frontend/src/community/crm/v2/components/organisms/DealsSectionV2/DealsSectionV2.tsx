@@ -16,9 +16,9 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  upsertCompanies
+  mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
-import { ingestDeals } from "~community/crm/v2/utils/dealUtil";
+import { mergeDeals, toDealIds } from "~community/crm/v2/utils/dealUtil";
 import { resolveDeals } from "~community/crm/v2/utils/selectorUtils";
 
 import DealsHeaderV2 from "./DealsHeaderV2";
@@ -69,7 +69,10 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (!data) return;
-    ingestDeals(data.pages.flatMap((page) => page.items));
+    const store = useCrmStoreV2.getState();
+    const items = data.pages.flatMap((page) => page.items);
+    store.setDeals(mergeDeals(store.deals, items));
+    store.setDealIds(toDealIds(items));
   }, [data]);
 
   const companyIds = useMemo(
@@ -92,7 +95,8 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      upsertCompanies(fetchedCompanies);
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

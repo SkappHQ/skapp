@@ -1,4 +1,3 @@
-import { useCrmStoreV2 } from "../store/store";
 import { CrmCompanyEntity, CrmCompanyRecord } from "../types/CrmCommonTypes";
 
 export const toCompaniesRecord = (
@@ -24,14 +23,14 @@ export const getMissingCompanyIds = (
   return Array.from(unique).sort((a, b) => a - b);
 };
 
-export const upsertCompanies = (companies: CrmCompanyEntity[]): void => {
-  const store = useCrmStoreV2.getState();
-  const merged: CrmCompanyRecord = { ...store.companies };
-
-  for (const company of companies) {
+export const mergeCompanies = (
+  existing: CrmCompanyRecord,
+  incoming: CrmCompanyEntity[]
+): CrmCompanyRecord => {
+  const merged: CrmCompanyRecord = { ...existing };
+  for (const company of incoming) {
     if (company.id == null) continue;
     merged[company.id] = { ...merged[company.id], ...company };
   }
-
-  store.setCompanies(merged);
+  return merged;
 };

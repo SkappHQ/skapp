@@ -1,9 +1,12 @@
 import { CrmPriorityEnum } from "../enums/common";
-import { useCrmStoreV2 } from "../store/store";
 import { CrmDealEntity } from "../types/CrmCommonTypes";
 import { CrmDealsByStagesResponse } from "../types/CrmTypes";
-import { ingestBoardStageDeals } from "./boardUtil";
-import { ingestCreatedDeal, ingestEditedDeal, removeDeal } from "./dealIngest";
+import {
+  ingestBoardStageDeals,
+  ingestCreatedDeal,
+  ingestEditedDeal,
+  removeDeal
+} from "./boardUtil";
 
 const STAGE_A = 1;
 const STAGE_B = 2;
@@ -43,25 +46,17 @@ const deal = (overrides: Partial<CrmDealEntity>): CrmDealEntity => ({
   ...overrides
 });
 
-const resetStore = (): void => {
-  useCrmStoreV2.setState({
-    deals: {},
-    board: {},
-    dealIds: [],
-    stageIds: []
-  });
-};
-
-describe("deal create/edit/delete orchestration", () => {
-  beforeEach(resetStore);
-
+describe("deal create/edit/delete orchestration as pure record transforms", () => {
   it("ingestCreatedDeal adds the deal to its column and the list order", () => {
-    ingestBoardStageDeals([group(STAGE_A, [boardDeal(1)]), group(STAGE_B, [])]);
-    useCrmStoreV2.getState().setDealIds([1]);
+    const ingested = ingestBoardStageDeals(
+      { deals: {}, board: {}, dealIds: [] },
+      [group(STAGE_A, [boardDeal(1)]), group(STAGE_B, [])]
+    );
+    const current = { ...ingested, dealIds: [1] };
 
-    ingestCreatedDeal(deal({ id: 100, stageId: STAGE_A }));
+    const result = ingestCreatedDeal(current, deal({ id: 100, stageId: STAGE_A }));
 
-    const { board, deals, dealIds } = useCrmStoreV2.getState();
+    const { board, deals, dealIds } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 100]);
     expect(board[STAGE_A].totalCount).toBe(2);
     expect(dealIds).toEqual([1, 100]);
@@ -69,14 +64,17 @@ describe("deal create/edit/delete orchestration", () => {
   });
 
   it("ingestEditedDeal moves the board card when the stage changes", () => {
-    ingestBoardStageDeals([
-      group(STAGE_A, [boardDeal(1), boardDeal(2)]),
-      group(STAGE_B, [boardDeal(3)])
-    ]);
+    const current = ingestBoardStageDeals(
+      { deals: {}, board: {}, dealIds: [] },
+      [
+        group(STAGE_A, [boardDeal(1), boardDeal(2)]),
+        group(STAGE_B, [boardDeal(3)])
+      ]
+    );
 
-    ingestEditedDeal(deal({ id: 1, stageId: STAGE_B, name: "Edited" }));
+    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_B, name: "Edited" }));
 
-    const { board, deals } = useCrmStoreV2.getState();
+    const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([2]);
     expect(board[STAGE_B].dealIds).toEqual([3, 1]);
     expect(deals[1].stageId).toBe(STAGE_B);
@@ -84,22 +82,28 @@ describe("deal create/edit/delete orchestration", () => {
   });
 
   it("ingestEditedDeal keeps the card in place when the stage is unchanged", () => {
-    ingestBoardStageDeals([group(STAGE_A, [boardDeal(1), boardDeal(2)])]);
+    const current = ingestBoardStageDeals(
+      { deals: {}, board: {}, dealIds: [] },
+      [group(STAGE_A, [boardDeal(1), boardDeal(2)])]
+    );
 
-    ingestEditedDeal(deal({ id: 1, stageId: STAGE_A, amount: "999" }));
+    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_A, amount: "999" }));
 
-    const { board, deals } = useCrmStoreV2.getState();
+    const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 2]);
     expect(deals[1].amount).toBe("999");
   });
 
   it("removeDeal drops the deal from board, list and record", () => {
-    ingestBoardStageDeals([group(STAGE_A, [boardDeal(1), boardDeal(2)])]);
-    useCrmStoreV2.getState().setDealIds([1, 2]);
+    const ingested = ingestBoardStageDeals(
+      { deals: {}, board: {}, dealIds: [] },
+      [group(STAGE_A, [boardDeal(1), boardDeal(2)])]
+    );
+    const current = { ...ingested, dealIds: [1, 2] };
 
-    removeDeal(1);
+    const result = removeDeal(current, 1);
 
-    const { board, deals, dealIds } = useCrmStoreV2.getState();
+    const { board, deals, dealIds } = result;
     expect(board[STAGE_A].dealIds).toEqual([2]);
     expect(dealIds).toEqual([2]);
     expect(deals[1]).toBeUndefined();

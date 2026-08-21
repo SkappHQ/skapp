@@ -24,8 +24,8 @@ import {
   CrmContactLookupItem,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
+import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
-import { ingestCreatedDeal } from "~community/crm/v2/utils/dealIngest";
 
 import DealNameStageSection from "./DealNameStageSection";
 import DealPropertiesSection from "./DealPropertiesSection";
@@ -51,13 +51,25 @@ const AddDealSidePanelV2: FC = () => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     closeCrmSidePanel,
-    setPreselectedStageId
+    setPreselectedStageId,
+    deals,
+    board,
+    dealIds,
+    setDeals,
+    setBoardColumn,
+    setDealIds
   } = useCrmStoreV2(
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       closeCrmSidePanel: store.closeCrmSidePanel,
-      setPreselectedStageId: store.setPreselectedStageId
+      setPreselectedStageId: store.setPreselectedStageId,
+      deals: store.deals,
+      board: store.board,
+      dealIds: store.dealIds,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn,
+      setDealIds: store.setDealIds
     }))
   );
 
@@ -78,7 +90,10 @@ const AddDealSidePanelV2: FC = () => {
   const contacts = contactLookupData?.items ?? [];
 
   const handleCreateDealSuccess = (createdDeal: CrmDealEntity) => {
-    ingestCreatedDeal(createdDeal);
+    const next = ingestCreatedDeal({ deals, board, dealIds }, createdDeal);
+    setDeals(next.deals);
+    setBoardColumn(next.board);
+    setDealIds(next.dealIds);
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -168,9 +183,7 @@ const AddDealSidePanelV2: FC = () => {
         isOpen={isOpen}
         onClose={handleClose}
         header={
-          <span className="pl-2 h1 text-black">
-            {translateText(["title"])}
-          </span>
+          <span className="pl-2 h1 text-black">{translateText(["title"])}</span>
         }
         closeOnBackdropClick
         closeAriaLabel={translateText(["ariaLabels", "closePanel"])}

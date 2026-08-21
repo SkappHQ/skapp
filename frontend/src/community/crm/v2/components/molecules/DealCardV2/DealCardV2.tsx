@@ -12,7 +12,7 @@ import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import PriorityLabel from "~community/crm/v2/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { formatDealAmount } from "~community/crm/v2/utils/dealUtil";
+import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
 
 export interface DealCardV2Props {
   id: number;
