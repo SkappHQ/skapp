@@ -229,6 +229,5 @@ export interface DirectEntryEmployeeType {
 
 export interface DirectTimeEntryVariablesType {
   employeeId: number;
-  isEdit: boolean;
   payload: ManualEntryPayloadType;
 }

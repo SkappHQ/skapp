@@ -30,7 +30,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
-import { useDirectTimeEntry } from "~enterprise/attendance/api/AttendanceApi";
+import {
+  useAddDirectTimeEntry,
+  useEditDirectTimeEntry
+} from "~enterprise/attendance/api/AttendanceApi";
 
 const CONFIRMATIONS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
@@ -120,20 +123,21 @@ const useAddEntry = () => {
   };
 
   const onSuccessDirectEntry = (isEdit: boolean) => {
+    const interpolations = {
+      employeeName: directEntryEmployee?.employeeName ?? "",
+      date: selectedDailyRecord?.date
+        ? formatDateWithOrdinalIndicator(new Date(selectedDailyRecord.date))
+        : ""
+    };
+
     setToastMessage({
       open: true,
-      title: translateText([
-        isEdit ? "directEntryUpdatedToastTitle" : "directEntryAddedToastTitle"
-      ]),
-      description: translateText(
-        [isEdit ? "directEntryUpdatedToastDes" : "directEntryAddedToastDes"],
-        {
-          employeeName: directEntryEmployee?.employeeName ?? "",
-          date: selectedDailyRecord?.date
-            ? formatDateWithOrdinalIndicator(new Date(selectedDailyRecord.date))
-            : ""
-        }
-      ),
+      title: isEdit
+        ? translateText(["directEntryUpdatedToastTitle"])
+        : translateText(["directEntryAddedToastTitle"]),
+      description: isEdit
+        ? translateText(["directEntryUpdatedToastDes"], interpolations)
+        : translateText(["directEntryAddedToastDes"], interpolations),
       toastType: ToastType.SUCCESS,
       autoHideDuration: null
     });
@@ -154,8 +158,13 @@ const useAddEntry = () => {
     });
   };
 
-  const { mutate: directEntryMutate } = useDirectTimeEntry(
-    () => onSuccessDirectEntry(Boolean(selectedDailyRecord?.timeRecordId)),
+  const { mutate: addDirectEntryMutate } = useAddDirectTimeEntry(
+    () => onSuccessDirectEntry(false),
+    onDirectEntryError
+  );
+
+  const { mutate: editDirectEntryMutate } = useEditDirectTimeEntry(
+    () => onSuccessDirectEntry(true),
     onDirectEntryError
   );
 
@@ -272,16 +281,22 @@ const useAddEntry = () => {
 
     if (isDirectEntry && directEntryEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
-      directEntryMutate({
+      const variables = {
         employeeId: directEntryEmployee.employeeId,
-        isEdit: Boolean(existingRecordId),
         payload: {
           startTime: convertToUtc(dateTimeFromTime),
           endTime: convertToUtc(dateTimeToTime),
           recordId: existingRecordId,
           zoneId: getCurrentTimeZone()
         }
-      });
+      };
+
+      // An existing record for the day makes this an edit of it, not a new entry.
+      if (existingRecordId) {
+        editDirectEntryMutate(variables);
+      } else {
+        addDirectEntryMutate(variables);
+      }
       setIsEmployeeTimesheetModalOpen(false);
       return;
     }
