@@ -21,7 +21,7 @@ import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
 import { ingestBoardStageDeals } from "~community/crm/v2/utils/boardUtil";
-import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
+import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 import { resolveColumnDeals } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealStageLaneV2Props {
@@ -165,7 +165,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
               totalValue > 0 ? "" : "invisible"
             }`}
           >
-            {formatDealAmount(String(totalValue))}
+            {formatCurrency(totalValue)}
           </p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">

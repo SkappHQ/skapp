@@ -26,6 +26,10 @@ import {
   resolveInsertIndex
 } from "../utils/kanbanMath";
 
+interface UseKanbanDragV2Props {
+  onError: (error: AxiosError) => void;
+}
+
 interface UseKanbanDragV2Return {
   activeDealId: number | null;
   overStageId: number | null;
@@ -36,15 +40,10 @@ interface UseKanbanDragV2Return {
 
 export const useKanbanDragV2 = ({
   onError
-}: {
-  onError?: (error: AxiosError) => void;
-} = {}): UseKanbanDragV2Return => {
+}: UseKanbanDragV2Props): UseKanbanDragV2Return => {
   const [activeDealId, setActiveDealId] = useState<number | null>(null);
   const [overStageId, setOverStageId] = useState<number | null>(null);
   const snapshotRef = useRef<CrmBoardRecord | null>(null);
-  // The moved deal's stageId at drag start. A cross-stage move restamps
-  // deals[dealId].stageId (via moveDealBetweenColumns), so restoring the board
-  // alone would leave the deal record pointing at the failed target stage.
   const dealStageSnapshotRef = useRef<{
     id: number;
     stageId: number | undefined;

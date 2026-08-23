@@ -109,8 +109,6 @@ const DealSidePanelV2: FC = () => {
     isFetchingNextPage
   } = useGetRelatedTasks({ dealId: selectedDealId, size: TASK_PAGE_SIZE });
 
-  // useGetRelatedTasks is an infinite query; its declared type drops the
-  // InfiniteData wrapper, so re-assert it to read the paginated `items`.
   const relatedTasks =
     (
       relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined

@@ -12,7 +12,7 @@ import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import PriorityLabel from "~community/crm/v2/components/atoms/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
+import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 
 export interface DealCardV2Props {
   id: number;
@@ -105,7 +105,7 @@ const DealCardV2: FC<DealCardV2Props> = ({
             <span className="shrink-0 text-secondary-icon">
               <DealValueIcon className="h-4 w-4" />
             </span>
-            <span className="body3">{formatDealAmount(amount)}</span>
+            <span className="body3">{formatCurrency(amount)}</span>
           </div>
         )}
       </div>

@@ -18,7 +18,7 @@ import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
-import { formatDealAmount } from "~community/crm/v2/utils/commonHelpers";
+import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -184,7 +184,7 @@ const DealsTableV2: FC<Props> = ({
           ),
           value: (
             <span className="body2 w-full block text-right">
-              {formatDealAmount(deal.amount)}
+              {formatCurrency(deal.amount)}
             </span>
           ),
           stage: (
