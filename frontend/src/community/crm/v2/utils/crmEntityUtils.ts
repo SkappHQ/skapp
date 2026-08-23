@@ -5,6 +5,8 @@ import {
   CrmContactRecord,
   CrmDealEntity,
   CrmDealRecord,
+  CrmContactEntity,
+  CrmContactRecord,
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface PolicyLeaveRequestRepository {
@@ -23,6 +24,9 @@ public interface PolicyLeaveRequestRepository {
 	Optional<PolicyLeaveRequest> findByIdForUpdate(Long id);
 
 	List<PolicyLeaveUsageDto> findCommittedUsageForPolicyInWindow(Long employeeId, Long policyId,
+			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd);
+
+	Map<Long, List<PolicyLeaveUsageDto>> findCommittedUsageForPoliciesInWindow(Long employeeId, List<Long> policyIds,
 			Collection<LeaveRequestStatus> statuses, LocalDate windowStart, LocalDate windowEnd);
 
 	List<PolicyLeaveRequest> findOverlappingRequests(Long employeeId, Collection<LeaveRequestStatus> statuses,

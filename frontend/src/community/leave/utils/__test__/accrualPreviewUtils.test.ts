@@ -104,15 +104,122 @@ describe("buildAccrualPreview", () => {
     expect(rows[1].days).toBe(2);
   });
 
-  it("does not prorate interval frequencies even when firstAccrual is PRORATED", () => {
+  it("reports days as the change in the half-day-rounded balance", () => {
+    // 2.4 days/month prorated over 23-31 Aug rounds down to a 0.5 balance, so the
+    // days column must say 0.5 too rather than the raw two-decimal accrual.
     const rows = buildAccrualPreview(
       basePolicy({
-        frequency: AccrualFrequency.EVERY_OTHER_WEEK,
-        firstAccrual: FirstAccrualType.PRORATED
+        accrualDays: 2.4,
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
       }),
-      "2024-01-01"
+      "2026-08-23"
     );
 
-    expect(rows[0].days).toBe(2);
+    expect(rows[0]).toEqual({
+      date: "31 Aug 2026",
+      days: 0.5,
+      balance: 0.5
+    });
+  });
+
+  it("keeps the days column summing to the balance on every row", () => {
+    const rows = buildAccrualPreview(
+      basePolicy({
+        accrualDays: 2.4,
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+
+    let runningTotal = 0;
+    rows.forEach((row) => {
+      expect(row.days * 2).toBe(Math.round(row.days * 2));
+      runningTotal += row.days;
+      expect(runningTotal).toBe(row.balance);
+    });
+  });
+
+  it("prorates the first period for every frequency, not just calendar ones", () => {
+    // Half of a 1-15 window, so half of the 2 days.
+    const twiceAMonth = buildAccrualPreview(
+      basePolicy({
+        frequency: AccrualFrequency.TWICE_A_MONTH,
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
+      }),
+      "2026-01-08"
+    );
+    expect(twiceAMonth[0]).toEqual({
+      date: "15 Jan 2026",
+      days: 1,
+      balance: 1
+    });
+
+    // 11 of the fortnight's 14 days are covered, so 2 * 11/14 rounds to 1.5.
+    const fortnightly = buildAccrualPreview(
+      basePolicy({
+        frequency: AccrualFrequency.EVERY_OTHER_WEEK,
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
+      }),
+      "2026-01-15"
+    );
+    expect(fortnightly[0]).toEqual({
+      date: "25 Jan 2026",
+      days: 1.5,
+      balance: 1.5
+    });
+  });
+
+  it("gives a full first period when the effective date opens the window", () => {
+    const rows = buildAccrualPreview(
+      basePolicy({
+        firstAccrual: FirstAccrualType.PRORATED,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-01"
+    );
+
+    expect(rows[0]).toEqual({ date: "31 Aug 2026", days: 2, balance: 2 });
+    expect(rows[1]).toEqual({ date: "30 Sep 2026", days: 2, balance: 4 });
+  });
+
+  it("credits the window start or end according to accrualTiming", () => {
+    const atPeriodEnd = buildAccrualPreview(
+      basePolicy({
+        accrualTiming: AccrualTiming.PERIOD_END,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+    const atPeriodStart = buildAccrualPreview(
+      basePolicy({
+        accrualTiming: AccrualTiming.PERIOD_START,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+
+    expect(atPeriodEnd[0].date).toBe("31 Aug 2026");
+    // Clamped to the effective date instead of the 01 Aug window start, then the
+    // later periods credit on their real start date.
+    expect(atPeriodStart[0].date).toBe("23 Aug 2026");
+    expect(atPeriodStart[1].date).toBe("01 Sep 2026");
+  });
+
+  it("anchors ON_ANNIVERSARY windows to the effective date, not the calendar year", () => {
+    const rows = buildAccrualPreview(
+      basePolicy({
+        frequency: AccrualFrequency.ON_ANNIVERSARY,
+        accrualTiming: AccrualTiming.PERIOD_START,
+        isCarryoverEnabled: true
+      }),
+      "2026-08-23"
+    );
+
+    expect(rows[0].date).toBe("23 Aug 2026");
+    expect(rows[1].date).toBe("23 Aug 2027");
   });
 });

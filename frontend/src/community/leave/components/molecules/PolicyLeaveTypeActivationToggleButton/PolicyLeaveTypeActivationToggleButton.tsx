@@ -1,15 +1,14 @@
 import {
-  CheckIcon,
   CloseIcon,
-  InfoIcon,
   SmallModal,
-  Toggle,
-  Tooltip
+  TickIcon,
+  Toggle
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import { FC, useState } from "react";
 
+import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -108,11 +107,10 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
           ariaLabel={translateText(["activate"])}
         />
         <Tooltip
-          id="activate-leave-tooltip"
-          content={translateText(["activateLeaveTooltipText"])}
-        >
-          <InfoIcon className="size-4 text-secondary-icon" />
-        </Tooltip>
+          id="leave-duration-preferences-section"
+          title={translateText(["activateLeaveTooltipText"])}
+          ariaLabel={translateText(["activateLeaveTooltipText"])}
+        />
       </div>
       <SmallModal
         isOpen={isConfirmModalOpen}
@@ -143,7 +141,7 @@ const PolicyLeaveTypeActivationToggleButton: FC = () => {
             onClick: handleConfirm,
             disabled: isPending,
             isLoading: isPending,
-            icon: <CheckIcon />,
+            icon: <TickIcon />,
             iconPosition: "end",
             children: translateText(["confirmAndSaveBtn"])
           }

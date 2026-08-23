@@ -7,7 +7,6 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
-import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
 import EmployeeLeaveStatusPopupController from "~community/leave/components/organisms/EmployeeLeaveStatusPopupController/EmployeeLeaveStatusPopupController";
 import MyLeaveAllocationSection from "~community/leave/components/organisms/MyLeaveAllocationSection/MyLeaveAllocationSection";
 import MyLeaveRequestsSection from "~community/leave/components/organisms/MyLeaveRequestsSection/MyLeaveRequestsSection";
@@ -37,14 +36,9 @@ const MyRequests: NextPage = () => {
     !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
   );
 
-  const { data: nextYearPolicyBalances } = useGetMyPolicyBalances(
-    nextYear.toString(),
-    isLeavePoliciesEnabled
-  );
-
-  const isNextYearAvailable = isLeavePoliciesEnabled
-    ? (nextYearPolicyBalances?.length ?? 0) > 0
-    : (isEntitlementAvailableNextYear?.length ?? 0) > 0;
+  const isNextYearAvailable =
+    !isLeavePoliciesEnabled &&
+    (isEntitlementAvailableNextYear?.length ?? 0) > 0;
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_PAGE_VIEWED,
