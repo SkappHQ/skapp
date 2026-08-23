@@ -8,8 +8,8 @@ import DealCardV2 from "~community/crm/v2/components/molecules/DealCardV2/DealCa
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
+import { resolveBoardCard } from "~community/crm/v2/utils/boardUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
-import { resolveBoardCard } from "~community/crm/v2/utils/selectorUtils";
 
 interface DraggableDealCardV2Props {
   dealId: number;

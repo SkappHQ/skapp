@@ -16,15 +16,13 @@ import { useCrmStoreV2 } from "../store/store";
 import { CrmBoardRecord } from "../types/CrmCommonTypes";
 import { CrmKanbanDragData } from "../types/CrmTypes";
 import {
-  findStageIdByDealId,
-  moveDealBetweenColumns,
-  reorderDealInColumn
-} from "../utils/boardUtil";
-import {
   computeMoveNeighbors,
   computeReorderWithinStage,
+  findStageIdByDealId,
+  moveDealBetweenColumns,
+  reorderDealInColumn,
   resolveInsertIndex
-} from "../utils/kanbanMath";
+} from "../utils/boardUtil";
 
 interface UseKanbanDragV2Props {
   onError: (error: AxiosError) => void;

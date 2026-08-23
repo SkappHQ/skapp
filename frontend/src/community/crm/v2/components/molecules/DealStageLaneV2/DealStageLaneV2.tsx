@@ -20,9 +20,11 @@ import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
-import { ingestBoardStageDeals } from "~community/crm/v2/utils/boardUtil";
+import {
+  ingestBoardStageDeals,
+  resolveColumnDeals
+} from "~community/crm/v2/utils/boardUtil";
 import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
-import { resolveColumnDeals } from "~community/crm/v2/utils/selectorUtils";
 
 interface DealStageLaneV2Props {
   stageId: number;

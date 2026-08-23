@@ -10,7 +10,7 @@ import {
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmBoardInitDataResponse } from "~community/crm/v2/types/CrmTypes";
 import { CrmStore } from "~community/crm/v2/types/StoreTypes";
-import { toStagesRecord } from "~community/crm/v2/utils/crmEntityUtils";
+import { toStagesRecord } from "~community/crm/v2/utils/commonUtil";
 
 import { useInitializeCrmData } from "./useInitializeCrmData";
 

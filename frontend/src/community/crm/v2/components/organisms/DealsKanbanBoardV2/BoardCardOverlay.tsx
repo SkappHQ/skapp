@@ -4,7 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 import DealCardV2 from "~community/crm/v2/components/molecules/DealCardV2/DealCardV2";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
-import { resolveBoardCard } from "~community/crm/v2/utils/selectorUtils";
+import { resolveBoardCard } from "~community/crm/v2/utils/boardUtil";
 
 const BoardCardOverlay: FC<{ dealId: number }> = ({ dealId }) => {
   const { deal, owners, contacts, companies } = useCrmStoreV2(

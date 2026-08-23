@@ -23,7 +23,7 @@ import { useKanbanDragV2 } from "~community/crm/v2/hooks/useKanbanDragV2";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import { ingestBoardStageDeals } from "~community/crm/v2/utils/boardUtil";
-import { getBoardStageIds } from "~community/crm/v2/utils/selectorUtils";
+import { getBoardStageIds } from "~community/crm/v2/utils/commonUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 

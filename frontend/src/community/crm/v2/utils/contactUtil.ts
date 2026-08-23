@@ -1,6 +1,22 @@
 import { DropdownOption } from "@rootcodelabs/skapp-ui";
 
-import { CrmCompanyRecord, CrmContactEntity } from "../types/CrmCommonTypes";
+import {
+  CrmCompanyRecord,
+  CrmContactEntity,
+  CrmContactRecord
+} from "../types/CrmCommonTypes";
+
+export const toContactsRecord = (
+  contacts: CrmContactEntity[]
+): CrmContactRecord => {
+  const contactRecord: CrmContactRecord = {};
+  for (const contact of contacts) {
+    if (contact.id != null) {
+      contactRecord[contact.id] = contact;
+    }
+  }
+  return contactRecord;
+};
 
 export const getContactDisplayName = (
   contact: CrmContactEntity | undefined
@@ -18,7 +34,9 @@ export const buildContactOptions = (
     if (contact.id == null) return options;
     const contactName = getContactDisplayName(contact);
     const companyName =
-      contact.companyId != null ? companies[contact.companyId]?.name : undefined;
+      contact.companyId != null
+        ? companies[contact.companyId]?.name
+        : undefined;
     options.push({
       id: contact.id,
       value: contact.id,

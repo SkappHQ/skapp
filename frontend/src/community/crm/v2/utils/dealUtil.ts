@@ -47,3 +47,11 @@ export const removeDealFromRecord = (
   delete next[id];
   return next;
 };
+
+export const resolveDeals = (
+  dealIds: number[],
+  deals: CrmDealRecord
+): CrmDealEntity[] =>
+  dealIds
+    .map((id) => deals[id])
+    .filter((deal): deal is CrmDealEntity => Boolean(deal));

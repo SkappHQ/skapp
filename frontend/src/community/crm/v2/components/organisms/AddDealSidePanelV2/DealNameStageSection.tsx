@@ -8,7 +8,7 @@ import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOrderedStages } from "~community/crm/v2/utils/selectorUtils";
+import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 
 interface DealNameStageSectionProps {
   formik: FormikProps<CrmDealEntity>;

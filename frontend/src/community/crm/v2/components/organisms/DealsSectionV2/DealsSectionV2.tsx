@@ -18,8 +18,11 @@ import {
   getMissingCompanyIds,
   mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
-import { mergeDeals, toDealIds } from "~community/crm/v2/utils/dealUtil";
-import { resolveDeals } from "~community/crm/v2/utils/selectorUtils";
+import {
+  mergeDeals,
+  resolveDeals,
+  toDealIds
+} from "~community/crm/v2/utils/dealUtil";
 
 import DealsHeaderV2 from "./DealsHeaderV2";
 

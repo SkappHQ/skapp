@@ -7,11 +7,11 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  toContactsRecord,
   toOwnersRecord,
   toStagesRecord,
   toTaskTypesRecord
-} from "~community/crm/v2/utils/crmEntityUtils";
+} from "~community/crm/v2/utils/commonUtil";
+import { toContactsRecord } from "~community/crm/v2/utils/contactUtil";
 
 interface UseInitializeCrmDataReturn {
   isCrmInitialDataLoading: boolean;

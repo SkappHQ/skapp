@@ -29,7 +29,7 @@ import {
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
-import { getOrderedStages } from "~community/crm/v2/utils/selectorUtils";
+import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 
 interface DealPropertiesSidebarProps {
   dealId: number;
