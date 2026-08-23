@@ -10,7 +10,7 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  mergeTasksRecord,
+  mergeEntityRecord,
   toTasksRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 import { getChangedTaskFields } from "~community/crm/v2/utils/crmTaskUtils";
@@ -21,23 +21,20 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId, tasks, setTasks } = useCrmStoreV2(
-    (state) => ({
-      setIsTaskModalOpen: state.setIsTaskModalOpen,
-      selectedTaskId: state.selectedTaskId,
-      tasks: state.tasks,
-      setTasks: state.setTasks
-    })
+  const { setIsTaskModalOpen, selectedTaskId } = useCrmStoreV2((state) => ({
+    setIsTaskModalOpen: state.setIsTaskModalOpen,
+    selectedTaskId: state.selectedTaskId
+  }));
+  const selectedTask = useCrmStoreV2((state) =>
+    selectedTaskId === null ? undefined : state.tasks[selectedTaskId]
   );
-
-  const selectedTask = selectedTaskId ? tasks[selectedTaskId] : undefined;
 
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: selectedTask?.name ?? "",
       typeId: selectedTask?.typeId,
       dueAt: selectedTask?.dueAt,
-      priority: selectedTask?.priority ?? CrmPriorityEnum.MEDIUM,
+      priority: selectedTask?.priority,
       contactId: selectedTask?.contactId,
       dealId: selectedTask?.dealId,
       ownerId: selectedTask?.ownerId,
@@ -73,7 +70,8 @@ const EditTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    setTasks(mergeTasksRecord(tasks, toTasksRecord([updatedTask])));
+    const { tasks, setTasks } = useCrmStoreV2.getState();
+    setTasks(mergeEntityRecord(tasks, toTasksRecord([updatedTask])));
 
     setToastMessage({
       open: true,
