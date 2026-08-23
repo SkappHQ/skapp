@@ -25,16 +25,6 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
 
-interface EditDealVariables {
-  id: number;
-  payload: CrmDealEntity;
-}
-
-interface UpdateDealStageVariables {
-  id: number;
-  payload: CrmStageEntity;
-}
-
 const fetchDeals = async (
   filters: CrmDealFilterRequest
 ): Promise<{
@@ -112,12 +102,10 @@ export const useCreateDeal = (
   });
 };
 
-const editDeal = async ({
-  id,
-  payload
-}: EditDealVariables): Promise<CrmDealEntity> => {
+const editDeal = async (deal: CrmDealEntity): Promise<CrmDealEntity> => {
+  const { id, ...payload } = deal;
   const response = await authFetchV2.patch(
-    crmDealEndpointsV2.EDIT_DEAL(id),
+    crmDealEndpointsV2.EDIT_DEAL(id!),
     payload
   );
   return response?.data?.results?.[0];
@@ -126,7 +114,7 @@ const editDeal = async ({
 export const useEditDeal = (
   onSuccess: (updatedDeal: CrmDealEntity) => void,
   onError: (error: AxiosError) => void
-): UseMutationResult<CrmDealEntity, AxiosError, EditDealVariables> =>
+): UseMutationResult<CrmDealEntity, AxiosError, CrmDealEntity> =>
   useMutation({
     mutationFn: editDeal,
     onSuccess,
@@ -215,12 +203,12 @@ export const useCreateDealStage = (
   });
 };
 
-const updateDealStage = async ({
-  id,
-  payload
-}: UpdateDealStageVariables): Promise<CrmStageEntity> => {
+const updateDealStage = async (
+  stage: CrmStageEntity
+): Promise<CrmStageEntity> => {
+  const { id, ...payload } = stage;
   const response = await authFetch.patch(
-    crmDealEndpoints.UPDATE_DEAL_STAGE(id),
+    crmDealEndpoints.UPDATE_DEAL_STAGE(id!),
     payload
   );
   return response?.data?.results?.[0];
@@ -229,7 +217,7 @@ const updateDealStage = async ({
 export const useUpdateDealStage = (
   onSuccess: (updatedStage: CrmStageEntity) => void,
   onError: (error: AxiosError) => void
-): UseMutationResult<CrmStageEntity, AxiosError, UpdateDealStageVariables> =>
+): UseMutationResult<CrmStageEntity, AxiosError, CrmStageEntity> =>
   useMutation({
     mutationFn: updateDealStage,
     onSuccess,

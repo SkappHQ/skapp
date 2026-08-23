@@ -99,7 +99,7 @@ const DealSidePanelV2: FC = () => {
 
   const updateDeal = (fields: Partial<CrmDealEntity>): void => {
     if (selectedDealId == null) return;
-    editDeal({ id: selectedDealId, payload: fields });
+    editDeal({ ...fields, id: selectedDealId });
   };
 
   const {
