@@ -7,8 +7,8 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  removeEntityFromRecord,
-  removeId
+  removeTaskFromRecord,
+  removeTaskId
 } from "~community/crm/v2/utils/crmEntityUtils";
 
 const DeleteTaskModalContent: FC = () => {
@@ -18,12 +18,20 @@ const DeleteTaskModalContent: FC = () => {
     selectedTaskId,
     setSelectedTaskId,
     setIsTaskModalOpen,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    tasks,
+    taskIds,
+    setTasks,
+    setTaskIds
   } = useCrmStoreV2((state) => ({
     selectedTaskId: state.selectedTaskId,
     setSelectedTaskId: state.setSelectedTaskId,
     setIsTaskModalOpen: state.setIsTaskModalOpen,
-    closeCrmSidePanel: state.closeCrmSidePanel
+    closeCrmSidePanel: state.closeCrmSidePanel,
+    tasks: state.tasks,
+    taskIds: state.taskIds,
+    setTasks: state.setTasks,
+    setTaskIds: state.setTaskIds
   }));
 
   const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
@@ -39,10 +47,8 @@ const DeleteTaskModalContent: FC = () => {
    * leave the row pointing at nothing.
    */
   const removeDeletedTaskFromStore = (deletedTaskId: number) => {
-    const { tasks, taskIds, setTasks, setTaskIds } = useCrmStoreV2.getState();
-
-    setTasks(removeEntityFromRecord(tasks, deletedTaskId));
-    setTaskIds(removeId(taskIds, deletedTaskId));
+    setTasks(removeTaskFromRecord(tasks, deletedTaskId));
+    setTaskIds(removeTaskId(taskIds, deletedTaskId));
   };
 
   const handleSuccess = () => {

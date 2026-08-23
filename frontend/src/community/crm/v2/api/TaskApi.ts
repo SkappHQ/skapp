@@ -92,6 +92,22 @@ export const useGetCompletedTasks = (
   });
 };
 
+const fetchTaskById = async (id: number): Promise<CrmTaskEntity> => {
+  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASK_BY_ID(id));
+  return response?.data?.results?.[0];
+};
+
+export const useGetTaskById = (
+  id: number,
+  enabled: boolean
+): UseQueryResult<CrmTaskEntity> => {
+  return useQuery({
+    queryKey: crmTaskQueryKeys.TASK_BY_ID(id),
+    queryFn: () => fetchTaskById(id),
+    enabled
+  });
+};
+
 const fetchRelatedTasks = async (
   request: CrmRelatedTasksRequest
 ): Promise<CrmTaskListResponse> => {
@@ -125,25 +141,19 @@ const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
   return response?.data?.results?.[0];
 };
 
-export const useCreateTask = (onSuccess: () => void, onError: () => void) => {
+export const useCreateTask = (
+  onSuccess: (createdTask: CrmTaskEntity) => void,
+  onError: () => void
+) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createTask,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.OPEN_TASKS
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.RELATED_TASKS
-      });
+    onSuccess: (createdTask) => {
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
-      onSuccess();
+      onSuccess(createdTask);
     },
     onError
   });
@@ -185,15 +195,6 @@ export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
   return useMutation({
     mutationFn: deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.OPEN_TASKS
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.COMPLETED_TASKS
-      });
-      queryClient.invalidateQueries({
-        queryKey: crmTaskQueryKeys.RELATED_TASKS
-      });
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });

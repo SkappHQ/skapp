@@ -33,17 +33,20 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
-import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
+import { CrmOwner } from "~community/crm/types/CommonTypes";
 import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 
 interface TaskFormProps {
-  formik: FormikProps<CrmTaskFormTypes>;
+  formik: FormikProps<CrmTaskEntity>;
   isPending: boolean;
   translateText: TranslatorFunctionType;
-  initialOwner?: CrmOwner | null;
+  initialOwner?: CrmOwnerEntity | null;
 }
 
 /**
@@ -51,8 +54,10 @@ interface TaskFormProps {
  * The store holds a `CrmOwnerEntity`, so the one owner read out of the store is
  * widened here rather than duplicating those controls.
  */
-const toLookupOwner = (owner: CrmOwnerEntity | undefined): CrmOwner | null =>
-  owner === undefined
+const toLookupOwner = (
+  owner: CrmOwnerEntity | null | undefined
+): CrmOwner | null =>
+  owner == null
     ? null
     : {
         employeeId: owner.employeeId,
@@ -85,46 +90,45 @@ const TaskModalForm: FC<TaskFormProps> = ({
     selectedContactId,
     selectedCompanyId,
     isCrmSidePanelOpen,
-    crmSidePanelType
+    crmSidePanelType,
+    tasks,
+    owners,
+    contacts,
+    deals
   } = useCrmStoreV2((state) => ({
     setIsTaskModalOpen: state.setIsTaskModalOpen,
     selectedTaskId: state.selectedTaskId,
     selectedContactId: state.selectedContactId,
     selectedCompanyId: state.selectedCompanyId,
     isCrmSidePanelOpen: state.isCrmSidePanelOpen,
-    crmSidePanelType: state.crmSidePanelType
+    crmSidePanelType: state.crmSidePanelType,
+    tasks: state.tasks,
+    owners: state.owners,
+    contacts: state.contacts,
+    deals: state.deals
   }));
 
-  const selectedTask = useCrmStoreV2((state) =>
-    selectedTaskId === null ? undefined : state.tasks[selectedTaskId]
-  );
-  const taskOwner = useCrmStoreV2((state) =>
-    selectedTask?.ownerId === undefined
-      ? undefined
-      : state.owners[selectedTask.ownerId]
-  );
-  const taskContact = useCrmStoreV2((state) =>
-    selectedTask?.contactId === undefined
-      ? undefined
-      : state.contacts[selectedTask.contactId]
-  );
-  const panelContact = useCrmStoreV2((state) =>
-    selectedContactId === null ? undefined : state.contacts[selectedContactId]
-  );
-  const taskDeal = useCrmStoreV2((state) =>
-    selectedTask?.dealId === undefined
-      ? undefined
-      : state.deals[selectedTask.dealId]
-  );
+  const selectedTask = selectedTaskId ? tasks[selectedTaskId] : undefined;
+  const taskOwner = selectedTask?.ownerId
+    ? owners[selectedTask.ownerId]
+    : undefined;
+  const taskContact = selectedTask?.contactId
+    ? contacts[selectedTask.contactId]
+    : undefined;
+  const panelContact = selectedContactId
+    ? contacts[selectedContactId]
+    : undefined;
+  const taskDeal = selectedTask?.dealId
+    ? deals[selectedTask.dealId]
+    : undefined;
 
   const { isCrmSalesManager } = useSessionData();
 
   const priorityDropdownOptions = useGetPriorityOptions(translateText);
-  const { options: taskTypeOptions, getCategoryById } =
-    useGetTaskTypeOptions(translateText);
+  const { options: taskTypeOptions } = useGetTaskTypeOptions(translateText);
 
   const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
-    toLookupOwner(taskOwner) ?? initialOwner ?? null
+    toLookupOwner(taskOwner) ?? toLookupOwner(initialOwner)
   );
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
@@ -138,11 +142,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   useEffect(() => {
     if (selectedTask) {
-      setSelectedOwner(toLookupOwner(taskOwner) ?? initialOwner ?? null);
+      setSelectedOwner(toLookupOwner(taskOwner) ?? toLookupOwner(initialOwner));
       setSelectedContactName(panelContact?.name ?? taskContact?.name ?? "");
       setSelectedDealName(taskDeal?.name ?? "");
     } else if (initialOwner) {
-      setSelectedOwner(initialOwner);
+      setSelectedOwner(toLookupOwner(initialOwner));
     }
   }, [
     initialOwner,
@@ -248,7 +252,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     [dealLookupData]
   );
 
-  const clearError = (field: keyof CrmTaskFormTypes) =>
+  const clearError = (field: keyof CrmTaskEntity) =>
     setFieldError(field, undefined);
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -262,21 +266,21 @@ const TaskModalForm: FC<TaskFormProps> = ({
   };
 
   const handleTypeSelect = (value: string) => {
-    setFieldValue("type", getCategoryById(Number(value)) ?? null);
-    clearError("type");
+    setFieldValue("typeId", Number(value));
+    clearError("typeId");
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
-    setFieldValue("dueDate", date?.toISOString() ?? null);
-    clearError("dueDate");
+    setFieldValue("dueAt", date?.toISOString());
+    clearError("dueAt");
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupData?.items?.find(
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
-    setFieldValue("owner", owner?.employeeId);
-    clearError("owner");
+    setFieldValue("ownerId", owner?.employeeId);
+    clearError("ownerId");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -307,23 +311,23 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const handleClearOwner = () => {
     setSelectedOwner(null);
-    setFieldValue("owner", null);
+    setFieldValue("ownerId", undefined);
   };
 
   const handleClearContact = () => {
-    setFieldValue("contactId", null);
+    setFieldValue("contactId", undefined);
     setSelectedContactName("");
     setContactSearchText("");
   };
 
   const handleClearDeal = () => {
-    setFieldValue("dealId", null);
+    setFieldValue("dealId", undefined);
     setSelectedDealName("");
     setDealSearchText("");
   };
 
-  const parsedDueDate = values.dueDate
-    ? convertUTCStringToLocalDateTime(values.dueDate).toJSDate()
+  const parsedDueDate = values.dueAt
+    ? convertUTCStringToLocalDateTime(values.dueAt).toJSDate()
     : undefined;
 
   const formattedDueDate = parsedDueDate
@@ -335,7 +339,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="name"
-          value={values.name}
+          value={values.name ?? ""}
           errorMessage={errors.name}
           state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
@@ -353,10 +357,10 @@ const TaskModalForm: FC<TaskFormProps> = ({
               label={translateText(["labels", "type"])}
               placeholder={translateText(["placeholders", "type"])}
               options={taskTypeOptions}
-              value={values.type?.id?.toString() ?? undefined}
+              value={values.typeId?.toString()}
               onChange={handleTypeSelect}
-              errorMessage={errors.type}
-              variant={errors.type ? "primary-error" : "primary"}
+              errorMessage={errors.typeId}
+              variant={errors.typeId ? "primary-error" : "primary"}
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "type"])}
@@ -368,9 +372,9 @@ const TaskModalForm: FC<TaskFormProps> = ({
               label={translateText(["labels", "priority"])}
               placeholder={translateText(["placeholders", "priority"])}
               options={priorityDropdownOptions}
-              value={values.priority ?? undefined}
+              value={values.priority}
               onChange={(value) => setFieldValue("priority", value)}
-              errorMessage={errors.priority || ""}
+              errorMessage={errors.priority}
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "priority"])}
@@ -388,12 +392,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
             >
               <div>
                 <InputField
-                  name="dueDate"
+                  name="dueAt"
                   value={formattedDueDate}
                   label={translateText(["labels", "dueDate"])}
                   placeholder={translateText(["placeholders", "dueDate"])}
-                  state={errors.dueDate ? "error" : "default"}
-                  errorMessage={errors.dueDate || ""}
+                  state={errors.dueAt ? "error" : "default"}
+                  errorMessage={errors.dueAt}
                   aria-label={translateText(["ariaLabels", "dueDate"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
@@ -423,8 +427,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
                 placeholder={translateText(["placeholders", "taskOwner"])}
                 value={ownerSearchText}
                 onChange={(e) => setOwnerSearchText(e.target.value)}
-                state={errors.owner ? "error" : "default"}
-                errorMessage={errors.owner}
+                state={errors.ownerId ? "error" : "default"}
+                errorMessage={errors.ownerId}
                 emptyMessage={translateText(["emptyStates", "noOwners"])}
                 required
               />
@@ -466,7 +470,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
         <TextArea
           name="notes"
-          value={values.notes}
+          value={values.notes ?? ""}
           placeholder={translateText(["placeholders", "notes"])}
           label={translateText(["labels", "notes"])}
           errorMessage={errors.notes}

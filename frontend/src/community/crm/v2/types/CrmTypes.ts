@@ -110,20 +110,6 @@ export interface CrmTaskTypeListResponse {
   taskTypes: CrmTaskTypeEntity[];
 }
 
-export interface CrmTaskCompletedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface CrmTaskRelatedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
 export interface CrmExistsResponse {
   isExists: boolean;
 }
@@ -188,6 +174,17 @@ export interface CrmTaskCompletedFilterRequest {
   companyId?: number;
   page?: number;
   size?: number;
+}
+
+export interface CrmRelatedTasksRequest {
+  id: number;
+  page: number;
+  size: number;
+}
+
+export interface CrmRelatedTasksFilterRequest {
+  id: number;
+  size: number;
 }
 
 export interface CrmDealsByIdsRequest {

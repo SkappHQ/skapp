@@ -19,13 +19,13 @@ interface Props {
 const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-
-  const { owner, contact } = useCrmStoreV2((state) => ({
-    owner: state.owners[task.ownerId],
-    contact: state.contacts[task.contactId]
+  const { owners, contacts } = useCrmStoreV2((state) => ({
+    owners: state.owners,
+    contacts: state.contacts
   }));
 
-
+  const owner = task.ownerId ? owners[task.ownerId] : undefined;
+  const contact = task.contactId ? contacts[task.contactId] : undefined;
 
   const priorityConfig = getPriorityConfig(task.priority);
 

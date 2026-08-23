@@ -8,9 +8,7 @@ import { isCrmTaskTab } from "~community/crm/v2/utils/crmTaskUtils";
 
 const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
-  const [activeTab, setActiveTab] = useState<CrmTaskTabEnum>(
-    tabs[0]?.id ?? CrmTaskTabEnum.MY_TASKS
-  );
+  const [activeTab, setActiveTab] = useState<CrmTaskTabEnum>(tabs[0]?.id);
 
   return (
     <div className="flex flex-col gap-4 h-full overflow-hidden">

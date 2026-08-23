@@ -15,16 +15,46 @@ import {
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
-/**
- * Folds a freshly loaded batch into the record already in the store, so an
- * entity stays cached once loaded. Which entities are on display is the id
- * arrays' job - switching tabs or re-searching swaps the ids, it never has to
- * evict entities another view may still be reading.
- */
-export const mergeEntityRecord = <T>(
-  existingRecord: Record<number, T>,
-  incomingRecord: Record<number, T>
-): Record<number, T> => ({ ...existingRecord, ...incomingRecord });
+export const mergeTasksRecord = (
+  existingTasks: CrmTaskRecord,
+  incomingTasks: CrmTaskRecord
+): CrmTaskRecord => {
+  const isAlreadyMerged = Object.keys(incomingTasks).every(
+    (taskId) => existingTasks[Number(taskId)] === incomingTasks[Number(taskId)]
+  );
+
+  return isAlreadyMerged
+    ? existingTasks
+    : { ...existingTasks, ...incomingTasks };
+};
+
+export const mergeDealsRecord = (
+  existingDeals: CrmDealRecord,
+  incomingDeals: CrmDealRecord
+): CrmDealRecord => {
+  const isAlreadyMerged = Object.keys(incomingDeals).every(
+    (dealId) => existingDeals[Number(dealId)] === incomingDeals[Number(dealId)]
+  );
+
+  return isAlreadyMerged
+    ? existingDeals
+    : { ...existingDeals, ...incomingDeals };
+};
+
+export const mergeCompaniesRecord = (
+  existingCompanies: CrmCompanyRecord,
+  incomingCompanies: CrmCompanyRecord
+): CrmCompanyRecord => {
+  const isAlreadyMerged = Object.keys(incomingCompanies).every(
+    (companyId) =>
+      existingCompanies[Number(companyId)] ===
+      incomingCompanies[Number(companyId)]
+  );
+
+  return isAlreadyMerged
+    ? existingCompanies
+    : { ...existingCompanies, ...incomingCompanies };
+};
 
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
   const stageRecord: CrmStageRecord = {};
@@ -102,30 +132,44 @@ export const toTaskTypesRecord = (
   return taskTypeRecord;
 };
 
-/**
- * The ids a batch lookup needs. Distinct, so one request covers every task
- * pointing at the same deal or company.
- */
-export const collectTaskDealIds = (tasks: CrmTaskEntity[]): number[] => [
-  ...new Set(
-    tasks
-      .map((task) => task.dealId)
-      .filter((dealId): dealId is number => dealId != null)
-  )
-];
+export const collectMissingTaskDealIds = (
+  tasks: CrmTaskEntity[],
+  existingDeals: CrmDealRecord
+): number[] => {
+  const missingDealIds: number[] = [];
 
-export const collectTaskCompanyIds = (tasks: CrmTaskEntity[]): number[] => [
-  ...new Set(
-    tasks
-      .map((task) => task.companyId)
-      .filter((companyId): companyId is number => companyId != null)
-  )
-];
+  for (const task of tasks) {
+    if (
+      task.dealId != null &&
+      existingDeals[task.dealId] === undefined &&
+      !missingDealIds.includes(task.dealId)
+    ) {
+      missingDealIds.push(task.dealId);
+    }
+  }
 
-/**
- * Fresh load, search or filter change: the order comes straight from the
- * response.
- */
+  return missingDealIds;
+};
+
+export const collectMissingTaskCompanyIds = (
+  tasks: CrmTaskEntity[],
+  existingCompanies: CrmCompanyRecord
+): number[] => {
+  const missingCompanyIds: number[] = [];
+
+  for (const task of tasks) {
+    if (
+      task.companyId != null &&
+      existingCompanies[task.companyId] === undefined &&
+      !missingCompanyIds.includes(task.companyId)
+    ) {
+      missingCompanyIds.push(task.companyId);
+    }
+  }
+
+  return missingCompanyIds;
+};
+
 export const replaceTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   const taskIds: number[] = [];
   for (const task of tasks) {
@@ -136,10 +180,6 @@ export const replaceTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   return taskIds;
 };
 
-/**
- * Load-more: extends the existing order, skipping ids already present so a
- * re-emitted cached page cannot duplicate a row.
- */
 export const appendTaskIds = (
   existingIds: number[],
   tasks: CrmTaskEntity[]
@@ -157,21 +197,30 @@ export const appendTaskIds = (
   return nextIds;
 };
 
-/**
- * Delete: drops the entity itself. The records are otherwise only ever merged
- * into, so a deleted entity would sit there until a full reload without this.
- */
-export const removeEntityFromRecord = <T>(
-  existingRecord: Record<number, T>,
-  id: number
-): Record<number, T> => {
-  const { [id]: _removedEntity, ...remainingRecord } = existingRecord;
-  return remainingRecord;
+export const prependTaskId = (
+  existingTaskIds: number[],
+  taskId: number
+): number[] =>
+  existingTaskIds.includes(taskId)
+    ? existingTaskIds
+    : [taskId, ...existingTaskIds];
+
+export const removeTaskFromRecord = (
+  existingTasks: CrmTaskRecord,
+  taskId: number
+): CrmTaskRecord => {
+  if (existingTasks[taskId] === undefined) {
+    return existingTasks;
+  }
+
+  const { [taskId]: _removedTask, ...remainingTasks } = existingTasks;
+  return remainingTasks;
 };
 
-/**
- * The matching half of the delete: takes the id out of the displayed order so
- * the row stops rendering.
- */
-export const removeId = (existingIds: number[], id: number): number[] =>
-  existingIds.filter((existingId) => existingId !== id);
+export const removeTaskId = (
+  existingTaskIds: number[],
+  taskId: number
+): number[] =>
+  existingTaskIds.includes(taskId)
+    ? existingTaskIds.filter((existingTaskId) => existingTaskId !== taskId)
+    : existingTaskIds;

@@ -4,13 +4,20 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
-import { taskValidations } from "~community/crm/utils/taskValidations";
 import { useCreateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  mergeTasksRecord,
+  prependTaskId,
+  toTasksRecord
+} from "~community/crm/v2/utils/crmEntityUtils";
+import { taskValidations } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: FC = () => {
@@ -18,32 +25,46 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen, selectedContactId } = useCrmStoreV2((state) => ({
+  const {
+    setIsTaskModalOpen,
+    selectedContactId,
+    tasks,
+    taskIds,
+    setTasks,
+    setTaskIds
+  } = useCrmStoreV2((state) => ({
     setIsTaskModalOpen: state.setIsTaskModalOpen,
-    selectedContactId: state.selectedContactId
+    selectedContactId: state.selectedContactId,
+    tasks: state.tasks,
+    taskIds: state.taskIds,
+    setTasks: state.setTasks,
+    setTaskIds: state.setTaskIds
   }));
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
-  const defaultOwner = useMemo((): CrmOwner | null => {
+  const defaultOwner = useMemo((): CrmOwnerEntity | null => {
     if (!currentUser?.employeeId) return null;
     return {
       employeeId: Number(currentUser.employeeId),
       firstName: currentUser.firstName ?? "",
-      lastName: currentUser.lastName ?? "",
-      authPic: currentUser.authPic as string | null
+      lastName: currentUser.lastName ?? undefined,
+      authPic:
+        typeof currentUser.authPic === "string"
+          ? currentUser.authPic
+          : undefined
     };
   }, [currentUser]);
 
-  const initialValues: CrmTaskFormTypes = useMemo(
+  const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: "",
-      type: null,
-      dueDate: null,
+      typeId: undefined,
+      dueAt: undefined,
       priority: CrmPriorityEnum.MEDIUM,
-      contactId: selectedContactId ?? null,
-      dealId: null,
-      owner: defaultOwner?.employeeId ? Number(defaultOwner.employeeId) : null,
+      contactId: selectedContactId ?? undefined,
+      dealId: undefined,
+      ownerId: defaultOwner?.employeeId,
       notes: ""
     }),
     [defaultOwner, selectedContactId]
@@ -60,9 +81,15 @@ const AddTaskModalContent: FC = () => {
 
   const { setSubmitting } = formik;
 
-  const handleSuccess = () => {
+  const handleSuccess = (createdTask: CrmTaskEntity) => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
+
+    setTasks(mergeTasksRecord(tasks, toTasksRecord([createdTask])));
+    if (createdTask.id !== undefined) {
+      setTaskIds(prependTaskId(taskIds, createdTask.id));
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -86,19 +113,12 @@ const AddTaskModalContent: FC = () => {
     handleError
   );
 
-  const createTask = (formValues: CrmTaskFormTypes) => {
-    const task: CrmTaskEntity = {
-      name: formValues.name.trim(),
-      typeId: formValues.type?.id ?? undefined,
-      dueAt: formValues?.dueDate,
-      priority: formValues.priority,
-      contactId: formValues.contactId ?? undefined,
-      dealId: formValues.dealId ?? undefined,
-      ownerId: formValues.owner ?? undefined,
+  const createTask = (formValues: CrmTaskEntity) => {
+    createNewTask({
+      ...formValues,
+      name: formValues.name?.trim(),
       notes: formValues.notes?.trim()
-    };
-
-    createNewTask(task);
+    });
   };
 
   return (

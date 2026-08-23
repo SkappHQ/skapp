@@ -6,7 +6,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskRecord } from "~community/crm/v2/types/CrmCommonTypes";
-import { mergeEntityRecord } from "~community/crm/v2/utils/crmEntityUtils";
+import { mergeTasksRecord } from "~community/crm/v2/utils/crmEntityUtils";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
@@ -30,8 +30,12 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const task = useCrmStoreV2((state) => state.tasks[taskId]);
-  const setTasks = useCrmStoreV2((state) => state.setTasks);
+  const { tasks, setTasks } = useCrmStoreV2((state) => ({
+    tasks: state.tasks,
+    setTasks: state.setTasks
+  }));
+
+  const task = tasks[taskId];
 
   const { mutate: updateCompletion } = useUpdateTask();
 
@@ -41,11 +45,10 @@ const TaskRow: FC<Props> = ({
    * assigns it.
    */
   const applyCompletion = (isCompleted: boolean) => {
-    const { tasks } = useCrmStoreV2.getState();
     const completionPatch: CrmTaskRecord = {
       [taskId]: { ...tasks[taskId], isCompleted }
     };
-    setTasks(mergeEntityRecord(tasks, completionPatch));
+    setTasks(mergeTasksRecord(tasks, completionPatch));
   };
 
   const handleToggleChange = (isCompleted: boolean) => {

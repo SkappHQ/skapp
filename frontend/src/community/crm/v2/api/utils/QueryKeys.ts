@@ -22,6 +22,7 @@ export const crmTaskQueryKeys = {
     "crm-completed-tasks",
     filter
   ],
+  TASK_BY_ID: (id: number) => [V2, "crm-task-by-id", id],
   RELATED_TASKS: [V2, "crm-related-tasks"],
   RELATED_TASKS_BY_ID: (id: number, size: number) => [
     V2,

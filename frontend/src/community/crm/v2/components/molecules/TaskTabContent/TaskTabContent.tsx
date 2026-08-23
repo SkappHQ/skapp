@@ -25,7 +25,9 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   collectMissingTaskCompanyIds,
   collectMissingTaskDealIds,
-  mergeEntityRecord,
+  mergeCompaniesRecord,
+  mergeDealsRecord,
+  mergeTasksRecord,
   replaceTaskIds,
   toCompaniesRecord,
   toDealsRecord,
@@ -109,20 +111,31 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
 
   useEffect(() => {
     if (responseTasks.length > 0) {
-      setTasks(mergeEntityRecord(tasks, toTasksRecord(responseTasks)));
+      setTasks(mergeTasksRecord(tasks, toTasksRecord(responseTasks)));
       setTaskIds(replaceTaskIds(responseTasks));
     }
 
     if (dealsData) {
-      setDeals(mergeEntityRecord(deals, toDealsRecord(dealsData)));
+      setDeals(mergeDealsRecord(deals, toDealsRecord(dealsData)));
     }
 
     if (companiesData) {
       setCompanies(
-        mergeEntityRecord(companies, toCompaniesRecord(companiesData))
+        mergeCompaniesRecord(companies, toCompaniesRecord(companiesData))
       );
     }
-  }, [responseTasks, dealsData, companiesData]);
+  }, [
+    responseTasks,
+    dealsData,
+    companiesData,
+    tasks,
+    deals,
+    companies,
+    setTasks,
+    setTaskIds,
+    setDeals,
+    setCompanies
+  ]);
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(

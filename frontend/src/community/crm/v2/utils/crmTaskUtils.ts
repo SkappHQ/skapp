@@ -14,7 +14,6 @@ import {
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
 import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
-import { CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
 import {
   isDueToday,
   isDueTomorrow,
@@ -86,9 +85,15 @@ export const getTaskTypeIcon = (
     { width: size, height: size }
   );
 
+export interface TaskPriorityConfig {
+  icon: ReactElement;
+  bgColor: string;
+  textColor: string;
+}
+
 export const getPriorityConfig = (
   priority: CrmPriorityEnum | undefined
-): { icon: ReactElement; bgColor: string; textColor: string } | null => {
+): TaskPriorityConfig | null => {
   const option = PRIORITY_OPTIONS.find((o) => o.value === priority);
   if (!option) return null;
 
@@ -115,38 +120,36 @@ export const getOwnerFullName = (owner: CrmOwnerEntity | undefined): string =>
 
 /**
  * Builds the edit payload from only the fields the user actually changed.
- * The form holds cleared fields as `null`; the entity is optional-only, so they
- * are sent as `undefined`.
  */
 export const getChangedTaskFields = (
-  newValues: CrmTaskFormTypes,
-  originalValues: CrmTaskFormTypes
+  newValues: CrmTaskEntity,
+  originalValues: CrmTaskEntity
 ): Omit<CrmTaskEntity, "id"> => {
   const changedFields: Omit<CrmTaskEntity, "id"> = {};
 
   if (newValues.name !== originalValues.name) {
-    changedFields.name = newValues.name.trim();
+    changedFields.name = newValues.name?.trim();
   }
-  if (newValues.type?.id !== originalValues.type?.id) {
-    changedFields.typeId = newValues.type?.id;
+  if (newValues.typeId !== originalValues.typeId) {
+    changedFields.typeId = newValues.typeId;
   }
-  if (newValues.dueDate !== originalValues.dueDate) {
-    changedFields.dueAt = newValues.dueDate ?? undefined;
+  if (newValues.dueAt !== originalValues.dueAt) {
+    changedFields.dueAt = newValues.dueAt;
   }
   if (newValues.priority !== originalValues.priority) {
     changedFields.priority = newValues.priority;
   }
   if (newValues.contactId !== originalValues.contactId) {
-    changedFields.contactId = newValues.contactId ?? undefined;
+    changedFields.contactId = newValues.contactId;
   }
   if (newValues.dealId !== originalValues.dealId) {
-    changedFields.dealId = newValues.dealId ?? undefined;
+    changedFields.dealId = newValues.dealId;
   }
-  if (newValues.owner !== originalValues.owner) {
-    changedFields.ownerId = newValues.owner ?? undefined;
+  if (newValues.ownerId !== originalValues.ownerId) {
+    changedFields.ownerId = newValues.ownerId;
   }
   if (newValues.notes !== originalValues.notes) {
-    changedFields.notes = newValues.notes.trim();
+    changedFields.notes = newValues.notes?.trim();
   }
 
   return changedFields;

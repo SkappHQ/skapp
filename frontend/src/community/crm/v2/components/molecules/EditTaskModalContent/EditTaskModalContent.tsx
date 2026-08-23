@@ -4,50 +4,49 @@ import { FC, useMemo } from "react";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { CrmPriorityEnum } from "~community/crm/enums/common";
-import { CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
-import { taskValidations } from "~community/crm/utils/taskValidations";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
-import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  mergeEntityRecord,
+  mergeTasksRecord,
   toTasksRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 import { getChangedTaskFields } from "~community/crm/v2/utils/crmTaskUtils";
+import { taskValidations } from "~community/crm/v2/utils/taskValidations";
 
 const EditTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId } = useCrmStoreV2((state) => ({
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    selectedTaskId: state.selectedTaskId
-  }));
-  const selectedTask = useCrmStoreV2((state) =>
-    selectedTaskId === null ? undefined : state.tasks[selectedTaskId]
+  const { setIsTaskModalOpen, selectedTaskId, tasks, setTasks } = useCrmStoreV2(
+    (state) => ({
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      selectedTaskId: state.selectedTaskId,
+      tasks: state.tasks,
+      setTasks: state.setTasks
+    })
   );
 
-  const { getCategoryById } = useGetTaskTypeOptions(translateText);
+  const selectedTask = selectedTaskId ? tasks[selectedTaskId] : undefined;
 
-  const initialValues: CrmTaskFormTypes = useMemo(
+  const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: selectedTask?.name ?? "",
-      type: selectedTask?.typeId ? getCategoryById(selectedTask.typeId) : null,
-      dueDate: selectedTask?.dueAt ?? null,
+      typeId: selectedTask?.typeId,
+      dueAt: selectedTask?.dueAt,
       priority: selectedTask?.priority ?? CrmPriorityEnum.MEDIUM,
-      contactId: selectedTask?.contactId ?? null,
-      dealId: selectedTask?.dealId ?? null,
-      owner: selectedTask?.ownerId ?? null,
+      contactId: selectedTask?.contactId,
+      dealId: selectedTask?.dealId,
+      ownerId: selectedTask?.ownerId,
       notes: selectedTask?.notes ?? ""
     }),
-    [selectedTask, getCategoryById]
+    [selectedTask]
   );
 
-  const submitEditTask = (formValues: CrmTaskFormTypes) => {
+  const submitEditTask = (formValues: CrmTaskEntity) => {
     if (!selectedTaskId) return;
 
     const changedFields = getChangedTaskFields(formValues, initialValues);
@@ -74,8 +73,7 @@ const EditTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    const { tasks, setTasks } = useCrmStoreV2.getState();
-    setTasks(mergeEntityRecord(tasks, toTasksRecord([updatedTask])));
+    setTasks(mergeTasksRecord(tasks, toTasksRecord([updatedTask])));
 
     setToastMessage({
       open: true,

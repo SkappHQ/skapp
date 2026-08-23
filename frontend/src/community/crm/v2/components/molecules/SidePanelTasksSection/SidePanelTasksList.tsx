@@ -42,7 +42,7 @@ const SidePanelTasksList: FC<Props> = ({
         ))}
       </div>
       {showAddTaskAction && (
-        <div className=" flex">
+        <div className="flex">
           <ButtonV2
             type="button"
             variant="line"

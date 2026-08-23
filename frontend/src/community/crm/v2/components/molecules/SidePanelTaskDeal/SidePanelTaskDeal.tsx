@@ -30,16 +30,16 @@ const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
 
   const { getStageByName } = useStageNameMapper();
 
-  const deal = useCrmStoreV2((state) =>
-    dealId === undefined ? undefined : state.deals[dealId]
-  );
-  const owner = useCrmStoreV2((state) =>
-    deal?.ownerId === undefined ? undefined : state.owners[deal.ownerId]
-  );
-  const stage = useCrmStoreV2((state) =>
-    deal?.stageId === undefined ? undefined : state.stages[deal.stageId]
-  );
+  const { deals, owners, stages } = useCrmStoreV2((state) => ({
+    deals: state.deals,
+    owners: state.owners,
+    stages: state.stages
+  }));
 
+  const deal = dealId ? deals[dealId] : undefined;
+  const owner = deal?.ownerId ? owners[deal?.ownerId] : undefined;
+  const stage = deal?.stageId ? stages[deal.stageId] : undefined;
+  
   if (!deal) {
     return (
       <EmptyDataView

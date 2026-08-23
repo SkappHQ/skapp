@@ -2,6 +2,7 @@ import { moduleAPIPath } from "~community/common/constants/configs";
 
 export const crmTaskEndpoints = {
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
+  GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
   GET_RELATED_TASKS: (id: number) => `${moduleAPIPath.CRM}/task/${id}/related`,
   CREATE_TASK: `${moduleAPIPath.CRM}/task`,
   UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
