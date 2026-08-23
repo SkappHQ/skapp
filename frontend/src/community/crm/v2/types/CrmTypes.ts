@@ -133,10 +133,11 @@ export interface CrmExistsResponse {
   isExists: boolean;
 }
 
-export interface CrmContactLookupItem {
-  id: number;
-  name: string;
-  company: CrmCompanyEntity | null;
+export interface CrmContactLookupResponse {
+  items: CrmContactEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 export interface CrmCompanyFilterRequest {

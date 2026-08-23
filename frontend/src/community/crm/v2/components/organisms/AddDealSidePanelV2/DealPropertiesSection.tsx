@@ -8,19 +8,21 @@ import PropertyField from "~community/crm/v2/components/molecules/PropertyField/
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import {
+  CrmCompanyRecord,
+  CrmContactEntity,
   CrmDealEntity,
   CrmOwnerEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmContactLookupItem } from "~community/crm/v2/types/CrmTypes";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface DealPropertiesSectionProps {
   translateText: (keys: string[]) => string;
   formik: FormikProps<CrmDealEntity>;
-  contacts: CrmContactLookupItem[];
-  selectedContact: CrmContactLookupItem | null;
-  setSelectedContact: (c: CrmContactLookupItem | null) => void;
+  contacts: CrmContactEntity[];
+  companies: CrmCompanyRecord;
+  selectedContact: CrmContactEntity | null;
+  setSelectedContact: (contact: CrmContactEntity | null) => void;
   setContactSearchTerm: (term: string) => void;
 }
 
@@ -28,6 +30,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   translateText,
   formik,
   contacts,
+  companies,
   selectedContact,
   setSelectedContact,
   setContactSearchTerm
@@ -57,14 +60,14 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
     }
   }, [defaultOwner]);
 
-  const handleOwnerChange = (u: CrmOwnerEntity | null) => {
-    setSelectedOwner(u);
-    setFieldValue("ownerId", u ? u.employeeId : undefined);
+  const handleOwnerChange = (owner: CrmOwnerEntity | null) => {
+    setSelectedOwner(owner);
+    setFieldValue("ownerId", owner ? owner.employeeId : undefined);
   };
 
-  const handleContactChange = (c: CrmContactLookupItem | null) => {
-    setSelectedContact(c);
-    setFieldValue("contactId", c ? c.id : undefined);
+  const handleContactChange = (contact: CrmContactEntity | null) => {
+    setSelectedContact(contact);
+    setFieldValue("contactId", contact ? contact.id : undefined);
   };
 
   const handlePriorityChange = (priority: string) => {
@@ -77,6 +80,7 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
         <div className="flex flex-col w-full">
           <ContactPopupSearch
             contacts={contacts}
+            companies={companies}
             selectedContact={selectedContact}
             onChange={handleContactChange}
             onSearch={setContactSearchTerm}

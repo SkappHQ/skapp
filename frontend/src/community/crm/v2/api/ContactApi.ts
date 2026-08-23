@@ -1,8 +1,8 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 
-import authFetch from "~community/common/utils/axiosInterceptor";
+import authFetch, { authFetchV2 } from "~community/common/utils/axiosInterceptor";
 import {
-  CrmContactLookupItem,
+  CrmContactLookupResponse,
   CrmOwnerListResponse
 } from "~community/crm/v2/types/CrmTypes";
 
@@ -12,13 +12,8 @@ import { crmLookupQueryKeys } from "./utils/QueryKeys";
 const fetchContactLookup = async (
   searchKeyword: string,
   size: number
-): Promise<{
-  items: CrmContactLookupItem[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}> => {
-  const response = await authFetch.get(crmLookupEndpoints.CONTACT_LOOKUP, {
+): Promise<CrmContactLookupResponse> => {
+  const response = await authFetchV2.get(crmLookupEndpoints.CONTACT_LOOKUP, {
     params: { searchKeyword, size }
   });
   return response?.data?.results?.[0];

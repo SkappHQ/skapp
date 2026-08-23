@@ -8,11 +8,14 @@ import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.service.v2.CrmContactServiceV2;
+import com.skapp.community.crmplanner.util.CrmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -84,6 +89,34 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 
 		log.info("editContact: execution ended");
 		return new ResponseEntityDto(false, crmMapperV2.crmContactToCrmContactResponseDtoV2(savedContact));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactsLookup(CrmContactFilterDto filterDto) {
+		log.info("getContactsLookup: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmContact> contactPage = crmContactDao.findContactsForLookup(filterDto, pageable);
+
+		List<CrmContactLookupResponseDtoV2> items = contactPage.getContent().stream().map(this::toLookupDto).toList();
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(items);
+		pageDto.setCurrentPage(contactPage.getNumber());
+		pageDto.setTotalItems(contactPage.getTotalElements());
+		pageDto.setTotalPages(contactPage.getTotalPages());
+
+		log.info("getContactsLookup: execution ended");
+		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private CrmContactLookupResponseDtoV2 toLookupDto(CrmContact contact) {
+		CrmContactLookupResponseDtoV2 dto = crmMapperV2.crmContactToCrmContactLookupResponseDtoV2(contact);
+		if (CrmUtil.hasDeletedCompany(contact)) {
+			dto.setCompanyId(null);
+		}
+		return dto;
 	}
 
 }

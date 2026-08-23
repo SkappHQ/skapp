@@ -15,10 +15,6 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  buildOwnerOptions,
-  findById
-} from "~community/crm/v2/utils/dealFormUtil";
 
 import OwnerOptionItem from "./OwnerOptionItem";
 import OwnerTriggerContent from "./OwnerTriggerContent";
@@ -55,13 +51,20 @@ const OwnerPopupSearch: FC<Props> = ({
     () => ownerLookupData?.items ?? [],
     [ownerLookupData?.items]
   );
-  const dropdownOptions: DropdownOption[] = useMemo(
-    () =>
-      buildOwnerOptions(users, selectedUser, (u) =>
-        concatStrings([u.firstName, u.lastName ?? ""])
-      ),
-    [users, selectedUser]
-  );
+  const dropdownOptions: DropdownOption[] = useMemo(() => {
+    const toOption = (user: CrmOwnerEntity): DropdownOption => ({
+      id: user.employeeId,
+      value: user.employeeId,
+      label: concatStrings([user.firstName, user.lastName ?? ""])
+    });
+
+    const base = users.map(toOption);
+    const isSelectedMissing =
+      selectedUser &&
+      !users.some((user) => user.employeeId === selectedUser.employeeId);
+
+    return isSelectedMissing ? [toOption(selectedUser), ...base] : base;
+  }, [users, selectedUser]);
 
   const selectedValue: DropdownOption | null = selectedUser
     ? {
@@ -75,8 +78,8 @@ const OwnerPopupSearch: FC<Props> = ({
     : null;
 
   const resolveUser = (id: number): CrmOwnerEntity | null =>
-    findById(users, id, (u) => u.employeeId) ??
-    (selectedUser?.employeeId === id ? selectedUser : null);
+    (users.find((user) => user.employeeId === id) ??
+      (selectedUser?.employeeId === id ? selectedUser : null));
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {

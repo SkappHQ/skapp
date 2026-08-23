@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.mapper;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
@@ -13,6 +14,9 @@ import org.mapstruct.Mapping;
 public interface CrmMapperV2 {
 
 	CrmContactResponseDtoV2 crmContactToCrmContactResponseDtoV2(CrmContact contact);
+
+	@Mapping(target = "companyId", source = "company.id")
+	CrmContactLookupResponseDtoV2 crmContactToCrmContactLookupResponseDtoV2(CrmContact contact);
 
 	@Mapping(target = "stageId", source = "stage.id")
 	@Mapping(target = "ownerId", source = "owner.employeeId")

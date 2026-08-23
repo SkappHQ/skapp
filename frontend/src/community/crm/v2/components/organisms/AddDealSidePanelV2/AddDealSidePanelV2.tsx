@@ -1,6 +1,6 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
-import { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
@@ -12,6 +12,7 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import {
   useCheckDealNameExists,
@@ -19,12 +20,16 @@ import {
 } from "~community/crm/v2/api/DealApi";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmContactLookupItem,
-  CrmSidePanelTypes
-} from "~community/crm/v2/types/CrmTypes";
+  CrmContactEntity,
+  CrmDealEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
+import {
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
 
 import DealNameStageSection from "./DealNameStageSection";
@@ -45,7 +50,7 @@ const AddDealSidePanelV2: FC = () => {
   const { setToastMessage } = useToast();
 
   const [selectedContact, setSelectedContact] =
-    useState<CrmContactLookupItem | null>(null);
+    useState<CrmContactEntity | null>(null);
 
   const {
     isCrmSidePanelOpen,
@@ -55,6 +60,7 @@ const AddDealSidePanelV2: FC = () => {
     deals,
     board,
     dealIds,
+    companies,
     setDeals,
     setBoardColumn,
     setDealIds
@@ -67,6 +73,7 @@ const AddDealSidePanelV2: FC = () => {
       deals: store.deals,
       board: store.board,
       dealIds: store.dealIds,
+      companies: store.companies,
       setDeals: store.setDeals,
       setBoardColumn: store.setBoardColumn,
       setDealIds: store.setDealIds
@@ -87,7 +94,31 @@ const AddDealSidePanelV2: FC = () => {
     DEFAULT_LOOKUP_PAGE_SIZE,
     isOpen
   );
-  const contacts = contactLookupData?.items ?? [];
+  const contacts = useMemo(
+    () => contactLookupData?.items ?? [],
+    [contactLookupData?.items]
+  );
+
+  const missingCompanyIds = useMemo(
+    () =>
+      getMissingCompanyIds(
+        contacts
+          .map((contact) => contact.companyId)
+          .filter((id): id is number => id != null),
+        companies
+      ),
+    [contacts, companies]
+  );
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
+  );
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+    }
+  }, [fetchedCompanies]);
 
   const handleCreateDealSuccess = (createdDeal: CrmDealEntity) => {
     const next = ingestCreatedDeal({ deals, board, dealIds }, createdDeal);
@@ -239,6 +270,7 @@ const AddDealSidePanelV2: FC = () => {
                 translateText={translateText}
                 formik={formik}
                 contacts={contacts}
+                companies={companies}
                 selectedContact={selectedContact}
                 setSelectedContact={setSelectedContact}
                 setContactSearchTerm={setContactSearchTerm}

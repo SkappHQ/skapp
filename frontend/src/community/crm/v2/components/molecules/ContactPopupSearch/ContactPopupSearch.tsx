@@ -6,19 +6,23 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo } from "react";
 
-import { CrmContactLookupItem } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactEntity,
+  CrmCompanyRecord
+} from "~community/crm/v2/types/CrmCommonTypes";
 import {
   buildContactOptions,
-  findById
-} from "~community/crm/v2/utils/dealFormUtil";
+  getContactDisplayName
+} from "~community/crm/v2/utils/contactUtil";
 
 import ContactOptionItem from "./ContactOptionItem";
 import ContactTriggerContent from "./ContactTriggerContent";
 
 interface Props {
-  contacts: CrmContactLookupItem[];
-  selectedContact: CrmContactLookupItem | null;
-  onChange: (contact: CrmContactLookupItem | null) => void;
+  contacts: CrmContactEntity[];
+  companies: CrmCompanyRecord;
+  selectedContact: CrmContactEntity | null;
+  onChange: (contact: CrmContactEntity | null) => void;
   onSearch: (searchTerm: string) => void;
   placeholder: string;
   searchPlaceholder: string;
@@ -29,6 +33,7 @@ interface Props {
 
 const ContactPopupSearch: FC<Props> = ({
   contacts,
+  companies,
   selectedContact,
   onChange,
   onSearch,
@@ -38,18 +43,22 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
+  const resolveCompanyName = (contact: CrmContactEntity): string | undefined =>
+    contact.companyId != null ? companies[contact.companyId]?.name : undefined;
+
   const dropdownOptions: DropdownOption[] = useMemo(
-    () => buildContactOptions(contacts),
-    [contacts]
+    () => buildContactOptions(contacts, companies),
+    [contacts, companies]
   );
 
-  const selectedValue: DropdownOption | null = selectedContact
-    ? {
-        id: selectedContact.id,
-        value: selectedContact.id,
-        label: selectedContact.name
-      }
-    : null;
+  const selectedValue: DropdownOption | null =
+    selectedContact?.id != null
+      ? {
+          id: selectedContact.id,
+          value: selectedContact.id,
+          label: getContactDisplayName(selectedContact)
+        }
+      : null;
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {
@@ -57,13 +66,13 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    onChange(findById(contacts, Number(id), (contact) => contact.id));
+    onChange(contacts.find((contact) => contact.id === Number(id)) ?? null);
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
-      name={selectedContact?.name}
-      companyName={selectedContact?.company?.name}
+      name={selectedContact ? getContactDisplayName(selectedContact) : undefined}
+      companyName={selectedContact ? resolveCompanyName(selectedContact) : undefined}
       placeholder={placeholder}
       triggerProps={triggerProps}
     />
@@ -73,12 +82,14 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = findById(contacts, Number(option.id), (contact) => contact.id);
+    const contact =
+      contacts.find((contact) => contact.id === Number(option.id)) ?? null;
 
     return contact ? (
       <ContactOptionItem
         key={option.id}
         contact={contact}
+        companyName={resolveCompanyName(contact)}
         option={option}
         onSelect={onSelect}
       />

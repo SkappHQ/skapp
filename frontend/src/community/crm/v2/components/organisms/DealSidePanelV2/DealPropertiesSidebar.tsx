@@ -1,5 +1,5 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -15,11 +15,18 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
+import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmContactLookupItem } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactEntity,
+  CrmOwnerEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 import { getOrderedStages } from "~community/crm/v2/utils/selectorUtils";
@@ -30,7 +37,7 @@ interface DealPropertiesSidebarProps {
   onAmountChange: (amount: string) => void;
   onPriorityChange: (priority: CrmPriorityEnum) => void;
   onOwnerChange: (owner: CrmOwnerEntity) => void;
-  onContactChange: (contact: CrmContactLookupItem) => void;
+  onContactChange: (contact: CrmContactEntity) => void;
 }
 
 const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
@@ -67,7 +74,31 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     DEFAULT_LOOKUP_PAGE_SIZE,
     debouncedContactSearchTerm.length > 0
   );
-  const contacts = contactLookupData?.items ?? [];
+  const contacts = useMemo(
+    () => contactLookupData?.items ?? [],
+    [contactLookupData?.items]
+  );
+
+  const missingCompanyIds = useMemo(
+    () =>
+      getMissingCompanyIds(
+        contacts
+          .map((contact) => contact.companyId)
+          .filter((id): id is number => id != null),
+        companies
+      ),
+    [contacts, companies]
+  );
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
+  );
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+    }
+  }, [fetchedCompanies]);
 
   const stageOptions = useMemo(
     () =>
@@ -89,13 +120,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const selectedStageId = deal.stageId != null ? String(deal.stageId) : "";
   const selectedOwner: CrmOwnerEntity | null =
     deal.ownerId != null ? owners[deal.ownerId] ?? null : null;
-  const selectedContact: CrmContactLookupItem | null =
+  const selectedContact: CrmContactEntity | null =
     deal.contactId != null
       ? {
           id: deal.contactId,
           name: getContactDisplayName(contactRecord[deal.contactId]),
-          company:
-            deal.companyId != null ? companies[deal.companyId] ?? null : null
+          companyId: deal.companyId
         }
       : null;
 
@@ -103,7 +133,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     if (value !== selectedStageId) onStageChange(Number(value));
   };
 
-  const handleContactChange = (contact: CrmContactLookupItem | null): void => {
+  const handleContactChange = (contact: CrmContactEntity | null): void => {
     if (contact && contact.id !== deal.contactId) onContactChange(contact);
   };
 
@@ -135,6 +165,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
           <div className="flex flex-col w-full">
             <ContactPopupSearch
               contacts={contacts}
+              companies={companies}
               selectedContact={selectedContact}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
