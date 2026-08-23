@@ -10,7 +10,7 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  mergeEntityRecord,
+  mergeTasksRecord,
   toTasksRecord
 } from "~community/crm/v2/utils/crmEntityUtils";
 import { getChangedTaskFields } from "~community/crm/v2/utils/crmTaskUtils";
@@ -21,10 +21,13 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId } = useCrmStoreV2((state) => ({
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    selectedTaskId: state.selectedTaskId
-  }));
+  const { setIsTaskModalOpen, selectedTaskId, tasks, setTasks } =
+    useCrmStoreV2((state) => ({
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      selectedTaskId: state.selectedTaskId,
+      tasks: state.tasks,
+      setTasks: state.setTasks
+    }));
   const selectedTask = useCrmStoreV2((state) =>
     selectedTaskId === null ? undefined : state.tasks[selectedTaskId]
   );
@@ -70,8 +73,7 @@ const EditTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    const { tasks, setTasks } = useCrmStoreV2.getState();
-    setTasks(mergeEntityRecord(tasks, toTasksRecord([updatedTask])));
+    setTasks(mergeTasksRecord(tasks, toTasksRecord([updatedTask])));
 
     setToastMessage({
       open: true,
