@@ -5,6 +5,11 @@ import {
   CrmContactRecord,
   CrmDealEntity,
   CrmDealRecord,
+<<<<<<< HEAD
+=======
+  CrmContactEntity,
+  CrmContactRecord,
+>>>>>>> 50aa6d89a52b43183e9d976b573662ebe2703c9c
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,
@@ -15,6 +20,7 @@ import {
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
+<<<<<<< HEAD
 /**
  * Folds a freshly loaded batch into the record already in the store, so an
  * entity stays cached once loaded. Which entities are on display is the id
@@ -25,6 +31,8 @@ import {
  * a caller that reads the record, merges and writes it back settles instead of
  * feeding itself a new reference on every pass.
  */
+=======
+>>>>>>> 50aa6d89a52b43183e9d976b573662ebe2703c9c
 export const mergeTasksRecord = (
   existingTasks: CrmTaskRecord,
   incomingTasks: CrmTaskRecord
@@ -284,3 +292,10 @@ export const removeId = (existingIds: number[], id: number): number[] =>
   existingIds.includes(id)
     ? existingIds.filter((existingId) => existingId !== id)
     : existingIds;
+export const removeTaskId = (
+  existingTaskIds: number[],
+  taskId: number
+): number[] =>
+  existingTaskIds.includes(taskId)
+    ? existingTaskIds.filter((existingTaskId) => existingTaskId !== taskId)
+    : existingTaskIds;
