@@ -98,7 +98,7 @@ public class CrmUtil {
 			dto.setCompany(null);
 		}
 		if (dto.getContact() != null && hasDeletedCompany(task.getContact())) {
-			dto.getContact().setCompany(null);
+			dto.getContact().setCompanyId(null);
 		}
 		if (task.getDeal() != null && dto.getDeal() != null) {
 			maskDeletedCompaniesOnDeal(dto.getDeal(), task.getDeal());

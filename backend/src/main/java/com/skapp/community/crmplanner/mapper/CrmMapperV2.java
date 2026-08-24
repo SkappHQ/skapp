@@ -12,6 +12,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = CrmMapper.class)
 public interface CrmMapperV2 {
 
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
 	CrmContactResponseDtoV2 crmContactToCrmContactResponseDtoV2(CrmContact contact);
 
 	@Mapping(target = "stageId", source = "stage.id")

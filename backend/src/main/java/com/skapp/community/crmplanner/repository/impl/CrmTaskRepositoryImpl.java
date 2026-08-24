@@ -328,11 +328,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		return cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
 				contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-				cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
-						contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
-						contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
-						contactCompany.get(CrmCompany_.contactNumber)),
-				buildOwnerSelection(cb, contactOwner));
+				contactCompany.get(CrmCompany_.id), contactOwner.get(Employee_.employeeId));
 	}
 
 	private Selection<CrmOwnerResponseDto> buildOwnerSelection(CriteriaBuilder cb, Join<?, Employee> owner) {

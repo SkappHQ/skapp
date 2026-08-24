@@ -336,7 +336,7 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contactId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(companyId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['companyId']").value(companyId));
 	}
 
 	@Test
