@@ -3,6 +3,7 @@ import {
   EmptyStateType,
   IconButton,
   InputField,
+  PlusIcon,
   SearchIcon,
   Table,
   TableColumn
@@ -152,8 +153,8 @@ const WorkLocationsTable = () => {
             onClick={() =>
               router.push(ROUTES.CONFIGURATIONS.WORK_LOCATION_CREATE)
             }
-            icon={<Icon name={IconName.ADD_ICON} width="1rem" height="1rem" />}
-            iconPosition="start"
+            icon={<PlusIcon />}
+            iconPosition="end"
           >
             {translateText(["table.addButton"])}
           </ButtonV2>

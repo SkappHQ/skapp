@@ -15,6 +15,6 @@ public class PolicyLeaveUsageDto {
 
 	private LocalDate startDate;
 
-	private Double durationDays;
+	private Float durationDays;
 
 }

@@ -15,6 +15,16 @@ import {
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
+/**
+ * Folds a freshly loaded batch into the record already in the store, so an
+ * entity stays cached once loaded. Which entities are on display is the id
+ * arrays' job - switching tabs or re-searching swaps the ids, it never has to
+ * evict entities another view may still be reading.
+ *
+ * The record it was given comes back untouched when the batch adds nothing, so
+ * a caller that reads the record, merges and writes it back settles instead of
+ * feeding itself a new reference on every pass.
+ */
 export const mergeTasksRecord = (
   existingTasks: CrmTaskRecord,
   incomingTasks: CrmTaskRecord
@@ -26,6 +36,21 @@ export const mergeTasksRecord = (
   return isAlreadyMerged
     ? existingTasks
     : { ...existingTasks, ...incomingTasks };
+};
+
+export const mergeContactsRecord = (
+  existingContacts: CrmContactRecord,
+  incomingContacts: CrmContactRecord
+): CrmContactRecord => {
+  const isAlreadyMerged = Object.keys(incomingContacts).every(
+    (contactId) =>
+      existingContacts[Number(contactId)] ===
+      incomingContacts[Number(contactId)]
+  );
+
+  return isAlreadyMerged
+    ? existingContacts
+    : { ...existingContacts, ...incomingContacts };
 };
 
 export const mergeDealsRecord = (
@@ -132,6 +157,10 @@ export const toTaskTypesRecord = (
   return taskTypeRecord;
 };
 
+/**
+ * The ids a batch lookup needs. Distinct, so one request covers every task
+ * pointing at the same deal or company.
+ */
 export const collectMissingTaskDealIds = (
   tasks: CrmTaskEntity[],
   existingDeals: CrmDealRecord
@@ -149,6 +178,25 @@ export const collectMissingTaskDealIds = (
   }
 
   return missingDealIds;
+};
+
+export const collectMissingTaskContactIds = (
+  tasks: CrmTaskEntity[],
+  existingContacts: CrmContactRecord
+): number[] => {
+  const missingContactIds: number[] = [];
+
+  for (const task of tasks) {
+    if (
+      task.contactId != null &&
+      existingContacts[task.contactId] === undefined &&
+      !missingContactIds.includes(task.contactId)
+    ) {
+      missingContactIds.push(task.contactId);
+    }
+  }
+
+  return missingContactIds;
 };
 
 export const collectMissingTaskCompanyIds = (
@@ -170,6 +218,10 @@ export const collectMissingTaskCompanyIds = (
   return missingCompanyIds;
 };
 
+/**
+ * Fresh load, search or filter change: the order comes straight from the
+ * response.
+ */
 export const replaceTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   const taskIds: number[] = [];
   for (const task of tasks) {
@@ -180,6 +232,10 @@ export const replaceTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   return taskIds;
 };
 
+/**
+ * Load-more: extends the existing order, skipping ids already present so a
+ * re-emitted cached page cannot duplicate a row.
+ */
 export const appendTaskIds = (
   existingIds: number[],
   tasks: CrmTaskEntity[]
@@ -197,14 +253,17 @@ export const appendTaskIds = (
   return nextIds;
 };
 
-export const prependTaskId = (
-  existingTaskIds: number[],
-  taskId: number
-): number[] =>
-  existingTaskIds.includes(taskId)
-    ? existingTaskIds
-    : [taskId, ...existingTaskIds];
+/**
+ * Create: puts the new task at the head of the displayed order so it shows
+ * without the list being refetched. The grouping decides where it finally sits.
+ */
+export const prependId = (existingIds: number[], id: number): number[] =>
+  existingIds.includes(id) ? existingIds : [id, ...existingIds];
 
+/**
+ * Delete: drops the task itself. The records are otherwise only ever merged
+ * into, so a deleted task would sit there until a full reload without this.
+ */
 export const removeTaskFromRecord = (
   existingTasks: CrmTaskRecord,
   taskId: number
@@ -217,10 +276,11 @@ export const removeTaskFromRecord = (
   return remainingTasks;
 };
 
-export const removeTaskId = (
-  existingTaskIds: number[],
-  taskId: number
-): number[] =>
-  existingTaskIds.includes(taskId)
-    ? existingTaskIds.filter((existingTaskId) => existingTaskId !== taskId)
-    : existingTaskIds;
+/**
+ * The matching half of the delete: takes the id out of the displayed order so
+ * the row stops rendering.
+ */
+export const removeId = (existingIds: number[], id: number): number[] =>
+  existingIds.includes(id)
+    ? existingIds.filter((existingId) => existingId !== id)
+    : existingIds;

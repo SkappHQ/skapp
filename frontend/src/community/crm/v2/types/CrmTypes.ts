@@ -6,6 +6,7 @@ import {
   CrmContactEntity,
   CrmDealEntity,
   CrmOwnerEntity,
+  CrmStageEntity,
   CrmTaskEntity,
   CrmTaskTypeEntity
 } from "./CrmCommonTypes";
@@ -73,6 +74,13 @@ export interface CrmContactListResponse {
   currentPage: number;
   totalItems: number;
   totalPages: number;
+}
+
+export interface CrmBoardInitDataResponse {
+  stages: CrmStageEntity[];
+  contacts: CrmContactEntity[];
+  owners: CrmOwnerEntity[];
+  taskTypes: CrmTaskTypeEntity[];
 }
 
 export interface CrmOwnerListResponse {

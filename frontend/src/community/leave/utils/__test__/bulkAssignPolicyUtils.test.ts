@@ -38,6 +38,7 @@ describe("validateBulkAssignCsv", () => {
     ).toEqual({
       error: null,
       missingColumns: [],
+      unexpectedColumns: [],
       payload: {
         assignments: [
           {
@@ -94,6 +95,7 @@ describe("validateBulkAssignCsv", () => {
     expect(validation).toEqual({
       error: BulkAssignCsvError.MISSING_COLUMNS,
       missingColumns: ["Policy Name", "Effective Date"],
+      unexpectedColumns: [],
       payload: null
     });
   });
@@ -126,6 +128,36 @@ describe("validateBulkAssignCsv", () => {
 
     expect(validation.error).toBe(BulkAssignCsvError.TOO_MANY_ROWS);
     expect(validation.payload).toBeNull();
+  });
+
+  it("rejects a downloaded error report re-uploaded as bulk data", () => {
+    const validation = validateBulkAssignCsv(
+      buildParseResult(
+        [{ ...validRow, Error: "Employee already has an Annual Leave policy" }],
+        ["Employee Name", "Policy Name", "Effective Date", "Error"]
+      ),
+      headers
+    );
+
+    expect(validation).toEqual({
+      error: BulkAssignCsvError.UNEXPECTED_COLUMNS,
+      missingColumns: [],
+      unexpectedColumns: ["Error"],
+      payload: null
+    });
+  });
+
+  it("ignores blank trailing headers that spreadsheets append", () => {
+    const validation = validateBulkAssignCsv(
+      buildParseResult(
+        [validRow],
+        ["Employee Name", "Policy Name", "Effective Date", "", "  "]
+      ),
+      headers
+    );
+
+    expect(validation.error).toBeNull();
+    expect(validation.payload).not.toBeNull();
   });
 
   it("reports missing columns before any other problem", () => {

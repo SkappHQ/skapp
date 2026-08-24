@@ -55,10 +55,10 @@ const DurationOptionCard: FC<Props> = ({
       aria-label={title}
       aria-describedby={describedBy}
     >
-      <div className="inline-flex w-full items-center justify-start gap-3">
+      <div className="inline-flex w-full items-center justify-start gap-4">
         <RadioButton isSelected={isSelected} />
-        <div className="inline-flex flex-1 flex-col items-start justify-start gap-2">
-          <div className="subtitle2 text-black">{title}</div>
+        <div className="inline-flex flex-1 flex-col items-start justify-start">
+          <div className="subtitle2 leading-tight text-black">{title}</div>
           <div className="body1 w-full text-black">{description}</div>
         </div>
       </div>
