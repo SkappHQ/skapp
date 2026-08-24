@@ -9,7 +9,7 @@ import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   task: CrmTaskEntity;
-  contact: CrmContactEntity | undefined;
+  contact?: CrmContactEntity;
   isShowContact: boolean;
   applyCompletedStyle: boolean;
 }

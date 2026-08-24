@@ -16,8 +16,8 @@ import TaskRowSubtitle from "./TaskRowSubtitle";
 
 interface Props {
   task: CrmTaskEntity;
-  owner: CrmOwnerEntity | undefined;
-  contact: CrmContactEntity | undefined;
+  owner?: CrmOwnerEntity;
+  contact?: CrmContactEntity;
   taskTypes: CrmTaskTypeRecord;
   isShowContact: boolean;
   applyCompletedStyle: boolean;

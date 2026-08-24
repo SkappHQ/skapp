@@ -19,14 +19,13 @@ import {
 import { getOwnerFullName } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
-  deal: CrmDealEntity | undefined;
-  owner: CrmOwnerEntity | undefined;
-  stage: CrmStageEntity | undefined;
+  deal?: CrmDealEntity;
+  owner?: CrmOwnerEntity;
+  stage?: CrmStageEntity;
 }
 
 const SidePanelTaskDeal: FC<Props> = ({ deal, owner, stage }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
-  const translateTaskText = useTranslator("crmModule", "tasks", "sidePanel");
+  const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const { getStageByName } = useStageNameMapper();
 
@@ -34,8 +33,8 @@ const SidePanelTaskDeal: FC<Props> = ({ deal, owner, stage }) => {
     return (
       <EmptyDataView
         icon={<SearchIcon />}
-        title={translateText(["emptyTitle"])}
-        description={translateTaskText(["noDealsDescription"])}
+        title={translateText(["noDealsTitle"])}
+        description={translateText(["noDealsDescription"])}
         className={{
           wrapper: "h-[228px] bg-secondary-background rounded-lg"
         }}
@@ -74,7 +73,7 @@ const SidePanelTaskDeal: FC<Props> = ({ deal, owner, stage }) => {
       content: (
         <div className="flex flex-col gap-1">
           <p className="subtitle4 text-secondary-text">
-            {translateText(["descriptionLabel"])}
+            {translateText(["dealDescriptionLabel"])}
           </p>
           {deal.description ? (
             <p className="body3">{deal.description}</p>

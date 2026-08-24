@@ -10,7 +10,7 @@ import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;
-  owner: CrmOwnerEntity | undefined;
+  owner?: CrmOwnerEntity;
   applyCompletedStyle: boolean;
 }
 

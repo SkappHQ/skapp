@@ -16,8 +16,8 @@ import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;
-  owner: CrmOwnerEntity | undefined;
-  contact: CrmContactEntity | undefined;
+  owner?: CrmOwnerEntity;
+  contact?: CrmContactEntity;
   onMarkAsDone: () => void;
 }
 

@@ -31,12 +31,14 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingDealIds,
-  mergeDeals
+  mergeDeals,
+  resolveDealRelations
 } from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskTypeIcon,
   getTaskTypeName,
   mergeTasks,
+  resolveTaskRelations,
   toTaskIds
 } from "~community/crm/v2/utils/taskUtil";
 
@@ -57,6 +59,9 @@ const TaskSidePanelV2: FC = () => {
     taskTypes,
     deals,
     tasks,
+    owners,
+    contacts,
+    stages,
     setTasks,
     setDeals
   } = useCrmStoreV2(
@@ -76,6 +81,9 @@ const TaskSidePanelV2: FC = () => {
       taskTypes: store.taskTypes,
       deals: store.deals,
       tasks: store.tasks,
+      owners: store.owners,
+      contacts: store.contacts,
+      stages: store.stages,
       setDeals: store.setDeals
     }))
   );
@@ -104,6 +112,19 @@ const TaskSidePanelV2: FC = () => {
     [selectedTask?.dealId]
   );
 
+  const { owner, contact } = useMemo(
+    () => resolveTaskRelations(selectedTask, owners, contacts),
+    [selectedTask, owners, contacts]
+  );
+
+  const selectedDeal =
+    selectedTask?.dealId != null ? deals[selectedTask.dealId] : undefined;
+
+  const { owner: dealOwner, stage: dealStage } = useMemo(
+    () => resolveDealRelations(selectedDeal, owners, stages),
+    [selectedDeal, owners, stages]
+  );
+
   const missingDealIds = useMemo(
     () => getMissingDealIds(dealIds, deals),
     [dealIds, deals]
@@ -128,7 +149,7 @@ const TaskSidePanelV2: FC = () => {
     hasNextPage,
     isFetchingNextPage
   } = useGetRelatedTasks(
-    { id: selectedTaskId ?? 0, size: TASK_PAGE_SIZE },
+    { id: selectedTaskId!, size: TASK_PAGE_SIZE },
     selectedTaskId != null
   );
 
@@ -250,7 +271,11 @@ const TaskSidePanelV2: FC = () => {
                   {translateText(["sidePanel", "dealsTitle"])}
                 </h2>
                 <hr className="border-secondary-accent" />
-                <SidePanelTaskDeal dealId={selectedTask.dealId} />
+                <SidePanelTaskDeal
+                  deal={selectedDeal}
+                  owner={dealOwner}
+                  stage={dealStage}
+                />
               </div>
 
               <div className="flex flex-col gap-3">
@@ -276,6 +301,8 @@ const TaskSidePanelV2: FC = () => {
             <div className="w-[18.438rem] shrink-0">
               <SidePanelTaskInfo
                 task={selectedTask}
+                owner={owner}
+                contact={contact}
                 onMarkAsDone={handleMarkAsDone}
               />
             </div>
