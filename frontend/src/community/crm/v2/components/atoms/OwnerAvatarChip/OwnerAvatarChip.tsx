@@ -1,4 +1,4 @@
-import { AvatarChip, AvatarProps } from "@rootcodelabs/skapp-ui";
+import { AvatarChip, AvatarSize } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
@@ -9,7 +9,7 @@ interface OwnerAvatarChipProps {
   id: string;
   owner: CrmOwnerEntity;
   backgroundColor?: string;
-  size?: AvatarProps["size"];
+  size?: AvatarSize;
 }
 
 const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
