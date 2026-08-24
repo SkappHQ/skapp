@@ -1,5 +1,4 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
-import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
@@ -30,6 +29,13 @@ import {
   CommunitySignUpParams
 } from "../types/auth";
 import authAxios from "./authInterceptor";
+import {
+  decodeJWTToken,
+  extractClaimsFromToken,
+  isTokenExpired
+} from "./tokenUtils";
+
+export { decodeJWTToken, extractClaimsFromToken, isTokenExpired };
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
@@ -51,13 +57,6 @@ export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   }
 
   return false;
-};
-
-export const decodeJWTToken = (token: string) => {
-  const base64Url = token.split(".")[1];
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const decodedToken = JSON.parse(atob(base64));
-  return decodedToken;
 };
 
 export interface User {
@@ -239,30 +238,6 @@ export const getAccessToken = async (): Promise<string | null> => {
 
   const newToken = await getNewAccessToken();
   return newToken;
-};
-
-export const isTokenExpired = (token: string): boolean => {
-  try {
-    const claims = extractClaimsFromToken(token);
-
-    return (
-      Date.now() >
-      (claims?.exp as number) * unitConversion.MILLISECONDS_PER_SECOND
-    );
-  } catch (error) {
-    console.error("Failed to parse token:", error);
-    return true;
-  }
-};
-
-export const extractClaimsFromToken = (token: string): Record<string, any> => {
-  try {
-    const claims = decodeJWTToken(token);
-    return claims || {};
-  } catch (error) {
-    console.error("Failed to parse token:", error);
-    return {};
-  }
 };
 
 export const extractUserFromToken = (token: string): User | null => {

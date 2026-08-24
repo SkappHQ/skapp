@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-const COOKIE_EXPIRY_DAYS = 31;
-const MAX_AGE_SECONDS = 60 * 60 * 24 * COOKIE_EXPIRY_DAYS;
+import { getTokenMaxAgeSeconds } from "~community/auth/utils/tokenUtils";
 
 type ResponseData = {
   message: string;
@@ -39,11 +38,21 @@ export default function handler(
     return res.status(400).json({ message: "Nothing to set" });
   }
 
+  const referenceToken =
+    (typeof accessToken === "string" && accessToken) ||
+    req.cookies.accessToken ||
+    "";
+  const maxAge = getTokenMaxAgeSeconds(referenceToken);
+
+  if (maxAge <= 0) {
+    return res.status(400).json({ message: "Access token has expired" });
+  }
+
   const setCookieHeaders: string[] = [];
 
   if (typeof accessToken === "string" && accessToken.length > 0) {
     setCookieHeaders.push(
-      `accessToken=${accessToken}; Path=/; Max-Age=${MAX_AGE_SECONDS}; Secure; HttpOnly; SameSite=Lax`
+      `accessToken=${accessToken}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax`
     );
   }
 
@@ -51,7 +60,7 @@ export default function handler(
     setCookieHeaders.push(
       `isPasswordChangedForTheFirstTime=${String(
         isPasswordChangedForTheFirstTime
-      )}; Path=/; Max-Age=${MAX_AGE_SECONDS}; Secure; HttpOnly; SameSite=Lax`
+      )}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax`
     );
   }
 

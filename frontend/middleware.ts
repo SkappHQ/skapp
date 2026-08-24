@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
+import {
+  RefreshedSession,
+  applyRefreshedSession,
+  clearSessionCookies,
+  refreshSessionAtEdge
+} from "~community/auth/utils/edgeSessionUtils";
+import {
+  extractClaimsFromToken,
+  isTokenExpired
+} from "~community/auth/utils/tokenUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
@@ -69,10 +78,7 @@ const superAdminRoutes = {
 };
 
 const adminRoutes = {
-  [AdminTypes.PEOPLE_ADMIN]: [
-    ROUTES.PEOPLE.BASE,
-    ROUTES.CONFIGURATIONS.BASE
-  ],
+  [AdminTypes.PEOPLE_ADMIN]: [ROUTES.PEOPLE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
@@ -200,21 +206,19 @@ const allowedRoutes: Record<
   ...commonRoutes
 };
 
-export function middleware(request: NextRequest) {
-  // Get accessToken from cookies
-  const token = request.cookies.get("accessToken")?.value;
+const isUnguardedPath = (currentPath: string): boolean =>
+  currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
+  currentPath.startsWith(ROUTES.SIGN.SIGN) ||
+  currentPath.startsWith(ROUTES.SIGN.INFO);
 
+function resolveRouteAccess(
+  request: NextRequest,
+  token: string | undefined,
+  isPasswordChangedForTheFirstTime: string | undefined
+) {
   const claims = extractClaimsFromToken(token || "");
 
   const currentPath = request.nextUrl.pathname;
-
-  if (
-    currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-    currentPath.startsWith(ROUTES.SIGN.SIGN) ||
-    currentPath.startsWith(ROUTES.SIGN.INFO)
-  ) {
-    return NextResponse.next();
-  }
 
   const roles: (
     | AdminTypes
@@ -224,10 +228,6 @@ export function middleware(request: NextRequest) {
     | SenderTypes
     | RepresentativeTypes
   )[] = claims?.roles || [];
-
-  const isPasswordChangedForTheFirstTime = request.cookies.get(
-    "isPasswordChangedForTheFirstTime"
-  )?.value;
 
   if (currentPath === ROUTES.REMOVE_PEOPLE) {
     const tenantStatus = claims?.tenantStatus;
@@ -374,6 +374,39 @@ export function middleware(request: NextRequest) {
   } else {
     return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
   }
+}
+
+export async function middleware(request: NextRequest) {
+  if (isUnguardedPath(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
+  let token = request.cookies.get("accessToken")?.value;
+  let refreshedSession: RefreshedSession | null = null;
+  let didAttemptRefresh = false;
+
+  if (!token || isTokenExpired(token)) {
+    didAttemptRefresh = true;
+    refreshedSession = await refreshSessionAtEdge(request);
+    token = refreshedSession?.accessToken;
+  }
+
+  const isPasswordChangedForTheFirstTime =
+    refreshedSession?.isPasswordChangedForTheFirstTime !== undefined
+      ? String(refreshedSession.isPasswordChangedForTheFirstTime)
+      : request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
+
+  const response = resolveRouteAccess(
+    request,
+    token,
+    isPasswordChangedForTheFirstTime
+  );
+
+  if (didAttemptRefresh && !refreshedSession) {
+    return clearSessionCookies(response);
+  }
+
+  return applyRefreshedSession(response, refreshedSession);
 }
 
 // Configure which routes middleware should run on
