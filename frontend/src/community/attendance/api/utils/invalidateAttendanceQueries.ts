@@ -16,3 +16,18 @@ export const invalidateAttendanceTimeRecordQueries = (
     queryClient.invalidateQueries({ queryKey }).catch((error) => error);
   });
 };
+
+export const invalidateDirectTimeEntryQueries = (
+  queryClient: QueryClient
+): void => {
+  const queryKeys = [
+    attendanceQueryKeys.getManagerRecords(),
+    attendanceQueryKeys.getManagerWorkSummary(),
+    attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),
+    attendanceQueryKeys.getEmployeeRequests()
+  ];
+
+  queryKeys.forEach((queryKey) => {
+    queryClient.invalidateQueries({ queryKey }).catch((error) => error);
+  });
+};
