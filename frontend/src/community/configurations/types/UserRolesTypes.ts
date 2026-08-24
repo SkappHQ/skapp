@@ -25,16 +25,19 @@ export interface UserRoleTableType {
 
 export interface UserRoleRestrictionsType {
   module: Modules;
-  isAdmin: boolean;
-  isManager: boolean;
   restrictions: RoleLevel[];
   restrictableRoles: RoleLevel[];
 }
 
 export interface UserRoleRestrictionsUpdateType {
   module: Modules;
-  isAdmin: boolean;
-  isManager: boolean;
+  addedRoles: RoleLevel[];
+  removedRoles: RoleLevel[];
+}
+
+export interface RestrictionChanges {
+  addedRoles: RoleLevel[];
+  removedRoles: RoleLevel[];
 }
 
 export interface GrantableRoleTypes {

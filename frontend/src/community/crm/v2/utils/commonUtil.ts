@@ -1,6 +1,4 @@
 import {
-  CrmDealEntity,
-  CrmDealRecord,
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,
@@ -60,16 +58,6 @@ export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
     }
   }
   return ownerRecord;
-};
-
-export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
-  const dealRecord: CrmDealRecord = {};
-  for (const deal of deals) {
-    if (deal.id !== undefined) {
-      dealRecord[deal.id] = deal;
-    }
-  }
-  return dealRecord;
 };
 
 export const getOrderedStages = (stages: CrmStageRecord): CrmStageEntity[] =>

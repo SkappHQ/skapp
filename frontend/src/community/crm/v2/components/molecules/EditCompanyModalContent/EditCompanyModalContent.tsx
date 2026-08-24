@@ -103,12 +103,7 @@ const EditCompanyModalContent: FC = () => {
       return;
     }
 
-    const editCompanyVariables = {
-      id: selectedCompanyId,
-      payload: changedFields
-    };
-
-    editCompany(editCompanyVariables);
+    editCompany({ id: selectedCompanyId, ...changedFields });
   };
 
   return (
