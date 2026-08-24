@@ -132,6 +132,32 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return new PageImpl<>(content, pageable, total);
 	}
 
+	@Override
+	public List<CrmDeal> findDealsByIds(List<Long> dealIds, Long ownerId) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDeal> query = cb.createQuery(CrmDeal.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+		deal.fetch(CrmDeal_.stage, JoinType.INNER);
+		deal.fetch(CrmDeal_.owner, JoinType.INNER);
+		deal.fetch(CrmDeal_.company, JoinType.LEFT);
+		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+		predicates.add(deal.get(CrmDeal_.id).in(dealIds));
+		if (ownerId != null) {
+			predicates.add(cb.equal(deal.get(CrmDeal_.owner).get(Employee_.employeeId), ownerId));
+		}
+
+		query.select(deal).where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto,
 			Long ownerId) {
 		List<Predicate> predicates = new ArrayList<>();
