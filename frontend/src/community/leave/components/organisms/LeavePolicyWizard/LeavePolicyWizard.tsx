@@ -22,6 +22,7 @@ import {
 import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
+  LeavePolicyNameAvailabilityResult,
   LeavePolicyWizardSteps,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
@@ -129,7 +130,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   );
 
   const {
-    mutateAsync: checkPolicyNameAvailability,
+    mutate: checkPolicyNameAvailability,
     isPending: isCheckingPolicyName
   } = useCheckLeavePolicyNameAvailability();
 
@@ -166,33 +167,26 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     }
   };
 
-  const isPolicyNameAvailable = async (): Promise<boolean> => {
-    const checkedName = formik.values.policyName.trim();
-    const checkedLeaveType = formik.values.leaveType;
-
-    try {
-      const { isAvailable } = await checkPolicyNameAvailability({
-        name: checkedName,
-        leaveTypeId: checkedLeaveType
-      });
-
-      const currentValues = formikRef.current?.values;
-      const isStale =
-        currentValues?.policyName.trim() !== checkedName ||
-        currentValues?.leaveType !== checkedLeaveType;
-
-      if (isStale) {
-        return false;
+  const proceedFromCurrentStep = async (): Promise<void> => {
+    if (isLastStep) {
+      if (!isPending) {
+        await formik.submitForm();
       }
-
-      if (!isAvailable) {
-        showDuplicatePolicyNameError();
-      }
-
-      return isAvailable;
-    } catch {
-      return true;
+      return;
     }
+
+    setActiveStep((previous) => previous + 1);
+  };
+
+  const handlePolicyNameAvailability = ({
+    isAvailable
+  }: LeavePolicyNameAvailabilityResult): void => {
+    if (!isAvailable) {
+      showDuplicatePolicyNameError();
+      return;
+    }
+
+    void proceedFromCurrentStep();
   };
 
   const advanceWizard = async (): Promise<void> => {
@@ -212,21 +206,21 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       return;
     }
 
-    if (
-      activeStep === LeavePolicyWizardSteps.BASIC_INFO &&
-      !(await isPolicyNameAvailable())
-    ) {
+    if (activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
+      checkPolicyNameAvailability(
+        {
+          name: formik.values.policyName.trim(),
+          leaveTypeId: formik.values.leaveType
+        },
+        {
+          onSuccess: handlePolicyNameAvailability,
+          onError: handleError
+        }
+      );
       return;
     }
 
-    if (isLastStep) {
-      if (!isPending) {
-        await formik.submitForm();
-      }
-      return;
-    }
-
-    setActiveStep((previous) => previous + 1);
+    await proceedFromCurrentStep();
   };
 
   const handleNext = async (): Promise<void> => {
