@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -16,35 +17,32 @@ import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelT
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  collectMissingTaskCompanyIds,
-  collectMissingTaskDealIds,
-  mergeCompaniesRecord,
-  mergeDealsRecord,
-  mergeTasksRecord,
-  toCompaniesRecord,
-  toDealsRecord,
-  toTasksRecord
-} from "~community/crm/v2/utils/crmEntityUtils";
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
+import {
+  getMissingDealIds,
+  mergeDeals
+} from "~community/crm/v2/utils/dealUtil";
+import { mergeTasks } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   taskId: number;
   onClose: () => void;
 }
 
-const TaskSidePanelContent: FC<Props> = ({ taskId, onClose }) => {
+const TaskSidePanelContentV2: FC<Props> = ({ taskId, onClose }) => {
   const translateText = useTranslator("crmModule", "tasks");
 
   const { setToastMessage } = useToast();
 
-  const { tasks, deals, companies, setTasks, setDeals, setCompanies } =
-    useCrmStoreV2((state) => ({
-      tasks: state.tasks,
-      deals: state.deals,
-      companies: state.companies,
-      setTasks: state.setTasks,
-      setDeals: state.setDeals,
-      setCompanies: state.setCompanies
-    }));
+  const { tasks, deals, companies } = useCrmStoreV2(
+    useShallow((store) => ({
+      tasks: store.tasks,
+      deals: store.deals,
+      companies: store.companies
+    }))
+  );
 
   const task = tasks[taskId];
 
@@ -52,46 +50,60 @@ const TaskSidePanelContent: FC<Props> = ({ taskId, onClose }) => {
 
   const responseTasks = useMemo(() => (taskData ? [taskData] : []), [taskData]);
 
+  useEffect(() => {
+    if (responseTasks.length === 0) return;
+    const store = useCrmStoreV2.getState();
+    store.setTasks(mergeTasks(store.tasks, responseTasks));
+  }, [responseTasks]);
+
   const dealIds = useMemo(
-    () => collectMissingTaskDealIds(responseTasks, deals),
-    [responseTasks, deals]
-  );
-  const companyIds = useMemo(
-    () => collectMissingTaskCompanyIds(responseTasks, companies),
-    [responseTasks, companies]
+    () =>
+      responseTasks
+        .map((responseTask) => responseTask.dealId)
+        .filter((id): id is number => id != null),
+    [responseTasks]
   );
 
-  const { data: dealsData } = useGetDealsByIds(dealIds, dealIds.length > 0);
-  const { data: companiesData } = useGetCompaniesByIds(
-    companyIds,
-    companyIds.length > 0
+  const companyIds = useMemo(
+    () =>
+      responseTasks
+        .map((responseTask) => responseTask.companyId)
+        .filter((id): id is number => id != null),
+    [responseTasks]
+  );
+
+  const missingDealIds = useMemo(
+    () => getMissingDealIds(dealIds, deals),
+    [dealIds, deals]
+  );
+
+  const missingCompanyIds = useMemo(
+    () => getMissingCompanyIds(companyIds, companies),
+    [companyIds, companies]
+  );
+
+  const { data: fetchedDeals } = useGetDealsByIds(
+    missingDealIds,
+    missingDealIds.length > 0
+  );
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
   );
 
   useEffect(() => {
-    if (responseTasks.length > 0) {
-      setTasks(mergeTasksRecord(tasks, toTasksRecord(responseTasks)));
+    if (fetchedDeals && fetchedDeals.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setDeals(mergeDeals(store.deals, fetchedDeals));
     }
+  }, [fetchedDeals]);
 
-    if (dealsData) {
-      setDeals(mergeDealsRecord(deals, toDealsRecord(dealsData)));
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
     }
-
-    if (companiesData) {
-      setCompanies(
-        mergeCompaniesRecord(companies, toCompaniesRecord(companiesData))
-      );
-    }
-  }, [
-    responseTasks,
-    dealsData,
-    companiesData,
-    tasks,
-    deals,
-    companies,
-    setTasks,
-    setDeals,
-    setCompanies
-  ]);
+  }, [fetchedCompanies]);
 
   const { mutate: updateTaskCompletion } = useUpdateTask();
 
@@ -114,7 +126,8 @@ const TaskSidePanelContent: FC<Props> = ({ taskId, onClose }) => {
       { id: taskId, isCompleted: true },
       {
         onSuccess: (updatedTask) => {
-          setTasks(mergeTasksRecord(tasks, toTasksRecord([updatedTask])));
+          const store = useCrmStoreV2.getState();
+          store.setTasks(mergeTasks(store.tasks, [updatedTask]));
           onClose();
         },
         onError: () =>
@@ -175,4 +188,4 @@ const TaskSidePanelContent: FC<Props> = ({ taskId, onClose }) => {
   );
 };
 
-export default TaskSidePanelContent;
+export default TaskSidePanelContentV2;

@@ -13,16 +13,12 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import { PRIORITY_OPTIONS } from "~community/crm/constants/taskConstants";
 import {
   isDueToday,
   isDueTomorrow,
   isOverdue
 } from "~community/crm/utils/taskValidations";
-import {
-  CrmPriorityEnum,
-  CrmTaskTabEnum
-} from "~community/crm/v2/enums/common";
+import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
   CrmOwnerEntity,
   CrmTaskEntity,
@@ -85,25 +81,6 @@ export const getTaskTypeIcon = (
     { width: size, height: size }
   );
 
-export interface TaskPriorityConfig {
-  icon: ReactElement;
-  bgColor: string;
-  textColor: string;
-}
-
-export const getPriorityConfig = (
-  priority: CrmPriorityEnum | undefined
-): TaskPriorityConfig | null => {
-  const option = PRIORITY_OPTIONS.find((o) => o.value === priority);
-  if (!option) return null;
-
-  return {
-    icon: createElement(option.IconComponent),
-    bgColor: option.backgroundColor,
-    textColor: option.textColor
-  };
-};
-
 export const getTaskTypeName = (
   typeId: number | undefined,
   taskTypes: CrmTaskTypeRecord
@@ -118,9 +95,6 @@ export const getOwnerFullName = (owner: CrmOwnerEntity | undefined): string =>
     ? ""
     : [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
-/**
- * Builds the edit payload from only the fields the user actually changed.
- */
 export const getChangedTaskFields = (
   newValues: CrmTaskEntity,
   originalValues: CrmTaskEntity
@@ -163,10 +137,6 @@ export interface GroupedTaskIds {
   isOpenTasksEmpty: boolean;
 }
 
-/**
- * Groups the given order of task ids by due date. The ids are resolved against
- * the task record so the grouping follows whatever the store currently holds.
- */
 export const groupTaskIdsByDueDate = (
   taskIds: number[],
   tasks: CrmTaskRecord
@@ -208,12 +178,6 @@ export const groupTaskIdsByDueDate = (
   };
 };
 
-/**
- * These are the open-task tabs, so a task ticked complete drops out of the
- * groups as soon as the store says it is completed - the list is not refetched
- * to work that out. The my-tasks tab narrows further to the signed-in user's
- * own tasks.
- */
 export const getTaskGroups = (
   taskIds: number[],
   tasks: CrmTaskRecord,

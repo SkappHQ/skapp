@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import AddTaskModalContent from "~community/crm/v2/components/molecules/AddTaskModalContent/AddTaskModalContent";
@@ -8,7 +9,7 @@ import EditTaskModalContent from "~community/crm/v2/components/molecules/EditTas
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
-const TaskModalController = () => {
+const TaskModalControllerV2 = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
   const {
@@ -16,12 +17,14 @@ const TaskModalController = () => {
     taskModalType,
     setIsTaskModalOpen,
     setSelectedTaskId
-  } = useCrmStoreV2((state) => ({
-    isTaskModalOpen: state.isTaskModalOpen,
-    taskModalType: state.taskModalType,
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    setSelectedTaskId: state.setSelectedTaskId
-  }));
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      isTaskModalOpen: store.isTaskModalOpen,
+      taskModalType: store.taskModalType,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setSelectedTaskId: store.setSelectedTaskId
+    }))
+  );
 
   const handleCloseModal = (): void => {
     setSelectedTaskId(null);
@@ -64,4 +67,4 @@ const TaskModalController = () => {
   );
 };
 
-export default TaskModalController;
+export default TaskModalControllerV2;

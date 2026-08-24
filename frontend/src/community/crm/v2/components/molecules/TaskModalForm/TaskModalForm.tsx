@@ -8,7 +8,8 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -17,9 +18,6 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
-// The contact, owner and deal lookups have no v2 equivalent yet, so the v1
-// endpoints are reused. They return the v1 lookup shapes, which stay local to
-// this form - nothing from them is written into the v2 store.
 import {
   useGetCrmContacts,
   useGetOwnerLookup
@@ -49,11 +47,6 @@ interface TaskFormProps {
   initialOwner?: CrmOwnerEntity | null;
 }
 
-/**
- * The owner controls below are v1 components typed against the v1 lookup shape.
- * The store holds a `CrmOwnerEntity`, so the one owner read out of the store is
- * widened here rather than duplicating those controls.
- */
 const toLookupOwner = (
   owner: CrmOwnerEntity | null | undefined
 ): CrmOwner | null =>
@@ -77,10 +70,8 @@ const TaskModalForm: FC<TaskFormProps> = ({
     errors,
     handleChange,
     handleBlur,
-    dirty,
     isSubmitting,
     setFieldValue,
-    setFieldError,
     submitForm
   } = formik;
 
@@ -95,18 +86,20 @@ const TaskModalForm: FC<TaskFormProps> = ({
     owners,
     contacts,
     deals
-  } = useCrmStoreV2((state) => ({
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    selectedTaskId: state.selectedTaskId,
-    selectedContactId: state.selectedContactId,
-    selectedCompanyId: state.selectedCompanyId,
-    isCrmSidePanelOpen: state.isCrmSidePanelOpen,
-    crmSidePanelType: state.crmSidePanelType,
-    tasks: state.tasks,
-    owners: state.owners,
-    contacts: state.contacts,
-    deals: state.deals
-  }));
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      selectedTaskId: store.selectedTaskId,
+      selectedContactId: store.selectedContactId,
+      selectedCompanyId: store.selectedCompanyId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      tasks: store.tasks,
+      owners: store.owners,
+      contacts: store.contacts,
+      deals: store.deals
+    }))
+  );
 
   const selectedTask = selectedTaskId ? tasks[selectedTaskId] : undefined;
   const taskOwner = selectedTask?.ownerId
@@ -252,27 +245,12 @@ const TaskModalForm: FC<TaskFormProps> = ({
     [dealLookupData]
   );
 
-  const clearError = (field: keyof CrmTaskEntity) =>
-    setFieldError(field, undefined);
-
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    handleChange(e);
-    clearError("name");
-  };
-
-  const handleNotesChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    handleChange(e);
-    clearError("notes");
-  };
-
   const handleTypeSelect = (value: string) => {
     setFieldValue("typeId", Number(value));
-    clearError("typeId");
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
     setFieldValue("dueAt", date?.toISOString());
-    clearError("dueAt");
   };
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
@@ -280,7 +258,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
     setFieldValue("ownerId", owner?.employeeId);
-    clearError("ownerId");
     setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
@@ -344,7 +321,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
-          onChange={handleNameChange}
+          onChange={handleChange}
           onBlur={handleBlur}
           aria-label={translateText(["ariaLabels", "task"])}
           fullWidth
@@ -475,7 +452,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           label={translateText(["labels", "notes"])}
           errorMessage={errors.notes}
           state={errors.notes ? "error" : "default"}
-          onChange={handleNotesChange}
+          onChange={handleChange}
           onBlur={handleBlur}
           rows={3}
           aria-label={translateText(["ariaLabels", "notes"])}
@@ -498,7 +475,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isSubmitting || isPending || !dirty}
+          disabled={isSubmitting || isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}

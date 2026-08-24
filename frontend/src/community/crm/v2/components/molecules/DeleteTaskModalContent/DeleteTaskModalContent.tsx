@@ -1,5 +1,6 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -9,7 +10,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   removeTaskFromRecord,
   removeTaskId
-} from "~community/crm/v2/utils/crmEntityUtils";
+} from "~community/crm/v2/utils/taskUtil";
 
 const DeleteTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -18,21 +19,15 @@ const DeleteTaskModalContent: FC = () => {
     selectedTaskId,
     setSelectedTaskId,
     setIsTaskModalOpen,
-    closeCrmSidePanel,
-    tasks,
-    taskIds,
-    setTasks,
-    setTaskIds
-  } = useCrmStoreV2((state) => ({
-    selectedTaskId: state.selectedTaskId,
-    setSelectedTaskId: state.setSelectedTaskId,
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    closeCrmSidePanel: state.closeCrmSidePanel,
-    tasks: state.tasks,
-    taskIds: state.taskIds,
-    setTasks: state.setTasks,
-    setTaskIds: state.setTaskIds
-  }));
+    closeCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      closeCrmSidePanel: store.closeCrmSidePanel
+    }))
+  );
 
   const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
 
@@ -40,15 +35,10 @@ const DeleteTaskModalContent: FC = () => {
     setIsTaskModalOpen(false);
   };
 
-  /**
-   * The store is otherwise only ever merged into, so the deleted task has to be
-   * taken out of both the record and the displayed order by hand - dropping the
-   * id alone would leave the entity behind, and dropping the entity alone would
-   * leave the row pointing at nothing.
-   */
   const removeDeletedTaskFromStore = (deletedTaskId: number) => {
-    setTasks(removeTaskFromRecord(tasks, deletedTaskId));
-    setTaskIds(removeTaskId(taskIds, deletedTaskId));
+    const store = useCrmStoreV2.getState();
+    store.setTasks(removeTaskFromRecord(store.tasks, deletedTaskId));
+    store.setTaskIds(removeTaskId(store.taskIds, deletedTaskId));
   };
 
   const handleSuccess = () => {

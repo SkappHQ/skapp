@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -12,11 +13,7 @@ import {
   CrmOwnerEntity,
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  mergeTasksRecord,
-  prependTaskId,
-  toTasksRecord
-} from "~community/crm/v2/utils/crmEntityUtils";
+import { mergeTasks, prependTaskId } from "~community/crm/v2/utils/taskUtil";
 import { taskValidations } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -25,21 +22,12 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const {
-    setIsTaskModalOpen,
-    selectedContactId,
-    tasks,
-    taskIds,
-    setTasks,
-    setTaskIds
-  } = useCrmStoreV2((state) => ({
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    selectedContactId: state.selectedContactId,
-    tasks: state.tasks,
-    taskIds: state.taskIds,
-    setTasks: state.setTasks,
-    setTaskIds: state.setTaskIds
-  }));
+  const { setIsTaskModalOpen, selectedContactId } = useCrmStoreV2(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      selectedContactId: store.selectedContactId
+    }))
+  );
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
@@ -75,7 +63,7 @@ const AddTaskModalContent: FC = () => {
     onSubmit: (values) => createTask(values),
     validationSchema: taskValidations(translateText),
     validateOnChange: false,
-    validateOnBlur: false,
+    validateOnBlur: true,
     enableReinitialize: true
   });
 
@@ -85,9 +73,10 @@ const AddTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    setTasks(mergeTasksRecord(tasks, toTasksRecord([createdTask])));
-    if (createdTask.id !== undefined) {
-      setTaskIds(prependTaskId(taskIds, createdTask.id));
+    const store = useCrmStoreV2.getState();
+    store.setTasks(mergeTasks(store.tasks, [createdTask]));
+    if (createdTask.id != null) {
+      store.setTaskIds(prependTaskId(store.taskIds, createdTask.id));
     }
 
     setToastMessage({

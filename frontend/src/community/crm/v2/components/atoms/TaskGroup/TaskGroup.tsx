@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -15,10 +16,12 @@ const TaskGroup: FC<TaskGroupProps> = ({
   taskIds,
   isCheckTaskVisible = true
 }) => {
-  const { setSelectedTaskId, openCrmSidePanel } = useCrmStoreV2((state) => ({
-    setSelectedTaskId: state.setSelectedTaskId,
-    openCrmSidePanel: state.openCrmSidePanel
-  }));
+  const { setSelectedTaskId, openCrmSidePanel } = useCrmStoreV2(
+    useShallow((store) => ({
+      setSelectedTaskId: store.setSelectedTaskId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   return (
     <div className="flex flex-col">

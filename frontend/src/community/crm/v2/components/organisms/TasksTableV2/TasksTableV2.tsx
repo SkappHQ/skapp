@@ -6,7 +6,7 @@ import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useGetTasksTabs } from "~community/crm/v2/hooks/useGetTasksTabs";
 import { isCrmTaskTab } from "~community/crm/v2/utils/crmTaskUtils";
 
-const TasksTable: FC = () => {
+const TasksTableV2: FC = () => {
   const tabs = useGetTasksTabs();
   const [activeTab, setActiveTab] = useState<CrmTaskTabEnum>(tabs[0]?.id);
 
@@ -29,4 +29,4 @@ const TasksTable: FC = () => {
   );
 };
 
-export default TasksTable;
+export default TasksTableV2;

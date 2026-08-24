@@ -6,9 +6,9 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-// Presentational only - no store or v1 types, so these are reused as they are.
 import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { formatValue } from "~community/crm/utils/crmUtil";
@@ -19,27 +19,24 @@ interface Props {
   dealId: number | undefined;
 }
 
-/**
- * A task links to at most one deal, so this renders a single accordion item
- * rather than the paged list the company and contact side panels use. The
- * layout matches those panels so a deal reads the same wherever it appears.
- */
 const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const translateTaskText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const { getStageByName } = useStageNameMapper();
 
-  const { deals, owners, stages } = useCrmStoreV2((state) => ({
-    deals: state.deals,
-    owners: state.owners,
-    stages: state.stages
-  }));
+  const { deals, owners, stages } = useCrmStoreV2(
+    useShallow((store) => ({
+      deals: store.deals,
+      owners: store.owners,
+      stages: store.stages
+    }))
+  );
 
   const deal = dealId ? deals[dealId] : undefined;
   const owner = deal?.ownerId ? owners[deal?.ownerId] : undefined;
   const stage = deal?.stageId ? stages[deal.stageId] : undefined;
-  
+
   if (!deal) {
     return (
       <EmptyDataView

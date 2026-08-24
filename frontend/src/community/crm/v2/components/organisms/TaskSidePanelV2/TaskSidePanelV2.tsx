@@ -5,6 +5,7 @@ import {
   SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TASK_DETAIL_ICON_SIZE } from "~community/crm/constants/taskConstants";
@@ -18,9 +19,9 @@ import {
   getTaskTypeName
 } from "~community/crm/v2/utils/crmTaskUtils";
 
-import TaskSidePanelContent from "./TaskSidePanelContent";
+import TaskSidePanelContentV2 from "./TaskSidePanelContentV2";
 
-const TaskSidePanel: FC = () => {
+const TaskSidePanelV2: FC = () => {
   const translateText = useTranslator("crmModule", "tasks");
 
   const {
@@ -33,17 +34,19 @@ const TaskSidePanel: FC = () => {
     setTaskModalType,
     taskTypes,
     tasks
-  } = useCrmStoreV2((state) => ({
-    isCrmSidePanelOpen: state.isCrmSidePanelOpen,
-    crmSidePanelType: state.crmSidePanelType,
-    selectedTaskId: state.selectedTaskId,
-    setSelectedTaskId: state.setSelectedTaskId,
-    closeCrmSidePanel: state.closeCrmSidePanel,
-    setIsTaskModalOpen: state.setIsTaskModalOpen,
-    setTaskModalType: state.setTaskModalType,
-    taskTypes: state.taskTypes,
-    tasks: state.tasks
-  }));
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      taskTypes: store.taskTypes,
+      tasks: store.tasks
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -123,9 +126,9 @@ const TaskSidePanel: FC = () => {
         )
       }
     >
-      <TaskSidePanelContent taskId={selectedTaskId} onClose={handleClose} />
+      <TaskSidePanelContentV2 taskId={selectedTaskId} onClose={handleClose} />
     </SidePanel>
   );
 };
 
-export default TaskSidePanel;
+export default TaskSidePanelV2;

@@ -4,7 +4,7 @@ import { FC } from "react";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getPriorityConfig } from "~community/crm/v2/utils/crmTaskUtils";
+import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;

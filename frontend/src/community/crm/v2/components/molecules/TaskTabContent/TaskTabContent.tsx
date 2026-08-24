@@ -1,5 +1,6 @@
 import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -23,17 +24,15 @@ import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  collectMissingTaskCompanyIds,
-  collectMissingTaskDealIds,
-  mergeCompaniesRecord,
-  mergeDealsRecord,
-  mergeTasksRecord,
-  replaceTaskIds,
-  toCompaniesRecord,
-  toDealsRecord,
-  toTasksRecord
-} from "~community/crm/v2/utils/crmEntityUtils";
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
 import { getTaskGroups } from "~community/crm/v2/utils/crmTaskUtils";
+import {
+  getMissingDealIds,
+  mergeDeals
+} from "~community/crm/v2/utils/dealUtil";
+import { mergeTasks, toTaskIds } from "~community/crm/v2/utils/taskUtil";
 
 interface TaskTabContentProps {
   tab: CrmTaskTabEnum;
@@ -46,25 +45,14 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
 
-  const {
-    tasks,
-    taskIds,
-    deals,
-    companies,
-    setTasks,
-    setTaskIds,
-    setDeals,
-    setCompanies
-  } = useCrmStoreV2((state) => ({
-    tasks: state.tasks,
-    taskIds: state.taskIds,
-    deals: state.deals,
-    companies: state.companies,
-    setTasks: state.setTasks,
-    setTaskIds: state.setTaskIds,
-    setDeals: state.setDeals,
-    setCompanies: state.setCompanies
-  }));
+  const { tasks, taskIds, deals, companies } = useCrmStoreV2(
+    useShallow((store) => ({
+      tasks: store.tasks,
+      taskIds: store.taskIds,
+      deals: store.deals,
+      companies: store.companies
+    }))
+  );
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -94,48 +82,61 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     [isCompletedTab, completedTaskData, openTaskData]
   );
 
+  useEffect(() => {
+    if (responseTasks.length === 0) return;
+    const store = useCrmStoreV2.getState();
+    store.setTasks(mergeTasks(store.tasks, responseTasks));
+    store.setTaskIds(toTaskIds(responseTasks));
+  }, [responseTasks]);
+
   const dealIds = useMemo(
-    () => collectMissingTaskDealIds(responseTasks, deals),
-    [responseTasks, deals]
-  );
-  const companyIds = useMemo(
-    () => collectMissingTaskCompanyIds(responseTasks, companies),
-    [responseTasks, companies]
+    () =>
+      responseTasks
+        .map((task) => task.dealId)
+        .filter((id): id is number => id != null),
+    [responseTasks]
   );
 
-  const { data: dealsData } = useGetDealsByIds(dealIds, dealIds.length > 0);
-  const { data: companiesData } = useGetCompaniesByIds(
-    companyIds,
-    companyIds.length > 0
+  const companyIds = useMemo(
+    () =>
+      responseTasks
+        .map((task) => task.companyId)
+        .filter((id): id is number => id != null),
+    [responseTasks]
+  );
+
+  const missingDealIds = useMemo(
+    () => getMissingDealIds(dealIds, deals),
+    [dealIds, deals]
+  );
+
+  const missingCompanyIds = useMemo(
+    () => getMissingCompanyIds(companyIds, companies),
+    [companyIds, companies]
+  );
+
+  const { data: fetchedDeals } = useGetDealsByIds(
+    missingDealIds,
+    missingDealIds.length > 0
+  );
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
   );
 
   useEffect(() => {
-    if (responseTasks.length > 0) {
-      setTasks(mergeTasksRecord(tasks, toTasksRecord(responseTasks)));
-      setTaskIds(replaceTaskIds(responseTasks));
+    if (fetchedDeals && fetchedDeals.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setDeals(mergeDeals(store.deals, fetchedDeals));
     }
+  }, [fetchedDeals]);
 
-    if (dealsData) {
-      setDeals(mergeDealsRecord(deals, toDealsRecord(dealsData)));
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
     }
-
-    if (companiesData) {
-      setCompanies(
-        mergeCompaniesRecord(companies, toCompaniesRecord(companiesData))
-      );
-    }
-  }, [
-    responseTasks,
-    dealsData,
-    companiesData,
-    tasks,
-    deals,
-    companies,
-    setTasks,
-    setTaskIds,
-    setDeals,
-    setCompanies
-  ]);
+  }, [fetchedCompanies]);
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(

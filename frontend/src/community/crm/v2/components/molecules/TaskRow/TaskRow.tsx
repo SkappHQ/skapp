@@ -5,8 +5,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskRecord } from "~community/crm/v2/types/CrmCommonTypes";
-import { mergeTasksRecord } from "~community/crm/v2/utils/crmEntityUtils";
+import { mergeTasks } from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
@@ -30,25 +29,13 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { tasks, setTasks } = useCrmStoreV2((state) => ({
-    tasks: state.tasks,
-    setTasks: state.setTasks
-  }));
-
-  const task = tasks[taskId];
+  const task = useCrmStoreV2((store) => store.tasks[taskId]);
 
   const { mutate: updateCompletion } = useUpdateTask();
 
-  /**
-   * There is a single task record, so flipping the flag here updates every view
-   * that renders this task. The call site builds the next record and the setter
-   * assigns it.
-   */
   const applyCompletion = (isCompleted: boolean) => {
-    const completionPatch: CrmTaskRecord = {
-      [taskId]: { ...tasks[taskId], isCompleted }
-    };
-    setTasks(mergeTasksRecord(tasks, completionPatch));
+    const store = useCrmStoreV2.getState();
+    store.setTasks(mergeTasks(store.tasks, [{ id: taskId, isCompleted }]));
   };
 
   const handleToggleChange = (isCompleted: boolean) => {

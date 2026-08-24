@@ -1,5 +1,6 @@
 import { ButtonV2, Label } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -9,7 +10,7 @@ import PropertyRow from "~community/crm/components/molecules/PropertyRow/Propert
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getPriorityConfig } from "~community/crm/v2/utils/crmTaskUtils";
+import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;
@@ -19,10 +20,12 @@ interface Props {
 const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
 
-  const { owners, contacts } = useCrmStoreV2((state) => ({
-    owners: state.owners,
-    contacts: state.contacts
-  }));
+  const { owners, contacts } = useCrmStoreV2(
+    useShallow((store) => ({
+      owners: store.owners,
+      contacts: store.contacts
+    }))
+  );
 
   const owner = task.ownerId ? owners[task.ownerId] : undefined;
   const contact = task.contactId ? contacts[task.contactId] : undefined;
