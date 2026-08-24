@@ -22,10 +22,21 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen, selectedContactId } = useCrmStoreV2(
+  const {
+    setIsTaskModalOpen,
+    selectedContactId,
+    tasks,
+    taskIds,
+    setTasks,
+    setTaskIds
+  } = useCrmStoreV2(
     useShallow((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
-      selectedContactId: store.selectedContactId
+      selectedContactId: store.selectedContactId,
+      tasks: store.tasks,
+      taskIds: store.taskIds,
+      setTasks: store.setTasks,
+      setTaskIds: store.setTaskIds
     }))
   );
 
@@ -37,10 +48,7 @@ const AddTaskModalContent: FC = () => {
       employeeId: Number(currentUser.employeeId),
       firstName: currentUser.firstName ?? "",
       lastName: currentUser.lastName ?? undefined,
-      authPic:
-        typeof currentUser.authPic === "string"
-          ? currentUser.authPic
-          : undefined
+      authPic: currentUser.authPic as string | null
     };
   }, [currentUser]);
 
@@ -73,10 +81,9 @@ const AddTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    const store = useCrmStoreV2.getState();
-    store.setTasks(mergeTasks(store.tasks, [createdTask]));
+    setTasks(mergeTasks(tasks, [createdTask]));
     if (createdTask.id != null) {
-      store.setTaskIds(prependTaskId(store.taskIds, createdTask.id));
+      setTaskIds(prependTaskId(taskIds, createdTask.id));
     }
 
     setToastMessage({

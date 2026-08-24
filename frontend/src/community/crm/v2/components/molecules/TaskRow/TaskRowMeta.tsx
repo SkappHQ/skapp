@@ -12,8 +12,8 @@ interface Props {
 }
 
 const TaskRowMeta: FC<Props> = ({ task, applyCompletedStyle }) => {
-  const owner = useCrmStoreV2((state) =>
-    task.ownerId === undefined ? undefined : state.owners[task.ownerId]
+  const owner = useCrmStoreV2((store) =>
+    task.ownerId ? store.owners[task.ownerId] : undefined
   );
 
   const priorityConfig = getPriorityConfig(task.priority);

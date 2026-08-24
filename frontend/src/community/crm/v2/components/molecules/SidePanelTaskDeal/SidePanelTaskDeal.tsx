@@ -34,8 +34,6 @@ const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
   );
 
   const deal = dealId ? deals[dealId] : undefined;
-  const owner = deal?.ownerId ? owners[deal?.ownerId] : undefined;
-  const stage = deal?.stageId ? stages[deal.stageId] : undefined;
 
   if (!deal) {
     return (
@@ -49,6 +47,9 @@ const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
       />
     );
   }
+
+  const owner = deal.ownerId ? owners[deal.ownerId] : undefined;
+  const stage = deal.stageId ? stages[deal.stageId] : undefined;
 
   const accordionItems: AdvancedAccordionItem[] = [
     {

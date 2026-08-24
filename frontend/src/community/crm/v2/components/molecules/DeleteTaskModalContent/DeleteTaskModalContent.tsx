@@ -15,30 +15,37 @@ import {
 const DeleteTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
+  const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
+
   const {
     selectedTaskId,
     setSelectedTaskId,
     setIsTaskModalOpen,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    tasks,
+    taskIds,
+    setTasks,
+    setTaskIds
   } = useCrmStoreV2(
     useShallow((store) => ({
       selectedTaskId: store.selectedTaskId,
       setSelectedTaskId: store.setSelectedTaskId,
       setIsTaskModalOpen: store.setIsTaskModalOpen,
-      closeCrmSidePanel: store.closeCrmSidePanel
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      tasks: store.tasks,
+      taskIds: store.taskIds,
+      setTasks: store.setTasks,
+      setTaskIds: store.setTaskIds
     }))
   );
-
-  const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
 
   const handleCloseModal = () => {
     setIsTaskModalOpen(false);
   };
 
   const removeDeletedTaskFromStore = (deletedTaskId: number) => {
-    const store = useCrmStoreV2.getState();
-    store.setTasks(removeTaskFromRecord(store.tasks, deletedTaskId));
-    store.setTaskIds(removeTaskId(store.taskIds, deletedTaskId));
+    setTasks(removeTaskFromRecord(tasks, deletedTaskId));
+    setTaskIds(removeTaskId(taskIds, deletedTaskId));
   };
 
   const handleSuccess = () => {

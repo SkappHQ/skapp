@@ -39,6 +39,7 @@ import {
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import { toLookupOwner } from "~community/crm/v2/utils/taskUtil";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskEntity>;
@@ -46,18 +47,6 @@ interface TaskFormProps {
   translateText: TranslatorFunctionType;
   initialOwner?: CrmOwnerEntity | null;
 }
-
-const toLookupOwner = (
-  owner: CrmOwnerEntity | null | undefined
-): CrmOwner | null =>
-  owner == null
-    ? null
-    : {
-        employeeId: owner.employeeId,
-        firstName: owner.firstName,
-        lastName: owner.lastName ?? null,
-        authPic: owner.authPic ?? null
-      };
 
 const TaskModalForm: FC<TaskFormProps> = ({
   formik,
@@ -141,7 +130,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     } else if (initialOwner) {
       setSelectedOwner(toLookupOwner(initialOwner));
     }
-
   }, [
     initialOwner?.employeeId,
     selectedTaskId,

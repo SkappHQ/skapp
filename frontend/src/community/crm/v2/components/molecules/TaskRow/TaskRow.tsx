@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -27,13 +28,18 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const task = useCrmStoreV2((store) => store.tasks[taskId]);
+  const { task, tasks, setTasks } = useCrmStoreV2(
+    useShallow((store) => ({
+      task: store.tasks[taskId],
+      tasks: store.tasks,
+      setTasks: store.setTasks
+    }))
+  );
 
   const { mutate: updateCompletion } = useUpdateTask();
 
   const applyCompletion = (isCompleted: boolean) => {
-    const store = useCrmStoreV2.getState();
-    store.setTasks(mergeTasks(store.tasks, [{ id: taskId, isCompleted }]));
+    setTasks(mergeTasks(tasks, [{ id: taskId, isCompleted }]));
   };
 
   const handleToggleChange = (isCompleted: boolean) => {

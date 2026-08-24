@@ -21,16 +21,19 @@ const EditTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
-  const { setIsTaskModalOpen, selectedTaskId, selectedTask } = useCrmStoreV2(
-    useShallow((store) => ({
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      selectedTaskId: store.selectedTaskId,
-      selectedTask:
-        store.selectedTaskId === null
-          ? undefined
-          : store.tasks[store.selectedTaskId]
-    }))
-  );
+  const { setIsTaskModalOpen, selectedTaskId, selectedTask, tasks, setTasks } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        setIsTaskModalOpen: store.setIsTaskModalOpen,
+        selectedTaskId: store.selectedTaskId,
+        selectedTask:
+          store.selectedTaskId != null
+            ? store.tasks[store.selectedTaskId]
+            : undefined,
+        tasks: store.tasks,
+        setTasks: store.setTasks
+      }))
+    );
 
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
@@ -73,8 +76,7 @@ const EditTaskModalContent: FC = () => {
     setSubmitting(false);
     setIsTaskModalOpen(false);
 
-    const store = useCrmStoreV2.getState();
-    store.setTasks(mergeTasks(store.tasks, [updatedTask]));
+    setTasks(mergeTasks(tasks, [updatedTask]));
 
     setToastMessage({
       open: true,

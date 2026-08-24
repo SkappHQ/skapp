@@ -13,6 +13,7 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
+import { CrmOwner } from "~community/crm/types/CommonTypes";
 import {
   isDueToday,
   isDueTomorrow,
@@ -133,6 +134,18 @@ export const getOwnerFullName = (owner: CrmOwnerEntity | undefined): string =>
   owner === undefined
     ? ""
     : [owner.firstName, owner.lastName].filter(Boolean).join(" ");
+
+export const toLookupOwner = (
+  owner: CrmOwnerEntity | null | undefined
+): CrmOwner | null =>
+  owner != null
+    ? {
+        employeeId: owner.employeeId,
+        firstName: owner.firstName,
+        lastName: owner.lastName ?? null,
+        authPic: owner.authPic ?? null
+      }
+    : null;
 
 export const getChangedTaskFields = (
   newValues: CrmTaskEntity,

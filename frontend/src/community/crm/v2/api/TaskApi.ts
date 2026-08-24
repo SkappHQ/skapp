@@ -31,14 +31,7 @@ const fetchOpenTasks = async (
   filter: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
-    params: {
-      searchKeyword: filter.searchKeyword,
-      contactId: filter.contactId,
-      dealId: filter.dealId,
-      companyId: filter.companyId,
-      isCompleted: false,
-      size: UNPAGED_SIZE
-    }
+    params: { ...filter, isCompleted: false, size: UNPAGED_SIZE }
   });
   return response?.data?.results?.[0];
 };
@@ -58,15 +51,7 @@ const fetchCompletedTasks = async (
   filter: CrmTaskCompletedFilterRequest
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
-    params: {
-      page: filter.page,
-      size: filter.size,
-      searchKeyword: filter.searchKeyword,
-      contactId: filter.contactId,
-      dealId: filter.dealId,
-      companyId: filter.companyId,
-      isCompleted: true
-    }
+    params: { ...filter, isCompleted: true }
   });
   return response?.data?.results?.[0];
 };
@@ -79,14 +64,7 @@ export const useGetCompletedTasks = (
     initialPageParam: 0,
     queryKey: crmTaskQueryKeys.COMPLETED_TASKS_BY_FILTER(filter),
     queryFn: ({ pageParam }) =>
-      fetchCompletedTasks({
-        page: pageParam,
-        size: filter.size,
-        searchKeyword: filter.searchKeyword,
-        contactId: filter.contactId,
-        dealId: filter.dealId,
-        companyId: filter.companyId
-      }),
+      fetchCompletedTasks({ ...filter, page: pageParam }),
     getNextPageParam: (lastPage: CrmTaskListResponse) => {
       if (
         lastPage?.currentPage !== undefined &&
@@ -117,12 +95,13 @@ export const useGetTaskById = (
   });
 };
 
-const fetchRelatedTasks = async (
-  request: CrmRelatedTasksRequest
-): Promise<CrmTaskListResponse> => {
+const fetchRelatedTasks = async ({
+  id,
+  ...params
+}: CrmRelatedTasksRequest): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(
-    crmTaskEndpointsV2.GET_RELATED_TASKS(request.id),
-    { params: { page: request.page, size: request.size } }
+    crmTaskEndpointsV2.GET_RELATED_TASKS(id),
+    { params }
   );
   return response?.data?.results?.[0];
 };
@@ -178,12 +157,8 @@ const updateTask = async ({
   id,
   ...task
 }: CrmTaskEntity): Promise<CrmTaskEntity> => {
-  if (id === undefined) {
-    throw new Error("A task id is required to update a task");
-  }
-
   const response = await authFetchV2.patch(
-    crmTaskEndpointsV2.UPDATE_TASK(id),
+    crmTaskEndpointsV2.UPDATE_TASK(id!),
     task
   );
   return response?.data?.results?.[0];

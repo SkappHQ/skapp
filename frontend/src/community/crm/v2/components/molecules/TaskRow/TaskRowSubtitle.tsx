@@ -23,8 +23,8 @@ const TaskRowSubtitle: FC<Props> = ({
     "tasks"
   );
 
-  const contact = useCrmStoreV2((state) =>
-    task.contactId === undefined ? undefined : state.contacts[task.contactId]
+  const contact = useCrmStoreV2((store) =>
+    task.contactId ? store.contacts[task.contactId] : undefined
   );
 
   const dueDateStatus = getDueDateStatus(task.dueAt, task.isCompleted);

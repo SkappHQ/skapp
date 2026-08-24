@@ -54,7 +54,9 @@ const TaskSidePanelV2: FC = () => {
     setIsTaskModalOpen,
     setTaskModalType,
     taskTypes,
-    deals
+    deals,
+    tasks,
+    setTasks
   } = useCrmStoreV2(
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
@@ -69,7 +71,9 @@ const TaskSidePanelV2: FC = () => {
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       setTaskModalType: store.setTaskModalType,
       taskTypes: store.taskTypes,
-      deals: store.deals
+      deals: store.deals,
+      tasks: store.tasks,
+      setTasks: store.setTasks
     }))
   );
 
@@ -92,20 +96,15 @@ const TaskSidePanelV2: FC = () => {
     selectedTaskId != null
   );
 
-  const responseTasks = useMemo(() => (taskData ? [taskData] : []), [taskData]);
-
   useEffect(() => {
-    if (responseTasks.length === 0) return;
+    if (!taskData) return;
     const store = useCrmStoreV2.getState();
-    store.setTasks(mergeTasks(store.tasks, responseTasks));
-  }, [responseTasks]);
+    store.setTasks(mergeTasks(store.tasks, [taskData]));
+  }, [taskData]);
 
   const dealIds = useMemo(
-    () =>
-      responseTasks
-        .map((responseTask) => responseTask.dealId)
-        .filter((id): id is number => id != null),
-    [responseTasks]
+    () => (taskData?.dealId != null ? [taskData.dealId] : []),
+    [taskData]
   );
 
   const missingDealIds = useMemo(
@@ -170,8 +169,7 @@ const TaskSidePanelV2: FC = () => {
       { id: selectedTaskId, isCompleted: true },
       {
         onSuccess: (updatedTask) => {
-          const store = useCrmStoreV2.getState();
-          store.setTasks(mergeTasks(store.tasks, [updatedTask]));
+          setTasks(mergeTasks(tasks, [updatedTask]));
           handleClose();
         },
         onError: () =>
