@@ -1,22 +1,3 @@
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
-
-import { authFetchV2 } from "~community/common/utils/axiosInterceptor";
-import { crmDealEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
-import { crmDealQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
-import {
-  CrmDealFilterRequest,
-  CrmDealListResponse
-} from "~community/crm/v2/types/CrmTypes";
-
-const fetchDealLookup = async (
-  params: CrmDealFilterRequest
-): Promise<CrmDealListResponse> => {
-  const response = await authFetchV2.get(crmDealEndpoints.GET_DEALS, {
-    params
-  });
-  return response?.data?.results?.[0];
-}
-
 import {
   UseMutationResult,
   UseQueryResult,
@@ -42,7 +23,11 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import {
+  crmCompanyQueryKeys,
+  crmContactQueryKeys,
+  crmDealQueryKeys
+} from "./utils/QueryKeys";
 
 const fetchDeals = async (
   filters: CrmDealFilterRequest
@@ -58,15 +43,6 @@ const fetchDeals = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetDealLookup = (
-  params: CrmDealFilterRequest,
-  enabled?: boolean
-): UseQueryResult<CrmDealListResponse> =>
-  useQuery({
-    queryKey: crmDealQueryKeys.LOOKUP(params),
-    queryFn: () => fetchDealLookup(params),
-    enabled
-  });
 export const useGetDealsInfinite = (
   filters: CrmDealFilterRequest,
   enabled?: boolean
@@ -86,6 +62,17 @@ export const useGetDealsInfinite = (
       }
       return undefined;
     },
+    refetchOnWindowFocus: false
+  });
+
+export const useGetDealLookup = (
+  filters: CrmDealFilterRequest,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: crmDealQueryKeys.LOOKUP(filters),
+    queryFn: () => fetchDeals(filters),
+    enabled,
     refetchOnWindowFocus: false
   });
 
@@ -124,6 +111,19 @@ export const useCreateDeal = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
+      if (createdDeal.companyId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: crmCompanyQueryKeys.METRICS(createdDeal.companyId)
+        });
+      }
+      if (createdDeal.contactId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.METRICS(createdDeal.contactId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.LISTS
+        });
+      }
       onSuccess(createdDeal);
     },
     onError

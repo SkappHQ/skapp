@@ -13,6 +13,8 @@ const CRM_DEALS = "crm-deals";
 const CRM_TASKS = "crm-tasks";
 
 export const crmContactQueryKeys = {
+  LISTS: [CRM_CONTACTS, "list"],
+  LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
   METRICS: (id: number) => [CRM_CONTACTS, "metrics", id],
   LOOKUP: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "lookup", params],
   OWNER_LOOKUP: (params: CrmOwnerLookupFilterRequest) => [
@@ -42,19 +44,6 @@ export const crmCompanyQueryKeys = {
   DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
   METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
   NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
-};
-
-export const crmLookupQueryKeys = {
-  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
-    "crm-contact-lookup-v2",
-    searchKeyword,
-    size
-  ],
-  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
-    "crm-owner-lookup-v2",
-    searchKeyword,
-    size
-  ]
 };
 
 export const crmBoardQueryKeys = {

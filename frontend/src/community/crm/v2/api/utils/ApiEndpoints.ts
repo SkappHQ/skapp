@@ -13,6 +13,7 @@ export const crmCompanyEndpoints = {
 };
 
 export const crmContactEndpoints = {
+  GET_CONTACTS: `${moduleAPIPath.CRM}/contact`,
   GET_CONTACT_METRICS: (id: number) =>
     `${moduleAPIPath.CRM}/contact/${id}/metrics`
 };

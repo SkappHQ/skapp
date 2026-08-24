@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOwnerName } from "~community/crm/v2/utils/crmEntityUtils";
+import { getOwnerName } from "~community/crm/v2/utils/commonUtil";
 
 interface SelectedOwnerFieldProps {
   label: string;

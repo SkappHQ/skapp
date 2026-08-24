@@ -37,14 +37,16 @@ import {
   CrmOwnerLookupFilterRequest,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
+import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 import {
-  getContactName,
+  getContactDisplayName,
   getContactNameById,
+  toContactsRecord
+} from "~community/crm/v2/utils/contactUtil";
+import {
   getDealNameById,
-  getOwnerById,
-  toContactsRecord,
   toDealsRecord
-} from "~community/crm/v2/utils/crmEntityUtils";
+} from "~community/crm/v2/utils/dealUtil";
 import { parseDueDate } from "~community/crm/v2/utils/taskUtil";
 
 interface TaskModalFormProps {
@@ -197,8 +199,11 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
       return contactLookupData.items.map((contact) => ({
         id: String(contact.id),
         content: (
-          <div className="w-full truncate" title={getContactName(contact)}>
-            {getContactName(contact)}
+          <div
+            className="w-full truncate"
+            title={getContactDisplayName(contact)}
+          >
+            {getContactDisplayName(contact)}
           </div>
         )
       }));

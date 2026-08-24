@@ -15,16 +15,27 @@ import {
   useGetCompanyById,
   useGetCompanyMetrics
 } from "~community/crm/v2/api/CompanyApi";
+import { useGetContactsInfinite } from "~community/crm/v2/api/ContactApi";
+import { useGetDealsInfinite } from "~community/crm/v2/api/DealApi";
 import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
 import SidePanelCompanyHeader from "~community/crm/v2/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
+import SidePanelContactsSection from "~community/crm/v2/components/molecules/SidePanelContactsSection/SidePanelContactsSection";
+import SidePanelDealSection from "~community/crm/v2/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelMetricCards from "~community/crm/v2/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import {
+  CONTACT_PAGE_SIZE,
+  DEAL_PAGE_SIZE,
+  TASK_PAGE_SIZE
+} from "~community/crm/v2/constants/commonConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmContactFilterRequest,
+  CrmDealFilterRequest,
   CrmModalTypes,
   CrmSidePanelTypes,
   CrmTaskCompletedFilterRequest
@@ -33,6 +44,15 @@ import {
   getCompanyMetricItems,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
+import {
+  toContactIds,
+  toContactsRecord
+} from "~community/crm/v2/utils/contactUtil";
+import {
+  appendDealId,
+  mergeDeals,
+  toDealIds
+} from "~community/crm/v2/utils/dealUtil";
 import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
@@ -53,10 +73,14 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const {
     companies,
     tasks,
+    deals,
+    contacts,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setCompanies,
     setTasks,
+    setDeals,
+    setContacts,
     setSelectedCompanyId,
     setIsCompanyModalOpen,
     setCompanyModalType,
@@ -65,10 +89,14 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     useShallow((store) => ({
       companies: store.companies,
       tasks: store.tasks,
+      deals: store.deals,
+      contacts: store.contacts,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       setCompanies: store.setCompanies,
       setTasks: store.setTasks,
+      setDeals: store.setDeals,
+      setContacts: store.setContacts,
       setSelectedCompanyId: store.setSelectedCompanyId,
       setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType,
@@ -79,6 +107,16 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const taskFilters: CrmTaskCompletedFilterRequest = {
     companyId,
     size: TASK_PAGE_SIZE
+  };
+
+  const dealFilters: CrmDealFilterRequest = {
+    companyId,
+    size: DEAL_PAGE_SIZE
+  };
+
+  const contactFilters: CrmContactFilterRequest = {
+    companyId,
+    size: CONTACT_PAGE_SIZE
   };
 
   const { data: fetchedCompany, isLoading: isCompanyLoading } =
@@ -92,24 +130,76 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     hasNextPage: hasNextTasksPage,
     isFetchingNextPage: isFetchingNextTasksPage
   } = useGetTasksInfinite(taskFilters);
+  const {
+    data: fetchedDeals,
+    isLoading: isDealsLoading,
+    fetchNextPage: fetchNextDealsPage,
+    hasNextPage: hasNextDealsPage,
+    isFetchingNextPage: isFetchingNextDealsPage
+  } = useGetDealsInfinite(dealFilters);
+  const {
+    data: fetchedContacts,
+    isLoading: isContactsLoading,
+    fetchNextPage: fetchNextContactsPage,
+    hasNextPage: hasNextContactsPage,
+    isFetchingNextPage: isFetchingNextContactsPage
+  } = useGetContactsInfinite(contactFilters);
 
-  const isLoading = isCompanyLoading || isMetricsLoading || isTasksLoading;
+  const isLoading =
+    isCompanyLoading ||
+    isMetricsLoading ||
+    isTasksLoading ||
+    isDealsLoading ||
+    isContactsLoading;
 
   useEffect(() => {
-    if (!fetchedCompany || !fetchedMetrics || !fetchedTasks) return;
+    if (
+      !fetchedCompany ||
+      !fetchedMetrics ||
+      !fetchedTasks ||
+      !fetchedDeals ||
+      !fetchedContacts
+    ) {
+      return;
+    }
 
     const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
     const normalizedTasks = normalizeTasks(taskItems);
 
+    const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
+    const contactItems = fetchedContacts.pages.flatMap((page) => page.items);
+
     setTasks({ ...tasks, ...normalizedTasks.tasks });
+    setDeals(mergeDeals(deals, dealItems));
+    setContacts({ ...contacts, ...toContactsRecord(contactItems) });
     setCompanies(
       updateCompany(companies, companyId, {
         ...fetchedCompany,
         metrics: fetchedMetrics,
-        taskIds: normalizedTasks.taskIds
+        taskIds: normalizedTasks.taskIds,
+        dealIds: toDealIds(dealItems),
+        contactIds: toContactIds(contactItems)
       })
     );
-  }, [fetchedCompany, fetchedMetrics, fetchedTasks]);
+  }, [
+    fetchedCompany,
+    fetchedMetrics,
+    fetchedTasks,
+    fetchedDeals,
+    fetchedContacts
+  ]);
+
+  const handleDealCreated = (createdDeal: CrmDealEntity) => {
+    setDeals(mergeDeals(deals, [createdDeal]));
+
+    if (createdDeal.id !== undefined) {
+      setCompanies(
+        updateCompany(companies, companyId, {
+          dealIds: appendDealId(company?.dealIds ?? [], createdDeal.id)
+        })
+      );
+    }
+  };
 
   const company = companies[companyId];
 
@@ -214,6 +304,26 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
               />
               <hr className="border-secondary-accent" />
             </div>
+
+            {activeTab === CrmSidePanelTabEnum.DEALS && (
+              <SidePanelDealSection
+                dealIds={company.dealIds}
+                onDealCreated={handleDealCreated}
+                companyId={companyId}
+                hasNextPage={hasNextDealsPage}
+                isFetchingNextPage={isFetchingNextDealsPage}
+                onFetchNextPage={fetchNextDealsPage}
+              />
+            )}
+
+            {activeTab === CrmSidePanelTabEnum.CONTACTS && (
+              <SidePanelContactsSection
+                contactIds={company.contactIds}
+                hasNextPage={hasNextContactsPage}
+                isFetchingNextPage={isFetchingNextContactsPage}
+                onFetchNextPage={fetchNextContactsPage}
+              />
+            )}
 
             {activeTab === CrmSidePanelTabEnum.TASKS && (
               <SidePanelTasksSection

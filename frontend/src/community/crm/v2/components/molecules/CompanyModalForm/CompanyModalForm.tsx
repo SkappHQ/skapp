@@ -5,14 +5,15 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
-import useGetIndustryOptions from "~community/crm/v2/hooks/useGetIndustryOptions";
+import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
@@ -30,7 +31,21 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   originalName,
   onCancel
 }) => {
-  const industryOptions = useGetIndustryOptions();
+  const translateIndustryOptions = useTranslator(
+    "crmModule",
+    "companies",
+    "industryOptions"
+  );
+
+  const industryOptions = useMemo(
+    () =>
+      Object.values(CrmIndustryEnum).map((industry) => ({
+        id: industry,
+        label: translateIndustryOptions([industry]),
+        value: industry
+      })),
+    [translateIndustryOptions]
+  );
 
   const {
     values,

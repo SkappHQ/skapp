@@ -1,11 +1,4 @@
-import { concatStrings } from "~community/common/utils/commonUtil";
 import {
-  CURRENCY_PREFIX,
-  EMPTY_PLACEHOLDER
-} from "~community/crm/v2/constants/commonConstants";
-import {
-  CrmContactEntity,
-  CrmContactRecord,
   CrmDealEntity,
   CrmDealRecord,
   CrmOwnerEntity,
@@ -20,56 +13,23 @@ const isEmptyValue = (value?: string | number) =>
   value === undefined || Number(value) === 0;
 
 export const formatTableValue = (value?: string | number, prefix = "") =>
-  isEmptyValue(value) ? EMPTY_PLACEHOLDER : `${prefix}${value}`;
+  isEmptyValue(value) ? "-" : `${prefix}${value}`;
 
 export const formatMonetaryValue = (value?: string) => {
-  if (isEmptyValue(value)) return EMPTY_PLACEHOLDER;
+  if (isEmptyValue(value)) return "-";
 
-  return `${CURRENCY_PREFIX}${value?.split(".")[0]}`;
+  return `$${value?.split(".")[0]}`;
 };
 
 export const formatMonetaryValueWithDecimals = (value?: string | number) =>
-  isEmptyValue(value)
-    ? EMPTY_PLACEHOLDER
-    : `${CURRENCY_PREFIX}${Number(value).toFixed(2)}`;
+  isEmptyValue(value) ? "-" : `$${Number(value).toFixed(2)}`;
 
-export const getOwnerName = (owner: CrmOwnerEntity): string => {
-  const nameParts = [owner.firstName];
-  if (owner.lastName !== undefined) {
-    nameParts.push(owner.lastName);
-  }
-  return concatStrings(nameParts);
-};
-
-export const getContactName = (contact: CrmContactEntity): string => {
-  const nameParts: string[] = [];
-  if (contact.firstName !== undefined) {
-    nameParts.push(contact.firstName);
-  }
-  if (contact.lastName !== undefined) {
-    nameParts.push(contact.lastName);
-  }
-  return concatStrings(nameParts);
-};
+export const getOwnerName = (owner: CrmOwnerEntity): string =>
+  [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 
 export const getOwnerById = (owners: CrmOwnerRecord, ownerId?: number) => {
   if (ownerId !== undefined) {
     return owners[ownerId];
-  }
-};
-
-export const getContactNameById = (
-  contacts: CrmContactRecord,
-  contactId?: number
-) => {
-  if (contactId !== undefined) {
-    return getContactName(contacts[contactId]);
-  }
-};
-
-export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
-  if (dealId !== undefined) {
-    return deals[dealId].name;
   }
 };
 

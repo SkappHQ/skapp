@@ -1,36 +1,71 @@
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
+import {
+  InfiniteData,
+  UseInfiniteQueryResult,
+  UseQueryResult,
+  useInfiniteQuery,
+  useQuery
+} from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
-import { crmContactEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import {
-  crmContactQueryKeys,
-  crmLookupQueryKeys
-} from "~community/crm/v2/api/utils/QueryKeys";
+  crmContactEndpoints,
+  crmLookupEndpoints
+} from "~community/crm/v2/api/utils/ApiEndpoints";
+import { crmContactQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
+import { CrmContactMetrics } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmContactFilterRequest,
   CrmContactListResponse,
-  CrmContactLookupResponse,
   CrmOwnerListResponse,
   CrmOwnerLookupFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
-const fetchContactLookup = async (
+const fetchContacts = async (
   params: CrmContactFilterRequest
 ): Promise<CrmContactListResponse> => {
-  const response = await authFetch.get(crmContactEndpoints.CONTACT_LOOKUP, {
+  const response = await authFetchV2.get(crmContactEndpoints.GET_CONTACTS, {
     params
   });
   return response?.data?.results?.[0];
 };
 
-const fetchContactLookupV2 = async (
-  searchKeyword: string,
-  size: number
-): Promise<CrmContactLookupResponse> => {
+export const useGetContactsInfinite = (
+  params: CrmContactFilterRequest
+): UseInfiniteQueryResult<InfiniteData<CrmContactListResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmContactQueryKeys.LIST(params),
+    queryFn: ({ pageParam }) => fetchContacts({ ...params, page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const nextPage = lastPage.currentPage + 1;
+      return nextPage < lastPage.totalPages ? nextPage : undefined;
+    },
+    refetchOnWindowFocus: false
+  });
+
+const fetchContactMetrics = async (id: number): Promise<CrmContactMetrics> => {
+  const response = await authFetch.get(
+    crmContactEndpoints.GET_CONTACT_METRICS(id)
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useGetContactMetrics = (
+  id: number
+): UseQueryResult<CrmContactMetrics> =>
+  useQuery({
+    queryKey: crmContactQueryKeys.METRICS(id),
+    queryFn: () => fetchContactMetrics(id)
+  });
+
+const fetchContactLookup = async (
+  params: CrmContactFilterRequest
+): Promise<CrmContactListResponse> => {
   const response = await authFetchV2.get(crmLookupEndpoints.CONTACT_LOOKUP, {
-    params: { searchKeyword, size }
+    params
   });
   return response?.data?.results?.[0];
 };
@@ -42,29 +77,18 @@ export const useGetContactLookup = (
   useQuery({
     queryKey: crmContactQueryKeys.LOOKUP(params),
     queryFn: () => fetchContactLookup(params),
-    enabled
+    enabled,
+    refetchOnWindowFocus: false
   });
 
 const fetchOwnerLookup = async (
   params: CrmOwnerLookupFilterRequest
 ): Promise<CrmOwnerListResponse> => {
-  const response = await authFetch.get(crmContactEndpoints.OWNER_LOOKUP, {
+  const response = await authFetch.get(crmLookupEndpoints.OWNER_LOOKUP, {
     params
   });
   return response?.data?.results?.[0];
 };
-
-export const useGetContactLookupV2 = (
-  searchKeyword: string,
-  size: number,
-  enabled: boolean
-) =>
-  useQuery({
-    queryKey: crmLookupQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
-    queryFn: () => fetchContactLookupV2(searchKeyword, size),
-    enabled,
-    refetchOnWindowFocus: false
-  });
 
 export const useGetOwnerLookup = (
   params: CrmOwnerLookupFilterRequest,

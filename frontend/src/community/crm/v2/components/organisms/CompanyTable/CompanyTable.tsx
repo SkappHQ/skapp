@@ -15,10 +15,7 @@ import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstan
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetCompaniesInfinite } from "~community/crm/v2/api/CompanyApi";
-import {
-  COMPANY_PAGE_SIZE,
-  PHONE_NUMBER_PREFIX
-} from "~community/crm/v2/constants/commonConstants";
+import { COMPANY_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmCompanyFilterRequest,
@@ -124,7 +121,7 @@ export const CompanyTable: FC = () => {
         ),
         contactNumber: (
           <div className="flex items-baseline">
-            {formatTableValue(company.contactNumber, PHONE_NUMBER_PREFIX)}
+            {formatTableValue(company.contactNumber, "+")}
           </div>
         ),
         openTasksCount: (

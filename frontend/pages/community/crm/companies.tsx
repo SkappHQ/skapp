@@ -12,7 +12,7 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import SidePanelWrapperV2 from "~community/crm/v2/components/atoms/SidePanelWrapper/SidePanelWrapper";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalControllerV2 from "~community/crm/v2/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanelV2 from "~community/crm/v2/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable as CompanyTableV2 } from "~community/crm/v2/components/organisms/CompanyTable/CompanyTable";

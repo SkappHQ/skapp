@@ -82,6 +82,9 @@ export const useCreateTask = (
         queryClient.invalidateQueries({
           queryKey: crmContactQueryKeys.METRICS(createdTask.contactId)
         });
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.LISTS
+        });
       }
       onSuccess(createdTask);
     },
