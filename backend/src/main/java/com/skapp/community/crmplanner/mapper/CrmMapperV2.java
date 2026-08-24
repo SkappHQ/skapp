@@ -18,6 +18,10 @@ public interface CrmMapperV2 {
 	@Mapping(target = "companyId", source = "company.id")
 	CrmBoardContactResponseDtoV2 crmContactToCrmBoardContactResponseDtoV2(CrmContact contact);
 
+	@Mapping(target = "stageId", source = "stage.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "contactId", source = "contact.id")
 	CrmDealResponseDtoV2 crmDealToCrmDealResponseDtoV2(CrmDeal deal);
 
 	@Mapping(target = "typeId", source = "type.id")

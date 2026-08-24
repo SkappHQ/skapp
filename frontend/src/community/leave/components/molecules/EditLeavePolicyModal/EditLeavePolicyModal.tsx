@@ -6,7 +6,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
-import { FC, useRef } from "react";
+import { FC } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -43,16 +43,12 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   const translateCommonText = useTranslator("leaveModule", "leavePolicies");
   const { setToastMessage } = useToast();
 
-  const submittedNameRef = useRef<string>("");
-
   const onUpdateSuccess = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["successToastTitle"]),
-      description: translateText(["successToastDescription"], {
-        policyName: submittedNameRef.current
-      }),
+      description: translateText(["successToastDescription"]),
       isIcon: true
     });
     onClose();
@@ -80,7 +76,6 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       return;
     }
     const trimmedName = formValues.policyName.trim();
-    submittedNameRef.current = trimmedName;
     updateLeavePolicy({
       id: policy.id,
       payload: { name: trimmedName }
@@ -99,8 +94,10 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   }
 
   const isChanged = values.policyName.trim() !== policy.name;
+  const hasError = Boolean(errors.policyName);
+  const isSaveDisabled = isPending || !isChanged || hasError;
 
-  const handleDiscard = (): void => {
+  const handleCancel = (): void => {
     resetForm();
     onClose();
   };
@@ -112,7 +109,7 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
   return (
     <SmallModal
       isOpen={isOpen}
-      onClose={handleDiscard}
+      onClose={handleCancel}
       modalHeader={translateText(["title"])}
       content={
         <div className="flex flex-col gap-4">
@@ -127,23 +124,24 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
             fullWidth
           />
           <div className="flex flex-col gap-1.5">
-            <p className="body2 text-secondary-text">
+            <p className="subtitle1 text-secondary-icon">
               {translateText(["leaveTypeLabel"])}
             </p>
-            <div className="flex items-center rounded-lg bg-tertiary-background px-3 py-2">
+            <div className="flex items-center rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-2">
               <LeaveTypeChip
                 name={policy.leaveTypeName}
                 emojiCode={policy.leaveTypeEmoji}
                 className="bg-white px-4 py-2"
+                isDisabled
               />
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <p className="body2 text-secondary-text">
+            <p className="subtitle1 text-secondary-icon">
               {translateText(["entitlementTypeLabel"])}
             </p>
-            <div className="rounded-lg bg-tertiary-background px-3 py-3">
-              <p className="body1 text-secondary-text">
+            <div className="rounded-lg border border-border-surface-secondary bg-tertiary-background px-3 py-3 text-secondary-icon">
+              <p className="body1 text-tertiary-icon">
                 {policy.policyType === PolicyType.ACCRUAL
                   ? translateCommonText(["accrual"])
                   : translateCommonText(["flexible"])}
@@ -155,18 +153,18 @@ const EditLeavePolicyModal: FC<EditLeavePolicyModalProps> = ({
       buttons={{
         buttonLeft: {
           variant: "tertiary",
-          onClick: handleDiscard,
+          onClick: handleCancel,
           disabled: isPending,
           icon: <CloseIcon />,
           iconPosition: "end",
-          children: translateText(["discardBtnTxt"])
+          children: translateText(["cancelBtnTxt"])
         },
         buttonRight: {
           variant: "primary",
           onClick: handleSave,
-          disabled: isPending || !isChanged,
+          disabled: isSaveDisabled,
           isLoading: isPending,
-          icon: <SaveIcon />,
+          icon: <SaveIcon className={isSaveDisabled ? "opacity-50" : ""} />,
           iconPosition: "end",
           children: translateText(["saveBtnTxt"])
         }

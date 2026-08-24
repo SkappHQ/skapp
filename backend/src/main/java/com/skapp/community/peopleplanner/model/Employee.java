@@ -35,6 +35,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -186,7 +188,9 @@ public class Employee extends Auditable<String> {
 	private BusinessUnit businessUnit;
 
 	public String getFullName() {
-		return firstName + " " + lastName;
+		return Stream.of(firstName, lastName)
+			.filter(namePart -> namePart != null && !namePart.isBlank())
+			.collect(Collectors.joining(" "));
 	}
 
 }

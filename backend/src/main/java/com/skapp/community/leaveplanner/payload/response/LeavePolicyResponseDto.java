@@ -36,7 +36,7 @@ public class LeavePolicyResponseDto {
 
 	private Boolean isCarryoverEnabled;
 
-	private String carryoverDate;
+	private String carryoverExpiryDate;
 
 	private Float maxCarryoverDays;
 

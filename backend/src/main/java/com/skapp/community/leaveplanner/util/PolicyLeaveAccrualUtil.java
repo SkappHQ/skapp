@@ -25,13 +25,15 @@ public class PolicyLeaveAccrualUtil {
 		return effectiveFrom.plusDays(waitingPeriodDays);
 	}
 
-	public static PolicyLeaveDateWindowDto resolveCycle(int year) {
-		MonthDay anchor = DateTimeUtils.CALENDAR_YEAR_START;
+	public static PolicyLeaveDateWindowDto resolveCycle(int year, MonthDay cycleStart) {
+		MonthDay anchor = cycleStart == null ? DateTimeUtils.CALENDAR_YEAR_START : cycleStart;
 		return new PolicyLeaveDateWindowDto(anchor.atYear(year), anchor.atYear(year + 1).minusDays(1));
 	}
 
-	public static PolicyLeaveDateWindowDto resolveCycleContaining(LocalDate date) {
-		return resolveCycle(date.getYear());
+	public static PolicyLeaveDateWindowDto resolveCycleContaining(LocalDate date, MonthDay cycleStart) {
+		MonthDay anchor = cycleStart == null ? DateTimeUtils.CALENDAR_YEAR_START : cycleStart;
+		int year = date.isBefore(anchor.atYear(date.getYear())) ? date.getYear() - 1 : date.getYear();
+		return resolveCycle(year, anchor);
 	}
 
 	private static float accruedUpTo(LeavePolicy policy, LocalDate accrualStartDate, LocalDate asOf) {
@@ -94,6 +96,79 @@ public class PolicyLeaveAccrualUtil {
 			return totalDaysAllocated;
 		}
 		return Math.min(totalDaysAllocated, cap);
+	}
+
+	private static float capCarryover(LeavePolicy policy, float unusedDays) {
+		float carriedOverDays = Math.max(0f, unusedDays);
+		Float maxCarryoverDays = policy.getMaxCarryoverDays();
+		return maxCarryoverDays == null ? carriedOverDays : Math.min(carriedOverDays, maxCarryoverDays);
+	}
+
+	private static LocalDate resolveCarryoverExpiry(LeavePolicy policy, PolicyLeaveDateWindowDto cycle) {
+		if (!DateTimeUtils.isValidMonthDay(policy.getCarryoverExpiryDate())) {
+			return cycle.getEndDate();
+		}
+		MonthDay monthDay = DateTimeUtils.parseMonthDay(policy.getCarryoverExpiryDate());
+		LocalDate expiresOn = monthDay.atYear(cycle.getStartDate().getYear());
+		if (expiresOn.isBefore(cycle.getStartDate())) {
+			expiresOn = monthDay.atYear(cycle.getStartDate().getYear() + 1);
+		}
+		return expiresOn.isAfter(cycle.getEndDate()) ? cycle.getEndDate() : expiresOn;
+	}
+
+	public static float carriedOverInto(LeavePolicy policy, LocalDate effectiveFrom, PolicyLeaveDateWindowDto cycle,
+			MonthDay cycleAnchor, PolicyLeaveUsageLookup usageLookup) {
+		if (!Boolean.TRUE.equals(policy.getIsCarryoverEnabled())) {
+			return 0f;
+		}
+
+		int targetYear = cycle.getStartDate().getYear();
+		int firstYear = resolveCycleContaining(effectiveFrom, cycleAnchor).getStartDate().getYear();
+
+		float carriedOverDays = 0f;
+		for (int year = firstYear; year < targetYear; year++) {
+			PolicyLeaveDateWindowDto priorCycle = resolveCycle(year, cycleAnchor);
+			carriedOverDays = capCarryover(policy,
+					unusedAtCycleEnd(policy, effectiveFrom, priorCycle, carriedOverDays, usageLookup));
+		}
+		return carriedOverDays;
+	}
+
+	public static float usableCarryoverDays(LeavePolicy policy, PolicyLeaveDateWindowDto cycle, float carriedOverDays,
+			LocalDate asOf, PolicyLeaveUsageLookup usageLookup) {
+		if (carriedOverDays <= 0f) {
+			return 0f;
+		}
+
+		LocalDate expiresOn = resolveCarryoverExpiry(policy, cycle);
+		if (!asOf.isAfter(expiresOn)) {
+			return carriedOverDays;
+		}
+		return Math.min(carriedOverDays, usageLookup.usedBetween(cycle.getStartDate(), expiresOn));
+	}
+
+	private static float unusedAtCycleEnd(LeavePolicy policy, LocalDate effectiveFrom, PolicyLeaveDateWindowDto cycle,
+			float carriedOverDays, PolicyLeaveUsageLookup usageLookup) {
+		if (cycle.getEndDate().isBefore(effectiveFrom)) {
+			return 0f;
+		}
+
+		float accrualAllocation = accrualAllocationInCycle(policy, effectiveFrom, cycle);
+		float usableCarryoverDays = usableCarryoverDays(policy, cycle, carriedOverDays, cycle.getEndDate().plusDays(1),
+				usageLookup);
+		float totalDaysUsed = usageLookup.usedBetween(cycle.getStartDate(), cycle.getEndDate());
+		return Math.max(0f, accrualAllocation + usableCarryoverDays - totalDaysUsed);
+	}
+
+	private static float accrualAllocationInCycle(LeavePolicy policy, LocalDate effectiveFrom,
+			PolicyLeaveDateWindowDto cycle) {
+		return accrualAllocationAsOf(policy, effectiveFrom, cycle, cycle.getEndDate());
+	}
+
+	private static float accrualAllocationAsOf(LeavePolicy policy, LocalDate effectiveFrom,
+			PolicyLeaveDateWindowDto cycle, LocalDate asOf) {
+		LocalDate accrualStartDate = resolveAccrualStartDate(policy, effectiveFrom);
+		return applyAccrualCap(policy, roundToHalfDay(accruedWithinCycle(policy, accrualStartDate, cycle, asOf)));
 	}
 
 	private static float proration(PolicyLeaveDateWindowDto period, LocalDate accrualStartDate) {

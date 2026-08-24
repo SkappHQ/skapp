@@ -7,34 +7,30 @@ const styles = (theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 0.7,
     maxWidth: "auto"
   },
   textDateStyles: {
     letterSpacing: "0.03em",
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis"
   },
   outerBoxWrapper: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto"
   },
-  innerBoxWrapper: {
-    display: "flex",
+  timeBadgeContentStyles: {
+    display: "inline-flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     gap: "0.5rem",
-    bgcolor: "white",
-    paddingX: "1.25rem",
-    paddingY: "0.625rem",
-    borderRadius: "4rem",
     [theme.breakpoints.down("md")]: {
       flexDirection: "column"
     }
@@ -43,7 +39,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.text.secondary,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis",
     textDecoration:
@@ -56,7 +52,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.error.contrastText,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis"
   },
@@ -64,7 +60,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.text.secondary,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis",
     textDecoration:
@@ -77,49 +73,21 @@ const styles = (theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto"
   },
-  workHoursTextStyle: (
-    timesheetRequest: TimeRequestDataType,
-    totalHours: number
-  ) => ({
-    letterSpacing: "0.03em",
-    color: theme.palette.text.secondary,
-    whiteSpace: "nowrap",
-    textAlign: "center",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    backgroundColor:
-      timesheetRequest?.workHours >= totalHours
-        ? theme.palette.grey[200]
-        : theme.palette.error.main,
-    py: "0.25rem",
-    px: "1rem",
-    borderRadius: "4rem"
-  }),
   statusOuterBoxStyles: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto",
     [theme.breakpoints.down("lg")]: {
-      justifyContent: "center"
+      justifyContent: "flex-start"
     },
     position: "relative"
-  },
-  iconChipStyles: {
-    color: theme.palette.text.secondary,
-    minWidth: "6.875rem",
-    justifyContent: "center",
-    pr: "0rem",
-    [theme.breakpoints.down("lg")]: {
-      minWidth: "0rem",
-      gap: "1rem"
-    }
   },
   kebabMenuBoxStyle: {
     position: "absolute",

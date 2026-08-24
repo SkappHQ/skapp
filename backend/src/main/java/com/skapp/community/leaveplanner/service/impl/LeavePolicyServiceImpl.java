@@ -21,6 +21,7 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyNameAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
@@ -179,6 +180,23 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkLeavePolicyNameAvailability(String name, Long leaveTypeId) {
+		log.info("checkLeavePolicyNameAvailability: execution started");
+
+		if (leaveTypeId == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED);
+		}
+
+		LeavePolicyValidationUtil.validateName(name);
+
+		boolean isAvailable = !leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(name, leaveTypeId);
+
+		log.info("checkLeavePolicyNameAvailability: execution ended");
+		return new ResponseEntityDto(false, new LeavePolicyNameAvailabilityResponseDto(isAvailable));
 	}
 
 	@Override
@@ -347,13 +365,21 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getIsCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
-		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
+		leavePolicy.setCarryoverExpiryDate(resolveCarryoverExpiryDate(carryoverEnabled, accrualDto));
 		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);
 
 		leavePolicy.setFirstAccrual(
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
 		leavePolicy.setAccrualTiming(
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
+	}
+
+	private String resolveCarryoverExpiryDate(boolean carryoverEnabled, LeavePolicyAccrualDetailDto accrualDto) {
+		if (!carryoverEnabled) {
+			return null;
+		}
+		String carryoverExpiryDate = accrualDto.getCarryoverExpiryDate();
+		return carryoverExpiryDate == null || carryoverExpiryDate.isBlank() ? null : carryoverExpiryDate;
 	}
 
 }

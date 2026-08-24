@@ -1,14 +1,52 @@
 import { AxiosError } from "axios";
+import { DateTime } from "luxon";
 
 import {
   COMMON_ERROR_ACCESS_DENIED,
   LEAVE_ERROR_LEAVE_POLICY_ALREADY_EXISTS
 } from "~community/common/constants/errorMessageKeys";
+import { FULL_MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
+import {
+  CARRYOVER_EXPIRY_DATE_FORMAT,
+  CARRYOVER_EXPIRY_REFERENCE_YEAR
+} from "~community/leave/constants/leavePolicyConstants";
 import {
   AddLeavePolicyPayload,
   LeavePolicyFormData,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
+
+export const toCarryoverExpiryMonthDay = (isoDate: string): string => {
+  const pickedDate = DateTime.fromISO(isoDate, { setZone: true });
+  return pickedDate.isValid
+    ? pickedDate.toFormat(CARRYOVER_EXPIRY_DATE_FORMAT)
+    : "";
+};
+
+export const parseCarryoverExpiryDate = (
+  monthDay: string
+): DateTime | undefined => {
+  if (!monthDay) {
+    return undefined;
+  }
+
+  const expiryDate = DateTime.fromFormat(
+    `${monthDay}-${CARRYOVER_EXPIRY_REFERENCE_YEAR}`,
+    `${CARRYOVER_EXPIRY_DATE_FORMAT}-yyyy`
+  );
+
+  return expiryDate.isValid ? expiryDate : undefined;
+};
+
+export const getCarryoverExpiryReferenceDate = (): DateTime =>
+  DateTime.fromObject({
+    year: CARRYOVER_EXPIRY_REFERENCE_YEAR,
+    month: 1,
+    day: 1
+  });
+
+export const formatCarryoverExpiryDate = (monthDay: string): string =>
+  parseCarryoverExpiryDate(monthDay)?.toFormat(FULL_MONTH_DATE_FORMAT) ?? "";
 
 interface LeavePolicyErrorData {
   results?: { messageKey?: string }[];
@@ -88,7 +126,10 @@ export const mapLeavePolicyFormToPayload = (
         ? Number(formData.accrualCapDays)
         : undefined,
       isCarryoverEnabled: formData.canCarryOver,
-      carryoverDate: formData.canCarryOver ? formData.carryOverDate : undefined,
+      carryoverExpiryDate:
+        formData.canCarryOver && formData.carryoverExpiryDate !== ""
+          ? formData.carryoverExpiryDate
+          : undefined,
       maxCarryoverDays:
         formData.canCarryOver && formData.maxCarryOverDays !== ""
           ? Number(formData.maxCarryOverDays)

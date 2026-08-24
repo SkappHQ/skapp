@@ -2,15 +2,14 @@ import {
   ArrowRightIcon,
   ButtonV2,
   CloseIcon,
-  InfoIcon,
-  InputField,
-  Tooltip
+  InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { ChangeEvent, FC, useEffect, useMemo, useRef } from "react";
 
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
+import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import ColorPalette from "~community/common/components/molecules/ColorPalette/ColorPalette";
 import EmojiPicker from "~community/common/components/molecules/EmojiPicker/EmojiPicker";
 import ROUTES from "~community/common/constants/routes";
@@ -192,7 +191,7 @@ const PolicyLeaveTypeForm: FC = () => {
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
       <div className="flex w-full max-w-146.5 flex-col">
-        <div className="flex flex-col gap-4 pb-10">
+        <div className="flex flex-col gap-4 pb-6">
           <InputField
             label={translateText(["name"])}
             name="name"
@@ -205,6 +204,7 @@ const PolicyLeaveTypeForm: FC = () => {
             errorMessage={errors?.name}
             onChange={handleNameChange}
             fullWidth
+            className="[&_label_span]:text-semantic-red-accent"
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <EmojiPicker
@@ -237,20 +237,20 @@ const PolicyLeaveTypeForm: FC = () => {
         <div className="flex flex-row items-center gap-4">
           <h3
             id={MIN_DURATION_GROUP_LABEL_ID}
-            className={`subtitle2 ${
-              hasMinDurationError ? "text-semantic-red-text" : "text-black"
+            className={`subtitle2 leading-tight ${
+              hasMinDurationError ? "text-semantic-red-accent" : "text-black"
             }`}
           >
             {translateText(["leaveDurationPreferences"])}
             &nbsp;
-            <span className="text-semantic-red-text">*</span>
+            <span className="text-semantic-red-accent">*</span>
           </h3>
           <Tooltip
             id="leave-duration-preferences-section"
-            content={translateText(["leaveDurationPreferencesTooltip"])}
-          >
-            <InfoIcon className="size-4 text-secondary-icon" />
-          </Tooltip>
+            title={translateText(["leaveDurationPreferencesTooltip"])}
+            error={hasMinDurationError}
+            ariaLabel={translateText(["leaveDurationPreferencesTooltip"])}
+          />
         </div>
 
         <div
@@ -294,7 +294,7 @@ const PolicyLeaveTypeForm: FC = () => {
           <p
             id={MIN_DURATION_ERROR_ID}
             role="alert"
-            className="body2 mt-1.5 text-semantic-red-text"
+            className="body2 mt-1.5 text-semantic-red-accent"
           >
             {errors.minDuration}
           </p>
@@ -304,15 +304,14 @@ const PolicyLeaveTypeForm: FC = () => {
 
         <div className="flex flex-col gap-6">
           <div className="flex flex-row items-center gap-4">
-            <h3 className="subtitle2 text-black">
+            <h3 className="subtitle2 leading-tight text-black">
               {translateText(["leaveTypeSettings"])}
             </h3>
             <Tooltip
               id="leave-type-settings-tooltip"
-              content={translateText(["leaveTypeSettingsTooltip"])}
-            >
-              <InfoIcon className="size-4 text-secondary-icon" />
-            </Tooltip>
+              title={translateText(["leaveTypeSettingsTooltip"])}
+              ariaLabel={translateText(["leaveTypeSettingsTooltip"])}
+            />
           </div>
 
           <SettingToggleRow
@@ -338,7 +337,7 @@ const PolicyLeaveTypeForm: FC = () => {
         <hr className="my-6 border-secondary-accent" />
 
         <div className="flex flex-col gap-6">
-          <h3 className="subtitle2 text-black">
+          <h3 className="subtitle2 leading-tight text-black">
             {translateText(["leaveApprovalSettings"])}
           </h3>
 
@@ -349,7 +348,7 @@ const PolicyLeaveTypeForm: FC = () => {
           />
         </div>
 
-        <div className="my-8 flex flex-col-reverse gap-3 sm:flex-row">
+        <div className="my-8 flex flex-col-reverse gap-3 sm:flex-row sm:space-y-0">
           <ButtonV2
             variant="tertiary"
             type="button"

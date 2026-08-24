@@ -36,6 +36,8 @@ const CrmUiSlice: StateCreator<
 
   preselectedStageId: null,
 
+  isCrmDataInitialized: false,
+
   setCompanyIds: (companyIds: number[]) => set({ companyIds }),
   setContactIds: (contactIds: number[]) => set({ contactIds }),
   setDealIds: (dealIds: number[]) => set({ dealIds }),
@@ -66,7 +68,10 @@ const CrmUiSlice: StateCreator<
     set({ isCrmSidePanelOpen: false, crmSidePanelType: null }),
 
   setPreselectedStageId: (preselectedStageId: number | null) =>
-    set({ preselectedStageId })
+    set({ preselectedStageId }),
+
+  setIsCrmDataInitialized: (isCrmDataInitialized: boolean) =>
+    set({ isCrmDataInitialized })
 });
 
 export default CrmUiSlice;

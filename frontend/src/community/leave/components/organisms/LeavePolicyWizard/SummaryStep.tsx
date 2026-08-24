@@ -4,7 +4,6 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import {
   accrualFrequencyItemList,
-  carryoverDateItemList,
   firstAccrualItemList,
   receiveAccruedTimeItemList
 } from "~community/leave/constants/leavePolicyConstants";
@@ -12,7 +11,10 @@ import {
   LeavePolicyFormData,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
-import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import {
+  buildTranslatedOptionList,
+  formatCarryoverExpiryDate
+} from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import SummaryCard from "./SummaryCard";
 import SummaryItem from "./SummaryItem";
@@ -40,11 +42,6 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
-    (suffixes) => translateText(["options", ...suffixes])
-  );
-  const carryoverDateOptions = buildTranslatedOptionList(
-    carryoverDateItemList,
-    "carryoverDate",
     (suffixes) => translateText(["options", ...suffixes])
   );
   const firstAccrualOptions = buildTranslatedOptionList(
@@ -136,40 +133,40 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         />
       </SummaryCard>
 
-      <SummaryCard
-        title={translateText(["summary", "carryForwardTitle"])}
-        onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
-      >
-        <SummaryItem
-          label={translateText(["summary", "statusLabel"])}
-          value={
-            <LeavePolicyStatusBadge
-              isActive={formData.canCarryOver}
-              text={
-                formData.canCarryOver
-                  ? translateText(["summary", "activeStatus"])
-                  : translateText(["summary", "inactiveStatus"])
-              }
-            />
-          }
-        />
-        <SummaryItem
-          label={translateText(["summary", "maxCarryOverDaysLabel"])}
-          value={
-            formData.canCarryOver && formData.maxCarryOverDays
-              ? translateText(["summary", "maxCarryOverDaysValue"], {
-                  days: formData.maxCarryOverDays
-                })
-              : translateText(["summary", "carryOverNoLimit"])
-          }
-        />
-        {formData.canCarryOver && (
+      {formData.canCarryOver && (
+        <SummaryCard
+          title={translateText(["summary", "carryForwardTitle"])}
+          onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
+        >
           <SummaryItem
-            label={translateText(["summary", "carryOverDateLabel"])}
-            value={getOptionLabel(carryoverDateOptions, formData.carryOverDate)}
+            label={translateText(["summary", "statusLabel"])}
+            value={
+              <LeavePolicyStatusBadge
+                isActive
+                text={translateText(["summary", "activeStatus"])}
+              />
+            }
           />
-        )}
-      </SummaryCard>
+          <SummaryItem
+            label={translateText(["summary", "maxCarryOverDaysLabel"])}
+            value={
+              formData.maxCarryOverDays
+                ? translateText(["summary", "maxCarryOverDaysValue"], {
+                    days: formData.maxCarryOverDays
+                  })
+                : translateText(["summary", "carryOverNoLimit"])
+            }
+          />
+          <SummaryItem
+            label={translateText(["summary", "carryoverExpiryDateLabel"])}
+            value={
+              formData.carryoverExpiryDate
+                ? formatCarryoverExpiryDate(formData.carryoverExpiryDate)
+                : translateText(["summary", "carryoverNeverExpires"])
+            }
+          />
+        </SummaryCard>
+      )}
     </div>
   );
 };

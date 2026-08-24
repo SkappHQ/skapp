@@ -54,26 +54,19 @@ const DeleteBusinessUnitModal: FC<Props> = ({
     targetId: number | undefined
   ): string => {
     if (count === 0) {
-      return translateText(["toasts", "deleteSuccess", "description"], {
-        name: businessUnit.name
-      });
+      return translateText(["toasts", "deleteSuccess", "description"]);
     }
 
     if (targetId !== undefined) {
-      const targetName = businessUnits?.find(
-        (unit) => unit.businessUnitId === targetId
-      )?.name;
-
       return translateText(
         ["toasts", "deleteAndTransferSuccess", "description"],
-        { name: businessUnit.name, count, target: targetName }
+        { count }
       );
     }
 
     return translateText(
       ["toasts", "deleteAndUnassignSuccess", "description"],
       {
-        name: businessUnit.name,
         count
       }
     );

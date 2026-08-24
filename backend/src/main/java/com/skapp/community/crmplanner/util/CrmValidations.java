@@ -45,6 +45,17 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateCompanyIds(List<Long> companyIds) {
+		if (companyIds == null) {
+			return;
+		}
+		for (Long companyId : companyIds) {
+			if (companyId == null || companyId <= 0) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND);
+			}
+		}
+	}
+
 	public static void validateContactName(String name) {
 		if (name == null || name.isBlank()) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NAME_REQUIRED);

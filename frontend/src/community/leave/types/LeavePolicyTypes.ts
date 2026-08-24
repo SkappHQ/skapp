@@ -32,6 +32,7 @@ export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
 
 export enum BulkAssignCsvError {
   MISSING_COLUMNS = "MISSING_COLUMNS",
+  UNEXPECTED_COLUMNS = "UNEXPECTED_COLUMNS",
   MALFORMED_ROWS = "MALFORMED_ROWS",
   EMPTY_FILE = "EMPTY_FILE",
   TOO_MANY_ROWS = "TOO_MANY_ROWS"
@@ -40,6 +41,7 @@ export enum BulkAssignCsvError {
 export interface BulkAssignCsvValidation {
   error: BulkAssignCsvError | null;
   missingColumns: string[];
+  unexpectedColumns: string[];
   payload: BulkAssignPolicyPayload | null;
 }
 
@@ -96,7 +98,7 @@ export interface LeavePolicyType {
   waitingPeriodDays?: number | null;
   accrualCapDays?: number | null;
   isCarryoverEnabled?: boolean | null;
-  carryoverDate?: string | null;
+  carryoverExpiryDate?: string | null;
   maxCarryoverDays?: number | null;
   firstAccrual?: FirstAccrualType | null;
   accrualTiming?: AccrualTiming | null;
@@ -135,6 +137,19 @@ export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
 }
 
+export interface CheckLeavePolicyNameAvailabilityParams {
+  name: string;
+  leaveTypeId: string;
+}
+
+export interface LeavePolicyNameAvailabilityResult {
+  isAvailable: boolean;
+}
+
+export interface LeavePolicyNameAvailabilityResponse {
+  results: LeavePolicyNameAvailabilityResult[];
+}
+
 export interface LeavePolicyConfigResult {
   isEnabled: boolean;
 }
@@ -155,7 +170,7 @@ export interface LeavePolicyFormData {
   hasAccrualCap: boolean;
   accrualCapDays: string;
   canCarryOver: boolean;
-  carryOverDate: string;
+  carryoverExpiryDate: string;
   maxCarryOverDays: string;
   firstAccrual: string;
   receiveAccruedTime: string;
@@ -167,7 +182,7 @@ export interface AddLeavePolicyAccrualPayload {
   waitingPeriodDays?: number;
   accrualCapDays?: number;
   isCarryoverEnabled: boolean;
-  carryoverDate?: string;
+  carryoverExpiryDate?: string;
   maxCarryoverDays?: number;
   firstAccrual: string;
   accrualTiming: string;
@@ -202,7 +217,7 @@ export interface LeavePolicyResponseDto {
   waitingPeriodDays: number | null;
   accrualCapDays: number | null;
   isCarryoverEnabled: boolean | null;
-  carryoverDate: string | null;
+  carryoverExpiryDate: string | null;
   maxCarryoverDays: number | null;
   firstAccrual: FirstAccrualType | null;
   accrualTiming: AccrualTiming | null;
@@ -234,6 +249,10 @@ export interface EmployeeLeavePolicyType {
   effectiveDateType: EffectiveDateType;
   effectiveFrom: string;
   status: EmployeeLeavePolicyStatus;
+  totalDaysAllocated: number;
+  totalDaysUsed: number;
+  balanceInDays: number;
+  isUnlimited: boolean;
 }
 
 export interface EmployeeLeavePoliciesPage {
