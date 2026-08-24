@@ -42,9 +42,6 @@ import {
 const MAX_INLINE_CHIPS = 2;
 const MAX_VISIBLE_AVATARS = 4;
 
-const TRIGGER_ID_PREFIX = "trigger";
-const OPTION_ID_PREFIX = "option";
-
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
@@ -60,7 +57,7 @@ const EmployeeGroupAvatar: FC<EmployeeGroupAvatarProps> = ({ employee }) => {
 
   return (
     <Avatar
-      id={`${TRIGGER_ID_PREFIX}-avatar-${employee.employeeId}`}
+      id={`trigger-avatar-${employee.employeeId}`}
       firstName={employee.firstName}
       lastName={employee.lastName}
       src={imageUrl ?? ""}
@@ -330,7 +327,7 @@ const WorkLocationEmployeeSelector = ({
 
   const renderTriggerContent = () => {
     if (isAllSelected) {
-      return renderAllEmployeesChip(TRIGGER_ID_PREFIX);
+      return renderAllEmployeesChip("trigger");
     }
 
     if (selectedCount === 0) {
@@ -348,7 +345,7 @@ const WorkLocationEmployeeSelector = ({
             <EmployeeAvatarChip
               key={emp.employeeId}
               employee={emp}
-              idPrefix={TRIGGER_ID_PREFIX}
+              idPrefix="trigger"
               className="w-fit min-w-0 max-w-full"
             />
           ))}
@@ -454,10 +451,7 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={true} />
-                    <EmployeeAvatarChip
-                      employee={emp}
-                      idPrefix={OPTION_ID_PREFIX}
-                    />
+                    <EmployeeAvatarChip employee={emp} idPrefix="option" />
                   </div>
                 );
               })}
@@ -480,7 +474,7 @@ const WorkLocationEmployeeSelector = ({
               }}
             >
               <Checkbox checked={isAllSelected} />
-              {renderAllEmployeesChip(OPTION_ID_PREFIX)}
+              {renderAllEmployeesChip("option")}
             </div>
           )}
 
@@ -505,10 +499,7 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    <EmployeeAvatarChip
-                      employee={emp}
-                      idPrefix={OPTION_ID_PREFIX}
-                    />
+                    <EmployeeAvatarChip employee={emp} idPrefix="option" />
                   </div>
                 );
               })}
