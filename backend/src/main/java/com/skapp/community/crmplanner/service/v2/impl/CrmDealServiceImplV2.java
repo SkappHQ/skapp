@@ -69,16 +69,9 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDtoV2> contacts = crmContactDao.findAllContactsForBoardInit()
-			.stream()
-			.map(crmMapperV2::crmContactToCrmBoardContactResponseDtoV2)
-			.toList();
+		List<CrmBoardContactResponseDtoV2> contacts = crmContactDao.findAllContactsForBoardInitV2();
 
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
-			.stream()
-			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
-					o.getAuthPic()))
-			.toList();
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwnersV2();
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());

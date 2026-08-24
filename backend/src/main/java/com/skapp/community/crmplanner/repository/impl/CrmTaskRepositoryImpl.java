@@ -262,21 +262,16 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 	private List<Order> buildTaskOrder(CriteriaBuilder cb, Root<CrmTask> task, CrmTaskSort sortKey,
 			Sort.Direction sortOrder) {
-		Sort.Direction direction = sortOrder == null ? Sort.Direction.ASC : sortOrder;
-		CrmTaskSort key = sortKey == null ? CrmTaskSort.DUE_AT : sortKey;
-
 		List<Order> orders = new ArrayList<>();
-		if (key == CrmTaskSort.LAST_MODIFIED_DATE) {
-			Expression<?> lastModified = task.get(Auditable_.lastModifiedDate);
-			orders.add(direction.isAscending() ? cb.asc(lastModified) : cb.desc(lastModified));
-			orders.add(direction.isAscending() ? cb.asc(task.get(CrmTask_.id)) : cb.desc(task.get(CrmTask_.id)));
-		}
-		else {
+
+		if (sortKey == CrmTaskSort.DUE_AT) {
 			orders.add(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)));
-			Expression<?> dueAt = task.get(CrmTask_.dueAt);
-			orders.add(direction.isAscending() ? cb.asc(dueAt) : cb.desc(dueAt));
-			orders.add(cb.asc(task.get(CrmTask_.id)));
 		}
+
+		Expression<?> sortExpression = task.get(sortKey.getSortField());
+		orders.add(sortOrder.isAscending() ? cb.asc(sortExpression) : cb.desc(sortExpression));
+		orders.add(sortOrder.isAscending() ? cb.asc(task.get(CrmTask_.id)) : cb.desc(task.get(CrmTask_.id)));
+
 		return orders;
 	}
 

@@ -19,9 +19,9 @@ public class CrmTaskFilterDtoV2 {
 
 	private Boolean isCompleted;
 
-	private CrmTaskSort sortKey;
+	private CrmTaskSort sortKey = CrmTaskSort.DUE_AT;
 
-	private Sort.Direction sortOrder;
+	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
 	private int page = 0;
 
