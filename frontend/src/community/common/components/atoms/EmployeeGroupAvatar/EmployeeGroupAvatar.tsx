@@ -1,11 +1,9 @@
 import { Avatar } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import {
-  EmployeeAvatarData,
-  getEmployeeAvatarName
-} from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { EmployeeAvatarData } from "~community/common/types/CommonTypes";
+import { getEmployeeAvatarName } from "~community/common/utils/commonUtil";
 
 export interface EmployeeGroupAvatarProps {
   employee: EmployeeAvatarData;

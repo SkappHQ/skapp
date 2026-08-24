@@ -10,15 +10,14 @@ import {
   useState
 } from "react";
 
-import EmployeeAvatarChip, {
-  getEmployeeAvatarName
-} from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
+import EmployeeAvatarChip from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
 import EmployeeGroupAvatar from "~community/common/components/atoms/EmployeeGroupAvatar/EmployeeGroupAvatar";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import { getEmployeeAvatarName } from "~community/common/utils/commonUtil";
 import {
   WorkLocationEmployee,
   WorkLocationFormValues

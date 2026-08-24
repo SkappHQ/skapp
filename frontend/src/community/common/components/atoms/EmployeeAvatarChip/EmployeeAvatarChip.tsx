@@ -2,22 +2,13 @@ import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
-import { concatStrings } from "~community/common/utils/commonUtil";
-
-export interface EmployeeAvatarData {
-  employeeId: number;
-  firstName: string;
-  lastName: string;
-  authPic?: string;
-}
+import { EmployeeAvatarData } from "~community/common/types/CommonTypes";
+import { getEmployeeAvatarName } from "~community/common/utils/commonUtil";
 
 export interface EmployeeAvatarChipProps {
   employee: EmployeeAvatarData;
   className?: string;
 }
-
-export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
-  concatStrings([employee.firstName, employee.lastName]).trim();
 
 const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   employee,
