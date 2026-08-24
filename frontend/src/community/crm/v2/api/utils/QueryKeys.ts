@@ -1,7 +1,10 @@
 import {
+  CrmCompanyFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest
 } from "~community/crm/v2/types/CrmTypes";
+
+const CRM_COMPANIES = "crm-companies";
 
 export const crmDealQueryKeys = {
   GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
@@ -11,7 +14,12 @@ export const crmDealQueryKeys = {
 };
 
 export const crmCompanyQueryKeys = {
-  COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids]
+  ALL: [CRM_COMPANIES],
+  COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids],
+  LIST: (params: CrmCompanyFilterRequest) => [CRM_COMPANIES, "list", params],
+  DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
+  METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
+  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
 };
 
 export const crmLookupQueryKeys = {
