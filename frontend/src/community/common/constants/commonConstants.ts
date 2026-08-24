@@ -38,3 +38,9 @@ export const SEARCH_DEBOUNCE_DELAY = 500;
 export const BUSINESS_UNIT_TRANSFER_UNASSIGN_VALUE = "unassign";
 export const BUSINESS_UNIT_NAME_MAX_LENGTH = 100;
 export const BUSINESS_UNIT_DESCRIPTION_MAX_LENGTH = 250;
+
+// Height of a skapp-ui DatePicker calendar at its tallest (a six week-row month),
+// the gap the Popper leaves to its trigger, and the margin kept to the viewport edge.
+export const CALENDAR_POPPER_HEIGHT_PX = 340;
+export const CALENDAR_POPPER_OFFSET_PX = 8;
+export const CALENDAR_POPPER_VIEWPORT_MARGIN_PX = 16;
