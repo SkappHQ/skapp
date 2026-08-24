@@ -1,6 +1,10 @@
 import { RoleLevel } from "~community/common/enums/CommonEnums";
 
-import { hasSelectionChanged, toggleRoleLevel } from "./roleRestrictionUtils";
+import {
+  getRestrictionChanges,
+  hasSelectionChanged,
+  toggleRoleLevel
+} from "./roleRestrictionUtils";
 
 describe("toggleRoleLevel", () => {
   it("should add a role that is not selected", () => {
@@ -82,5 +86,48 @@ describe("hasSelectionChanged", () => {
 
   it("should report a change when everything is cleared", () => {
     expect(hasSelectionChanged([], [RoleLevel.ADMIN])).toBe(true);
+  });
+});
+
+describe("getRestrictionChanges", () => {
+  it("should report a newly selected role in addedRoles", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.ADMIN, RoleLevel.MANAGER], [RoleLevel.ADMIN])
+    ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [] });
+  });
+
+  it("should report a newly cleared role in removedRoles", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.ADMIN], [RoleLevel.ADMIN, RoleLevel.MANAGER])
+    ).toEqual({ addedRoles: [], removedRoles: [RoleLevel.MANAGER] });
+  });
+
+  it("should report a swapped role in both addedRoles and removedRoles", () => {
+    expect(
+      getRestrictionChanges([RoleLevel.MANAGER], [RoleLevel.ADMIN])
+    ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [RoleLevel.ADMIN] });
+  });
+
+  it("should report empty addedRoles and removedRoles when nothing changed", () => {
+    expect(
+      getRestrictionChanges(
+        [RoleLevel.ADMIN, RoleLevel.MANAGER],
+        [RoleLevel.MANAGER, RoleLevel.ADMIN]
+      )
+    ).toEqual({ addedRoles: [], removedRoles: [] });
+  });
+
+  it("should report all roles in addedRoles when starting from an empty selection", () => {
+    expect(getRestrictionChanges([RoleLevel.ADMIN], [])).toEqual({
+      addedRoles: [RoleLevel.ADMIN],
+      removedRoles: []
+    });
+  });
+
+  it("should report all roles in removedRoles when everything is cleared", () => {
+    expect(getRestrictionChanges([], [RoleLevel.ADMIN])).toEqual({
+      addedRoles: [],
+      removedRoles: [RoleLevel.ADMIN]
+    });
   });
 });

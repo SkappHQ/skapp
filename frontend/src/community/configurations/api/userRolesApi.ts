@@ -1,4 +1,9 @@
-import { UseQueryResult, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  UseQueryResult,
+  useMutation,
+  useQuery,
+  useQueryClient
+} from "@tanstack/react-query";
 
 import { Modules } from "~community/common/enums/CommonEnums";
 import authFetch from "~community/common/utils/axiosInterceptor";
@@ -32,16 +37,18 @@ export const getUserRoleRestrictions = async (module: Modules) => {
     userRolesEndPoints.GET_USER_ROLE_RESTRICTIONS(module)
   );
 
-  return data.data.results[0];
+  return data?.data?.results?.[0];
 };
 
 export const useGetUserRoleRestrictions = (
-  module: Modules
+  module: Modules,
+  enabled = true
 ): UseQueryResult<UserRoleRestrictionsType> => {
   return useQuery({
     queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(module),
     queryFn: () => getUserRoleRestrictions(module),
-    select: (data) => data
+    enabled,
+    refetchOnWindowFocus: false
   });
 };
 
@@ -49,6 +56,8 @@ export const useUpdateUserRoleRestrictions = (
   onSuccess: () => void,
   onError: () => void
 ) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (payload: UserRoleRestrictionsUpdateType) => {
       return authFetch.patch(
@@ -56,7 +65,10 @@ export const useUpdateUserRoleRestrictions = (
         payload
       );
     },
-    onSuccess: () => {
+    onSuccess: (_data, payload) => {
+      queryClient.invalidateQueries({
+        queryKey: userRolesQueryKeys.USER_ROLE_RESTRICTIONS(payload.module)
+      });
       onSuccess();
     },
     onError
