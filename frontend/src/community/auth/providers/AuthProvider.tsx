@@ -16,7 +16,6 @@ import {
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ROUTES from "../../common/constants/routes";
-import { getCookieValue } from "../../common/utils/commonUtil";
 import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
@@ -97,14 +96,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           await checkAuth();
 
           if (params.redirect) {
-            // Verify that cookies are set before redirecting
-            const accessToken = getCookieValue("accessToken");
-            const isPasswordChangedForTheFirstTime = getCookieValue(
-              "isPasswordChangedForTheFirstTime"
-            );
+            const userData = await checkUserAuthentication();
 
-            // Ensure critical cookies are available before redirect
-            if (accessToken && isPasswordChangedForTheFirstTime !== null) {
+            if (userData) {
               const callback = router.query.callback as string;
               const currentPath = router.asPath.split("?")[0];
               const isSafeRedirect =
@@ -118,8 +112,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 : ROUTES.DASHBOARD.BASE;
               window.location.href = redirectPath;
             } else {
-              console.error("Access token cookie not found after sign-in");
-              throw new Error("Authentication cookies not properly set");
+              console.error("Access token not available after sign-in");
+              throw new Error(
+                "Authentication was not established after sign-in"
+              );
             }
           }
         }

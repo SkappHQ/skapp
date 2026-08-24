@@ -1,6 +1,7 @@
 import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { unitConversion } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   AdminTypes,
   AuthEmployeeType,
@@ -10,10 +11,7 @@ import {
   SenderTypes,
   SuperAdminType
 } from "~community/common/types/AuthTypes";
-import {
-  getCookieValue,
-  isEnterpriseMode
-} from "~community/common/utils/commonUtil";
+import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams,
@@ -24,7 +22,6 @@ import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoin
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
 import { config } from "../../../../middleware";
-import { COOKIE_EXPIRY_DAYS } from "../constants/authConstants";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import {
@@ -90,6 +87,40 @@ export interface User {
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
+let retrievePromise: Promise<string | null> | null = null;
+
+const retrieveStoredAccessToken = async (): Promise<string | null> => {
+  if (retrievePromise) {
+    return retrievePromise;
+  }
+
+  retrievePromise = (async () => {
+    try {
+      const response = await fetch("/api/auth/access-token", {
+        method: "GET",
+        credentials: "same-origin"
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+
+      return typeof data?.accessToken === "string" && data.accessToken
+        ? data.accessToken
+        : null;
+    } catch {
+      console.error("Failed to retrieve the stored access token");
+      return null;
+    } finally {
+      retrievePromise = null;
+    }
+  })();
+
+  return retrievePromise;
+};
+
 export const getNewAccessToken = async (): Promise<string | null> => {
   // If already refreshing, wait for the existing refresh to complete
   if (isRefreshing && refreshPromise) {
@@ -109,7 +140,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       const accessToken = response?.data?.results[0]?.accessToken;
 
       if (accessToken) {
-        setAccessToken(accessToken);
+        await setAccessToken(accessToken);
         return accessToken;
       }
 
@@ -125,23 +156,37 @@ export const getNewAccessToken = async (): Promise<string | null> => {
   return refreshPromise;
 };
 
-export const setAccessToken = (token: string) => {
-  if (typeof window !== "undefined") {
-    const expiryDate = new Date(
-      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
-    );
+export const setAccessToken = async (token: string): Promise<void> => {
+  useCommonStore.getState().setAccessToken(token);
 
-    document.cookie = `accessToken=${token}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+  if (typeof window !== "undefined") {
+    try {
+      await fetch("/api/auth/access-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ accessToken: token })
+      });
+    } catch {
+      console.error("Failed to persist access token cookie");
+    }
   }
 };
 
-export const setIsPasswordChangedForTheFirstTime = (value: boolean) => {
+export const setIsPasswordChangedForTheFirstTime = async (
+  value: boolean
+): Promise<void> => {
   if (typeof window !== "undefined") {
-    const expiryDate = new Date(
-      Date.now() + COOKIE_EXPIRY_DAYS * unitConversion.MILLISECONDS_PER_DAY
-    );
-
-    document.cookie = `isPasswordChangedForTheFirstTime=${value}; path=/; expires=${expiryDate.toUTCString()}; Secure; SameSite=Lax`;
+    try {
+      await fetch("/api/auth/access-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ isPasswordChangedForTheFirstTime: value })
+      });
+    } catch {
+      console.error("Failed to persist password-changed flag cookie");
+    }
   }
 };
 
@@ -156,29 +201,44 @@ export const clearCookies = async (): Promise<void> => {
     console.error("Error calling signout API");
   }
 
+  useCommonStore.getState().clearAccessToken();
+
   if (typeof window !== "undefined") {
-    document.cookie =
-      "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
-    document.cookie =
-      "isPasswordChangedForTheFirstTime=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; Secure; SameSite=Lax";
+    try {
+      await fetch("/api/clear-cookies", {
+        method: "POST",
+        credentials: "same-origin"
+      });
+    } catch {
+      console.error("Error clearing session cookies");
+    }
   }
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
   if (typeof window === "undefined") return null;
 
-  const currentAccessToken = getCookieValue("accessToken");
+  const cachedAccessToken = useCommonStore.getState().accessToken;
 
-  if (!currentAccessToken) {
-    return null;
+  if (cachedAccessToken && !isTokenExpired(cachedAccessToken)) {
+    return cachedAccessToken;
   }
 
-  if (isTokenExpired(currentAccessToken)) {
-    const newToken = await getNewAccessToken();
-    return newToken;
+  if (!cachedAccessToken) {
+    const storedToken = await retrieveStoredAccessToken();
+
+    if (!storedToken) {
+      return null;
+    }
+
+    if (!isTokenExpired(storedToken)) {
+      useCommonStore.getState().setAccessToken(storedToken);
+      return storedToken;
+    }
   }
 
-  return currentAccessToken;
+  const newToken = await getNewAccessToken();
+  return newToken;
 };
 
 export const isTokenExpired = (token: string): boolean => {
@@ -248,9 +308,9 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
     response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
 
   if (accessToken) {
-    setAccessToken(accessToken);
+    await setAccessToken(accessToken);
 
-    setIsPasswordChangedForTheFirstTime(
+    await setIsPasswordChangedForTheFirstTime(
       isPasswordChangedForTheFirstTime ?? true
     );
 
@@ -338,6 +398,9 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
 
   if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
+
+    if (currentPath === ROUTES.AUTH.SIGNIN) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const existingCallback = urlParams.get("callback");
 
