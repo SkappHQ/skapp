@@ -3,6 +3,7 @@ package com.skapp.community.crmplanner.controller.v2;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.service.v2.CrmContactServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,15 @@ public class CrmContactControllerV2 {
 	@GetMapping
 	public ResponseEntity<ResponseEntityDto> getContactMetrics(CrmContactMetricRequestDto filterDto) {
 		ResponseEntityDto response = contactService.getContactMetrics(filterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get CRM contacts for lookup",
+			description = "Returns a paginated list of contacts for dropdowns and deal forms, each with a scalar companyId, plus the referenced companies for name display.")
+	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/lookup")
+	public ResponseEntity<ResponseEntityDto> getContactsLookup(CrmContactFilterDto filterDto) {
+		ResponseEntityDto response = contactService.getContactsLookup(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

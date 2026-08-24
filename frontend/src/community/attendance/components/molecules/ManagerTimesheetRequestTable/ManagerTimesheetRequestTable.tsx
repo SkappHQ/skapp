@@ -163,7 +163,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
     label: col.headerName,
-    align: "center"
+    align: "left"
   }));
 
   const transformToTableRows = (): GridRow[] => {
