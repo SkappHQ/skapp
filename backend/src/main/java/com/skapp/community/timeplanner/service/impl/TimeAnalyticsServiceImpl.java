@@ -47,6 +47,7 @@ import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.ClockInType;
 import com.skapp.community.timeplanner.type.RecordType;
 import com.skapp.community.timeplanner.type.TimeBlocks;
+import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TrendPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -548,21 +549,26 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 		TimeBlockDto timeBlockDto = new TimeBlockDto();
 		for (JsonNode block : timeBlocks) {
-			if (!block.has("timeBlock") || !block.has("hours")) {
+			if (!block.hasNonNull(TimeConfigFieldName.TIME_BLOCK.getFieldName())
+					|| !block.hasNonNull(TimeConfigFieldName.HOURS.getFieldName())) {
 				return buildDefaultTimeBlocks(totalHours);
 			}
 
-			String timeBlock = block.get("timeBlock").asString();
-			String hours = block.get("hours").asString();
+			String timeBlock = block.get(TimeConfigFieldName.TIME_BLOCK.getFieldName()).asString();
+			String hours = block.get(TimeConfigFieldName.HOURS.getFieldName()).asString();
 
-			if ("MORNING_HOURS".equals(timeBlock)) {
+			if (TimeBlocks.MORNING_HOURS.name().equals(timeBlock)) {
 				timeBlockDto.setMorningTimeBlock(timeBlock);
 				timeBlockDto.setMorningHours(hours);
 			}
-			else if ("EVENING_HOURS".equals(timeBlock)) {
+			else if (TimeBlocks.EVENING_HOURS.name().equals(timeBlock)) {
 				timeBlockDto.setEveningTimeBlock(timeBlock);
 				timeBlockDto.setEveningHours(hours);
 			}
+		}
+
+		if (timeBlockDto.getMorningHours() == null) {
+			return buildDefaultTimeBlocks(totalHours);
 		}
 
 		return timeBlockDto;

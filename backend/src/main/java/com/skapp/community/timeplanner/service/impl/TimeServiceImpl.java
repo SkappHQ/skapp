@@ -115,7 +115,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -193,8 +192,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final OrganizationService organizationService;
 
-	public static JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
-		ObjectMapper mapper = new ObjectMapper();
+	private JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ArrayNode timeBlocksNode = mapper.createArrayNode();
 
 		for (Map.Entry<String, Float> entry : hoursMap.entrySet()) {
@@ -1317,6 +1315,10 @@ public class TimeServiceImpl implements TimeService {
 	private JsonNode resolveTimeBlocks(TimeConfigDto.DayCapacity timeConfig) {
 		if (timeConfig.timeBlocks() != null && !timeConfig.timeBlocks().isEmpty()) {
 			return mapper.valueToTree(timeConfig.timeBlocks());
+		}
+
+		if (timeConfig.totalHours() == null) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
 		}
 
 		Map<String, Float> hoursMap = new HashMap<>();
