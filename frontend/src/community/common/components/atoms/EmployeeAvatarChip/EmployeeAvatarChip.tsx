@@ -1,5 +1,5 @@
 import { AvatarChip } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, useId } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -13,9 +13,6 @@ export interface EmployeeAvatarData {
 
 export interface EmployeeAvatarChipProps {
   employee: EmployeeAvatarData;
-  /** Namespaces the avatar DOM id so the same employee can be rendered in more
-   * than one place (e.g. a select trigger and its option list) without clashing. */
-  idPrefix?: string;
   className?: string;
 }
 
@@ -24,9 +21,11 @@ export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
 
 const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   employee,
-  idPrefix = "avatar",
   className
 }) => {
+  // Keeps the avatar id unique when the same employee is rendered more than
+  // once at a time (e.g. in a select trigger and in its option list).
+  const instanceId = useId();
   const imageUrl = useGetImageUrl(employee.authPic ?? "");
   const employeeName = getEmployeeAvatarName(employee);
 
@@ -34,7 +33,7 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
     <div className={className}>
       <AvatarChip
         avatarProps={{
-          id: `${idPrefix}-${employee.employeeId}`,
+          id: `${instanceId}-avatar-${employee.employeeId}`,
           firstName: employee.firstName,
           lastName: employee.lastName,
           src: imageUrl ?? "",

@@ -57,7 +57,7 @@ const EmployeeGroupAvatar: FC<EmployeeGroupAvatarProps> = ({ employee }) => {
 
   return (
     <Avatar
-      id={`trigger-avatar-${employee.employeeId}`}
+      id={`avatar-${employee.employeeId}`}
       firstName={employee.firstName}
       lastName={employee.lastName}
       src={imageUrl ?? ""}
@@ -345,7 +345,6 @@ const WorkLocationEmployeeSelector = ({
             <EmployeeAvatarChip
               key={emp.employeeId}
               employee={emp}
-              idPrefix="trigger"
               className="w-fit min-w-0 max-w-full"
             />
           ))}
@@ -364,7 +363,7 @@ const WorkLocationEmployeeSelector = ({
         ))}
         {remainingEmployees.length > 0 && (
           <Avatar
-            id="trigger-avatar-surplus"
+            id="avatar-surplus"
             count={remainingEmployees.length}
             title={remainingEmployeesLabel}
             size="sm"
@@ -451,7 +450,7 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={true} />
-                    <EmployeeAvatarChip employee={emp} idPrefix="option" />
+                    <EmployeeAvatarChip employee={emp} />
                   </div>
                 );
               })}
@@ -499,7 +498,7 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    <EmployeeAvatarChip employee={emp} idPrefix="option" />
+                    <EmployeeAvatarChip employee={emp} />
                   </div>
                 );
               })}
