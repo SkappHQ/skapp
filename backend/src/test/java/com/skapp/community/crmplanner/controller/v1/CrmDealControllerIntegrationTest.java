@@ -316,6 +316,42 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep Deal"));
 	}
 
+	@Test
+	@DisplayName("Get deals filtered by search keyword matching deal ID - Returns matching deal")
+	void getDeals_SearchKeywordMatchesDealId_ReturnsMatchingDeal() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Search By Id Company");
+
+		CrmDeal deal = savedDeal("Deal To Find By Id", stage, company);
+		savedDeal("Unrelated Deal", stage, company);
+
+		performRequest(
+				get(BASE_PATH).param("searchKeyword", deal.getId().toString()).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(deal.getId().intValue()));
+	}
+
+	@Test
+	@DisplayName("Get deals filtered by search keyword matching a soft-deleted deal's ID - Returns empty list")
+	void getDeals_SearchKeywordMatchesSoftDeletedDealId_ReturnsEmptyList() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deleted Id Search Company");
+
+		CrmDeal deal = savedDeal("Deleted Deal For Id Search", stage, company);
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		performRequest(
+				get(BASE_PATH).param("searchKeyword", deal.getId().toString()).accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(0));
+	}
+
 	// --- Check deal name exists tests ---
 
 	@Test

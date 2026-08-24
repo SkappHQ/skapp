@@ -1,8 +1,5 @@
 package com.skapp.community.crmplanner.payload.response.v2;
 
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,12 +28,12 @@ public class CrmDealResponseDtoV2 {
 
 	private LocalDateTime closingAt;
 
-	private CrmDealStageResponseDto stage;
+	private Long stageId;
 
-	private CrmOwnerResponseDto owner;
+	private Long ownerId;
 
-	private CrmCompanyResponseDto company;
+	private Long companyId;
 
-	private CrmContactResponseDtoV2 contact;
+	private Long contactId;
 
 }

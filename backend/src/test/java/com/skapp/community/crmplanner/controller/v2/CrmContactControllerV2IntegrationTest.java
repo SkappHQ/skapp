@@ -65,6 +65,8 @@ class CrmContactControllerV2IntegrationTest {
 
 	private static final String METRICS_PATH = BASE_PATH;
 
+	private static final String LOOKUP_PATH = BASE_PATH + "/lookup";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
@@ -393,6 +395,70 @@ class CrmContactControllerV2IntegrationTest {
 		performRequest(patch(BY_ID_PATH, contactId).contentType(MediaType.APPLICATION_JSON)
 			.content(objectMapper.writeValueAsString(editValidPayload(companyId)))
 			.accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// --- getContactsLookup ---
+
+	@Test
+	@DisplayName("Lookup contacts - Returns contact with its companyId")
+	void getContactsLookup_HappyPath_ReturnsContactWithCompanyId() throws Exception {
+		Long companyId = savedCompany("Lookup V2 Corp").getId();
+		savedContact(companyId, "Lookup Contact V2", "lookup.contact.v2@example.com");
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "Lookup Contact V2").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Lookup Contact V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(companyId));
+	}
+
+	@Test
+	@DisplayName("Lookup contacts whose company is soft-deleted - Returns null companyId")
+	void getContactsLookup_DeletedCompany_ReturnsNullCompanyId() throws Exception {
+		CrmCompany company = savedCompany("Deleted Lookup V2 Corp");
+		savedContact(company.getId(), "Orphaned Contact V2", "orphaned.contact.v2@example.com");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(
+				get(LOOKUP_PATH).param("searchKeyword", "Orphaned Contact V2").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Orphaned Contact V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Lookup contact without a company - Returns null companyId without dropping the contact")
+	void getContactsLookup_ContactWithoutCompany_ReturnsNullCompanyId() throws Exception {
+		CrmContact contact = new CrmContact();
+		contact.setName("Solo Contact V2");
+		contact.setEmail("solo.contact.v2@example.com");
+		contact.setContactNumber("94770009999");
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contact);
+
+		performRequest(get(LOOKUP_PATH).param("searchKeyword", "Solo Contact V2").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Solo Contact V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Lookup contacts without CRM role - Returns Forbidden")
+	void getContactsLookup_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 }

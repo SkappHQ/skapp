@@ -2,8 +2,8 @@ import { AvatarChip, AvatarSize } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOwnerName } from "~community/crm/v2/utils/crmEntityUtils";
 
 interface OwnerAvatarChipProps {
   id: string;
@@ -29,7 +29,7 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
         src: imageUrl ?? undefined,
         size
       }}
-      label={getOwnerName(owner)}
+      label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
       backgroundColor={backgroundColor}
     />
   );
