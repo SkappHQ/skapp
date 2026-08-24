@@ -115,7 +115,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -193,8 +192,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final OrganizationService organizationService;
 
-	public static JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
-		ObjectMapper mapper = new ObjectMapper();
+	private JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ArrayNode timeBlocksNode = mapper.createArrayNode();
 
 		for (Map.Entry<String, Float> entry : hoursMap.entrySet()) {
@@ -1304,7 +1302,7 @@ public class TimeServiceImpl implements TimeService {
 	private TimeConfig createTimeConfig(TimeConfigDto.DayCapacity timeConfig) {
 		TimeConfig newTimeConfig = new TimeConfig();
 		newTimeConfig.setDay(timeConfig.day());
-		newTimeConfig.setTimeBlocks(mapper.valueToTree(timeConfig.timeBlocks()));
+		newTimeConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		newTimeConfig.setTotalHours(timeConfig.totalHours());
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
@@ -1314,15 +1312,25 @@ public class TimeServiceImpl implements TimeService {
 		return newTimeConfig;
 	}
 
-	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
-		currentConfig.setTotalHours(timeConfig.totalHours());
+	private JsonNode resolveTimeBlocks(TimeConfigDto.DayCapacity timeConfig) {
+		if (timeConfig.timeBlocks() != null && !timeConfig.timeBlocks().isEmpty()) {
+			return mapper.valueToTree(timeConfig.timeBlocks());
+		}
+
+		if (timeConfig.totalHours() == null) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
+		}
 
 		Map<String, Float> hoursMap = new HashMap<>();
 		hoursMap.put(TimeBlocks.MORNING_HOURS.name(), timeConfig.totalHours() / 2);
 		hoursMap.put(TimeBlocks.EVENING_HOURS.name(), timeConfig.totalHours() / 2);
+		return createTimeConfigJsonNode(hoursMap);
+	}
 
-		currentConfig.setTimeBlocks((timeConfig.timeBlocks() != null) ? (mapper.valueToTree(timeConfig.timeBlocks()))
-				: (createTimeConfigJsonNode(hoursMap)));
+	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
+		currentConfig.setTotalHours(timeConfig.totalHours());
+
+		currentConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
 		currentConfig.setStartHour(hours);
