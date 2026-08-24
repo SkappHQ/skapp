@@ -182,9 +182,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
         currentValues?.leaveType !== checkedLeaveType;
 
       if (isStale) {
-        // The field was edited while the check was in flight, so this answer
-        // is about a name the user has moved on from. Stay put rather than
-        // flagging - or advancing - the wrong name.
         return false;
       }
 
