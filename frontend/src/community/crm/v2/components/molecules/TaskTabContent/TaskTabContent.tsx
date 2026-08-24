@@ -18,7 +18,8 @@ import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import {
   TASK_PAGE_SIZE,
   TASK_SEARCH_DEBOUNCE_DELAY,
-  TASK_SKELETON_CONFIG
+  TASK_SKELETON_CONFIG,
+  UNPAGED_SIZE
 } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -61,7 +62,11 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     hasNextPage,
     isFetchingNextPage
   } = useGetCompletedTasks(
-    { searchKeyword: debouncedSearch, size: TASK_PAGE_SIZE },
+    {
+      searchKeyword: debouncedSearch,
+      isCompleted: true,
+      size: TASK_PAGE_SIZE
+    },
     isCompletedTab
   );
 
@@ -69,7 +74,14 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     data: openTaskData,
     isLoading: isOpenTasksLoading,
     isError: isOpenTasksError
-  } = useGetOpenTasks({ searchKeyword: debouncedSearch }, !isCompletedTab);
+  } = useGetOpenTasks(
+    {
+      searchKeyword: debouncedSearch,
+      isCompleted: false,
+      size: UNPAGED_SIZE
+    },
+    !isCompletedTab
+  );
 
   const responseTasks = useMemo(
     () =>

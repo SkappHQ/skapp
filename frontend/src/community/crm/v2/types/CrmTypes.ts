@@ -184,13 +184,7 @@ export interface CrmTaskFilterRequest {
   contactId?: number;
   dealId?: number;
   companyId?: number;
-}
-
-export interface CrmTaskCompletedFilterRequest {
-  searchKeyword?: string;
-  contactId?: number;
-  dealId?: number;
-  companyId?: number;
+  isCompleted?: boolean;
   page?: number;
   size?: number;
 }

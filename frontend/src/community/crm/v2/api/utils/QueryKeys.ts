@@ -1,7 +1,6 @@
 import {
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
-  CrmTaskCompletedFilterRequest,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
@@ -15,7 +14,7 @@ export const crmTaskQueryKeys = {
     filter
   ],
   COMPLETED_TASKS: [V2, "crm-completed-tasks"],
-  COMPLETED_TASKS_BY_FILTER: (filter: CrmTaskCompletedFilterRequest) => [
+  COMPLETED_TASKS_BY_FILTER: (filter: CrmTaskFilterRequest) => [
     V2,
     "crm-completed-tasks",
     filter

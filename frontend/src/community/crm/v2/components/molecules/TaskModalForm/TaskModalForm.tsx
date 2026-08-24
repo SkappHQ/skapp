@@ -130,6 +130,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     } else if (initialOwner) {
       setSelectedOwner(toLookupOwner(initialOwner));
     }
+
   }, [
     initialOwner?.employeeId,
     selectedTaskId,

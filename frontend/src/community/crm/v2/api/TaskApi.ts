@@ -16,22 +16,20 @@ import {
   crmTaskEndpointsV2
 } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
-import { UNPAGED_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmRelatedTasksFilterRequest,
   CrmRelatedTasksRequest,
-  CrmTaskCompletedFilterRequest,
   CrmTaskFilterRequest,
   CrmTaskListResponse
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-const fetchOpenTasks = async (
-  filter: CrmTaskFilterRequest
+const fetchTasks = async (
+  params: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
-    params: { ...filter, isCompleted: false, size: UNPAGED_SIZE }
+    params
   });
   return response?.data?.results?.[0];
 };
@@ -42,29 +40,19 @@ export const useGetOpenTasks = (
 ): UseQueryResult<CrmTaskListResponse> => {
   return useQuery({
     queryKey: crmTaskQueryKeys.OPEN_TASKS_BY_FILTER(filter),
-    queryFn: () => fetchOpenTasks(filter),
+    queryFn: () => fetchTasks(filter),
     enabled
   });
 };
 
-const fetchCompletedTasks = async (
-  filter: CrmTaskCompletedFilterRequest
-): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
-    params: { ...filter, isCompleted: true }
-  });
-  return response?.data?.results?.[0];
-};
-
 export const useGetCompletedTasks = (
-  filter: CrmTaskCompletedFilterRequest,
+  filter: CrmTaskFilterRequest,
   enabled: boolean
 ): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> => {
   return useInfiniteQuery({
     initialPageParam: 0,
     queryKey: crmTaskQueryKeys.COMPLETED_TASKS_BY_FILTER(filter),
-    queryFn: ({ pageParam }) =>
-      fetchCompletedTasks({ ...filter, page: pageParam }),
+    queryFn: ({ pageParam }) => fetchTasks({ ...filter, page: pageParam }),
     getNextPageParam: (lastPage: CrmTaskListResponse) => {
       if (
         lastPage?.currentPage !== undefined &&
@@ -75,7 +63,8 @@ export const useGetCompletedTasks = (
       }
       return undefined;
     },
-    enabled
+    enabled,
+    refetchOnWindowFocus: false
   });
 };
 
