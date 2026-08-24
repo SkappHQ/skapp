@@ -299,7 +299,7 @@ const Drawer = (): JSX.Element => {
                     }}
                     aria-expanded={isExpanded}
                     aria-controls={`sub-list-${routeId}`}
-                    aria-label={route?.name}
+                    aria-label={!isDrawerExpanded ? route?.name : undefined}
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
