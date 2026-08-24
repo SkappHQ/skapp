@@ -30,7 +30,10 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
+import {
+  convertYYYYMMDDToDateTime,
+  formatDateTimeWithOrdinalIndicator
+} from "~community/common/utils/dateTimeUtils";
 import {
   useAddDirectTimeEntry,
   useEditDirectTimeEntry
@@ -130,7 +133,9 @@ const useAddEntry = () => {
     const interpolations = {
       employeeName: variables.employeeName,
       date: variables.entryDate
-        ? formatDateWithOrdinalIndicator(new Date(variables.entryDate))
+        ? formatDateTimeWithOrdinalIndicator(
+            convertYYYYMMDDToDateTime(variables.entryDate)
+          )
         : ""
     };
 

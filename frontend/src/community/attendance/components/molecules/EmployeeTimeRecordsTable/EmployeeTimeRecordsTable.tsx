@@ -349,9 +349,7 @@ const EmployeeTimeRecordsTable = ({
                     type="button"
                     aria-label={translateAria(["directEntryCellLabel"], {
                       employeeName,
-                      date: formatDateWithOrdinalIndicator(
-                        new Date(timeSheetRecord.date)
-                      )
+                      date: formatDateWithOrdinalIndicator(dateAsISOString)
                     })}
                     aria-busy={isCellLoading}
                     disabled={isCellLoading}
