@@ -136,45 +136,44 @@ export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
   records: CrmTaskRelatedRecords
 ): CrmTaskRelatedRecords => {
+  const taskId = task.id;
+
+  if (taskId === undefined) {
+    return records;
+  }
+
   const linked: CrmTaskRelatedRecords = { ...records };
 
-  if (task.id !== undefined) {
-    const taskId = task.id;
+  if (task.companyId !== undefined) {
+    const company = records.companies[task.companyId];
 
-    if (task.companyId !== undefined) {
-      const company = records.companies[task.companyId];
-      if (company?.taskIds !== undefined) {
-        linked.companies = {
-          ...records.companies,
-          [task.companyId]: {
-            ...company,
-            taskIds: [...company.taskIds, taskId]
-          }
-        };
-      }
+    if (company?.taskIds !== undefined) {
+      linked.companies = {
+        ...records.companies,
+        [task.companyId]: { ...company, taskIds: [...company.taskIds, taskId] }
+      };
     }
+  }
 
-    if (task.contactId !== undefined) {
-      const contact = records.contacts[task.contactId];
-      if (contact?.taskIds !== undefined) {
-        linked.contacts = {
-          ...records.contacts,
-          [task.contactId]: {
-            ...contact,
-            taskIds: [...contact.taskIds, taskId]
-          }
-        };
-      }
+  if (task.contactId !== undefined) {
+    const contact = records.contacts[task.contactId];
+
+    if (contact?.taskIds !== undefined) {
+      linked.contacts = {
+        ...records.contacts,
+        [task.contactId]: { ...contact, taskIds: [...contact.taskIds, taskId] }
+      };
     }
+  }
 
-    if (task.dealId !== undefined) {
-      const deal = records.deals[task.dealId];
-      if (deal?.taskIds !== undefined) {
-        linked.deals = {
-          ...records.deals,
-          [task.dealId]: { ...deal, taskIds: [...deal.taskIds, taskId] }
-        };
-      }
+  if (task.dealId !== undefined) {
+    const deal = records.deals[task.dealId];
+
+    if (deal?.taskIds !== undefined) {
+      linked.deals = {
+        ...records.deals,
+        [task.dealId]: { ...deal, taskIds: [...deal.taskIds, taskId] }
+      };
     }
   }
 

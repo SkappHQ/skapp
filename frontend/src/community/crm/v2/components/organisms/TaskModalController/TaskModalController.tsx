@@ -1,5 +1,5 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode } from "react";
+import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -29,30 +29,16 @@ const TaskModalController: FC = () => {
     setIsTaskModalOpen(false);
   };
 
-  const getModalTitle = (modalType: CrmModalTypes): string => {
-    switch (modalType) {
-      case CrmModalTypes.ADD_TASK_MODAL:
-        return translateText(["addTaskModal", "title"]);
-      default:
-        return "";
-    }
-  };
-
-  const getModalContent = (): ReactNode => {
-    switch (taskModalType) {
-      case CrmModalTypes.ADD_TASK_MODAL:
-        return <AddTaskModalContent />;
-      default:
-        return null;
-    }
-  };
+  const isAddTaskModal = taskModalType === CrmModalTypes.ADD_TASK_MODAL;
 
   return (
     <SmallModal
       isOpen={isTaskModalOpen}
       onClose={handleCloseModal}
-      modalHeader={getModalTitle(taskModalType)}
-      content={getModalContent()}
+      modalHeader={
+        isAddTaskModal ? translateText(["addTaskModal", "title"]) : ""
+      }
+      content={isAddTaskModal ? <AddTaskModalContent /> : null}
     />
   );
 };
