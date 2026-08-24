@@ -17,7 +17,6 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
@@ -306,9 +305,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmDeal, CrmCompany> dealCompany = deal.join(CrmDeal_.company, JoinType.LEFT);
 		dealCompany.on(cb.isFalse(dealCompany.get(CrmCompany_.isDeleted)));
 		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
-		Join<CrmContact, CrmCompany> dealContactCompany = dealContact.join(CrmContact_.company, JoinType.LEFT);
-		dealContactCompany.on(cb.isFalse(dealContactCompany.get(CrmCompany_.isDeleted)));
-		Join<CrmContact, Employee> dealContactOwner = dealContact.join(CrmContact_.owner, JoinType.LEFT);
 
 		return cb.construct(CrmTaskResponseDtoV2.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
 				task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted), task.get(CrmTask_.dueAt),
@@ -322,17 +318,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				buildContactSelection(cb, contact, contactCompany, contactOwner),
 				cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
 						deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
-						deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt),
-						cb.construct(CrmDealStageResponseDto.class, dealStage.get(CrmDealStage_.id),
-								dealStage.get(CrmDealStage_.name), dealStage.get(CrmDealStage_.color),
-								dealStage.get(CrmDealStage_.orderIndex), dealStage.get(CrmDealStage_.description),
-								dealStage.get(CrmDealStage_.stageType)),
-						buildOwnerSelection(cb, dealOwner),
-						cb.construct(CrmCompanyResponseDto.class, dealCompany.get(CrmCompany_.id),
-								dealCompany.get(CrmCompany_.name), dealCompany.get(CrmCompany_.industry),
-								dealCompany.get(CrmCompany_.website), dealCompany.get(CrmCompany_.address),
-								dealCompany.get(CrmCompany_.contactNumber)),
-						buildContactSelection(cb, dealContact, dealContactCompany, dealContactOwner)));
+						deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), dealStage.get(CrmDealStage_.id),
+						dealOwner.get(Employee_.employeeId), dealCompany.get(CrmCompany_.id),
+						dealContact.get(CrmContact_.id)));
 	}
 
 	private Selection<CrmContactResponseDtoV2> buildContactSelection(CriteriaBuilder cb, Join<?, CrmContact> contact,
