@@ -53,9 +53,11 @@ const BirthdayModalShell: FC<Props> = ({
     const mainContent = document.getElementById("content-with-drawer-root");
 
     mainContent?.setAttribute("inert", "");
+    mainContent?.setAttribute("aria-hidden", "true");
 
     return () => {
       mainContent?.removeAttribute("inert");
+      mainContent?.removeAttribute("aria-hidden");
     };
   }, []);
 
