@@ -2,7 +2,6 @@ import { CircularProgress } from "@mui/material";
 import { Avatar, AvatarChip, Checkbox } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import {
-  FC,
   MouseEvent,
   useCallback,
   useEffect,
@@ -12,13 +11,12 @@ import {
 } from "react";
 
 import EmployeeAvatarChip, {
-  EmployeeAvatarData,
   getEmployeeAvatarName
 } from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
+import EmployeeGroupAvatar from "~community/common/components/atoms/EmployeeGroupAvatar/EmployeeGroupAvatar";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import useDebounce from "~community/common/hooks/useDebounce";
-import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
@@ -46,27 +44,6 @@ interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
 }
-
-interface EmployeeGroupAvatarProps {
-  employee: EmployeeAvatarData;
-}
-
-const EmployeeGroupAvatar: FC<EmployeeGroupAvatarProps> = ({ employee }) => {
-  const imageUrl = useGetImageUrl(employee.authPic ?? "");
-  const employeeName = getEmployeeAvatarName(employee);
-
-  return (
-    <Avatar
-      id={`avatar-${employee.employeeId}`}
-      firstName={employee.firstName}
-      lastName={employee.lastName}
-      src={imageUrl ?? ""}
-      alt={employeeName}
-      title={employeeName}
-      size="sm"
-    />
-  );
-};
 
 const WorkLocationEmployeeSelector = ({
   formik,

@@ -23,8 +23,7 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   employee,
   className
 }) => {
-  // Keeps the avatar id unique when the same employee is rendered more than
-  // once at a time (e.g. in a select trigger and in its option list).
+
   const instanceId = useId();
   const imageUrl = useGetImageUrl(employee.authPic ?? "");
   const employeeName = getEmployeeAvatarName(employee);
