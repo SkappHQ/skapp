@@ -226,11 +226,7 @@ export const getAccessToken = async (): Promise<string | null> => {
   if (!cachedAccessToken) {
     const storedToken = await retrieveStoredAccessToken();
 
-    if (!storedToken) {
-      return null;
-    }
-
-    if (!isTokenExpired(storedToken)) {
+    if (storedToken && !isTokenExpired(storedToken)) {
       useCommonStore.getState().setAccessToken(storedToken);
       return storedToken;
     }

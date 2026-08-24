@@ -6,8 +6,8 @@ export const decodeJWTToken = (token: string) => {
   if (!base64Url) return null;
 
   const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const decodedToken = JSON.parse(atob(base64));
-  return decodedToken;
+
+  return JSON.parse(atob(base64));
 };
 
 export const extractClaimsFromToken = (token: string): Record<string, any> => {
