@@ -3,7 +3,8 @@ import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import {
   CrmDealSortEnum,
   CrmKanbanDragType,
-  CrmPriorityEnum
+  CrmPriorityEnum,
+  CrmTaskTabEnum
 } from "../enums/common";
 import {
   CrmCompanyEntity,
@@ -36,6 +37,11 @@ export enum CrmSidePanelTypes {
   TASK_SIDE_PANEL = "TASK_SIDE_PANEL",
   ADD_DEAL_SIDE_PANEL = "ADD_DEAL_SIDE_PANEL",
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
+}
+
+export interface CrmTaskTab {
+  id: CrmTaskTabEnum;
+  label: string;
 }
 
 export interface CrmDealReorderWithinStageRequest {

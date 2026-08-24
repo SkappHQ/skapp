@@ -11,7 +11,10 @@ import {
 import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
-import { crmTaskEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
+import {
+  crmTaskEndpoints,
+  crmTaskEndpointsV2
+} from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import { UNPAGED_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
@@ -27,7 +30,7 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchOpenTasks = async (
   filter: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
+  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
     params: {
       searchKeyword: filter.searchKeyword,
       contactId: filter.contactId,
@@ -54,7 +57,7 @@ export const useGetOpenTasks = (
 const fetchCompletedTasks = async (
   filter: CrmTaskCompletedFilterRequest
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
+  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
     params: {
       page: filter.page,
       size: filter.size,
@@ -85,15 +88,21 @@ export const useGetCompletedTasks = (
         companyId: filter.companyId
       }),
     getNextPageParam: (lastPage: CrmTaskListResponse) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     enabled
   });
 };
 
 const fetchTaskById = async (id: number): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASK_BY_ID(id));
+  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASK_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
@@ -112,7 +121,7 @@ const fetchRelatedTasks = async (
   request: CrmRelatedTasksRequest
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(
-    crmTaskEndpoints.GET_RELATED_TASKS(request.id),
+    crmTaskEndpointsV2.GET_RELATED_TASKS(request.id),
     { params: { page: request.page, size: request.size } }
   );
   return response?.data?.results?.[0];
@@ -128,8 +137,14 @@ export const useGetRelatedTasks = (
     queryFn: ({ pageParam }) =>
       fetchRelatedTasks({ id: filter.id, page: pageParam, size: filter.size }),
     getNextPageParam: (lastPage: CrmTaskListResponse) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     enabled,
     refetchOnWindowFocus: false
@@ -137,7 +152,7 @@ export const useGetRelatedTasks = (
 };
 
 const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.post(crmTaskEndpoints.CREATE_TASK, task);
+  const response = await authFetchV2.post(crmTaskEndpointsV2.CREATE_TASK, task);
   return response?.data?.results?.[0];
 };
 
@@ -168,7 +183,7 @@ const updateTask = async ({
   }
 
   const response = await authFetchV2.patch(
-    crmTaskEndpoints.UPDATE_TASK(id),
+    crmTaskEndpointsV2.UPDATE_TASK(id),
     task
   );
   return response?.data?.results?.[0];

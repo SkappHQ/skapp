@@ -4,7 +4,7 @@ import { FC, useState } from "react";
 import TaskTabContent from "~community/crm/v2/components/molecules/TaskTabContent/TaskTabContent";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useGetTasksTabs } from "~community/crm/v2/hooks/useGetTasksTabs";
-import { isCrmTaskTab } from "~community/crm/v2/utils/crmTaskUtils";
+import { isCrmTaskTab } from "~community/crm/v2/utils/taskUtil";
 
 const TasksTableV2: FC = () => {
   const tabs = useGetTasksTabs();

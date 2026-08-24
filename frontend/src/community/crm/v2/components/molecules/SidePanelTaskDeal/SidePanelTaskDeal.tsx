@@ -9,11 +9,11 @@ import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { formatValue } from "~community/crm/utils/crmUtil";
+import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { getOwnerFullName } from "~community/crm/v2/utils/crmTaskUtils";
+import { getOwnerFullName } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   dealId: number | undefined;

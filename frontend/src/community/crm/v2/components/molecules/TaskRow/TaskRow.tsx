@@ -15,15 +15,13 @@ interface Props {
   onRowClick?: () => void;
   isShowContact?: boolean;
   isCheckTaskVisible?: boolean;
-  className?: string;
 }
 
 const TaskRow: FC<Props> = ({
   taskId,
   onRowClick,
   isShowContact = false,
-  isCheckTaskVisible = true,
-  className
+  isCheckTaskVisible = true
 }) => {
   const translateText = useTranslator("crmModule", "tasks");
 
@@ -69,7 +67,7 @@ const TaskRow: FC<Props> = ({
       role="button"
       tabIndex={0}
       aria-label={translateText(["openTaskDetails"], { name: task.name })}
-      className={`relative flex items-center gap-4 p-3 min-w-0 ${className} min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer`}
+      className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer"
       onClick={onRowClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onRowClick?.();

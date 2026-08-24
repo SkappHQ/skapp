@@ -12,6 +12,17 @@ import {
 
 export const UNPAGED_SIZE = -1;
 
+export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
+
+export const TASK_PAGE_SIZE = 12;
+
+export const TASK_DETAIL_ICON_SIZE = 24;
+
+export const TASK_SKELETON_CONFIG = {
+  COMPLETED: { rowCount: 20, groupCount: 1 },
+  OPEN: { rowCount: 4, groupCount: 4 }
+};
+
 export const SALES_REP_RESTRICTED_TASK_TABS: CrmTaskTabEnum[] = [
   CrmTaskTabEnum.ALL_TASKS
 ];

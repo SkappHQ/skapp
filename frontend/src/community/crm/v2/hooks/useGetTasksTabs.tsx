@@ -2,12 +2,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { SALES_REP_RESTRICTED_TASK_TABS } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
-
-export interface CrmTaskTab {
-  id: CrmTaskTabEnum;
-  label: string;
-  position?: number;
-}
+import { CrmTaskTab } from "~community/crm/v2/types/CrmTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
   const translateText = useTranslator("crmModule", "tasks", "tabs");

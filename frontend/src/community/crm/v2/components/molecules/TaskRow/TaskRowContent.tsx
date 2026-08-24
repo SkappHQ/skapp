@@ -5,7 +5,7 @@ import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getTaskTypeIcon,
   getTaskTypeName
-} from "~community/crm/v2/utils/crmTaskUtils";
+} from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";

@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getDueDateStatus } from "~community/crm/v2/utils/crmTaskUtils";
+import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   task: CrmTaskEntity;

@@ -107,6 +107,7 @@ export interface CrmTaskEntity {
   contactId?: number;
   companyId?: number;
   dealId?: number;
+  relatedTaskIds?: number[];
 }
 
 export interface CrmTaskTypeEntity {
