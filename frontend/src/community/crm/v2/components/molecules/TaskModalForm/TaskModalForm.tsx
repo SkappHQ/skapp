@@ -93,19 +93,18 @@ const TaskModalForm: FC<TaskFormProps> = ({
     }))
   );
 
-  const selectedTask = selectedTaskId ? tasks[selectedTaskId] : undefined;
-  const taskOwner = selectedTask?.ownerId
-    ? owners[selectedTask.ownerId]
-    : undefined;
-  const taskContact = selectedTask?.contactId
-    ? contacts[selectedTask.contactId]
-    : undefined;
-  const panelContact = selectedContactId
-    ? contacts[selectedContactId]
-    : undefined;
-  const taskDeal = selectedTask?.dealId
-    ? deals[selectedTask.dealId]
-    : undefined;
+  const selectedTask =
+    selectedTaskId != null ? tasks[selectedTaskId] : undefined;
+  const taskOwner =
+    selectedTask?.ownerId != null ? owners[selectedTask.ownerId] : undefined;
+  const taskContact =
+    selectedTask?.contactId != null
+      ? contacts[selectedTask.contactId]
+      : undefined;
+  const panelContact =
+    selectedContactId != null ? contacts[selectedContactId] : undefined;
+  const taskDeal =
+    selectedTask?.dealId != null ? deals[selectedTask.dealId] : undefined;
 
   const { isCrmSalesManager } = useSessionData();
 

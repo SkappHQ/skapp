@@ -1,4 +1,25 @@
-import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
+import {
+  CrmDealEntity,
+  CrmDealRecord,
+  CrmOwnerEntity,
+  CrmOwnerRecord,
+  CrmStageEntity,
+  CrmStageRecord
+} from "../types/CrmCommonTypes";
+
+export interface ResolvedDealRelations {
+  owner: CrmOwnerEntity | undefined;
+  stage: CrmStageEntity | undefined;
+}
+
+export const resolveDealRelations = (
+  deal: CrmDealEntity | undefined,
+  owners: CrmOwnerRecord,
+  stages: CrmStageRecord
+): ResolvedDealRelations => ({
+  owner: deal?.ownerId != null ? owners[deal.ownerId] : undefined,
+  stage: deal?.stageId != null ? stages[deal.stageId] : undefined
+});
 
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   const dealRecord: CrmDealRecord = {};
@@ -16,7 +37,7 @@ export const getMissingDealIds = (
 ): number[] => {
   const unique = new Set<number>();
   for (const id of dealIds) {
-    if (id != null && !deals[id]) unique.add(id);
+    if (!deals[id]) unique.add(id);
   }
   return Array.from(unique).sort((a, b) => a - b);
 };

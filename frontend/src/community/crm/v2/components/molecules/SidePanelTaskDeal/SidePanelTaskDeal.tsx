@@ -6,34 +6,29 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { formatValue } from "~community/crm/utils/crmUtil";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import {
+  CrmDealEntity,
+  CrmOwnerEntity,
+  CrmStageEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getOwnerFullName } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
-  dealId: number | undefined;
+  deal: CrmDealEntity | undefined;
+  owner: CrmOwnerEntity | undefined;
+  stage: CrmStageEntity | undefined;
 }
 
-const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
+const SidePanelTaskDeal: FC<Props> = ({ deal, owner, stage }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const translateTaskText = useTranslator("crmModule", "tasks", "sidePanel");
 
   const { getStageByName } = useStageNameMapper();
-
-  const { deals, owners, stages } = useCrmStoreV2(
-    useShallow((store) => ({
-      deals: store.deals,
-      owners: store.owners,
-      stages: store.stages
-    }))
-  );
-
-  const deal = dealId ? deals[dealId] : undefined;
 
   if (!deal) {
     return (
@@ -47,9 +42,6 @@ const SidePanelTaskDeal: FC<Props> = ({ dealId }) => {
       />
     );
   }
-
-  const owner = deal.ownerId ? owners[deal.ownerId] : undefined;
-  const stage = deal.stageId ? stages[deal.stageId] : undefined;
 
   const accordionItems: AdvancedAccordionItem[] = [
     {

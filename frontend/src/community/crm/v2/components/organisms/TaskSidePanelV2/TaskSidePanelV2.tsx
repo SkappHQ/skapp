@@ -36,7 +36,8 @@ import {
 import {
   getTaskTypeIcon,
   getTaskTypeName,
-  mergeTasks
+  mergeTasks,
+  toTaskIds
 } from "~community/crm/v2/utils/taskUtil";
 
 const TaskSidePanelV2: FC = () => {
@@ -56,7 +57,8 @@ const TaskSidePanelV2: FC = () => {
     taskTypes,
     deals,
     tasks,
-    setTasks
+    setTasks,
+    setDeals
   } = useCrmStoreV2(
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
@@ -70,10 +72,11 @@ const TaskSidePanelV2: FC = () => {
       closeCrmSidePanel: store.closeCrmSidePanel,
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       setTaskModalType: store.setTaskModalType,
+      setTasks: store.setTasks,
       taskTypes: store.taskTypes,
       deals: store.deals,
       tasks: store.tasks,
-      setTasks: store.setTasks
+      setDeals: store.setDeals
     }))
   );
 
@@ -96,15 +99,9 @@ const TaskSidePanelV2: FC = () => {
     selectedTaskId != null
   );
 
-  useEffect(() => {
-    if (!taskData) return;
-    const store = useCrmStoreV2.getState();
-    store.setTasks(mergeTasks(store.tasks, [taskData]));
-  }, [taskData]);
-
   const dealIds = useMemo(
-    () => (taskData?.dealId != null ? [taskData.dealId] : []),
-    [taskData]
+    () => (selectedTask?.dealId != null ? [selectedTask.dealId] : []),
+    [selectedTask?.dealId]
   );
 
   const missingDealIds = useMemo(
@@ -119,10 +116,9 @@ const TaskSidePanelV2: FC = () => {
 
   useEffect(() => {
     if (fetchedDeals && fetchedDeals.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setDeals(mergeDeals(store.deals, fetchedDeals));
+      setDeals(mergeDeals(deals, fetchedDeals));
     }
-  }, [fetchedDeals]);
+  }, [fetchedDeals, setDeals]);
 
   const { mutate: updateTaskCompletion } = useUpdateTask();
 
@@ -144,24 +140,18 @@ const TaskSidePanelV2: FC = () => {
     [relatedTasksData, selectedTaskId]
   );
 
-  const relatedTaskIds = useMemo(
-    () =>
-      relatedTasks
-        .map((relatedTask) => relatedTask.id)
-        .filter((id): id is number => id !== undefined),
-    [relatedTasks]
-  );
+  const relatedTaskIds = useMemo(() => toTaskIds(relatedTasks), [relatedTasks]);
 
   useEffect(() => {
     if (selectedTaskId == null) return;
-    const store = useCrmStoreV2.getState();
-    store.setTasks(
-      mergeTasks(store.tasks, [
+    setTasks(
+      mergeTasks(tasks, [
+        ...(taskData ? [taskData] : []),
         ...relatedTasks,
         { id: selectedTaskId, relatedTaskIds }
       ])
     );
-  }, [relatedTasks, relatedTaskIds, selectedTaskId]);
+  }, [taskData, relatedTasks, relatedTaskIds, selectedTaskId, setTasks]);
 
   const handleMarkAsDone = () => {
     if (selectedTaskId == null) return;

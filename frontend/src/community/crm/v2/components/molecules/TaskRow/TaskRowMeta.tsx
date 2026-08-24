@@ -2,20 +2,19 @@ import { Avatar, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;
+  owner: CrmOwnerEntity | undefined;
   applyCompletedStyle: boolean;
 }
 
-const TaskRowMeta: FC<Props> = ({ task, applyCompletedStyle }) => {
-  const owner = useCrmStoreV2((store) =>
-    task.ownerId ? store.owners[task.ownerId] : undefined
-  );
-
+const TaskRowMeta: FC<Props> = ({ task, owner, applyCompletedStyle }) => {
   const priorityConfig = getPriorityConfig(task.priority);
   const imageUrl = useGetImageUrl(owner?.authPic ?? "");
 

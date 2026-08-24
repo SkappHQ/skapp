@@ -30,6 +30,8 @@ import {
 import {
   getTaskGroups,
   mergeTasks,
+  resolveTasks,
+  toTaskDealIds,
   toTaskIds
 } from "~community/crm/v2/utils/taskUtil";
 
@@ -83,29 +85,23 @@ const TaskTabContent: FC<TaskTabContentProps> = ({ tab }) => {
     !isCompletedTab
   );
 
-  const responseTasks = useMemo(
-    () =>
-      isCompletedTab
-        ? (completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [])
-        : (openTaskData?.items ?? []),
-    [isCompletedTab, completedTaskData, openTaskData]
-  );
-
   useEffect(() => {
     const store = useCrmStoreV2.getState();
-    if (responseTasks.length > 0) {
-      store.setTasks(mergeTasks(store.tasks, responseTasks));
+    const items = isCompletedTab
+      ? (completedTaskData?.pages.flatMap((page) => page.items) ?? [])
+      : (openTaskData?.items ?? []);
+    if (items.length > 0) {
+      store.setTasks(mergeTasks(store.tasks, items));
     }
-    store.setTaskIds(toTaskIds(responseTasks));
-  }, [responseTasks]);
+    store.setTaskIds(toTaskIds(items));
+  }, [isCompletedTab, completedTaskData, openTaskData]);
 
-  const dealIds = useMemo(
-    () =>
-      responseTasks
-        .map((task) => task.dealId)
-        .filter((id): id is number => id != null),
-    [responseTasks]
+  const tasksInView = useMemo(
+    () => resolveTasks(taskIds, tasks),
+    [taskIds, tasks]
   );
+
+  const dealIds = useMemo(() => toTaskDealIds(tasksInView), [tasksInView]);
 
   const missingDealIds = useMemo(
     () => getMissingDealIds(dealIds, deals),

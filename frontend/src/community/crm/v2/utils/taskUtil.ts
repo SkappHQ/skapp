@@ -19,14 +19,34 @@ import {
   isDueTomorrow,
   isOverdue
 } from "~community/crm/utils/taskValidations";
-import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmPriorityEnum,
+  CrmTaskTabEnum
+} from "~community/crm/v2/enums/common";
 
 import {
+  CrmContactEntity,
+  CrmContactRecord,
   CrmOwnerEntity,
+  CrmOwnerRecord,
   CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeRecord
 } from "../types/CrmCommonTypes";
+
+export interface ResolvedTaskRelations {
+  owner: CrmOwnerEntity | undefined;
+  contact: CrmContactEntity | undefined;
+}
+
+export const resolveTaskRelations = (
+  task: CrmTaskEntity | undefined,
+  owners: CrmOwnerRecord,
+  contacts: CrmContactRecord
+): ResolvedTaskRelations => ({
+  owner: task?.ownerId != null ? owners[task.ownerId] : undefined,
+  contact: task?.contactId != null ? contacts[task.contactId] : undefined
+});
 
 export const toTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   const taskIds: number[] = [];
@@ -37,6 +57,24 @@ export const toTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   }
   return taskIds;
 };
+
+export const toTaskDealIds = (tasks: CrmTaskEntity[]): number[] => {
+  const dealIds: number[] = [];
+  for (const task of tasks) {
+    if (task.dealId != null) {
+      dealIds.push(task.dealId);
+    }
+  }
+  return dealIds;
+};
+
+export const resolveTasks = (
+  taskIds: number[],
+  tasks: CrmTaskRecord
+): CrmTaskEntity[] =>
+  taskIds
+    .map((id) => tasks[id])
+    .filter((task): task is CrmTaskEntity => Boolean(task));
 
 export const mergeTasks = (
   existing: CrmTaskRecord,
@@ -146,6 +184,19 @@ export const toLookupOwner = (
         authPic: owner.authPic ?? null
       }
     : null;
+
+export const getTaskFormInitialValues = (
+  task?: CrmTaskEntity
+): CrmTaskEntity => ({
+  name: task?.name ?? "",
+  typeId: task?.typeId,
+  dueAt: task?.dueAt,
+  priority: task?.priority ?? CrmPriorityEnum.MEDIUM,
+  contactId: task?.contactId,
+  dealId: task?.dealId,
+  ownerId: task?.ownerId,
+  notes: task?.notes ?? ""
+});
 
 export const getChangedTaskFields = (
   newValues: CrmTaskEntity,

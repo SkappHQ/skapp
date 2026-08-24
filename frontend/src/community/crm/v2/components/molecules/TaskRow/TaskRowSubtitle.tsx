@@ -1,18 +1,22 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmContactEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   task: CrmTaskEntity;
+  contact: CrmContactEntity | undefined;
   isShowContact: boolean;
   applyCompletedStyle: boolean;
 }
 
 const TaskRowSubtitle: FC<Props> = ({
   task,
+  contact,
   isShowContact,
   applyCompletedStyle
 }) => {
@@ -21,10 +25,6 @@ const TaskRowSubtitle: FC<Props> = ({
     "contacts",
     "contactDetailsPanel",
     "tasks"
-  );
-
-  const contact = useCrmStoreV2((store) =>
-    task.contactId ? store.contacts[task.contactId] : undefined
   );
 
   const dueDateStatus = getDueDateStatus(task.dueAt, task.isCompleted);

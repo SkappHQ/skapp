@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -6,7 +6,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { mergeTasks } from "~community/crm/v2/utils/taskUtil";
+import {
+  mergeTasks,
+  resolveTaskRelations
+} from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
@@ -28,12 +31,20 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { task, tasks, setTasks } = useCrmStoreV2(
+  const { task, tasks, owners, contacts, taskTypes, setTasks } = useCrmStoreV2(
     useShallow((store) => ({
       task: store.tasks[taskId],
       tasks: store.tasks,
+      owners: store.owners,
+      contacts: store.contacts,
+      taskTypes: store.taskTypes,
       setTasks: store.setTasks
     }))
+  );
+
+  const { owner, contact } = useMemo(
+    () => resolveTaskRelations(task, owners, contacts),
+    [task, owners, contacts]
   );
 
   const { mutate: updateCompletion } = useUpdateTask();
@@ -89,6 +100,9 @@ const TaskRow: FC<Props> = ({
 
       <TaskRowContent
         task={task}
+        owner={owner}
+        contact={contact}
+        taskTypes={taskTypes}
         isShowContact={isShowContact}
         applyCompletedStyle={applyCompletedStyle}
       />

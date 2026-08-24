@@ -7,13 +7,16 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
-import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmOwnerEntity,
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { mergeTasks, prependTaskId } from "~community/crm/v2/utils/taskUtil";
+import {
+  getTaskFormInitialValues,
+  mergeTasks,
+  prependTaskId
+} from "~community/crm/v2/utils/taskUtil";
 import { taskValidations } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -53,16 +56,11 @@ const AddTaskModalContent: FC = () => {
   }, [currentUser]);
 
   const initialValues: CrmTaskEntity = useMemo(
-    () => ({
-      name: "",
-      typeId: undefined,
-      dueAt: undefined,
-      priority: CrmPriorityEnum.MEDIUM,
-      contactId: selectedContactId ?? undefined,
-      dealId: undefined,
-      ownerId: defaultOwner?.employeeId,
-      notes: ""
-    }),
+    () =>
+      getTaskFormInitialValues({
+        contactId: selectedContactId ?? undefined,
+        ownerId: defaultOwner?.employeeId
+      }),
     [defaultOwner, selectedContactId]
   );
 

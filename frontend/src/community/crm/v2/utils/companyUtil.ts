@@ -147,7 +147,7 @@ export const getMissingCompanyIds = (
 ): number[] => {
   const unique = new Set<number>();
   for (const id of companyIds) {
-    if (id != null && !companies[id]) unique.add(id);
+    if (!companies[id]) unique.add(id);
   }
   return Array.from(unique).sort((a, b) => a - b);
 };

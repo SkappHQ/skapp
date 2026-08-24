@@ -7,11 +7,11 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
-import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getChangedTaskFields,
+  getTaskFormInitialValues,
   mergeTasks
 } from "~community/crm/v2/utils/taskUtil";
 import { taskValidations } from "~community/crm/v2/utils/taskValidations";
@@ -36,16 +36,7 @@ const EditTaskModalContent: FC = () => {
     );
 
   const initialValues: CrmTaskEntity = useMemo(
-    () => ({
-      name: selectedTask?.name ?? "",
-      typeId: selectedTask?.typeId,
-      dueAt: selectedTask?.dueAt,
-      priority: selectedTask?.priority ?? CrmPriorityEnum.MEDIUM,
-      contactId: selectedTask?.contactId,
-      dealId: selectedTask?.dealId,
-      ownerId: selectedTask?.ownerId,
-      notes: selectedTask?.notes ?? ""
-    }),
+    () => getTaskFormInitialValues(selectedTask),
     [selectedTask]
   );
 

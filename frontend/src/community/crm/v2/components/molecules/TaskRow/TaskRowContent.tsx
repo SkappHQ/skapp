@@ -1,7 +1,11 @@
 import { FC } from "react";
 
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmContactEntity,
+  CrmOwnerEntity,
+  CrmTaskEntity,
+  CrmTaskTypeRecord
+} from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getTaskTypeIcon,
   getTaskTypeName
@@ -12,17 +16,21 @@ import TaskRowSubtitle from "./TaskRowSubtitle";
 
 interface Props {
   task: CrmTaskEntity;
+  owner: CrmOwnerEntity | undefined;
+  contact: CrmContactEntity | undefined;
+  taskTypes: CrmTaskTypeRecord;
   isShowContact: boolean;
   applyCompletedStyle: boolean;
 }
 
 const TaskRowContent: FC<Props> = ({
   task,
+  owner,
+  contact,
+  taskTypes,
   isShowContact,
   applyCompletedStyle
 }) => {
-  const taskTypes = useCrmStoreV2((state) => state.taskTypes);
-
   return (
     <div className="flex-1 min-w-0 flex items-center gap-4">
       <div
@@ -40,12 +48,17 @@ const TaskRowContent: FC<Props> = ({
 
         <TaskRowSubtitle
           task={task}
+          contact={contact}
           isShowContact={isShowContact}
           applyCompletedStyle={applyCompletedStyle}
         />
       </div>
 
-      <TaskRowMeta task={task} applyCompletedStyle={applyCompletedStyle} />
+      <TaskRowMeta
+        task={task}
+        owner={owner}
+        applyCompletedStyle={applyCompletedStyle}
+      />
     </div>
   );
 };
