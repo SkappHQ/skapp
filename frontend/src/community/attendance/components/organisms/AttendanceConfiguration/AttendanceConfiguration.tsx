@@ -28,6 +28,9 @@ const AttendanceConfiguration = (): JSX.Element => {
   );
   const [initialConfig, setInitialConfig] =
     useState<AttendanceConfigurationType | null>(null);
+  const [locallyEditedKeys, setLocallyEditedKeys] = useState<
+    Set<keyof AttendanceConfigurationType>
+  >(new Set());
 
   const { data: configData } = useGetAttendanceConfiguration();
   const onSuccess = () => {
@@ -56,10 +59,6 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-  const [locallyEditedKeys, setLocallyEditedKeys] = useState<
-    Set<keyof AttendanceConfigurationType>
-  >(new Set());
-
   useEffect(() => {
     if (!configData) return;
 

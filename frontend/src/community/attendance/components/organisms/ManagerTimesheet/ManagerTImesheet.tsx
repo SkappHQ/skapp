@@ -41,7 +41,6 @@ const ManagerTimesheet = ({
 
   return (
     <>
-      <EmployeeTimesheetPopupController />
       <TimesheetAnalytics
         recordData={recordData as TimeRecordDataResponseType}
         workSummaryData={workSummaryData}
@@ -62,6 +61,7 @@ const ManagerTimesheet = ({
           tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         />
       )}
+      <EmployeeTimesheetPopupController />
     </>
   );
 };

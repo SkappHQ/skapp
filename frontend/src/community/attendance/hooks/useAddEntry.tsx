@@ -103,7 +103,6 @@ const useAddEntry = () => {
         open: true,
         title: translateText(["addTimeEntryErrorTitle"]),
         description: translateText(["manualEntryRestrictedErrorDes"]),
-        autoHideDuration: null,
         toastType: ToastType.ERROR
       });
       return;
@@ -147,8 +146,7 @@ const useAddEntry = () => {
       description: isEdit
         ? translateText(["directEntryUpdatedToastDes"], interpolations)
         : translateText(["directEntryAddedToastDes"], interpolations),
-      toastType: ToastType.SUCCESS,
-      autoHideDuration: null
+      toastType: ToastType.SUCCESS
     });
   };
 
@@ -162,18 +160,18 @@ const useAddEntry = () => {
       description: translateText([
         isConflict ? "directEntryConflictErrorDes" : "directEntrySaveErrorDes"
       ]),
-      toastType: ToastType.ERROR,
-      autoHideDuration: null
+      toastType: ToastType.ERROR
     });
   };
 
   const { mutate: addDirectEntryMutate } = useAddDirectTimeEntry(
-    (variables) => onSuccessDirectEntry(false, variables),
+    (directEntryVariables) =>
+      onSuccessDirectEntry(false, directEntryVariables),
     onDirectEntryError
   );
 
   const { mutate: editDirectEntryMutate } = useEditDirectTimeEntry(
-    (variables) => onSuccessDirectEntry(true, variables),
+    (directEntryVariables) => onSuccessDirectEntry(true, directEntryVariables),
     onDirectEntryError
   );
 
