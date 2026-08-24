@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.service.CrmDealListViewConfigService;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,10 +17,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class CrmDealController {
 
 	private final CrmDealService crmDealService;
+
+	private final CrmDealListViewConfigService crmDealListViewConfigService;
 
 	@Operation(summary = "Check if a deal name exists",
 			description = "Check if a deal with the given name already exists")
@@ -78,6 +83,24 @@ public class CrmDealController {
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_MANAGER')")
 	public ResponseEntity<ResponseEntityDto> deleteDeal(@PathVariable Long id) {
 		ResponseEntityDto response = crmDealService.deleteDeal(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get the current user's deal list-view config",
+			description = "Returns the user's saved deal table config JSON, or the default config when nothing is saved.")
+	@GetMapping("/list-view-config")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getListViewConfig() {
+		ResponseEntityDto response = crmDealListViewConfigService.getListViewConfig();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Update the current user's deal list-view config",
+			description = "Persists the deal table config JSON sent by the client as-is; does not affect other users.")
+	@PutMapping("/list-view-config")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> updateListViewConfig(@RequestBody JsonNode config) {
+		ResponseEntityDto response = crmDealListViewConfigService.updateListViewConfig(config);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
