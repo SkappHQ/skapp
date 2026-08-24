@@ -4,12 +4,13 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
 
 public interface CrmTaskServiceV2 {
 
 	ResponseEntityDto getTasks(CrmTaskFilterDtoV2 filterDto);
 
-	ResponseEntityDto getRelatedTasks(Long id, int page, int size);
+	ResponseEntityDto getRelatedTasks(Long id, CrmTaskRelatedFilterDtoV2 filterDto);
 
 	ResponseEntityDto getTaskById(Long id);
 

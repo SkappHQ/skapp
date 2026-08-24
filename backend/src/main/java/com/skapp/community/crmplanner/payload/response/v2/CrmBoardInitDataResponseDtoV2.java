@@ -16,8 +16,6 @@ public class CrmBoardInitDataResponseDtoV2 {
 
 	private List<CrmBoardContactResponseDtoV2> contacts;
 
-	private List<String> crmRoles;
-
 	private List<CrmBoardOwnerResponseDto> owners;
 
 	private List<CrmTaskTypeResponseDto> taskTypes;

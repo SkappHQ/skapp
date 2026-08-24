@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
 import com.skapp.community.crmplanner.service.v2.CrmTaskServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -50,8 +50,8 @@ public class CrmTaskControllerV2 {
 	@GetMapping("/{id}/related")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getRelatedTasks(@PathVariable Long id,
-			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-		ResponseEntityDto response = taskService.getRelatedTasks(id, page, size);
+			CrmTaskRelatedFilterDtoV2 filterDto) {
+		ResponseEntityDto response = taskService.getRelatedTasks(id, filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

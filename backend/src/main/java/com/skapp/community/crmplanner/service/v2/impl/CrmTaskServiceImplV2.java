@@ -12,6 +12,7 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
@@ -60,7 +61,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getRelatedTasks(Long id, int page, int size) {
+	public ResponseEntityDto getRelatedTasks(Long id, CrmTaskRelatedFilterDtoV2 filterDto) {
 		log.info("getRelatedTasks: execution started");
 
 		CrmTaskLinkRefs linkRefs = crmTaskDao.findTaskLinkRefsById(id)
@@ -73,7 +74,8 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 		CrmTaskRelatedParams params = new CrmTaskRelatedParams(linkRefs.getContactId(), linkRefs.getDealId(), ownerId);
-		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(id, params, toPageable(page, size));
+		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(id, params,
+				toPageable(filterDto.getPage(), filterDto.getSize()));
 
 		log.info("getRelatedTasks: execution ended");
 		return new ResponseEntityDto(false, toPageDto(taskPage));

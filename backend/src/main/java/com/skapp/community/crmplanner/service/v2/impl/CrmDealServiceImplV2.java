@@ -5,7 +5,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
-import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.mapper.CrmMapperV2;
@@ -87,7 +86,6 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
-		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
 		responseDto.setOwners(owners);
 		responseDto.setTaskTypes(taskTypes);
 

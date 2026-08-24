@@ -110,7 +110,6 @@ class CrmBoardControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isArray())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isNotEmpty())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['crmRoles']").isArray())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isNotEmpty());
 	}
 
