@@ -191,8 +191,6 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
 
       return isAvailable;
     } catch {
-      // The check is only a shortcut to an inline error. When it fails, let the
-      // create request run so the backend stays the authority on uniqueness.
       return true;
     }
   };
