@@ -95,7 +95,7 @@ const Tooltip: FC<Props> = ({
       title={title}
       TransitionComponent={Fade}
       PopperProps={PopperProps}
-      aria-label={ariaLabel ?? ""}
+      ariaLabel={ariaLabel ?? ""}
       aria-description={ariaDescription ?? ""}
       customstyles={{
         tooltip: {
@@ -131,6 +131,7 @@ const Tooltip: FC<Props> = ({
                   ? theme.palette.error.contrastText
                   : iconColor
             }
+            svgProps={{ "aria-hidden": true, focusable: false }}
           />
         )}
       </span>

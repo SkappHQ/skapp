@@ -160,11 +160,15 @@ public class PolicyLeaveAccrualUtil {
 		return Math.max(0f, accrualAllocation + usableCarryoverDays - totalDaysUsed);
 	}
 
-	public static float accrualAllocationInCycle(LeavePolicy policy, LocalDate effectiveFrom,
+	private static float accrualAllocationInCycle(LeavePolicy policy, LocalDate effectiveFrom,
 			PolicyLeaveDateWindowDto cycle) {
+		return accrualAllocationAsOf(policy, effectiveFrom, cycle, cycle.getEndDate());
+	}
+
+	private static float accrualAllocationAsOf(LeavePolicy policy, LocalDate effectiveFrom,
+			PolicyLeaveDateWindowDto cycle, LocalDate asOf) {
 		LocalDate accrualStartDate = resolveAccrualStartDate(policy, effectiveFrom);
-		return applyAccrualCap(policy,
-				roundToHalfDay(accruedWithinCycle(policy, accrualStartDate, cycle, cycle.getEndDate())));
+		return applyAccrualCap(policy, roundToHalfDay(accruedWithinCycle(policy, accrualStartDate, cycle, asOf)));
 	}
 
 	private static float proration(PolicyLeaveDateWindowDto period, LocalDate accrualStartDate) {
