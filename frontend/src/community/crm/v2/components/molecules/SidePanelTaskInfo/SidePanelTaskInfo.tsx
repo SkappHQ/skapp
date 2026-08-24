@@ -67,23 +67,18 @@ const SidePanelTaskInfo: FC<Props> = ({ task, onMarkAsDone }) => {
           )}
         </PropertyRow>
 
-        {priorityConfig && (
-          <PropertyRow label={translateText(["priority"])}>
-            <Label
-              backgroundColor={priorityConfig.bgColor}
-              textColor={priorityConfig.textColor}
-            >
-              <span className="flex items-center gap-1">
-                {priorityConfig.icon}
-                {task.priority &&
-                  translateText([
-                    "priorityOptions",
-                    task.priority.toLowerCase()
-                  ])}
-              </span>
-            </Label>
-          </PropertyRow>
-        )}
+        <PropertyRow label={translateText(["priority"])}>
+          <Label
+            backgroundColor={priorityConfig.bgColor}
+            textColor={priorityConfig.textColor}
+          >
+            <span className="flex items-center gap-1">
+              {priorityConfig.icon}
+              {task.priority &&
+                translateText(["priorityOptions", task.priority.toLowerCase()])}
+            </span>
+          </Label>
+        </PropertyRow>
 
         <PropertyRow label={translateText(["closingDate"])}>
           <span className="body2">

@@ -1,12 +1,10 @@
 import {
+  CrmDealFilterRequest,
+  CrmDealsByStagesRequest,
   CrmTaskCompletedFilterRequest,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
-/**
- * Every v2 key carries this prefix so v1 and v2 hooks can never share a React
- * Query cache entry while their response shapes differ.
- */
 const V2 = "v2";
 
 export const crmTaskQueryKeys = {
@@ -33,7 +31,11 @@ export const crmTaskQueryKeys = {
 };
 
 export const crmDealQueryKeys = {
-  DEALS_BY_IDS: (dealIds: number[]) => [V2, "crm-deals-by-ids", dealIds]
+  DEALS_BY_IDS: (dealIds: number[]) => [V2, "crm-deals-by-ids", dealIds],
+  GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
+  DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
+  CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
+  DEAL_STAGES: ["crm-deal-stages-v2"]
 };
 
 export const crmCompanyQueryKeys = {
@@ -41,5 +43,26 @@ export const crmCompanyQueryKeys = {
     V2,
     "crm-companies-by-ids",
     companyIds
+  ]
+};
+
+export const crmLookupQueryKeys = {
+  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-contact-lookup-v2",
+    searchKeyword,
+    size
+  ],
+  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-owner-lookup-v2",
+    searchKeyword,
+    size
+  ]
+};
+
+export const crmBoardQueryKeys = {
+  BOARD_INIT_DATA: ["crm-board-init-data-v2"],
+  DEALS_GROUPED_BY_STAGES: (params: CrmDealsByStagesRequest) => [
+    "crm-board-deals-grouped-by-stages-v2",
+    params
   ]
 };

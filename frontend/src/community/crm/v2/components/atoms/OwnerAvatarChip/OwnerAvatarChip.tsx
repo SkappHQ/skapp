@@ -5,14 +5,14 @@ import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-interface Props {
+interface OwnerAvatarChipProps {
   id: string;
   owner: CrmOwnerEntity;
   backgroundColor?: string;
   size?: AvatarProps["size"];
 }
 
-const OwnerAvatarChip: FC<Props> = ({
+const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
   id,
   owner,
   backgroundColor,

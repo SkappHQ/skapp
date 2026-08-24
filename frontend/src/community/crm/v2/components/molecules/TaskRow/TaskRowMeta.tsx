@@ -23,12 +23,10 @@ const TaskRowMeta: FC<Props> = ({ task, applyCompletedStyle }) => {
     <div
       className={`flex items-center gap-6 shrink-0 ${applyCompletedStyle ? "opacity-40" : ""}`}
     >
-      {priorityConfig && (
-        <PriorityIcon
-          icon={priorityConfig.icon}
-          bgColor={priorityConfig.bgColor}
-        />
-      )}
+      <PriorityIcon
+        icon={priorityConfig.icon}
+        bgColor={priorityConfig.bgColor}
+      />
 
       <Avatar
         id={`task-owner-${task.id}`}

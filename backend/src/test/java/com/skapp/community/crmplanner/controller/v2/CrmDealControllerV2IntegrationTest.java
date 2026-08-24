@@ -162,8 +162,8 @@ class CrmDealControllerV2IntegrationTest {
 	// --- createDeal ---
 
 	@Test
-	@DisplayName("Create deal - Returns Created with embedded stage, owner, company and contact-with-company")
-	void createDeal_HappyPath_ReturnsEmbeddedAssociations() throws Exception {
+	@DisplayName("Create deal - Returns Created with scalar stage, owner, company and contact ids")
+	void createDeal_HappyPath_ReturnsScalarAssociationIds() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal V2 Corp");
 		CrmContact contact = savedContact(company, "deal.create.v2@example.com");
@@ -174,25 +174,17 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal V2"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['amount']").value("5000"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['name']").value("V2 Stage"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['owner']['employeeId']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	// --- getDealById ---
 
 	@Test
-	@DisplayName("Get deal by ID - Returns embedded stage, owner, company and contact-with-company")
-	void getDealById_HappyPath_ReturnsEmbeddedAssociations() throws Exception {
+	@DisplayName("Get deal by ID - Returns scalar stage, owner, company and contact ids")
+	void getDealById_HappyPath_ReturnsScalarAssociationIds() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal Detail V2 Corp");
 		CrmContact contact = savedContact(company, "deal.detail.v2@example.com");
@@ -203,17 +195,14 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Saved Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['id']").value(contact.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['owner']['employeeId']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	@Test
-	@DisplayName("Get deals filtered by companyId - Returns paginated deals with embedded associations")
+	@DisplayName("Get deals filtered by companyId - Returns paginated deals with scalar association ids")
 	void getDeals_FilterByCompanyId_ReturnsMatchingDeals() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal List V2 Corp");
@@ -225,7 +214,8 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['company']['id']").value(company.getId()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactId']").value(contact.getId()));
 	}
 
 	@Test
@@ -247,7 +237,7 @@ class CrmDealControllerV2IntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get deals - Masks soft-deleted company on deal and contact")
+	@DisplayName("Get deals - Masks soft-deleted company on deal")
 	void getDeals_SoftDeletedCompany_MasksCompany() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("List Deleted Co V2");
@@ -261,12 +251,11 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deleted Co Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['company']['id']").doesNotExist())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['company']['id']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
 	}
 
 	@Test
-	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal and contact")
+	@DisplayName("Get deal by ID with soft-deleted company - Masks company on deal")
 	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deleted Co V2");
@@ -280,8 +269,7 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").doesNotExist())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -295,7 +283,7 @@ class CrmDealControllerV2IntegrationTest {
 	// --- editDeal ---
 
 	@Test
-	@DisplayName("Edit deal - Returns OK with updated deal and embedded associations")
+	@DisplayName("Edit deal - Returns OK with updated deal and scalar association ids")
 	void editDeal_HappyPath_ReturnsUpdatedDeal() throws Exception {
 		CrmDealStage stage = savedStage();
 		CrmCompany company = savedCompany("Deal Edit V2 Corp");
@@ -309,10 +297,10 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(stage.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(company.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['company']['id']").value(company.getId()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(stage.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contact.getId()));
 	}
 
 	@Test

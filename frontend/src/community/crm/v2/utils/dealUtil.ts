@@ -21,6 +21,16 @@ export const getMissingDealIds = (
   return Array.from(unique).sort((a, b) => a - b);
 };
 
+export const toDealIds = (deals: CrmDealEntity[]): number[] => {
+  const dealIds: number[] = [];
+  for (const deal of deals) {
+    if (deal.id != null) {
+      dealIds.push(deal.id);
+    }
+  }
+  return dealIds;
+};
+
 export const mergeDeals = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]
@@ -32,3 +42,27 @@ export const mergeDeals = (
   }
   return merged;
 };
+
+export const appendDealId = (dealIds: number[], id: number): number[] =>
+  dealIds.includes(id) ? dealIds : [...dealIds, id];
+
+export const removeDealId = (dealIds: number[], id: number): number[] =>
+  dealIds.filter((dealId) => dealId !== id);
+
+export const removeDealFromRecord = (
+  deals: CrmDealRecord,
+  id: number
+): CrmDealRecord => {
+  if (!(id in deals)) return deals;
+  const next = { ...deals };
+  delete next[id];
+  return next;
+};
+
+export const resolveDeals = (
+  dealIds: number[],
+  deals: CrmDealRecord
+): CrmDealEntity[] =>
+  dealIds
+    .map((id) => deals[id])
+    .filter((deal): deal is CrmDealEntity => Boolean(deal));
