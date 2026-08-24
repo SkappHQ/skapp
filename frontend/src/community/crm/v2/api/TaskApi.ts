@@ -1,12 +1,14 @@
 import {
   InfiniteData,
   UseInfiniteQueryResult,
+  UseMutationResult,
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 
 import authFetch, {
   authFetchV2
@@ -119,15 +121,18 @@ export const useGetRelatedTasks = (
   });
 };
 
-const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.post(crmTaskEndpointsV2.CREATE_TASK, task);
+const createTask = async (payload: CrmTaskEntity): Promise<CrmTaskEntity> => {
+  const response = await authFetchV2.post(
+    crmTaskEndpointsV2.CREATE_TASK,
+    payload
+  );
   return response?.data?.results?.[0];
 };
 
 export const useCreateTask = (
   onSuccess: (createdTask: CrmTaskEntity) => void,
   onError: () => void
-) => {
+): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -142,13 +147,11 @@ export const useCreateTask = (
   });
 };
 
-const updateTask = async ({
-  id,
-  ...task
-}: CrmTaskEntity): Promise<CrmTaskEntity> => {
+const updateTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
+  const { id, ...payload } = task;
   const response = await authFetchV2.patch(
     crmTaskEndpointsV2.UPDATE_TASK(id!),
-    task
+    payload
   );
   return response?.data?.results?.[0];
 };
@@ -156,7 +159,7 @@ const updateTask = async ({
 export const useUpdateTask = (
   onSuccess?: (updatedTask: CrmTaskEntity) => void,
   onError?: () => void
-) => {
+): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> => {
   return useMutation({
     mutationFn: updateTask,
     onSuccess,
@@ -168,7 +171,10 @@ const deleteTask = async (id: number): Promise<void> => {
   await authFetch.delete(crmTaskEndpoints.DELETE_TASK(id));
 };
 
-export const useDeleteTask = (onSuccess: () => void, onError: () => void) => {
+export const useDeleteTask = (
+  onSuccess: () => void,
+  onError: () => void
+): UseMutationResult<void, AxiosError, number> => {
   const queryClient = useQueryClient();
 
   return useMutation({
