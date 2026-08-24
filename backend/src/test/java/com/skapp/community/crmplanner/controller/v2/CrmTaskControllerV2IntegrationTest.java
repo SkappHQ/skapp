@@ -208,7 +208,7 @@ class CrmTaskControllerV2IntegrationTest {
 	// --- createTask ---
 
 	@Test
-	@DisplayName("Create task with contact and deal - Returns Created with embedded type, owner, company, contact, deal")
+	@DisplayName("Create task with contact and deal - Returns Created with embedded type, owner, company, contact and scalar deal ids")
 	void createTask_WithContactAndDeal_ReturnsEmbeddedAssociations() throws Exception {
 		CrmDeal deal = savedDeal("Task Linked Deal V2");
 
@@ -228,7 +228,7 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']['name']").value("Task Test Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']['id']").value(deal.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']['name']").value("Task Linked Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']['contact']['name']").value("Task Test Contact"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']['contactId']").value(contactId));
 	}
 
 	@Test
@@ -261,7 +261,7 @@ class CrmTaskControllerV2IntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get tasks (open) - Projects the nested deal with its stage, company and contact")
+	@DisplayName("Get tasks (open) - Projects the nested deal with scalar stage, company and contact ids")
 	void getTasks_WithLinkedDeal_ProjectsNestedDeal() throws Exception {
 		CrmDeal deal = savedDeal("Nested Deal V2");
 
@@ -282,10 +282,9 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task With Deal V2"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['id']").value(deal.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['name']").value("Nested Deal V2"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['stage']['name']").value("Task Deal Stage"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['company']['id']").value(companyId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['contact']['name']").value("Task Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['contact']['company']['id']").value(companyId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['stageId']").value(deal.getStage().getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['deal']['contactId']").value(contactId));
 	}
 
 	// --- getCompletedTasks ---

@@ -10,6 +10,11 @@ export enum CrmSidePanelTabEnum {
   CONTACTS = "CONTACTS"
 }
 
+export enum CrmKanbanDragType {
+  STAGE = "stage",
+  DEAL = "deal"
+}
+
 export enum CrmTaskTabEnum {
   MY_TASKS = "my tasks",
   ALL_TASKS = "all tasks",
