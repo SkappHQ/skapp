@@ -70,7 +70,10 @@ export const useFetchMoreStageDeals = (
 const reorderDealWithinStage = async (
   payload: CrmDealReorderWithinStageRequest
 ): Promise<void> => {
-  await authFetch.patch(crmBoardEndpoints.REORDER_DEAL_WITHIN_STAGE, payload);
+  await authFetch.patch(
+    crmBoardEndpoints.REORDER_DEAL_WITHIN_STAGE,
+    payload
+  );
 };
 
 export const useReorderDealWithinStage = (
@@ -84,7 +87,10 @@ export const useReorderDealWithinStage = (
 const moveDealBetweenStages = async (
   payload: CrmDealMoveBetweenStagesRequest
 ): Promise<void> => {
-  await authFetch.patch(crmBoardEndpoints.MOVE_DEAL_BETWEEN_STAGES, payload);
+  await authFetch.patch(
+    crmBoardEndpoints.MOVE_DEAL_BETWEEN_STAGES,
+    payload
+  );
 };
 
 export const useMoveDealBetweenStages = (

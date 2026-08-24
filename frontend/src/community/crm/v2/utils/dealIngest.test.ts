@@ -54,10 +54,7 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
     );
     const current = { ...ingested, dealIds: [1] };
 
-    const result = ingestCreatedDeal(
-      current,
-      deal({ id: 100, stageId: STAGE_A })
-    );
+    const result = ingestCreatedDeal(current, deal({ id: 100, stageId: STAGE_A }));
 
     const { board, deals, dealIds } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 100]);
@@ -75,10 +72,7 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
       ]
     );
 
-    const result = ingestEditedDeal(
-      current,
-      deal({ id: 1, stageId: STAGE_B, name: "Edited" })
-    );
+    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_B, name: "Edited" }));
 
     const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([2]);
@@ -93,10 +87,7 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
       [group(STAGE_A, [boardDeal(1), boardDeal(2)])]
     );
 
-    const result = ingestEditedDeal(
-      current,
-      deal({ id: 1, stageId: STAGE_A, amount: "999" })
-    );
+    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_A, amount: "999" }));
 
     const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 2]);

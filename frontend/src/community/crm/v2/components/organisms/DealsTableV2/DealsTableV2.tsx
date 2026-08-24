@@ -10,15 +10,15 @@ import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useContainerWidth } from "~community/crm/components/organisms/DealsTable/utils/dealsTableUtils";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
+import { useContainerWidth } from "~community/crm/components/organisms/DealsTable/utils/dealsTableUtils";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
+import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 
 interface DealRow extends BaseRowData {
   id: string;

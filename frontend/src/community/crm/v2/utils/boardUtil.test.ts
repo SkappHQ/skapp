@@ -50,13 +50,10 @@ const group = (
 
 describe("board ingestion + mutation as pure record transforms", () => {
   it("ingests stage groups into scalar deals + ordered board columns", () => {
-    const result = ingestBoardStageDeals(
-      { deals: {}, board: {}, dealIds: [] },
-      [
-        group(STAGE_A, [boardDeal(1), boardDeal(2)]),
-        group(STAGE_B, [boardDeal(3)])
-      ]
-    );
+    const result = ingestBoardStageDeals({ deals: {}, board: {}, dealIds: [] }, [
+      group(STAGE_A, [boardDeal(1), boardDeal(2)]),
+      group(STAGE_B, [boardDeal(3)])
+    ]);
 
     expect(result.board[STAGE_A].dealIds).toEqual([1, 2]);
     expect(result.board[STAGE_B].dealIds).toEqual([3]);
