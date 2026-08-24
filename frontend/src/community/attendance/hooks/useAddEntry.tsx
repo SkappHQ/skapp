@@ -24,6 +24,7 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import {
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
+  PEOPLE_ERROR_NO_MANAGERS_FOUND,
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -93,7 +94,6 @@ const useAddEntry = () => {
       toastType: ToastType.ERROR
     });
   };
-  // Enhanced onError to handle "No manager Found" 400 error
   const enhancedOnError = (error: ErrorResponse) => {
     if (
       error?.response?.data?.results?.[0]?.messageKey ===
@@ -108,7 +108,10 @@ const useAddEntry = () => {
       return;
     }
 
-    if (error?.response?.data?.results?.[0]?.message === "No managers found") {
+    if (
+      error?.response?.data?.results?.[0]?.messageKey ===
+      PEOPLE_ERROR_NO_MANAGERS_FOUND
+    ) {
       setToastMessage({
         open: true,
         title: translateText(["addTimeEntryNoManagerErrorTitle"]),
@@ -165,8 +168,7 @@ const useAddEntry = () => {
   };
 
   const { mutate: addDirectEntryMutate } = useAddDirectTimeEntry(
-    (directEntryVariables) =>
-      onSuccessDirectEntry(false, directEntryVariables),
+    (directEntryVariables) => onSuccessDirectEntry(false, directEntryVariables),
     onDirectEntryError
   );
 
