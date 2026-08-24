@@ -1,9 +1,37 @@
 import {
   CrmDealFilterRequest,
-  CrmDealsByStagesRequest
+  CrmDealsByStagesRequest,
+  CrmTaskCompletedFilterRequest,
+  CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
+const V2 = "v2";
+
+export const crmTaskQueryKeys = {
+  OPEN_TASKS: [V2, "crm-open-tasks"],
+  OPEN_TASKS_BY_FILTER: (filter: CrmTaskFilterRequest) => [
+    V2,
+    "crm-open-tasks",
+    filter
+  ],
+  COMPLETED_TASKS: [V2, "crm-completed-tasks"],
+  COMPLETED_TASKS_BY_FILTER: (filter: CrmTaskCompletedFilterRequest) => [
+    V2,
+    "crm-completed-tasks",
+    filter
+  ],
+  TASK_BY_ID: (id: number) => [V2, "crm-task-by-id", id],
+  RELATED_TASKS: [V2, "crm-related-tasks"],
+  RELATED_TASKS_BY_ID: (id: number, size: number) => [
+    V2,
+    "crm-related-tasks",
+    id,
+    size
+  ]
+};
+
 export const crmDealQueryKeys = {
+  DEALS_BY_IDS: (dealIds: number[]) => [V2, "crm-deals-by-ids", dealIds],
   GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
   DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
@@ -11,7 +39,11 @@ export const crmDealQueryKeys = {
 };
 
 export const crmCompanyQueryKeys = {
-  COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids]
+  COMPANIES_BY_IDS: (companyIds: number[]) => [
+    V2,
+    "crm-companies-by-ids",
+    companyIds
+  ]
 };
 
 export const crmLookupQueryKeys = {

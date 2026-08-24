@@ -25,6 +25,23 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
 import { crmDealQueryKeys } from "./utils/QueryKeys";
 
+const fetchDealsByIds = async (ids: number[]): Promise<CrmDealEntity[]> => {
+  const response = await authFetch.post(crmDealEndpoints.GET_DEALS_BY_IDS, {
+    ids
+  });
+  return response?.data?.results;
+};
+
+export const useGetDealsByIds = (
+  dealIds: number[],
+  enabled: boolean
+): UseQueryResult<CrmDealEntity[]> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.DEALS_BY_IDS(dealIds),
+    queryFn: () => fetchDealsByIds(dealIds),
+    enabled
+  });
+
 const fetchDeals = async (
   filters: CrmDealFilterRequest
 ): Promise<{

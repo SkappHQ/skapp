@@ -1,5 +1,17 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
+export const crmTaskEndpointsV2 = {
+  GET_TASKS: `${moduleAPIPath.CRM}/task`,
+  GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
+  GET_RELATED_TASKS: (id: number) => `${moduleAPIPath.CRM}/task/${id}/related`,
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
+};
+
+export const crmTaskEndpoints = {
+  DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
+};
+
 export const crmDealEndpointsV2 = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
@@ -8,6 +20,7 @@ export const crmDealEndpointsV2 = {
 };
 
 export const crmDealEndpoints = {
+  GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,

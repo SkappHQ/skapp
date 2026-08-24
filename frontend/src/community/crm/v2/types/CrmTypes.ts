@@ -3,7 +3,8 @@ import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import {
   CrmDealSortEnum,
   CrmKanbanDragType,
-  CrmPriorityEnum
+  CrmPriorityEnum,
+  CrmTaskTabEnum
 } from "../enums/common";
 import {
   CrmCompanyEntity,
@@ -36,6 +37,11 @@ export enum CrmSidePanelTypes {
   TASK_SIDE_PANEL = "TASK_SIDE_PANEL",
   ADD_DEAL_SIDE_PANEL = "ADD_DEAL_SIDE_PANEL",
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
+}
+
+export interface CrmTaskTab {
+  id: CrmTaskTabEnum;
+  label: string;
 }
 
 export interface CrmDealReorderWithinStageRequest {
@@ -108,25 +114,14 @@ export interface CrmDealsByStagesResponse {
 }
 
 export interface CrmTaskListResponse {
-  tasks: CrmTaskEntity[];
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 export interface CrmTaskTypeListResponse {
   taskTypes: CrmTaskTypeEntity[];
-}
-
-export interface CrmTaskCompletedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface CrmTaskRelatedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
 }
 
 export interface CrmExistsResponse {
@@ -200,9 +195,13 @@ export interface CrmTaskCompletedFilterRequest {
   size?: number;
 }
 
-export interface CrmTaskRelatedFilterRequest {
-  contactId?: number;
-  dealId?: number;
-  page?: number;
-  size?: number;
+export interface CrmRelatedTasksRequest {
+  id: number;
+  page: number;
+  size: number;
+}
+
+export interface CrmRelatedTasksFilterRequest {
+  id: number;
+  size: number;
 }

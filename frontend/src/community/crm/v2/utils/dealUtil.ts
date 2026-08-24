@@ -10,6 +10,17 @@ export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   return dealRecord;
 };
 
+export const getMissingDealIds = (
+  dealIds: number[],
+  deals: CrmDealRecord
+): number[] => {
+  const unique = new Set<number>();
+  for (const id of dealIds) {
+    if (id != null && !deals[id]) unique.add(id);
+  }
+  return Array.from(unique).sort((a, b) => a - b);
+};
+
 export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   const dealIds: number[] = [];
   for (const deal of deals) {
