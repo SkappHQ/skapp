@@ -15,20 +15,25 @@ import {
   useGetCompanyById,
   useGetCompanyMetrics
 } from "~community/crm/v2/api/CompanyApi";
+import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
 import SidePanelCompanyHeader from "~community/crm/v2/components/molecules/SidePanelCompanyHeader/SidePanelCompanyHeader";
 import SidePanelMetricCards from "~community/crm/v2/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
+import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmModalTypes,
-  CrmSidePanelTypes
+  CrmSidePanelTypes,
+  CrmTaskCompletedFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 import {
   getCompanyMetricItems,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
+import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
@@ -47,9 +52,11 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
   const {
     companies,
+    tasks,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setCompanies,
+    setTasks,
     setSelectedCompanyId,
     setIsCompanyModalOpen,
     setCompanyModalType,
@@ -57,9 +64,11 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   } = useCrmStoreV2(
     useShallow((store) => ({
       companies: store.companies,
+      tasks: store.tasks,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       setCompanies: store.setCompanies,
+      setTasks: store.setTasks,
       setSelectedCompanyId: store.setSelectedCompanyId,
       setIsCompanyModalOpen: store.setIsCompanyModalOpen,
       setCompanyModalType: store.setCompanyModalType,
@@ -67,23 +76,40 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     }))
   );
 
+  const taskFilters: CrmTaskCompletedFilterRequest = {
+    companyId,
+    size: TASK_PAGE_SIZE
+  };
+
   const { data: fetchedCompany, isLoading: isCompanyLoading } =
     useGetCompanyById(companyId);
   const { data: fetchedMetrics, isLoading: isMetricsLoading } =
     useGetCompanyMetrics(companyId);
+  const {
+    data: fetchedTasks,
+    isLoading: isTasksLoading,
+    fetchNextPage: fetchNextTasksPage,
+    hasNextPage: hasNextTasksPage,
+    isFetchingNextPage: isFetchingNextTasksPage
+  } = useGetTasksInfinite(taskFilters);
 
-  const isLoading = isCompanyLoading || isMetricsLoading;
+  const isLoading = isCompanyLoading || isMetricsLoading || isTasksLoading;
 
   useEffect(() => {
-    if (!fetchedCompany || !fetchedMetrics) return;
+    if (!fetchedCompany || !fetchedMetrics || !fetchedTasks) return;
 
+    const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
+    const normalizedTasks = normalizeTasks(taskItems);
+
+    setTasks({ ...tasks, ...normalizedTasks.tasks });
     setCompanies(
       updateCompany(companies, companyId, {
         ...fetchedCompany,
-        metrics: fetchedMetrics
+        metrics: fetchedMetrics,
+        taskIds: normalizedTasks.taskIds
       })
     );
-  }, [fetchedCompany, fetchedMetrics]);
+  }, [fetchedCompany, fetchedMetrics, fetchedTasks]);
 
   const company = companies[companyId];
 
@@ -188,6 +214,16 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
               />
               <hr className="border-secondary-accent" />
             </div>
+
+            {activeTab === CrmSidePanelTabEnum.TASKS && (
+              <SidePanelTasksSection
+                taskIds={company.taskIds}
+                hasNextPage={hasNextTasksPage}
+                isFetchingNextPage={isFetchingNextTasksPage}
+                onFetchNextPage={fetchNextTasksPage}
+                emptyDescription={translateText(["tasks", "emptyDescription"])}
+              />
+            )}
           </>
         )}
       </div>

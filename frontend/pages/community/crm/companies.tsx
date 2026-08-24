@@ -16,6 +16,7 @@ import SidePanelWrapperV2 from "~community/crm/v2/components/atoms/SidePanelWrap
 import CompanyModalControllerV2 from "~community/crm/v2/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanelV2 from "~community/crm/v2/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable as CompanyTableV2 } from "~community/crm/v2/components/organisms/CompanyTable/CompanyTable";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -116,6 +117,7 @@ const CompaniesV2 = () => {
         )}
 
         <CompanyModalControllerV2 />
+        <TaskModalControllerV2 />
         <CompanyTableV2 />
       </>
     </ContentLayout>

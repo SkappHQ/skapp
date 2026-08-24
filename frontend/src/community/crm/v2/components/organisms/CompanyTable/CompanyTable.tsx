@@ -186,9 +186,7 @@ export const CompanyTable: FC = () => {
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: () => {
-          void fetchNextPage();
-        }
+        onLoadMore: fetchNextPage
       }}
       toolbar={{
         searchBar: {
