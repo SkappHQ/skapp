@@ -13,7 +13,7 @@ const Unauthorized: NextPage = () => {
 
   useEffect(() => {
     setBreadcrumbs([]);
-  }, [setBreadcrumbs]);
+  }, []);
 
   return (
     <>
