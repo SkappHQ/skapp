@@ -129,6 +129,18 @@ export const getChangedCompanyFields = (
   return changedFields;
 };
 
+export const toCompaniesRecord = (
+  companies: CrmCompanyEntity[]
+): CrmCompanyRecord => {
+  const companyRecord: CrmCompanyRecord = {};
+  for (const company of companies) {
+    if (company.id != null) {
+      companyRecord[company.id] = company;
+    }
+  }
+  return companyRecord;
+};
+
 export const getMissingCompanyIds = (
   companyIds: number[],
   companies: CrmCompanyRecord

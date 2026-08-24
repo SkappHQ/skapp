@@ -46,6 +46,19 @@ export const crmCompanyQueryKeys = {
   NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
 };
 
+export const crmLookupQueryKeys = {
+  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-contact-lookup-v2",
+    searchKeyword,
+    size
+  ],
+  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
+    "crm-owner-lookup-v2",
+    searchKeyword,
+    size
+  ]
+};
+
 export const crmBoardQueryKeys = {
   BOARD_INIT_DATA: ["crm-board-init-data-v2"],
   DEALS_GROUPED_BY_STAGES: (params: CrmDealsByStagesRequest) => [

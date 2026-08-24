@@ -26,11 +26,6 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-interface EditCompanyVariables {
-  id: number;
-  payload: CrmCompanyEntity;
-}
-
 const fetchCompanies = async (
   params: CrmCompanyFilterRequest
 ): Promise<CrmCompanyListResponse> => {
@@ -132,12 +127,12 @@ export const useCreateCompany = (
   });
 };
 
-const editCompany = async ({
-  id,
-  payload
-}: EditCompanyVariables): Promise<CrmCompanyEntity> => {
+const editCompany = async (
+  company: CrmCompanyEntity
+): Promise<CrmCompanyEntity> => {
+  const { id, ...payload } = company;
   const response = await authFetch.patch(
-    crmCompanyEndpoints.EDIT_COMPANY(id),
+    crmCompanyEndpoints.EDIT_COMPANY(id!),
     payload
   );
   return response?.data?.results?.[0];
@@ -146,7 +141,7 @@ const editCompany = async ({
 export const useEditCompany = (
   onSuccess: (company: CrmCompanyEntity) => void,
   onError: (error: AxiosError) => void
-): UseMutationResult<CrmCompanyEntity, AxiosError, EditCompanyVariables> =>
+): UseMutationResult<CrmCompanyEntity, AxiosError, CrmCompanyEntity> =>
   useMutation({
     mutationFn: editCompany,
     onSuccess,
