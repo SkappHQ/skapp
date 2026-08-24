@@ -11,12 +11,16 @@ import {
   useState
 } from "react";
 
+import EmployeeAvatarChip, {
+  EmployeeAvatarData,
+  getEmployeeAvatarName
+} from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
+import useDebounce from "~community/common/hooks/useDebounce";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   WorkLocationEmployee,
   WorkLocationFormValues
@@ -35,46 +39,28 @@ import {
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
 
+const MAX_INLINE_CHIPS = 2;
 const MAX_VISIBLE_AVATARS = 4;
+
+const TRIGGER_ID_PREFIX = "trigger";
+const OPTION_ID_PREFIX = "option";
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
   preloadedEmployees?: WorkLocationEmployee[];
 }
 
-const getEmployeeName = (employee: AllEmployeeDataType): string =>
-  concatStrings([employee.firstName, employee.lastName]).trim();
+interface EmployeeGroupAvatarProps {
+  employee: EmployeeAvatarData;
+}
 
-const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
-  employee
-}) => {
+const EmployeeGroupAvatar: FC<EmployeeGroupAvatarProps> = ({ employee }) => {
   const imageUrl = useGetImageUrl(employee.authPic ?? "");
-
-  return (
-    <div className="w-fit min-w-0 max-w-full">
-      <AvatarChip
-        avatarProps={{
-          id: String(employee.employeeId),
-          firstName: employee.firstName,
-          lastName: employee.lastName,
-          src: imageUrl ?? "",
-          size: "sm"
-        }}
-        label={getEmployeeName(employee)}
-      />
-    </div>
-  );
-};
-
-const EmployeeGroupAvatar: FC<{ employee: AllEmployeeDataType }> = ({
-  employee
-}) => {
-  const imageUrl = useGetImageUrl(employee.authPic ?? "");
-  const employeeName = getEmployeeName(employee);
+  const employeeName = getEmployeeAvatarName(employee);
 
   return (
     <Avatar
-      id={String(employee.employeeId)}
+      id={`${TRIGGER_ID_PREFIX}-avatar-${employee.employeeId}`}
       firstName={employee.firstName}
       lastName={employee.lastName}
       src={imageUrl ?? ""}
@@ -133,7 +119,13 @@ const WorkLocationEmployeeSelector = ({
     hasNextPage,
     isFetchingNextPage
   } = useGetEmployeeData();
-  const { data: searchResults } = useGetSearchedEmployees(employeeSearchText);
+  const { data: searchResults, isFetching: isFetchingSearchResults } =
+    useGetSearchedEmployees(employeeSearchText);
+
+  const debouncedSearchText = useDebounce(employeeSearchText, 500);
+  const isSearchPending =
+    employeeSearchText.length > 0 &&
+    (employeeSearchText !== debouncedSearchText || isFetchingSearchResults);
 
   const allEmployees: AllEmployeeDataType[] = useMemo(
     () =>
@@ -251,6 +243,36 @@ const WorkLocationEmployeeSelector = ({
     ? allEmployees.length
     : selectedIds.length;
 
+  const visibleEmployees = useMemo(
+    () => selectedEmployees.slice(0, MAX_VISIBLE_AVATARS),
+    [selectedEmployees]
+  );
+
+  const remainingEmployees = useMemo(
+    () => selectedEmployees.slice(MAX_VISIBLE_AVATARS),
+    [selectedEmployees]
+  );
+
+  const selectedEmployeesLabel = useMemo(
+    () => selectedEmployees.map(getEmployeeAvatarName).join(", "),
+    [selectedEmployees]
+  );
+
+  const remainingEmployeesLabel = useMemo(
+    () => remainingEmployees.map(getEmployeeAvatarName).join(", "),
+    [remainingEmployees]
+  );
+
+  const filteredSelectedEmployees = useMemo(
+    () =>
+      selectedEmployees.filter((emp) =>
+        getEmployeeAvatarName(emp)
+          .toLowerCase()
+          .includes(employeeSearchText.toLowerCase())
+      ),
+    [selectedEmployees, employeeSearchText]
+  );
+
   useEffect(() => {
     if (boxRef.current) {
       setBoxWidth(boxRef.current.clientWidth);
@@ -289,14 +311,14 @@ const WorkLocationEmployeeSelector = ({
     }
   };
 
-  const renderAllEmployeesChip = () => {
-    const allEmployeesLabel = translateText(["form.allEmployees"]);
+  const renderAllEmployeesChip = (idPrefix: string) => {
+    const allEmployeesLabel = translateText(["form.allEmployees"]).trim();
 
     return (
-      <div className="w-fit max-w-full">
+      <div className="w-fit min-w-0 max-w-full">
         <AvatarChip
           avatarProps={{
-            id: "all-employees",
+            id: `${idPrefix}-all-employees`,
             firstName: allEmployeesLabel,
             size: "sm"
           }}
@@ -307,6 +329,10 @@ const WorkLocationEmployeeSelector = ({
   };
 
   const renderTriggerContent = () => {
+    if (isAllSelected) {
+      return renderAllEmployeesChip(TRIGGER_ID_PREFIX);
+    }
+
     if (selectedCount === 0) {
       return (
         <span className="body1 text-secondary-text">
@@ -315,37 +341,35 @@ const WorkLocationEmployeeSelector = ({
       );
     }
 
-    if (isAllSelected) {
-      return renderAllEmployeesChip();
-    }
-
-    if (selectedCount <= 2) {
+    if (selectedCount <= MAX_INLINE_CHIPS) {
       return (
         <div className="flex min-w-0 gap-2">
           {selectedEmployees.map((emp) => (
-            <EmployeeAvatarChip key={emp.employeeId} employee={emp} />
+            <EmployeeAvatarChip
+              key={emp.employeeId}
+              employee={emp}
+              idPrefix={TRIGGER_ID_PREFIX}
+              className="w-fit min-w-0 max-w-full"
+            />
           ))}
         </div>
       );
     }
 
-    const visibleEmployees = selectedEmployees.slice(0, MAX_VISIBLE_AVATARS);
-    const remainingEmployees = selectedEmployees.slice(MAX_VISIBLE_AVATARS);
-
     return (
       <div
-        className="flex -space-x-3"
+        className="flex min-w-0 max-w-full -space-x-3"
         role="group"
-        aria-label={selectedEmployees.map(getEmployeeName).join(", ")}
+        aria-label={selectedEmployeesLabel}
       >
         {visibleEmployees.map((emp) => (
           <EmployeeGroupAvatar key={emp.employeeId} employee={emp} />
         ))}
         {remainingEmployees.length > 0 && (
           <Avatar
-            id="selected-employees-surplus"
+            id="trigger-avatar-surplus"
             count={remainingEmployees.length}
-            title={remainingEmployees.map(getEmployeeName).join(", ")}
+            title={remainingEmployeesLabel}
             size="sm"
           />
         )}
@@ -365,7 +389,7 @@ const WorkLocationEmployeeSelector = ({
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
+        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full min-w-0 overflow-hidden cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -410,38 +434,33 @@ const WorkLocationEmployeeSelector = ({
           role="listbox"
           className="max-h-56 overflow-y-auto"
         >
-          {!isAllSelected && selectedEmployees.length > 0 && (
+          {!isAllSelected && filteredSelectedEmployees.length > 0 && (
             <>
-              {selectedEmployees
-                .filter(
-                  (emp) =>
-                    employeeSearchText.length === 0 ||
-                    `${emp.firstName ?? ""} ${emp.lastName ?? ""}`
-                      .toLowerCase()
-                      .includes(employeeSearchText.toLowerCase())
-                )
-                .map((emp) => {
-                  const empId = emp.employeeId;
-                  return (
-                    <div
-                      key={empId}
-                      role="option"
-                      tabIndex={0}
-                      aria-selected={true}
-                      className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
-                      onClick={() => toggleEmployee(empId)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          toggleEmployee(empId);
-                        }
-                      }}
-                    >
-                      <Checkbox checked={true} />
-                      <EmployeeAvatarChip employee={emp} />
-                    </div>
-                  );
-                })}
+              {filteredSelectedEmployees.map((emp) => {
+                const empId = emp.employeeId;
+                return (
+                  <div
+                    key={empId}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={true}
+                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    onClick={() => toggleEmployee(empId)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleEmployee(empId);
+                      }
+                    }}
+                  >
+                    <Checkbox checked={true} />
+                    <EmployeeAvatarChip
+                      employee={emp}
+                      idPrefix={OPTION_ID_PREFIX}
+                    />
+                  </div>
+                );
+              })}
               <hr className="border-secondary-accent my-2 mx-3" />
             </>
           )}
@@ -461,7 +480,7 @@ const WorkLocationEmployeeSelector = ({
               }}
             >
               <Checkbox checked={isAllSelected} />
-              {renderAllEmployeesChip()}
+              {renderAllEmployeesChip(OPTION_ID_PREFIX)}
             </div>
           )}
 
@@ -486,16 +505,28 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    <EmployeeAvatarChip employee={emp} />
+                    <EmployeeAvatarChip
+                      employee={emp}
+                      idPrefix={OPTION_ID_PREFIX}
+                    />
                   </div>
                 );
               })}
 
-          {employeeSearchText.length > 0 && displayEmployees.length === 0 && (
-            <p className="text-center text-secondary-text body2 py-4">
-              {translateText(["form.noSearchResults"])}
-            </p>
+          {isSearchPending && (
+            <div className="flex justify-center py-2">
+              <CircularProgress size={20} />
+            </div>
           )}
+
+          {employeeSearchText.length > 0 &&
+            !isSearchPending &&
+            displayEmployees.length === 0 &&
+            filteredSelectedEmployees.length === 0 && (
+              <p className="text-center text-secondary-text body2 py-4">
+                {translateText(["form.noSearchResults"])}
+              </p>
+            )}
 
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">
