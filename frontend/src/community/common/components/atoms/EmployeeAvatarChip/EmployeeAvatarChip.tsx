@@ -1,5 +1,5 @@
 import { AvatarChip } from "@rootcodelabs/skapp-ui";
-import { FC, useId } from "react";
+import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -23,8 +23,6 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
   employee,
   className
 }) => {
-
-  const instanceId = useId();
   const imageUrl = useGetImageUrl(employee.authPic ?? "");
   const employeeName = getEmployeeAvatarName(employee);
 
@@ -32,7 +30,7 @@ const EmployeeAvatarChip: FC<EmployeeAvatarChipProps> = ({
     <div className={className}>
       <AvatarChip
         avatarProps={{
-          id: `${instanceId}-avatar-${employee.employeeId}`,
+          id: `avatar-${employee.employeeId}`,
           firstName: employee.firstName,
           lastName: employee.lastName,
           src: imageUrl ?? "",
