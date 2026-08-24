@@ -11,8 +11,10 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.v2.CrmDealServiceV2;
 import com.skapp.community.crmplanner.util.CrmUtil;
@@ -36,6 +38,8 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 	private final CrmMapperV2 crmMapperV2;
 
 	private final UserService userService;
+
+	private final CrmDealOrderIndexService crmDealOrderIndexService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -97,6 +101,34 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 		log.info("editDeal: execution ended");
 		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, savedDeal));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto reorderDealInList(CrmDealListReorderRequestDto requestDto) {
+		log.info("reorderDealInList: reordering deal id={}", requestDto.getDealId());
+
+		if (requestDto.getDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
+		}
+		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
+		}
+
+		CrmDeal deal = crmDealDao.findByIdAndIsDeletedFalse(requestDto.getDealId())
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
+
+		User currentUser = userService.getCurrentUser();
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, deal.getOwner().getEmployeeId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
+		}
+
+		crmDealOrderIndexService.reorderInList(requestDto.getDealId(), requestDto.getPreviousDealId(),
+				requestDto.getNextDealId());
+
+		CrmDeal reordered = crmDealDao.findByIdWithAssociations(requestDto.getDealId());
+		log.info("reorderDealInList: execution ended");
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, reordered));
 	}
 
 }

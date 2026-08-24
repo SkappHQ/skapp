@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,5 +70,8 @@ public class CrmDeal extends Auditable<String> {
 
 	@Column(name = "is_deleted", nullable = false)
 	private Boolean isDeleted = false;
+
+	@OneToOne(mappedBy = "deal", fetch = FetchType.LAZY)
+	private CrmDealOrderIndex dealOrderIndex;
 
 }

@@ -38,6 +38,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.util.CrmUtil;
@@ -45,6 +46,7 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -84,6 +86,12 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final MessageUtil messageUtil;
+
+	// Field-injected (not constructor-injected) so the @RequiredArgsConstructor signature
+	// stays stable for the enterprise EpCrmDealServiceImpl subclass, which calls
+	// super(...).
+	@Autowired
+	private CrmDealOrderIndexService crmDealOrderIndexService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -154,6 +162,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOwner(owner);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
+		crmDealOrderIndexService.createForNewDeal(savedDeal);
 
 		log.info("persistNewDeal: deal created with id={}", savedDeal.getId());
 		return savedDeal;
