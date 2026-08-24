@@ -1,4 +1,7 @@
-import { authenticationEndpoints as communityAuthEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import {
+  authenticationEndpoints as communityAuthEndpoints,
+  internalApiEndpoints
+} from "~community/common/api/utils/ApiEndpoints";
 import ROUTES from "~community/common/constants/routes";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
@@ -95,7 +98,7 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
 
   retrievePromise = (async () => {
     try {
-      const response = await fetch("/api/auth/access-token", {
+      const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
         method: "GET",
         credentials: "same-origin"
       });
@@ -160,7 +163,7 @@ export const setAccessToken = async (token: string): Promise<void> => {
 
   if (typeof window !== "undefined") {
     try {
-      await fetch("/api/auth/access-token", {
+      await fetch(internalApiEndpoints.ACCESS_TOKEN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -177,7 +180,7 @@ export const setIsPasswordChangedForTheFirstTime = async (
 ): Promise<void> => {
   if (typeof window !== "undefined") {
     try {
-      await fetch("/api/auth/access-token", {
+      await fetch(internalApiEndpoints.ACCESS_TOKEN, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -204,7 +207,7 @@ export const clearCookies = async (): Promise<void> => {
 
   if (typeof window !== "undefined") {
     try {
-      await fetch("/api/clear-cookies", {
+      await fetch(internalApiEndpoints.CLEAR_COOKIES, {
         method: "POST",
         credentials: "same-origin"
       });

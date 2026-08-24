@@ -9,6 +9,7 @@ import React, {
   useState
 } from "react";
 
+import { internalApiEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams
@@ -84,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
         // Clear all existing cookies before signing in
-        await fetch("/api/clear-cookies", {
+        await fetch(internalApiEndpoints.CLEAR_COOKIES, {
           method: "POST"
         });
 

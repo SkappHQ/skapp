@@ -12,6 +12,11 @@ export const organizationCreateEndpoints = {
   CHECK_ORG_SETUP_STATUS: `/app-setup-status`
 };
 
+export const internalApiEndpoints = {
+  ACCESS_TOKEN: `/api/auth/access-token`,
+  CLEAR_COOKIES: `/api/clear-cookies`
+};
+
 export const authenticationEndpoints = {
   CREDENTIAL_SIGN_IN: `${ApiVersions.V1}/auth/session/sign-in`,
   CREDENTIAL_SIGN_UP: `${ApiVersions.V1}/auth/signup/super-admin`,
