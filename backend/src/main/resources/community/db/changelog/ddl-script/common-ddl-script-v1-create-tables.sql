@@ -528,8 +528,9 @@ CREATE TABLE IF NOT EXISTS `rule_property`
 
 CREATE TABLE IF NOT EXISTS `user_settings`
 (
-    `user_id`       bigint NOT NULL,
-    `notifications` json DEFAULT NULL,
+    `user_id`            bigint NOT NULL,
+    `notifications`      json DEFAULT NULL,
+    `crm_deal_list_view` json DEFAULT NULL,
     PRIMARY KEY (`user_id`),
     CONSTRAINT `FK_user_settings_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 ) ENGINE = InnoDB;
@@ -676,6 +677,15 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
     CONSTRAINT `FK_crm_deal_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `crm_deal_order_index`
+(
+    `deal_id` bigint                                         NOT NULL,
+    `board`   text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    `list`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    PRIMARY KEY (`deal_id`),
+    CONSTRAINT `FK_crm_deal_order_index_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
 CREATE TABLE IF NOT EXISTS `crm_task`
 (
     `id`                 bigint  NOT NULL AUTO_INCREMENT,
@@ -703,6 +713,7 @@ CREATE TABLE IF NOT EXISTS `crm_task`
 ) ENGINE = InnoDB;
 
 -- rollback drop table crm_task;
+-- rollback drop table crm_deal_order_index;
 -- rollback drop table crm_deal;
 -- rollback drop table crm_deal_stage;
 -- rollback drop table crm_contact;
