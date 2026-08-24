@@ -1,5 +1,5 @@
-import { CrmCompanyFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import {
+  CrmCompanyFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest
 } from "~community/crm/v2/types/CrmTypes";
