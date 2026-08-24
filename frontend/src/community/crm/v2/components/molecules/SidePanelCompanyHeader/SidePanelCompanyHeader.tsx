@@ -9,7 +9,7 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
-import SidePanelHeaderInfoItem from "~community/crm/v2/components/atoms/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
+import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface SidePanelCompanyHeaderProps {
