@@ -21,7 +21,7 @@ export interface CrmCompanyEntity {
 export interface CrmCompanyMetrics {
   id?: number;
   openTasksCount?: number;
-  overdueCount?: number;
+  overdueTasksCount?: number;
   openValue?: string;
   accountValue?: string;
   openDealsCount?: number;

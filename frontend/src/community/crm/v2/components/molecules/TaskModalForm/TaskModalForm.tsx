@@ -31,7 +31,10 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
-import { CrmOwner } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookupParams,
+  CrmOwner
+} from "~community/crm/types/CommonTypes";
 import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
@@ -130,7 +133,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
     } else if (initialOwner) {
       setSelectedOwner(toLookupOwner(initialOwner));
     }
-
+    // Keyed on primitive ids, not the store object references above: merge
+    // helpers always return a new object on every hydration, even when the
+    // underlying fields are unchanged, which would otherwise reset an
+    // in-progress selection on every unrelated background refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     initialOwner?.employeeId,
     selectedTaskId,
@@ -178,12 +185,16 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedContactSearchText.length > 0 ||
     hasSelectedDeal ||
     contactLookupCompanyId != null;
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearchText,
+    size: DEFAULT_LOOKUP_PAGE_SIZE,
+    dealId: values.dealId,
+    companyId: contactLookupCompanyId ?? undefined
+  };
+
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearchText,
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    isContactSearchEnabled,
-    values.dealId,
-    contactLookupCompanyId
+    contactLookupParams,
+    isContactSearchEnabled
   );
 
   const dealLookupCompanyId = hasSelectedContact ? null : companyScopeId;

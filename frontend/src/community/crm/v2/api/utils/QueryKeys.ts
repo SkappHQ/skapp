@@ -1,10 +1,13 @@
 import {
+  CrmCompanyFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
 const V2 = "v2";
+
+const CRM_COMPANIES = "crm-companies";
 
 export const crmTaskQueryKeys = {
   OPEN_TASKS: [V2, "crm-open-tasks"],
@@ -38,11 +41,12 @@ export const crmDealQueryKeys = {
 };
 
 export const crmCompanyQueryKeys = {
-  COMPANIES_BY_IDS: (companyIds: number[]) => [
-    V2,
-    "crm-companies-by-ids",
-    companyIds
-  ]
+  ALL: [CRM_COMPANIES],
+  COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids],
+  LIST: (params: CrmCompanyFilterRequest) => [CRM_COMPANIES, "list", params],
+  DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
+  METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
+  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
 };
 
 export const crmLookupQueryKeys = {
