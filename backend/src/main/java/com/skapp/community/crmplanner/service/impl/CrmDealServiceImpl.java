@@ -11,7 +11,6 @@ import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
-import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -75,8 +74,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmContactOwnerRepository crmContactOwnerRepository;
 
 	private final CrmMapper crmMapper;
-
-	private final CrmMapperV2 crmMapperV2;
 
 	private final PageTransformer pageTransformer;
 
@@ -402,10 +399,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		List<CrmDealResponseDtoV2> deals = crmDealDao.findDealsByIds(requestDto.getIds(), ownerId)
-			.stream()
-			.map(deal -> CrmUtil.toDealResponseDtoV2(crmMapperV2, deal))
-			.toList();
+		List<CrmDealResponseDtoV2> deals = crmDealDao.findDealsByIds(requestDto.getIds(), ownerId);
 
 		log.info("getDealsByIds: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, deals);
