@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { Checkbox } from "@rootcodelabs/skapp-ui";
+import { Avatar, AvatarChip, Checkbox } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import {
   MouseEvent,
@@ -10,12 +10,14 @@ import {
   useState
 } from "react";
 
-import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
-import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
+import EmployeeAvatarChip from "~community/common/components/atoms/EmployeeAvatarChip/EmployeeAvatarChip";
+import EmployeeGroupAvatar from "~community/common/components/atoms/EmployeeGroupAvatar/EmployeeGroupAvatar";
 import Popper from "~community/common/components/molecules/Popper/Popper";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
+import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
+import { getEmployeeAvatarName } from "~community/common/utils/commonUtil";
 import {
   WorkLocationEmployee,
   WorkLocationFormValues
@@ -33,6 +35,9 @@ import {
   AllEmployeeDataResponse,
   AllEmployeeDataType
 } from "~community/people/types/PeopleTypes";
+
+const MAX_INLINE_CHIPS = 2;
+const MAX_VISIBLE_AVATARS = 4;
 
 interface Props {
   formik: FormikProps<WorkLocationFormValues>;
@@ -87,7 +92,13 @@ const WorkLocationEmployeeSelector = ({
     hasNextPage,
     isFetchingNextPage
   } = useGetEmployeeData();
-  const { data: searchResults } = useGetSearchedEmployees(employeeSearchText);
+  const { data: searchResults, isFetching: isFetchingSearchResults } =
+    useGetSearchedEmployees(employeeSearchText);
+
+  const debouncedSearchText = useDebounce(employeeSearchText, 500);
+  const isSearchPending =
+    employeeSearchText.length > 0 &&
+    (employeeSearchText !== debouncedSearchText || isFetchingSearchResults);
 
   const allEmployees: AllEmployeeDataType[] = useMemo(
     () =>
@@ -205,6 +216,36 @@ const WorkLocationEmployeeSelector = ({
     ? allEmployees.length
     : selectedIds.length;
 
+  const visibleEmployees = useMemo(
+    () => selectedEmployees.slice(0, MAX_VISIBLE_AVATARS),
+    [selectedEmployees]
+  );
+
+  const remainingEmployees = useMemo(
+    () => selectedEmployees.slice(MAX_VISIBLE_AVATARS),
+    [selectedEmployees]
+  );
+
+  const selectedEmployeesLabel = useMemo(
+    () => selectedEmployees.map(getEmployeeAvatarName).join(", "),
+    [selectedEmployees]
+  );
+
+  const remainingEmployeesLabel = useMemo(
+    () => remainingEmployees.map(getEmployeeAvatarName).join(", "),
+    [remainingEmployees]
+  );
+
+  const filteredSelectedEmployees = useMemo(
+    () =>
+      selectedEmployees.filter((emp) =>
+        getEmployeeAvatarName(emp)
+          .toLowerCase()
+          .includes(employeeSearchText.toLowerCase())
+      ),
+    [selectedEmployees, employeeSearchText]
+  );
+
   useEffect(() => {
     if (boxRef.current) {
       setBoxWidth(boxRef.current.clientWidth);
@@ -243,16 +284,28 @@ const WorkLocationEmployeeSelector = ({
     }
   };
 
-  const renderAllEmployeesChip = () => (
-    <AvatarChip
-      firstName={translateText(["form.allEmployees"]).trim()}
-      lastName=""
-      avatarUrl={undefined}
-      isTooltipEnabled
-    />
-  );
+  const renderAllEmployeesChip = (idPrefix: string) => {
+    const allEmployeesLabel = translateText(["form.allEmployees"]).trim();
+
+    return (
+      <div className="w-fit min-w-0 max-w-full">
+        <AvatarChip
+          avatarProps={{
+            id: `${idPrefix}-all-employees`,
+            firstName: allEmployeesLabel,
+            size: "sm"
+          }}
+          label={allEmployeesLabel}
+        />
+      </div>
+    );
+  };
 
   const renderTriggerContent = () => {
+    if (isAllSelected) {
+      return renderAllEmployeesChip("trigger");
+    }
+
     if (selectedCount === 0) {
       return (
         <span className="body1 text-secondary-text">
@@ -261,41 +314,38 @@ const WorkLocationEmployeeSelector = ({
       );
     }
 
-    if (isAllSelected) {
-      return renderAllEmployeesChip();
-    }
-
-    if (selectedCount <= 2) {
+    if (selectedCount <= MAX_INLINE_CHIPS) {
       return (
-        <div className="flex gap-2">
+        <div className="flex min-w-0 gap-2">
           {selectedEmployees.map((emp) => (
-            <AvatarChip
+            <EmployeeAvatarChip
               key={emp.employeeId}
-              firstName={emp.firstName ?? ""}
-              lastName={(emp.lastName ?? "").trim()}
-              avatarUrl={emp.authPic}
-              isTooltipEnabled
+              employee={emp}
+              className="w-fit min-w-0 max-w-full"
             />
           ))}
         </div>
       );
     }
 
-    const remainingEmployees = selectedEmployees.slice(3);
-    const remainingTitle = remainingEmployees
-      .map((emp) => `${emp.firstName ?? ""} ${(emp.lastName ?? "").trim()}`.trim())
-      .join(", ");
-
     return (
-      <AvatarGroup
-        avatars={selectedEmployees.map((emp) => ({
-          firstName: emp.firstName ?? "",
-          lastName: (emp.lastName ?? "").trim(),
-          image: emp.authPic || null
-        }))}
-        max={4}
-        title={remainingTitle || undefined}
-      />
+      <div
+        className="flex min-w-0 max-w-full -space-x-3"
+        role="group"
+        aria-label={selectedEmployeesLabel}
+      >
+        {visibleEmployees.map((emp) => (
+          <EmployeeGroupAvatar key={emp.employeeId} employee={emp} />
+        ))}
+        {remainingEmployees.length > 0 && (
+          <Avatar
+            id="avatar-surplus"
+            count={remainingEmployees.length}
+            title={remainingEmployeesLabel}
+            size="sm"
+          />
+        )}
+      </div>
     );
   };
 
@@ -311,7 +361,7 @@ const WorkLocationEmployeeSelector = ({
         aria-expanded={popperOpen}
         aria-haspopup="listbox"
         aria-label={translateText(["form.assignEmployeesLabel"])}
-        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
+        className="bg-tertiary-background h-12 rounded-lg flex items-center w-full min-w-0 overflow-hidden cursor-pointer px-3 focus:outline-1 focus:outline-primary-accent focus:-outline-offset-[2px]"
         onClick={handleTriggerClick}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -351,44 +401,35 @@ const WorkLocationEmployeeSelector = ({
           setSearchTerm={setEmployeeSearchText}
           autoFocus
         />
-        <div ref={listRefCallback} role="listbox" className="max-h-56 overflow-y-auto">
-          {!isAllSelected && selectedEmployees.length > 0 && (
+        <div
+          ref={listRefCallback}
+          role="listbox"
+          className="max-h-56 overflow-y-auto"
+        >
+          {!isAllSelected && filteredSelectedEmployees.length > 0 && (
             <>
-              {selectedEmployees
-                .filter(
-                  (emp) =>
-                    employeeSearchText.length === 0 ||
-                    `${emp.firstName ?? ""} ${emp.lastName ?? ""}`
-                      .toLowerCase()
-                      .includes(employeeSearchText.toLowerCase())
-                )
-                .map((emp) => {
-                  const empId = emp.employeeId;
-                  return (
-                    <div
-                      key={empId}
-                      role="option"
-                      tabIndex={0}
-                      aria-selected={true}
-                      className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
-                      onClick={() => toggleEmployee(empId)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          toggleEmployee(empId);
-                        }
-                      }}
-                    >
-                      <Checkbox checked={true} />
-                      <AvatarChip
-                        firstName={emp.firstName ?? ""}
-                        lastName={(emp.lastName ?? "").trim()}
-                        avatarUrl={emp.authPic}
-                        isTooltipEnabled
-                      />
-                    </div>
-                  );
-                })}
+              {filteredSelectedEmployees.map((emp) => {
+                const empId = emp.employeeId;
+                return (
+                  <div
+                    key={empId}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={true}
+                    className="flex items-center gap-3 px-3 py-1 cursor-pointer hover:bg-secondary-background"
+                    onClick={() => toggleEmployee(empId)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleEmployee(empId);
+                      }
+                    }}
+                  >
+                    <Checkbox checked={true} />
+                    <EmployeeAvatarChip employee={emp} />
+                  </div>
+                );
+              })}
               <hr className="border-secondary-accent my-2 mx-3" />
             </>
           )}
@@ -408,7 +449,7 @@ const WorkLocationEmployeeSelector = ({
               }}
             >
               <Checkbox checked={isAllSelected} />
-              {renderAllEmployeesChip()}
+              {renderAllEmployeesChip("option")}
             </div>
           )}
 
@@ -433,18 +474,21 @@ const WorkLocationEmployeeSelector = ({
                     }}
                   >
                     <Checkbox checked={false} />
-                    <AvatarChip
-                      firstName={emp.firstName ?? ""}
-                      lastName={(emp.lastName ?? "").trim()}
-                      avatarUrl={emp.authPic}
-                      isTooltipEnabled
-                    />
+                    <EmployeeAvatarChip employee={emp} />
                   </div>
                 );
               })}
 
+          {isSearchPending && (
+            <div className="flex justify-center py-2">
+              <CircularProgress size={20} />
+            </div>
+          )}
+
           {employeeSearchText.length > 0 &&
-            displayEmployees.length === 0 && (
+            !isSearchPending &&
+            displayEmployees.length === 0 &&
+            filteredSelectedEmployees.length === 0 && (
               <p className="text-center text-secondary-text body2 py-4">
                 {translateText(["form.noSearchResults"])}
               </p>
