@@ -62,7 +62,6 @@ export const ContactTable: FC = () => {
     owners,
     setContacts,
     setContactIds,
-    setCompanies,
     setSelectedContactId,
     openCrmSidePanel
   } = useCrmStoreV2(
@@ -73,7 +72,6 @@ export const ContactTable: FC = () => {
       owners: store.owners,
       setContacts: store.setContacts,
       setContactIds: store.setContactIds,
-      setCompanies: store.setCompanies,
       setSelectedContactId: store.setSelectedContactId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
