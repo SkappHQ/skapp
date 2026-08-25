@@ -86,6 +86,11 @@ export interface User {
   tenantStatus?: TenantStatusEnums;
 }
 
+export interface SessionPayload {
+  accessToken: string;
+  isPasswordChangedForTheFirstTime: boolean;
+}
+
 // Flag to prevent recursive token refresh
 let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
@@ -197,29 +202,33 @@ export const setAccessToken = async (token: string): Promise<boolean> => {
   }
 };
 
-export const setIsPasswordChangedForTheFirstTime = async (
-  value: boolean
-): Promise<boolean> => {
+export const persistSession = async ({
+  accessToken,
+  isPasswordChangedForTheFirstTime
+}: SessionPayload): Promise<boolean> => {
   if (typeof window === "undefined") return false;
+
+  useCommonStore.getState().setAccessToken(accessToken);
+  resetStoredTokenCheck();
 
   try {
     const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
-      body: JSON.stringify({ isPasswordChangedForTheFirstTime: value })
+      body: JSON.stringify({ accessToken, isPasswordChangedForTheFirstTime })
     });
 
     if (!response.ok) {
       console.error(
-        `Failed to persist password-changed flag cookie: ${response.status}`
+        `Failed to persist the session cookies: ${response.status}`
       );
       return false;
     }
 
     return true;
   } catch {
-    console.error("Failed to persist password-changed flag cookie");
+    console.error("Failed to persist the session cookies");
     return false;
   }
 };
@@ -318,18 +327,20 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
     response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
 
   if (accessToken) {
-    const isTokenPersisted = await setAccessToken(accessToken);
+    const isSessionPersisted = await persistSession({
+      accessToken,
+      isPasswordChangedForTheFirstTime:
+        typeof isPasswordChangedForTheFirstTime === "boolean"
+          ? isPasswordChangedForTheFirstTime
+          : true
+    });
 
-    if (!isTokenPersisted) {
+    if (!isSessionPersisted) {
       return {
         status: SignInStatus.FAILURE,
         error: "Failed to persist the session"
       };
     }
-
-    await setIsPasswordChangedForTheFirstTime(
-      isPasswordChangedForTheFirstTime ?? true
-    );
 
     return { status: SignInStatus.SUCCESS };
   } else {
