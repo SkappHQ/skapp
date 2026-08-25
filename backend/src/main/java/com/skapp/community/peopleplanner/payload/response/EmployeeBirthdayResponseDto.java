@@ -1,21 +1,12 @@
 package com.skapp.community.peopleplanner.payload.response;
 
+import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class EmployeeBirthdayResponseDto {
-
-	private Long employeeId;
-
-	private String firstName;
-
-	private String lastName;
-
-	private String middleName;
-
-	private String authPic;
+public class EmployeeBirthdayResponseDto extends EmployeeBasicDetailsResponseDto {
 
 	private String jobFamily;
 
