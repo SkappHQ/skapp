@@ -10,7 +10,7 @@ import { ConfigurationTab } from "~community/configurations/types/ConfigurationT
 import CrmConfigurationsV2 from "~community/crm/v2/components/organisms/CrmConfigurations/CrmConfigurations";
 
 // Flip to true to serve the CRM configurations tab from the normalized v2 store surface.
-const isCrmConfigurationsV2 = false;
+const isCrmConfigurationsV2 = true;
 
 export const getConfigurationTabs = (
   translateText: (keys: string[]) => string

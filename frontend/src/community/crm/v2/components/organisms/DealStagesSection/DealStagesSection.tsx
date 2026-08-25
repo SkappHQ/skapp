@@ -53,7 +53,11 @@ const DealStagesSection: FC = () => {
     }))
   );
 
-  const { data: fetchedStages, isLoading } = useGetDealStages();
+  const {
+    data: fetchedStages,
+    isLoading,
+    refetch: refetchStages
+  } = useGetDealStages();
 
   const orderedStages = getOrderedStages(stages);
 
@@ -64,9 +68,13 @@ const DealStagesSection: FC = () => {
     if (!fetchedStages) return;
 
     setStages(toStagesRecord(fetchedStages));
-    setDraftStages(fetchedStages);
-    setHasChanges(false);
   }, [fetchedStages]);
+
+  useEffect(() => {
+    if (hasChanges) return;
+
+    setDraftStages(orderedStages);
+  }, [stages, hasChanges]);
 
   const handleSuccess = () => {
     setStages(applyStageOrder(stages, draftStages));
@@ -197,7 +205,7 @@ const DealStagesSection: FC = () => {
         </ButtonV2>
       </div>
 
-      <DealStageModalController />
+      <DealStageModalController onStageCreated={refetchStages} />
     </>
   );
 };

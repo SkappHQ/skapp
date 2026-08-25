@@ -1,24 +1,9 @@
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import {
-  CrmDealStageEnum,
-  DefaultStageNameEnum
-} from "~community/crm/v2/enums/common";
+import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
 import {
   CrmStageEntity,
   CrmStageRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmDealStageReorderItem } from "~community/crm/v2/types/CrmTypes";
-
-export const getStageDisplayName = (
-  translateText: TranslatorFunctionType,
-  stageName?: string
-) => {
-  if (stageName !== undefined) {
-    return stageName in DefaultStageNameEnum
-      ? translateText([stageName])
-      : stageName;
-  }
-};
 
 export const getSelectedStage = (
   stages: CrmStageRecord,
@@ -58,17 +43,6 @@ export const getChangedStageFields = (
   }
 
   return changedFields;
-};
-
-export const addStage = (
-  stages: CrmStageRecord,
-  stage: CrmStageEntity
-): CrmStageRecord => {
-  if (stage.id === undefined) {
-    return stages;
-  }
-
-  return { ...stages, [stage.id]: stage };
 };
 
 export const updateStage = (

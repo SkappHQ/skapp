@@ -7,6 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
+import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface DraggableDealStageCardProps {
@@ -39,7 +40,9 @@ const DraggableDealStageCard = ({
   const translateText = useTranslator("configurations", "crm");
 
   const stageColor = stage.color ?? CrmDealStageColorsEnum.SKY;
-  const stageName = stage.name ?? "";
+  const { getStageDisplayName } = useStageNameMapper();
+
+  const stageName = getStageDisplayName(stage.name) ?? "";
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -82,7 +85,7 @@ const DraggableDealStageCard = ({
             icon: <Icon name={IconName.EDIT_ICON} />,
             onClick: () => onEdit(stage),
             "aria-label": translateText(["aria", "editStage"], {
-              stageName: stage.name
+              stageName: stageName
             })
           },
           ...(!isTerminalStage &&
@@ -92,7 +95,7 @@ const DraggableDealStageCard = ({
                 icon: <Icon name={IconName.DELETE_BUTTON_ICON} />,
                 onClick: () => onDelete(stage),
                 "aria-label": translateText(["aria", "deleteStage"], {
-                  stageName: stage.name
+                  stageName: stageName
                 })
               }
             })
