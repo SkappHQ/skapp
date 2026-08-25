@@ -200,6 +200,8 @@ public interface PeopleMapper {
 	@Mapping(target = "jobTitle", source = "jobTitle.name")
 	EmployeeBirthdayResponseDto employeeToEmployeeBirthdayResponseDto(Employee employee);
 
+	List<EmployeeBirthdayResponseDto> employeesToEmployeeBirthdayResponseDtos(List<Employee> employees);
+
 	List<HolidayBasicDetailsResponseDto> holidaysToHolidayBasicDetailsResponseDtos(List<Holiday> holidays);
 
 	JobTitleDto jobTitleToJobTitleDto(JobTitle jobTitle);

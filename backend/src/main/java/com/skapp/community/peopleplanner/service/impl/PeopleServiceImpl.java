@@ -1613,9 +1613,8 @@ public class PeopleServiceImpl implements PeopleService {
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
-		List<EmployeeBirthdayResponseDto> response = employeesWithBirthdays.stream()
-			.map(peopleMapper::employeeToEmployeeBirthdayResponseDto)
-			.toList();
+		List<EmployeeBirthdayResponseDto> response = peopleMapper
+			.employeesToEmployeeBirthdayResponseDtos(employeesWithBirthdays);
 
 		log.info("getTodayBirthdayNotifications: execution ended");
 		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
