@@ -132,11 +132,6 @@ const TaskModalForm: FC<TaskFormProps> = ({
     } else if (initialOwner) {
       setSelectedOwner(toLookupOwner(initialOwner));
     }
-    // Keyed on primitive ids, not the store object references above: merge
-    // helpers always return a new object on every hydration, even when the
-    // underlying fields are unchanged, which would otherwise reset an
-    // in-progress selection on every unrelated background refetch.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     initialOwner?.employeeId,
     selectedTaskId,

@@ -44,7 +44,7 @@ export const resolveTaskRelations = (
   owners: CrmOwnerRecord,
   contacts: CrmContactRecord
 ): ResolvedTaskRelations => ({
-  owner: task?.ownerId != null ? owners[task.ownerId] : undefined,
+  owner: task?.ownerId ? owners[task.ownerId] : undefined,
   contact: task?.contactId != null ? contacts[task.contactId] : undefined
 });
 
