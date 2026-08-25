@@ -394,6 +394,10 @@ public class CrmDealServiceImpl implements CrmDealService {
 	public ResponseEntityDto getDealsByIds(CrmDealIdsRequestDto requestDto) {
 		log.info("getDealsByIds: execution started");
 
+		if (requestDto.getIds() == null || requestDto.getIds().isEmpty()) {
+			return new ResponseEntityDto(false, new ArrayList<>());
+		}
+
 		CrmValidations.validateDealIds(requestDto.getIds());
 
 		User currentUser = userService.getCurrentUser();

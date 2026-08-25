@@ -134,10 +134,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 	@Override
 	public List<CrmDealResponseDtoV2> findDealsByIds(List<Long> dealIds, Long ownerId) {
-		if (dealIds == null || dealIds.isEmpty()) {
-			return Collections.emptyList();
-		}
-
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmDealResponseDtoV2> query = cb.createQuery(CrmDealResponseDtoV2.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
