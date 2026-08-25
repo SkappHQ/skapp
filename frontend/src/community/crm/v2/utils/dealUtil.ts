@@ -21,6 +21,15 @@ export const resolveDealRelations = (
   stage: deal?.stageId != null ? stages[deal.stageId] : undefined
 });
 
+export const getSelectedDeal = (
+  deals: CrmDealRecord,
+  dealId: number | undefined
+): CrmDealEntity | undefined => {
+  if (dealId === undefined) return undefined;
+
+  return deals[dealId];
+};
+
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   const dealRecord: CrmDealRecord = {};
   for (const deal of deals) {

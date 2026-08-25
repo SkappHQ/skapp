@@ -8,7 +8,7 @@ import {
   TextArea
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import SearchableDropdown, {
@@ -31,30 +31,31 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
-import {
-  CrmContactLookupParams,
-  CrmOwner
-} from "~community/crm/types/CommonTypes";
+import { CrmContactLookupParams } from "~community/crm/types/CommonTypes";
 import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import {
-  CrmOwnerEntity,
-  CrmTaskEntity
-} from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
-import { toLookupOwner } from "~community/crm/v2/utils/taskUtil";
+import {
+  getSelectedOwner,
+  mergeOwners
+} from "~community/crm/v2/utils/commonUtil";
+import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
+import { getSelectedDeal, mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import {
+  fromLookupOwner,
+  toLookupOwner
+} from "~community/crm/v2/utils/taskUtil";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskEntity>;
   isPending: boolean;
   translateText: TranslatorFunctionType;
-  initialOwner?: CrmOwnerEntity | null;
 }
 
 const TaskModalForm: FC<TaskFormProps> = ({
   formik,
   isPending,
-  initialOwner,
   translateText
 }) => {
   const {
@@ -69,77 +70,41 @@ const TaskModalForm: FC<TaskFormProps> = ({
 
   const {
     setIsTaskModalOpen,
-    selectedTaskId,
-    selectedContactId,
     selectedCompanyId,
     isCrmSidePanelOpen,
     crmSidePanelType,
-    tasks,
     owners,
     contacts,
-    deals
+    deals,
+    setOwners,
+    setDeals
   } = useCrmStoreV2(
     useShallow((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
-      selectedTaskId: store.selectedTaskId,
-      selectedContactId: store.selectedContactId,
       selectedCompanyId: store.selectedCompanyId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
-      tasks: store.tasks,
       owners: store.owners,
       contacts: store.contacts,
-      deals: store.deals
+      deals: store.deals,
+      setOwners: store.setOwners,
+      setDeals: store.setDeals
     }))
   );
-
-  const selectedTask =
-    selectedTaskId != null ? tasks[selectedTaskId] : undefined;
-  const taskOwner =
-    selectedTask?.ownerId != null ? owners[selectedTask.ownerId] : undefined;
-  const taskContact =
-    selectedTask?.contactId != null
-      ? contacts[selectedTask.contactId]
-      : undefined;
-  const panelContact =
-    selectedContactId != null ? contacts[selectedContactId] : undefined;
-  const taskDeal =
-    selectedTask?.dealId != null ? deals[selectedTask.dealId] : undefined;
 
   const { isCrmSalesManager } = useSessionData();
 
   const priorityDropdownOptions = useGetPriorityOptions(translateText);
   const { options: taskTypeOptions } = useGetTaskTypeOptions(translateText);
 
-  const [selectedOwner, setSelectedOwner] = useState<CrmOwner | null>(
-    toLookupOwner(taskOwner) ?? toLookupOwner(initialOwner)
-  );
+  const selectedOwner = toLookupOwner(getSelectedOwner(owners, values.ownerId));
+  const selectedContactName =
+    getSelectedContact(contacts, values.contactId)?.name ?? "";
+  const selectedDealName = getSelectedDeal(deals, values.dealId)?.name ?? "";
+
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
-  const [selectedContactName, setSelectedContactName] = useState(
-    panelContact?.name ?? taskContact?.name ?? ""
-  );
   const [dealSearchText, setDealSearchText] = useState("");
-  const [selectedDealName, setSelectedDealName] = useState(
-    taskDeal?.name ?? ""
-  );
-
-  useEffect(() => {
-    if (selectedTaskId != null) {
-      setSelectedOwner(toLookupOwner(taskOwner) ?? toLookupOwner(initialOwner));
-      setSelectedContactName(panelContact?.name ?? taskContact?.name ?? "");
-      setSelectedDealName(taskDeal?.name ?? "");
-    } else if (initialOwner) {
-      setSelectedOwner(toLookupOwner(initialOwner));
-    }
-  }, [
-    initialOwner?.employeeId,
-    selectedTaskId,
-    selectedTask?.ownerId,
-    selectedTask?.contactId,
-    selectedTask?.dealId,
-    selectedContactId
-  ]);
 
   const debouncedOwnerSearchText = useDebounce(
     ownerSearchText.trim(),
@@ -252,17 +217,13 @@ const TaskModalForm: FC<TaskFormProps> = ({
     const owner = ownerLookupData?.items?.find(
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
+    if (owner) setOwners(mergeOwners(owners, [fromLookupOwner(owner)]));
     setFieldValue("ownerId", owner?.employeeId);
-    setSelectedOwner(owner ?? null);
     setOwnerSearchText("");
   };
 
   const handleContactSelect = (item: SearchableDropdownItem) => {
-    const contact = contactLookupData?.items?.find(
-      (contactLookupItem) => String(contactLookupItem.id) === item.id
-    );
     setFieldValue("contactId", Number(item.id));
-    setSelectedContactName(contact?.name ?? "");
     setContactSearchText("");
   };
 
@@ -270,31 +231,37 @@ const TaskModalForm: FC<TaskFormProps> = ({
     const deal = dealLookupData?.items?.find(
       (dealLookupItem) => String(dealLookupItem.id) === item.id
     );
+    if (deal) {
+      setDeals(
+        mergeDeals(deals, [
+          {
+            id: deal.id,
+            name: deal.name,
+            contactId: deal.contactId ?? undefined
+          }
+        ])
+      );
+    }
     setFieldValue("dealId", Number(item.id));
-    setSelectedDealName(deal?.name ?? "");
     setDealSearchText("");
 
-    if (deal?.contactId != null && deal?.contactName != null) {
-      formik.setFieldValue("contactId", deal.contactId);
-      setSelectedContactName(deal?.contactName);
+    if (deal?.contactId != null) {
+      setFieldValue("contactId", deal.contactId);
       setContactSearchText("");
     }
   };
 
   const handleClearOwner = () => {
-    setSelectedOwner(null);
     setFieldValue("ownerId", undefined);
   };
 
   const handleClearContact = () => {
     setFieldValue("contactId", undefined);
-    setSelectedContactName("");
     setContactSearchText("");
   };
 
   const handleClearDeal = () => {
     setFieldValue("dealId", undefined);
-    setSelectedDealName("");
     setDealSearchText("");
   };
 

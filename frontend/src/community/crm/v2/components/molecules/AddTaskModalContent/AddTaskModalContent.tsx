@@ -120,7 +120,6 @@ const AddTaskModalContent: FC = () => {
       formik={formik}
       isPending={isPending}
       translateText={translateText}
-      initialOwner={defaultOwner}
     />
   );
 };

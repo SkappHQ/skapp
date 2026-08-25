@@ -185,6 +185,13 @@ export const toLookupOwner = (
       }
     : null;
 
+export const fromLookupOwner = (owner: CrmOwner): CrmOwnerEntity => ({
+  employeeId: owner.employeeId,
+  firstName: owner.firstName,
+  lastName: owner.lastName ?? undefined,
+  authPic: owner.authPic
+});
+
 export const getTaskFormInitialValues = (
   task?: CrmTaskEntity
 ): CrmTaskEntity => ({
