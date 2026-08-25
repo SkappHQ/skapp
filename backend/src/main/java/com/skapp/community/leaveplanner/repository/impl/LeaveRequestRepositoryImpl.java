@@ -342,8 +342,9 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
 
 		Predicate employeePredicate = criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId);
-		Predicate statusPredicate = criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status),
-				LeaveRequestStatus.APPROVED);
+		Predicate statusPredicate = criteriaBuilder.or(
+				criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.PENDING),
+				criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
 
 		Predicate datePredicate = criteriaBuilder.between(criteriaBuilder.literal(currentDate),
 				leaveRequest.get(LeaveRequest_.startDate), leaveRequest.get(LeaveRequest_.endDate));
