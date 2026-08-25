@@ -1,6 +1,8 @@
 import { unitConversion } from "~community/common/constants/configs";
 
-export const decodeJWTToken = (token: string) => {
+export const decodeJWTToken = (
+  token: string
+): Record<string, unknown> | null => {
   const base64Url = token?.split(".")[1];
 
   if (!base64Url) return null;
@@ -20,11 +22,19 @@ export const extractClaimsFromToken = (token: string): Record<string, any> => {
   }
 };
 
+const getExpiryInSeconds = (token: string): number | null => {
+  const exp = extractClaimsFromToken(token)?.exp;
+
+  if (typeof exp !== "number" || !Number.isFinite(exp)) return null;
+
+  return exp;
+};
+
 export const isTokenExpired = (token: string): boolean => {
   try {
-    const exp = extractClaimsFromToken(token)?.exp as number | undefined;
+    const exp = getExpiryInSeconds(token);
 
-    if (!exp) return true;
+    if (exp === null) return true;
 
     return Date.now() > exp * unitConversion.MILLISECONDS_PER_SECOND;
   } catch (error) {
@@ -34,9 +44,9 @@ export const isTokenExpired = (token: string): boolean => {
 };
 
 export const getTokenMaxAgeSeconds = (token: string): number => {
-  const exp = extractClaimsFromToken(token)?.exp as number | undefined;
+  const exp = getExpiryInSeconds(token);
 
-  if (!exp) return 0;
+  if (exp === null) return 0;
 
   const secondsUntilExpiry = Math.floor(
     exp - Date.now() / unitConversion.MILLISECONDS_PER_SECOND

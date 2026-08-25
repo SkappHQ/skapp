@@ -58,7 +58,7 @@ export interface CommonStoreTypes extends actionTypes {
 
   // Auth token
   accessToken: string | null;
-  setAccessToken: (token: string | null) => void;
+  setAccessToken: (token: string) => void;
   clearAccessToken: () => void;
 }
 

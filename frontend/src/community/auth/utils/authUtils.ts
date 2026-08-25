@@ -1,3 +1,4 @@
+import { PUBLIC_ROUTES } from "~community/auth/constants/authConstants";
 import {
   authenticationEndpoints as communityAuthEndpoints,
   internalApiEndpoints
@@ -90,10 +91,19 @@ let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
 let retrievePromise: Promise<string | null> | null = null;
+let hasCheckedStoredToken = false;
+
+const resetStoredTokenCheck = (): void => {
+  hasCheckedStoredToken = false;
+};
 
 const retrieveStoredAccessToken = async (): Promise<string | null> => {
   if (retrievePromise) {
     return retrievePromise;
+  }
+
+  if (hasCheckedStoredToken) {
+    return null;
   }
 
   retrievePromise = (async () => {
@@ -116,6 +126,7 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
       console.error("Failed to retrieve the stored access token");
       return null;
     } finally {
+      hasCheckedStoredToken = true;
       retrievePromise = null;
     }
   })();
@@ -158,37 +169,58 @@ export const getNewAccessToken = async (): Promise<string | null> => {
   return refreshPromise;
 };
 
-export const setAccessToken = async (token: string): Promise<void> => {
-  useCommonStore.getState().setAccessToken(token);
+export const setAccessToken = async (token: string): Promise<boolean> => {
+  if (typeof window === "undefined") return false;
 
-  if (typeof window !== "undefined") {
-    try {
-      await fetch(internalApiEndpoints.ACCESS_TOKEN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ accessToken: token })
-      });
-    } catch {
-      console.error("Failed to persist access token cookie");
+  useCommonStore.getState().setAccessToken(token);
+  resetStoredTokenCheck();
+
+  try {
+    const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ accessToken: token })
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to persist access token cookie: ${response.status}`
+      );
+      return false;
     }
+
+    return true;
+  } catch {
+    console.error("Failed to persist access token cookie");
+    return false;
   }
 };
 
 export const setIsPasswordChangedForTheFirstTime = async (
   value: boolean
-): Promise<void> => {
-  if (typeof window !== "undefined") {
-    try {
-      await fetch(internalApiEndpoints.ACCESS_TOKEN, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ isPasswordChangedForTheFirstTime: value })
-      });
-    } catch {
-      console.error("Failed to persist password-changed flag cookie");
+): Promise<boolean> => {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ isPasswordChangedForTheFirstTime: value })
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to persist password-changed flag cookie: ${response.status}`
+      );
+      return false;
     }
+
+    return true;
+  } catch {
+    console.error("Failed to persist password-changed flag cookie");
+    return false;
   }
 };
 
@@ -204,6 +236,7 @@ export const clearCookies = async (): Promise<void> => {
   }
 
   useCommonStore.getState().clearAccessToken();
+  resetStoredTokenCheck();
 
   if (typeof window !== "undefined") {
     try {
@@ -226,13 +259,16 @@ export const getAccessToken = async (): Promise<string | null> => {
     return cachedAccessToken;
   }
 
-  if (!cachedAccessToken) {
-    const storedToken = await retrieveStoredAccessToken();
+  const storedToken = await retrieveStoredAccessToken();
 
-    if (storedToken && !isTokenExpired(storedToken)) {
-      useCommonStore.getState().setAccessToken(storedToken);
-      return storedToken;
-    }
+  if (storedToken && !isTokenExpired(storedToken)) {
+    useCommonStore.getState().setAccessToken(storedToken);
+    return storedToken;
+  }
+
+  // No evidence of an existing session, so do not escalate to a refresh call
+  if (!cachedAccessToken && !storedToken) {
+    return null;
   }
 
   const newToken = await getNewAccessToken();
@@ -282,7 +318,14 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
     response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
 
   if (accessToken) {
-    await setAccessToken(accessToken);
+    const isTokenPersisted = await setAccessToken(accessToken);
+
+    if (!isTokenPersisted) {
+      return {
+        status: SignInStatus.FAILURE,
+        error: "Failed to persist the session"
+      };
+    }
 
     await setIsPasswordChangedForTheFirstTime(
       isPasswordChangedForTheFirstTime ?? true
@@ -373,7 +416,7 @@ export const signOut = async (redirect: boolean = true): Promise<void> => {
   if (typeof window !== "undefined") {
     const currentPath = window.location.pathname;
 
-    if (currentPath === ROUTES.AUTH.SIGNIN) return;
+    if (PUBLIC_ROUTES.includes(currentPath)) return;
 
     const urlParams = new URLSearchParams(window.location.search);
     const existingCallback = urlParams.get("callback");

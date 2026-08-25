@@ -19,6 +19,7 @@ export const internalApiEndpoints = {
 
 export const authenticationEndpoints = {
   CREDENTIAL_SIGN_IN: `${ApiVersions.V1}/auth/session/sign-in`,
+  REFRESH_TOKEN: `${ApiVersions.V1}/auth/session/refresh-token`,
   CREDENTIAL_SIGN_UP: `${ApiVersions.V1}/auth/signup/super-admin`,
   RESET_PASSWORD: `${moduleAPIPath.AUTH}/reset-password`,
   CHANGE_PASSWORD: (userId: string | number) =>

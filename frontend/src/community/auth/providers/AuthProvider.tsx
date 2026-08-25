@@ -10,6 +10,7 @@ import React, {
 } from "react";
 
 import { internalApiEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams
@@ -45,8 +46,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const isCheckingAuth = useRef(false);
 
   // Check authentication status
-  const checkAuth = useCallback(async () => {
-    if (isCheckingAuth.current) return;
+  const checkAuth = useCallback(async (): Promise<User | null> => {
+    if (isCheckingAuth.current) return null;
     isCheckingAuth.current = true;
     setIsLoading(true);
 
@@ -55,6 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       setUser(userData);
       setIsAuthenticated(!!userData);
+
+      return userData;
     } finally {
       setIsLoading(false);
       isCheckingAuth.current = false;
@@ -84,7 +87,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signIn = useCallback(
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
-        // Clear all existing cookies before signing in
+        // Clear all existing cookies and the in memory token before signing in
+        useCommonStore.getState().clearAccessToken();
+
         await fetch(internalApiEndpoints.CLEAR_COOKIES, {
           method: "POST"
         });
@@ -94,11 +99,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (response.status === SignInStatus.SUCCESS) {
           setIsLoading(true);
           // Refresh auth state after successful sign in
-          await checkAuth();
+          const userData = await checkAuth();
 
           if (params.redirect) {
-            const userData = await checkUserAuthentication();
-
             if (userData) {
               const callback = router.query.callback as string;
               const currentPath = router.asPath.split("?")[0];

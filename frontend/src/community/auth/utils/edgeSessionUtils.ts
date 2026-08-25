@@ -1,8 +1,17 @@
 import type { NextRequest, NextResponse } from "next/server";
 
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  EDGE_REFRESH_TIMEOUT_MS,
+  IS_PASSWORD_CHANGED_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_SUFFIX,
+  SESSION_COOKIE_ATTRIBUTES
+} from "~community/auth/constants/authConstants";
+import { authenticationEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { appModes } from "~community/common/constants/configs";
 import { LOCALHOST } from "~community/common/constants/stringConstants";
-import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
+import { getApiUrl } from "~community/common/utils/getConstants";
 import {
   TENANT_COOKIE_NAME,
   TENANT_HEADER_NAME,
@@ -14,6 +23,8 @@ import { getTokenMaxAgeSeconds } from "./tokenUtils";
 
 const IPV4_HOSTNAME_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
 
+const UNAUTHORIZED_STATUS_CODES = [401, 403];
+
 const hasTenantSubdomain = (hostname: string, subdomain: string): boolean =>
   hostname.split(".").length > 2 &&
   !IPV4_HOSTNAME_PATTERN.test(hostname) &&
@@ -22,9 +33,12 @@ const hasTenantSubdomain = (hostname: string, subdomain: string): boolean =>
 
 export interface RefreshedSession {
   accessToken: string;
-  isPasswordChangedForTheFirstTime?: boolean;
-  backendSetCookies: string[];
 }
+
+export type RefreshSessionResult =
+  | { status: "success"; session: RefreshedSession }
+  | { status: "unauthorized" }
+  | { status: "error" };
 
 const getTenantIdFromRequest = (request: NextRequest): string => {
   const hostname = (request.nextUrl.hostname || "").toLowerCase();
@@ -40,13 +54,26 @@ const getTenantIdFromRequest = (request: NextRequest): string => {
   return (fromQuery || fromCookie || "").trim().toLowerCase();
 };
 
+const isRefreshTokenCookie = (name: string): boolean =>
+  name === REFRESH_TOKEN_COOKIE_NAME ||
+  name.endsWith(REFRESH_TOKEN_COOKIE_SUFFIX);
+
+const buildRefreshCookieHeader = (request: NextRequest): string =>
+  request.cookies
+    .getAll()
+    .filter((cookie) => isRefreshTokenCookie(cookie.name))
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+
 export const refreshSessionAtEdge = async (
   request: NextRequest
-): Promise<RefreshedSession | null> => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const cookieHeader = request.headers.get("cookie");
+): Promise<RefreshSessionResult> => {
+  const apiUrl = getApiUrl();
+  const cookieHeader = buildRefreshCookieHeader(request);
 
-  if (!apiUrl || !cookieHeader) return null;
+  if (!apiUrl) return { status: "error" };
+
+  if (!cookieHeader) return { status: "unauthorized" };
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -61,40 +88,38 @@ export const refreshSessionAtEdge = async (
   try {
     const response = await fetch(
       `${apiUrl}${authenticationEndpoints.REFRESH_TOKEN}`,
-      { method: "POST", headers, body: "{}" }
+      {
+        method: "POST",
+        headers,
+        body: "{}",
+        signal: AbortSignal.timeout(EDGE_REFRESH_TIMEOUT_MS)
+      }
     );
 
-    if (!response.ok) return null;
+    if (UNAUTHORIZED_STATUS_CODES.includes(response.status)) {
+      return { status: "unauthorized" };
+    }
 
-    const responseHeaders = response.headers as Headers & {
-      getSetCookie?: () => string[];
-    };
+    if (!response.ok) return { status: "error" };
+
     const data = await response.json();
     const accessToken = data?.results?.[0]?.accessToken;
 
-    if (!accessToken) return null;
+    if (!accessToken) return { status: "error" };
 
-    return {
-      accessToken,
-      isPasswordChangedForTheFirstTime:
-        data?.results?.[0]?.isPasswordChangedForTheFirstTime,
-      backendSetCookies: responseHeaders.getSetCookie?.() ?? []
-    };
+    return { status: "success", session: { accessToken } };
   } catch {
-    return null;
+    return { status: "error" };
   }
 };
 
 export const clearSessionCookies = (response: NextResponse): NextResponse => {
-  ["accessToken", "isPasswordChangedForTheFirstTime"].forEach((name) =>
+  [ACCESS_TOKEN_COOKIE_NAME, IS_PASSWORD_CHANGED_COOKIE_NAME].forEach((name) =>
     response.cookies.set({
       name,
       value: "",
-      path: "/",
       maxAge: 0,
-      secure: true,
-      httpOnly: true,
-      sameSite: "lax"
+      ...SESSION_COOKIE_ATTRIBUTES
     })
   );
 
@@ -109,31 +134,14 @@ export const applyRefreshedSession = (
 
   const maxAge = getTokenMaxAgeSeconds(refreshedSession.accessToken);
 
+  if (maxAge <= 0) return response;
+
   response.cookies.set({
-    name: "accessToken",
+    name: ACCESS_TOKEN_COOKIE_NAME,
     value: refreshedSession.accessToken,
-    path: "/",
     maxAge,
-    secure: true,
-    httpOnly: true,
-    sameSite: "lax"
+    ...SESSION_COOKIE_ATTRIBUTES
   });
-
-  if (refreshedSession.isPasswordChangedForTheFirstTime !== undefined) {
-    response.cookies.set({
-      name: "isPasswordChangedForTheFirstTime",
-      value: String(refreshedSession.isPasswordChangedForTheFirstTime),
-      path: "/",
-      maxAge,
-      secure: true,
-      httpOnly: true,
-      sameSite: "lax"
-    });
-  }
-
-  refreshedSession.backendSetCookies.forEach((cookie) =>
-    response.headers.append("set-cookie", cookie)
-  );
 
   return response;
 };

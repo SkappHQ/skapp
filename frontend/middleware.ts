@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  IS_PASSWORD_CHANGED_COOKIE_NAME
+} from "~community/auth/constants/authConstants";
+import {
   RefreshedSession,
   applyRefreshedSession,
   clearSessionCookies,
@@ -207,15 +211,17 @@ const allowedRoutes: Record<
 };
 
 const isUnguardedPath = (currentPath: string): boolean =>
-  currentPath === ROUTES.SIGN.DOCUMENT_ACCESS ||
-  currentPath.startsWith(ROUTES.SIGN.SIGN) ||
-  currentPath.startsWith(ROUTES.SIGN.INFO);
+  currentPath === ROUTES.SIGN.DOCUMENT_ACCESS;
+
+const isPrefetchRequest = (request: NextRequest): boolean =>
+  request.headers.get("next-router-prefetch") !== null ||
+  request.headers.get("purpose") === "prefetch";
 
 function resolveRouteAccess(
   request: NextRequest,
   token: string | undefined,
   isPasswordChangedForTheFirstTime: string | undefined
-) {
+): NextResponse {
   const claims = extractClaimsFromToken(token || "");
 
   const currentPath = request.nextUrl.pathname;
@@ -376,25 +382,29 @@ function resolveRouteAccess(
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (isUnguardedPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
-  let token = request.cookies.get("accessToken")?.value;
+  let token = request.cookies.get(ACCESS_TOKEN_COOKIE_NAME)?.value;
   let refreshedSession: RefreshedSession | null = null;
-  let didAttemptRefresh = false;
+  let isSessionRejected = false;
 
-  if (!token || isTokenExpired(token)) {
-    didAttemptRefresh = true;
-    refreshedSession = await refreshSessionAtEdge(request);
-    token = refreshedSession?.accessToken;
+  if ((!token || isTokenExpired(token)) && !isPrefetchRequest(request)) {
+    const refreshResult = await refreshSessionAtEdge(request);
+
+    if (refreshResult.status === "success") {
+      refreshedSession = refreshResult.session;
+      token = refreshedSession.accessToken;
+    } else {
+      isSessionRejected = refreshResult.status === "unauthorized";
+    }
   }
 
-  const isPasswordChangedForTheFirstTime =
-    refreshedSession?.isPasswordChangedForTheFirstTime !== undefined
-      ? String(refreshedSession.isPasswordChangedForTheFirstTime)
-      : request.cookies.get("isPasswordChangedForTheFirstTime")?.value;
+  const isPasswordChangedForTheFirstTime = request.cookies.get(
+    IS_PASSWORD_CHANGED_COOKIE_NAME
+  )?.value;
 
   const response = resolveRouteAccess(
     request,
@@ -402,7 +412,7 @@ export async function middleware(request: NextRequest) {
     isPasswordChangedForTheFirstTime
   );
 
-  if (didAttemptRefresh && !refreshedSession) {
+  if (isSessionRejected) {
     return clearSessionCookies(response);
   }
 
