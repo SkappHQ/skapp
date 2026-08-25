@@ -43,6 +43,15 @@ const styles = (theme: Theme) => ({
       zIndex: ZIndexEnums.DEFAULT
     }
   },
+  nonInteractiveStackStyle: {
+    cursor: "default",
+    "&:hover": {
+      background: theme.palette.common.white,
+      "& > :first-child": {
+        background: theme.palette.common.white
+      }
+    }
+  },
   boxContainerStyle: (isDrawerToggled: boolean) => ({
     display: "flex",
     flexDirection: "row",

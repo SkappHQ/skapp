@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
@@ -110,6 +111,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -557,6 +559,7 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("editClockInClockOut: execution started");
 
+		validateManualEntryRestriction(currentUser);
 		validateRequestParameters(timeRequestDto);
 
 		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
@@ -600,6 +603,8 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("addManualEntryRequest: execution started");
+
+		validateManualEntryRestriction(currentUser);
 
 		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
@@ -2187,6 +2192,25 @@ public class TimeServiceImpl implements TimeService {
 
 	protected boolean isGeoFencingEnabled() {
 		return false;
+	}
+
+	protected boolean isManualEntryRestrictionEnabled() {
+		return false;
+	}
+
+	private void validateManualEntryRestriction(User currentUser) {
+		if (!isManualEntryRestrictionEnabled()) {
+			return;
+		}
+
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+
+		if (!isAuthorized) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED);
+		}
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

@@ -71,9 +71,20 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 					String.valueOf(attendanceConfigRequestDto.getIsFingerprintAttendanceEnabled()));
 		}
 
+		if (attendanceConfigRequestDto.getIsManualEntryRestrictionEnabled() != null) {
+			updateOrCreateConfig(AttendanceConfigType.MANUAL_ENTRY_ENABLED,
+					String.valueOf(attendanceConfigRequestDto.getIsManualEntryRestrictionEnabled()));
+		}
+
 		log.info("updateAttendanceConfig: execution ended");
 		return new ResponseEntityDto(messageUtil.getMessage(TimeMessageConstant.TIME_SUCCESS_ATTENDANCE_CONFIG_UPDATED),
 				false);
+	}
+
+	@Override
+	public void updateManualEntryRestrictionEnabled(boolean enabled) {
+		log.info("updateManualEntryRestrictionEnabled: setting manual entry restriction to {}", enabled);
+		updateOrCreateConfig(AttendanceConfigType.MANUAL_ENTRY_ENABLED, String.valueOf(enabled));
 	}
 
 	private void updateOrCreateConfig(AttendanceConfigType configType, String configValue) {
@@ -104,9 +115,11 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 
 		boolean isGeoFencingEnabled = isConfigEnabled(attendanceConfigs, AttendanceConfigType.GEO_FENCING_ENABLED);
 		boolean isClockInClockOutOnly = isConfigEnabled(attendanceConfigs, AttendanceConfigType.CLOCK_IN_OUT_ONLY);
+		boolean isManualEntryRestrictionEnabled = isConfigEnabled(attendanceConfigs,
+				AttendanceConfigType.MANUAL_ENTRY_ENABLED);
 
 		AttendanceConfigRequestDto attendanceConfigRequestDto = new AttendanceConfigRequestDto(null, null, null, null,
-				isGeoFencingEnabled, isClockInClockOutOnly, null);
+				isGeoFencingEnabled, isClockInClockOutOnly, null, isManualEntryRestrictionEnabled);
 
 		log.info("getAllAttendanceConfigs: execution ended");
 
@@ -114,7 +127,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 	}
 
 	private static AttendanceConfigRequestDto getAttendanceConfigRequestDto(List<AttendanceConfig> attendanceConfigs) {
-		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false, false,
+		AttendanceConfigRequestDto dto = new AttendanceConfigRequestDto(false, false, false, false, false, false, false,
 				false);
 
 		for (AttendanceConfig config : attendanceConfigs) {
@@ -127,6 +140,7 @@ public class AttendanceConfigServiceImpl implements AttendanceConfigService {
 				case GEO_FENCING_ENABLED -> dto.setIsGeoFencingEnabled(value);
 				case CLOCK_IN_OUT_ONLY -> dto.setIsClockInClockOutOnly(value);
 				case FINGERPRINT_ATTENDANCE_ENABLED -> dto.setIsFingerprintAttendanceEnabled(value);
+				case MANUAL_ENTRY_ENABLED -> dto.setIsManualEntryRestrictionEnabled(value);
 			}
 		}
 
