@@ -1,5 +1,10 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useEffect, useState } from "react";
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+  onlineManager
+} from "@tanstack/react-query";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
 import {
@@ -10,21 +15,58 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import authFetch from "~community/common/utils/axiosInterceptor";
+import { NetworkOfflineError } from "~community/common/types/ErrorTypes";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
 import { useToast } from "./ToastProvider";
+import { useTranslator } from "../hooks/useTranslator";
 
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
+  const translateText = useTranslator("networkError");
+  const offlineToastShown = useRef(false);
+
+  const showOfflineToast = useCallback(() => {
+    if (offlineToastShown.current) return;
+    offlineToastShown.current = true;
+    
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["title"]),
+      description: translateText(["description"]),
+      isIcon: true
+    });
+
+    setTimeout(() => {
+      offlineToastShown.current = false;
+    }, 3000);
+  }, [setToastMessage, translateText]);
+
+  const showOfflineToastRef = useRef(showOfflineToast);
+
+  useEffect(() => {
+    showOfflineToastRef.current = showOfflineToast;
+  }, [showOfflineToast]);
 
   const [queryClient] = useState(() => {
     return new QueryClient({
+      mutationCache: new MutationCache({
+        onError: (error) => {
+          if (error instanceof NetworkOfflineError) {
+            setTimeout(() => {
+              showOfflineToastRef.current();
+            }, 0);
+            return;
+          }
+        }
+      }),
       defaultOptions: {
         mutations: {
           onMutate: async () => {
-            if (!navigator.onLine) {
-              throw new Error("Network error: No internet connection");
+            if (!onlineManager.isOnline()) {
+              throw new NetworkOfflineError();
             }
           }
         }
@@ -42,15 +84,8 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     const interceptor = authFetch.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (!navigator.onLine) {
-          setToastMessage({
-            open: true,
-            toastType: ToastType.ERROR,
-            title: "Oops! Something went wrong.",
-            description:
-              "No internet connection. Please check your network and try again.",
-            isIcon: true
-          });
+        if (!onlineManager.isOnline()) {
+          showOfflineToast();
           throw error;
         }
 
@@ -82,7 +117,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user, checkAuth, queryClient, setToastMessage]);
+  }, [user, checkAuth, queryClient, showOfflineToast]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
