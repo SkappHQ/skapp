@@ -1,4 +1,4 @@
-import { PopperPosition } from "@rootcodelabs/skapp-ui";
+import { type PopperProps } from "@rootcodelabs/skapp-ui";
 import { RefObject, useCallback, useMemo, useRef, useState } from "react";
 
 import {
@@ -7,15 +7,17 @@ import {
   CALENDAR_POPPER_VIEWPORT_MARGIN_PX
 } from "~community/common/constants/commonConstants";
 
-interface CalendarPopperPlacement {
-  position: PopperPosition;
-  offset: number;
-}
+type CalendarPopperPlacement = Required<
+  Pick<PopperProps, "position" | "offset">
+>;
 
 interface UseCalendarPopperPlacementReturn {
   triggerRef: RefObject<HTMLDivElement>;
   isCalendarOpen: boolean;
-  calendarPopperProps: CalendarPopperPlacement & { containerClassName: string };
+  calendarPopperProps: Pick<
+    PopperProps,
+    "position" | "offset" | "containerClassName"
+  >;
   onCalendarOpenChange: (isOpen: boolean) => void;
 }
 
@@ -67,8 +69,12 @@ const getPlacement = (
  * sits low in a vertically centred modal pushes the last week rows past the
  * bottom of the viewport — where nothing can scroll them into view, because the
  * modal locks background scrolling. This picks the side of the trigger the
- * calendar actually fits on, offsets it back up over the trigger when neither
- * side fits, and lets the calendar scroll if even that is not enough room.
+ * calendar actually fits on, and offsets it back up over the trigger when
+ * neither side fits.
+ *
+ * The Popper container caps its own height off the document height, not the
+ * viewport, and clips with overflow-hidden — so overflow-y-auto is applied on
+ * every open, not just the pinned case, to make whatever it caps scrollable.
  */
 export const useCalendarPopperPlacement =
   (): UseCalendarPopperPlacementReturn => {
