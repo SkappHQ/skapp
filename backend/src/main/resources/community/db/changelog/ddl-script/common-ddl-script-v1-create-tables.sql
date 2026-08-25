@@ -530,7 +530,7 @@ CREATE TABLE IF NOT EXISTS `user_settings`
 (
     `user_id`            bigint NOT NULL,
     `notifications`      json DEFAULT NULL,
-    `crm_deal_list_view` json DEFAULT NULL,
+    `crm_deal_list_view` json,
     PRIMARY KEY (`user_id`),
     CONSTRAINT `FK_user_settings_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 ) ENGINE = InnoDB;
