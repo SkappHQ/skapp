@@ -18,10 +18,6 @@ export const PASSWORD_CHANGED_COOKIE_MAX_AGE_SECONDS =
   unitConversion.MINUTES_PER_HOUR *
   unitConversion.SECONDS_PER_MINUTE;
 
-export const JWT_PATTERN = /^[\w-]+\.[\w-]+\.[\w-]+$/;
-
-export const MAX_ACCESS_TOKEN_LENGTH = 4096;
-
 export const EDGE_REFRESH_TIMEOUT_MS = 3000;
 
 export const SESSION_COOKIE_ATTRIBUTES = {
