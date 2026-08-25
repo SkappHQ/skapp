@@ -1,5 +1,12 @@
 import { type PopperProps } from "@rootcodelabs/skapp-ui";
-import { RefObject, useCallback, useMemo, useRef, useState } from "react";
+import {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 
 import {
   CALENDAR_POPPER_HEIGHT_PX,
@@ -89,6 +96,22 @@ export const useCalendarPopperPlacement =
       }
       setIsCalendarOpen(isOpen);
     }, []);
+
+    // The Popper re-runs its own positioning on resize but reuses whatever
+    // offset it was given, so a stale pinned offset would be re-applied against
+    // a moved trigger. Re-measure while the calendar is open.
+    useEffect(() => {
+      if (!isCalendarOpen) {
+        return;
+      }
+
+      const onViewportChange = (): void =>
+        setPlacement(getPlacement(triggerRef.current));
+
+      window.addEventListener("resize", onViewportChange);
+
+      return () => window.removeEventListener("resize", onViewportChange);
+    }, [isCalendarOpen]);
 
     const calendarPopperProps = useMemo(
       () => ({ ...placement, containerClassName: "overflow-y-auto" }),
