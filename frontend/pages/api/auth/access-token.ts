@@ -6,24 +6,82 @@ import {
   PASSWORD_CHANGED_COOKIE_MAX_AGE_SECONDS,
   buildSessionCookieHeader
 } from "~community/auth/constants/authConstants";
-import { getTokenMaxAgeSeconds } from "~community/auth/utils/tokenUtils";
+import {
+  buildRefreshCookieHeader,
+  requestSessionRefresh,
+  resolveTenantId
+} from "~community/auth/utils/edgeSessionUtils";
+import {
+  getTokenMaxAgeSeconds,
+  isTokenExpired
+} from "~community/auth/utils/tokenUtils";
+import {
+  TENANT_COOKIE_NAME,
+  TENANT_QUERY_PARAM
+} from "~enterprise/common/constants/stringConstants";
 
 interface ResponseData {
   message: string;
   accessToken?: string | null;
 }
 
-export default function handler(
+const refreshAccessToken = async (
+  req: NextApiRequest
+): Promise<string | null> => {
+  const cookies = Object.entries(req.cookies).map(([name, value]) => ({
+    name,
+    value: value ?? ""
+  }));
+
+  const tenantId = resolveTenantId(
+    req.headers.host,
+    req.query[TENANT_QUERY_PARAM]?.toString(),
+    req.cookies[TENANT_COOKIE_NAME]
+  );
+
+  const result = await requestSessionRefresh(
+    buildRefreshCookieHeader(cookies),
+    tenantId
+  );
+
+  return result.status === "success" ? result.session.accessToken : null;
+};
+
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
   if (req.method === "GET") {
     res.setHeader("Cache-Control", "no-store");
 
-    return res.status(200).json({
-      message: "Session cookie read",
-      accessToken: req.cookies[ACCESS_TOKEN_COOKIE_NAME] ?? null
-    });
+    const storedToken = req.cookies[ACCESS_TOKEN_COOKIE_NAME];
+
+    if (storedToken && !isTokenExpired(storedToken)) {
+      return res
+        .status(200)
+        .json({ message: "Session cookie read", accessToken: storedToken });
+    }
+
+    const refreshedToken = await refreshAccessToken(req);
+
+    if (!refreshedToken) {
+      return res
+        .status(200)
+        .json({ message: "No active session", accessToken: null });
+    }
+
+    res.setHeader(
+      "Set-Cookie",
+      buildSessionCookieHeader(
+        ACCESS_TOKEN_COOKIE_NAME,
+        refreshedToken,
+        getTokenMaxAgeSeconds(refreshedToken)
+      )
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Session refreshed", accessToken: refreshedToken });
   }
 
   if (req.method !== "POST") {

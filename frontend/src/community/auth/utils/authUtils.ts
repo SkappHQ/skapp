@@ -1,4 +1,3 @@
-import { PUBLIC_ROUTES } from "~community/auth/constants/authConstants";
 import {
   authenticationEndpoints as communityAuthEndpoints,
   internalApiEndpoints
@@ -97,6 +96,9 @@ let refreshPromise: Promise<string | null> | null = null;
 
 let retrievePromise: Promise<string | null> | null = null;
 let hasCheckedStoredToken = false;
+
+// Flag to prevent recursive sign out
+let isSigningOut = false;
 
 const resetStoredTokenCheck = (): void => {
   hasCheckedStoredToken = false;
@@ -420,21 +422,27 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
 };
 
 export const signOut = async (redirect: boolean = true): Promise<void> => {
-  await clearCookies();
+  if (isSigningOut) return;
 
-  if (redirect === false) return;
+  isSigningOut = true;
 
-  if (typeof window !== "undefined") {
-    const currentPath = window.location.pathname;
+  const hadActiveSession = Boolean(useCommonStore.getState().accessToken);
 
-    if (PUBLIC_ROUTES.includes(currentPath)) return;
+  try {
+    await clearCookies();
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const existingCallback = urlParams.get("callback");
+    if (redirect === false || !hadActiveSession) return;
 
-    const callbackPath = existingCallback || currentPath;
-    window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${encodeURIComponent(
-      callbackPath
-    )}`;
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const existingCallback = urlParams.get("callback");
+
+      const callbackPath = existingCallback || window.location.pathname;
+      window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${encodeURIComponent(
+        callbackPath
+      )}`;
+    }
+  } finally {
+    isSigningOut = false;
   }
 };

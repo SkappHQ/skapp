@@ -1,5 +1,4 @@
 import { unitConversion } from "~community/common/constants/configs";
-import ROUTES from "~community/common/constants/routes";
 
 export const COOKIE_EXPIRY_DAYS = 31;
 
@@ -33,19 +32,3 @@ export const buildSessionCookieHeader = (
   maxAgeSeconds: number
 ): string =>
   `${name}=${value}; Path=/; Max-Age=${maxAgeSeconds}; Secure; HttpOnly; SameSite=Lax`;
-
-export const PUBLIC_ROUTES: string[] = [
-  ROUTES.AUTH.SIGNIN,
-  ROUTES.AUTH.SIGNUP,
-  ROUTES.AUTH.ENTERPRISE_SIGNIN,
-  ROUTES.AUTH.OAUTH_SIGNIN,
-  ROUTES.AUTH.FORGOT_PASSWORD,
-  ROUTES.AUTH.FORGET_PASSWORD,
-  ROUTES.AUTH.VERIFY,
-  ROUTES.AUTH.VERIFY_SUCCESS,
-  ROUTES.AUTH.VERIFY_RESET_PASSWORD,
-  ROUTES.AUTH.VERIFY_GUEST,
-  ROUTES.AUTH.VERIFY_GUEST_OTP,
-  ROUTES.SIGN.DOCUMENT_ACCESS,
-  ROUTES.MAINTENANCE
-];

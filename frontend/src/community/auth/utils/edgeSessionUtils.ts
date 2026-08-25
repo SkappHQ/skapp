@@ -40,16 +40,22 @@ export type RefreshSessionResult =
   | { status: "unauthorized" }
   | { status: "error" };
 
-const getTenantIdFromRequest = (request: NextRequest): string => {
-  const hostname = (request.nextUrl.hostname || "").toLowerCase();
+export interface SessionCookie {
+  name: string;
+  value: string;
+}
+
+export const resolveTenantId = (
+  host: string | undefined,
+  fromQuery: string | undefined,
+  fromCookie: string | undefined
+): string => {
+  const hostname = (host || "").toLowerCase().split(":")[0];
   const subdomain = hostname.split(".")[0];
 
   if (subdomain && hasTenantSubdomain(hostname, subdomain)) {
     return subdomain;
   }
-
-  const fromQuery = request.nextUrl.searchParams.get(TENANT_QUERY_PARAM);
-  const fromCookie = request.cookies.get(TENANT_COOKIE_NAME)?.value;
 
   return (fromQuery || fromCookie || "").trim().toLowerCase();
 };
@@ -58,18 +64,17 @@ const isRefreshTokenCookie = (name: string): boolean =>
   name === REFRESH_TOKEN_COOKIE_NAME ||
   name.endsWith(REFRESH_TOKEN_COOKIE_SUFFIX);
 
-const buildRefreshCookieHeader = (request: NextRequest): string =>
-  request.cookies
-    .getAll()
+export const buildRefreshCookieHeader = (cookies: SessionCookie[]): string =>
+  cookies
     .filter((cookie) => isRefreshTokenCookie(cookie.name))
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
-export const refreshSessionAtEdge = async (
-  request: NextRequest
+export const requestSessionRefresh = async (
+  cookieHeader: string,
+  tenantId: string
 ): Promise<RefreshSessionResult> => {
   const apiUrl = getApiUrl();
-  const cookieHeader = buildRefreshCookieHeader(request);
 
   if (!apiUrl) return { status: "error" };
 
@@ -80,9 +85,8 @@ export const refreshSessionAtEdge = async (
     cookie: cookieHeader
   };
 
-  if (process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE) {
-    const tenantId = getTenantIdFromRequest(request);
-    if (tenantId) headers[TENANT_HEADER_NAME] = tenantId;
+  if (process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE && tenantId) {
+    headers[TENANT_HEADER_NAME] = tenantId;
   }
 
   try {
@@ -112,6 +116,18 @@ export const refreshSessionAtEdge = async (
     return { status: "error" };
   }
 };
+
+export const refreshSessionAtEdge = async (
+  request: NextRequest
+): Promise<RefreshSessionResult> =>
+  requestSessionRefresh(
+    buildRefreshCookieHeader(request.cookies.getAll()),
+    resolveTenantId(
+      request.nextUrl.hostname,
+      request.nextUrl.searchParams.get(TENANT_QUERY_PARAM) ?? undefined,
+      request.cookies.get(TENANT_COOKIE_NAME)?.value
+    )
+  );
 
 export const clearSessionCookies = (response: NextResponse): NextResponse => {
   [ACCESS_TOKEN_COOKIE_NAME, IS_PASSWORD_CHANGED_COOKIE_NAME].forEach((name) =>
