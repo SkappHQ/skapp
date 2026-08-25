@@ -5,18 +5,14 @@ import {
   CrmCompanyRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
-export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
-  const companies: CrmCompanyRecord = {};
+export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
-
-  items.forEach((company) => {
+  for (const company of companies) {
     if (company.id !== undefined) {
-      companies[company.id] = company;
       companyIds.push(company.id);
     }
-  });
-
-  return { companies, companyIds };
+  }
+  return companyIds;
 };
 
 export interface CrmMetricItem {
@@ -127,6 +123,15 @@ export const getChangedCompanyFields = (
   }
 
   return changedFields;
+};
+
+export const getCompanyNameById = (
+  companies: CrmCompanyRecord,
+  companyId?: number
+) => {
+  if (companyId !== undefined) {
+    return companies[companyId]?.name;
+  }
 };
 
 export const getMissingCompanyIds = (

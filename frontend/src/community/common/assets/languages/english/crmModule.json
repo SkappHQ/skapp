@@ -374,6 +374,10 @@
       },
       "tasks": {
         "emptyDescription": "No tasks associated with this company"
+      },
+      "errors": {
+        "companyNotFoundTitle": "Company not found",
+        "companyNotFoundDescription": "This company is no longer available."
       }
     }
   },

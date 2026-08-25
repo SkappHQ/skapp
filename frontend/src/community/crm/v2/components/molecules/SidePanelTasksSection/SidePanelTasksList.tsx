@@ -7,11 +7,13 @@ import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
 interface SidePanelTasksListProps {
   taskIds: number[];
   onAddTask: () => void;
+  isAddTaskDisabled?: boolean;
 }
 
 const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
   taskIds,
-  onAddTask
+  onAddTask,
+  isAddTaskDisabled
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -35,6 +37,8 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
           icon={<PlusIcon />}
           iconPosition="end"
           onClick={onAddTask}
+          disabled={isAddTaskDisabled}
+          isLoading={isAddTaskDisabled}
         >
           {translateText(["addTaskButtonEmptyView"])}
         </ButtonV2>

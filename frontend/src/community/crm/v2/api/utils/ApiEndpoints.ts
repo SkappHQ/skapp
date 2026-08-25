@@ -32,8 +32,7 @@ export const crmDealEndpoints = {
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
-  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
-  GET_DEALS: `${moduleAPIPath.CRM}/deal`
+  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
 };
 
 export const crmLookupEndpoints = {

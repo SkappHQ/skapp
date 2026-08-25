@@ -10,7 +10,8 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import {
   PRIORITY_OPTIONS,
-  TASK_TYPE_ICONS
+  TASK_TYPE_ICONS,
+  TASK_TYPE_ICON_SIZE
 } from "~community/crm/v2/constants/taskConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import {
@@ -57,7 +58,10 @@ export const getDueDateStatus = (
   }
 };
 
-export const getTaskTypeIcon = (typeName = "", size = 20): ReactElement =>
+export const getTaskTypeIcon = (
+  typeName = "",
+  size = TASK_TYPE_ICON_SIZE
+): ReactElement =>
   createElement(
     TASK_TYPE_ICONS[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon,
     { width: size, height: size }
@@ -105,7 +109,8 @@ export const parseDueDate = (dueAt?: string) => {
 };
 
 export const getTaskFormInitialValues = (
-  selectedContactId: number | null
+  selectedContactId: number | null,
+  currentUserId?: string | number
 ): CrmTaskEntity => {
   const initialValues: CrmTaskEntity = {
     name: "",
@@ -115,6 +120,10 @@ export const getTaskFormInitialValues = (
 
   if (selectedContactId !== null) {
     initialValues.contactId = selectedContactId;
+  }
+
+  if (currentUserId !== undefined) {
+    initialValues.ownerId = Number(currentUserId);
   }
 
   return initialValues;

@@ -60,7 +60,6 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     useShallow((store) => ({ stages: store.stages }))
   );
 
-  /** Scoped to the company the panel belongs to, so only its contacts appear. */
   const contactFilters: CrmContactFilterRequest = {
     searchKeyword: debouncedContactSearch,
     size: DEFAULT_LOOKUP_PAGE_SIZE,

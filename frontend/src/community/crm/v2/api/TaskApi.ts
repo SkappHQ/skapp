@@ -47,8 +47,14 @@ export const useGetTasksInfinite = (
     queryFn: ({ pageParam }) => fetchTasks({ ...params, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     refetchOnWindowFocus: false
   });
@@ -104,8 +110,7 @@ const updateTask = async ({
 };
 
 export const useUpdateTask = (
-  onSuccess: (task: CrmTaskEntity) => void,
-  onError: (error: AxiosError) => void
+  onSuccess: (task: CrmTaskEntity) => void
 ): UseMutationResult<CrmTaskEntity, AxiosError, UpdateTaskVariables> => {
   const queryClient = useQueryClient();
 
@@ -118,7 +123,6 @@ export const useUpdateTask = (
         });
       }
       onSuccess(updatedTask);
-    },
-    onError
+    }
   });
 };

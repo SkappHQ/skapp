@@ -50,15 +50,19 @@ const TaskRow: FC<TaskRowProps> = ({
     });
   };
 
-  const { mutate: updateCompletion } = useUpdateTask(
-    (updatedTask) => setTasks(updateTask(tasks, taskId, updatedTask)),
-    () => handleToggleError(isCompleted)
+  const { mutate: updateCompletion } = useUpdateTask((updatedTask) =>
+    setTasks(updateTask(tasks, taskId, updatedTask))
   );
 
   const handleToggleChange = (nextIsCompleted: boolean) => {
+    const wasCompleted = isCompleted;
+
     setTasks(updateTask(tasks, taskId, { isCompleted: nextIsCompleted }));
 
-    updateCompletion({ id: taskId, payload: { isCompleted: nextIsCompleted } });
+    updateCompletion(
+      { id: taskId, payload: { isCompleted: nextIsCompleted } },
+      { onError: () => handleToggleError(wasCompleted) }
+    );
   };
 
   return (

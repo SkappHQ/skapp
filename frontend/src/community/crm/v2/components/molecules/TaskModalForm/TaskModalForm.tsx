@@ -41,12 +41,9 @@ import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactDisplayName,
   getContactNameById,
-  toContactsRecord
+  mergeContacts
 } from "~community/crm/v2/utils/contactUtil";
-import {
-  getDealNameById,
-  toDealsRecord
-} from "~community/crm/v2/utils/dealUtil";
+import { getDealNameById, mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { parseDueDate } from "~community/crm/v2/utils/taskUtil";
 
 interface TaskModalFormProps {
@@ -172,12 +169,12 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
 
   useEffect(() => {
     if (!contactLookupData) return;
-    setContacts({ ...contacts, ...toContactsRecord(contactLookupData.items) });
+    setContacts(mergeContacts(contacts, contactLookupData.items));
   }, [contactLookupData]);
 
   useEffect(() => {
     if (!dealLookupData) return;
-    setDeals({ ...deals, ...toDealsRecord(dealLookupData.items) });
+    setDeals(mergeDeals(deals, dealLookupData.items));
   }, [dealLookupData]);
 
   const selectedOwner = getOwnerById(owners, values.ownerId);

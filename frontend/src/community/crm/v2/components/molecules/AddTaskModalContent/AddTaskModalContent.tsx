@@ -15,6 +15,7 @@ import {
   linkTaskToRelatedEntities
 } from "~community/crm/v2/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/v2/utils/taskValidations";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
@@ -47,12 +48,18 @@ const AddTaskModalContent: FC = () => {
     }))
   );
 
+  const { data: currentUser } = useGetUserPersonalDetails();
+
   const formik = useFormik<CrmTaskEntity>({
-    initialValues: getTaskFormInitialValues(selectedContactId),
+    initialValues: getTaskFormInitialValues(
+      selectedContactId,
+      currentUser?.employeeId
+    ),
     onSubmit: (values) => createNewTask(getTrimmedTaskValues(values)),
     validationSchema: getTaskValidationSchema(translateText),
     validateOnChange: false,
-    validateOnBlur: true
+    validateOnBlur: true,
+    enableReinitialize: true
   });
 
   const { setSubmitting } = formik;

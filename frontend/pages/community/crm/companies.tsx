@@ -1,8 +1,9 @@
 import { NextPage } from "next";
 import { useShallow } from "zustand/react/shallow";
 
+import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { Modules } from "~community/common/enums/CommonEnums";
+import { Modules, ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -12,11 +13,11 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalControllerV2 from "~community/crm/v2/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanelV2 from "~community/crm/v2/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable as CompanyTableV2 } from "~community/crm/v2/components/organisms/CompanyTable/CompanyTable";
 import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -86,7 +87,7 @@ const CompaniesV2 = () => {
       }))
     );
 
-  useInitializeCrmData();
+  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {
@@ -109,17 +110,23 @@ const CompaniesV2 = () => {
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}
     >
-      <>
-        {selectedCompanyId && (
-          <SidePanelWrapperV2>
-            <CompanySidePanelV2 companyId={selectedCompanyId} />
-          </SidePanelWrapperV2>
-        )}
+      {isCrmInitialDataLoading ? (
+        <div className="relative w-full flex-1 min-h-[37.2rem]">
+          <FullScreenLoader fullPage={false} zIndex={ZIndexEnums.MODAL} />
+        </div>
+      ) : (
+        <>
+          {selectedCompanyId && (
+            <SidePanelWrapperV2>
+              <CompanySidePanelV2 companyId={selectedCompanyId} />
+            </SidePanelWrapperV2>
+          )}
 
-        <CompanyModalControllerV2 />
-        <TaskModalControllerV2 />
-        <CompanyTableV2 />
-      </>
+          <CompanyModalControllerV2 />
+          <TaskModalControllerV2 />
+          <CompanyTableV2 />
+        </>
+      )}
     </ContentLayout>
   );
 };

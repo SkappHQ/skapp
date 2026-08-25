@@ -9,8 +9,10 @@ import {
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetCompanyById,
   useGetCompanyMetrics
@@ -45,11 +47,11 @@ import {
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
 import {
-  toContactIds,
-  toContactsRecord
+  mergeContacts,
+  toContactIds
 } from "~community/crm/v2/utils/contactUtil";
 import {
-  appendDealId,
+  linkDealToRelatedEntities,
   mergeDeals,
   toDealIds
 } from "~community/crm/v2/utils/dealUtil";
@@ -65,6 +67,7 @@ interface CompanySidePanelProps {
 const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const translateText = useTranslator("crmModule", "companies", "sidePanel");
   const { isCrmSalesManager } = useSessionData();
+  const { setToastMessage } = useToast();
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
     CrmSidePanelTabEnum.TASKS
@@ -73,6 +76,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const {
     companies,
     tasks,
+    isCrmDataInitialized,
     deals,
     contacts,
     isCrmSidePanelOpen,
@@ -89,6 +93,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     useShallow((store) => ({
       companies: store.companies,
       tasks: store.tasks,
+      isCrmDataInitialized: store.isCrmDataInitialized,
       deals: store.deals,
       contacts: store.contacts,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
@@ -119,8 +124,11 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     size: CONTACT_PAGE_SIZE
   };
 
-  const { data: fetchedCompany, isLoading: isCompanyLoading } =
-    useGetCompanyById(companyId);
+  const {
+    data: fetchedCompany,
+    isLoading: isCompanyLoading,
+    isError: isCompanyError
+  } = useGetCompanyById(companyId);
   const { data: fetchedMetrics, isLoading: isMetricsLoading } =
     useGetCompanyMetrics(companyId);
   const {
@@ -146,6 +154,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   } = useGetContactsInfinite(contactFilters);
 
   const isLoading =
+    !isCrmDataInitialized ||
     isCompanyLoading ||
     isMetricsLoading ||
     isTasksLoading ||
@@ -153,52 +162,77 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     isContactsLoading;
 
   useEffect(() => {
-    if (
-      !fetchedCompany ||
-      !fetchedMetrics ||
-      !fetchedTasks ||
-      !fetchedDeals ||
-      !fetchedContacts
-    ) {
-      return;
-    }
+    if (!fetchedCompany || !fetchedMetrics) return;
 
-    const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
-    const normalizedTasks = normalizeTasks(taskItems);
-
-    const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
-    const contactItems = fetchedContacts.pages.flatMap((page) => page.items);
-
-    setTasks({ ...tasks, ...normalizedTasks.tasks });
-    setDeals(mergeDeals(deals, dealItems));
-    setContacts({ ...contacts, ...toContactsRecord(contactItems) });
     setCompanies(
       updateCompany(companies, companyId, {
         ...fetchedCompany,
-        metrics: fetchedMetrics,
-        taskIds: normalizedTasks.taskIds,
-        dealIds: toDealIds(dealItems),
+        metrics: fetchedMetrics
+      })
+    );
+  }, [fetchedCompany, fetchedMetrics]);
+
+  useEffect(() => {
+    if (!fetchedTasks) return;
+
+    const taskItems = fetchedTasks.pages.flatMap((page) => page.items ?? []);
+    const normalizedTasks = normalizeTasks(taskItems);
+
+    setTasks({ ...tasks, ...normalizedTasks.tasks });
+    setCompanies(
+      updateCompany(companies, companyId, {
+        taskIds: normalizedTasks.taskIds
+      })
+    );
+  }, [fetchedTasks]);
+
+  useEffect(() => {
+    if (!fetchedDeals) return;
+
+    const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
+
+    setDeals(mergeDeals(deals, dealItems));
+    setCompanies(
+      updateCompany(companies, companyId, { dealIds: toDealIds(dealItems) })
+    );
+  }, [fetchedDeals]);
+
+  useEffect(() => {
+    if (!fetchedContacts) return;
+
+    const contactItems = fetchedContacts.pages.flatMap(
+      (page) => page.items ?? []
+    );
+
+    setContacts(mergeContacts(contacts, contactItems));
+    setCompanies(
+      updateCompany(companies, companyId, {
         contactIds: toContactIds(contactItems)
       })
     );
-  }, [
-    fetchedCompany,
-    fetchedMetrics,
-    fetchedTasks,
-    fetchedDeals,
-    fetchedContacts
-  ]);
+  }, [fetchedContacts]);
+
+  useEffect(() => {
+    if (!isCompanyError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errors", "companyNotFoundTitle"]),
+      description: translateText(["errors", "companyNotFoundDescription"])
+    });
+    handleClose();
+  }, [isCompanyError]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));
 
-    if (createdDeal.id !== undefined) {
-      setCompanies(
-        updateCompany(companies, companyId, {
-          dealIds: appendDealId(company?.dealIds ?? [], createdDeal.id)
-        })
-      );
-    }
+    const linked = linkDealToRelatedEntities(createdDeal, {
+      companies,
+      contacts
+    });
+    setCompanies(linked.companies);
+    setContacts(linked.contacts);
   };
 
   const company = companies[companyId];

@@ -26,7 +26,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   isFetchingNextPage = false,
   onFetchNextPage
 }) => {
-  const { guardCrmCreate } = useCrmLimitGuard();
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsTaskModalOpen, setTaskModalType } = useCrmStoreV2(
     useShallow((store) => ({
@@ -56,8 +56,13 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   if (taskIds !== undefined && taskIds.length > 0) {
     return (
-      <div ref={loadingRef}>
-        <SidePanelTasksList taskIds={taskIds} onAddTask={handleAddTask} />
+      <div>
+        <SidePanelTasksList
+          taskIds={taskIds}
+          onAddTask={handleAddTask}
+          isAddTaskDisabled={isCheckingCrmLimit}
+        />
+        <div ref={loadingRef} />
       </div>
     );
   }
@@ -73,6 +78,8 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
         children: translateText(["tasks", "addTaskButtonEmptyView"]),
         variant: "tertiary",
         onClick: handleAddTask,
+        disabled: isCheckingCrmLimit,
+        isLoading: isCheckingCrmLimit,
         icon: <PlusIcon />,
         "aria-label": translateText(["tasks", "addTaskButtonEmptyView"])
       }}

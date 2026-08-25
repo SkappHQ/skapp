@@ -1,5 +1,7 @@
 import { CrmDealStageEnum } from "../enums/common";
 import {
+  CrmCompanyRecord,
+  CrmContactRecord,
   CrmDealEntity,
   CrmDealRecord,
   CrmStageRecord
@@ -65,6 +67,54 @@ export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
   if (dealId !== undefined) {
     return deals[dealId].name;
   }
+};
+
+export interface CrmDealRelatedRecords {
+  companies: CrmCompanyRecord;
+  contacts: CrmContactRecord;
+}
+
+export const linkDealToRelatedEntities = (
+  deal: CrmDealEntity,
+  records: CrmDealRelatedRecords
+): CrmDealRelatedRecords => {
+  const dealId = deal.id;
+
+  if (dealId === undefined) {
+    return records;
+  }
+
+  const linked: CrmDealRelatedRecords = { ...records };
+
+  if (deal.companyId !== undefined) {
+    const company = records.companies[deal.companyId];
+
+    if (company?.dealIds !== undefined) {
+      linked.companies = {
+        ...records.companies,
+        [deal.companyId]: {
+          ...company,
+          dealIds: appendDealId(company.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  if (deal.contactId !== undefined) {
+    const contact = records.contacts[deal.contactId];
+
+    if (contact?.dealIds !== undefined) {
+      linked.contacts = {
+        ...records.contacts,
+        [deal.contactId]: {
+          ...contact,
+          dealIds: appendDealId(contact.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  return linked;
 };
 
 export const getInitialStageId = (stages: CrmStageRecord) =>
