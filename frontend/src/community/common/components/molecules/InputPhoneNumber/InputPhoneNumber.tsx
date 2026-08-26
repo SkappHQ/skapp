@@ -99,13 +99,13 @@ const InputPhoneNumber: FC<Props> = ({
   };
 
   useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) {
+      return;
+    }
+
     const handleDropdownAccessibility = () => {
-      const container = containerRef.current;
-
-      if (!container) {
-        return;
-      }
-
       const list = container.querySelector(".country-list");
       const options = container.querySelectorAll<HTMLElement>(
         ".country-list .country"
@@ -167,8 +167,18 @@ const InputPhoneNumber: FC<Props> = ({
       }
     };
 
-    const interval = setInterval(handleDropdownAccessibility, 300);
-    return () => clearInterval(interval);
+    handleDropdownAccessibility();
+
+    const observer = new MutationObserver(handleDropdownAccessibility);
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+
+    return () => observer.disconnect();
   }, [countryCodeValue, countryListLabel, countrySearchLabel, listboxId]);
 
   return (
