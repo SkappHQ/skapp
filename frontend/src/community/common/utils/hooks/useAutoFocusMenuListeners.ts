@@ -1,26 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const useAutoFocusMenuListener = (
   anchorEl: HTMLElement | null,
   menuId: string,
   handleClose: () => void
 ) => {
-  let prevFocusedElement: HTMLElement | null;
+  const prevFocusedElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    // Only listen while the menu is open, otherwise Escape anywhere on the
+    // page triggers handleClose and its side effects.
+    if (!anchorEl) {
+      prevFocusedElement.current = null;
+      return;
+    }
+
     const customMenu: HTMLElement | null = document.getElementById(menuId);
 
-    if (anchorEl && customMenu) {
-      prevFocusedElement = document.activeElement as HTMLElement;
+    // Captured once per open: re-running the effect would otherwise record the
+    // menu itself as the element to restore focus to.
+    if (customMenu && !prevFocusedElement.current) {
+      prevFocusedElement.current = document.activeElement as HTMLElement;
       customMenu.focus();
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         handleClose();
-        if (prevFocusedElement) {
-          prevFocusedElement.focus();
-        }
+        prevFocusedElement.current?.focus();
       }
     };
 
@@ -29,7 +36,7 @@ const useAutoFocusMenuListener = (
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [anchorEl]);
+  }, [anchorEl, menuId, handleClose]);
 };
 
 export default useAutoFocusMenuListener;
