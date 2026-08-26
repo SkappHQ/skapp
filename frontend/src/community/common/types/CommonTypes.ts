@@ -288,3 +288,10 @@ export type HTMLTableHeaderTypes = {
 export type TableTypes = {
   tableName: string;
 };
+
+export interface EmployeeAvatarData {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic?: string;
+}

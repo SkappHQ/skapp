@@ -5,7 +5,7 @@ import com.skapp.community.common.type.RoleLevel;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,12 +13,8 @@ public class ModuleRoleRestrictionResponseDto {
 
 	private ModuleType module;
 
-	private Boolean isAdmin;
+	private Set<RoleLevel> restrictions;
 
-	private Boolean isManager;
-
-	private List<RoleLevel> restrictions;
-
-	private List<RoleLevel> restrictableRoles;
+	private Set<RoleLevel> restrictableRoles;
 
 }

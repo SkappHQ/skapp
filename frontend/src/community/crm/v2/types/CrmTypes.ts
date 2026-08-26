@@ -1,6 +1,10 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
-import { CrmDealSortEnum, CrmPriorityEnum } from "../enums/common";
+import {
+  CrmDealSortEnum,
+  CrmKanbanDragType,
+  CrmPriorityEnum
+} from "../enums/common";
 import {
   CrmCompanyEntity,
   CrmContactEntity,
@@ -10,8 +14,6 @@ import {
   CrmTaskEntity,
   CrmTaskTypeEntity
 } from "./CrmCommonTypes";
-
-// Modals and side panels
 
 export enum CrmModalTypes {
   ADD_COMPANY_MODAL = "ADD_COMPANY_MODAL",
@@ -36,8 +38,6 @@ export enum CrmSidePanelTypes {
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
 }
 
-// Requests
-
 export interface CrmDealReorderWithinStageRequest {
   dealId: number;
   previousDealId: number | null;
@@ -51,12 +51,19 @@ export interface CrmDealMoveBetweenStagesRequest {
   nextDealId: number | null;
 }
 
-export interface CrmDealStageReorderRequest {
+export interface CrmDealStageReorderItem {
   id: number;
   orderIndex: number;
 }
 
-// Responses
+export interface CrmCompanyBatchRequest {
+  ids: number[];
+}
+
+export interface CrmKanbanDragData {
+  stageId: number;
+  type: CrmKanbanDragType;
+}
 
 export interface CrmCompanyListResponse {
   items: CrmCompanyEntity[];
@@ -85,13 +92,6 @@ export interface CrmBoardInitDataResponse {
 
 export interface CrmOwnerListResponse {
   items: CrmOwnerEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface CrmDealListResponse {
-  items: CrmDealEntity[];
   currentPage: number;
   totalItems: number;
   totalPages: number;
@@ -133,7 +133,12 @@ export interface CrmExistsResponse {
   isExists: boolean;
 }
 
-// Filters
+export interface CrmContactLookupResponse {
+  items: CrmContactEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
 
 export interface CrmCompanyFilterRequest {
   searchKeyword?: string;

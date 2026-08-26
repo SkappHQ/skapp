@@ -21,6 +21,7 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyNameAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
@@ -179,6 +180,23 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkLeavePolicyNameAvailability(String name, Long leaveTypeId) {
+		log.info("checkLeavePolicyNameAvailability: execution started");
+
+		if (leaveTypeId == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED);
+		}
+
+		LeavePolicyValidationUtil.validateName(name);
+
+		boolean isAvailable = !leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(name, leaveTypeId);
+
+		log.info("checkLeavePolicyNameAvailability: execution ended");
+		return new ResponseEntityDto(false, new LeavePolicyNameAvailabilityResponseDto(isAvailable));
 	}
 
 	@Override

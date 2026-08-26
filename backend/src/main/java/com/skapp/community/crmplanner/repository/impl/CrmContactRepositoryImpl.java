@@ -15,6 +15,7 @@ import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
@@ -254,6 +255,31 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
 		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
+	}
+
+	@Override
+	public Page<CrmContactLookupResponseDtoV2> findContactsForLookupV2(CrmContactFilterDto filterDto,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContactLookupResponseDtoV2> query = cb.createQuery(CrmContactLookupResponseDtoV2.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+
+		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
+
+		query.select(cb.construct(CrmContactLookupResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name),
+				cb.<Long>selectCase()
+					.when(cb.isTrue(company.get(CrmCompany_.isDeleted)), cb.nullLiteral(Long.class))
+					.otherwise(company.get(CrmCompany_.id))));
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+
+		TypedQuery<CrmContactLookupResponseDtoV2> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
 

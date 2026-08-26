@@ -29,8 +29,11 @@ export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, COMPANY_NAME_DEBOUNCE_DELAY);
-  const isEmptyFilterState = debouncedSearch.trim() !== "";
+  const debouncedSearch = useDebounce(
+    searchTerm.trim(),
+    COMPANY_NAME_DEBOUNCE_DELAY
+  );
+  const hasActiveSearch = debouncedSearch !== "";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
@@ -52,8 +55,7 @@ export const CompanyTable: FC = () => {
   }, [fetchedCompanies]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setSearchTerm(value);
+    setSearchTerm(event.target.value);
   };
 
   const tableHeaders: GridHeader[] = [
@@ -143,10 +145,10 @@ export const CompanyTable: FC = () => {
       loader={<ProjectTableSkeletonLoader rowCount={8} />}
       emptyState={{
         icon: <SearchIcon />,
-        title: isEmptyFilterState
+        title: hasActiveSearch
           ? translateText(["table", "emptySearchState", "title"])
           : translateText(["table", "emptyDataState", "title"]),
-        description: isEmptyFilterState
+        description: hasActiveSearch
           ? translateText(["table", "emptySearchState", "description"])
           : translateText(["table", "emptyDataState", "description"])
       }}
