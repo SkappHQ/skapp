@@ -25,6 +25,14 @@ export const styles = (theme: Theme) => ({
     overflow: "hidden"
   }),
 
+  requiredAsteriskStyle: {
+    color: theme.palette.error.contrastText
+  },
+
+  spinnerStyle: {
+    color: theme.palette.common.black
+  },
+
   paperStyle: (
     error: boolean,
     theme: Theme,

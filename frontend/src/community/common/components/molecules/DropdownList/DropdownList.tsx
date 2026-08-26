@@ -1,6 +1,7 @@
 import {
   CircularProgress,
   MenuItem,
+  MenuListProps,
   Paper,
   Select,
   Stack,
@@ -9,7 +10,15 @@ import {
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Theme, useTheme } from "@mui/material/styles";
 import { Box, SxProps } from "@mui/system";
-import { FC, JSX, KeyboardEvent, SyntheticEvent } from "react";
+import {
+  FC,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  JSX,
+  KeyboardEvent,
+  SyntheticEvent,
+  useId
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
@@ -91,7 +100,7 @@ const DropdownList: FC<Props> = ({
   addNewClickBtnText,
   required,
   emojiWithText,
-  readOnly,
+  readOnly = false,
   errorFocusOutlineNeeded = true,
   labelStyles,
   checkSelected,
@@ -104,13 +113,35 @@ const DropdownList: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
-  const accessibleName = ariaLabel || label;
+  // Every one of these is optional, so the name can still come out empty: without it both
+  // the combobox and its listbox are unnamed (the placeholder text and the notched-outline
+  // legend are both inside aria-hidden markup, so neither can stand in).
+  const accessibleName = ariaLabel || label || placeholder;
 
-  const errorId = error ? `${inputName}-error` : undefined;
+  // inputName is a form-field name, not DOM-unique: sibling sections and table rows
+  // reuse it, so seed ids from useId() to keep them pointing at this instance.
+  const reactId = useId();
+  const idSeed = `${id ?? inputName}-${reactId}`;
 
-  const menuListProps = accessibleName
-    ? { "aria-label": accessibleName }
-    : {};
+  const labelId = label && !ariaLabel ? `${idSeed}-label` : undefined;
+
+  const errorId = error ? `${idSeed}-error` : undefined;
+
+  const menuListProps: Partial<MenuListProps> = {
+    "aria-label": accessibleName
+  };
+
+  // Shared by both Select branches: keep them hoisted so ARIA wiring cannot drift apart.
+  const selectInputProps: InputHTMLAttributes<HTMLInputElement> = {
+    "aria-label": accessibleName,
+    "aria-describedby": errorId
+  };
+
+  const selectDisplayProps: HTMLAttributes<HTMLDivElement> = {
+    "aria-labelledby": labelId,
+    "aria-invalid": !!error,
+    "aria-required": required ? "true" : undefined
+  };
 
   const handleChange = (
     event:
@@ -133,14 +164,19 @@ const DropdownList: FC<Props> = ({
       >
         <Typography
           component="label"
+          id={labelId}
           lineHeight={1.5}
           sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
         >
           {label}{" "}
           {required && (
-            <span aria-hidden="true" style={{ color: "red" }}>
+            <Box
+              component="span"
+              aria-hidden="true"
+              sx={classes.requiredAsteriskStyle}
+            >
               *
-            </span>
+            </Box>
           )}
         </Typography>
         {tooltip && (
@@ -149,7 +185,7 @@ const DropdownList: FC<Props> = ({
             maxWidth={toolTipWidth}
             id={toolTipId}
             isDisabled={isDisabled}
-            ariaDescription={tooltip as string}
+            ariaDescription={typeof tooltip === "string" ? tooltip : undefined}
           />
         )}
       </Stack>
@@ -193,47 +229,41 @@ const DropdownList: FC<Props> = ({
               MenuListProps: menuListProps
             }}
             sx={{
-              ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
+              ...classes.selectStyle(theme, isDisabled, readOnly),
               ...selectStyles
             }}
             fullWidth
-            inputProps={{
-              "aria-label": accessibleName,
-              "aria-invalid": !!error,
-              "aria-required": required,
-              "aria-describedby": errorId
-            }}
+            inputProps={selectInputProps}
+            SelectDisplayProps={selectDisplayProps}
             displayEmpty={!!placeholder?.length}
-            renderValue={
-              value !== ""
-                ? () => (
-                    <Stack direction={"row"}>
-                      {emojiWithText &&
-                        getEmoji(
-                          itemList?.find((item) => item?.value === value)
-                            ?.emoji as string
-                        )}
-                      <Typography
-                        sx={{
-                          paddingLeft: emojiWithText ? "0.25rem" : "0",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          color: readOnly ? "text.secondary" : "common.black"
-                        }}
-                      >
-                        {itemList?.find((item) => item?.value === value)?.label}
-                      </Typography>
-                    </Stack>
-                  )
-                : () => (
-                    <Typography
-                      aria-hidden={true}
-                      sx={classes.placeholderStyle}
-                    >
-                      {placeholder}
-                    </Typography>
-                  )
+            // Branch on what MUI hands back, not the outer prop: an undefined `value` is
+            // not "" and would otherwise render an empty label instead of the placeholder.
+            // The lookup still uses `value`, which keeps its original type - item values
+            // may be numbers, while the value handed to Select is stringified.
+            renderValue={(selected) =>
+              selected === undefined || selected === "" ? (
+                <Typography aria-hidden={true} sx={classes.placeholderStyle}>
+                  {placeholder}
+                </Typography>
+              ) : (
+                <Stack direction={"row"}>
+                  {emojiWithText &&
+                    getEmoji(
+                      itemList?.find((item) => item?.value === value)?.emoji
+                    )}
+                  <Typography
+                    sx={{
+                      paddingLeft: emojiWithText ? "0.25rem" : "0",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      color: readOnly ? "text.secondary" : "common.black"
+                    }}
+                  >
+                    {itemList?.find((item) => item?.value === value)?.label}
+                  </Typography>
+                </Stack>
+              )
             }
           >
             {itemList?.map(({ label, value: menuItemValue, emoji }, index) => (
@@ -251,7 +281,7 @@ const DropdownList: FC<Props> = ({
                 }}
               >
                 <Stack direction={"row"}>
-                  {emojiWithText && getEmoji(emoji as string)}
+                  {emojiWithText && getEmoji(emoji)}
                   <Typography
                     sx={{
                       paddingLeft: emojiWithText ? "0.25rem" : "0",
@@ -291,7 +321,7 @@ const DropdownList: FC<Props> = ({
         ) : (
           <Select
             id={id}
-            value={value?.toString()}
+            value={value?.toString() ?? ""}
             onChange={handleChange}
             onClose={onClose}
             onKeyDown={(
@@ -308,7 +338,12 @@ const DropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             multiple={isMultiValue}
-            MenuProps={{ MenuListProps: menuListProps }}
+            MenuProps={{
+              MenuListProps: {
+                ...menuListProps,
+                "aria-busy": showSpinnerWhenNoData
+              }
+            }}
             sx={{
               flex: 1,
               "&& .MuiInputBase-input": {
@@ -317,31 +352,44 @@ const DropdownList: FC<Props> = ({
               }
             }}
             fullWidth
-            inputProps={{
-              "aria-label": accessibleName,
-              "aria-invalid": !!error,
-              "aria-required": required,
-              "aria-describedby": errorId
-            }}
+            inputProps={selectInputProps}
+            SelectDisplayProps={selectDisplayProps}
           >
             {showSpinnerWhenNoData ? (
-              <Box display={"flex"} justifyContent={"center"}>
-                <CircularProgress size={20} style={{ color: "black" }} />
-              </Box>
+              <MenuItem
+                disabled
+                value=""
+                sx={{
+                  justifyContent: "center",
+                  "&.Mui-disabled": { opacity: 1 }
+                }}
+              >
+                <CircularProgress
+                  size={20}
+                  aria-hidden="true"
+                  sx={classes.spinnerStyle}
+                />
+              </MenuItem>
             ) : (
-              <Typography variant="body2" sx={{ p: 1 }}>
-                {noOptionsText}
-              </Typography>
+              <MenuItem
+                disabled
+                value=""
+                sx={{ "&.Mui-disabled": { opacity: 1 } }}
+              >
+                <Typography variant="body2">{noOptionsText}</Typography>
+              </MenuItem>
             )}
           </Select>
         )}
       </Paper>
 
+      {/* role="status" implies aria-live="polite" + aria-atomic, so no explicit aria-live
+          is needed. Polite rather than assertive because validation runs on blur: this
+          renders while focus is already in the next field and must not interrupt it. */}
       {!!error && (
         <Typography
           id={errorId}
-          role="alert"
-          aria-live="assertive"
+          role="status"
           variant="body2"
           sx={classes.errorTextStyle}
         >

@@ -61,7 +61,9 @@ export const isSuperOrPeopleAdmin = (roles?: string[]): boolean => {
   );
 };
 
-export const getEmoji = (unicode: string): string => {
+export const getEmoji = (unicode?: string): string => {
+  if (!unicode) return "";
+
   try {
     if (unicode.startsWith("&#")) {
       const codePoint = parseInt(unicode.slice(2, -1), 10);
