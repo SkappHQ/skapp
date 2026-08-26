@@ -118,6 +118,10 @@ const InputPhoneNumber: FC<Props> = ({
         list.setAttribute("id", listboxId);
       }
 
+      // A listbox only permits option/group children. This <li> wraps the
+      // library's search input, so it is neither an option nor safe to hide —
+      // "group" is the only permitted role that is honest about the element.
+      // Do not change this to option, presentation, or aria-hidden.
       if (searchItem) {
         searchItem.setAttribute("role", "group");
       }
