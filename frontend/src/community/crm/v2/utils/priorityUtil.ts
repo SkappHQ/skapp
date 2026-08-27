@@ -5,11 +5,12 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 
 export const getPriorityConfig = (
   priority?: CrmPriorityEnum
-): { icon: ReactElement; bgColor: string; textColor: string } => {
+): { key: string; icon: ReactElement; bgColor: string; textColor: string } => {
   const option = PRIORITY_OPTIONS.find(
     (o) => o.value === (priority ?? CrmPriorityEnum.LOW)
   )!;
   return {
+    key: option.key,
     icon: createElement(option.IconComponent),
     bgColor: option.backgroundColor,
     textColor: option.textColor

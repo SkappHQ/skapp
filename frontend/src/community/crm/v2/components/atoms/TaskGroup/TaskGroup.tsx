@@ -9,12 +9,14 @@ interface Props {
   label?: string;
   taskIds: number[];
   isCheckTaskVisible?: boolean;
+  isShowContact?: boolean;
 }
 
 const TaskGroup: FC<Props> = ({
   label,
   taskIds,
-  isCheckTaskVisible = true
+  isCheckTaskVisible = true,
+  isShowContact = true
 }) => {
   const { setSelectedTaskId, openCrmSidePanel } = useCrmStoreV2(
     useShallow((store) => ({
@@ -39,7 +41,7 @@ const TaskGroup: FC<Props> = ({
             key={taskId}
             taskId={taskId}
             isCheckTaskVisible={isCheckTaskVisible}
-            isShowContact={true}
+            isShowContact={isShowContact}
             onRowClick={() => handleRowClick(taskId)}
           />
         ))}

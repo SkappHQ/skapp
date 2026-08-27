@@ -11,8 +11,11 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import TaskSidePanelV2 from "~community/crm/v2/components/organisms/TaskSidePanelV2/TaskSidePanelV2";
 import TasksTableV2 from "~community/crm/v2/components/organisms/TasksTableV2/TasksTableV2";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -98,6 +101,8 @@ const TasksV2 = () => {
   const translateText = useTranslator("crmModule");
   const containerRef = useFullHeightContainer();
 
+  const [selectedTaskId, isCrmSidePanelOpen] = useCrmStoreV2((store) => [store.selectedTaskId, store.isCrmSidePanelOpen]);
+
   const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   return (
@@ -113,9 +118,16 @@ const TasksV2 = () => {
       }}
       module={Modules.CRM}
     >
-      <div ref={containerRef} className="flex flex-col w-full gap-4">
-        {!isCrmInitialDataLoading && <TasksTableV2 />}
-      </div>
+      <>
+        {selectedTaskId !== null && (
+          <SidePanelWrapperV2 isOpen={isCrmSidePanelOpen}>
+            <TaskSidePanelV2 taskId={selectedTaskId} />
+          </SidePanelWrapperV2>
+        )}
+        <div ref={containerRef} className="flex flex-col w-full gap-4">
+          {!isCrmInitialDataLoading && <TasksTableV2 />}
+        </div>
+      </>
     </ContentLayout>
   );
 };

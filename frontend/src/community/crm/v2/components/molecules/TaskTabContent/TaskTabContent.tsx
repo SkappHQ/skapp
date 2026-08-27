@@ -29,10 +29,10 @@ import {
 } from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskGroups,
+  mergeTasks,
   resolveTasks,
   toTaskDealIds,
-  toTaskIds,
-  toTasksRecord
+  toTaskIds
 } from "~community/crm/v2/utils/taskUtil";
 
 import TaskTabSkeleton from "./TaskTabSkeleton";
@@ -108,7 +108,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
-    setTasks(toTasksRecord(fetchedTasks));
+    setTasks(mergeTasks(tasks, fetchedTasks));
     setTaskIds(toTaskIds(fetchedTasks));
   }, [openTaskData, completedTaskData, fetchedTasks]);
 

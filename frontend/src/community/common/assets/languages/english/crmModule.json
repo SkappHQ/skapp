@@ -600,6 +600,7 @@
       "markAsDone": "Mark as Done",
       "statusDone": "Done",
       "assignedTo": "Assigned To",
+      "noOwner": "No owner assigned",
       "priority": "Priority",
       "closingDate": "Closing Date",
       "noClosingDate": "No closing date",

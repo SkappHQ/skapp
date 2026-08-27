@@ -33,16 +33,6 @@ import {
   isOverdue
 } from "~community/crm/v2/utils/taskValidations";
 
-export const toTasksRecord = (tasks: CrmTaskEntity[]): CrmTaskRecord => {
-  const taskRecord: CrmTaskRecord = {};
-  for (const task of tasks) {
-    if (task.id != null) {
-      taskRecord[task.id] = task;
-    }
-  }
-  return taskRecord;
-};
-
 export const toTaskIds = (tasks: CrmTaskEntity[]): number[] => {
   const taskIds: number[] = [];
   for (const task of tasks) {
