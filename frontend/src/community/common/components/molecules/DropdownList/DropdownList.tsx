@@ -76,6 +76,9 @@ interface Props {
   noOptionsText?: string;
 }
 
+const getMenuContainer = (): HTMLElement | null =>
+  typeof document === "undefined" ? null : document.querySelector("main");
+
 const DropdownList: FC<Props> = ({
   componentStyle,
   label,
@@ -113,13 +116,8 @@ const DropdownList: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
-  // Every one of these is optional, so the name can still come out empty: without it both
-  // the combobox and its listbox are unnamed (the placeholder text and the notched-outline
-  // legend are both inside aria-hidden markup, so neither can stand in).
   const accessibleName = ariaLabel || label || placeholder;
 
-  // inputName is a form-field name, not DOM-unique: sibling sections and table rows
-  // reuse it, so seed ids from useId() to keep them pointing at this instance.
   const reactId = useId();
   const idSeed = `${id ?? inputName}-${reactId}`;
 
@@ -221,6 +219,7 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
+              container: getMenuContainer,
               style: {
                 maxHeight: 300,
                 zIndex: ZIndexEnums.NEWMODAL,
@@ -236,10 +235,6 @@ const DropdownList: FC<Props> = ({
             inputProps={selectInputProps}
             SelectDisplayProps={selectDisplayProps}
             displayEmpty={!!placeholder?.length}
-            // Branch on what MUI hands back, not the outer prop: an undefined `value` is
-            // not "" and would otherwise render an empty label instead of the placeholder.
-            // The lookup still uses `value`, which keeps its original type - item values
-            // may be numbers, while the value handed to Select is stringified.
             renderValue={(selected) =>
               selected === undefined || selected === "" ? (
                 <Typography aria-hidden={true} sx={classes.placeholderStyle}>
@@ -340,6 +335,7 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
+              container: getMenuContainer,
               MenuListProps: {
                 ...menuListProps,
                 "aria-busy": showSpinnerWhenNoData
@@ -384,9 +380,6 @@ const DropdownList: FC<Props> = ({
         )}
       </Paper>
 
-      {/* role="status" implies aria-live="polite" + aria-atomic, so no explicit aria-live
-          is needed. Polite rather than assertive because validation runs on blur: this
-          renders while focus is already in the next field and must not interrupt it. */}
       {!!error && (
         <Typography
           id={errorId}
