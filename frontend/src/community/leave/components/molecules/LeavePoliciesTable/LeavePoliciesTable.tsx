@@ -132,7 +132,11 @@ const LeavePoliciesTable: FC<Props> = ({
       { id: "policyName", label: translateText(["policyNameHeader"]) },
       { id: "leaveType", label: translateText(["leaveTypeHeader"]) },
       { id: "entitlementType", label: translateText(["entitlementTypeHeader"]) },
-      { id: "status", label: translateText(["statusHeader"]) }
+      { id: "status", label: translateText(["statusHeader"]) },
+      {
+        id: "assignedEmployees",
+        label: translateText(["assignedEmployeesHeader"])
+      }
     ];
 
     if (!canManagePolicies) {
@@ -176,6 +180,11 @@ const LeavePoliciesTable: FC<Props> = ({
                 isActive ? translateText(["active"]) : translateText(["inactive"])
               }
             />
+          ),
+          assignedEmployees: (
+            <span className="body1 text-black">
+              {policy.assignedEmployeeCount ?? 0}
+            </span>
           ),
           ...(canManagePolicies
             ? {

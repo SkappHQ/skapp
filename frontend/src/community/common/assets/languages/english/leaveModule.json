@@ -494,6 +494,7 @@
       "savingBtnTxt": "Saving..."
     },
     "entitlementTypeHeader": "ENTITLEMENT TYPE",
+    "assignedEmployeesHeader": "ASSIGNED EMPLOYEES",
     "leaveTypeFilterLabel": "Leave Type",
     "noSearchResultsTitle": "No policies found. Try a different search term.",
     "noPoliciesYetTitle": "No leave policies yet.",
