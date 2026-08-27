@@ -77,10 +77,6 @@ const InputPhoneNumber: FC<Props> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
 
-  const countryListLabel = translateText(["countryList"]);
-  const countrySearchLabel = translateText(["countrySearch"]);
-  const countryCodeLabel = `${ariaLabel ? ariaLabel : label} ${translateText(["countryCode"])}`;
-
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
       e.preventDefault();
@@ -114,7 +110,7 @@ const InputPhoneNumber: FC<Props> = ({
 
       if (list) {
         list.setAttribute("role", "listbox");
-        list.setAttribute("aria-label", countryListLabel);
+        list.setAttribute("aria-label", translateText(["countryList"]));
         list.setAttribute("id", listboxId);
       }
 
@@ -125,7 +121,7 @@ const InputPhoneNumber: FC<Props> = ({
       const searchBox = container.querySelector(".country-list .search-box");
 
       if (searchBox) {
-        searchBox.setAttribute("aria-label", countrySearchLabel);
+        searchBox.setAttribute("aria-label", translateText(["countrySearch"]));
       }
 
       options.forEach((el: HTMLElement, index: number) => {
@@ -179,7 +175,7 @@ const InputPhoneNumber: FC<Props> = ({
     });
 
     return () => observer.disconnect();
-  }, [countryCodeValue, countryListLabel, countrySearchLabel, listboxId]);
+  }, [countryCodeValue, translateText, listboxId]);
 
   return (
     // TODO: move styles to styles.ts
@@ -216,7 +212,7 @@ const InputPhoneNumber: FC<Props> = ({
           onChange={onChangeCountry}
           inputProps={{
             readOnly: true,
-            "aria-label": countryCodeLabel,
+            "aria-label": `${ariaLabel || label} ${translateText(["countryCode"])}`,
             role: "combobox",
             "aria-expanded": "false",
             "aria-haspopup": "listbox",
