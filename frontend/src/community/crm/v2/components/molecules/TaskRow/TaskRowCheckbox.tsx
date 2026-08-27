@@ -29,7 +29,6 @@ const TaskRowCheckbox: FC<Props> = ({
 
   return (
     <div
-      role="presentation"
       className="shrink-0 flex items-center justify-center pr-1"
       onClick={(event) => event.stopPropagation()}
     >
