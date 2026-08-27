@@ -38,6 +38,10 @@ export const crmTaskEndpointsV2 = {
   UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
+export const crmTaskEndpoints = {
+  DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
+};
+
 export const crmLookupEndpoints = {
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`

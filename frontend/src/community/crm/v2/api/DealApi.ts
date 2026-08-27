@@ -17,6 +17,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmDealFilterRequest,
+  CrmDealListResponse,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -45,17 +46,23 @@ export const useGetDealsByIds = (
 
 const fetchDeals = async (
   filters: CrmDealFilterRequest
-): Promise<{
-  items: CrmDealEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}> => {
+): Promise<CrmDealListResponse> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
     params: filters
   });
   return response?.data?.results?.[0];
 };
+
+export const useGetDealLookupV2 = (
+  filters: CrmDealFilterRequest,
+  enabled: boolean
+): UseQueryResult<CrmDealListResponse> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.GET_DEALS(filters),
+    queryFn: () => fetchDeals(filters),
+    enabled,
+    refetchOnWindowFocus: false
+  });
 
 export const useGetDealsInfinite = (
   filters: CrmDealFilterRequest,

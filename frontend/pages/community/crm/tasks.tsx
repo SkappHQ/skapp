@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -11,15 +12,17 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
 import TaskSidePanelV2 from "~community/crm/v2/components/organisms/TaskSidePanelV2/TaskSidePanelV2";
 import TasksTableV2 from "~community/crm/v2/components/organisms/TasksTableV2/TasksTableV2";
 import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-const isCrmTasksV2 = true;
+const isCrmTasksV2 = false;
 
 const useFullHeightContainer = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,9 +104,33 @@ const TasksV2 = () => {
   const translateText = useTranslator("crmModule");
   const containerRef = useFullHeightContainer();
 
-  const [selectedTaskId, isCrmSidePanelOpen] = useCrmStoreV2((store) => [store.selectedTaskId, store.isCrmSidePanelOpen]);
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const {
+    selectedTaskId,
+    isCrmSidePanelOpen,
+    setSelectedTaskId,
+    setIsTaskModalOpen,
+    setTaskModalType
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      selectedTaskId: store.selectedTaskId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      setSelectedTaskId: store.setSelectedTaskId,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType
+    }))
+  );
 
   const { isCrmInitialDataLoading } = useInitializeCrmData();
+
+  const onPrimaryButtonClick = () => {
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
+      setSelectedTaskId(null);
+      setTaskModalType(CrmModalTypesV2.ADD_TASK_MODAL);
+      setIsTaskModalOpen(true);
+    });
+  };
 
   return (
     <ContentLayout
@@ -113,6 +140,10 @@ const TasksV2 = () => {
       ]}
       pageHead={translateText(["tasks", "pageHead"])}
       title={translateText(["tasks", "title"])}
+      primaryButtonText={translateText(["tasks", "addTaskBtn"])}
+      primaryBtnIconName={IconName.ADD_ICON}
+      onPrimaryButtonClick={onPrimaryButtonClick}
+      isPrimaryBtnLoading={isCheckingCrmLimit}
       containerStyles={{
         padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
       }}
@@ -125,6 +156,7 @@ const TasksV2 = () => {
           </SidePanelWrapperV2>
         )}
         <div ref={containerRef} className="flex flex-col w-full gap-4">
+          <TaskModalControllerV2 />
           {!isCrmInitialDataLoading && <TasksTableV2 />}
         </div>
       </>

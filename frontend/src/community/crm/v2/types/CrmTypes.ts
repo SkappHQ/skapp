@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
@@ -109,6 +111,13 @@ export interface CrmDealsByStagesResponse {
   hasNextPage: boolean;
 }
 
+export interface CrmDealListResponse {
+  items: CrmDealEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface CrmTaskListResponse {
   items: CrmTaskEntity[];
   currentPage: number;
@@ -188,6 +197,18 @@ export interface GroupedTaskIds {
   dueTomorrow: number[];
   upcoming: number[];
   isOpenTasksEmpty: boolean;
+}
+
+export interface CrmPriorityOption {
+  id: string;
+  value: string;
+  label: ReactNode;
+}
+
+export interface CrmTaskTypeOption {
+  id: string;
+  value: string;
+  label: string;
 }
 
 export interface CrmTaskTab {

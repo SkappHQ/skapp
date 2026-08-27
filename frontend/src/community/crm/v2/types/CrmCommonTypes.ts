@@ -60,7 +60,7 @@ export interface CrmOwnerEntity {
   firstName: string;
   lastName?: string;
   email?: string;
-  authPic?: string;
+  authPic: string | null;
 }
 
 export interface CrmDealEntity {

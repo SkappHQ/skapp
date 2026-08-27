@@ -47,6 +47,17 @@ export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
   return ownerRecord;
 };
 
+export const mergeOwners = (
+  existing: CrmOwnerRecord,
+  incoming: CrmOwnerEntity[]
+): CrmOwnerRecord => {
+  const merged: CrmOwnerRecord = { ...existing };
+  for (const owner of incoming) {
+    merged[owner.employeeId] = { ...merged[owner.employeeId], ...owner };
+  }
+  return merged;
+};
+
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
   const stageRecord: CrmStageRecord = {};
   for (const stage of stages) {

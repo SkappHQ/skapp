@@ -8,6 +8,11 @@
     "initData": {
       "errorTitle": "Couldn't load CRM data",
       "errorDescription": "Something went wrong. Please try again"
+    },
+    "priorityOptions": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
     }
   },
   "breadcrumbs": {

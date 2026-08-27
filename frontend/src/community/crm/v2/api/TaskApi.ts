@@ -5,12 +5,18 @@ import {
   UseQueryResult,
   useInfiniteQuery,
   useMutation,
-  useQuery
+  useQuery,
+  useQueryClient
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import { authFetchV2 } from "~community/common/utils/axiosInterceptor";
-import { crmTaskEndpointsV2 } from "~community/crm/v2/api/utils/ApiEndpoints";
+import authFetch, {
+  authFetchV2
+} from "~community/common/utils/axiosInterceptor";
+import {
+  crmTaskEndpoints,
+  crmTaskEndpointsV2
+} from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -19,6 +25,7 @@ import {
   CrmTaskListResponse,
   CrmTaskUpdateRequest
 } from "~community/crm/v2/types/CrmTypes";
+import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchTasks = async (
   params: CrmTaskFilterRequest
@@ -119,12 +126,20 @@ const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
 export const useCreateTask = (
   onSuccess: (createdTask: CrmTaskEntity) => void,
   onError: () => void
-): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> =>
-  useMutation({
+): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: createTask,
-    onSuccess,
+    onSuccess: (createdTask) => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess(createdTask);
+    },
     onError
   });
+};
 
 const updateTask = async (
   params: CrmTaskUpdateRequest
@@ -145,3 +160,25 @@ export const useUpdateTask = (
     onSuccess,
     onError
   });
+
+const deleteTask = async (id: number): Promise<void> => {
+  await authFetch.delete(crmTaskEndpoints.DELETE_TASK(id));
+};
+
+export const useDeleteTask = (
+  onSuccess: () => void,
+  onError: () => void
+): UseMutationResult<void, AxiosError, number> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
+      });
+      onSuccess();
+    },
+    onError
+  });
+};

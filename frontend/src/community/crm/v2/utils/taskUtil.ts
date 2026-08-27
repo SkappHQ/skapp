@@ -13,10 +13,15 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmPriorityEnum,
+  CrmTaskTabEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmContactEntity,
   CrmContactRecord,
+  CrmDealEntity,
+  CrmDealRecord,
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmTaskEntity,
@@ -24,6 +29,7 @@ import {
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmTaskTypeOption,
   GroupedTaskIds,
   TaskDueDateInfo
 } from "~community/crm/v2/types/CrmTypes";
@@ -53,6 +59,9 @@ export const toTaskDealIds = (tasks: CrmTaskEntity[]): number[] => {
   return dealIds;
 };
 
+export const prependTaskId = (taskIds: number[], id: number): number[] =>
+  taskIds.includes(id) ? taskIds : [id, ...taskIds];
+
 export const mergeTasks = (
   existing: CrmTaskRecord,
   incoming: CrmTaskEntity[]
@@ -63,6 +72,19 @@ export const mergeTasks = (
     merged[task.id] = { ...merged[task.id], ...task };
   }
   return merged;
+};
+
+export const removeTaskId = (taskIds: number[], id: number): number[] =>
+  taskIds.filter((taskId) => taskId !== id);
+
+export const removeTaskFromRecord = (
+  tasks: CrmTaskRecord,
+  id: number
+): CrmTaskRecord => {
+  if (!(id in tasks)) return tasks;
+  const next = { ...tasks };
+  delete next[id];
+  return next;
 };
 
 export const resolveTasks = (
@@ -80,20 +102,104 @@ export const getSelectedTask = (
   return tasks[taskId];
 };
 
+export const getTaskTypeOptions = (
+  taskTypes: CrmTaskTypeRecord
+): CrmTaskTypeOption[] =>
+  Object.values(taskTypes)
+    .sort((first, second) => first.orderIndex - second.orderIndex)
+    .map((taskType) => ({
+      id: String(taskType.id),
+      value: String(taskType.id),
+      label: taskType.name.toLowerCase()
+    }));
+
+export const getTaskFormInitialValues = (
+  task?: CrmTaskEntity
+): CrmTaskEntity => ({
+  name: task?.name ?? "",
+  typeId: task?.typeId,
+  priority: task?.priority ?? CrmPriorityEnum.MEDIUM,
+  dueAt: task?.dueAt,
+  ownerId: task?.ownerId,
+  contactId: task?.contactId,
+  dealId: task?.dealId,
+  notes: task?.notes ?? ""
+});
+
+export const getTrimmedTaskValues = (values: CrmTaskEntity): CrmTaskEntity => ({
+  name: values.name?.trim(),
+  typeId: values.typeId,
+  priority: values.priority,
+  dueAt: values.dueAt,
+  ownerId: values.ownerId,
+  contactId: values.contactId,
+  dealId: values.dealId,
+  notes: values.notes?.trim()
+});
+
+export const getChangedTaskFields = (
+  initialValues: CrmTaskEntity,
+  currentValues: CrmTaskEntity
+): CrmTaskEntity => {
+  const changedFields: CrmTaskEntity = {};
+
+  if (currentValues.name !== initialValues.name) {
+    changedFields.name = currentValues.name;
+  }
+
+  if (currentValues.typeId !== initialValues.typeId) {
+    changedFields.typeId = currentValues.typeId;
+  }
+
+  if (currentValues.priority !== initialValues.priority) {
+    changedFields.priority = currentValues.priority;
+  }
+
+  if (currentValues.dueAt !== initialValues.dueAt) {
+    changedFields.dueAt = currentValues.dueAt;
+  }
+
+  if (currentValues.ownerId !== initialValues.ownerId) {
+    changedFields.ownerId = currentValues.ownerId;
+  }
+
+  if (currentValues.contactId !== initialValues.contactId) {
+    changedFields.contactId = currentValues.contactId;
+  }
+
+  if (currentValues.dealId !== initialValues.dealId) {
+    changedFields.dealId = currentValues.dealId;
+  }
+
+  if (currentValues.notes !== initialValues.notes) {
+    changedFields.notes = currentValues.notes;
+  }
+
+  return changedFields;
+};
+
 export const getTaskOwner = (
   owners: CrmOwnerRecord,
-  ownerId?: number
+  ownerId?: number | null
 ): CrmOwnerEntity | undefined => {
-  if (ownerId === undefined) return undefined;
+  if (ownerId == null) return undefined;
   return owners[ownerId];
 };
 
 export const getTaskContact = (
   contacts: CrmContactRecord,
-  contactId?: number
+  contactId?: number | null
 ): CrmContactEntity | undefined => {
-  if (contactId === undefined) return undefined;
+  if (contactId == null) return undefined;
   return contacts[contactId];
+};
+
+export const getTaskDeal = (
+  deals: CrmDealRecord,
+  dealId?: number | null
+): CrmDealEntity | undefined => {
+  if (dealId == null) return undefined;
+  return deals[dealId];
 };
 
 export const getTaskTypeName = (
@@ -194,9 +300,12 @@ export const getTaskGroups = (
   tasks: CrmTaskEntity[],
   tab: CrmTaskTabEnum,
   userId?: number
-): GroupedTaskIds =>
-  groupTaskIdsByDueDate(
+): GroupedTaskIds => {
+  const openTasks = tasks.filter((task) => !task.isCompleted);
+
+  return groupTaskIdsByDueDate(
     tab === CrmTaskTabEnum.MY_TASKS
-      ? tasks.filter((task) => task.ownerId === userId)
-      : tasks
+      ? openTasks.filter((task) => task.ownerId === userId)
+      : openTasks
   );
+};

@@ -1,4 +1,10 @@
-import { SidePanel } from "@rootcodelabs/skapp-ui";
+import {
+  DeleteButtonIcon,
+  EditIcon,
+  KebabMenu,
+  MenuItemProps,
+  SidePanel
+} from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -19,6 +25,7 @@ import {
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmModalTypes,
   CrmRelatedTasksFilterRequest,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
@@ -27,8 +34,7 @@ import {
   getTaskTypeIcon,
   getTaskTypeName,
   mergeTasks,
-  toTaskIds,
-  updateRelatedTaskIds
+  toTaskIds
 } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
@@ -47,7 +53,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     taskTypes,
     setTasks,
     setSelectedTaskId,
-    closeCrmSidePanel
+    closeCrmSidePanel,
+    setIsTaskModalOpen,
+    setTaskModalType
   } = useCrmStoreV2(
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
@@ -56,7 +64,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       taskTypes: store.taskTypes,
       setTasks: store.setTasks,
       setSelectedTaskId: store.setSelectedTaskId,
-      closeCrmSidePanel: store.closeCrmSidePanel
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType
     }))
   );
 
@@ -95,9 +105,13 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   useEffect(() => {
     if (!relatedTasksData) return;
 
-    const tasksWithRelated = mergeTasks(tasks, relatedTasks);
+    const mergedTasks = mergeTasks(tasks, relatedTasks);
 
- 
+    setTasks(
+      mergeTasks(mergedTasks, [
+        { id: taskId, relatedTaskIds: toTaskIds(relatedTasks) }
+      ])
+    );
   }, [relatedTasksData]);
 
   const handleClose = () => {
@@ -128,6 +142,36 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
   };
 
+  const menuItems: MenuItemProps[] = [
+    {
+      id: "edit",
+      label: translateText(["sidePanel", "editTask"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: () => {
+        setTaskModalType(CrmModalTypes.EDIT_TASK_MODAL);
+        setIsTaskModalOpen(true);
+      }
+    },
+    {
+      id: "delete",
+      label: translateText(["sidePanel", "deleteTask"]),
+      icon: {
+        start: (
+          <DeleteButtonIcon
+            width="12px"
+            height="14px"
+            fill="var(--color-semantic-red-text)"
+          />
+        )
+      },
+      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+      onClick: () => {
+        setTaskModalType(CrmModalTypes.DELETE_TASK_MODAL);
+        setIsTaskModalOpen(true);
+      }
+    }
+  ];
+
   return (
     <SidePanel
       isOpen={isOpen}
@@ -138,6 +182,19 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           {getTaskTypeIcon(typeName, TASK_DETAIL_ICON_SIZE)}
           <span className="h1 text-black">{task.name}</span>
         </div>
+      }
+      headerActions={
+        <KebabMenu
+          id="task-actions"
+          menuItems={menuItems}
+          anchorButton={{
+            "aria-label": translateText(["sidePanel", "kebabMenuAriaLabel"])
+          }}
+          className={{
+            anchorElement:
+              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+          }}
+        />
       }
     >
       <div className="flex gap-6 pb-4">
