@@ -18,6 +18,18 @@ export const toContactsRecord = (
   return contactRecord;
 };
 
+export const mergeContacts = (
+  existing: CrmContactRecord,
+  incoming: CrmContactEntity[]
+): CrmContactRecord => {
+  const merged: CrmContactRecord = { ...existing };
+  for (const contact of incoming) {
+    if (contact.id == null) continue;
+    merged[contact.id] = { ...merged[contact.id], ...contact };
+  }
+  return merged;
+};
+
 export const getContactDisplayName = (
   contact: CrmContactEntity | undefined
 ): string => {

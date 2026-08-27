@@ -1,3 +1,4 @@
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   CrmOwnerEntity,
   CrmOwnerRecord,
@@ -6,6 +7,11 @@ import {
   CrmTaskTypeEntity,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
+
+export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
+  searchTerm.trim() === ""
+    ? EmptyStateTypeEnum.NO_DATA
+    : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
 const isEmptyValue = (value?: string | number) =>
   value === undefined || Number(value) === 0;
@@ -39,6 +45,17 @@ export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
     }
   }
   return ownerRecord;
+};
+
+export const mergeOwners = (
+  existing: CrmOwnerRecord,
+  incoming: CrmOwnerEntity[]
+): CrmOwnerRecord => {
+  const merged: CrmOwnerRecord = { ...existing };
+  for (const owner of incoming) {
+    merged[owner.employeeId] = { ...merged[owner.employeeId], ...owner };
+  }
+  return merged;
 };
 
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {

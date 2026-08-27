@@ -1,9 +1,13 @@
+import { ReactNode } from "react";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 import {
   CrmDealSortEnum,
   CrmKanbanDragType,
-  CrmPriorityEnum
+  CrmPriorityEnum,
+  CrmTaskSortEnum,
+  CrmTaskTabEnum
 } from "../enums/common";
 import {
   CrmCompanyEntity,
@@ -107,26 +111,22 @@ export interface CrmDealsByStagesResponse {
   hasNextPage: boolean;
 }
 
+export interface CrmDealListResponse {
+  items: CrmDealEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export interface CrmTaskListResponse {
-  tasks: CrmTaskEntity[];
+  items: CrmTaskEntity[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
 }
 
 export interface CrmTaskTypeListResponse {
   taskTypes: CrmTaskTypeEntity[];
-}
-
-export interface CrmTaskCompletedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface CrmTaskRelatedListResponse {
-  items: CrmTaskEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
 }
 
 export interface CrmExistsResponse {
@@ -184,25 +184,57 @@ export interface CrmDealsByStagesRequest {
   limit?: number;
 }
 
+export interface TaskDueDateInfo {
+  textKey: string;
+  dateValue?: string;
+  dayCount?: number;
+  colorClass: string;
+}
+
+export interface GroupedTaskIds {
+  overdue: number[];
+  dueToday: number[];
+  dueTomorrow: number[];
+  upcoming: number[];
+  isOpenTasksEmpty: boolean;
+}
+
+export interface CrmPriorityOption {
+  id: string;
+  value: string;
+  label: ReactNode;
+}
+
+export interface CrmTaskTypeOption {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface CrmTaskTab {
+  id: CrmTaskTabEnum;
+  label: string;
+}
+
 export interface CrmTaskFilterRequest {
   searchKeyword?: string;
   contactId?: number;
   dealId?: number;
   companyId?: number;
-}
-
-export interface CrmTaskCompletedFilterRequest {
-  searchKeyword?: string;
-  contactId?: number;
-  dealId?: number;
-  companyId?: number;
+  isCompleted?: boolean;
+  sortKey?: CrmTaskSortEnum;
+  sortOrder?: SortOrderTypes;
   page?: number;
   size?: number;
 }
 
-export interface CrmTaskRelatedFilterRequest {
-  contactId?: number;
-  dealId?: number;
+export interface CrmRelatedTasksFilterRequest {
+  id: number;
   page?: number;
   size?: number;
+}
+
+export interface CrmTaskUpdateRequest {
+  id: number;
+  task: CrmTaskEntity;
 }
