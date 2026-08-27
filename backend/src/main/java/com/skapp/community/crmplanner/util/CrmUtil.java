@@ -108,10 +108,7 @@ public class CrmUtil {
 
 	private void maskDeletedCompaniesOnDeal(CrmDealResponseDtoV2 dto, CrmDeal deal) {
 		if (hasDeletedCompany(deal)) {
-			dto.setCompany(null);
-		}
-		if (dto.getContact() != null && deal.getContact() != null && hasDeletedCompany(deal.getContact())) {
-			dto.getContact().setCompany(null);
+			dto.setCompanyId(null);
 		}
 	}
 

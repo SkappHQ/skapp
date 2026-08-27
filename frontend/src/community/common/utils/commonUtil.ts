@@ -12,6 +12,7 @@ import {
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
+  EmployeeAvatarData,
   FileUploadType
 } from "~community/common/types/CommonTypes";
 import {
@@ -621,6 +622,9 @@ export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
 
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
+
+export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
+  concatStrings([employee.firstName, employee.lastName]).trim();
 
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(1);
