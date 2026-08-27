@@ -192,16 +192,16 @@ const senderRoutes = {
   ]
 };
 
-// Merging all routes into one allowedRoutes object
-const allowedRoutes: Record<
+type UserRole =
   | AdminTypes
   | ManagerTypes
   | EmployeeTypes
   | SuperAdminType
   | SenderTypes
-  | RepresentativeTypes,
-  string[]
-> = {
+  | RepresentativeTypes;
+
+// Merging all routes into one allowedRoutes object
+const allowedRoutes: Record<UserRole, string[]> = {
   ...superAdminRoutes,
   ...adminRoutes,
   ...managerRoutes,
@@ -217,6 +217,188 @@ const isPrefetchRequest = (request: NextRequest): boolean =>
   request.headers.get("next-router-prefetch") !== null ||
   request.headers.get("purpose") === "prefetch";
 
+interface RouteAccessContext {
+  request: NextRequest;
+  currentPath: string;
+  claims: Record<string, any>;
+  roles: UserRole[];
+  isPasswordChangedForTheFirstTime: string | undefined;
+}
+
+type AccessGuard = (context: RouteAccessContext) => NextResponse | null;
+
+const REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES: TenantStatusEnums[] = [
+  TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED,
+  TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
+];
+
+// Roles that keep the dashboard as their landing page
+const DASHBOARD_ALLOWED_ROLES: UserRole[] = [
+  EmployeeTypes.LEAVE_EMPLOYEE,
+  ManagerTypes.PEOPLE_MANAGER,
+  ManagerTypes.ATTENDANCE_MANAGER
+];
+
+const RESTRICTED_ROUTE_RULES: { routes: string[]; requiredRole: string }[] = [
+  {
+    routes: nonSuperAdminRestrictedRoutes,
+    requiredRole: AdminTypes.SUPER_ADMIN
+  },
+  { routes: managerRestrictedRoutes, requiredRole: AdminTypes.PEOPLE_ADMIN },
+  { routes: userRolesRestrictedRoutes, requiredRole: ROLE_SUPER_ADMIN },
+  {
+    routes: invoiceEmployeeRestrictedRoutes,
+    requiredRole: ManagerTypes.INVOICE_MANAGER
+  },
+  {
+    routes: employeeRestrictedRoutes,
+    requiredRole: ManagerTypes.PEOPLE_MANAGER
+  }
+];
+
+const redirectTo = (request: NextRequest, path: string): NextResponse =>
+  NextResponse.redirect(new URL(path, request.url));
+
+const redirectToUnauthorized = (request: NextRequest): NextResponse =>
+  redirectTo(request, ROUTES.AUTH.UNAUTHORIZED);
+
+// Super admins over their user limit are the only ones allowed to remove people
+const resolveRemovePeopleAccess: AccessGuard = ({
+  request,
+  currentPath,
+  claims,
+  roles
+}) => {
+  if (currentPath !== ROUTES.REMOVE_PEOPLE) return null;
+
+  if (!roles.includes(ROLE_SUPER_ADMIN)) return null;
+
+  if (REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.includes(claims?.tenantStatus)) {
+    return NextResponse.next();
+  }
+
+  return redirectTo(request, ROUTES.DASHBOARD.BASE);
+};
+
+const resolveFirstTimePasswordAccess: AccessGuard = ({
+  request,
+  currentPath,
+  isPasswordChangedForTheFirstTime
+}) => {
+  const isOnResetPassword = currentPath === ROUTES.AUTH.RESET_PASSWORD;
+
+  if (isPasswordChangedForTheFirstTime === "false" && !isOnResetPassword) {
+    return redirectTo(request, ROUTES.AUTH.RESET_PASSWORD);
+  }
+
+  if (isPasswordChangedForTheFirstTime === "true" && isOnResetPassword) {
+    return redirectTo(request, ROUTES.DASHBOARD.BASE);
+  }
+
+  return null;
+};
+
+// Leave reports are for leave admins only
+const resolveLeaveReportAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) =>
+  roles.includes(ManagerTypes.LEAVE_MANAGER) &&
+  !roles.includes(AdminTypes.LEAVE_ADMIN) &&
+  currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
+    ? redirectToUnauthorized(request)
+    : null;
+
+// Attendance-only employees land on their timesheet instead of the dashboard
+const resolveDashboardAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) => {
+  if (!currentPath.startsWith(ROUTES.DASHBOARD.BASE)) return null;
+
+  if (roles.some((role) => DASHBOARD_ALLOWED_ROLES.includes(role))) return null;
+
+  if (!roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) return null;
+
+  return redirectTo(request, ROUTES.TIMESHEET.MY_TIMESHEET);
+};
+
+const resolveSignAccess: AccessGuard = ({ request, currentPath, roles }) =>
+  currentPath.includes(ROUTES.SIGN.BASE) &&
+  !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
+    ? redirectToUnauthorized(request)
+    : null;
+
+const resolveIntegrationsAccess: AccessGuard = ({
+  request,
+  currentPath,
+  claims
+}) =>
+  currentPath.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
+  !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+    ? redirectToUnauthorized(request)
+    : null;
+
+const resolveCrmAccess: AccessGuard = ({ request, currentPath, roles }) =>
+  currentPath.startsWith(ROUTES.CRM.BASE) &&
+  !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
+    ? redirectToUnauthorized(request)
+    : null;
+
+const resolveRestrictedRouteAccess: AccessGuard = ({ request, roles }) => {
+  for (const { routes, requiredRole } of RESTRICTED_ROUTE_RULES) {
+    const redirect = checkRestrictedRoutesAndRedirect(
+      request,
+      routes,
+      requiredRole,
+      roles
+    );
+
+    if (redirect) return redirect;
+  }
+
+  return null;
+};
+
+// Guards that apply to every request, regardless of role-based route access
+const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
+  resolveRemovePeopleAccess,
+  resolveFirstTimePasswordAccess,
+  resolveLeaveReportAccess,
+  resolveDashboardAccess
+];
+
+// Guards that only apply once the path is allowed for one of the user's roles
+const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
+  resolveSignAccess,
+  resolveIntegrationsAccess,
+  resolveCrmAccess,
+  resolveRestrictedRouteAccess
+];
+
+const runAccessGuards = (
+  guards: AccessGuard[],
+  context: RouteAccessContext
+): NextResponse | null => {
+  for (const guard of guards) {
+    const response = guard(context);
+
+    if (response) return response;
+  }
+
+  return null;
+};
+
+const isRouteAllowedForRoles = ({
+  currentPath,
+  roles
+}: RouteAccessContext): boolean =>
+  roles.some((role) =>
+    allowedRoutes[role]?.some((url) => currentPath.startsWith(url))
+  );
+
 function resolveRouteAccess(
   request: NextRequest,
   token: string | undefined,
@@ -224,162 +406,30 @@ function resolveRouteAccess(
 ): NextResponse {
   const claims = extractClaimsFromToken(token || "");
 
-  const currentPath = request.nextUrl.pathname;
+  const context: RouteAccessContext = {
+    request,
+    currentPath: request.nextUrl.pathname,
+    claims,
+    roles: claims?.roles || [],
+    isPasswordChangedForTheFirstTime
+  };
 
-  const roles: (
-    | AdminTypes
-    | ManagerTypes
-    | EmployeeTypes
-    | SuperAdminType
-    | SenderTypes
-    | RepresentativeTypes
-  )[] = claims?.roles || [];
+  const guardResponse = runAccessGuards(ROUTE_ACCESS_GUARDS, context);
 
-  if (currentPath === ROUTES.REMOVE_PEOPLE) {
-    const tenantStatus = claims?.tenantStatus;
-    const roles = claims?.roles || [];
-    const isSuperAdmin = roles.includes(ROLE_SUPER_ADMIN);
+  if (guardResponse) return guardResponse;
 
-    if (isSuperAdmin) {
-      if (
-        tenantStatus ===
-          TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED ||
-        tenantStatus === TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
-      ) {
-        return NextResponse.next();
-      } else {
-        return NextResponse.redirect(
-          new URL(ROUTES.DASHBOARD.BASE, request.url)
-        );
-      }
-    }
-  }
-
-  if (
-    isPasswordChangedForTheFirstTime === "false" &&
-    currentPath !== ROUTES.AUTH.RESET_PASSWORD
-  ) {
-    return NextResponse.redirect(
-      new URL(ROUTES.AUTH.RESET_PASSWORD, request.url)
+  if (isRouteAllowedForRoles(context)) {
+    return (
+      runAccessGuards(ALLOWED_ROUTE_GUARDS, context) ?? NextResponse.next()
     );
-  } else if (
-    isPasswordChangedForTheFirstTime === "true" &&
-    currentPath === ROUTES.AUTH.RESET_PASSWORD
-  ) {
-    return NextResponse.redirect(new URL(ROUTES.DASHBOARD.BASE, request.url));
-  }
-
-  if (
-    roles.includes(ManagerTypes.LEAVE_MANAGER) &&
-    !roles.includes(AdminTypes.LEAVE_ADMIN) &&
-    currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
-  ) {
-    return NextResponse.redirect(
-      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-    );
-  }
-
-  if (
-    currentPath.startsWith(ROUTES.DASHBOARD.BASE) &&
-    !roles.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
-    !roles.includes(ManagerTypes.PEOPLE_MANAGER) &&
-    !roles.includes(ManagerTypes.ATTENDANCE_MANAGER)
-  ) {
-    if (roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) {
-      return NextResponse.redirect(
-        new URL(ROUTES.TIMESHEET.MY_TIMESHEET, request.url)
-      );
-    }
-  }
-
-  const isAllowed = roles.some((role) =>
-    allowedRoutes[role]?.some((url) => request.nextUrl.pathname.startsWith(url))
-  );
-
-  if (isAllowed) {
-    if (
-      request.nextUrl.pathname.includes(ROUTES.SIGN.BASE) &&
-      !roles.includes(EmployeeTypes.ESIGN_EMPLOYEE)
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-
-    if (
-      request.nextUrl.pathname.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-      !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-
-    if (
-      request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
-      !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
-    ) {
-      return NextResponse.redirect(
-        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-      );
-    }
-
-    // Check super-admin restricted routes
-    const nonSuperAdminRedirect = checkRestrictedRoutesAndRedirect(
-      request,
-      nonSuperAdminRestrictedRoutes,
-      AdminTypes.SUPER_ADMIN,
-      roles
-    );
-    if (nonSuperAdminRedirect) return nonSuperAdminRedirect;
-
-    // Check manager restricted routes
-    const managerRedirect = checkRestrictedRoutesAndRedirect(
-      request,
-      managerRestrictedRoutes,
-      AdminTypes.PEOPLE_ADMIN,
-      roles
-    );
-    if (managerRedirect) return managerRedirect;
-
-    // Check user roles restricted routes (Super Admin only)
-    const userRolesRedirect = checkRestrictedRoutesAndRedirect(
-      request,
-      userRolesRestrictedRoutes,
-      ROLE_SUPER_ADMIN,
-      roles
-    );
-    if (userRolesRedirect) return userRolesRedirect;
-
-    // Check invoice employee restricted routes
-    const invoiceEmployeeRedirect = checkRestrictedRoutesAndRedirect(
-      request,
-      invoiceEmployeeRestrictedRoutes,
-      ManagerTypes.INVOICE_MANAGER,
-      roles
-    );
-    if (invoiceEmployeeRedirect) return invoiceEmployeeRedirect;
-
-    // Check employee restricted routes
-    const employeeRedirect = checkRestrictedRoutesAndRedirect(
-      request,
-      employeeRestrictedRoutes,
-      ManagerTypes.PEOPLE_MANAGER,
-      roles
-    );
-    if (employeeRedirect) return employeeRedirect;
-
-    return NextResponse.next();
   }
 
   // Redirect to /unauthorized if no access
-  if (currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
-    return NextResponse.redirect(
-      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
-    );
-  } else {
-    return NextResponse.redirect(new URL(ROUTES.AUTH.SIGNIN, request.url));
+  if (context.currentPath !== ROUTES.AUTH.UNAUTHORIZED && token) {
+    return redirectToUnauthorized(request);
   }
+
+  return redirectTo(request, ROUTES.AUTH.SIGNIN);
 }
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
