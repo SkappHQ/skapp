@@ -1,3 +1,4 @@
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   CrmOwnerEntity,
   CrmOwnerRecord,
@@ -6,6 +7,11 @@ import {
   CrmTaskTypeEntity,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
+
+export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
+  searchTerm.trim() === ""
+    ? EmptyStateTypeEnum.NO_DATA
+    : EmptyStateTypeEnum.NO_SEARCH_RESULTS;
 
 const isEmptyValue = (value?: string | number) =>
   value === undefined || Number(value) === 0;

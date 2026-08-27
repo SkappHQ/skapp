@@ -11,12 +11,35 @@ import TaskSidePanel from "~community/crm/components/organisms/TaskSidePanel/Tas
 import TasksTable from "~community/crm/components/organisms/TasksTable/TasksTable";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import TasksTableV2 from "~community/crm/v2/components/organisms/TasksTableV2/TasksTableV2";
+import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-const Tasks: NextPage = () => {
-  const translateText = useTranslator("crmModule");
+const isCrmTasksV2 = true;
+
+const useFullHeightContainer = () => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const offsetTop = containerRef.current.getBoundingClientRect().top;
+        containerRef.current.style.height = `calc(100vh - ${offsetTop}px)`;
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
+  return containerRef;
+};
+
+const TasksV1 = () => {
+  const translateText = useTranslator("crmModule");
+  const containerRef = useFullHeightContainer();
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const {
@@ -38,19 +61,6 @@ const Tasks: NextPage = () => {
       setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
     });
   };
-
-  useEffect(() => {
-    const updateHeight = () => {
-      if (containerRef.current) {
-        const offsetTop = containerRef.current.getBoundingClientRect().top;
-        containerRef.current.style.height = `calc(100vh - ${offsetTop}px)`;
-      }
-    };
-
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    return () => window.removeEventListener("resize", updateHeight);
-  }, []);
 
   return (
     <ContentLayout
@@ -83,5 +93,33 @@ const Tasks: NextPage = () => {
     </ContentLayout>
   );
 };
+
+const TasksV2 = () => {
+  const translateText = useTranslator("crmModule");
+  const containerRef = useFullHeightContainer();
+
+  const { isCrmInitialDataLoading } = useInitializeCrmData();
+
+  return (
+    <ContentLayout
+      breadcrumbs={[
+        { label: translateText(["breadcrumbs", "crm"]) },
+        { label: translateText(["tasks", "title"]) }
+      ]}
+      pageHead={translateText(["tasks", "pageHead"])}
+      title={translateText(["tasks", "title"])}
+      containerStyles={{
+        padding: { xs: "1.375rem 2rem 0", lg: "1.375rem 3rem 0" }
+      }}
+      module={Modules.CRM}
+    >
+      <div ref={containerRef} className="flex flex-col w-full gap-4">
+        {!isCrmInitialDataLoading && <TasksTableV2 />}
+      </div>
+    </ContentLayout>
+  );
+};
+
+const Tasks: NextPage = () => (isCrmTasksV2 ? <TasksV2 /> : <TasksV1 />);
 
 export default Tasks;
