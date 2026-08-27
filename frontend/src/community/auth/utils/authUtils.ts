@@ -40,6 +40,22 @@ export {
   isTokenExpired
 } from "./tokenUtils";
 
+export const resolvePostSignInPath = (
+  callback: string | string[] | undefined,
+  currentPath: string
+): string => {
+  const path = Array.isArray(callback) ? callback[0] : callback;
+
+  const isSafeRedirect =
+    !!path &&
+    path.startsWith("/") &&
+    !path.startsWith("//") &&
+    !path.startsWith("/\\") &&
+    path !== currentPath;
+
+  return isSafeRedirect ? path : ROUTES.DASHBOARD.BASE;
+};
+
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
     (prefix) => {

@@ -17,14 +17,14 @@ import {
 } from "~enterprise/auth/utils/authUtils";
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
-import ROUTES from "../../common/constants/routes";
 import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
   handleSignIn,
-  handleSignUp
+  handleSignUp,
+  resolvePostSignInPath
 } from "../utils/authUtils";
 
 interface AuthProviderProps {
@@ -103,18 +103,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           if (params.redirect) {
             if (userData) {
-              const callback = router.query.callback as string;
-              const currentPath = router.asPath.split("?")[0];
-              const isSafeRedirect =
-                callback &&
-                callback.startsWith("/") &&
-                !callback.startsWith("//") &&
-                !callback.startsWith("/\\") &&
-                callback !== currentPath;
-              const redirectPath = isSafeRedirect
-                ? callback
-                : ROUTES.DASHBOARD.BASE;
-              window.location.href = redirectPath;
+              window.location.href = resolvePostSignInPath(
+                router.query.callback,
+                router.asPath.split("?")[0]
+              );
             } else {
               console.error("Access token not available after sign-in");
               throw new Error(
