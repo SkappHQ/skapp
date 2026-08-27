@@ -32,13 +32,13 @@ import {
   CommunitySignUpParams
 } from "../types/auth";
 import authAxios from "./authInterceptor";
-import {
+import { extractClaimsFromToken, isTokenExpired } from "./tokenUtils";
+
+export {
   decodeJWTToken,
   extractClaimsFromToken,
   isTokenExpired
 } from "./tokenUtils";
-
-export { decodeJWTToken, extractClaimsFromToken, isTokenExpired };
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
