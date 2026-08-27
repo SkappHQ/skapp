@@ -201,7 +201,7 @@ const DropdownList: FC<Props> = ({
         {itemList?.length > 0 ? (
           <Select
             id={id}
-            value={value?.toString() ?? ""}
+            value={value?.toString()}
             readOnly={readOnly}
             label={placeholder}
             onChange={handleChange}
@@ -249,7 +249,8 @@ const DropdownList: FC<Props> = ({
                 <Stack direction={"row"}>
                   {emojiWithText &&
                     getEmoji(
-                      itemList?.find((item) => item?.value === value)?.emoji
+                      itemList?.find((item) => item?.value === value)
+                        ?.emoji as string
                     )}
                   <Typography
                     sx={{
@@ -281,7 +282,7 @@ const DropdownList: FC<Props> = ({
                 }}
               >
                 <Stack direction={"row"}>
-                  {emojiWithText && getEmoji(emoji)}
+                  {emojiWithText && getEmoji(emoji as string)}
                   <Typography
                     sx={{
                       paddingLeft: emojiWithText ? "0.25rem" : "0",
@@ -321,7 +322,7 @@ const DropdownList: FC<Props> = ({
         ) : (
           <Select
             id={id}
-            value={value?.toString() ?? ""}
+            value={value?.toString()}
             onChange={handleChange}
             onClose={onClose}
             onKeyDown={(
