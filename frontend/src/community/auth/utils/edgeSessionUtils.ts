@@ -21,13 +21,8 @@ import {
 
 import { getTokenMaxAgeSeconds } from "./tokenUtils";
 
-const IPV4_HOSTNAME_PATTERN = /^\d{1,3}(\.\d{1,3}){3}$/;
-
-const UNAUTHORIZED_STATUS_CODES = [401, 403];
-
 const hasTenantSubdomain = (hostname: string, subdomain: string): boolean =>
   hostname.split(".").length > 2 &&
-  !IPV4_HOSTNAME_PATTERN.test(hostname) &&
   subdomain !== LOCALHOST &&
   !TENANT_SELECTION_SUBDOMAINS.includes(subdomain);
 
@@ -100,7 +95,7 @@ export const requestSessionRefresh = async (
       }
     );
 
-    if (UNAUTHORIZED_STATUS_CODES.includes(response.status)) {
+    if (response.status === 401 || response.status === 403) {
       return { status: "unauthorized" };
     }
 
