@@ -723,3 +723,17 @@ CREATE TABLE IF NOT EXISTS `crm_config`
 
 -- rollback DROP TABLE IF EXISTS `crm_config`;
 
+-- changeset yasindu:crm-ddl-script-v1-create-table-crm-industry
+CREATE TABLE IF NOT EXISTS `crm_industry`
+(
+    `id`                 bigint NOT NULL AUTO_INCREMENT,
+    `created_by`         text        DEFAULT NULL,
+    `created_date`       datetime(6) DEFAULT NULL,
+    `last_modified_by`   text        DEFAULT NULL,
+    `last_modified_date` datetime(6) DEFAULT NULL,
+    `name`               text   NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
+-- rollback DROP TABLE IF EXISTS `crm_industry`;
+
