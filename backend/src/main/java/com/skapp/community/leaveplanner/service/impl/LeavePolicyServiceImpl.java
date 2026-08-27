@@ -23,6 +23,7 @@ import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequest
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
+import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
@@ -30,6 +31,7 @@ import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
+import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -67,6 +69,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final LeaveRequestDao leaveRequestDao;
 
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
+
+	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
 
 	private final JsonMapper jsonMapper;
 
@@ -116,7 +120,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("updateLeavePolicy: policy updated successfully");
 
-		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
+		LeavePolicyResponseDto leavePolicyResponseDto = leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy);
+		populateAssignedEmployeeCounts(List.of(leavePolicyResponseDto));
+
+		return new ResponseEntityDto(false, leavePolicyResponseDto);
 	}
 
 	@Override
@@ -171,6 +178,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
 			.leavePolicyListToLeavePolicyResponseDtoList(leavePolicyPage.getContent());
 
+		populateAssignedEmployeeCounts(leavePolicyResponseDtos);
+
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(leavePolicyResponseDtos);
 		pageDto.setCurrentPage(leavePolicyPage.getNumber());
@@ -179,6 +188,19 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	private void populateAssignedEmployeeCounts(List<LeavePolicyResponseDto> leavePolicyResponseDtos) {
+		if (leavePolicyResponseDtos.isEmpty()) {
+			return;
+		}
+
+		List<Long> policyIds = leavePolicyResponseDtos.stream().map(LeavePolicyResponseDto::getId).toList();
+		Map<Long, Long> assignedCounts = employeeLeavePolicyDao.countByPolicyIdsAndStatus(policyIds,
+				EmployeeLeavePolicyStatus.ACTIVE);
+
+		leavePolicyResponseDtos
+			.forEach(dto -> dto.setAssignedEmployeeCount(assignedCounts.getOrDefault(dto.getId(), 0L)));
 	}
 
 	@Override

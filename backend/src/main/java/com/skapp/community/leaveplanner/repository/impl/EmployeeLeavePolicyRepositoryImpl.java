@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
+import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy_;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
@@ -8,11 +9,13 @@ import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyRepository
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.peopleplanner.model.Employee_;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -74,6 +79,30 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 		long totalRows = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(typedQuery.getResultList(), pageable, totalRows);
+	}
+
+	@Override
+	public Map<Long, Long> countByPolicyIdsAndStatus(List<Long> policyIds, EmployeeLeavePolicyStatus status) {
+		if (policyIds == null || policyIds.isEmpty()) {
+			return Map.of();
+		}
+
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Tuple> query = cb.createTupleQuery();
+		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);
+		Path<Long> policyIdPath = root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.id);
+
+		query
+			.multiselect(policyIdPath.alias(LeavePolicyConstant.POLICY_ID_ALIAS),
+					cb.count(root).alias(LeavePolicyConstant.ASSIGNED_COUNT_ALIAS))
+			.where(cb.and(policyIdPath.in(policyIds), cb.equal(root.get(EmployeeLeavePolicy_.status), status)))
+			.groupBy(policyIdPath);
+
+		return entityManager.createQuery(query)
+			.getResultList()
+			.stream()
+			.collect(Collectors.toMap(tuple -> tuple.get(LeavePolicyConstant.POLICY_ID_ALIAS, Long.class),
+					tuple -> tuple.get(LeavePolicyConstant.ASSIGNED_COUNT_ALIAS, Long.class)));
 	}
 
 	private Predicate[] buildEmployeeStatusPredicates(CriteriaBuilder cb, Root<EmployeeLeavePolicy> root,

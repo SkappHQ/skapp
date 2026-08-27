@@ -52,6 +52,9 @@ class LeavePolicyControllerIntegrationTest {
 	private static final String SEED_INACTIVE_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (501, 'Inactive Policy', 100, 'ACCRUAL', 'INACTIVE', false)";
 
+	private static final String SEED_POLICY_ASSIGNMENTS = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) VALUES "
+			+ "(950, 1, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE'), " + "(951, 2, 500, 'SPECIFIC', '2024-01-01', 'ENDED')";
+
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
 
 	private static final String USER2_PEOPLE_ADMIN_ONLY = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_ADMIN', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
@@ -263,7 +266,19 @@ class LeavePolicyControllerIntegrationTest {
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath("$.results[0].items", hasSize(1)))
 				.andExpect(jsonPath("$.results[0].items[0].name").value("Existing Policy"))
+				.andExpect(jsonPath("$.results[0].items[0].assignedEmployeeCount").value(0))
 				.andExpect(jsonPath("$.results[0].totalItems").value(1));
+		}
+
+		@Test
+		@DisplayName("Leave policy list counts only active employee assignments")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS })
+		void getAllLeavePolicies_LeaveAdmin_CountsOnlyActiveAssignments() throws Exception {
+			performGetAll(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("Existing Policy"))
+				.andExpect(jsonPath("$.results[0].items[0].assignedEmployeeCount").value(1));
 		}
 
 		@Test
