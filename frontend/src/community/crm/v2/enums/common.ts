@@ -16,9 +16,9 @@ export enum CrmKanbanDragType {
 }
 
 export enum CrmTaskTabEnum {
-  MY_TASKS = "my-tasks",
-  ALL_TASKS = "all-tasks",
-  COMPLETED_TASKS = "completed-tasks"
+  MY_TASKS = "my tasks",
+  ALL_TASKS = "all tasks",
+  COMPLETED_TASKS = "completed tasks"
 }
 
 export enum CrmIndustryEnum {

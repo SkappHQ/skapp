@@ -60,7 +60,7 @@ export interface CrmOwnerEntity {
   firstName: string;
   lastName?: string;
   email?: string;
-  authPic?: string | null;
+  authPic?: string;
 }
 
 export interface CrmDealEntity {
@@ -107,7 +107,6 @@ export interface CrmTaskEntity {
   contactId?: number;
   companyId?: number;
   dealId?: number;
-  relatedTaskIds?: number[];
 }
 
 export interface CrmTaskTypeEntity {

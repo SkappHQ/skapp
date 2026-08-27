@@ -16,22 +16,20 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
-import {
-  useGetCrmContacts,
-  useGetOwnerLookup
-} from "~community/crm/api/ContactApi";
+import { useGetCrmContacts } from "~community/crm/api/ContactApi";
 import { useGetDealLookup } from "~community/crm/api/crmDealApi";
-import OwnerDropdownItem from "~community/crm/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
-import SelectedOwnerField from "~community/crm/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import { CrmContactLookupParams } from "~community/crm/types/CommonTypes";
+import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
+import OwnerDropdownItem from "~community/crm/v2/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
+import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
@@ -41,23 +39,16 @@ import {
   mergeOwners
 } from "~community/crm/v2/utils/commonUtil";
 import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
-import { getSelectedDeal, mergeDeals } from "~community/crm/v2/utils/dealUtil";
-import {
-  fromLookupOwner,
-  toLookupOwner
-} from "~community/crm/v2/utils/taskUtil";
+import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 
 interface TaskFormProps {
   formik: FormikProps<CrmTaskEntity>;
   isPending: boolean;
-  translateText: TranslatorFunctionType;
 }
 
-const TaskModalForm: FC<TaskFormProps> = ({
-  formik,
-  isPending,
-  translateText
-}) => {
+const TaskModalForm: FC<TaskFormProps> = ({ formik, isPending }) => {
+  const translateText = useTranslator("crmModule", "tasks", "taskModal");
+
   const {
     values,
     errors,
@@ -97,10 +88,11 @@ const TaskModalForm: FC<TaskFormProps> = ({
   const priorityDropdownOptions = useGetPriorityOptions(translateText);
   const { options: taskTypeOptions } = useGetTaskTypeOptions(translateText);
 
-  const selectedOwner = toLookupOwner(getSelectedOwner(owners, values.ownerId));
+  const selectedOwner = getSelectedOwner(owners, values.ownerId);
   const selectedContactName =
     getSelectedContact(contacts, values.contactId)?.name ?? "";
-  const selectedDealName = getSelectedDeal(deals, values.dealId)?.name ?? "";
+  const selectedDealName =
+    values.dealId != null ? (deals[values.dealId]?.name ?? "") : "";
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
@@ -123,7 +115,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     setIsTaskModalOpen(false);
   };
 
-  const { data: ownerLookupData } = useGetOwnerLookup(
+  const { data: ownerLookupData } = useGetOwnerLookupV2(
     debouncedOwnerSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,
     Boolean(isCrmSalesManager) && debouncedOwnerSearchText.length > 0
@@ -217,7 +209,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     const owner = ownerLookupData?.items?.find(
       (ownerLookupItem) => String(ownerLookupItem.employeeId) === item.id
     );
-    if (owner) setOwners(mergeOwners(owners, [fromLookupOwner(owner)]));
+    if (owner) setOwners(mergeOwners(owners, [owner]));
     setFieldValue("ownerId", owner?.employeeId);
     setOwnerSearchText("");
   };
@@ -425,7 +417,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isPending}
           onClick={handleCloseModal}
           icon={<CloseIcon />}
           iconPosition="end"

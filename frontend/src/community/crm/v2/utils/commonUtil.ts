@@ -51,26 +51,6 @@ export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
   return stageRecord;
 };
 
-export const getSelectedOwner = (
-  owners: CrmOwnerRecord,
-  ownerId: number | undefined
-): CrmOwnerEntity | undefined => {
-  if (ownerId === undefined) return undefined;
-
-  return owners[ownerId];
-};
-
-export const mergeOwners = (
-  existing: CrmOwnerRecord,
-  incoming: CrmOwnerEntity[]
-): CrmOwnerRecord => {
-  const merged: CrmOwnerRecord = { ...existing };
-  for (const owner of incoming) {
-    merged[owner.employeeId] = { ...merged[owner.employeeId], ...owner };
-  }
-  return merged;
-};
-
 export const getOrderedStages = (stages: CrmStageRecord): CrmStageEntity[] =>
   Object.values(stages).sort(
     (a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0)

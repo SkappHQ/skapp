@@ -18,15 +18,6 @@ export const toContactsRecord = (
   return contactRecord;
 };
 
-export const getSelectedContact = (
-  contacts: CrmContactRecord,
-  contactId: number | undefined
-): CrmContactEntity | undefined => {
-  if (contactId === undefined) return undefined;
-
-  return contacts[contactId];
-};
-
 export const getContactDisplayName = (
   contact: CrmContactEntity | undefined
 ): string => {

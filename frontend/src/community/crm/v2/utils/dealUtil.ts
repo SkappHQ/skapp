@@ -1,34 +1,4 @@
-import {
-  CrmDealEntity,
-  CrmDealRecord,
-  CrmOwnerEntity,
-  CrmOwnerRecord,
-  CrmStageEntity,
-  CrmStageRecord
-} from "../types/CrmCommonTypes";
-
-export interface ResolvedDealRelations {
-  owner: CrmOwnerEntity | undefined;
-  stage: CrmStageEntity | undefined;
-}
-
-export const resolveDealRelations = (
-  deal: CrmDealEntity | undefined,
-  owners: CrmOwnerRecord,
-  stages: CrmStageRecord
-): ResolvedDealRelations => ({
-  owner: deal?.ownerId != null ? owners[deal.ownerId] : undefined,
-  stage: deal?.stageId != null ? stages[deal.stageId] : undefined
-});
-
-export const getSelectedDeal = (
-  deals: CrmDealRecord,
-  dealId: number | undefined
-): CrmDealEntity | undefined => {
-  if (dealId === undefined) return undefined;
-
-  return deals[dealId];
-};
+import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
 
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   const dealRecord: CrmDealRecord = {};
@@ -38,17 +8,6 @@ export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
     }
   }
   return dealRecord;
-};
-
-export const getMissingDealIds = (
-  dealIds: number[],
-  deals: CrmDealRecord
-): number[] => {
-  const unique = new Set<number>();
-  for (const id of dealIds) {
-    if (!deals[id]) unique.add(id);
-  }
-  return Array.from(unique).sort((a, b) => a - b);
 };
 
 export const toDealIds = (deals: CrmDealEntity[]): number[] => {
