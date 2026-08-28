@@ -2,7 +2,7 @@ import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { PaginationSizeEnum } from "~community/common/enums/CommonEnums";
+import { UNPAGINATED_SIZE } from "~community/common/constants/commonConstants";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
@@ -66,7 +66,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     () => ({
       searchKeyword: debouncedSearch,
       isCompleted: false,
-      size: PaginationSizeEnum.UNPAGINATED
+      size: UNPAGINATED_SIZE
     }),
     [debouncedSearch]
   );
