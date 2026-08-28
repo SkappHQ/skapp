@@ -36,10 +36,7 @@ const styles = (theme: Theme) => ({
     ...(isInteractive
       ? {
           "&:hover": {
-            background: theme.palette.grey[100],
-            "& [data-sticky-cell]": {
-              background: theme.palette.grey[100]
-            }
+            background: theme.palette.grey[100]
           }
         }
       : {}),
@@ -67,7 +64,10 @@ const styles = (theme: Theme) => ({
     ...(isDrawerToggled && {
       [theme.breakpoints.up("xl")]: { flex: 1.5 }
     }),
-    background: theme.palette.common.white,
+    // A sticky column has to stay opaque so the cells scrolling underneath do not show
+    // through. Inheriting the row's background keeps it opaque while still tracking the
+    // row's hover colour, which a fixed colour here would paint over.
+    background: "inherit",
     borderRight: "0.063rem solid",
     borderColor: theme.palette.grey[200]
   }),

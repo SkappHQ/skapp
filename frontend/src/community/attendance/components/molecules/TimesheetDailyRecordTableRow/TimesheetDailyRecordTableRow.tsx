@@ -223,7 +223,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
         }
       }}
     >
-      <Box data-sticky-cell sx={classes.boxContainerStyle(isDrawerToggled)}>
+      <Box sx={classes.boxContainerStyle(isDrawerToggled)}>
         <Typography variant="body2" sx={classes.dateFontStyle}>
           {convertDateToFormat(
             new Date(record?.date),
