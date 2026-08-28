@@ -507,7 +507,6 @@ const ApplyPolicyLeaveModal = () => {
               maxDate={maxDate}
               workingDays={workingDays}
               myLeaveRequests={blockingLeaveRequests}
-              error={formErrors?.selectedDates}
             />
           </fieldset>
           <div className="flex flex-row items-center gap-2">

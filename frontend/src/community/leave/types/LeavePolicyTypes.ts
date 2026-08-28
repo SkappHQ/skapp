@@ -32,6 +32,7 @@ export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
 
 export enum BulkAssignCsvError {
   MISSING_COLUMNS = "MISSING_COLUMNS",
+  UNEXPECTED_COLUMNS = "UNEXPECTED_COLUMNS",
   MALFORMED_ROWS = "MALFORMED_ROWS",
   EMPTY_FILE = "EMPTY_FILE",
   TOO_MANY_ROWS = "TOO_MANY_ROWS"
@@ -40,6 +41,7 @@ export enum BulkAssignCsvError {
 export interface BulkAssignCsvValidation {
   error: BulkAssignCsvError | null;
   missingColumns: string[];
+  unexpectedColumns: string[];
   payload: BulkAssignPolicyPayload | null;
 }
 
@@ -133,6 +135,19 @@ export interface GetLeavePoliciesParams {
 
 export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
+}
+
+export interface CheckLeavePolicyNameAvailabilityParams {
+  name: string;
+  leaveTypeId: string;
+}
+
+export interface LeavePolicyNameAvailabilityResult {
+  isAvailable: boolean;
+}
+
+export interface LeavePolicyNameAvailabilityResponse {
+  results: LeavePolicyNameAvailabilityResult[];
 }
 
 export interface LeavePolicyConfigResult {
@@ -234,6 +249,10 @@ export interface EmployeeLeavePolicyType {
   effectiveDateType: EffectiveDateType;
   effectiveFrom: string;
   status: EmployeeLeavePolicyStatus;
+  totalDaysAllocated: number;
+  totalDaysUsed: number;
+  balanceInDays: number;
+  isUnlimited: boolean;
 }
 
 export interface EmployeeLeavePoliciesPage {

@@ -124,6 +124,13 @@ export interface CrmContactLookupResponseType {
   totalPages: number;
 }
 
+export interface CrmContactLookupParams {
+  searchKeyword: string;
+  size: number;
+  dealId?: number;
+  companyId?: number;
+}
+
 export interface CrmOwnersResponseType {
   items: CrmOwner[];
   totalItems: number;

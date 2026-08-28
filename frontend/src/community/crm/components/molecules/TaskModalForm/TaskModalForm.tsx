@@ -32,7 +32,11 @@ import {
 import useGetPriorityOptions from "~community/crm/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/hooks/useGetTaskTypeOptions";
 import { useCrmStore } from "~community/crm/store/store";
-import { CrmOwner, CrmTaskFormTypes } from "~community/crm/types/CommonTypes";
+import {
+  CrmContactLookupParams,
+  CrmOwner,
+  CrmTaskFormTypes
+} from "~community/crm/types/CommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/types/SidePanelTypes";
 
 interface TaskFormProps {
@@ -155,12 +159,17 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedContactSearchText.length > 0 ||
     hasSelectedDeal ||
     contactLookupCompanyId != null;
+
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearchText,
+    size: DEFAULT_LOOKUP_PAGE_SIZE,
+    dealId: values.dealId,
+    companyId: contactLookupCompanyId
+  };
+
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearchText,
-    DEFAULT_LOOKUP_PAGE_SIZE,
-    isContactSearchEnabled,
-    values.dealId,
-    contactLookupCompanyId
+    contactLookupParams,
+    isContactSearchEnabled
   );
 
   const dealLookupCompanyId = hasSelectedContact ? null : companyScopeId;
@@ -169,6 +178,7 @@ const TaskModalForm: FC<TaskFormProps> = ({
     debouncedDealSearchText.length > 0 ||
     hasSelectedContact ||
     dealLookupCompanyId != null;
+
   const { data: dealLookupData } = useGetDealLookup(
     debouncedDealSearchText,
     DEFAULT_LOOKUP_PAGE_SIZE,

@@ -40,6 +40,12 @@ export interface BirthdayNotificationViewStateType {
   lastViewedDate: string;
 }
 
+export interface BirthdayDismissedCacheType {
+  userId: number;
+  date: string;
+  dismissedEmployeeIds: number[];
+}
+
 export interface BirthdayNotificationContextType {
   isEligible: boolean;
   today: string;

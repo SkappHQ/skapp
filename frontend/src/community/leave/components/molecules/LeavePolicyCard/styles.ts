@@ -43,11 +43,6 @@ const styles = (theme: Theme): StyleProps => ({
     fontSize: "2.5rem",
     lineHeight: "2.5rem"
   },
-  unlimited: {
-    fontWeight: 500,
-    fontSize: "1.5rem",
-    lineHeight: "2.5rem"
-  },
   rightContent: {
     width: "max-content"
   }

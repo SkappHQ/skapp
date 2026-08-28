@@ -158,6 +158,12 @@ const AssignLeavePolicyModal: FC<Props> = ({
     });
   }, [selectedPolicy, existingAssignmentsPage, employeeSubject, translateText]);
 
+  const joinDateWarning = needsJoinDate
+    ? translateText(["assignModal", "joinDateMissingLabel"], {
+        employeeName: employeeSubject
+      })
+    : "";
+
   const handleEffectiveDateTypeChange = (type: EffectiveDateType): void => {
     setEffectiveDateType(type);
     setSpecificDateError("");
@@ -240,6 +246,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
             accrualPreview={accrualPreview}
             isFlexiblePolicy={isFlexiblePolicy}
             conflictWarning={conflictWarning}
+            joinDateWarning={joinDateWarning}
           />
         }
         buttons={{
@@ -254,7 +261,7 @@ const AssignLeavePolicyModal: FC<Props> = ({
                 variant: "primary",
                 onClick: () => setIsSetJoinDateOpen(true),
                 disabled: isEmployeeLoading,
-                children: translateText(["assignModal", "setJoinDateBtnTxt"])
+                children: translateText(["assignModal", "saveBtnTxt"])
               }
             : {
                 variant: "primary",
