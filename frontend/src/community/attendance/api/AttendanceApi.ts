@@ -76,7 +76,7 @@ export const useGetEmployeeStatus = () => {
         setAttendanceParams("slotStartTime", params?.starTime);
         setAttendanceParams("breakHours", params?.breakHours);
         setAttendanceParams("workHours", params?.workHours);
-        setAttendanceParams("leavePending", params?.leavePending);
+        setAttendanceParams("isLeavePending", params?.isLeavePending);
       } else {
         setAttendanceParams("slotType", AttendanceSlotType.READY);
       }

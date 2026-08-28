@@ -1265,7 +1265,7 @@ public class TimeServiceImpl implements TimeService {
 				if (isEveningLeave || isMorningLeave || isFullDayLeave) {
 					ActiveTimeSlotResponseDto activeTimeSlotResponseDto = new ActiveTimeSlotResponseDto();
 					activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.LEAVE_DAY);
-					activeTimeSlotResponseDto.setLeavePending(leaveRequest.getStatus() == LeaveRequestStatus.PENDING);
+					activeTimeSlotResponseDto.setIsLeavePending(leaveRequest.getStatus() == LeaveRequestStatus.PENDING);
 					return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 				}
 			}

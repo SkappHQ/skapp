@@ -12,7 +12,7 @@ public class ActiveTimeSlotResponseDto {
 
 	private TimeRecordActionTypes periodType;
 
-	private boolean leavePending;
+	private Boolean isLeavePending;
 
 	private LocalDateTime starTime;
 

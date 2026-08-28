@@ -35,7 +35,7 @@ const ClockWidget = (): JSX.Element => {
     setIsAttendanceModalOpen
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
-  const isLeavePending = attendanceParams.leavePending;
+  const isLeavePending = attendanceParams.isLeavePending;
 
   const { refetch: getEmployeeStatusRefetch } = useGetEmployeeStatus();
   const { data: timeConfigData } = useDefaultCapacity();

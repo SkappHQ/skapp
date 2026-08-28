@@ -29,7 +29,7 @@ export interface attendanceStatusTypes {
   slotStartTime: string | null;
   breakHours: number | null;
   workHours: number | null;
-  leavePending?: boolean;
+  isLeavePending?: boolean;
 }
 
 export interface attendanceLeaveStatusTypes {
