@@ -22,6 +22,11 @@ public interface CrmMapperV2 {
 	@Mapping(target = "contactId", source = "contact.id")
 	CrmDealResponseDtoV2 crmDealToCrmDealResponseDtoV2(CrmDeal deal);
 
+	@Mapping(target = "typeId", source = "type.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "contactId", source = "contact.id")
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "dealId", source = "deal.id")
 	CrmTaskResponseDtoV2 crmTaskToCrmTaskResponseDtoV2(CrmTask task);
 
 }

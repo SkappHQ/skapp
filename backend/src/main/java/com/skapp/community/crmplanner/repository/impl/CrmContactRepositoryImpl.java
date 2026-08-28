@@ -13,6 +13,7 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
@@ -219,6 +220,23 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		countQuery.select(cb.count(contact)).where(buildPredicates(cb, contact, owner, company, filterDto));
 
 		return entityManager.createQuery(countQuery).getSingleResult();
+	}
+
+	@Override
+	public List<CrmBoardContactResponseDtoV2> findAllContactsForBoardInitV2() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmBoardContactResponseDtoV2> query = cb.createQuery(CrmBoardContactResponseDtoV2.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+
+		query.select(cb.construct(CrmBoardContactResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name), company.get(CrmCompany_.id)));
+
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 	@Override
