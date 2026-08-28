@@ -1,6 +1,8 @@
 import { UseQueryResult, useQuery } from "@tanstack/react-query";
 
-import authFetch, { authFetchV2 } from "~community/common/utils/axiosInterceptor";
+import authFetch, {
+  authFetchV2
+} from "~community/common/utils/axiosInterceptor";
 import {
   CrmContactLookupResponse,
   CrmOwnerListResponse

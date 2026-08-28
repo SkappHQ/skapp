@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import {
-  Avatar,
   Box,
   Fade,
   AvatarGroup as MuiAvatarGroup,
@@ -29,7 +28,6 @@ interface Props {
   onClick?: () => void;
   isHover?: boolean;
   isHoverModal?: boolean;
-  title?: string;
 }
 
 const StyledPopper = styled(Popper)`
@@ -46,8 +44,7 @@ const AvatarGroup: FC<Props> = ({
   hasStyledBadge = false,
   onClick,
   isHover = false,
-  isHoverModal = false,
-  title
+  isHoverModal = false
 }) => {
   const theme: Theme = useTheme();
 
@@ -87,13 +84,6 @@ const AvatarGroup: FC<Props> = ({
         data-cy="avatar-group"
         role={onClick ? "button" : "group"}
         aria-label={ariaLabel}
-        renderSurplus={
-          title
-            ? (surplus) => (
-                <Avatar title={title}>+{surplus}</Avatar>
-              )
-            : undefined
-        }
       >
         {avatars.map(({ firstName, image, lastName, leaveState }, index) => (
           <AvatarGroupAvatar

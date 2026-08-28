@@ -180,6 +180,35 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		}
 	}
 
+	@Override
+	public List<CrmDealResponseDtoV2> findDealsByIds(List<Long> dealIds, Long ownerId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmDealResponseDtoV2> query = cb.createQuery(CrmDealResponseDtoV2.class);
+		Root<CrmDeal> deal = query.from(CrmDeal.class);
+
+		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.LEFT);
+		Join<CrmDeal, Employee> owner = deal.join(CrmDeal_.owner, JoinType.LEFT);
+		Join<CrmDeal, CrmCompany> company = deal.join(CrmDeal_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+		Join<CrmDeal, CrmContact> contact = deal.join(CrmDeal_.contact, JoinType.LEFT);
+
+		query.select(cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
+				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), stage.get(CrmDealStage_.id),
+				owner.get(Employee_.employeeId), company.get(CrmCompany_.id), contact.get(CrmContact_.id)));
+
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(cb.isFalse(deal.get(CrmDeal_.isDeleted)));
+		predicates.add(deal.get(CrmDeal_.id).in(dealIds));
+		if (ownerId != null) {
+			predicates.add(cb.equal(owner.get(Employee_.employeeId), ownerId));
+		}
+
+		query.where(predicates.toArray(new Predicate[0]));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
 	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<CrmDeal> deal, CrmDealFilterDto filterDto,
 			Long ownerId) {
 		List<Predicate> predicates = new ArrayList<>();

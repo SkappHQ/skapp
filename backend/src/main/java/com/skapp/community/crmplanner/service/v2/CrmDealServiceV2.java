@@ -8,6 +8,8 @@ import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestD
 
 public interface CrmDealServiceV2 {
 
+	ResponseEntityDto getBoardInitData();
+
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
 
 	ResponseEntityDto getDealById(Long id);
