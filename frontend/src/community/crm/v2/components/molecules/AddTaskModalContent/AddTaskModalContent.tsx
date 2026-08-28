@@ -69,14 +69,16 @@ const AddTaskModalContent: FC = () => {
       setTasks({ ...tasks, [createdTask.id]: createdTask });
     }
 
-    const linked = linkTaskToRelatedEntities(createdTask, {
+    const linked = linkTaskToRelatedEntities(
+      createdTask,
       companies,
       contacts,
       deals
-    });
-    setCompanies(linked.companies);
-    setContacts(linked.contacts);
-    setDeals(linked.deals);
+    );
+
+    setCompanies({ ...companies, ...linked.companies });
+    setContacts({ ...contacts, ...linked.contacts });
+    setDeals({ ...deals, ...linked.deals });
 
     setSubmitting(false);
     setIsTaskModalOpen(false);

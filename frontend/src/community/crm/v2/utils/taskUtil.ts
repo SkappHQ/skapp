@@ -22,6 +22,7 @@ import {
   CrmTaskRecord,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { appendId } from "~community/crm/v2/utils/commonUtil";
 
 export interface TaskDueDateInfo {
   textKey: string;
@@ -135,53 +136,54 @@ export const getTrimmedTaskValues = (task: CrmTaskEntity): CrmTaskEntity => ({
   notes: task.notes?.trim()
 });
 
-export interface CrmTaskRelatedRecords {
-  companies: CrmCompanyRecord;
-  contacts: CrmContactRecord;
-  deals: CrmDealRecord;
-}
-
 export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
-  records: CrmTaskRelatedRecords
-): CrmTaskRelatedRecords => {
+  companies?: CrmCompanyRecord,
+  contacts?: CrmContactRecord,
+  deals?: CrmDealRecord
+) => {
   const taskId = task.id;
+  const linked = { companies, contacts, deals };
 
   if (taskId === undefined) {
-    return records;
+    return linked;
   }
 
-  const linked: CrmTaskRelatedRecords = { ...records };
+  if (companies !== undefined && task.companyId !== undefined) {
+    const company = companies[task.companyId];
 
-  if (task.companyId !== undefined) {
-    const company = records.companies[task.companyId];
-
-    if (company?.taskIds !== undefined) {
+    if (company !== undefined) {
       linked.companies = {
-        ...records.companies,
-        [task.companyId]: { ...company, taskIds: [...company.taskIds, taskId] }
+        ...companies,
+        [task.companyId]: {
+          ...company,
+          taskIds: appendId(company.taskIds, taskId)
+        }
       };
     }
   }
 
-  if (task.contactId !== undefined) {
-    const contact = records.contacts[task.contactId];
+  if (contacts !== undefined && task.contactId !== undefined) {
+    const contact = contacts[task.contactId];
 
-    if (contact?.taskIds !== undefined) {
+    if (contact !== undefined) {
       linked.contacts = {
-        ...records.contacts,
-        [task.contactId]: { ...contact, taskIds: [...contact.taskIds, taskId] }
+        ...contacts,
+        [task.contactId]: {
+          ...contact,
+          taskIds: appendId(contact.taskIds, taskId)
+        }
       };
     }
   }
 
-  if (task.dealId !== undefined) {
-    const deal = records.deals[task.dealId];
+  if (deals !== undefined && task.dealId !== undefined) {
+    const deal = deals[task.dealId];
 
-    if (deal?.taskIds !== undefined) {
+    if (deal !== undefined) {
       linked.deals = {
-        ...records.deals,
-        [task.dealId]: { ...deal, taskIds: [...deal.taskIds, taskId] }
+        ...deals,
+        [task.dealId]: { ...deal, taskIds: appendId(deal.taskIds, taskId) }
       };
     }
   }

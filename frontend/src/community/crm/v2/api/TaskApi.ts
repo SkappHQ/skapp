@@ -22,11 +22,6 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-interface UpdateTaskVariables {
-  id: number;
-  payload: CrmTaskEntity;
-}
-
 const fetchTasks = async (
   params: CrmTaskCompletedFilterRequest
 ): Promise<CrmTaskCompletedListResponse> => {
@@ -98,12 +93,10 @@ export const useCreateTask = (
   });
 };
 
-const updateTask = async ({
-  id,
-  payload
-}: UpdateTaskVariables): Promise<CrmTaskEntity> => {
+const updateTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
+  const { id, ...payload } = task;
   const response = await authFetchV2.patch(
-    crmTaskEndpoints.UPDATE_TASK(id),
+    crmTaskEndpoints.UPDATE_TASK(id!),
     payload
   );
   return response?.data?.results?.[0];
@@ -111,7 +104,7 @@ const updateTask = async ({
 
 export const useUpdateTask = (
   onSuccess: (task: CrmTaskEntity) => void
-): UseMutationResult<CrmTaskEntity, AxiosError, UpdateTaskVariables> => {
+): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> => {
   const queryClient = useQueryClient();
 
   return useMutation({

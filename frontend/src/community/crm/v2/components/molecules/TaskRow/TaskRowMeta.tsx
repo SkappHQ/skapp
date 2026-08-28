@@ -4,6 +4,7 @@ import { FC } from "react";
 import OwnerAvatar from "~community/crm/v2/components/atoms/OwnerAvatar/OwnerAvatar";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 import { getPriorityConfig } from "~community/crm/v2/utils/taskUtil";
 
 interface TaskRowMetaProps {
@@ -16,6 +17,8 @@ const TaskRowMeta: FC<TaskRowMetaProps> = ({ task, applyCompletedStyle }) => {
 
   const priorityConfig = getPriorityConfig(task.priority);
 
+  const owner = getOwnerById(owners, task.ownerId);
+
   return (
     <div
       className={`flex items-center gap-6 shrink-0 ${applyCompletedStyle ? "opacity-40" : ""}`}
@@ -27,12 +30,8 @@ const TaskRowMeta: FC<TaskRowMetaProps> = ({ task, applyCompletedStyle }) => {
         />
       )}
 
-      {task.ownerId !== undefined && (
-        <OwnerAvatar
-          id={`task-owner-${task.id}`}
-          owner={owners[task.ownerId]}
-          size="xs"
-        />
+      {owner !== undefined && (
+        <OwnerAvatar id={`task-owner-${task.id}`} owner={owner} size="xs" />
       )}
     </div>
   );

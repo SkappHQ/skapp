@@ -1,9 +1,8 @@
 import { NextPage } from "next";
 import { useShallow } from "zustand/react/shallow";
 
-import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
-import { Modules, ZIndexEnums } from "~community/common/enums/CommonEnums";
+import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
@@ -25,7 +24,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Companies page from the normalized v2 store surface.
-const isCrmCompaniesV2 = false;
+const isCrmCompaniesV2 = true;
 
 const CompaniesV1 = () => {
   const translateText = useTranslator("crmModule");
@@ -87,7 +86,7 @@ const CompaniesV2 = () => {
       }))
     );
 
-  const { isCrmInitialDataLoading } = useInitializeCrmData();
+  useInitializeCrmData();
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {
@@ -110,23 +109,17 @@ const CompaniesV2 = () => {
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}
     >
-      {isCrmInitialDataLoading ? (
-        <div className="relative w-full flex-1 min-h-[37.2rem]">
-          <FullScreenLoader fullPage={false} zIndex={ZIndexEnums.MODAL} />
-        </div>
-      ) : (
-        <>
-          {selectedCompanyId && (
-            <SidePanelWrapperV2>
-              <CompanySidePanelV2 companyId={selectedCompanyId} />
-            </SidePanelWrapperV2>
-          )}
+      <>
+        {selectedCompanyId && (
+          <SidePanelWrapperV2>
+            <CompanySidePanelV2 companyId={selectedCompanyId} />
+          </SidePanelWrapperV2>
+        )}
 
-          <CompanyModalControllerV2 />
-          <TaskModalControllerV2 />
-          <CompanyTableV2 />
-        </>
-      )}
+        <CompanyModalControllerV2 />
+        <TaskModalControllerV2 />
+        <CompanyTableV2 />
+      </>
     </ContentLayout>
   );
 };

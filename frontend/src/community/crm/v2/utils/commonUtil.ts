@@ -22,6 +22,14 @@ export const formatMonetaryValue = (value?: string) => {
 export const formatMonetaryValueWithDecimals = (value?: string | number) =>
   isEmptyValue(value) ? "-" : `$${Number(value).toFixed(2)}`;
 
+export const appendId = (ids: number[] | undefined, id: number): number[] => {
+  if (ids === undefined) {
+    return [id];
+  }
+
+  return ids.includes(id) ? ids : [...ids, id];
+};
+
 export const getOwnerName = (owner: CrmOwnerEntity): string =>
   [owner.firstName, owner.lastName].filter(Boolean).join(" ");
 

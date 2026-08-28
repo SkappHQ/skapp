@@ -30,21 +30,18 @@ describe("linkDealToRelatedEntities", () => {
   it("appends the deal id to every entity it is linked to", () => {
     const deal: CrmDealEntity = { id: 9, companyId: 1, contactId: 4 };
 
-    const linked = linkDealToRelatedEntities(deal, { companies, contacts });
+    const linked = linkDealToRelatedEntities(deal, companies, contacts);
 
-    expect(linked.companies[1].dealIds).toEqual([7, 9]);
-    expect(linked.contacts[4].dealIds).toEqual([9]);
+    expect(linked.companies?.[1].dealIds).toEqual([7, 9]);
+    expect(linked.contacts?.[4].dealIds).toEqual([9]);
   });
 
-  it("leaves an entity alone when its deals were never loaded", () => {
+  it("starts the array when the entity has not loaded its deals yet", () => {
     const unloaded: CrmCompanyRecord = { 1: { id: 1 } };
     const deal: CrmDealEntity = { id: 9, companyId: 1 };
 
-    const linked = linkDealToRelatedEntities(deal, {
-      companies: unloaded,
-      contacts
-    });
+    const linked = linkDealToRelatedEntities(deal, unloaded, contacts);
 
-    expect(linked.companies).toBe(unloaded);
+    expect(linked.companies?.[1].dealIds).toEqual([9]);
   });
 });

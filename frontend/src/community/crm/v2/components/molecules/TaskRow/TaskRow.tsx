@@ -60,7 +60,7 @@ const TaskRow: FC<TaskRowProps> = ({
     setTasks(updateTask(tasks, taskId, { isCompleted: nextIsCompleted }));
 
     updateCompletion(
-      { id: taskId, payload: { isCompleted: nextIsCompleted } },
+      { id: taskId, isCompleted: nextIsCompleted },
       { onError: () => handleToggleError(wasCompleted) }
     );
   };

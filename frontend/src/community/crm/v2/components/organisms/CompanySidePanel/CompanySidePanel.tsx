@@ -227,12 +227,10 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));
 
-    const linked = linkDealToRelatedEntities(createdDeal, {
-      companies,
-      contacts
-    });
-    setCompanies(linked.companies);
-    setContacts(linked.contacts);
+    const linked = linkDealToRelatedEntities(createdDeal, companies, contacts);
+
+    setCompanies({ ...companies, ...linked.companies });
+    setContacts({ ...contacts, ...linked.contacts });
   };
 
   const company = companies[companyId];

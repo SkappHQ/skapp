@@ -6,6 +6,7 @@ import {
   CrmDealRecord,
   CrmStageRecord
 } from "../types/CrmCommonTypes";
+import { appendId } from "./commonUtil";
 
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   const dealRecord: CrmDealRecord = {};
@@ -39,9 +40,6 @@ export const mergeDeals = (
   return merged;
 };
 
-export const appendDealId = (dealIds: number[], id: number): number[] =>
-  dealIds.includes(id) ? dealIds : [...dealIds, id];
-
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);
 
@@ -69,46 +67,41 @@ export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
   }
 };
 
-export interface CrmDealRelatedRecords {
-  companies: CrmCompanyRecord;
-  contacts: CrmContactRecord;
-}
-
 export const linkDealToRelatedEntities = (
   deal: CrmDealEntity,
-  records: CrmDealRelatedRecords
-): CrmDealRelatedRecords => {
+  companies?: CrmCompanyRecord,
+  contacts?: CrmContactRecord
+) => {
   const dealId = deal.id;
+  const linked = { companies, contacts };
 
   if (dealId === undefined) {
-    return records;
+    return linked;
   }
 
-  const linked: CrmDealRelatedRecords = { ...records };
+  if (companies !== undefined && deal.companyId !== undefined) {
+    const company = companies[deal.companyId];
 
-  if (deal.companyId !== undefined) {
-    const company = records.companies[deal.companyId];
-
-    if (company?.dealIds !== undefined) {
+    if (company !== undefined) {
       linked.companies = {
-        ...records.companies,
+        ...companies,
         [deal.companyId]: {
           ...company,
-          dealIds: appendDealId(company.dealIds, dealId)
+          dealIds: appendId(company.dealIds, dealId)
         }
       };
     }
   }
 
-  if (deal.contactId !== undefined) {
-    const contact = records.contacts[deal.contactId];
+  if (contacts !== undefined && deal.contactId !== undefined) {
+    const contact = contacts[deal.contactId];
 
-    if (contact?.dealIds !== undefined) {
+    if (contact !== undefined) {
       linked.contacts = {
-        ...records.contacts,
+        ...contacts,
         [deal.contactId]: {
           ...contact,
-          dealIds: appendDealId(contact.dealIds, dealId)
+          dealIds: appendId(contact.dealIds, dealId)
         }
       };
     }
