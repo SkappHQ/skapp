@@ -328,7 +328,7 @@ export const useGetPeriodAvailability = (
 export const useGetDailyLogsByEmployeeId = (
   startDate: string,
   endDate: string,
-  employeeId: number | undefined,
+  employeeId?: number,
   isEnabled: boolean = true
 ) => {
   return useQuery({
