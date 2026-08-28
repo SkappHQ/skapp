@@ -213,13 +213,13 @@ const useAddEntry = () => {
     setFromDateTime: Dispatch<SetStateAction<string>>,
     setToDateTime: Dispatch<SetStateAction<string>>
   ) => {
-    const modalBeforeEntry = getModalBeforeManualEntry(
+    const employeeConfirmationModalType = getModalBeforeManualEntry(
       values,
       timeAvailability,
       status
     );
 
-    if (modalBeforeEntry === null) {
+    if (employeeConfirmationModalType === null) {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
@@ -230,17 +230,17 @@ const useAddEntry = () => {
       return;
     }
 
-    if (MODALS_RETAINING_AVAILABILITY.has(modalBeforeEntry)) {
+    if (MODALS_RETAINING_AVAILABILITY.has(employeeConfirmationModalType)) {
       setTimeAvailabilityForPeriod(timeAvailability);
     }
 
-    if (MODALS_CARRYING_ENTERED_TIMES.has(modalBeforeEntry)) {
+    if (MODALS_CARRYING_ENTERED_TIMES.has(employeeConfirmationModalType)) {
       setFromDateTime(dateTimeFromTime ?? "");
       setToDateTime(dateTimeToTime ?? "");
     }
 
     setIsEmployeeTimesheetModalOpen(true);
-    setEmployeeTimesheetModalType(modalBeforeEntry);
+    setEmployeeTimesheetModalType(employeeConfirmationModalType);
     setCurrentAddTimeChanges(values);
   };
 
