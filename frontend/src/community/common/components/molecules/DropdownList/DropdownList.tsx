@@ -76,8 +76,7 @@ interface Props {
   noOptionsText?: string;
 }
 
-const getMenuContainer = (): HTMLElement | null =>
-  typeof document === "undefined" ? null : document.querySelector("main");
+const getMenuContainer = () => document.querySelector<HTMLElement>("main");
 
 const DropdownList: FC<Props> = ({
   componentStyle,
@@ -103,7 +102,7 @@ const DropdownList: FC<Props> = ({
   addNewClickBtnText,
   required,
   emojiWithText,
-  readOnly = false,
+  readOnly,
   errorFocusOutlineNeeded = true,
   labelStyles,
   checkSelected,
@@ -116,28 +115,23 @@ const DropdownList: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
-  const accessibleName = ariaLabel || label || placeholder;
-
   const reactId = useId();
   const idSeed = `${id ?? inputName}-${reactId}`;
 
-  const labelId = label && !ariaLabel ? `${idSeed}-label` : undefined;
-
-  const errorId = error ? `${idSeed}-error` : undefined;
+  const errorId = `${idSeed}-error`;
 
   const menuListProps: Partial<MenuListProps> = {
-    "aria-label": accessibleName
+    "aria-label": ariaLabel || label
   };
 
   const selectInputProps: InputHTMLAttributes<HTMLInputElement> = {
-    "aria-label": accessibleName,
+    "aria-label": ariaLabel || label,
     "aria-describedby": errorId
   };
 
   const selectDisplayProps: HTMLAttributes<HTMLDivElement> = {
-    "aria-labelledby": labelId,
     "aria-invalid": !!error,
-    "aria-required": required ? "true" : undefined
+    "aria-required": required
   };
 
   const handleChange = (
@@ -161,7 +155,6 @@ const DropdownList: FC<Props> = ({
       >
         <Typography
           component="label"
-          id={labelId}
           lineHeight={1.5}
           sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
         >
@@ -218,7 +211,7 @@ const DropdownList: FC<Props> = ({
               MenuListProps: menuListProps
             }}
             sx={{
-              ...classes.selectStyle(theme, isDisabled, readOnly),
+              ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
               ...selectStyles
             }}
             fullWidth
@@ -226,7 +219,7 @@ const DropdownList: FC<Props> = ({
             SelectDisplayProps={selectDisplayProps}
             displayEmpty={!!placeholder?.length}
             renderValue={(selected) =>
-              selected === undefined || selected === "" ? (
+              !selected ? (
                 <Typography aria-hidden={true} sx={classes.placeholderStyle}>
                   {placeholder}
                 </Typography>
