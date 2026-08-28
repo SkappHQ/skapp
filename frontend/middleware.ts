@@ -228,6 +228,11 @@ interface RouteAccessContext {
 
 type AccessGuard = (context: RouteAccessContext) => NextResponse | null;
 
+interface RestrictedRouteRule {
+  routes: string[];
+  requiredRole: string;
+}
+
 const REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES = new Set<TenantStatusEnums>([
   TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED,
   TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
@@ -240,7 +245,7 @@ const DASHBOARD_ALLOWED_ROLES = new Set<UserRole>([
   ManagerTypes.ATTENDANCE_MANAGER
 ]);
 
-const RESTRICTED_ROUTE_RULES: { routes: string[]; requiredRole: string }[] = [
+const RESTRICTED_ROUTE_RULES: RestrictedRouteRule[] = [
   {
     routes: nonSuperAdminRestrictedRoutes,
     requiredRole: AdminTypes.SUPER_ADMIN
