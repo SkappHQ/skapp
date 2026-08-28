@@ -24,10 +24,7 @@ import {
   DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
-import {
-  formatDuration,
-  isToday
-} from "~community/attendance/utils/TimeUtils";
+import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
@@ -81,7 +78,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     setSelectedDailyRecord,
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectEntryEmployee
+    setDirectManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
@@ -181,12 +178,12 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     if (targetEmployee) {
       if (getTimeEntryModalType(record) === null) return;
 
-      setDirectEntryEmployee(targetEmployee);
+      setDirectManualTimeEntryEligibleEmployee(targetEmployee);
       handleEdit();
       return;
     }
 
-    setDirectEntryEmployee(null);
+    setDirectManualTimeEntryEligibleEmployee(null);
     mutate();
   };
 

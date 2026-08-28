@@ -228,7 +228,7 @@ export interface DirectEntryEmployeeType {
   date?: string;
 }
 
-export interface DirectTimeEntryVariablesType extends DirectEntryEmployeeType {
+export interface DirectManualTimeEntryVariablesType extends DirectEntryEmployeeType {
   entryDate: string;
   payload: ManualEntryPayloadType;
 }

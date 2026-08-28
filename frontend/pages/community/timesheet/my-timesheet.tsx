@@ -14,12 +14,13 @@ const MyTimeSheet: NextPage = () => {
   const {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectEntryEmployee
+    setDirectManualTimeEntryEligibleEmployee
   } = useAttendanceStore(
     useShallow((state) => ({
       setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
-      setDirectEntryEmployee: state.setDirectEntryEmployee
+      setDirectManualTimeEntryEligibleEmployee:
+        state.setDirectManualTimeEntryEligibleEmployee
     }))
   );
   const { isManualEntryRestricted, isLoading: isRestrictionLoading } =
@@ -45,7 +46,7 @@ const MyTimeSheet: NextPage = () => {
       primaryButtonType={ButtonStyle.PRIMARY}
       isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
-        setDirectEntryEmployee(null);
+        setDirectManualTimeEntryEligibleEmployee(null);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

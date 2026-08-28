@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useRef } from "react";
 
 import {
   useAddManualTimeEntry,
@@ -9,7 +9,7 @@ import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
-  DirectTimeEntryVariablesType,
+  DirectManualTimeEntryVariablesType,
   TimeAvailabilityType,
   TimeEntryFormValueType
 } from "~community/attendance/types/timeSheetTypes";
@@ -20,7 +20,7 @@ import {
   getCurrentTimeZone,
   getDuration
 } from "~community/attendance/utils/TimeUtils";
-import { getSelfServiceAddConfirmation } from "~community/attendance/utils/TimesheetModalUtils";
+import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
 import {
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
   PEOPLE_ERROR_NO_MANAGERS_FOUND,
@@ -39,12 +39,12 @@ import {
   useEditDirectTimeEntry
 } from "~enterprise/attendance/api/AttendanceApi";
 
-const CONFIRMATIONS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
+const MODALS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
   EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
 ];
 
-const CONFIRMATIONS_CARRYING_ENTERED_TIMES: EmployeeTimesheetModalTypes[] = [
+const MODALS_CARRYING_ENTERED_TIMES: EmployeeTimesheetModalTypes[] = [
   EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
   EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
@@ -61,13 +61,23 @@ const useAddEntry = () => {
     setEmployeeTimesheetModalType,
     setTimeAvailabilityForPeriod,
     setCurrentAddTimeChanges,
-    directEntryEmployee
+    directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
-  const isDirectEntry = Boolean(directEntryEmployee);
+  const directManualTimeEntryVariables =
+    useRef<DirectManualTimeEntryVariablesType | null>(null);
 
-  const onSuccessManual = () => {
+  const showErrorToast = (titleKey: string, descriptionKey: string) => {
+    setToastMessage({
+      open: true,
+      title: translateText([titleKey]),
+      description: translateText([descriptionKey]),
+      toastType: ToastType.ERROR
+    });
+  };
+
+  const onSuccessAddManualTimeEntry = () => {
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntrySuccessTitle"]),
@@ -76,7 +86,7 @@ const useAddEntry = () => {
     });
   };
 
-  const onSuccessEdit = () => {
+  const onSuccessEditManualTimeEntry = () => {
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntrySuccessTitle"]),
@@ -94,95 +104,89 @@ const useAddEntry = () => {
     });
   };
   const enhancedOnError = (error: ErrorResponse) => {
-    if (
-      error?.response?.data?.results?.[0]?.messageKey ===
-      TIME_ERROR_MANUAL_ENTRY_RESTRICTED
-    ) {
-      setToastMessage({
-        open: true,
-        title: translateText(["addTimeEntryErrorTitle"]),
-        description: translateText(["manualEntryRestrictedErrorDes"]),
-        toastType: ToastType.ERROR
-      });
+    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
+
+    if (messageKey === TIME_ERROR_MANUAL_ENTRY_RESTRICTED) {
+      showErrorToast("addTimeEntryErrorTitle", "manualEntryRestrictedErrorDes");
       return;
     }
 
-    if (
-      error?.response?.data?.results?.[0]?.messageKey ===
-      PEOPLE_ERROR_NO_MANAGERS_FOUND
-    ) {
-      setToastMessage({
-        open: true,
-        title: translateText(["addTimeEntryNoManagerErrorTitle"]),
-        description: translateText(["managerMissingErrorDes"]),
-        toastType: ToastType.ERROR
-      });
-    } else {
-      setToastMessage({
-        open: true,
-        title: translateText(["addTimeEntryErrorTitle"]),
-        description: translateText(["addTimeEntryErrorDes"]),
-        toastType: ToastType.ERROR
-      });
+    if (messageKey === PEOPLE_ERROR_NO_MANAGERS_FOUND) {
+      showErrorToast(
+        "addTimeEntryNoManagerErrorTitle",
+        "managerMissingErrorDes"
+      );
+      return;
     }
+
+    showErrorToast("addTimeEntryErrorTitle", "addTimeEntryErrorDes");
   };
 
-  const onSuccessDirectEntry = (
-    isEdit: boolean,
-    variables: DirectTimeEntryVariablesType
-  ) => {
-    const interpolations = {
-      employeeName: variables.employeeName,
-      date: variables.entryDate
+  const getDirectManualTimeEntryDetails = () => {
+    const variables = directManualTimeEntryVariables.current;
+
+    return {
+      employeeName: variables?.employeeName ?? "",
+      date: variables?.entryDate
         ? formatDateTimeWithOrdinalIndicator(
             convertYYYYMMDDToDateTime(variables.entryDate)
           )
         : ""
     };
+  };
 
+  const onDirectManualTimeEntryAddSuccess = () => {
     setToastMessage({
       open: true,
-      title: isEdit
-        ? translateText(["directEntryUpdatedToastTitle"])
-        : translateText(["directEntryAddedToastTitle"]),
-      description: isEdit
-        ? translateText(["directEntryUpdatedToastDes"], interpolations)
-        : translateText(["directEntryAddedToastDes"], interpolations),
+      title: translateText(["directEntryAddedToastTitle"]),
+      description: translateText(
+        ["directEntryAddedToastDes"],
+        getDirectManualTimeEntryDetails()
+      ),
       toastType: ToastType.SUCCESS
     });
   };
 
-  const onDirectEntryError = (error: ErrorResponse) => {
-    const isConflict =
-      error?.response?.data?.results?.[0]?.messageKey ===
-      EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
+  const onDirectManualTimeEntryEditSuccess = () => {
     setToastMessage({
       open: true,
-      title: translateText(["addTimeEntryErrorTitle"]),
-      description: translateText([
-        isConflict ? "directEntryConflictErrorDes" : "directEntrySaveErrorDes"
-      ]),
-      toastType: ToastType.ERROR
+      title: translateText(["directEntryUpdatedToastTitle"]),
+      description: translateText(
+        ["directEntryUpdatedToastDes"],
+        getDirectManualTimeEntryDetails()
+      ),
+      toastType: ToastType.SUCCESS
     });
   };
 
-  const { mutate: addDirectEntryMutate } = useAddDirectTimeEntry(
-    (directEntryVariables) => onSuccessDirectEntry(false, directEntryVariables),
-    onDirectEntryError
+  const onDirectManualTimeEntryError = (error: ErrorResponse) => {
+    const isConflict =
+      error?.response?.data?.results?.[0]?.messageKey ===
+      EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
+
+    showErrorToast(
+      "addTimeEntryErrorTitle",
+      isConflict ? "directEntryConflictErrorDes" : "directEntrySaveErrorDes"
+    );
+  };
+
+  const { mutate: addDirectManualTimeEntryMutate } = useAddDirectTimeEntry(
+    onDirectManualTimeEntryAddSuccess,
+    onDirectManualTimeEntryError
   );
 
-  const { mutate: editDirectEntryMutate } = useEditDirectTimeEntry(
-    (directEntryVariables) => onSuccessDirectEntry(true, directEntryVariables),
-    onDirectEntryError
+  const { mutate: editDirectManualTimeEntryMutate } = useEditDirectTimeEntry(
+    onDirectManualTimeEntryEditSuccess,
+    onDirectManualTimeEntryError
   );
 
   const { mutate: manualEntryMutate } = useAddManualTimeEntry(
-    onSuccessManual,
+    onSuccessAddManualTimeEntry,
     enhancedOnError
   );
 
   const { mutate: editClockInOutMutate } = useEditClockInOut(
-    onSuccessEdit,
+    onSuccessEditManualTimeEntry,
     onError
   );
 
@@ -201,7 +205,7 @@ const useAddEntry = () => {
     }
   };
 
-  const routeSelfServiceAddEntry = (
+  const routeManualEntry = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
     dateTimeFromTime: string | null,
@@ -209,13 +213,13 @@ const useAddEntry = () => {
     setFromDateTime: Dispatch<SetStateAction<string>>,
     setToDateTime: Dispatch<SetStateAction<string>>
   ) => {
-    const confirmation = getSelfServiceAddConfirmation(
+    const modalBeforeEntry = getModalBeforeManualEntry(
       values,
       timeAvailability,
       status
     );
 
-    if (confirmation === null) {
+    if (modalBeforeEntry === null) {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
@@ -226,17 +230,17 @@ const useAddEntry = () => {
       return;
     }
 
-    if (CONFIRMATIONS_RETAINING_AVAILABILITY.includes(confirmation)) {
+    if (MODALS_RETAINING_AVAILABILITY.includes(modalBeforeEntry)) {
       setTimeAvailabilityForPeriod(timeAvailability);
     }
 
-    if (CONFIRMATIONS_CARRYING_ENTERED_TIMES.includes(confirmation)) {
+    if (MODALS_CARRYING_ENTERED_TIMES.includes(modalBeforeEntry)) {
       setFromDateTime(dateTimeFromTime ?? "");
       setToDateTime(dateTimeToTime ?? "");
     }
 
     setIsEmployeeTimesheetModalOpen(true);
-    setEmployeeTimesheetModalType(confirmation);
+    setEmployeeTimesheetModalType(modalBeforeEntry);
     setCurrentAddTimeChanges(values);
   };
 
@@ -257,11 +261,11 @@ const useAddEntry = () => {
 
     if (!isDurationValid(values.fromTime, values.toTime)) return;
 
-    if (isDirectEntry && directEntryEmployee) {
+    if (directManualTimeEntryEligibleEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
-      const variables: DirectTimeEntryVariablesType = {
-        employeeId: directEntryEmployee.employeeId,
-        employeeName: directEntryEmployee.employeeName,
+      const variables: DirectManualTimeEntryVariablesType = {
+        employeeId: directManualTimeEntryEligibleEmployee.employeeId,
+        employeeName: directManualTimeEntryEligibleEmployee.employeeName,
         entryDate: selectedDailyRecord?.date ?? "",
         payload: {
           startTime: convertToUtc(dateTimeFromTime),
@@ -271,10 +275,12 @@ const useAddEntry = () => {
         }
       };
 
+      directManualTimeEntryVariables.current = variables;
+
       if (existingRecordId) {
-        editDirectEntryMutate(variables);
+        editDirectManualTimeEntryMutate(variables);
       } else {
-        addDirectEntryMutate(variables);
+        addDirectManualTimeEntryMutate(variables);
       }
       setIsEmployeeTimesheetModalOpen(false);
       return;
@@ -283,7 +289,7 @@ const useAddEntry = () => {
     if (
       employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
     ) {
-      routeSelfServiceAddEntry(
+      routeManualEntry(
         values,
         timeAvailability,
         dateTimeFromTime,
@@ -329,13 +335,13 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType,
     isGetTimeAvailabilityLoading: boolean
   ) => {
+    const timeSlots = selectedDailyRecord?.timeSlots ?? [];
+
     const currentRecordStartTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots?.[0]?.startTime ?? ""
+      timeSlots[0]?.startTime ?? ""
     );
     const currentRecordEndTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots?.[
-        (selectedDailyRecord?.timeSlots?.length ?? 0) - 1
-      ]?.endTime ?? ""
+      timeSlots.at(-1)?.endTime ?? ""
     );
 
     if (

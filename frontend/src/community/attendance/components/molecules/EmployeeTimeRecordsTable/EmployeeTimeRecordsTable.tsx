@@ -69,7 +69,7 @@ const EmployeeTimeRecordsTable = ({
     timesheetAnalyticsParams,
     setTimesheetAnalyticsPagination,
     setSelectedDailyRecord,
-    setDirectEntryEmployee,
+    setDirectManualTimeEntryEligibleEmployee,
     setEmployeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen
   } = useAttendanceStore(
@@ -77,7 +77,8 @@ const EmployeeTimeRecordsTable = ({
       timesheetAnalyticsParams: state.timesheetAnalyticsParams,
       setTimesheetAnalyticsPagination: state.setTimesheetAnalyticsPagination,
       setSelectedDailyRecord: state.setSelectedDailyRecord,
-      setDirectEntryEmployee: state.setDirectEntryEmployee,
+      setDirectManualTimeEntryEligibleEmployee:
+        state.setDirectManualTimeEntryEligibleEmployee,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
       setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
     }))
@@ -147,7 +148,7 @@ const EmployeeTimeRecordsTable = ({
     setPendingCell(null);
     if (modalType === null) return;
 
-    setDirectEntryEmployee({ employeeId, employeeName });
+    setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
     setIsEmployeeTimesheetModalOpen(true);

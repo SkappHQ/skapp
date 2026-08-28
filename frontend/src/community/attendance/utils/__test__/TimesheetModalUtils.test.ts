@@ -7,10 +7,10 @@ import {
   TimeEntryFormValueType
 } from "~community/attendance/types/timeSheetTypes";
 
-import { getSelfServiceAddConfirmation } from "../TimesheetModalUtils";
+import { getModalBeforeManualEntry } from "../TimesheetModalUtils";
 
 describe("Timesheet Modal Utility Functions", () => {
-  describe("getSelfServiceAddConfirmation", () => {
+  describe("getModalBeforeManualEntry", () => {
     const noAvailability = {} as TimeAvailabilityType;
 
     const valuesFor = (timeEntryDate: string) =>
@@ -21,7 +21,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("returns null when nothing blocks the entry", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           noAvailability,
           undefined
@@ -35,17 +35,13 @@ describe("Timesheet Modal Utility Functions", () => {
       AttendanceSlotType.RESUME
     ])("flags an ongoing session for slot type %s on today", (slotType) => {
       expect(
-        getSelfServiceAddConfirmation(
-          valuesFor(today),
-          noAvailability,
-          slotType
-        )
+        getModalBeforeManualEntry(valuesFor(today), noAvailability, slotType)
       ).toBe(EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY);
     });
 
     test("ignores an ongoing session when the entry is not for today", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           noAvailability,
           AttendanceSlotType.START
@@ -55,7 +51,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("prefers an existing request over an existing time slot", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           {
             editTimeRequests: { timeRequestId: "1" },
@@ -68,7 +64,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("detects a pending manual entry request", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           { manualEntryRequests: [{}] } as TimeAvailabilityType,
           undefined
@@ -78,7 +74,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("detects an existing time slot", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           { timeSlotsExists: true } as TimeAvailabilityType,
           undefined
@@ -88,7 +84,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("detects a leave request", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           { leaveRequest: [{}] } as TimeAvailabilityType,
           undefined
@@ -98,7 +94,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("detects a holiday", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           { holiday: [{}] } as TimeAvailabilityType,
           undefined
@@ -108,7 +104,7 @@ describe("Timesheet Modal Utility Functions", () => {
 
     test("prefers a leave request over a holiday", () => {
       expect(
-        getSelfServiceAddConfirmation(
+        getModalBeforeManualEntry(
           valuesFor(pastDate),
           { leaveRequest: [{}], holiday: [{}] } as TimeAvailabilityType,
           undefined

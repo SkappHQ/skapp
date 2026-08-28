@@ -30,7 +30,7 @@ export const getTimeEntryModalType = (
   return null;
 };
 
-export const getSelfServiceAddConfirmation = (
+export const getModalBeforeManualEntry = (
   values: TimeEntryFormValueType,
   timeAvailability: TimeAvailabilityType,
   slotType?: AttendanceSlotType | null
