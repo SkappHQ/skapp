@@ -39,7 +39,7 @@ const MyTimeSheet: NextPage = () => {
       pageHead={translateText(["timesheet.myTimesheet.pageHead"])}
       title={translateText(["timesheet.myTimesheet.title"])}
       primaryButtonText={
-        isManualEntryRestricted
+        !isManualEntryRestricted
           ? translateText(["timesheet.manualTimeEntryButtonTxt"])
           : undefined
       }
