@@ -115,10 +115,7 @@ const DropdownList: FC<Props> = ({
   const theme: Theme = useTheme();
   const classes = styles(theme);
 
-  const reactId = useId();
-  const idSeed = `${id ?? inputName}-${reactId}`;
-
-  const errorId = `${idSeed}-error`;
+  const errorId = `${useId()}-error`;
 
   const menuListProps: Partial<MenuListProps> = {
     "aria-label": ariaLabel || label
