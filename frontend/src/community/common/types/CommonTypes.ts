@@ -1,4 +1,5 @@
 import { type SxProps } from "@mui/material";
+import { type PopperProps } from "@rootcodelabs/skapp-ui";
 import { AppProps } from "next/app";
 import { JSX } from "react";
 import { type FileRejection } from "react-dropzone";
@@ -295,3 +296,7 @@ export interface EmployeeAvatarData {
   lastName: string;
   authPic?: string;
 }
+
+export type CalendarPopperPlacement = Required<
+  Pick<PopperProps, "position" | "offset">
+>;
