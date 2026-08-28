@@ -328,11 +328,11 @@ export const useGetPeriodAvailability = (
 export const useGetDailyLogsByEmployeeId = (
   startDate: string,
   endDate: string,
-  employeeId: number,
+  employeeId: number | undefined,
   isEnabled: boolean = true
 ) => {
   return useQuery({
-    enabled: isEnabled,
+    enabled: isEnabled && !!employeeId,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
       startDate,
       endDate,
@@ -341,7 +341,7 @@ export const useGetDailyLogsByEmployeeId = (
     queryFn: async () => {
       const url =
         employeeAttendanceEndpoints.GET_EMPLOYEE_DAILY_LOG_BY_EMPLOYEE_ID(
-          employeeId
+          employeeId as number
         );
 
       return await authFetch.get(url, {

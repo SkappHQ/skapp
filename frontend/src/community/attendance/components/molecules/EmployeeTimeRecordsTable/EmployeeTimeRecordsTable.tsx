@@ -105,7 +105,7 @@ const EmployeeTimeRecordsTable = ({
   } = useGetDailyLogsByEmployeeId(
     pendingCell?.date ?? "",
     pendingCell?.date ?? "",
-    pendingCell?.employeeId ?? 0,
+    pendingCell?.employeeId,
     Boolean(pendingCell)
   );
 
