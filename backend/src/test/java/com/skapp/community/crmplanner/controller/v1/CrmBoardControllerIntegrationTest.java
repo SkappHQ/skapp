@@ -492,6 +492,63 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Board init data - contact with a live company returns the nested company")
+	void getBoardInitData_ContactWithCompany_ReturnsNestedCompany() throws Exception {
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.id")
+				.value(company.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.name")
+				.value("Board Test Company"));
+	}
+
+	@Test
+	@DisplayName("Board init data - contact without a company omits the company object")
+	void getBoardInitData_ContactWithoutCompany_OmitsCompany() throws Exception {
+		CrmContact orphan = new CrmContact();
+		orphan.setName("Board Orphan Contact");
+		orphan.setEmail("board.orphan@example.com");
+		orphan.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(orphan);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].name")
+				.value("Board Orphan Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
+				.doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Board init data - contact whose company is soft deleted omits the company object")
+	void getBoardInitData_ContactWithDeletedCompany_OmitsCompany() throws Exception {
+		CrmCompany deletedCompany = new CrmCompany();
+		deletedCompany.setName("Board Deleted Company");
+		crmCompanyDao.save(deletedCompany);
+
+		CrmContact orphan = new CrmContact();
+		orphan.setName("Board Deleted Company Contact");
+		orphan.setEmail("board.deletedco@example.com");
+		orphan.setCompany(deletedCompany);
+		orphan.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(orphan);
+
+		deletedCompany.setIsDeleted(true);
+		crmCompanyDao.save(deletedCompany);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
+				.doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Board init data - returns task types ordered by orderIndex")
 	void getBoardInitData_ReturnsTaskTypes() throws Exception {
 		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
