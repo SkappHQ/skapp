@@ -15,16 +15,6 @@ export const ABOVE_TRIGGER: CalendarPopperPlacement = {
   offset: CALENDAR_POPPER_OFFSET_PX
 };
 
-/**
- * Picks the side of the trigger a skapp-ui DatePicker calendar fits on.
- *
- * The Popper always draws the calendar below its trigger, so a trigger that
- * sits low in a vertically centred modal pushes the last week rows past the
- * bottom of the viewport - where nothing can scroll them into view, because
- * the modal locks background scrolling. Prefers below, flips above when below
- * would overflow, and pins the calendar inside the viewport when neither side
- * fits by offsetting it back up over the trigger.
- */
 export const getCalendarPopperPlacement = (
   trigger: HTMLElement | null
 ): CalendarPopperPlacement => {

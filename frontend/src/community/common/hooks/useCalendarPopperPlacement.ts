@@ -24,15 +24,6 @@ interface UseCalendarPopperPlacementReturn {
   onCalendarOpenChange: (isOpen: boolean) => void;
 }
 
-/**
- * Keeps a skapp-ui DatePicker calendar reachable inside a modal by measuring
- * the trigger against the viewport on every open. See
- * getCalendarPopperPlacement for the placement rules.
- *
- * The Popper container caps its own height off the document height, not the
- * viewport, and clips with overflow-hidden - so overflow-y-auto is applied on
- * every open, not just the pinned case, to make whatever it caps scrollable.
- */
 export const useCalendarPopperPlacement =
   (): UseCalendarPopperPlacementReturn => {
     const triggerRef = useRef<HTMLDivElement>(null);
@@ -47,9 +38,6 @@ export const useCalendarPopperPlacement =
       setIsCalendarOpen(isOpen);
     }, []);
 
-    // The Popper re-runs its own positioning on resize but reuses whatever
-    // offset it was given, so a stale pinned offset would be re-applied against
-    // a moved trigger. Re-measure while the calendar is open.
     useEffect(() => {
       if (!isCalendarOpen) {
         return;
