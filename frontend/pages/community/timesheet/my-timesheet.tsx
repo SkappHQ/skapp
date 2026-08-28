@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import EmployeeTimesheet from "~community/attendance/components/organisms/EmployeeTimesheet/EmployeeTimesheet";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
@@ -14,7 +15,13 @@ const MyTimeSheet: NextPage = () => {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
     setDirectEntryEmployee
-  } = useAttendanceStore((state) => state);
+  } = useAttendanceStore(
+    useShallow((state) => ({
+      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
+      setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
+      setDirectEntryEmployee: state.setDirectEntryEmployee
+    }))
+  );
   const { isManualEntryRestricted, isLoading: isRestrictionLoading } =
     useManualEntryRestriction();
 
