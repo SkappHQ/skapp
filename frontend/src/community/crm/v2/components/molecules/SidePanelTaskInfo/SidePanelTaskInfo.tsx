@@ -10,11 +10,6 @@ import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
-import {
-  getSelectedTask,
-  getTaskContact,
-  getTaskOwner
-} from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   taskId: number;
@@ -32,9 +27,9 @@ const SidePanelTaskInfo: FC<Props> = ({ taskId, onMarkAsDone }) => {
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
-  const owner = getTaskOwner(owners, task.ownerId);
-  const contact = getTaskContact(contacts, task.contactId);
+  const task = tasks[taskId];
+  const owner = task.ownerId ? owners[task.ownerId] : undefined;
+  const contact = task.contactId ? contacts[task.contactId] : undefined;
 
   const priorityConfig = getPriorityConfig(task.priority);
   const isCompleted = task.isCompleted === true;

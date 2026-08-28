@@ -2,11 +2,7 @@ import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import {
-  getSelectedTask,
-  getTaskTypeIcon,
-  getTaskTypeName
-} from "~community/crm/v2/utils/taskUtil";
+import { getTaskTypeIcon } from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";
@@ -29,8 +25,8 @@ const TaskRowContent: FC<Props> = ({
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
-  const typeName = getTaskTypeName(taskTypes, task?.typeId);
+  const task = tasks[taskId];
+  const typeName = task?.typeId ? taskTypes[task.typeId]?.name : undefined;
 
   return (
     <div className="flex-1 min-w-0 flex items-center gap-4">

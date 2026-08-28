@@ -5,10 +5,6 @@ import { useShallow } from "zustand/react/shallow";
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
-import {
-  getSelectedTask,
-  getTaskOwner
-} from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   taskId: number;
@@ -23,8 +19,8 @@ const TaskRowMeta: FC<Props> = ({ taskId, isCompletedStyleApplied }) => {
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
-  const owner = getTaskOwner(owners, task?.ownerId);
+  const task = tasks[taskId];
+  const owner = task?.ownerId ? owners[task.ownerId] : undefined;
 
   const priorityConfig = getPriorityConfig(task?.priority);
   const imageUrl = useGetImageUrl(owner?.authPic ?? "");

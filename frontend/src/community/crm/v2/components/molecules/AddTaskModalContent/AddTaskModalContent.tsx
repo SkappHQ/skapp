@@ -7,6 +7,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmOwnerEntity,
@@ -14,10 +15,8 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { mergeOwners } from "~community/crm/v2/utils/commonUtil";
 import {
-  getTaskFormInitialValues,
-  getTrimmedTaskValues,
-  mergeTasks,
-  prependTaskId
+  prependTaskId,
+  updateTaskRecord
 } from "~community/crm/v2/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
@@ -66,8 +65,17 @@ const AddTaskModalContent: FC = () => {
     setOwners(mergeOwners(owners, [defaultOwner]));
   }, [defaultOwner]);
 
-  const initialValues = useMemo(
-    () => getTaskFormInitialValues({ ownerId: defaultOwner?.employeeId }),
+  const initialValues: CrmTaskEntity = useMemo(
+    () => ({
+      name: "",
+      typeId: undefined,
+      priority: CrmPriorityEnum.MEDIUM,
+      dueAt: undefined,
+      ownerId: defaultOwner?.employeeId,
+      contactId: undefined,
+      dealId: undefined,
+      notes: ""
+    }),
     [defaultOwner]
   );
 
@@ -90,7 +98,7 @@ const AddTaskModalContent: FC = () => {
     setSubmitting(false);
 
     if (createdTask.id !== undefined) {
-      setTasks(mergeTasks(tasks, [createdTask]));
+      setTasks(updateTaskRecord(tasks, [createdTask]));
       setTaskIds(prependTaskId(taskIds, createdTask.id));
     }
 
@@ -119,7 +127,11 @@ const AddTaskModalContent: FC = () => {
   );
 
   const createTask = (values: CrmTaskEntity) => {
-    createNewTask(getTrimmedTaskValues(values));
+    createNewTask({
+      ...values,
+      name: values.name?.trim(),
+      notes: values.notes?.trim()
+    });
   };
 
   return (

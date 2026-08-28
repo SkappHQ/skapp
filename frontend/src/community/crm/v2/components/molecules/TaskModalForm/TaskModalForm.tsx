@@ -41,12 +41,7 @@ import {
   mergeContacts
 } from "~community/crm/v2/utils/contactUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
-import {
-  getTaskContact,
-  getTaskDeal,
-  getTaskOwner,
-  getTaskTypeOptions
-} from "~community/crm/v2/utils/taskUtil";
+import { getTaskTypeOptions } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   formik: FormikProps<CrmTaskEntity>;
@@ -188,9 +183,11 @@ const TaskModalForm: FC<Props> = ({
 
   const priorityOptions = useGetPriorityOptions();
 
-  const selectedOwner = getTaskOwner(owners, values.ownerId);
-  const selectedContact = getTaskContact(contacts, values.contactId);
-  const selectedDeal = getTaskDeal(deals, values.dealId);
+  const selectedOwner = values.ownerId ? owners[values.ownerId] : undefined;
+  const selectedContact = values.contactId
+    ? contacts[values.contactId]
+    : undefined;
+  const selectedDeal = values.dealId ? deals[values.dealId] : undefined;
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupItems.find(
