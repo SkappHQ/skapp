@@ -8,7 +8,6 @@ import {
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   DirectTimeEntryVariablesType,
   TimeAvailabilityType,
@@ -20,7 +19,7 @@ import {
   convertToUtc,
   getCurrentTimeZone,
   getDuration,
-  isToday
+  getSelfServiceAddConfirmation
 } from "~community/attendance/utils/TimeUtils";
 import {
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
@@ -202,37 +201,6 @@ const useAddEntry = () => {
     }
   };
 
-  const getSelfServiceAddConfirmation = (
-    values: TimeEntryFormValueType,
-    timeAvailability: TimeAvailabilityType
-  ): EmployeeTimesheetModalTypes | null => {
-    const isOngoingSession =
-      (status === AttendanceSlotType.START ||
-        status === AttendanceSlotType.PAUSE ||
-        status === AttendanceSlotType.RESUME) &&
-      isToday(values?.timeEntryDate);
-
-    if (isOngoingSession) {
-      return EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY;
-    }
-    if (
-      timeAvailability?.editTimeRequests ||
-      timeAvailability?.manualEntryRequests?.length
-    ) {
-      return EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS;
-    }
-    if (timeAvailability?.timeSlotsExists) {
-      return EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS;
-    }
-    if (timeAvailability?.leaveRequest?.length) {
-      return EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY;
-    }
-    if (timeAvailability?.holiday?.length) {
-      return EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY;
-    }
-    return null;
-  };
-
   const routeSelfServiceAddEntry = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
@@ -243,7 +211,8 @@ const useAddEntry = () => {
   ) => {
     const confirmation = getSelfServiceAddConfirmation(
       values,
-      timeAvailability
+      timeAvailability,
+      status
     );
 
     if (confirmation === null) {
