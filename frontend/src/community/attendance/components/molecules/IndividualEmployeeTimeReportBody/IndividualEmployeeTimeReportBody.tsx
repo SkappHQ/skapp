@@ -19,7 +19,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
-  getEmployeeFullName,
+  concatStrings,
   roundNumberToX
 } from "~community/common/utils/commonUtil";
 import {
@@ -53,10 +53,10 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
   );
 
   const targetEmployee = useMemo<DirectEntryEmployeeType | undefined>(() => {
-    const employeeName = getEmployeeFullName(
-      targetEmployeeDetails?.firstName,
-      targetEmployeeDetails?.lastName
-    );
+    const employeeName = concatStrings([
+      targetEmployeeDetails?.firstName ?? "",
+      targetEmployeeDetails?.lastName ?? ""
+    ]).trim();
 
     return employeeName
       ? { employeeId: selectedUser, employeeName }

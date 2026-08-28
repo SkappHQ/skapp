@@ -33,7 +33,7 @@ import { TableNames } from "~community/common/enums/Table";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { getEmployeeFullName } from "~community/common/utils/commonUtil";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   convertYYYYMMDDToDateTime,
   formatDateWithOrdinalIndicator
@@ -327,10 +327,10 @@ const EmployeeTimeRecordsTable = ({
 
             if (canDirectlyAddOrEditEntry && !isFutureDate) {
               const employeeId = employeeData?.employeeId;
-              const employeeName = getEmployeeFullName(
-                employeeData?.firstName,
-                employeeData?.lastName
-              );
+              const employeeName = concatStrings([
+                employeeData?.firstName ?? "",
+                employeeData?.lastName ?? ""
+              ]).trim();
 
               if (employeeId) {
                 const openDirectEntry = () =>

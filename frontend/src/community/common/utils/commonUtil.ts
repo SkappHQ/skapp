@@ -628,8 +628,3 @@ export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
 
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(1);
-
-export const getEmployeeFullName = (
-  firstName?: string | null,
-  lastName?: string | null
-): string => concatStrings([firstName ?? "", lastName ?? ""].filter(Boolean));
