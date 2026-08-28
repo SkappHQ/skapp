@@ -10,3 +10,9 @@ export enum SignInStatus {
   SUCCESS = "SUCCESS",
   FAILURE = "FAILURE"
 }
+
+export enum SessionRefreshStatus {
+  SUCCESSFUL = "successful",
+  UNAUTHORIZED = "unauthorized",
+  ERROR = "error"
+}

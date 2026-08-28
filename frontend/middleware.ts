@@ -5,6 +5,7 @@ import {
   ACCESS_TOKEN_COOKIE_NAME,
   IS_PASSWORD_CHANGED_COOKIE_NAME
 } from "~community/auth/constants/authConstants";
+import { SessionRefreshStatus } from "~community/auth/enums/auth";
 import {
   RefreshedSession,
   applyRefreshedSession,
@@ -444,11 +445,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   if ((!token || isTokenExpired(token)) && !isPrefetchRequest(request)) {
     const refreshResult = await refreshSessionAtEdge(request);
 
-    if (refreshResult.status === "success") {
+    if (refreshResult.status === SessionRefreshStatus.SUCCESSFUL) {
       refreshedSession = refreshResult.session;
       token = refreshedSession.accessToken;
     } else {
-      isSessionRejected = refreshResult.status === "unauthorized";
+      isSessionRejected =
+        refreshResult.status === SessionRefreshStatus.UNAUTHORIZED;
     }
   }
 

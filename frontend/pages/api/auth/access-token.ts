@@ -6,6 +6,7 @@ import {
   PASSWORD_CHANGED_COOKIE_MAX_AGE_SECONDS,
   buildSessionCookieHeader
 } from "~community/auth/constants/authConstants";
+import { SessionRefreshStatus } from "~community/auth/enums/auth";
 import {
   buildRefreshCookieHeader,
   requestSessionRefresh,
@@ -45,7 +46,9 @@ const refreshAccessToken = async (
     tenantId
   );
 
-  return result.status === "success" ? result.session.accessToken : null;
+  return result.status === SessionRefreshStatus.SUCCESSFUL
+    ? result.session.accessToken
+    : null;
 };
 
 export default async function handler(

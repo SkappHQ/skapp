@@ -8,6 +8,7 @@ import {
   REFRESH_TOKEN_COOKIE_SUFFIX,
   SESSION_COOKIE_ATTRIBUTES
 } from "~community/auth/constants/authConstants";
+import { SessionRefreshStatus } from "~community/auth/enums/auth";
 import { authenticationEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { appModes } from "~community/common/constants/configs";
 import {
@@ -34,9 +35,9 @@ export interface RefreshedSession {
 }
 
 export type RefreshSessionResult =
-  | { status: "success"; session: RefreshedSession }
-  | { status: "unauthorized" }
-  | { status: "error" };
+  | { status: SessionRefreshStatus.SUCCESSFUL; session: RefreshedSession }
+  | { status: SessionRefreshStatus.UNAUTHORIZED }
+  | { status: SessionRefreshStatus.ERROR };
 
 export interface SessionCookie {
   name: string;
@@ -74,9 +75,9 @@ export const requestSessionRefresh = async (
 ): Promise<RefreshSessionResult> => {
   const apiUrl = getApiUrl();
 
-  if (!apiUrl) return { status: "error" };
+  if (!apiUrl) return { status: SessionRefreshStatus.ERROR };
 
-  if (!cookieHeader) return { status: "unauthorized" };
+  if (!cookieHeader) return { status: SessionRefreshStatus.UNAUTHORIZED };
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -99,19 +100,22 @@ export const requestSessionRefresh = async (
     );
 
     if (response.status === 401 || response.status === 403) {
-      return { status: "unauthorized" };
+      return { status: SessionRefreshStatus.UNAUTHORIZED };
     }
 
-    if (!response.ok) return { status: "error" };
+    if (!response.ok) return { status: SessionRefreshStatus.ERROR };
 
     const data = await response.json();
     const accessToken = data?.results?.[0]?.accessToken;
 
-    if (!accessToken) return { status: "error" };
+    if (!accessToken) return { status: SessionRefreshStatus.ERROR };
 
-    return { status: "success", session: { accessToken } };
+    return {
+      status: SessionRefreshStatus.SUCCESSFUL,
+      session: { accessToken }
+    };
   } catch {
-    return { status: "error" };
+    return { status: SessionRefreshStatus.ERROR };
   }
 };
 
