@@ -21,10 +21,10 @@ import {
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
-  formatDuration,
-  getTimeEntryModalType
+  formatDuration
 } from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
+import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import HtmlChip from "~community/common/components/atoms/Chips/HtmlChip/HtmlChip";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import Table from "~community/common/components/molecules/HtmlTable/Table";

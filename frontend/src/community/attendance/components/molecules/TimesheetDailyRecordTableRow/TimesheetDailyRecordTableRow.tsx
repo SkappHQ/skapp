@@ -26,9 +26,9 @@ import {
 } from "~community/attendance/types/timeSheetTypes";
 import {
   formatDuration,
-  getTimeEntryModalType,
   isToday
 } from "~community/attendance/utils/TimeUtils";
+import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";

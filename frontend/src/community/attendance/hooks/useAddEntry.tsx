@@ -18,9 +18,9 @@ import {
   convertToDateTime,
   convertToUtc,
   getCurrentTimeZone,
-  getDuration,
-  getSelfServiceAddConfirmation
+  getDuration
 } from "~community/attendance/utils/TimeUtils";
+import { getSelfServiceAddConfirmation } from "~community/attendance/utils/TimesheetModalUtils";
 import {
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
   PEOPLE_ERROR_NO_MANAGERS_FOUND,
