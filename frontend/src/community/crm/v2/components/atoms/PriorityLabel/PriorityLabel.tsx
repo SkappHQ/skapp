@@ -2,16 +2,22 @@ import { PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
-import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
+import { getPriorityConfig } from "~community/crm/v2/utils/taskUtil";
 
 interface PriorityLabelProps {
   priority?: CrmPriorityEnum;
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
-  const { icon, bgColor } = getPriorityConfig(priority);
+  const priorityConfig = getPriorityConfig(priority);
 
-  return <PriorityIcon bgColor={bgColor} icon={icon} />;
+  if (priorityConfig === undefined) {
+    return null;
+  }
+
+  return (
+    <PriorityIcon bgColor={priorityConfig.bgColor} icon={priorityConfig.icon} />
+  );
 };
 
 export default PriorityLabel;

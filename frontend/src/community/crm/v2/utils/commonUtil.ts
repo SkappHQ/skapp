@@ -19,8 +19,15 @@ export const formatMonetaryValue = (value?: string) => {
   return `$${value?.split(".")[0]}`;
 };
 
-export const formatMonetaryValueWithDecimals = (value?: string | number) =>
-  isEmptyValue(value) ? "-" : `$${Number(value).toFixed(2)}`;
+export const formatMonetaryValueWithDecimals = (value?: string | number) => {
+  if (isEmptyValue(value)) return "-";
+
+  const parsed = Number(value);
+
+  if (Number.isNaN(parsed)) return "-";
+
+  return `$${parsed.toFixed(2)}`;
+};
 
 export const appendId = (ids: number[] | undefined, id: number): number[] => {
   if (ids === undefined) {
@@ -47,15 +54,6 @@ export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
     }
   }
   return stageRecord;
-};
-
-export const formatCurrency = (
-  value: string | number | null | undefined
-): string => {
-  if (value == null || value === "") return "-";
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value);
-  if (Number.isNaN(parsed) || parsed === 0) return "-";
-  return `$${parsed.toFixed(2)}`;
 };
 
 export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {

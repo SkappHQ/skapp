@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  formatCurrency,
+  formatMonetaryValueWithDecimals,
   getOwnerById,
   getOwnerName
 } from "~community/crm/v2/utils/commonUtil";
@@ -27,7 +27,9 @@ const DealAccordionItemHeader: FC<DealAccordionItemHeaderProps> = ({
         {deal.amount && (
           <>
             <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />
-            <span className="body3">{formatCurrency(deal.amount)}</span>
+            <span className="body3">
+              {formatMonetaryValueWithDecimals(deal.amount)}
+            </span>
           </>
         )}
       </div>

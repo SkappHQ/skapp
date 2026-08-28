@@ -17,7 +17,7 @@ import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
+import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface DealRow extends BaseRowData {
@@ -184,7 +184,7 @@ const DealsTableV2: FC<Props> = ({
           ),
           value: (
             <span className="body2 w-full block text-right">
-              {formatCurrency(deal.amount)}
+              {formatMonetaryValueWithDecimals(deal.amount)}
             </span>
           ),
           stage: (

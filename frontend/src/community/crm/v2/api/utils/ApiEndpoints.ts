@@ -9,13 +9,20 @@ export const crmCompanyEndpoints = {
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   CHECK_COMPANY_NAME_EXISTS: `${moduleAPIPath.CRM}/company/exists`,
-  GET_COMPANIES_BY_IDS: `${moduleAPIPath.CRM}/company/ids`
+  GET_COMPANIES_BY_IDS: `${moduleAPIPath.CRM}/company/ids`,
+  COMPANY_LOOKUP: `${moduleAPIPath.CRM}/company/lookup`,
+  SEARCH_COMPANIES_BY_DOMAIN: `${moduleAPIPath.CRM}/company/search-by-domain`
 };
 
 export const crmContactEndpoints = {
   GET_CONTACTS: `${moduleAPIPath.CRM}/contact`,
+  GET_CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
   GET_CONTACT_METRICS: (id: number) =>
-    `${moduleAPIPath.CRM}/contact/${id}/metrics`
+    `${moduleAPIPath.CRM}/contact/${id}/metrics`,
+  CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
+  EDIT_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`
 };
 
 export const crmDealEndpointsV2 = {

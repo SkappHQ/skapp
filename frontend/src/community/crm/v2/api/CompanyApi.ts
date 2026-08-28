@@ -15,11 +15,13 @@ import authFetch, {
 } from "~community/common/utils/axiosInterceptor";
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import {
   CrmCompanyEntity,
   CrmCompanyMetrics
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmCompanyDomainSearchResponse,
   CrmCompanyFilterRequest,
   CrmCompanyListResponse,
   CrmExistsResponse
@@ -193,6 +195,47 @@ export const useGetCompaniesByIds = (
   useQuery({
     queryKey: crmCompanyQueryKeys.COMPANIES_BY_IDS(ids),
     queryFn: () => fetchCompaniesByIds(ids),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const fetchCompanyLookup = async (
+  params: CrmCompanyFilterRequest
+): Promise<CrmCompanyListResponse> => {
+  const response = await authFetch.get(crmCompanyEndpoints.COMPANY_LOOKUP, {
+    params
+  });
+  return response?.data?.results?.[0];
+};
+
+export const useGetCompanyLookup = (
+  params: CrmCompanyFilterRequest,
+  enabled?: boolean
+): UseQueryResult<CrmCompanyListResponse> =>
+  useQuery({
+    queryKey: crmCompanyQueryKeys.LOOKUP(params),
+    queryFn: () => fetchCompanyLookup(params),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const searchCompaniesByDomain = async (
+  domain: string
+): Promise<CrmCompanyDomainSearchResponse> => {
+  const response = await authFetch.get(
+    crmCompanyEndpoints.SEARCH_COMPANIES_BY_DOMAIN,
+    { params: { domain, limit: DEFAULT_LOOKUP_PAGE_SIZE } }
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useSearchCompaniesByDomain = (
+  domain: string,
+  enabled?: boolean
+): UseQueryResult<CrmCompanyDomainSearchResponse> =>
+  useQuery({
+    queryKey: crmCompanyQueryKeys.DOMAIN_SEARCH(domain),
+    queryFn: () => searchCompaniesByDomain(domain),
     enabled,
     refetchOnWindowFocus: false
   });

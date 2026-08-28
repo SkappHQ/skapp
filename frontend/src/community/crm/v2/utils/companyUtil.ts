@@ -1,5 +1,8 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
@@ -15,11 +18,17 @@ export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   return companyIds;
 };
 
+export interface CrmMetricChip {
+  label: string;
+  variant: CrmMetricLabelThemeEnum;
+}
+
 export interface CrmMetricItem {
   id: string;
   title: string;
   amount?: string | number;
   isCurrency?: boolean;
+  chip?: CrmMetricChip;
 }
 
 export const getCompanyMetricItems = (

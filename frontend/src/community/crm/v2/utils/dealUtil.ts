@@ -8,16 +8,6 @@ import {
 } from "../types/CrmCommonTypes";
 import { appendId } from "./commonUtil";
 
-export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
-  const dealRecord: CrmDealRecord = {};
-  for (const deal of deals) {
-    if (deal.id != null) {
-      dealRecord[deal.id] = deal;
-    }
-  }
-  return dealRecord;
-};
-
 export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   const dealIds: number[] = [];
   for (const deal of deals) {
