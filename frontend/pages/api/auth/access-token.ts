@@ -6,7 +6,10 @@ import {
   PASSWORD_CHANGED_COOKIE_MAX_AGE_SECONDS,
   buildSessionCookieHeader
 } from "~community/auth/constants/authConstants";
-import { SessionRefreshStatus } from "~community/auth/enums/auth";
+import {
+  AccessTokenMessageKey,
+  SessionRefreshStatus
+} from "~community/auth/enums/auth";
 import {
   buildRefreshCookieHeader,
   requestSessionRefresh,
@@ -23,7 +26,7 @@ import {
 } from "~enterprise/common/constants/stringConstants";
 
 interface ResponseData {
-  message: string;
+  messageKey: AccessTokenMessageKey;
   accessToken?: string | null;
 }
 
@@ -61,17 +64,19 @@ export default async function handler(
     const storedToken = req.cookies[ACCESS_TOKEN_COOKIE_NAME];
 
     if (storedToken && !isTokenExpired(storedToken)) {
-      return res
-        .status(200)
-        .json({ message: "Session cookie read", accessToken: storedToken });
+      return res.status(200).json({
+        messageKey: AccessTokenMessageKey.SESSION_COOKIE_READ,
+        accessToken: storedToken
+      });
     }
 
     const refreshedToken = await refreshAccessToken(req);
 
     if (!refreshedToken) {
-      return res
-        .status(200)
-        .json({ message: "No active session", accessToken: null });
+      return res.status(200).json({
+        messageKey: AccessTokenMessageKey.NO_ACTIVE_SESSION,
+        accessToken: null
+      });
     }
 
     res.setHeader(
@@ -83,14 +88,17 @@ export default async function handler(
       )
     );
 
-    return res
-      .status(200)
-      .json({ message: "Session refreshed", accessToken: refreshedToken });
+    return res.status(200).json({
+      messageKey: AccessTokenMessageKey.SESSION_REFRESHED,
+      accessToken: refreshedToken
+    });
   }
 
   if (req.method !== HttpMethods.POST) {
     res.setHeader("Allow", [HttpMethods.GET, HttpMethods.POST]);
-    return res.status(405).json({ message: "Method not allowed" });
+    return res
+      .status(405)
+      .json({ messageKey: AccessTokenMessageKey.METHOD_NOT_ALLOWED });
   }
 
   const { accessToken, isPasswordChangedForTheFirstTime } = req.body ?? {};
@@ -118,9 +126,13 @@ export default async function handler(
   }
 
   if (cookies.length === 0) {
-    return res.status(400).json({ message: "Nothing to set" });
+    return res
+      .status(400)
+      .json({ messageKey: AccessTokenMessageKey.NOTHING_TO_SET });
   }
 
   res.setHeader("Set-Cookie", cookies);
-  return res.status(200).json({ message: "Session cookie updated" });
+  return res
+    .status(200)
+    .json({ messageKey: AccessTokenMessageKey.SESSION_COOKIE_UPDATED });
 }
