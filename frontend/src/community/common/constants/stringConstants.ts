@@ -44,16 +44,6 @@ export enum daysTypes {
   SUNDAY = "SUNDAY"
 }
 
-export const ORDERED_WEEK_DAYS: daysTypes[] = [
-  daysTypes.MONDAY,
-  daysTypes.TUESDAY,
-  daysTypes.WEDNESDAY,
-  daysTypes.THURSDAY,
-  daysTypes.FRIDAY,
-  daysTypes.SATURDAY,
-  daysTypes.SUNDAY
-];
-
 export enum PasswordStrength {
   Great = "Great",
   Good = "Good",

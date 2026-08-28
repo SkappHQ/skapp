@@ -6,6 +6,7 @@ import {
   TimeAvailabilityType,
   TimeEntryFormValueType
 } from "~community/attendance/types/timeSheetTypes";
+import { daysTypes } from "~community/common/constants/stringConstants";
 
 import {
   addHoursToTime,
@@ -19,6 +20,7 @@ import {
   convertToTimeZoneISO,
   convertToUtc,
   convertUnixTimestampToISO,
+  createEmptyDailyLog,
   formatDuration,
   generateTimeSlots,
   getCurrentTimeZone,
@@ -281,6 +283,34 @@ describe("Date and Time Utility Functions", () => {
     test("returns the current time zone", () => {
       const timeZone = DateTime.local().zoneName;
       expect(getCurrentTimeZone()).toBe(timeZone);
+    });
+  });
+
+  describe("createEmptyDailyLog", () => {
+    // 2024-01-15 is a Monday, so this walks a full ISO week Monday through Sunday.
+    test.each([
+      ["2024-01-15", daysTypes.MONDAY],
+      ["2024-01-16", daysTypes.TUESDAY],
+      ["2024-01-17", daysTypes.WEDNESDAY],
+      ["2024-01-18", daysTypes.THURSDAY],
+      ["2024-01-19", daysTypes.FRIDAY],
+      ["2024-01-20", daysTypes.SATURDAY],
+      ["2024-01-21", daysTypes.SUNDAY]
+    ])("resolves %s to %s", (date, expectedDay) => {
+      expect(createEmptyDailyLog(date).day).toBe(expectedDay);
+    });
+
+    test("returns an empty log carrying the given date", () => {
+      expect(createEmptyDailyLog("2024-01-15")).toEqual({
+        timeRecordId: null,
+        date: "2024-01-15",
+        day: daysTypes.MONDAY,
+        workedHours: 0,
+        breakHours: 0,
+        timeSlots: [],
+        leaveRequest: null,
+        holiday: null
+      });
     });
   });
 

@@ -8,12 +8,12 @@ import {
   TimeEntryFormValueType,
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
-import { ORDERED_WEEK_DAYS } from "~community/common/constants/stringConstants";
+import { daysTypes } from "~community/common/constants/stringConstants";
 
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
   timeRecordId: null,
   date,
-  day: ORDERED_WEEK_DAYS[DateTime.fromISO(date).weekday - 1],
+  day: Object.values(daysTypes)[DateTime.fromISO(date).weekday - 1],
   workedHours: 0,
   breakHours: 0,
   timeSlots: [],
