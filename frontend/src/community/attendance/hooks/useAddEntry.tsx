@@ -39,16 +39,16 @@ import {
   useEditDirectTimeEntry
 } from "~enterprise/attendance/api/AttendanceApi";
 
-const MODALS_RETAINING_AVAILABILITY: EmployeeTimesheetModalTypes[] = [
+const MODALS_RETAINING_AVAILABILITY = new Set<EmployeeTimesheetModalTypes>([
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
   EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-];
+]);
 
-const MODALS_CARRYING_ENTERED_TIMES: EmployeeTimesheetModalTypes[] = [
+const MODALS_CARRYING_ENTERED_TIMES = new Set<EmployeeTimesheetModalTypes>([
   EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
   EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
   EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-];
+]);
 
 const useAddEntry = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -230,11 +230,11 @@ const useAddEntry = () => {
       return;
     }
 
-    if (MODALS_RETAINING_AVAILABILITY.includes(modalBeforeEntry)) {
+    if (MODALS_RETAINING_AVAILABILITY.has(modalBeforeEntry)) {
       setTimeAvailabilityForPeriod(timeAvailability);
     }
 
-    if (MODALS_CARRYING_ENTERED_TIMES.includes(modalBeforeEntry)) {
+    if (MODALS_CARRYING_ENTERED_TIMES.has(modalBeforeEntry)) {
       setFromDateTime(dateTimeFromTime ?? "");
       setToDateTime(dateTimeToTime ?? "");
     }
