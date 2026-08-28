@@ -18,12 +18,6 @@ import {
   CrmTaskTabEnum
 } from "~community/crm/v2/enums/common";
 import {
-  CrmContactEntity,
-  CrmContactRecord,
-  CrmDealEntity,
-  CrmDealRecord,
-  CrmOwnerEntity,
-  CrmOwnerRecord,
   CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeRecord
@@ -62,29 +56,16 @@ export const toTaskDealIds = (tasks: CrmTaskEntity[]): number[] => {
 export const prependTaskId = (taskIds: number[], id: number): number[] =>
   taskIds.includes(id) ? taskIds : [id, ...taskIds];
 
-export const mergeTasks = (
-  existing: CrmTaskRecord,
-  incoming: CrmTaskEntity[]
+export const updateTaskRecord = (
+  existingTasks: CrmTaskRecord,
+  newTasks: CrmTaskEntity[]
 ): CrmTaskRecord => {
-  const merged: CrmTaskRecord = { ...existing };
-  for (const task of incoming) {
+  const updatedRecord: CrmTaskRecord = { ...existingTasks };
+  for (const task of newTasks) {
     if (task.id == null) continue;
-    merged[task.id] = { ...merged[task.id], ...task };
+    updatedRecord[task.id] = { ...updatedRecord[task.id], ...task };
   }
-  return merged;
-};
-
-export const removeTaskId = (taskIds: number[], id: number): number[] =>
-  taskIds.filter((taskId) => taskId !== id);
-
-export const removeTaskFromRecord = (
-  tasks: CrmTaskRecord,
-  id: number
-): CrmTaskRecord => {
-  if (!(id in tasks)) return tasks;
-  const next = { ...tasks };
-  delete next[id];
-  return next;
+  return updatedRecord;
 };
 
 export const resolveTasks = (
@@ -95,23 +76,14 @@ export const resolveTasks = (
     .map((id) => tasks[id])
     .filter((task): task is CrmTaskEntity => Boolean(task));
 
-export const getSelectedTask = (
-  tasks: CrmTaskRecord,
-  taskId: number
-): CrmTaskEntity => {
-  return tasks[taskId];
-};
-
 export const getTaskTypeOptions = (
   taskTypes: CrmTaskTypeRecord
 ): CrmTaskTypeOption[] =>
-  Object.values(taskTypes)
-    .sort((first, second) => first.orderIndex - second.orderIndex)
-    .map((taskType) => ({
-      id: String(taskType.id),
-      value: String(taskType.id),
-      label: taskType.name.toLowerCase()
-    }));
+  Object.values(taskTypes).map((taskType) => ({
+    id: String(taskType.id),
+    value: String(taskType.id),
+    label: taskType.name.toLowerCase()
+  }));
 
 export const getTaskFormInitialValues = (
   task?: CrmTaskEntity
@@ -178,38 +150,6 @@ export const getChangedTaskFields = (
   return changedFields;
 };
 
-export const getTaskOwner = (
-  owners: CrmOwnerRecord,
-  ownerId?: number | null
-): CrmOwnerEntity | undefined => {
-  if (ownerId == null) return undefined;
-  return owners[ownerId];
-};
-
-export const getTaskContact = (
-  contacts: CrmContactRecord,
-  contactId?: number | null
-): CrmContactEntity | undefined => {
-  if (contactId == null) return undefined;
-  return contacts[contactId];
-};
-
-export const getTaskDeal = (
-  deals: CrmDealRecord,
-  dealId?: number | null
-): CrmDealEntity | undefined => {
-  if (dealId == null) return undefined;
-  return deals[dealId];
-};
-
-export const getTaskTypeName = (
-  taskTypes: CrmTaskTypeRecord,
-  typeId?: number
-): string | undefined => {
-  if (typeId === undefined) return undefined;
-  return taskTypes[typeId]?.name;
-};
-
 const TASK_TYPE_ICON_MAP: Record<
   string,
   ComponentType<SVGProps<SVGSVGElement>>
@@ -228,8 +168,8 @@ export const getTaskTypeIcon = (typeName?: string, size = 20): ReactElement =>
   );
 
 export const getDueDateStatus = (
-  dueAt?: string,
-  isCompleted?: boolean
+  dueAt: string,
+  isCompleted: boolean
 ): TaskDueDateInfo | null => {
   if (!dueAt) return null;
 
@@ -240,18 +180,18 @@ export const getDueDateStatus = (
     return {
       textKey: "dueDateOverdue",
       dayCount: getDayDifference(due, today),
-      colorClass: "text-semantic-red-text"
+      textColorClass: "text-semantic-red-text"
     };
   }
 
   if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", colorClass: "text-secondary-text" };
+    return { textKey: "dueDateToday", textColorClass: "text-secondary-text" };
   }
 
   return {
     textKey: "dueDateDueOn",
     dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(due),
-    colorClass: "text-secondary-text"
+    textColorClass: "text-secondary-text"
   };
 };
 
