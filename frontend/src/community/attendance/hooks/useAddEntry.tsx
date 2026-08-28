@@ -65,7 +65,7 @@ const useAddEntry = () => {
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
-  const directManualTimeEntryVariables =
+  const lastDirectManualTimeEntryRequest =
     useRef<DirectManualTimeEntryVariablesType | null>(null);
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
@@ -123,13 +123,13 @@ const useAddEntry = () => {
   };
 
   const getDirectManualTimeEntryDetails = () => {
-    const variables = directManualTimeEntryVariables.current;
+    const request = lastDirectManualTimeEntryRequest.current;
 
     return {
-      employeeName: variables?.employeeName ?? "",
-      date: variables?.entryDate
+      employeeName: request?.employeeName ?? "",
+      date: request?.entryDate
         ? formatDateTimeWithOrdinalIndicator(
-            convertYYYYMMDDToDateTime(variables.entryDate)
+            convertYYYYMMDDToDateTime(request.entryDate)
           )
         : ""
     };
@@ -263,7 +263,7 @@ const useAddEntry = () => {
 
     if (directManualTimeEntryEligibleEmployee) {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
-      const variables: DirectManualTimeEntryVariablesType = {
+      const directManualTimeEntryRequest: DirectManualTimeEntryVariablesType = {
         employeeId: directManualTimeEntryEligibleEmployee.employeeId,
         employeeName: directManualTimeEntryEligibleEmployee.employeeName,
         entryDate: selectedDailyRecord?.date ?? "",
@@ -275,12 +275,12 @@ const useAddEntry = () => {
         }
       };
 
-      directManualTimeEntryVariables.current = variables;
+      lastDirectManualTimeEntryRequest.current = directManualTimeEntryRequest;
 
       if (existingRecordId) {
-        editDirectManualTimeEntryMutate(variables);
+        editDirectManualTimeEntryMutate(directManualTimeEntryRequest);
       } else {
-        addDirectManualTimeEntryMutate(variables);
+        addDirectManualTimeEntryMutate(directManualTimeEntryRequest);
       }
       setIsEmployeeTimesheetModalOpen(false);
       return;
