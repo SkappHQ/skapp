@@ -29,7 +29,7 @@ import {
   useGetOwnerLookupV2
 } from "~community/crm/v2/api/ContactApi";
 import { useGetDealLookupV2 } from "~community/crm/v2/api/DealApi";
-import OwnerDropdownItem from "~community/crm/v2/components/atoms/OwnerDropdownItem/OwnerDropdownItem";
+import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
@@ -147,10 +147,13 @@ const TaskModalForm: FC<Props> = ({
   );
 
   const ownerDropdownItems: SearchableDropdownItem[] = ownerLookupItems.map(
-    (owner) => ({
-      id: String(owner.employeeId),
-      content: <OwnerDropdownItem owner={owner} />
-    })
+    (owner) => {
+      const ownerId = String(owner.employeeId);
+      return {
+        id: ownerId,
+        content: <OwnerAvatarChip id={ownerId} owner={owner} />
+      };
+    }
   );
 
   const contactDropdownItems: SearchableDropdownItem[] = contactLookupItems.map(
