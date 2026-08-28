@@ -2,6 +2,7 @@ import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { PaginationSizeEnum } from "~community/common/enums/CommonEnums";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
@@ -17,8 +18,7 @@ import {
 import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import {
   TASK_PAGE_SIZE,
-  TASK_SKELETON_CONFIG,
-  UNPAGINATED_SIZE
+  TASK_SKELETON_CONFIG
 } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -66,7 +66,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     () => ({
       searchKeyword: debouncedSearch,
       isCompleted: false,
-      size: UNPAGINATED_SIZE
+      size: PaginationSizeEnum.UNPAGINATED
     }),
     [debouncedSearch]
   );
