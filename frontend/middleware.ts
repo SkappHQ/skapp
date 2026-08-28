@@ -227,17 +227,17 @@ interface RouteAccessContext {
 
 type AccessGuard = (context: RouteAccessContext) => NextResponse | null;
 
-const REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES: TenantStatusEnums[] = [
+const REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES = new Set<TenantStatusEnums>([
   TenantStatusEnums.SUBSCRIPTION_CANCELED_USER_LIMIT_EXCEEDED,
   TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
-];
+]);
 
 // Roles that keep the dashboard as their landing page
-const DASHBOARD_ALLOWED_ROLES: UserRole[] = [
+const DASHBOARD_ALLOWED_ROLES = new Set<UserRole>([
   EmployeeTypes.LEAVE_EMPLOYEE,
   ManagerTypes.PEOPLE_MANAGER,
   ManagerTypes.ATTENDANCE_MANAGER
-];
+]);
 
 const RESTRICTED_ROUTE_RULES: { routes: string[]; requiredRole: string }[] = [
   {
@@ -273,7 +273,7 @@ const resolveRemovePeopleAccess: AccessGuard = ({
 
   if (!roles.includes(ROLE_SUPER_ADMIN)) return null;
 
-  if (REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.includes(claims?.tenantStatus)) {
+  if (REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.has(claims?.tenantStatus)) {
     return NextResponse.next();
   }
 
@@ -318,7 +318,7 @@ const resolveDashboardAccess: AccessGuard = ({
 }) => {
   if (!currentPath.startsWith(ROUTES.DASHBOARD.BASE)) return null;
 
-  if (roles.some((role) => DASHBOARD_ALLOWED_ROLES.includes(role))) return null;
+  if (roles.some((role) => DASHBOARD_ALLOWED_ROLES.has(role))) return null;
 
   if (!roles.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)) return null;
 
