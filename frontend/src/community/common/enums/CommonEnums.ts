@@ -85,3 +85,7 @@ export enum TimePeriodEnums {
   LAST_30_DAYS = "last30DaysGroup",
   OLDER = "olderGroup"
 }
+
+export enum PaginationSizeEnum {
+  UNPAGINATED = -1
+}
