@@ -30,7 +30,7 @@ public class DefaultCrmDealListViewTemplate {
 		node.put("isSortable", true);
 		node.put("isDraggable", true);
 		node.put("isGroupable", false);
-		node.put("isResizable", false);
+		node.put("isResizable", true);
 		return node;
 	}
 
