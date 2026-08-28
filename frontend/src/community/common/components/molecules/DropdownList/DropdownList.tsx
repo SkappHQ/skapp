@@ -129,7 +129,6 @@ const DropdownList: FC<Props> = ({
     "aria-label": accessibleName
   };
 
-  // Shared by both Select branches: keep them hoisted so ARIA wiring cannot drift apart.
   const selectInputProps: InputHTMLAttributes<HTMLInputElement> = {
     "aria-label": accessibleName,
     "aria-describedby": errorId
@@ -166,16 +165,7 @@ const DropdownList: FC<Props> = ({
           lineHeight={1.5}
           sx={{ ...classes.labelStyle(isDisabled, !!error), ...labelStyles }}
         >
-          {label}{" "}
-          {required && (
-            <Box
-              component="span"
-              aria-hidden="true"
-              sx={classes.requiredAsteriskStyle}
-            >
-              *
-            </Box>
-          )}
+          {label} {required && <span style={{ color: "red" }}>*</span>}
         </Typography>
         {tooltip && (
           <Tooltip
@@ -183,7 +173,7 @@ const DropdownList: FC<Props> = ({
             maxWidth={toolTipWidth}
             id={toolTipId}
             isDisabled={isDisabled}
-            ariaDescription={typeof tooltip === "string" ? tooltip : undefined}
+            ariaDescription={tooltip as string}
           />
         )}
       </Stack>
@@ -353,28 +343,13 @@ const DropdownList: FC<Props> = ({
             SelectDisplayProps={selectDisplayProps}
           >
             {showSpinnerWhenNoData ? (
-              <MenuItem
-                disabled
-                value=""
-                sx={{
-                  justifyContent: "center",
-                  "&.Mui-disabled": { opacity: 1 }
-                }}
-              >
-                <CircularProgress
-                  size={20}
-                  aria-hidden="true"
-                  sx={classes.spinnerStyle}
-                />
-              </MenuItem>
+              <Box display={"flex"} justifyContent={"center"}>
+                <CircularProgress size={20} style={{ color: "black" }} />
+              </Box>
             ) : (
-              <MenuItem
-                disabled
-                value=""
-                sx={{ "&.Mui-disabled": { opacity: 1 } }}
-              >
-                <Typography variant="body2">{noOptionsText}</Typography>
-              </MenuItem>
+              <Typography variant="body2" sx={{ p: 1 }}>
+                {noOptionsText}
+              </Typography>
             )}
           </Select>
         )}
