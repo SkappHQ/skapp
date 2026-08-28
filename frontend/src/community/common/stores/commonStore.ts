@@ -10,11 +10,6 @@ import { orgDetailsSlice } from "./slices/orgDetailsSlice";
 import { settingsModalSlice } from "./slices/settingsModalSlice";
 import { templateSlice } from "./slices/templateSlice";
 
-const REDACTED_VALUE = "<redacted>";
-
-const redactAccessToken = (state: CommonStoreTypes): CommonStoreTypes =>
-  state?.accessToken ? { ...state, accessToken: REDACTED_VALUE } : state;
-
 export const useCommonStore = create<
   CommonStoreTypes,
   [["zustand/devtools", never], ["zustand/persist", CommonStoreTypes]]
@@ -29,6 +24,6 @@ export const useCommonStore = create<
       ...breadcrumbSlice(set),
       ...authTokenSlice(set)
     }),
-    { name: "commonStore", stateSanitizer: redactAccessToken }
+    { name: "commonStore" }
   )
 );

@@ -3,7 +3,8 @@ import {
   internalApiEndpoints
 } from "~community/common/api/utils/ApiEndpoints";
 import ROUTES from "~community/common/constants/routes";
-import { useCommonStore } from "~community/common/stores/commonStore";
+import { HttpMethods } from "~community/common/constants/stringConstants";
+import { AuthTokenSliceType } from "~community/common/stores/slices/authTokenSlice";
 import {
   AdminTypes,
   AuthEmployeeType,
@@ -142,7 +143,7 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
   retrievePromise = (async () => {
     try {
       const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
-        method: "GET",
+        method: HttpMethods.GET,
         credentials: "same-origin"
       });
 
@@ -167,7 +168,9 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
   return retrievePromise;
 };
 
-export const getNewAccessToken = async (): Promise<string | null> => {
+export const getNewAccessToken = async (
+  authTokenStore: AuthTokenSliceType
+): Promise<string | null> => {
   // If already refreshing, wait for the existing refresh to complete
   if (isRefreshing && refreshPromise) {
     return refreshPromise;
@@ -186,7 +189,7 @@ export const getNewAccessToken = async (): Promise<string | null> => {
       const accessToken = response?.data?.results[0]?.accessToken;
 
       if (accessToken) {
-        await setAccessToken(accessToken);
+        await setAccessToken(accessToken, authTokenStore);
         return accessToken;
       }
 
@@ -202,15 +205,18 @@ export const getNewAccessToken = async (): Promise<string | null> => {
   return refreshPromise;
 };
 
-export const setAccessToken = async (token: string): Promise<boolean> => {
+export const setAccessToken = async (
+  token: string,
+  authTokenStore: AuthTokenSliceType
+): Promise<boolean> => {
   if (typeof window === "undefined") return false;
 
-  useCommonStore.getState().setAccessToken(token);
+  authTokenStore.setAccessToken(token);
   resetStoredTokenCheck();
 
   try {
     const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
-      method: "POST",
+      method: HttpMethods.POST,
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({ accessToken: token })
@@ -230,18 +236,18 @@ export const setAccessToken = async (token: string): Promise<boolean> => {
   }
 };
 
-export const persistSession = async ({
-  accessToken,
-  isPasswordChangedForTheFirstTime
-}: SessionPayload): Promise<boolean> => {
+export const persistSession = async (
+  { accessToken, isPasswordChangedForTheFirstTime }: SessionPayload,
+  authTokenStore: AuthTokenSliceType
+): Promise<boolean> => {
   if (typeof window === "undefined") return false;
 
-  useCommonStore.getState().setAccessToken(accessToken);
+  authTokenStore.setAccessToken(accessToken);
   resetStoredTokenCheck();
 
   try {
     const response = await fetch(internalApiEndpoints.ACCESS_TOKEN, {
-      method: "POST",
+      method: HttpMethods.POST,
       headers: { "Content-Type": "application/json" },
       credentials: "same-origin",
       body: JSON.stringify({ accessToken, isPasswordChangedForTheFirstTime })
@@ -261,7 +267,9 @@ export const persistSession = async ({
   }
 };
 
-export const clearCookies = async (): Promise<void> => {
+export const clearCookies = async (
+  authTokenStore: AuthTokenSliceType
+): Promise<void> => {
   try {
     await authAxios.post(
       authenticationEndpoints.SIGNOUT,
@@ -272,13 +280,13 @@ export const clearCookies = async (): Promise<void> => {
     console.error("Error calling signout API");
   }
 
-  useCommonStore.getState().clearAccessToken();
+  authTokenStore.clearAccessToken();
   resetStoredTokenCheck();
 
   if (typeof window !== "undefined") {
     try {
       await fetch(internalApiEndpoints.CLEAR_COOKIES, {
-        method: "POST",
+        method: HttpMethods.POST,
         credentials: "same-origin"
       });
     } catch {
@@ -287,10 +295,12 @@ export const clearCookies = async (): Promise<void> => {
   }
 };
 
-export const getAccessToken = async (): Promise<string | null> => {
+export const getAccessToken = async (
+  authTokenStore: AuthTokenSliceType
+): Promise<string | null> => {
   if (typeof window === "undefined") return null;
 
-  const cachedAccessToken = useCommonStore.getState().accessToken;
+  const cachedAccessToken = authTokenStore.accessToken;
 
   if (cachedAccessToken && !isTokenExpired(cachedAccessToken)) {
     return cachedAccessToken;
@@ -299,7 +309,7 @@ export const getAccessToken = async (): Promise<string | null> => {
   const storedToken = await retrieveStoredAccessToken();
 
   if (storedToken && !isTokenExpired(storedToken)) {
-    useCommonStore.getState().setAccessToken(storedToken);
+    authTokenStore.setAccessToken(storedToken);
     return storedToken;
   }
 
@@ -308,7 +318,7 @@ export const getAccessToken = async (): Promise<string | null> => {
     return null;
   }
 
-  const newToken = await getNewAccessToken();
+  const newToken = await getNewAccessToken(authTokenStore);
   return newToken;
 };
 
@@ -349,19 +359,25 @@ export const extractUserFromToken = (token: string): User | null => {
   }
 };
 
-const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
+const handleAuthResponse = async (
+  response: any,
+  authTokenStore: AuthTokenSliceType
+): Promise<AuthResponseType> => {
   const accessToken = response?.data?.results[0]?.accessToken;
   const isPasswordChangedForTheFirstTime =
     response?.data?.results[0]?.isPasswordChangedForTheFirstTime;
 
   if (accessToken) {
-    const isSessionPersisted = await persistSession({
-      accessToken,
-      isPasswordChangedForTheFirstTime:
-        typeof isPasswordChangedForTheFirstTime === "boolean"
-          ? isPasswordChangedForTheFirstTime
-          : true
-    });
+    const isSessionPersisted = await persistSession(
+      {
+        accessToken,
+        isPasswordChangedForTheFirstTime:
+          typeof isPasswordChangedForTheFirstTime === "boolean"
+            ? isPasswordChangedForTheFirstTime
+            : true
+      },
+      authTokenStore
+    );
 
     if (!isSessionPersisted) {
       return {
@@ -377,7 +393,8 @@ const handleAuthResponse = async (response: any): Promise<AuthResponseType> => {
 };
 
 export const communitySignIn = async (
-  params: CommunitySignInParams
+  params: CommunitySignInParams,
+  authTokenStore: AuthTokenSliceType
 ): Promise<AuthResponseType> => {
   const payload = { email: params.email, password: params.password };
   try {
@@ -385,7 +402,7 @@ export const communitySignIn = async (
       communityAuthEndpoints.CREDENTIAL_SIGN_IN,
       payload
     );
-    return handleAuthResponse(response);
+    return handleAuthResponse(response, authTokenStore);
   } catch (error: any) {
     return {
       status: SignInStatus.FAILURE,
@@ -395,7 +412,8 @@ export const communitySignIn = async (
 };
 
 export const communitySignUp = async (
-  params: CommunitySignUpParams
+  params: CommunitySignUpParams,
+  authTokenStore: AuthTokenSliceType
 ): Promise<AuthResponseType> => {
   const payload = {
     firstName: params.firstName,
@@ -408,7 +426,7 @@ export const communitySignUp = async (
       communityAuthEndpoints.CREDENTIAL_SIGN_UP,
       payload
     );
-    return handleAuthResponse(response);
+    return handleAuthResponse(response, authTokenStore);
   } catch (error: any) {
     return {
       status: SignInStatus.FAILURE,
@@ -418,25 +436,29 @@ export const communitySignUp = async (
 };
 
 export const handleSignIn = async (
-  params: EnterpriseSignInParams
+  params: EnterpriseSignInParams,
+  authTokenStore: AuthTokenSliceType
 ): Promise<AuthResponseType> => {
   if (!isEnterpriseMode()) {
-    return communitySignIn(params);
+    return communitySignIn(params, authTokenStore);
   }
-  return enterpriseSignIn(params);
+  return enterpriseSignIn(params, authTokenStore);
 };
 
 export const handleSignUp = async (
-  params: EnterpriseSignUpParams
+  params: EnterpriseSignUpParams,
+  authTokenStore: AuthTokenSliceType
 ): Promise<AuthResponseType> => {
   if (!isEnterpriseMode()) {
-    return communitySignUp(params);
+    return communitySignUp(params, authTokenStore);
   }
-  return enterpriseSignUp(params);
+  return enterpriseSignUp(params, authTokenStore);
 };
 
-export const checkUserAuthentication = async (): Promise<User | null> => {
-  const token = await getAccessToken();
+export const checkUserAuthentication = async (
+  authTokenStore: AuthTokenSliceType
+): Promise<User | null> => {
+  const token = await getAccessToken(authTokenStore);
 
   if (!token) {
     return null;
@@ -447,15 +469,18 @@ export const checkUserAuthentication = async (): Promise<User | null> => {
   return userData;
 };
 
-export const signOut = async (redirect: boolean = true): Promise<void> => {
+export const signOut = async (
+  authTokenStore: AuthTokenSliceType,
+  redirect: boolean = true
+): Promise<void> => {
   if (isSigningOut) return;
 
   isSigningOut = true;
 
-  const hadActiveSession = Boolean(useCommonStore.getState().accessToken);
+  const hadActiveSession = Boolean(authTokenStore.accessToken);
 
   try {
-    await clearCookies();
+    await clearCookies(authTokenStore);
 
     if (redirect === false || !hadActiveSession) return;
 

@@ -15,6 +15,7 @@ import {
   getTokenMaxAgeSeconds,
   isTokenExpired
 } from "~community/auth/utils/tokenUtils";
+import { HttpMethods } from "~community/common/constants/stringConstants";
 import {
   TENANT_COOKIE_NAME,
   TENANT_QUERY_PARAM
@@ -51,7 +52,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  if (req.method === "GET") {
+  if (req.method === HttpMethods.GET) {
     res.setHeader("Cache-Control", "no-store");
 
     const storedToken = req.cookies[ACCESS_TOKEN_COOKIE_NAME];
@@ -84,8 +85,8 @@ export default async function handler(
       .json({ message: "Session refreshed", accessToken: refreshedToken });
   }
 
-  if (req.method !== "POST") {
-    res.setHeader("Allow", ["GET", "POST"]);
+  if (req.method !== HttpMethods.POST) {
+    res.setHeader("Allow", [HttpMethods.GET, HttpMethods.POST]);
     return res.status(405).json({ message: "Method not allowed" });
   }
 

@@ -8,8 +8,10 @@ import React, {
   useRef,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { internalApiEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { HttpMethods } from "~community/common/constants/stringConstants";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   EnterpriseSignInParams,
@@ -41,6 +43,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
+
   // Use ref to track if initial auth check is done
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
@@ -52,7 +62,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setIsLoading(true);
 
     try {
-      const userData = await checkUserAuthentication();
+      const userData = await checkUserAuthentication({
+        accessToken,
+        setAccessToken,
+        clearAccessToken
+      });
 
       setUser(userData);
       setIsAuthenticated(!!userData);
@@ -63,12 +77,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
     }
-  }, []);
+  }, [accessToken, setAccessToken, clearAccessToken]);
 
   const signUp = useCallback(
     async (params: EnterpriseSignUpParams): Promise<AuthResponseType> => {
       try {
-        const response = await handleSignUp(params);
+        const response = await handleSignUp(params, {
+          accessToken,
+          setAccessToken,
+          clearAccessToken
+        });
 
         if (response.status === SignInStatus.SUCCESS) {
           await checkAuth();
@@ -80,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw error;
       }
     },
-    [checkAuth]
+    [checkAuth, accessToken, setAccessToken, clearAccessToken]
   );
 
   // Sign In function
@@ -88,13 +106,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
         // Clear all existing cookies and the in memory token before signing in
-        useCommonStore.getState().clearAccessToken();
+        clearAccessToken();
 
         await fetch(internalApiEndpoints.CLEAR_COOKIES, {
-          method: "POST"
+          method: HttpMethods.POST
         });
 
-        const response = await handleSignIn(params);
+        const response = await handleSignIn(params, {
+          accessToken,
+          setAccessToken,
+          clearAccessToken
+        });
 
         if (response.status === SignInStatus.SUCCESS) {
           setIsLoading(true);
@@ -122,7 +144,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw error;
       }
     },
-    [router, checkAuth]
+    [router, checkAuth, accessToken, setAccessToken, clearAccessToken]
   );
 
   // Initial authentication check on mount

@@ -10,7 +10,10 @@ import {
 } from "~community/auth/constants/authConstants";
 import { authenticationEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { appModes } from "~community/common/constants/configs";
-import { LOCALHOST } from "~community/common/constants/stringConstants";
+import {
+  HttpMethods,
+  LOCALHOST
+} from "~community/common/constants/stringConstants";
 import { getApiUrl } from "~community/common/utils/getConstants";
 import {
   TENANT_COOKIE_NAME,
@@ -88,7 +91,7 @@ export const requestSessionRefresh = async (
     const response = await fetch(
       `${apiUrl}${authenticationEndpoints.REFRESH_TOKEN}`,
       {
-        method: "POST",
+        method: HttpMethods.POST,
         headers,
         body: "{}",
         signal: AbortSignal.timeout(EDGE_REFRESH_TIMEOUT_MS)
