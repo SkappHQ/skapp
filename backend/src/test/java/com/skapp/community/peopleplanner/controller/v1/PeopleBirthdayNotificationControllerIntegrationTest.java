@@ -77,6 +77,10 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 
 	private static final String CURRENT_USER_EMAIL = "user1@gmail.com";
 
+	private static final String CURRENT_EMPLOYEE_JOB_FAMILY = "Software Engineer";
+
+	private static final String CURRENT_EMPLOYEE_JOB_TITLE = "Associate";
+
 	private static final Long CURRENT_EMPLOYEE_ID = 1L;
 
 	private static final Long TEAMMATE_EMPLOYEE_ID = 2L;
@@ -256,6 +260,8 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 				.andExpect(jsonPath(birthdayFieldPath(0, "firstName")).value("Employee User One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "lastName")).value("Lastname One"))
 				.andExpect(jsonPath(birthdayFieldPath(0, "authPic")).value("auth-pic-one.png"))
+				.andExpect(jsonPath(birthdayFieldPath(0, "jobFamily")).value(CURRENT_EMPLOYEE_JOB_FAMILY))
+				.andExpect(jsonPath(birthdayFieldPath(0, "jobTitle")).value(CURRENT_EMPLOYEE_JOB_TITLE))
 				.andExpect(jsonPath(LAST_VIEWED_PATH).value(nullValue()));
 			assertThat(specialNotificationStatusDao.count()).isZero();
 		}
@@ -366,6 +372,24 @@ class PeopleBirthdayNotificationControllerIntegrationTest {
 					.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
 					.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()));
 			}
+		}
+
+		@Test
+		@DisplayName("Get today's birthdays when the matching employee has no job family or job title - Returns nulls for both")
+		void getTodayBirthdayNotifications_WithEmployeeWithoutJobFamilyAndJobTitle_ReturnsNullsForBoth()
+				throws Exception {
+			seedConfig(true, false, false);
+			giveBirthdayOn(CURRENT_EMPLOYEE_ID, today);
+			mutateEmployee(CURRENT_EMPLOYEE_ID, employee -> {
+				employee.setJobFamily(null);
+				employee.setJobTitle(null);
+			});
+
+			assertSuccessful(performGetTodayRequest(currentUserToken))
+				.andExpect(jsonPath(BIRTHDAYS_COUNT_PATH).value(1))
+				.andExpect(jsonPath(birthdayFieldPath(0, "employeeId")).value(CURRENT_EMPLOYEE_ID.intValue()))
+				.andExpect(jsonPath(birthdayFieldPath(0, "jobFamily")).value(nullValue()))
+				.andExpect(jsonPath(birthdayFieldPath(0, "jobTitle")).value(nullValue()));
 		}
 
 	}
