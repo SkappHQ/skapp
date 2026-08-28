@@ -1,4 +1,9 @@
-import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
+import { CrmDealStageEnum } from "../enums/common";
+import {
+  CrmDealEntity,
+  CrmDealRecord,
+  CrmStageRecord
+} from "../types/CrmCommonTypes";
 
 export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
   const dealRecord: CrmDealRecord = {};
@@ -55,3 +60,14 @@ export const resolveDeals = (
   dealIds
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
+
+export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
+  if (dealId !== undefined) {
+    return deals[dealId].name;
+  }
+};
+
+export const getInitialStageId = (stages: CrmStageRecord) =>
+  Object.values(stages).find(
+    (stage) => stage.stageType === CrmDealStageEnum.INITIAL
+  )?.id;

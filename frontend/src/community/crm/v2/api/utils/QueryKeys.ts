@@ -1,16 +1,42 @@
 import {
   CrmCompanyFilterRequest,
+  CrmContactFilterRequest,
   CrmDealFilterRequest,
-  CrmDealsByStagesRequest
+  CrmDealsByStagesRequest,
+  CrmOwnerLookupFilterRequest,
+  CrmTaskCompletedFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
 const CRM_COMPANIES = "crm-companies";
+const CRM_CONTACTS = "crm-contacts";
+const CRM_DEALS = "crm-deals";
+const CRM_TASKS = "crm-tasks";
+
+export const crmContactQueryKeys = {
+  LISTS: [CRM_CONTACTS, "list"],
+  LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
+  DETAIL: (id: number) => [CRM_CONTACTS, "detail", id],
+  METRICS: (id: number) => [CRM_CONTACTS, "metrics", id],
+  EMAIL_EXISTS: (email: string) => [CRM_CONTACTS, "email-exists", email],
+  LOOKUP: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "lookup", params],
+  OWNER_LOOKUP: (params: CrmOwnerLookupFilterRequest) => [
+    CRM_CONTACTS,
+    "owner-lookup",
+    params
+  ]
+};
+
+export const crmTaskQueryKeys = {
+  ALL: [CRM_TASKS],
+  LIST: (params: CrmTaskCompletedFilterRequest) => [CRM_TASKS, "list", params]
+};
 
 export const crmDealQueryKeys = {
   GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
   DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
-  DEAL_STAGES: ["crm-deal-stages-v2"]
+  DEAL_STAGES: ["crm-deal-stages-v2"],
+  LOOKUP: (params: CrmDealFilterRequest) => [CRM_DEALS, "lookup", params]
 };
 
 export const crmCompanyQueryKeys = {
@@ -19,7 +45,13 @@ export const crmCompanyQueryKeys = {
   LIST: (params: CrmCompanyFilterRequest) => [CRM_COMPANIES, "list", params],
   DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
   METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
-  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
+  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name],
+  LOOKUP: (params: CrmCompanyFilterRequest) => [
+    CRM_COMPANIES,
+    "lookup",
+    params
+  ],
+  DOMAIN_SEARCH: (domain: string) => [CRM_COMPANIES, "domain-search", domain]
 };
 
 export const crmLookupQueryKeys = {

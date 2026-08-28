@@ -1,0 +1,4 @@
+export const ALL_COMPANIES = "ALL_COMPANIES";
+export const CONTACT_NAME_MAX_LENGTH = 255;
+export const CONTACT_EMAIL_MAX_LENGTH = 100;
+export const CONTACT_NUMBER_MAX_LENGTH = 15;

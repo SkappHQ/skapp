@@ -219,14 +219,10 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith.v2@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Contact V2 Corp"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['website']").value("https://contact-v2.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['address']").value("42 Contact Ave"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['employeeId']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']['email']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").doesNotExist());
 	}
 
 	@Test
@@ -255,7 +251,7 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(contactId))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("detail.v2@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['metrics']").doesNotExist())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").doesNotExist());
 	}
@@ -295,8 +291,8 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("ZeroMetricsContactV2Unique"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['email']").value("metrics.contact.v2@example.com"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contactNumber']").value("94770009999"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['owner']['employeeId']").value(1))
-			.andExpect(jsonPath("['results'][0]['items'][0]['company']['id']").value(companyId))
+			.andExpect(jsonPath("['results'][0]['items'][0]['ownerId']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['companyId']").value(companyId))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealValue']").value("0"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(0))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(0))
@@ -373,7 +369,7 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith Updated"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith.updated.v2@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId));
 	}
 
 	@Test

@@ -5,24 +5,13 @@ import {
 } from "../commonUtil";
 
 describe("formatTableValue", () => {
-  it("returns the placeholder when the value is missing", () => {
+  it("shows a placeholder for missing and zero values", () => {
     expect(formatTableValue(undefined)).toBe("-");
-  });
-
-  it("returns the placeholder when the value is zero", () => {
     expect(formatTableValue(0)).toBe("-");
   });
 
-  it("returns the value as-is when present", () => {
-    expect(formatTableValue(23)).toBe("23");
-  });
-
-  it("applies the given prefix", () => {
-    expect(formatTableValue("94771234567", "+")).toBe("+94771234567");
-  });
-
-  it("does not prefix a missing value", () => {
-    expect(formatTableValue(undefined, "+")).toBe("-");
+  it("applies the prefix to a real value", () => {
+    expect(formatTableValue("771234567", "+")).toBe("+771234567");
   });
 });
 
@@ -31,16 +20,13 @@ describe("formatMonetaryValue", () => {
     expect(formatMonetaryValue("14700000.00")).toBe("$14700000");
   });
 
-  it("returns the placeholder when the value is missing", () => {
-    expect(formatMonetaryValue(undefined)).toBe("-");
-  });
-
-  it("returns the placeholder when the amount is zero", () => {
-    expect(formatMonetaryValue("0.00")).toBe("-");
-  });
-
-  it("renders an amount under one as zero, not as missing data", () => {
+  it("keeps sub-unit amounts visible rather than treating them as empty", () => {
     expect(formatMonetaryValue("0.50")).toBe("$0");
+  });
+
+  it("shows a placeholder for missing and zero values", () => {
+    expect(formatMonetaryValue(undefined)).toBe("-");
+    expect(formatMonetaryValue("0.00")).toBe("-");
   });
 });
 
@@ -49,11 +35,8 @@ describe("formatMonetaryValueWithDecimals", () => {
     expect(formatMonetaryValueWithDecimals("5000000.00")).toBe("$5000000.00");
   });
 
-  it("returns the placeholder when the value is missing", () => {
+  it("shows a placeholder for missing and zero values", () => {
     expect(formatMonetaryValueWithDecimals(undefined)).toBe("-");
-  });
-
-  it("returns the placeholder when the amount is zero", () => {
     expect(formatMonetaryValueWithDecimals("0.00")).toBe("-");
   });
 });

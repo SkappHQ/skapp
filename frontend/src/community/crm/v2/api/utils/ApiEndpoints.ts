@@ -1,5 +1,16 @@
 import { moduleAPIPath } from "~community/common/constants/configs";
 
+export const crmContactEndpoints = {
+  GET_CONTACTS: `${moduleAPIPath.CRM}/contact`,
+  GET_CONTACT_BY_ID: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  GET_CONTACT_METRICS: (id: number) =>
+    `${moduleAPIPath.CRM}/contact/${id}/metrics`,
+  CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
+  EDIT_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
+  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`
+};
+
 export const crmDealEndpointsV2 = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
@@ -14,7 +25,8 @@ export const crmDealEndpoints = {
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
-  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
+  DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
+  GET_DEALS: `${moduleAPIPath.CRM}/deal`
 };
 
 export const crmCompanyEndpoints = {
@@ -26,12 +38,20 @@ export const crmCompanyEndpoints = {
   CREATE_COMPANY: `${moduleAPIPath.CRM}/company`,
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
-  CHECK_COMPANY_NAME_EXISTS: `${moduleAPIPath.CRM}/company/exists`
+  CHECK_COMPANY_NAME_EXISTS: `${moduleAPIPath.CRM}/company/exists`,
+  COMPANY_LOOKUP: `${moduleAPIPath.CRM}/company/lookup`,
+  SEARCH_COMPANIES_BY_DOMAIN: `${moduleAPIPath.CRM}/company/search-by-domain`
 };
 
 export const crmLookupEndpoints = {
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
+};
+
+export const crmTaskEndpoints = {
+  GET_TASKS: `${moduleAPIPath.CRM}/task`,
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const crmBoardEndpoints = {

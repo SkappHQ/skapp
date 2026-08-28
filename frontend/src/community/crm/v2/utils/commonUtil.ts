@@ -1,4 +1,6 @@
 import {
+  CrmDealEntity,
+  CrmDealRecord,
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,
@@ -22,6 +24,25 @@ export const formatMonetaryValue = (value?: string) => {
 export const formatMonetaryValueWithDecimals = (value?: string | number) =>
   isEmptyValue(value) ? "-" : `$${Number(value).toFixed(2)}`;
 
+export const getOwnerName = (owner: CrmOwnerEntity): string =>
+  [owner.firstName, owner.lastName].filter(Boolean).join(" ");
+
+export const getOwnerById = (owners: CrmOwnerRecord, ownerId?: number) => {
+  if (ownerId !== undefined) {
+    return owners[ownerId];
+  }
+};
+
+export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
+  const stageRecord: CrmStageRecord = {};
+  for (const stage of stages) {
+    if (stage.id != null) {
+      stageRecord[stage.id] = stage;
+    }
+  }
+  return stageRecord;
+};
+
 export const formatCurrency = (
   value: string | number | null | undefined
 ): string => {
@@ -41,14 +62,14 @@ export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
   return ownerRecord;
 };
 
-export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
-  const stageRecord: CrmStageRecord = {};
-  for (const stage of stages) {
-    if (stage.id != null) {
-      stageRecord[stage.id] = stage;
+export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
+  const dealRecord: CrmDealRecord = {};
+  for (const deal of deals) {
+    if (deal.id !== undefined) {
+      dealRecord[deal.id] = deal;
     }
   }
-  return stageRecord;
+  return dealRecord;
 };
 
 export const getOrderedStages = (stages: CrmStageRecord): CrmStageEntity[] =>
