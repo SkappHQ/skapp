@@ -130,7 +130,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 router.asPath.split("?")[0]
               );
             } else {
-              console.error("Access token not available after sign-in");
               throw new Error(
                 "Authentication was not established after sign-in"
               );

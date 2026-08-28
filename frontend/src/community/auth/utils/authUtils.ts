@@ -157,7 +157,6 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
         ? data.accessToken
         : null;
     } catch {
-      console.error("Failed to retrieve the stored access token");
       return null;
     } finally {
       hasCheckedStoredToken = true;
@@ -223,15 +222,11 @@ export const setAccessToken = async (
     });
 
     if (!response.ok) {
-      console.error(
-        `Failed to persist access token cookie: ${response.status}`
-      );
       return false;
     }
 
     return true;
   } catch {
-    console.error("Failed to persist access token cookie");
     return false;
   }
 };
@@ -254,15 +249,11 @@ export const persistSession = async (
     });
 
     if (!response.ok) {
-      console.error(
-        `Failed to persist the session cookies: ${response.status}`
-      );
       return false;
     }
 
     return true;
   } catch {
-    console.error("Failed to persist the session cookies");
     return false;
   }
 };
@@ -290,7 +281,7 @@ export const clearCookies = async (
         credentials: "same-origin"
       });
     } catch {
-      console.error("Error clearing session cookies");
+      console.error("Error clearing cookies");
     }
   }
 };
