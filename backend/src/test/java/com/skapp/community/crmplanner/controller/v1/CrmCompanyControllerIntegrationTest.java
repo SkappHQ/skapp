@@ -22,6 +22,8 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -109,6 +111,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	private final CrmDealDao crmDealDao;
 
 	private final CrmDealStageDao crmDealStageDao;
@@ -186,6 +190,11 @@ class CrmCompanyControllerIntegrationTest {
 		return dto;
 	}
 
+	private Long seedIndustryId(String name) {
+		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
+		return crmIndustryDao.findByName(name).orElseThrow().getId();
+	}
+
 	// --- Create company tests ---
 
 	@Test
@@ -195,6 +204,43 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp"));
+	}
+
+	@Test
+	@DisplayName("Create company with seeded industries - Persists industry id and keeps industry constant in response")
+	void createCompany_SeededIndustries_PersistsIndustryId() throws Exception {
+		Long industryId = seedIndustryId(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name());
+
+		ResultActions createResult = performPostRequest(createValidPayload()).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()));
+
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		assertThat(persisted.getIndustryId()).isEqualTo(industryId);
+	}
+
+	@Test
+	@DisplayName("Create company when industry table is empty - Leaves industry id null")
+	void createCompany_NoSeededIndustries_LeavesIndustryIdNull() throws Exception {
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
+		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		assertThat(persisted.getIndustryId()).isNull();
 	}
 
 	@Test

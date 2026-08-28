@@ -23,8 +23,10 @@ import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,8 @@ import java.util.List;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -99,6 +103,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		}
 
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		newCompany.setIndustryId(resolveIndustryId(crmCompany.getIndustry()));
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
@@ -112,6 +117,14 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private boolean checkCompanyExists(String name) {
 		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+	}
+
+	private Long resolveIndustryId(CrmIndustry industry) {
+		if (industry == null) {
+			return null;
+		}
+
+		return crmIndustryDao.findByName(industry.name()).map(crmIndustry -> crmIndustry.getId()).orElse(null);
 	}
 
 	@Override
@@ -249,6 +262,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		if (crmCompany.getIndustry() != null) {
 			existingCompany.setIndustry(crmCompany.getIndustry());
+			existingCompany.setIndustryId(resolveIndustryId(crmCompany.getIndustry()));
 		}
 
 		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);

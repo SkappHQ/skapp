@@ -16,9 +16,9 @@ import com.skapp.community.crmplanner.model.CrmTaskType_;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
@@ -312,8 +312,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.construct(CrmTaskTypeResponseDto.class, type.get(CrmTaskType_.id), type.get(CrmTaskType_.name),
 						type.get(CrmTaskType_.orderIndex)),
 				buildOwnerSelection(cb, owner),
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+				cb.construct(CrmCompanyResponseDtoV2.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
+						company.get(CrmCompany_.industryId), company.get(CrmCompany_.website),
 						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
 				buildContactSelection(cb, contact, contactCompany, contactOwner),
 				cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
@@ -328,8 +328,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		return cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
 				contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-				cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
-						contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
+				cb.construct(CrmCompanyResponseDtoV2.class, contactCompany.get(CrmCompany_.id),
+						contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industryId),
 						contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
 						contactCompany.get(CrmCompany_.contactNumber)),
 				buildOwnerSelection(cb, contactOwner));
