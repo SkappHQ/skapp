@@ -16,6 +16,7 @@ import {
   useGetTaskById,
   useUpdateTask
 } from "~community/crm/v2/api/TaskApi";
+import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
 import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
@@ -26,11 +27,7 @@ import {
   CrmRelatedTasksFilterRequest,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
-import {
-  getTaskTypeIcon,
-  toTaskIds,
-  updateTaskRecord
-} from "~community/crm/v2/utils/taskUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 const TASK_DETAIL_ICON_SIZE = 24;
 
@@ -176,7 +173,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       closeOnBackdropClick
       header={
         <div className="flex items-center gap-4 pl-2">
-          {getTaskTypeIcon(typeName, TASK_DETAIL_ICON_SIZE)}
+          <TaskTypeIcon typeName={typeName} size={TASK_DETAIL_ICON_SIZE} />
           <span className="h1 text-black">{task.name}</span>
         </div>
       }

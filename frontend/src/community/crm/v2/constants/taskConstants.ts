@@ -1,9 +1,13 @@
 import {
+  ChecklistVerificationFilledIcon,
+  EmailFilledIcon,
   HighPriorityIcon,
   LowPriorityIcon,
-  MediumPriorityIcon
+  MediumPriorityIcon,
+  MeetingFilledIcon,
+  PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { ComponentType, FC, SVGProps } from "react";
 
 import {
   CrmPriorityEnum,
@@ -44,3 +48,13 @@ export const PRIORITY_OPTIONS = [
     IconComponent: LowPriorityIcon as FC
   }
 ];
+
+export const TASK_TYPE_ICON_MAP: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
+  email: EmailFilledIcon,
+  call: PhoneFilledIcon,
+  meeting: MeetingFilledIcon,
+  other: ChecklistVerificationFilledIcon
+};

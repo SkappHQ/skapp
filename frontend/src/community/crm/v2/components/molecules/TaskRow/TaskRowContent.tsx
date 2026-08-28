@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { getTaskTypeIcon } from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";
@@ -33,7 +33,7 @@ const TaskRowContent: FC<Props> = ({
       <div
         className={`shrink-0 flex items-center justify-center ${isCompletedStyleApplied ? "opacity-40" : ""}`}
       >
-        {getTaskTypeIcon(typeName)}
+        <TaskTypeIcon typeName={typeName} />
       </div>
 
       <div className="flex-1 min-w-0">
