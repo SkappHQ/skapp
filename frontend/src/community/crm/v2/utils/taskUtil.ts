@@ -1,12 +1,4 @@
 import {
-  ChecklistVerificationFilledIcon,
-  EmailFilledIcon,
-  MeetingFilledIcon,
-  PhoneFilledIcon
-} from "@rootcodelabs/skapp-ui";
-import { ComponentType, ReactElement, SVGProps, createElement } from "react";
-
-import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
   getCurrentDateAtMidnight,
@@ -52,9 +44,6 @@ export const toTaskDealIds = (tasks: CrmTaskEntity[]): number[] => {
   }
   return dealIds;
 };
-
-export const prependTaskId = (taskIds: number[], id: number): number[] =>
-  taskIds.includes(id) ? taskIds : [id, ...taskIds];
 
 export const updateTaskRecord = (
   existingTasks: CrmTaskRecord,
@@ -149,23 +138,6 @@ export const getChangedTaskFields = (
 
   return changedFields;
 };
-
-const TASK_TYPE_ICON_MAP: Record<
-  string,
-  ComponentType<SVGProps<SVGSVGElement>>
-> = {
-  email: EmailFilledIcon,
-  call: PhoneFilledIcon,
-  meeting: MeetingFilledIcon,
-  other: ChecklistVerificationFilledIcon
-};
-
-export const getTaskTypeIcon = (typeName?: string, size = 20): ReactElement =>
-  createElement(
-    TASK_TYPE_ICON_MAP[typeName?.toLowerCase() ?? ""] ??
-      ChecklistVerificationFilledIcon,
-    { width: size, height: size }
-  );
 
 export const getDueDateStatus = (
   dueAt: string,
