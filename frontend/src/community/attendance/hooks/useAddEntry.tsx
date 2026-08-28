@@ -205,7 +205,7 @@ const useAddEntry = () => {
     }
   };
 
-  const routeManualEntry = (
+  const submitManualTimeEntry = (
     values: TimeEntryFormValueType,
     timeAvailability: TimeAvailabilityType,
     dateTimeFromTime: string | null,
@@ -289,7 +289,7 @@ const useAddEntry = () => {
     if (
       employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
     ) {
-      routeManualEntry(
+      submitManualTimeEntry(
         values,
         timeAvailability,
         dateTimeFromTime,
