@@ -2,6 +2,7 @@ import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { JSX, useCallback, useEffect, useState } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
+import { useUpdateEmployeeStatus } from "~community/attendance/api/AttendanceApi";
 import PlayButton from "~community/attendance/components/molecules/PlayButton/PlayButton";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
@@ -21,8 +22,13 @@ interface TimerProps {
 }
 
 const Timer = ({ disabled }: TimerProps): JSX.Element => {
-  const { attendanceParams, isAttendanceModalOpen, setIsAttendanceModalOpen } =
-    useAttendanceStore((state) => state);
+  const {
+    attendanceParams,
+    isAttendanceModalOpen,
+    setIsAttendanceModalOpen,
+    setSlotType,
+    setIsAutoClockOutMidnightModalOpen
+  } = useAttendanceStore((state) => state);
   const theme = useTheme();
   const classes = styles(theme);
   const status = attendanceParams.slotType;
@@ -32,6 +38,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
+  const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
@@ -47,7 +54,18 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         status === AttendanceSlotType.START) &&
       !isAttendanceModalOpen
     ) {
+      const clockInDay = new Date(
+        attendanceParams.slotStartTime + "Z"
+      ).toDateString();
+
       interval = setInterval(() => {
+        if (new Date().toDateString() !== clockInDay) {
+          interval && clearInterval(interval);
+          setTimer(0);
+          void updateEmployeeStatus(setSlotType(AttendanceSlotType.END));
+          setIsAutoClockOutMidnightModalOpen(true);
+          return;
+        }
         setTimer((prevTimer) => prevTimer + 1);
       }, 1000);
     } else if (status === AttendanceSlotType.END) {
@@ -59,7 +77,14 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     return () => {
       interval && clearInterval(interval);
     };
-  }, [status, attendanceParams, isAttendanceModalOpen]);
+  }, [
+    status,
+    attendanceParams,
+    isAttendanceModalOpen,
+    updateEmployeeStatus,
+    setSlotType,
+    setIsAutoClockOutMidnightModalOpen
+  ]);
 
   return (
     <Stack
