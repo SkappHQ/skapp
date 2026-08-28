@@ -9,7 +9,6 @@ import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
-  DailyLogType,
   DirectEntryEmployeeType,
   TimeRecordDataResponseType,
   TimeRecordDataType,
@@ -138,9 +137,7 @@ const EmployeeTimeRecordsTable = ({
 
     if (!isPendingDaySuccess) return;
 
-    const dayRecord =
-      pendingDayLogs?.find((log: DailyLogType) => log.date === date) ??
-      createEmptyDailyLog(date);
+    const dayRecord = pendingDayLogs?.[0] ?? createEmptyDailyLog(date);
 
     const modalType = getTimeEntryModalType(dayRecord);
 
