@@ -46,6 +46,9 @@ class LeavePolicyControllerIntegrationTest {
 	private static final String SEED_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
 			+ "VALUES (100, 'PolicyAnnual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true)";
 
+	private static final String SEED_SECOND_LEAVE_TYPE = "INSERT INTO lv_leave_type (id, name, emoji_code, color_code, min_duration, is_attachment, is_attachment_must, is_comment_must, is_auto_approval, is_active) "
+			+ "VALUES (101, 'PolicyCasual', 'U+1F3D6', '#FFC107', 'FULL_DAY', false, false, false, false, true)";
+
 	private static final String SEED_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (500, 'Existing Policy', 100, 'ACCRUAL', 'ACTIVE', false)";
 
@@ -115,6 +118,13 @@ class LeavePolicyControllerIntegrationTest {
 	private ResultActions performGetAll(String authToken) throws Exception {
 		return mvc
 			.perform(get(ENDPOINT).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performNameAvailability(String authToken, String name, String leaveTypeId) throws Exception {
+		return mvc.perform(get(ENDPOINT + "/name-availability").param("name", name)
+			.param("leaveTypeId", leaveTypeId)
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
 	}
 
 	private ResultActions performEnable(String authToken) throws Exception {
@@ -355,6 +365,93 @@ class LeavePolicyControllerIntegrationTest {
 				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
 				.andDo(print())
 				.andExpect(status().isNotFound());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Leave Policy Name Availability")
+	class LeavePolicyNameAvailabilityTests {
+
+		@Test
+		@DisplayName("Returns available when no policy holds the name for the leave type")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
+		void checkNameAvailability_UnusedName_ReturnsAvailable() throws Exception {
+			performNameAvailability(leaveAdminToken(), "Brand New Policy", "100").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].isAvailable").value(true));
+		}
+
+		@Test
+		@DisplayName("Returns unavailable when the name matches an existing policy ignoring case")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY })
+		void checkNameAvailability_DuplicateNameDifferentCase_ReturnsUnavailable() throws Exception {
+			performNameAvailability(leaveAdminToken(), "existing policy", "100").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isAvailable").value(false));
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the name is missing")
+		@Sql(statements = { SEED_LEAVE_TYPE })
+		void checkNameAvailability_MissingName_ReturnsBadRequest() throws Exception {
+			mvc.perform(get(ENDPOINT + "/name-availability").param("leaveTypeId", "100")
+				.accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns unavailable when the name is held by an inactive policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_INACTIVE_POLICY })
+		void checkNameAvailability_InactivePolicyName_ReturnsUnavailable() throws Exception {
+			performNameAvailability(leaveAdminToken(), "Inactive Policy", "100").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isAvailable").value(false));
+		}
+
+		@Test
+		@DisplayName("Returns available when the same name is used under a different leave type")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE, SEED_POLICY })
+		void checkNameAvailability_SameNameOtherLeaveType_ReturnsAvailable() throws Exception {
+			performNameAvailability(leaveAdminToken(), "Existing Policy", "101").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].isAvailable").value(true));
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the name is blank")
+		@Sql(statements = { SEED_LEAVE_TYPE })
+		void checkNameAvailability_BlankName_ReturnsBadRequest() throws Exception {
+			performNameAvailability(leaveAdminToken(), "   ", "100").andDo(print()).andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Returns bad request when the leave type is missing")
+		void checkNameAvailability_MissingLeaveTypeId_ReturnsBadRequest() throws Exception {
+			mvc.perform(get(ENDPOINT + "/name-availability").param("name", "Brand New Policy")
+				.accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Non-admin user cannot check policy name availability")
+		@Sql(statements = { SEED_LEAVE_TYPE, DOWNGRADE_USER2_TO_EMPLOYEE })
+		void checkNameAvailability_LeaveEmployee_ReturnsForbidden() throws Exception {
+			performNameAvailability(user2Token(), "Brand New Policy", "100").andDo(print())
+				.andExpect(status().isForbidden());
+		}
+
+		@Test
+		@DisplayName("Returns 401 when no authentication token is provided")
+		void checkNameAvailability_NoAuth_ReturnsUnauthorized() throws Exception {
+			mvc.perform(get(ENDPOINT + "/name-availability").param("name", "Brand New Policy")
+				.param("leaveTypeId", "100")
+				.accept(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isUnauthorized());
 		}
 
 	}

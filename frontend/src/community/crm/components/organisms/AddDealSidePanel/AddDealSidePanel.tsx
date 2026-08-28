@@ -20,6 +20,7 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
+  CrmContactLookupParams,
   CrmCreateDealPayload,
   CrmDealAddFormTypes,
   CrmDealResponseType
@@ -71,9 +72,12 @@ const AddDealSidePanel: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupParams,
     isOpen
   );
   const contacts = contactLookupData?.items ?? [];

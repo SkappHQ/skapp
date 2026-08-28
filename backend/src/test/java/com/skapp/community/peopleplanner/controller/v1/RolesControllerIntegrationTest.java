@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,10 +47,6 @@ class RolesControllerIntegrationTest {
 	private static final String RESTRICTIONS_FIELD = "['restrictions']";
 
 	private static final String RESTRICTABLE_ROLES_FIELD = "['restrictableRoles']";
-
-	private static final String IS_ADMIN_FIELD = "['isAdmin']";
-
-	private static final String IS_MANAGER_FIELD = "['isManager']";
 
 	private final JwtService jwtService;
 
@@ -76,6 +73,10 @@ class RolesControllerIntegrationTest {
 		return performRequest(get(RESTRICTIONS_PATH + "/" + module.name()).accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions updateRestrictions(String body) throws Exception {
+		return performRequest(patch(RESTRICTIONS_PATH).contentType(MediaType.APPLICATION_JSON).content(body));
+	}
+
 	/**
 	 * Stores a raw restrictions value, which the update endpoint cannot produce, so the
 	 * read path can be exercised against values already sitting in the table.
@@ -92,8 +93,8 @@ class RolesControllerIntegrationTest {
 	class GetRestrictedRolesByModuleTests {
 
 		@Test
-		@DisplayName("Get restrictions with both roles restricted - Returns restrictions and derived flags")
-		void getRestrictions_BothRolesRestricted_ReturnsRestrictionsAndDerivedFlags() throws Exception {
+		@DisplayName("Get restrictions with both roles restricted - Returns both restrictions")
+		void getRestrictions_BothRolesRestricted_ReturnsBothRestrictions() throws Exception {
 			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andDo(print())
@@ -101,31 +102,25 @@ class RolesControllerIntegrationTest {
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 				.andExpect(jsonPath(RESULTS_0_PATH + "['module']").value(ModuleType.PEOPLE.name()))
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
-						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(true))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
 		}
 
 		@Test
-		@DisplayName("Get restrictions with only admin restricted - Returns isManager false")
-		void getRestrictions_OnlyAdminRestricted_ReturnsIsManagerFalse() throws Exception {
+		@DisplayName("Get restrictions with only admin restricted - Returns single restriction")
+		void getRestrictions_OnlyAdminRestricted_ReturnsSingleRestriction() throws Exception {
 			storeRestrictions(ModuleType.LEAVE, "ADMIN");
 
 			getRestrictionsByModule(ModuleType.LEAVE).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(true))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(false));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
 		}
 
 		@Test
-		@DisplayName("Get restrictions for module with no stored row - Returns empty restrictions and false flags")
-		void getRestrictions_NoRowForModule_ReturnsEmptyRestrictionsAndFalseFlags() throws Exception {
+		@DisplayName("Get restrictions for module with no stored row - Returns empty restrictions")
+		void getRestrictions_NoRowForModule_ReturnsEmptyRestrictions() throws Exception {
 			getRestrictionsByModule(ModuleType.ATTENDANCE).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + "['module']").value(ModuleType.ATTENDANCE.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(false));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()));
 		}
 
 		@Test
@@ -134,36 +129,7 @@ class RolesControllerIntegrationTest {
 			storeRestrictions(ModuleType.LEAVE, null);
 
 			getRestrictionsByModule(ModuleType.LEAVE).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(false));
-		}
-
-		/**
-		 * The legacy boolean pair represents the module's manager level role, so a
-		 * restricted CRM sales manager has to surface as isManager for existing clients.
-		 */
-		@Test
-		@DisplayName("Get restrictions with CRM sales manager restricted - Returns isManager true")
-		void getRestrictions_CrmSalesManagerRestricted_ReturnsIsManagerTrue() throws Exception {
-			storeRestrictions(ModuleType.CRM, "SALES_MANAGER");
-
-			getRestrictionsByModule(ModuleType.CRM).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.SALES_MANAGER.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
-		}
-
-		@Test
-		@DisplayName("Get restrictions with eSign sender restricted - Returns isManager true")
-		void getRestrictions_EsignSenderRestricted_ReturnsIsManagerTrue() throws Exception {
-			storeRestrictions(ModuleType.ESIGN, "SENDER");
-
-			getRestrictionsByModule(ModuleType.ESIGN).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.SENDER.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()));
 		}
 
 		/**
@@ -177,9 +143,7 @@ class RolesControllerIntegrationTest {
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
-						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(true))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(true));
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
 		}
 
 		/**
@@ -196,9 +160,7 @@ class RolesControllerIntegrationTest {
 			moduleRoleRestrictionDao.save(legacyRestriction);
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_ADMIN_FIELD).value(false))
-				.andExpect(jsonPath(RESULTS_0_PATH + IS_MANAGER_FIELD).value(false));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, empty()));
 		}
 
 		@Test
@@ -206,18 +168,18 @@ class RolesControllerIntegrationTest {
 		void getRestrictions_ManagerModule_ReturnsAdminAndManagerAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[1]").value(RoleLevel.MANAGER.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
 		}
 
 		@Test
-		@DisplayName("Get restrictions for CRM - Returns admin and sales manager as restrictable")
-		void getRestrictions_Crm_ReturnsAdminAndSalesManagerAsRestrictable() throws Exception {
+		@DisplayName("Get restrictions for CRM - Returns admin, sales manager and sales rep as restrictable")
+		void getRestrictions_Crm_ReturnsAdminSalesManagerAndSalesRepAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.CRM).andExpect(status().isOk())
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(2)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[1]")
-					.value(RoleLevel.SALES_MANAGER.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(3)))
+				.andExpect(
+						jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, containsInAnyOrder(RoleLevel.ADMIN.name(),
+								RoleLevel.SALES_MANAGER.name(), RoleLevel.SALES_REPRESENTATIVE.name())));
 		}
 
 		/**
@@ -228,7 +190,8 @@ class RolesControllerIntegrationTest {
 		void getRestrictions_ModuleWithoutManagerRole_ReturnsOnlyAdminAsRestrictable() throws Exception {
 			getRestrictionsByModule(ModuleType.PM).andExpect(status().isOk())
 				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD, hasSize(1)))
-				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTABLE_ROLES_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name())));
 		}
 
 		/**
@@ -248,6 +211,149 @@ class RolesControllerIntegrationTest {
 			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
 
 			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isForbidden());
+		}
+
+	}
+
+	@Nested
+	@DisplayName("Update Role Restrictions Tests")
+	class UpdateRoleRestrictionsTests {
+
+		@Test
+		@DisplayName("Add to empty baseline - Restricts the added role")
+		void update_AddToEmptyBaseline_RestrictsAddedRole() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\"]}").andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Add CRM sales representative - Restricts the sales rep role")
+		void update_AddCrmSalesRepresentative_RestrictsSalesRep() throws Exception {
+			updateRestrictions("{\"module\":\"CRM\",\"addedRoles\":[\"SALES_REPRESENTATIVE\"]}")
+				.andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.CRM).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]")
+					.value(RoleLevel.SALES_REPRESENTATIVE.name()));
+		}
+
+		@Test
+		@DisplayName("Add on top of existing restriction - Merges with baseline")
+		void update_AddOnTopOfExisting_MergesWithBaseline() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"MANAGER\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD,
+						containsInAnyOrder(RoleLevel.ADMIN.name(), RoleLevel.MANAGER.name())));
+		}
+
+		@Test
+		@DisplayName("Remove from baseline - Clears only the removed role")
+		void update_RemoveFromBaseline_ClearsRemovedRole() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN,MANAGER");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"removedRoles\":[\"ADMIN\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()));
+		}
+
+		@Test
+		@DisplayName("Add and remove together - Remove applies before add")
+		void update_AddAndRemoveTogether_RemoveAppliesBeforeAdd() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"MANAGER\"],\"removedRoles\":[\"ADMIN\"]}")
+				.andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.MANAGER.name()));
+		}
+
+		@Test
+		@DisplayName("Add an already restricted role - Idempotent")
+		void update_AddAlreadyRestrictedRole_Idempotent() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Remove a role that is not restricted - Idempotent")
+		void update_RemoveNotRestrictedRole_Idempotent() throws Exception {
+			storeRestrictions(ModuleType.PEOPLE, "ADMIN");
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"removedRoles\":[\"MANAGER\"]}").andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Remove a non-restrictable role - Returns Bad Request")
+		void update_RemoveNonRestrictableRole_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"removedRoles\":[\"EMPLOYEE\"]}")
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update with no module - Returns Bad Request")
+		void update_NoModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"addedRoles\":[\"ADMIN\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update with COMMON module - Returns Bad Request")
+		void update_CommonModule_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"COMMON\",\"addedRoles\":[\"ADMIN\"]}").andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Add a non-restrictable role - Returns Bad Request")
+		void update_AddNonRestrictableRole_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"EMPLOYEE\"]}")
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Add with duplicate entries - Deduplicated and stored once")
+		void update_AddWithDuplicateEntries_Deduplicated() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\",\"ADMIN\"]}")
+				.andExpect(status().isOk());
+
+			getRestrictionsByModule(ModuleType.PEOPLE).andExpect(status().isOk())
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD, hasSize(1)))
+				.andExpect(jsonPath(RESULTS_0_PATH + RESTRICTIONS_FIELD + "[0]").value(RoleLevel.ADMIN.name()));
+		}
+
+		@Test
+		@DisplayName("Same role in add and remove - Returns Bad Request")
+		void update_SameRoleInAddAndRemove_ReturnsBadRequest() throws Exception {
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\"],\"removedRoles\":[\"ADMIN\"]}")
+				.andExpect(status().isBadRequest());
+		}
+
+		@Test
+		@DisplayName("Update without super admin role - Returns Forbidden")
+		void update_WithoutSuperAdminRole_ReturnsForbidden() throws Exception {
+			authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 2L);
+
+			updateRestrictions("{\"module\":\"PEOPLE\",\"addedRoles\":[\"ADMIN\"]}").andExpect(status().isForbidden());
 		}
 
 	}

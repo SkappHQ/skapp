@@ -447,6 +447,42 @@ class CrmBoardControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['name']").value("Rep Deal"));
 	}
 
+	@Test
+	@DisplayName("Deals grouped by stage - search keyword matching deal ID returns matching deal")
+	void getDealsByStages_SearchKeywordMatchesDealId_ReturnsMatchingDeal() throws Exception {
+		CrmDeal deal = createDeal("Deal To Find By Id", stage1, "a0", 1L);
+		createDeal("Unrelated Deal", stage1, "b0", 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+		request.setSearchKeyword(deal.getId().toString());
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['id']").value(deal.getId().intValue()));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - search keyword matching a soft-deleted deal's ID returns no deals")
+	void getDealsByStages_SearchKeywordMatchesSoftDeletedDealId_ReturnsNoDeals() throws Exception {
+		CrmDeal deal = createDeal("Deleted Deal For Id Search", stage1, "a0", 1L);
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+		request.setSearchKeyword(deal.getId().toString());
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'].length()").value(0));
+	}
+
 	private ResultActions performPostDealsByStagesRequest(CrmDealsByStagesRequestDto dto, String token)
 			throws Exception {
 		return mvc.perform(post("/v1/crm/board/deals-grouped-by-stages").contentType(MediaType.APPLICATION_JSON)

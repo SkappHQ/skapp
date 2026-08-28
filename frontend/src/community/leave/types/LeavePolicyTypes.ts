@@ -138,6 +138,19 @@ export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
 }
 
+export interface CheckLeavePolicyNameAvailabilityParams {
+  name: string;
+  leaveTypeId: string;
+}
+
+export interface LeavePolicyNameAvailabilityResult {
+  isAvailable: boolean;
+}
+
+export interface LeavePolicyNameAvailabilityResponse {
+  results: LeavePolicyNameAvailabilityResult[];
+}
+
 export interface LeavePolicyConfigResult {
   isEnabled: boolean;
 }
