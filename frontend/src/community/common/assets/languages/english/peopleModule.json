@@ -575,7 +575,7 @@
       "employeeAddErrorToastTitle": "Oops! Something went wrong",
       "employeeAddErrorToastDescription": "Failed to add the resource. Please try again.",
       "areYouSureModalTitle": "Are you sure?",
-      "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvitated Successfully",
+      "reInvitationForOneEmployeeSuccessfulToastTitle": "Reinvited Successfully",
       "reInvitationForOneEmployeeSuccessfulToastDescription": "Reinvitation sent for the employee successfully",
       "addFullProfile": "Add Full Profile",
       "save": "Save"
