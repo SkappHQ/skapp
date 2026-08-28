@@ -39,16 +39,18 @@ import {
   useEditDirectTimeEntry
 } from "~enterprise/attendance/api/AttendanceApi";
 
-const MODALS_RETAINING_AVAILABILITY = new Set<EmployeeTimesheetModalTypes>([
-  EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
-  EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-]);
+const EMPLOYEE_TIME_ENTRY_MODALS_RETAINING_AVAILABILITY =
+  new Set<EmployeeTimesheetModalTypes>([
+    EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+    EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+  ]);
 
-const MODALS_CARRYING_ENTERED_TIMES = new Set<EmployeeTimesheetModalTypes>([
-  EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
-  EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
-  EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-]);
+const EMPLOYEE_TIME_ENTRY_MODALS_CARRYING_ENTERED_TIMES =
+  new Set<EmployeeTimesheetModalTypes>([
+    EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
+    EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+    EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+  ]);
 
 const useAddEntry = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -230,11 +232,19 @@ const useAddEntry = () => {
       return;
     }
 
-    if (MODALS_RETAINING_AVAILABILITY.has(employeeConfirmationModalType)) {
+    if (
+      EMPLOYEE_TIME_ENTRY_MODALS_RETAINING_AVAILABILITY.has(
+        employeeConfirmationModalType
+      )
+    ) {
       setTimeAvailabilityForPeriod(timeAvailability);
     }
 
-    if (MODALS_CARRYING_ENTERED_TIMES.has(employeeConfirmationModalType)) {
+    if (
+      EMPLOYEE_TIME_ENTRY_MODALS_CARRYING_ENTERED_TIMES.has(
+        employeeConfirmationModalType
+      )
+    ) {
       setFromDateTime(dateTimeFromTime ?? "");
       setToDateTime(dateTimeToTime ?? "");
     }
