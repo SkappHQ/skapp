@@ -12,6 +12,7 @@ import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -276,8 +277,8 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			return Optional.empty();
 		}
 
-		List<LeaveRequest> leaveRequestsList = leaveRequestDao
-			.findLeaveRequestsForTodayByUser(DateTimeUtils.getCurrentUtcDate(), employee.getEmployeeId());
+		List<LeaveRequest> leaveRequestsList = leaveRequestDao.findLeaveRequestsForTodayByUser(
+				DateTimeUtils.getCurrentUtcDate(), employee.getEmployeeId(), List.of(LeaveRequestStatus.APPROVED));
 
 		boolean clockInOnLeaveDaysStatus = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);

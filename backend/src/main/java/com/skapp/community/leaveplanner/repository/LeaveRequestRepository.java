@@ -5,6 +5,7 @@ import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.payload.EmployeeLeaveHistoryFilterDto;
 import com.skapp.community.leaveplanner.payload.LeaveRequestFilterDto;
 import com.skapp.community.leaveplanner.payload.TeamLeaveHistoryFilterDto;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.payload.request.EmployeesOnLeavePeriodFilterDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportExportDto;
 import com.skapp.community.leaveplanner.payload.response.EmployeeLeaveRequestReportQueryDto;
@@ -32,7 +33,8 @@ public interface LeaveRequestRepository {
 
 	List<LeaveRequest> findAllLeaveRequestsByDateRange(LeaveRequestFilterDto leaveRequestFilterDto);
 
-	List<LeaveRequest> findLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId);
+	List<LeaveRequest> findLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId,
+			List<LeaveRequestStatus> statuses);
 
 	List<LeaveRequest> findLeaveRequestAvailabilityForGivenDate(LocalDate date, Long employeeId);
 

@@ -10,7 +10,8 @@ const attendanceParams: attendanceStatusTypes = {
   slotType: AttendanceSlotType.READY,
   slotStartTime: null,
   breakHours: null,
-  workHours: null
+  workHours: null,
+  leavePending: false
 };
 
 const attendanceLeaveStatus: attendanceLeaveStatusTypes = {

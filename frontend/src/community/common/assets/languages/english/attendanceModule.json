@@ -243,6 +243,7 @@
     "notAllowedToClockInOnNonWorkingDaysTooltip": "You are not allowed to clock in on non-working days",
     "notAllowedToClockInOnHolidaysTooltip": "You are not allowed to clock in on company holidays",
     "notAllowedToClockInOnLeaveDaysTooltip": "You are not allowed to clock in on leave days",
+    "notAllowedToClockInOnPendingLeaveDaysTooltip": "Clock-in is blocked while your leave request for today is awaiting approval",
     "clockInConfirmation": "Clock in confirmation",
     "closeButton": "Close Button",
     "clockInConfirmationDescription": "You have applied for a leave today. Are you sure you want to clock in?",

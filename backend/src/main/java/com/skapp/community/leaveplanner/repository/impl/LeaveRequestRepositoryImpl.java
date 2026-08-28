@@ -334,7 +334,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	@Override
-	public List<LeaveRequest> findLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId) {
+	public List<LeaveRequest> findLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId,
+			List<LeaveRequestStatus> statuses) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
 		Root<LeaveRequest> leaveRequest = criteriaQuery.from(LeaveRequest.class);
@@ -342,9 +343,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
 
 		Predicate employeePredicate = criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId);
-		Predicate statusPredicate = criteriaBuilder.or(
-				criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.PENDING),
-				criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status), LeaveRequestStatus.APPROVED));
+		Predicate statusPredicate = leaveRequest.get(LeaveRequest_.status).in(statuses);
 
 		Predicate datePredicate = criteriaBuilder.between(criteriaBuilder.literal(currentDate),
 				leaveRequest.get(LeaveRequest_.startDate), leaveRequest.get(LeaveRequest_.endDate));
