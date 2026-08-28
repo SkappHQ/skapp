@@ -1,0 +1,108 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { DragIcon, StatusCard } from "@rootcodelabs/skapp-ui";
+
+import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { IconName } from "~community/common/types/IconTypes";
+import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
+import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
+import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+
+interface DraggableDealStageCardProps {
+  stage: CrmStageEntity;
+  stageId: number;
+  onEdit: (stage: CrmStageEntity) => void;
+  onDelete?: (stage: CrmStageEntity) => void;
+  isTerminalStage: boolean;
+  isDeletable?: boolean;
+  isDraggable?: boolean;
+}
+
+const DraggableDealStageCard = ({
+  stage,
+  stageId,
+  onEdit,
+  onDelete,
+  isTerminalStage,
+  isDeletable = false,
+  isDraggable = true
+}: DraggableDealStageCardProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: stageId, disabled: !isDraggable });
+  const translateText = useTranslator("configurations", "crm");
+
+  const stageColor = stage.color ?? CrmDealStageColorsEnum.SKY;
+  const { getStageDisplayName } = useStageNameMapper();
+
+  const stageName = getStageDisplayName(stage.name) ?? "";
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="w-full flex flex-row justify-between"
+    >
+      {!isDraggable ? (
+        <div className="w-6 h-6 flex-shrink-0" aria-hidden="true" />
+      ) : (
+        <button
+          {...listeners}
+          {...attributes}
+          className="cursor-grab"
+          type="button"
+        >
+          <DragIcon />
+        </button>
+      )}
+      <StatusCard
+        id={String(stageId)}
+        color={{
+          label: stageColor,
+          code: STAGE_COLOR_MAP[stageColor]
+        }}
+        title={stageName}
+        description={stage.description ?? ""}
+        className={{
+          title: "body1 md:!w-[23%] flex-shrink-0",
+          description: "body2 flex-1"
+        }}
+        iconButtons={{
+          edit: {
+            icon: <Icon name={IconName.EDIT_ICON} />,
+            onClick: () => onEdit(stage),
+            "aria-label": translateText(["aria", "editStage"], {
+              stageName: stageName
+            })
+          },
+          ...(!isTerminalStage &&
+            isDeletable &&
+            onDelete && {
+              delete: {
+                icon: <Icon name={IconName.DELETE_BUTTON_ICON} />,
+                onClick: () => onDelete(stage),
+                "aria-label": translateText(["aria", "deleteStage"], {
+                  stageName: stageName
+                })
+              }
+            })
+        }}
+      />
+    </li>
+  );
+};
+
+export default DraggableDealStageCard;
