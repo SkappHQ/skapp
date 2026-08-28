@@ -3,11 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import {
-  getDueDateStatus,
-  getSelectedTask,
-  getTaskContact
-} from "~community/crm/v2/utils/taskUtil";
+import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   taskId: number;
@@ -34,10 +30,12 @@ const TaskRowSubtitle: FC<Props> = ({
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
-  const contact = getTaskContact(contacts, task?.contactId);
+  const task = tasks[taskId];
+  const contact = task?.contactId ? contacts[task.contactId] : undefined;
 
-  const dueDateStatus = getDueDateStatus(task?.dueAt, task?.isCompleted);
+  const dueDateStatus = task?.dueAt
+    ? getDueDateStatus(task.dueAt, task.isCompleted === true)
+    : null;
 
   return (
     <p className="body3 leading-none mt-0.5 flex items-center gap-2">
@@ -46,7 +44,7 @@ const TaskRowSubtitle: FC<Props> = ({
           className={
             isCompletedStyleApplied
               ? "line-through text-secondary-icon"
-              : dueDateStatus.colorClass
+              : dueDateStatus.textColorClass
           }
         >
           {translateText([dueDateStatus.textKey], {

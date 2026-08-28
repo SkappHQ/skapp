@@ -6,7 +6,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { getSelectedTask, mergeTasks } from "~community/crm/v2/utils/taskUtil";
+import { updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import TaskRowCheckbox from "./TaskRowCheckbox";
 import TaskRowContent from "./TaskRowContent";
@@ -36,7 +36,7 @@ const TaskRow: FC<Props> = ({
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
+  const task = tasks[taskId];
 
   const { mutate: updateCompletion } = useUpdateTask();
 
@@ -46,7 +46,7 @@ const TaskRow: FC<Props> = ({
   const isCompletedStyleApplied = isCompleted && isCheckTaskVisible;
 
   const applyCompletion = (completed: boolean) => {
-    setTasks(mergeTasks(tasks, [{ id: taskId, isCompleted: completed }]));
+    setTasks(updateTaskRecord(tasks, [{ id: taskId, isCompleted: completed }]));
   };
 
   const handleToggleComplete = (completed: boolean) => {

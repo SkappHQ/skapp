@@ -4,7 +4,6 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { getSelectedTask } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   taskId: number;
@@ -25,7 +24,7 @@ const TaskRowCheckbox: FC<Props> = ({
     }))
   );
 
-  const task = getSelectedTask(tasks, taskId);
+  const task = tasks[taskId];
 
   return (
     <div className="shrink-0 flex items-center justify-center pr-1">

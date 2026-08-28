@@ -188,7 +188,7 @@ export interface TaskDueDateInfo {
   textKey: string;
   dateValue?: string;
   dayCount?: number;
-  colorClass: string;
+  textColorClass: string;
 }
 
 export interface GroupedTaskIds {

@@ -18,10 +18,7 @@ import {
 } from "~community/crm/v2/api/TaskApi";
 import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import {
-  TASK_DETAIL_ICON_SIZE,
-  TASK_PAGE_SIZE
-} from "~community/crm/v2/constants/taskConstants";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -30,12 +27,12 @@ import {
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import {
-  getSelectedTask,
   getTaskTypeIcon,
-  getTaskTypeName,
-  mergeTasks,
-  toTaskIds
+  toTaskIds,
+  updateTaskRecord
 } from "~community/crm/v2/utils/taskUtil";
+
+const TASK_DETAIL_ICON_SIZE = 24;
 
 interface Props {
   taskId: number;
@@ -74,15 +71,15 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
 
-  const task = getSelectedTask(tasks, taskId);
-  const typeName = getTaskTypeName(taskTypes, task.typeId);
+  const task = tasks[taskId];
+  const typeName = task.typeId ? taskTypes[task.typeId]?.name : undefined;
 
   const { data: taskDetail } = useGetTaskById(taskId, isOpen);
 
   useEffect(() => {
     if (!taskDetail) return;
 
-    setTasks(mergeTasks(tasks, [taskDetail]));
+    setTasks(updateTaskRecord(tasks, [taskDetail]));
   }, [taskDetail]);
 
   const relatedTasksFilter: CrmRelatedTasksFilterRequest = useMemo(
@@ -105,10 +102,10 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   useEffect(() => {
     if (!relatedTasksData) return;
 
-    const mergedTasks = mergeTasks(tasks, relatedTasks);
+    const updatedTasks = updateTaskRecord(tasks, relatedTasks);
 
     setTasks(
-      mergeTasks(mergedTasks, [
+      updateTaskRecord(updatedTasks, [
         { id: taskId, relatedTaskIds: toTaskIds(relatedTasks) }
       ])
     );
@@ -120,7 +117,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   };
 
   const handleMarkAsDoneSuccess = (updatedTask: CrmTaskEntity) => {
-    setTasks(mergeTasks(tasks, [updatedTask]));
+    setTasks(updateTaskRecord(tasks, [updatedTask]));
     handleClose();
   };
 

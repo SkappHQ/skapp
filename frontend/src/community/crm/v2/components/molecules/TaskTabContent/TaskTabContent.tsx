@@ -7,6 +7,8 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getEmptyStateType } from "~community/common/utils/commonUtil";
+import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 import { useGetDealsByIds } from "~community/crm/v2/api/DealApi";
 import {
   useGetCompletedTasks,
@@ -15,24 +17,22 @@ import {
 import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 import {
   TASK_PAGE_SIZE,
-  TASK_SEARCH_DEBOUNCE_DELAY,
   TASK_SKELETON_CONFIG,
   UNPAGINATED_SIZE
 } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskFilterRequest } from "~community/crm/v2/types/CrmTypes";
-import { getEmptyStateType } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingDealIds,
   mergeDeals
 } from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskGroups,
-  mergeTasks,
   resolveTasks,
   toTaskDealIds,
-  toTaskIds
+  toTaskIds,
+  updateTaskRecord
 } from "~community/crm/v2/utils/taskUtil";
 
 import TaskTabSkeleton from "./TaskTabSkeleton";
@@ -46,7 +46,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const { userId } = useSessionData();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, TASK_SEARCH_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
 
   const { tasks, taskIds, deals, setTasks, setTaskIds, setDeals } =
     useCrmStoreV2(
@@ -108,7 +108,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
-    setTasks(mergeTasks(tasks, fetchedTasks));
+    setTasks(updateTaskRecord(tasks, fetchedTasks));
     setTaskIds(toTaskIds(fetchedTasks));
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
