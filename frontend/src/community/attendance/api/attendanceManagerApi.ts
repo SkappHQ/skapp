@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { rejects } from "assert";
 
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
@@ -8,6 +9,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import { getStartAndEndOfYear } from "~community/common/utils/dateTimeUtils";
+import { dashboardQueryKeys } from "~enterprise/common/api/utils/QueryKeys";
 
 import { graphDataPreprocessor } from "../actions/attendanceDashboardPreProcessor";
 import { useAttendanceStore } from "../store/attendanceStore";
@@ -126,6 +128,8 @@ export const useApproveDenyTimeRequest = (
   onSuccess: () => void,
   onError: (messageKey: string) => void
 ) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (requestData: { id: number; status: string }) => {
       const url = managerAttendanceEndpoints.MANAGER_APPROVE_DENY_REQUESTS(
@@ -137,6 +141,16 @@ export const useApproveDenyTimeRequest = (
     },
     onSuccess: () => {
       onSuccess();
+      queryClient
+        .invalidateQueries({
+          queryKey: attendanceQueryKeys.getManagerRequests()
+        })
+        .catch(rejects);
+      queryClient
+        .invalidateQueries({
+          queryKey: dashboardQueryKeys.GET_PENDING_COUNTS
+        })
+        .catch(rejects);
     },
     onError: (error: ErrorResponse) => {
       onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
