@@ -225,6 +225,7 @@ export const TimeUtilizationTrendTypes = {
 export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
+  date?: string;
 }
 
 export interface DirectTimeEntryVariablesType extends DirectEntryEmployeeType {

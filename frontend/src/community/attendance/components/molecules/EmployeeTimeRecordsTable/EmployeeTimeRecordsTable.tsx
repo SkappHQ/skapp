@@ -42,10 +42,6 @@ import { useDefaultCapacity } from "~community/configurations/api/timeConfigurat
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
-interface PendingDirectEntryCell extends DirectEntryEmployeeType {
-  date: string;
-}
-
 interface Props {
   recordData: TimeRecordDataResponseType;
   orgName?: string;
@@ -95,9 +91,8 @@ const EmployeeTimeRecordsTable = ({
 
   const { setToastMessage } = useToast();
 
-  const [pendingCell, setPendingCell] = useState<PendingDirectEntryCell | null>(
-    null
-  );
+  const [pendingCell, setPendingCell] =
+    useState<DirectEntryEmployeeType | null>(null);
 
   const {
     data: pendingDayLogs,
@@ -114,12 +109,14 @@ const EmployeeTimeRecordsTable = ({
   const [handledCell, setHandledCell] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!pendingCell) {
+    if (!pendingCell?.date) {
       setHandledCell(null);
       return;
     }
 
-    const cellKey = `${pendingCell.employeeId}-${pendingCell.date}`;
+    const { employeeId, employeeName, date } = pendingCell;
+
+    const cellKey = `${employeeId}-${date}`;
     if (handledCell === cellKey || isPendingDayFetching) return;
 
     if (isPendingDayError) {
@@ -138,9 +135,8 @@ const EmployeeTimeRecordsTable = ({
     if (!isPendingDaySuccess) return;
 
     const dayRecord =
-      pendingDayLogs?.find(
-        (log: DailyLogType) => log.date === pendingCell.date
-      ) ?? createEmptyDailyLog(pendingCell.date);
+      pendingDayLogs?.find((log: DailyLogType) => log.date === date) ??
+      createEmptyDailyLog(date);
 
     const modalType = getTimeEntryModalType(dayRecord);
 
@@ -148,10 +144,7 @@ const EmployeeTimeRecordsTable = ({
     setPendingCell(null);
     if (modalType === null) return;
 
-    setDirectEntryEmployee({
-      employeeId: pendingCell.employeeId,
-      employeeName: pendingCell.employeeName
-    });
+    setDirectEntryEmployee({ employeeId, employeeName });
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
     setIsEmployeeTimesheetModalOpen(true);
