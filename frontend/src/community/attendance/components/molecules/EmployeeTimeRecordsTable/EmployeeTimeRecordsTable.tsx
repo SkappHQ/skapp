@@ -1,6 +1,7 @@
 import { type Theme, useTheme } from "@mui/material/styles";
 import { LocationPinIcon, Tooltip } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, JSX, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
@@ -71,14 +72,16 @@ const EmployeeTimeRecordsTable = ({
     setDirectEntryEmployee,
     setEmployeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen
-  } = useAttendanceStore((state) => ({
-    timesheetAnalyticsParams: state.timesheetAnalyticsParams,
-    setTimesheetAnalyticsPagination: state.setTimesheetAnalyticsPagination,
-    setSelectedDailyRecord: state.setSelectedDailyRecord,
-    setDirectEntryEmployee: state.setDirectEntryEmployee,
-    setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
-    setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
-  }));
+  } = useAttendanceStore(
+    useShallow((state) => ({
+      timesheetAnalyticsParams: state.timesheetAnalyticsParams,
+      setTimesheetAnalyticsPagination: state.setTimesheetAnalyticsPagination,
+      setSelectedDailyRecord: state.setSelectedDailyRecord,
+      setDirectEntryEmployee: state.setDirectEntryEmployee,
+      setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
+      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
+    }))
+  );
 
   const { isFetching: isExportRecordDataLoading, refetch: refetchExportData } =
     useGetManagerTimeRecords(true);
