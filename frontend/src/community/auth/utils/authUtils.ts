@@ -46,14 +46,24 @@ export const resolvePostSignInPath = (
 ): string => {
   const path = Array.isArray(callback) ? callback[0] : callback;
 
-  const isSafeRedirect =
-    !!path &&
-    path.startsWith("/") &&
-    !path.startsWith("//") &&
-    !path.startsWith("/\\") &&
-    path !== currentPath;
+  if (!path || typeof window === "undefined") {
+    return ROUTES.DASHBOARD.BASE;
+  }
 
-  return isSafeRedirect ? path : ROUTES.DASHBOARD.BASE;
+  try {
+    const target = new URL(path, window.location.origin);
+
+    if (
+      target.origin !== window.location.origin ||
+      target.pathname === currentPath
+    ) {
+      return ROUTES.DASHBOARD.BASE;
+    }
+
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch {
+    return ROUTES.DASHBOARD.BASE;
+  }
 };
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
