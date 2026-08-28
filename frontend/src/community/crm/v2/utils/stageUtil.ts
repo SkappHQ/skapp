@@ -8,7 +8,7 @@ import { CrmDealStageReorderItem } from "~community/crm/v2/types/CrmTypes";
 export const getSelectedStage = (
   stages: CrmStageRecord,
   stageId: number | null
-) => {
+): CrmStageEntity | undefined => {
   if (stageId !== null) {
     return stages[stageId];
   }
@@ -83,18 +83,20 @@ export const toStageReorderPayload = (
   return payload;
 };
 
-/** Restamps orderIndex from the saved order so the record matches what the server now holds. */
-export const applyStageOrder = (
-  stages: CrmStageRecord,
-  orderedStages: CrmStageEntity[]
-): CrmStageRecord => {
-  const reordered: CrmStageRecord = { ...stages };
+const toStandardStageName = (stageName: string): string =>
+  stageName.trim().replace(/\s+/g, "_").toUpperCase();
 
-  orderedStages.forEach((stage, index) => {
-    if (stage.id !== undefined) {
-      reordered[stage.id] = { ...reordered[stage.id], orderIndex: index + 1 };
-    }
-  });
+export const isStageNameTaken = (
+  stages: CrmStageEntity[],
+  stageName: string,
+  currentStageId?: number
+): boolean => {
+  const standardName = toStandardStageName(stageName);
 
-  return reordered;
+  return stages.some(
+    (stage) =>
+      stage.id !== currentStageId &&
+      stage.name !== undefined &&
+      toStandardStageName(stage.name) === standardName
+  );
 };

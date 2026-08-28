@@ -11,9 +11,9 @@ const useStageNameMapper = () => {
   );
 
   const getStageDisplayName = useCallback(
-    (stageName?: string) => {
+    (stageName?: string): string | undefined => {
       if (stageName !== undefined) {
-        return stageName in DefaultStageNameEnum
+        return Object.values<string>(DefaultStageNameEnum).includes(stageName)
           ? translateText([stageName])
           : stageName;
       }

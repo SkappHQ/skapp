@@ -4,6 +4,7 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { isDealStageNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { isStageNameTaken } from "~community/crm/v2/utils/stageUtil";
 
 export const getStageValidationSchema = (
   translator: TranslatorFunctionType,
@@ -29,12 +30,7 @@ export const getStageValidationSchema = (
       .test(
         "is-deal-stage-name-unique",
         translator(["dealStageModal", "validations", "nameExists"]),
-        (value) =>
-          stages.every(
-            (stage) =>
-              stage.id === currentStageId ||
-              stage.name?.trim().toLowerCase() !== value.trim().toLowerCase()
-          )
+        (value) => !isStageNameTaken(stages, value, currentStageId)
       ),
     description: Yup.string()
       .trim()

@@ -4,7 +4,7 @@ import {
   PlusIcon,
   SaveIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -24,10 +24,7 @@ import {
   getOrderedStages,
   toStagesRecord
 } from "~community/crm/v2/utils/commonUtil";
-import {
-  applyStageOrder,
-  toStageReorderPayload
-} from "~community/crm/v2/utils/stageUtil";
+import { toStageReorderPayload } from "~community/crm/v2/utils/stageUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -59,7 +56,7 @@ const DealStagesSection: FC = () => {
     refetch: refetchStages
   } = useGetDealStages();
 
-  const orderedStages = getOrderedStages(stages);
+  const orderedStages = useMemo(() => getOrderedStages(stages), [stages]);
 
   const [draftStages, setDraftStages] = useState<CrmStageEntity[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
@@ -74,10 +71,10 @@ const DealStagesSection: FC = () => {
     if (hasChanges) return;
 
     setDraftStages(orderedStages);
-  }, [stages, hasChanges]);
+  }, [orderedStages, hasChanges]);
 
-  const handleSuccess = () => {
-    setStages(applyStageOrder(stages, draftStages));
+  const handleSuccess = (reorderedStages: CrmStageEntity[]) => {
+    setStages({ ...stages, ...toStagesRecord(reorderedStages) });
     setHasChanges(false);
     setToastMessage({
       open: true,
