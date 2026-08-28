@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useState } from "react";
 
 import {
   useGetAttendanceConfiguration,
@@ -23,18 +23,16 @@ import styles from "./styles";
 
 const AttendanceConfiguration = (): JSX.Element => {
   const classes = styles();
-  const [config, setConfig] = useState<AttendanceConfigurationType | null>(
-    null
-  );
-  const [initialConfig, setInitialConfig] =
-    useState<AttendanceConfigurationType | null>(null);
-  const [locallyEditedKeys, setLocallyEditedKeys] = useState<
-    Set<keyof AttendanceConfigurationType>
-  >(new Set());
+  const [edits, setEdits] = useState<Partial<AttendanceConfigurationType>>({});
 
   const { data: configData } = useGetAttendanceConfiguration();
+
+  const config: AttendanceConfigurationType | null = configData
+    ? { ...configData, ...edits }
+    : null;
+
   const onSuccess = () => {
-    setLocallyEditedKeys(new Set());
+    setEdits({});
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -59,44 +57,11 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-  useEffect(() => {
-    if (!configData) return;
-
-    setInitialConfig(configData);
-
-    setConfig((prevConfig) => {
-      if (!prevConfig) return configData;
-
-      const localEdits: Partial<AttendanceConfigurationType> = {};
-      locallyEditedKeys.forEach((key) => {
-        localEdits[key] = prevConfig[key];
-      });
-
-      return { ...configData, ...localEdits };
-    });
-  }, [configData, locallyEditedKeys]);
-
   const handleSwitchChange = (
     key: keyof AttendanceConfigurationType,
     checked: boolean
   ) => {
-    setLocallyEditedKeys((prevKeys) => new Set(prevKeys).add(key));
-    setConfig((prevConfig) =>
-      prevConfig ? { ...prevConfig, [key]: checked } : prevConfig
-    );
-  };
-
-  const handleManualEntryRestrictionSaved = (checked: boolean) => {
-    setConfig((prevConfig) =>
-      prevConfig
-        ? { ...prevConfig, isManualTimeEntryRestrictionEnabled: checked }
-        : prevConfig
-    );
-    setInitialConfig((prevInitialConfig) =>
-      prevInitialConfig
-        ? { ...prevInitialConfig, isManualTimeEntryRestrictionEnabled: checked }
-        : prevInitialConfig
-    );
+    setEdits((prevEdits) => ({ ...prevEdits, [key]: checked }));
   };
 
   const handleSaveBtnClick = () => {
@@ -106,13 +71,14 @@ const AttendanceConfiguration = (): JSX.Element => {
   };
 
   const handleCancelBtnClick = () => {
-    setLocallyEditedKeys(new Set());
-    setConfig(initialConfig);
+    setEdits({});
   };
 
-  const isFormChanged = () => {
-    return JSON.stringify(config) !== JSON.stringify(initialConfig);
-  };
+  const isFormChanged = () =>
+    Object.entries(edits).some(
+      ([key, value]) =>
+        configData?.[key as keyof AttendanceConfigurationType] !== value
+    );
 
   const isManualEntryRestricted = Boolean(
     config?.isManualTimeEntryRestrictionEnabled
@@ -175,8 +141,7 @@ const AttendanceConfiguration = (): JSX.Element => {
 
         <ManualEntryRestrictionSettings
           config={config}
-          initialConfig={initialConfig}
-          onSaved={handleManualEntryRestrictionSaved}
+          initialConfig={configData ?? null}
         />
 
         {!isManualEntryRestricted && (
@@ -208,13 +173,13 @@ const AttendanceConfiguration = (): JSX.Element => {
 
         <GeoFencingSettings
           config={config}
-          initialConfig={initialConfig}
+          initialConfig={configData ?? null}
           onSwitchChange={handleSwitchChange}
         />
 
         <FingerprintSettings
           config={config}
-          initialConfig={initialConfig}
+          initialConfig={configData ?? null}
           onSwitchChange={handleSwitchChange}
         />
 
