@@ -88,8 +88,8 @@ public class CrmDealController {
 
 	@Operation(summary = "Get the current user's deal list-view config",
 			description = "Returns the user's saved deal table config JSON, or the default config when nothing is saved.")
-	@GetMapping("/list-view-config")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@GetMapping("/list-view-config")
 	public ResponseEntity<ResponseEntityDto> getListViewConfig() {
 		ResponseEntityDto response = crmDealListViewConfigService.getListViewConfig();
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -97,8 +97,8 @@ public class CrmDealController {
 
 	@Operation(summary = "Update the current user's deal list-view config",
 			description = "Persists the deal table config JSON sent by the client as-is; does not affect other users.")
-	@PutMapping("/list-view-config")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	@PutMapping("/list-view-config")
 	public ResponseEntity<ResponseEntityDto> updateListViewConfig(@RequestBody JsonNode config) {
 		ResponseEntityDto response = crmDealListViewConfigService.updateListViewConfig(config);
 		return new ResponseEntity<>(response, HttpStatus.OK);
