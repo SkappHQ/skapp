@@ -25,7 +25,10 @@ import {
   formatMonetaryValue,
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
-import { normalizeCompanies } from "~community/crm/v2/utils/companyUtil";
+import {
+  mergeCompanies,
+  toCompanyIds
+} from "~community/crm/v2/utils/companyUtil";
 
 export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -65,10 +68,9 @@ export const CompanyTable: FC = () => {
     if (!data) return;
 
     const items = data.pages.flatMap((page) => page.items);
-    const normalized = normalizeCompanies(items);
 
-    setCompanies({ ...companies, ...normalized.companies });
-    setCompanyIds(normalized.companyIds);
+    setCompanies(mergeCompanies(companies, items));
+    setCompanyIds(toCompanyIds(items));
   }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -183,9 +185,7 @@ export const CompanyTable: FC = () => {
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: () => {
-          void fetchNextPage();
-        }
+        onLoadMore: fetchNextPage
       }}
       toolbar={{
         searchBar: {

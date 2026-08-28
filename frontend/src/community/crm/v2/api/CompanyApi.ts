@@ -43,8 +43,14 @@ export const useGetCompaniesInfinite = (
     queryFn: ({ pageParam }) => fetchCompanies({ ...params, page: pageParam }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const nextPage = lastPage.currentPage + 1;
-      return nextPage < lastPage.totalPages ? nextPage : undefined;
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
     },
     refetchOnWindowFocus: false
   });

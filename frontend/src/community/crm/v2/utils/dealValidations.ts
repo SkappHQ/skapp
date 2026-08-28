@@ -76,3 +76,11 @@ export const validateDealDescription = (
   description: string,
   translator: TranslatorFunctionType
 ): string => validateField("description", description, translator);
+
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: dealNameValidation(translator),
+    contactId: Yup.string().required(
+      translator(["inlineAddDeal", "validations", "contactRequired"])
+    )
+  });

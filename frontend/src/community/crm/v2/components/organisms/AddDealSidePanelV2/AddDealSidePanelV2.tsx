@@ -13,7 +13,7 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
-import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
+import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
 import {
   useCheckDealNameExists,
   useCreateDeal
@@ -24,7 +24,10 @@ import {
   CrmContactEntity,
   CrmDealEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactFilterRequest,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
@@ -89,9 +92,13 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+  const contactFilters: CrmContactFilterRequest = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
+  const { data: contactLookupData } = useGetContactLookup(
+    contactFilters,
     isOpen
   );
   const contacts = useMemo(
