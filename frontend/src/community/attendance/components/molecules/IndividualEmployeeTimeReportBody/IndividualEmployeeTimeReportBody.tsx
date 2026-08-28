@@ -9,19 +9,13 @@ import TimeUtilizationCard from "~community/attendance/components/molecules/Time
 import TimesheetDailyRecordTable from "~community/attendance/components/molecules/TimesheetDailyRecordTable/TimesheetDailyRecordTable";
 import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
-import {
-  DirectEntryEmployeeType,
-  TimeUtilizationTrendTypes
-} from "~community/attendance/types/timeSheetTypes";
+import { TimeUtilizationTrendTypes } from "~community/attendance/types/timeSheetTypes";
 import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import {
-  concatStrings,
-  roundNumberToX
-} from "~community/common/utils/commonUtil";
+import { roundNumberToX } from "~community/common/utils/commonUtil";
 import {
   getCurrentMonth,
   getMonthName,
@@ -51,17 +45,6 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
     selectedUser,
     canDirectlyAddOrEditEntry
   );
-
-  const targetEmployee = useMemo<DirectEntryEmployeeType | undefined>(() => {
-    const employeeName = concatStrings([
-      targetEmployeeDetails?.firstName ?? "",
-      targetEmployeeDetails?.lastName ?? ""
-    ]).trim();
-
-    return employeeName
-      ? { employeeId: selectedUser, employeeName }
-      : undefined;
-  }, [selectedUser, targetEmployeeDetails]);
 
   const { isDrawerToggled } = useCommonStore((state) => ({
     isDrawerToggled: state.isDrawerExpanded
@@ -160,7 +143,8 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
           >
             <EmployeeTimesheetPopupController />
             <TimesheetDailyRecordTable
-              targetEmployee={targetEmployee}
+              targetEmployeeId={selectedUser}
+              targetEmployeeDetails={targetEmployeeDetails}
               dailyLogData={dailyLogs || []}
               downloadEmployeeDailyLogCsv={() => {
                 downloadEmployeeDailyLogCsv(

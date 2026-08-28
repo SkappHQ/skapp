@@ -21,7 +21,6 @@ import { useAttendanceStore } from "~community/attendance/store/attendanceStore"
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   DailyLogType,
-  DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
@@ -32,7 +31,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { concatStrings, getEmoji } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
@@ -40,6 +39,7 @@ import {
   shouldMoveDownward,
   shouldMoveUpward
 } from "~community/common/utils/keyboardUtils";
+import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
 
 import TimesheetTimelineBar from "../TimesheetTimelineBar/TimesheetTimelineBar";
 import styles from "./styles";
@@ -47,7 +47,8 @@ import styles from "./styles";
 interface Props {
   record: DailyLogType;
   headerLength: number;
-  targetEmployee?: DirectEntryEmployeeType;
+  targetEmployeeId?: number;
+  targetEmployeeDetails?: EmployeeDetails;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
 }
@@ -55,7 +56,8 @@ interface Props {
 const TimesheetDailyRecordTableRow: FC<Props> = ({
   record,
   headerLength,
-  targetEmployee,
+  targetEmployeeId,
+  targetEmployeeDetails,
   isRowInteractive,
   isManualEntryRestricted
 }) => {
@@ -175,10 +177,16 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   const handleRowActivate = () => {
     if (!isRowInteractive) return;
 
-    if (targetEmployee) {
+    if (targetEmployeeDetails && targetEmployeeId) {
       if (getTimeEntryModalType(record) === null) return;
 
-      setDirectManualTimeEntryEligibleEmployee(targetEmployee);
+      setDirectManualTimeEntryEligibleEmployee({
+        employeeId: targetEmployeeId,
+        employeeName: concatStrings([
+          targetEmployeeDetails.firstName ?? "",
+          targetEmployeeDetails.lastName ?? ""
+        ]).trim()
+      });
       handleEdit();
       return;
     }
@@ -196,7 +204,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       onClick={handleRowActivate}
       aria-disabled={!isRowInteractive}
       title={
-        isManualEntryRestricted && !targetEmployee
+        isManualEntryRestricted && !targetEmployeeDetails
           ? translateText(["manualEntryRestrictedCellTooltip"])
           : undefined
       }

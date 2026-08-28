@@ -5,10 +5,7 @@ import { JSX, useEffect, useRef, useState } from "react";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
-import {
-  DailyLogType,
-  DirectEntryEmployeeType
-} from "~community/attendance/types/timeSheetTypes";
+import { DailyLogType } from "~community/attendance/types/timeSheetTypes";
 import {
   generateTimeSlots,
   timeStringToDecimalHours
@@ -20,6 +17,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import { IconName } from "~community/common/types/IconTypes";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
+import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
 
 import TimesheetDailyRecordSkeleton from "../AttendanceSkeletons/TimesheetDailyRecordSkeleton";
 import TimesheetDailyRecordTableHeader from "../TimesheetDailyRecordTableHeader/TimesheetDailyRecordTableHeader";
@@ -30,14 +28,16 @@ interface Props {
   dailyLogData: DailyLogType[];
   downloadEmployeeDailyLogCsv?: () => void;
   isDailyLogLoading?: boolean;
-  targetEmployee?: DirectEntryEmployeeType;
+  targetEmployeeId?: number;
+  targetEmployeeDetails?: EmployeeDetails;
 }
 
 const TimesheetDailyRecordTable = ({
   dailyLogData,
   downloadEmployeeDailyLogCsv,
   isDailyLogLoading,
-  targetEmployee
+  targetEmployeeId,
+  targetEmployeeDetails
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
   const {
@@ -48,7 +48,9 @@ const TimesheetDailyRecordTable = ({
 
   const isRowInteractive =
     !isRestrictionLoading &&
-    (targetEmployee ? canDirectlyAddOrEditEntry : !isManualEntryRestricted);
+    (targetEmployeeDetails
+      ? canDirectlyAddOrEditEntry
+      : !isManualEntryRestricted);
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -140,7 +142,8 @@ const TimesheetDailyRecordTable = ({
                   record={record}
                   key={record?.date}
                   headerLength={tableHeaders?.length}
-                  targetEmployee={targetEmployee}
+                  targetEmployeeId={targetEmployeeId}
+                  targetEmployeeDetails={targetEmployeeDetails}
                   isRowInteractive={isRowInteractive}
                   isManualEntryRestricted={isManualEntryRestricted}
                 />
@@ -152,7 +155,8 @@ const TimesheetDailyRecordTable = ({
                     record={record}
                     key={record?.date}
                     headerLength={tableHeaders?.length}
-                    targetEmployee={targetEmployee}
+                    targetEmployeeId={targetEmployeeId}
+                    targetEmployeeDetails={targetEmployeeDetails}
                     isRowInteractive={isRowInteractive}
                     isManualEntryRestricted={isManualEntryRestricted}
                   />
