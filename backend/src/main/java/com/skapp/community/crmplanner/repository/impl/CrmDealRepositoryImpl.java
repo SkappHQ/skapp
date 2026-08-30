@@ -146,12 +146,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	/**
-	 * Maps a {@link CrmDealSort} column key to the criteria expression it sorts on.
-	 * AMOUNT is cast to {@link BigDecimal} so the value column sorts numerically
-	 * (highest/lowest) rather than lexically; every other key sorts on its natural
-	 * (alphabetical) path.
-	 */
 	private Expression<?> resolveDealSortExpression(CrmDealSort sortKey, Root<CrmDeal> deal,
 			Join<CrmDeal, CrmDealStage> stage, Join<CrmDeal, CrmCompany> company, Join<CrmDeal, CrmContact> contact,
 			Join<CrmDeal, Employee> owner) {

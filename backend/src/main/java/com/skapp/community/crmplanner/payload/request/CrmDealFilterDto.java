@@ -17,8 +17,6 @@ public class CrmDealFilterDto {
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	// Null = no active column sort; the list view then falls back to the saved row
-	// (crm_deal_order_index.list) order. Set to a column key to apply that sort.
 	private CrmDealSort sortKey;
 
 	private String searchKeyword;

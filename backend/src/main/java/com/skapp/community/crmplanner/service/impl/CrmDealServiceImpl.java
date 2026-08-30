@@ -89,9 +89,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final MessageUtil messageUtil;
 
-	// Field-injected (not constructor-injected) so the @RequiredArgsConstructor signature
-	// stays stable for the enterprise EpCrmDealServiceImpl subclass, which calls
-	// super(...).
 	@Autowired
 	private CrmDealOrderIndexService crmDealOrderIndexService;
 
