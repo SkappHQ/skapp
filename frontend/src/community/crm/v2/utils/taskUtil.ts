@@ -5,10 +5,7 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import {
-  CrmPriorityEnum,
-  CrmTaskTabEnum
-} from "~community/crm/v2/enums/common";
+import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
   CrmTaskEntity,
   CrmTaskRecord,
@@ -73,30 +70,6 @@ export const getTaskTypeOptions = (
     value: String(taskType.id),
     label: taskType.name.toLowerCase()
   }));
-
-export const getTaskFormInitialValues = (
-  task?: CrmTaskEntity
-): CrmTaskEntity => ({
-  name: task?.name ?? "",
-  typeId: task?.typeId,
-  priority: task?.priority ?? CrmPriorityEnum.MEDIUM,
-  dueAt: task?.dueAt,
-  ownerId: task?.ownerId,
-  contactId: task?.contactId,
-  dealId: task?.dealId,
-  notes: task?.notes ?? ""
-});
-
-export const getTrimmedTaskValues = (values: CrmTaskEntity): CrmTaskEntity => ({
-  name: values.name?.trim(),
-  typeId: values.typeId,
-  priority: values.priority,
-  dueAt: values.dueAt,
-  ownerId: values.ownerId,
-  contactId: values.contactId,
-  dealId: values.dealId,
-  notes: values.notes?.trim()
-});
 
 export const getChangedTaskFields = (
   initialValues: CrmTaskEntity,
