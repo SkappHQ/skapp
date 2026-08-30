@@ -126,10 +126,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("updateLeavePolicy: policy updated successfully");
 
-		LeavePolicyResponseDto leavePolicyResponseDto = leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy);
-		populateAssignedEmployeeCounts(List.of(leavePolicyResponseDto));
-
-		return new ResponseEntityDto(false, leavePolicyResponseDto);
+		return new ResponseEntityDto(false, leaveMapper.leavePolicyToLeavePolicyResponseDto(leavePolicy));
 	}
 
 	@Override
@@ -200,19 +197,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private void populateAssignedEmployeeCounts(List<LeavePolicyResponseDto> leavePolicyResponseDtos) {
-		if (leavePolicyResponseDtos.isEmpty()) {
-			return;
-		}
-
-		List<Long> policyIds = leavePolicyResponseDtos.stream().map(LeavePolicyResponseDto::getId).toList();
-		Map<Long, Long> assignedCounts = employeeLeavePolicyDao.countByPolicyIdsAndStatus(policyIds,
-				EmployeeLeavePolicyStatus.ACTIVE);
-
-		leavePolicyResponseDtos
-			.forEach(dto -> dto.setAssignedEmployeeCount(assignedCounts.getOrDefault(dto.getId(), 0L)));
 	}
 
 	@Override
@@ -298,6 +282,19 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue()));
 
 		log.info("setDefaultLeavePolicyConfig: execution ended");
+	}
+
+	private void populateAssignedEmployeeCounts(List<LeavePolicyResponseDto> leavePolicyResponseDtos) {
+		if (leavePolicyResponseDtos.isEmpty()) {
+			return;
+		}
+
+		List<Long> policyIds = leavePolicyResponseDtos.stream().map(LeavePolicyResponseDto::getId).toList();
+		Map<Long, Long> assignedCounts = employeeLeavePolicyDao.countByPolicyIdsAndStatus(policyIds,
+				EmployeeLeavePolicyStatus.ACTIVE);
+
+		leavePolicyResponseDtos
+			.forEach(dto -> dto.setAssignedEmployeeCount(assignedCounts.getOrDefault(dto.getId(), 0L)));
 	}
 
 	private int endActivePolicyAssignments(Long policyId) {

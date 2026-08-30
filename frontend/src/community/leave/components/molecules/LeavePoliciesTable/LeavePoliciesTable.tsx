@@ -131,7 +131,10 @@ const LeavePoliciesTable: FC<Props> = ({
     const baseHeaders: GridHeader[] = [
       { id: "policyName", label: translateText(["policyNameHeader"]) },
       { id: "leaveType", label: translateText(["leaveTypeHeader"]) },
-      { id: "entitlementType", label: translateText(["entitlementTypeHeader"]) },
+      {
+        id: "entitlementType",
+        label: translateText(["entitlementTypeHeader"])
+      },
       { id: "status", label: translateText(["statusHeader"]) },
       {
         id: "assignedEmployees",
@@ -157,9 +160,7 @@ const LeavePoliciesTable: FC<Props> = ({
         return {
           id: policy.id,
           ariaLabel: policy.name,
-          policyName: (
-            <span className="body1 text-black">{policy.name}</span>
-          ),
+          policyName: <span className="body1 text-black">{policy.name}</span>,
           leaveType: (
             <LeaveTypeChip
               name={policy.leaveTypeName}
@@ -177,13 +178,15 @@ const LeavePoliciesTable: FC<Props> = ({
             <LeavePolicyStatusBadge
               isActive={isActive}
               text={
-                isActive ? translateText(["active"]) : translateText(["inactive"])
+                isActive
+                  ? translateText(["active"])
+                  : translateText(["inactive"])
               }
             />
           ),
           assignedEmployees: (
             <span className="body1 text-black">
-              {policy.assignedEmployeeCount ?? 0}
+              {policy.assignedEmployeeCount}
             </span>
           ),
           ...(canManagePolicies
@@ -227,7 +230,13 @@ const LeavePoliciesTable: FC<Props> = ({
             : {})
         };
       }),
-    [policies, translateText, canManagePolicies, openKebabMenuId, handleActivate]
+    [
+      policies,
+      translateText,
+      canManagePolicies,
+      openKebabMenuId,
+      handleActivate
+    ]
   );
 
   const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);

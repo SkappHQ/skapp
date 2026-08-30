@@ -6,13 +6,16 @@ import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeavePolicy_;
 import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyRepository;
 import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
+import com.skapp.community.peopleplanner.type.AccountStatus;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Fetch;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
@@ -85,10 +88,12 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);
+		Join<EmployeeLeavePolicy, Employee> employee = root.join(EmployeeLeavePolicy_.employee);
 		Path<Long> policyId = root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.id);
 
-		query.multiselect(policyId, cb.count(root))
-			.where(policyId.in(policyIds), cb.equal(root.get(EmployeeLeavePolicy_.status), status))
+		query.multiselect(policyId, cb.countDistinct(employee))
+			.where(policyId.in(policyIds), cb.equal(root.get(EmployeeLeavePolicy_.status), status),
+					cb.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)))
 			.groupBy(policyId);
 
 		return entityManager.createQuery(query)

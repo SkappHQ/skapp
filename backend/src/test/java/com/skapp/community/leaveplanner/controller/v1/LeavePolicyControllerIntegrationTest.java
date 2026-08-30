@@ -64,10 +64,13 @@ class LeavePolicyControllerIntegrationTest {
 			+ "VALUES (501, 'Inactive Policy', 100, 'ACCRUAL', 'INACTIVE', false)";
 
 	private static final String SEED_POLICY_ASSIGNMENTS = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) VALUES "
-			+ "(950, 1, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE'), " + "(951, 2, 500, 'SPECIFIC', '2024-01-01', 'ENDED')";
+			+ "(950, 1, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE'), "
+			+ "(951, 2, 500, 'SPECIFIC', '2024-01-01', 'ENDED')";
 
 	private static final String SEED_EXTRA_ACTIVE_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
 			+ "VALUES (953, 3, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE')";
+
+	private static final String TERMINATE_EMPLOYEE_3 = "UPDATE employee SET account_status = 'TERMINATED' WHERE employee_id = 3";
 
 	private static final String SEED_OTHER_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
 			+ "VALUES (502, 'Other Policy', 101, 'ACCRUAL', 'ACTIVE', false)";
@@ -335,6 +338,36 @@ class LeavePolicyControllerIntegrationTest {
 		@DisplayName("Leave policy list counts only active employee assignments")
 		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS })
 		void getAllLeavePolicies_LeaveAdmin_CountsOnlyActiveAssignments() throws Exception {
+			performGetAll(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("Existing Policy"))
+				.andExpect(jsonPath("$.results[0].items[0].assignedEmployeeCount").value(1));
+		}
+
+		@Test
+		@DisplayName("Leave policy list counts assignments separately for each policy")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE, SEED_POLICY, SEED_INACTIVE_POLICY,
+				SEED_OTHER_POLICY, SEED_POLICY_ASSIGNMENTS, SEED_EXTRA_ACTIVE_ASSIGNMENT,
+				SEED_OTHER_POLICY_ASSIGNMENT })
+		void getAllLeavePolicies_LeaveAdmin_CountsAssignmentsPerPolicy() throws Exception {
+			performGetAll(leaveAdminToken()).andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+				.andExpect(jsonPath("$.results[0].items", hasSize(3)))
+				.andExpect(jsonPath("$.results[0].items[0].name").value("Existing Policy"))
+				.andExpect(jsonPath("$.results[0].items[0].assignedEmployeeCount").value(2))
+				.andExpect(jsonPath("$.results[0].items[1].name").value("Inactive Policy"))
+				.andExpect(jsonPath("$.results[0].items[1].assignedEmployeeCount").value(0))
+				.andExpect(jsonPath("$.results[0].items[2].name").value("Other Policy"))
+				.andExpect(jsonPath("$.results[0].items[2].assignedEmployeeCount").value(1));
+		}
+
+		@Test
+		@DisplayName("Leave policy list excludes terminated employees from the assignment count")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS, SEED_EXTRA_ACTIVE_ASSIGNMENT,
+				TERMINATE_EMPLOYEE_3 })
+		void getAllLeavePolicies_TerminatedEmployee_ExcludedFromCount() throws Exception {
 			performGetAll(leaveAdminToken()).andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
