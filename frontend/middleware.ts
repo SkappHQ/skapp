@@ -5,6 +5,7 @@ import { extractClaimsFromToken } from "~community/auth/utils/authUtils";
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
+  leavePolicyManagementRestrictedRoutes,
   managerRestrictedRoutes,
   nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
@@ -71,9 +72,10 @@ const superAdminRoutes = {
 const adminRoutes = {
   [AdminTypes.PEOPLE_ADMIN]: [
     ROUTES.PEOPLE.BASE,
-    ROUTES.CONFIGURATIONS.BASE
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.LEAVE.LEAVE_POLICIES
   ],
-  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
+  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
     ROUTES.CONFIGURATIONS.BASE
@@ -267,6 +269,18 @@ export function middleware(request: NextRequest) {
     roles.includes(ManagerTypes.LEAVE_MANAGER) &&
     !roles.includes(AdminTypes.LEAVE_ADMIN) &&
     currentPath === `${ROUTES.LEAVE.TEAM_TIME_SHEET_ANALYTICS}/reports`
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+    );
+  }
+
+  if (
+    leavePolicyManagementRestrictedRoutes.some((url) =>
+      currentPath.startsWith(url)
+    ) &&
+    !roles.includes(AdminTypes.LEAVE_ADMIN) &&
+    !roles.includes(ROLE_SUPER_ADMIN)
   ) {
     return NextResponse.redirect(
       new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
