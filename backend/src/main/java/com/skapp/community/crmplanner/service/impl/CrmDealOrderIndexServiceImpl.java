@@ -38,6 +38,19 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 
 	@Override
 	@Transactional
+	public void syncBoardKey(CrmDeal deal) {
+		CrmDealOrderIndex orderIndex = crmDealOrderIndexDao.findByDealId(deal.getId()).orElse(null);
+		if (orderIndex == null) {
+			orderIndex = new CrmDealOrderIndex();
+			orderIndex.setDeal(deal);
+			orderIndex.setList(FractionalIndexUtil.generateKeyBetween(crmDealOrderIndexDao.findMaxListIndex(), null));
+		}
+		orderIndex.setBoard(deal.getOrderIndex());
+		crmDealOrderIndexDao.save(orderIndex);
+	}
+
+	@Override
+	@Transactional
 	public void reorderInList(Long dealId, Long previousDealId, Long nextDealId) {
 		CrmDealOrderIndex target = crmDealOrderIndexDao.findByDealId(dealId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
