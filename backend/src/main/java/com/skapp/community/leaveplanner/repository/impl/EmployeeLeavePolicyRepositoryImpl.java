@@ -1,6 +1,5 @@
 package com.skapp.community.leaveplanner.repository.impl;
 
-import com.skapp.community.leaveplanner.constant.LeavePolicyConstant;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy_;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
@@ -83,26 +82,19 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 
 	@Override
 	public Map<Long, Long> countByPolicyIdsAndStatus(List<Long> policyIds, EmployeeLeavePolicyStatus status) {
-		if (policyIds == null || policyIds.isEmpty()) {
-			return Map.of();
-		}
-
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);
-		Path<Long> policyIdPath = root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.id);
+		Path<Long> policyId = root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.id);
 
-		query
-			.multiselect(policyIdPath.alias(LeavePolicyConstant.POLICY_ID_ALIAS),
-					cb.count(root).alias(LeavePolicyConstant.ASSIGNED_COUNT_ALIAS))
-			.where(cb.and(policyIdPath.in(policyIds), cb.equal(root.get(EmployeeLeavePolicy_.status), status)))
-			.groupBy(policyIdPath);
+		query.multiselect(policyId, cb.count(root))
+			.where(policyId.in(policyIds), cb.equal(root.get(EmployeeLeavePolicy_.status), status))
+			.groupBy(policyId);
 
 		return entityManager.createQuery(query)
 			.getResultList()
 			.stream()
-			.collect(Collectors.toMap(tuple -> tuple.get(LeavePolicyConstant.POLICY_ID_ALIAS, Long.class),
-					tuple -> tuple.get(LeavePolicyConstant.ASSIGNED_COUNT_ALIAS, Long.class)));
+			.collect(Collectors.toMap(result -> result.get(0, Long.class), result -> result.get(1, Long.class)));
 	}
 
 	private Predicate[] buildEmployeeStatusPredicates(CriteriaBuilder cb, Root<EmployeeLeavePolicy> root,

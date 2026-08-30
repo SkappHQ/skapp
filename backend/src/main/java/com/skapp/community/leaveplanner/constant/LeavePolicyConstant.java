@@ -17,8 +17,4 @@ public class LeavePolicyConstant {
 
 	public static final int MAX_BULK_ASSIGN_ROWS = 1000;
 
-	public static final String POLICY_ID_ALIAS = "policyId";
-
-	public static final String ASSIGNED_COUNT_ALIAS = "assignedCount";
-
 }
