@@ -35,10 +35,17 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+<<<<<<< HEAD
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactDisplayName,
   updateContactRecord
+=======
+import { mergeOwners } from "~community/crm/v2/utils/commonUtil";
+import {
+  getContactDisplayName,
+  mergeContacts
+>>>>>>> d79eb2120834b948f8487ad49597be6a859eab15
 } from "~community/crm/v2/utils/contactUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { getTaskTypeOptions } from "~community/crm/v2/utils/taskUtil";
@@ -193,7 +200,11 @@ const TaskModalForm: FC<Props> = ({
     const owner = ownerLookupItems.find(
       (lookupOwner) => String(lookupOwner.employeeId) === item.id
     );
+<<<<<<< HEAD
     if (owner) setOwners(updateOwnerRecord(owners, [owner]));
+=======
+    if (owner) setOwners(mergeOwners(owners, [owner]));
+>>>>>>> d79eb2120834b948f8487ad49597be6a859eab15
 
     setFieldValue("ownerId", owner?.employeeId);
     setOwnerSearchTerm("");
@@ -203,7 +214,11 @@ const TaskModalForm: FC<Props> = ({
     const contact = contactLookupItems.find(
       (lookupContact) => String(lookupContact.id) === item.id
     );
+<<<<<<< HEAD
     if (contact) setContacts(updateContactRecord(contacts, [contact]));
+=======
+    if (contact) setContacts(mergeContacts(contacts, [contact]));
+>>>>>>> d79eb2120834b948f8487ad49597be6a859eab15
 
     setFieldValue("contactId", contact?.id);
     setContactSearchTerm("");
