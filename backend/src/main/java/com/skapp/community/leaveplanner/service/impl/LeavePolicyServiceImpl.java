@@ -10,10 +10,12 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
 import com.skapp.community.leaveplanner.payload.LeavePolicyConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
@@ -29,6 +31,7 @@ import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
+import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
@@ -72,6 +75,8 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
 
 	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
+
+	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
 	private final JsonMapper jsonMapper;
 
@@ -141,7 +146,13 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
-		log.info("deactivateLeavePolicy: policy deactivated successfully");
+		int cancelledRequests = cancelPendingPolicyLeaveRequests(leavePolicy.getId());
+		int revokedRequests = revokeFutureApprovedPolicyLeaveRequests(leavePolicy.getId());
+		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
+
+		log.info(
+				"deactivateLeavePolicy: policy deactivated successfully, cancelledRequests: {}, revokedRequests: {}, endedAssignments: {}",
+				cancelledRequests, revokedRequests, endedAssignments);
 
 		return new ResponseEntityDto(false,
 				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
@@ -287,6 +298,44 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue()));
 
 		log.info("setDefaultLeavePolicyConfig: execution ended");
+	}
+
+	private int endActivePolicyAssignments(Long policyId) {
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
+				EmployeeLeavePolicyStatus.ACTIVE);
+		if (assignments.isEmpty()) {
+			return 0;
+		}
+
+		assignments.forEach(assignment -> assignment.setStatus(EmployeeLeavePolicyStatus.ENDED));
+		employeeLeavePolicyDao.saveAll(assignments);
+
+		return assignments.size();
+	}
+
+	private int cancelPendingPolicyLeaveRequests(Long policyId) {
+		return voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatus(policyId, LeaveRequestStatus.PENDING),
+				LeaveRequestStatus.CANCELLED);
+	}
+
+	private int revokeFutureApprovedPolicyLeaveRequests(Long policyId) {
+		return voidPolicyLeaveRequests(policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(policyId,
+				LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()), LeaveRequestStatus.REVOKED);
+	}
+
+	private int voidPolicyLeaveRequests(List<PolicyLeaveRequest> policyLeaveRequests, LeaveRequestStatus status) {
+		if (policyLeaveRequests.isEmpty()) {
+			return 0;
+		}
+
+		policyLeaveRequests.forEach(policyLeaveRequest -> {
+			policyLeaveRequest.setStatus(status);
+			policyLeaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		});
+		policyLeaveRequestDao.saveAll(policyLeaveRequests);
+
+		return policyLeaveRequests.size();
 	}
 
 	private int removeExistingLeaveAllocations() {

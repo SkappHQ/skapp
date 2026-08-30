@@ -3,8 +3,14 @@ package com.skapp.community.leaveplanner.controller.v1;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
+import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
+import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
+import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.support.MockUserFactory;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +25,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
@@ -57,6 +65,24 @@ class LeavePolicyControllerIntegrationTest {
 
 	private static final String SEED_POLICY_ASSIGNMENTS = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) VALUES "
 			+ "(950, 1, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE'), " + "(951, 2, 500, 'SPECIFIC', '2024-01-01', 'ENDED')";
+
+	private static final String SEED_EXTRA_ACTIVE_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
+			+ "VALUES (953, 3, 500, 'SPECIFIC', '2024-01-01', 'ACTIVE')";
+
+	private static final String SEED_OTHER_POLICY = "INSERT INTO lv_leave_policy (id, name, leave_type_id, policy_type, status, is_carryover_enabled) "
+			+ "VALUES (502, 'Other Policy', 101, 'ACCRUAL', 'ACTIVE', false)";
+
+	private static final String SEED_OTHER_POLICY_ASSIGNMENT = "INSERT INTO lv_employee_leave_policy (id, employee_id, policy_id, effective_date_type, effective_from, status) "
+			+ "VALUES (952, 1, 502, 'SPECIFIC', '2024-01-01', 'ACTIVE')";
+
+	private static final String SEED_POLICY_LEAVE_REQUESTS = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) VALUES "
+			+ "(960, 1, 500, DATEADD('DAY', 10, CURRENT_DATE), DATEADD('DAY', 11, CURRENT_DATE), 'FULLDAY', 'PENDING', 2), "
+			+ "(961, 1, 500, DATEADD('DAY', 20, CURRENT_DATE), DATEADD('DAY', 21, CURRENT_DATE), 'FULLDAY', 'APPROVED', 2), "
+			+ "(962, 1, 500, DATEADD('DAY', -20, CURRENT_DATE), DATEADD('DAY', -19, CURRENT_DATE), 'FULLDAY', 'APPROVED', 2), "
+			+ "(963, 1, 500, DATEADD('DAY', -10, CURRENT_DATE), DATEADD('DAY', -9, CURRENT_DATE), 'FULLDAY', 'DENIED', 2)";
+
+	private static final String SEED_OTHER_POLICY_LEAVE_REQUEST = "INSERT INTO lv_leave_request (id, employee_id, policy_id, start_date, end_date, leave_state, status, duration_days) "
+			+ "VALUES (964, 1, 502, DATEADD('DAY', 10, CURRENT_DATE), DATEADD('DAY', 11, CURRENT_DATE), 'FULLDAY', 'PENDING', 2)";
 
 	private static final String DOWNGRADE_USER2_TO_EMPLOYEE = "UPDATE employee_role SET leave_role = 'LEAVE_EMPLOYEE', people_role = 'PEOPLE_EMPLOYEE', attendance_role = 'ATTENDANCE_EMPLOYEE' WHERE employee_id = 2";
 
@@ -98,6 +124,10 @@ class LeavePolicyControllerIntegrationTest {
 
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
+	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
+
+	private final PolicyLeaveRequestDao policyLeaveRequestDao;
+
 	private String leaveAdminToken() {
 		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createLeaveAdmin());
 		return jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
@@ -135,6 +165,27 @@ class LeavePolicyControllerIntegrationTest {
 	private ResultActions performGetConfig(String authToken) throws Exception {
 		return mvc.perform(get(ENDPOINT + "/config").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private ResultActions performDeactivate(String authToken, Long policyId) throws Exception {
+		return mvc.perform(patch(ENDPOINT + "/" + policyId + "/deactivate").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(authToken)));
+	}
+
+	private List<Long> assignmentIdsWithStatus(Long policyId, EmployeeLeavePolicyStatus status) {
+		return employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId, status)
+			.stream()
+			.map(EmployeeLeavePolicy::getId)
+			.sorted()
+			.toList();
+	}
+
+	private List<Long> requestIdsWithStatus(Long policyId, LeaveRequestStatus status) {
+		return policyLeaveRequestDao.findByPolicy_IdAndStatus(policyId, status)
+			.stream()
+			.map(PolicyLeaveRequest::getId)
+			.sorted()
+			.toList();
 	}
 
 	@Nested
@@ -365,6 +416,58 @@ class LeavePolicyControllerIntegrationTest {
 				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
 				.andDo(print())
 				.andExpect(status().isNotFound());
+		}
+
+		@Test
+		@DisplayName("Deactivating a policy ends every active employee assignment on it")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS, SEED_EXTRA_ACTIVE_ASSIGNMENT })
+		void deactivateLeavePolicy_WithAssignedEmployees_EndsAssignments() throws Exception {
+			assertEquals(List.of(950L, 953L), assignmentIdsWithStatus(500L, EmployeeLeavePolicyStatus.ACTIVE));
+
+			performDeactivate(leaveAdminToken(), 500L).andDo(print()).andExpect(status().isOk());
+
+			assertTrue(assignmentIdsWithStatus(500L, EmployeeLeavePolicyStatus.ACTIVE).isEmpty());
+			assertEquals(List.of(950L, 951L, 953L), assignmentIdsWithStatus(500L, EmployeeLeavePolicyStatus.ENDED));
+		}
+
+		@Test
+		@DisplayName("Deactivating a policy cancels pending and revokes future approved leave requests")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS, SEED_POLICY_LEAVE_REQUESTS })
+		void deactivateLeavePolicy_WithInFlightRequests_CancelsPendingAndRevokesFutureApproved() throws Exception {
+			performDeactivate(leaveAdminToken(), 500L).andDo(print()).andExpect(status().isOk());
+
+			assertEquals(List.of(960L), requestIdsWithStatus(500L, LeaveRequestStatus.CANCELLED));
+			assertEquals(List.of(961L), requestIdsWithStatus(500L, LeaveRequestStatus.REVOKED));
+			assertEquals(List.of(962L), requestIdsWithStatus(500L, LeaveRequestStatus.APPROVED));
+			assertEquals(List.of(963L), requestIdsWithStatus(500L, LeaveRequestStatus.DENIED));
+			assertTrue(requestIdsWithStatus(500L, LeaveRequestStatus.PENDING).isEmpty());
+		}
+
+		@Test
+		@DisplayName("Deactivating a policy leaves other policies' assignments and requests untouched")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_SECOND_LEAVE_TYPE, SEED_POLICY, SEED_OTHER_POLICY,
+				SEED_POLICY_ASSIGNMENTS, SEED_OTHER_POLICY_ASSIGNMENT, SEED_POLICY_LEAVE_REQUESTS,
+				SEED_OTHER_POLICY_LEAVE_REQUEST })
+		void deactivateLeavePolicy_OtherPolicies_RemainUntouched() throws Exception {
+			performDeactivate(leaveAdminToken(), 500L).andDo(print()).andExpect(status().isOk());
+
+			assertEquals(List.of(952L), assignmentIdsWithStatus(502L, EmployeeLeavePolicyStatus.ACTIVE));
+			assertEquals(List.of(964L), requestIdsWithStatus(502L, LeaveRequestStatus.PENDING));
+		}
+
+		@Test
+		@DisplayName("Reactivating a policy does not restore the previously assigned entitlements")
+		@Sql(statements = { SEED_LEAVE_TYPE, SEED_POLICY, SEED_POLICY_ASSIGNMENTS })
+		void activateLeavePolicy_AfterDeactivation_DoesNotRestoreAssignments() throws Exception {
+			performDeactivate(leaveAdminToken(), 500L).andExpect(status().isOk());
+
+			mvc.perform(patch(ENDPOINT + "/500/activate").accept(MediaType.APPLICATION_JSON)
+				.with(SecurityTestUtils.bearerToken(leaveAdminToken())))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.results[0].status").value("ACTIVE"));
+
+			assertTrue(assignmentIdsWithStatus(500L, EmployeeLeavePolicyStatus.ACTIVE).isEmpty());
 		}
 
 	}
