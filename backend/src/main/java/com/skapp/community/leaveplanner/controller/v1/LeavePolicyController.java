@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -34,6 +35,17 @@ public class LeavePolicyController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check leave policy name availability",
+			description = "Returns whether the given policy name is still available for the given leave type. "
+					+ "Names are compared case-insensitively across both active and inactive policies")
+	@GetMapping("/name-availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> checkLeavePolicyNameAvailability(
+			@RequestParam(required = false) String name, @RequestParam(required = false) Long leaveTypeId) {
+		ResponseEntityDto response = leavePolicyService.checkLeavePolicyNameAvailability(name, leaveTypeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

@@ -432,7 +432,7 @@
       },
       "toastMessages": {
         "editErrorTitle": "Failed to update deal",
-        "editErrorDescription": "Something went wrong. Please try again"
+        "editErrorDescription": "Oops! Something went wrong. Please try again"
       },
       "validations": {
         "dealNameRequired": "Deal name is required",
@@ -491,7 +491,13 @@
       "switchDealViewAriaLabel": "Switch deal view"
     },
     "kanban": {
-      "addDealBtn": "Add deal"
+      "addDealBtn": "Add deal",
+      "toastMessages": {
+        "moveErrorTitle": "Couldn't move deal",
+        "moveErrorDescription": "Something went wrong and the change was reverted. Please try again.",
+        "loadMoreErrorTitle": "Couldn't load more deals",
+        "loadMoreErrorDescription": "Something went wrong. Please try again."
+      }
     },
     "deleteDealModal": {
       "title": "Delete Deal",

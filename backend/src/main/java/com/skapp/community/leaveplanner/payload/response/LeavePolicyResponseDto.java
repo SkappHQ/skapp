@@ -44,4 +44,6 @@ public class LeavePolicyResponseDto {
 
 	private AccrualTiming accrualTiming;
 
+	private Long assignedEmployeeCount = 0L;
+
 }
