@@ -31,7 +31,6 @@ import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 const TASK_DETAIL_ICON_SIZE = 24;
 
-
 interface Props {
   taskId: number;
 }
