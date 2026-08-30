@@ -1,22 +1,20 @@
 import {
+  ChecklistVerificationFilledIcon,
+  EmailFilledIcon,
   HighPriorityIcon,
   LowPriorityIcon,
-  MediumPriorityIcon
+  MediumPriorityIcon,
+  MeetingFilledIcon,
+  PhoneFilledIcon
 } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { ComponentType, FC, SVGProps } from "react";
 
 import {
   CrmPriorityEnum,
   CrmTaskTabEnum
 } from "~community/crm/v2/enums/common";
 
-export const TASK_SEARCH_DEBOUNCE_DELAY = 500;
-
 export const TASK_PAGE_SIZE = 12;
-
-export const UNPAGINATED_SIZE = -1;
-
-export const TASK_DETAIL_ICON_SIZE = 24;
 
 export const TASK_SKELETON_CONFIG = {
   COMPLETED: { rowCount: 20, groupCount: 1 },
@@ -50,3 +48,13 @@ export const PRIORITY_OPTIONS = [
     IconComponent: LowPriorityIcon as FC
   }
 ];
+
+export const TASK_TYPE_ICON_MAP: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
+  email: EmailFilledIcon,
+  call: PhoneFilledIcon,
+  meeting: MeetingFilledIcon,
+  other: ChecklistVerificationFilledIcon
+};
