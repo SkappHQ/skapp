@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -20,11 +19,7 @@ import lombok.Setter;
 public class CrmDealOrderIndex {
 
 	@Id
-	@Column(name = "deal_id", nullable = false, updatable = false)
-	private Long dealId;
-
 	@OneToOne(fetch = FetchType.LAZY)
-	@MapsId
 	@JoinColumn(name = "deal_id")
 	private CrmDeal deal;
 
