@@ -25,7 +25,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		if (deal.getId() != null && crmDealOrderIndexDao.existsById(deal.getId())) {
 			return;
 		}
-		String maxListIndex = crmDealOrderIndexDao.findMaxListIndex();
+		String maxListIndex = resolveMaxListKey();
 
 		CrmDealOrderIndex orderIndex = new CrmDealOrderIndex();
 		orderIndex.setDealId(deal.getId());
@@ -43,7 +43,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		if (orderIndex == null) {
 			orderIndex = new CrmDealOrderIndex();
 			orderIndex.setDealId(deal.getId());
-			orderIndex.setList(FractionalIndexUtil.generateKeyBetween(crmDealOrderIndexDao.findMaxListIndex(), null));
+			orderIndex.setList(FractionalIndexUtil.generateKeyBetween(resolveMaxListKey(), null));
 		}
 		orderIndex.setBoard(deal.getOrderIndex());
 		crmDealOrderIndexDao.save(orderIndex);
@@ -68,6 +68,10 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 			return null;
 		}
 		return crmDealOrderIndexDao.findById(dealId).map(CrmDealOrderIndex::getList).orElse(null);
+	}
+
+	private String resolveMaxListKey() {
+		return crmDealOrderIndexDao.findTopByOrderByListDesc().map(CrmDealOrderIndex::getList).orElse(null);
 	}
 
 }
