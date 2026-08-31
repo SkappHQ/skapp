@@ -34,7 +34,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
-import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmIndustryName;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
@@ -169,7 +169,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyCreateDto createValidPayload() {
 		CrmCompanyCreateDto dto = new CrmCompanyCreateDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		dto.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
 		dto.setContactNumber("94771234567");
@@ -179,7 +179,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompanyEditDto createValidEditPayload() {
 		CrmCompanyEditDto dto = new CrmCompanyEditDto();
 		dto.setName("Acme Corp");
-		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		dto.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite(JsonNullable.of("https://acme.com"));
 		dto.setAddress(JsonNullable.of("123 Main St"));
 		dto.setContactNumber(JsonNullable.of("94771234567"));
@@ -427,7 +427,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("Acme Corp Updated");
-		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
+		editDto.setIndustry(CrmIndustryName.FINANCIAL_SERVICES);
 		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
 		editDto.setAddress(JsonNullable.of("456 New St"));
 		editDto.setContactNumber(JsonNullable.of("94779876543"));
@@ -436,14 +436,14 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp Updated"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value(CrmIndustry.FINANCIAL_SERVICES.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value(CrmIndustryName.FINANCIAL_SERVICES.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
 
 		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
 		assertThat(persisted.getName()).isEqualTo("Acme Corp Updated");
-		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.FINANCIAL_SERVICES);
+		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustryName.FINANCIAL_SERVICES);
 		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
 		assertThat(persisted.getAddress()).isEqualTo("456 New St");
 		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
@@ -493,7 +493,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyCreateDto secondCompanyDto = new CrmCompanyCreateDto();
 		secondCompanyDto.setName("Beta Corp");
-		secondCompanyDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
+		secondCompanyDto.setIndustry(CrmIndustryName.HOSPITALS_AND_HEALTH_CARE);
 		ResultActions secondResult = performPostRequest(secondCompanyDto).andExpect(status().isCreated());
 		Long secondCompanyId = objectMapper.readTree(secondResult.andReturn().getResponse().getContentAsString())
 			.path("results")
@@ -503,7 +503,7 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyEditDto editDto = new CrmCompanyEditDto();
 		editDto.setName("ACME CORP");
-		editDto.setIndustry(CrmIndustry.HOSPITALS_AND_HEALTH_CARE);
+		editDto.setIndustry(CrmIndustryName.HOSPITALS_AND_HEALTH_CARE);
 
 		performPatchRequest(secondCompanyId, editDto).andDo(print())
 			.andExpect(status().isBadRequest())
@@ -632,7 +632,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany createMetricsCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		return crmCompanyDao.save(company);
 	}
 
@@ -771,7 +771,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
 		CrmCompany company = new CrmCompany();
 		company.setName("DetailCoUnique");
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		company.setWebsite("https://detail.com");
 		company.setAddress("1 Detail St");
 		company.setContactNumber("94770000001");
@@ -783,7 +783,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("DetailCoUnique"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+				.value(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://detail.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Detail St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000001"));
@@ -862,7 +862,7 @@ class CrmCompanyControllerIntegrationTest {
 	private CrmCompany savedBatchCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		company.setWebsite("https://batch.com");
 		company.setAddress("1 Batch St");
 		company.setContactNumber("94770000010");
@@ -881,7 +881,7 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+				.value(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://batch.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Batch St"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000010"));

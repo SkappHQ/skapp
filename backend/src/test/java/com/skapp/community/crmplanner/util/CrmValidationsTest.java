@@ -4,7 +4,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmIndustryName;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -202,7 +202,7 @@ class CrmValidationsTest {
 		@Test
 		@DisplayName("Valid industry - does not throw")
 		void validateIndustry_Valid_DoesNotThrow() {
-			assertDoesNotThrow(() -> CrmValidations.validateIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA));
+			assertDoesNotThrow(() -> CrmValidations.validateIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA));
 		}
 
 	}

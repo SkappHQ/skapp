@@ -15,7 +15,7 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmIndustry;
+import com.skapp.community.crmplanner.type.CrmIndustryName;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
@@ -117,7 +117,7 @@ class CrmDealControllerV2IntegrationTest {
 	private CrmCompany savedCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		company.setWebsite("https://deal-v2.com");
 		company.setAddress("7 Deal Rd");
 		company.setContactNumber("94771111111");
