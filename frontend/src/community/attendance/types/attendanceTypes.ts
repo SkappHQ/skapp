@@ -6,6 +6,7 @@ export type AttendanceConfigurationType = {
   isGeoFencingEnabled?: boolean;
   isClockInClockOutOnly: boolean;
   isFingerprintAttendanceEnabled: boolean;
+  isManualTimeEntryRestrictionEnabled: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {
@@ -29,6 +30,7 @@ export interface attendanceStatusTypes {
   slotStartTime: string | null;
   breakHours: number | null;
   workHours: number | null;
+  isLeavePending?: boolean;
 }
 
 export interface attendanceLeaveStatusTypes {
