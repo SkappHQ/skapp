@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.payload.response.v2;
 
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +26,7 @@ public class CrmContactResponseDtoV2 {
 
 	private LocalDateTime lastModifiedDate;
 
-	private CrmCompanyResponseDto company;
+	private CrmCompanyResponseDtoV2 company;
 
 	private CrmOwnerResponseDto owner;
 

@@ -13,10 +13,10 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
@@ -116,8 +116,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+				cb.construct(CrmCompanyResponseDtoV2.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
+						company.get(CrmCompany_.industryId), company.get(CrmCompany_.website),
 						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
 				cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
 						owner.get(Employee_.lastName), owner.get(Employee_.authPic)),
