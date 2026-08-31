@@ -287,7 +287,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		}
 
 		List<Long> policyIds = new ArrayList<>();
-		
+
 		for (LeavePolicyResponseDto leavePolicyResponseDto : leavePolicyResponseDtos) {
 			policyIds.add(leavePolicyResponseDto.getId());
 		}
