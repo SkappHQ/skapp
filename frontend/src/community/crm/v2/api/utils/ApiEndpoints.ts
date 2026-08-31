@@ -4,11 +4,13 @@ export const crmDealEndpointsV2 = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
   EDIT_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
-  GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`
+  GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
+  REORDER_DEAL: `${moduleAPIPath.CRM}/deal/reorder`
 };
 
 export const crmDealEndpoints = {
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
+  LIST_VIEW_CONFIG: `${moduleAPIPath.CRM}/deal/list-view-config`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,

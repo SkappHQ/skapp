@@ -55,3 +55,15 @@ export const resolveDeals = (
   dealIds
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
+
+export const reorderDealIds = (
+  dealIds: number[],
+  movingId: number,
+  previousId: number | null
+): number[] => {
+  const without = dealIds.filter((id) => id !== movingId);
+  if (previousId == null) return [movingId, ...without];
+  const index = without.indexOf(previousId);
+  if (index === -1) return [...without, movingId];
+  return [...without.slice(0, index + 1), movingId, ...without.slice(index + 1)];
+};

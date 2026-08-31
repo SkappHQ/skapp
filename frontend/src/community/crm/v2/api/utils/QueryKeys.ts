@@ -7,10 +7,12 @@ import {
 const CRM_COMPANIES = "crm-companies";
 
 export const crmDealQueryKeys = {
+  GET_DEALS_ROOT: ["crm-deals-v2"],
   GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
   DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
-  DEAL_STAGES: ["crm-deal-stages-v2"]
+  DEAL_STAGES: ["crm-deal-stages-v2"],
+  LIST_VIEW_CONFIG: ["crm-deal-list-view-config-v2"]
 };
 
 export const crmCompanyQueryKeys = {

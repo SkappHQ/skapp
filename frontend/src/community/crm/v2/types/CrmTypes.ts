@@ -44,6 +44,12 @@ export interface CrmDealReorderWithinStageRequest {
   nextDealId: number | null;
 }
 
+export interface CrmDealListReorderRequest {
+  dealId: number;
+  previousDealId: number | null;
+  nextDealId: number | null;
+}
+
 export interface CrmDealMoveBetweenStagesRequest {
   dealId: number;
   newStageId: number;
