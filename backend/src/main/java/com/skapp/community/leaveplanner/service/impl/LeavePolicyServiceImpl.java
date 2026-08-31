@@ -17,6 +17,7 @@ import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
 import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
+import com.skapp.community.leaveplanner.payload.LeavePolicyAssignedEmployeeCountDto;
 import com.skapp.community.leaveplanner.payload.LeavePolicyConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
@@ -144,8 +145,13 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
-		int cancelledRequests = cancelPendingPolicyLeaveRequests(leavePolicy.getId());
-		int revokedRequests = revokeFutureApprovedPolicyLeaveRequests(leavePolicy.getId());
+		int cancelledRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatus(leavePolicy.getId(), LeaveRequestStatus.PENDING),
+				LeaveRequestStatus.CANCELLED);
+		int revokedRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
+						LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()),
+				LeaveRequestStatus.REVOKED);
 		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
 		return new ResponseEntityDto(false,
@@ -179,12 +185,17 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		Pageable pageable = leavePolicyFilterDto.getSize() < 0 ? Pageable.unpaged()
 				: PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
-		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
+		Page<LeavePolicyAssignedEmployeeCountDto> leavePolicyPage = leavePolicyDao
+			.findLeavePolicies(leavePolicyFilterDto, pageable);
 
-		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
-			.leavePolicyListToLeavePolicyResponseDtoList(leavePolicyPage.getContent());
-
-		populateAssignedEmployeeCounts(leavePolicyResponseDtos);
+		List<LeavePolicyResponseDto> leavePolicyResponseDtos = new ArrayList<>();
+		for (LeavePolicyAssignedEmployeeCountDto leavePolicyAssignedEmployeeCountDto : leavePolicyPage.getContent()) {
+			LeavePolicyResponseDto leavePolicyResponseDto = leaveMapper
+				.leavePolicyToLeavePolicyResponseDto(leavePolicyAssignedEmployeeCountDto.getLeavePolicy());
+			leavePolicyResponseDto
+				.setAssignedEmployeeCount(leavePolicyAssignedEmployeeCountDto.getAssignedEmployeeCount());
+			leavePolicyResponseDtos.add(leavePolicyResponseDto);
+		}
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(leavePolicyResponseDtos);
@@ -281,26 +292,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		log.info("setDefaultLeavePolicyConfig: execution ended");
 	}
 
-	private void populateAssignedEmployeeCounts(List<LeavePolicyResponseDto> leavePolicyResponseDtos) {
-		if (leavePolicyResponseDtos.isEmpty()) {
-			return;
-		}
-
-		List<Long> policyIds = new ArrayList<>();
-
-		for (LeavePolicyResponseDto leavePolicyResponseDto : leavePolicyResponseDtos) {
-			policyIds.add(leavePolicyResponseDto.getId());
-		}
-
-		Map<Long, Long> assignedCounts = employeeLeavePolicyDao.countByPolicyIdsAndStatus(policyIds,
-				EmployeeLeavePolicyStatus.ACTIVE);
-
-		for (LeavePolicyResponseDto leavePolicyResponseDto : leavePolicyResponseDtos) {
-			leavePolicyResponseDto
-				.setAssignedEmployeeCount(assignedCounts.getOrDefault(leavePolicyResponseDto.getId(), 0L));
-		}
-	}
-
 	private int endActivePolicyAssignments(Long policyId) {
 		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
 				EmployeeLeavePolicyStatus.ACTIVE);
@@ -312,17 +303,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		employeeLeavePolicyDao.saveAll(assignments);
 
 		return assignments.size();
-	}
-
-	private int cancelPendingPolicyLeaveRequests(Long policyId) {
-		return voidPolicyLeaveRequests(
-				policyLeaveRequestDao.findByPolicy_IdAndStatus(policyId, LeaveRequestStatus.PENDING),
-				LeaveRequestStatus.CANCELLED);
-	}
-
-	private int revokeFutureApprovedPolicyLeaveRequests(Long policyId) {
-		return voidPolicyLeaveRequests(policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(policyId,
-				LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()), LeaveRequestStatus.REVOKED);
 	}
 
 	private int voidPolicyLeaveRequests(List<PolicyLeaveRequest> policyLeaveRequests, LeaveRequestStatus status) {
