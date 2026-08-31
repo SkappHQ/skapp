@@ -10,6 +10,7 @@ import {
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetContactById,
@@ -99,6 +100,8 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     }))
   );
 
+  const { isCrmSalesManager, userId } = useSessionData();
+
   const taskFilters: CrmTaskCompletedFilterRequest = {
     contactId,
     size: TASK_PAGE_SIZE
@@ -171,6 +174,10 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const contact = contacts[contactId];
 
+  const canEditContact = isCrmSalesManager || contact?.ownerId === userId;
+
+  const canDeleteContact = isCrmSalesManager;
+
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));
 
@@ -189,9 +196,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     closeCrmSidePanel();
   };
 
-  const menuItems: MenuItemProps[] = useMemo(
-    () => [
-      {
+  const menuItems: MenuItemProps[] = useMemo(() => {
+    const items: MenuItemProps[] = [];
+
+    if (canEditContact) {
+      items.push({
         id: "edit",
         label: translateText(["editContact"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
@@ -199,8 +208,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
           setContactModalType(CrmModalTypes.EDIT_CONTACT_MODAL);
           setIsContactModalOpen(true);
         }
-      },
-      {
+      });
+    }
+
+    if (canDeleteContact) {
+      items.push({
         id: "delete",
         label: translateText(["deleteContact"]),
         icon: {
@@ -218,10 +230,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
           setContactModalType(CrmModalTypes.DELETE_CONTACT_MODAL);
           setIsContactModalOpen(true);
         }
-      }
-    ],
-    [translateText]
-  );
+      });
+    }
+
+    return items;
+  }, [translateText, canEditContact, canDeleteContact]);
 
   const tabs: TabItem[] = [
     {
@@ -253,17 +266,19 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
         isLoading ? (
           <SidePanelHeaderActionsSkeleton />
         ) : (
-          <KebabMenu
-            id="contact-actions"
-            menuItems={menuItems}
-            anchorButton={{
-              "aria-label": translateText(["kebabMenuAriaLabel"])
-            }}
-            className={{
-              anchorElement:
-                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-            }}
-          />
+          menuItems.length > 0 && (
+            <KebabMenu
+              id="contact-actions"
+              menuItems={menuItems}
+              anchorButton={{
+                "aria-label": translateText(["kebabMenuAriaLabel"])
+              }}
+              className={{
+                anchorElement:
+                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+              }}
+            />
+          )
         )
       }
     >
