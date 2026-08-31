@@ -39,7 +39,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void syncBoardKey(CrmDeal deal) {
-		CrmDealOrderIndex orderIndex = crmDealOrderIndexDao.findByDealId(deal.getId()).orElse(null);
+		CrmDealOrderIndex orderIndex = crmDealOrderIndexDao.findById(deal.getId()).orElse(null);
 		if (orderIndex == null) {
 			orderIndex = new CrmDealOrderIndex();
 			orderIndex.setDeal(deal);
@@ -52,7 +52,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void reorderInList(Long dealId, Long previousDealId, Long nextDealId) {
-		CrmDealOrderIndex target = crmDealOrderIndexDao.findByDealId(dealId)
+		CrmDealOrderIndex target = crmDealOrderIndexDao.findById(dealId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
 		String previousKey = resolveListKey(previousDealId);
@@ -67,7 +67,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		if (dealId == null) {
 			return null;
 		}
-		return crmDealOrderIndexDao.findByDealId(dealId).map(CrmDealOrderIndex::getList).orElse(null);
+		return crmDealOrderIndexDao.findById(dealId).map(CrmDealOrderIndex::getList).orElse(null);
 	}
 
 }
