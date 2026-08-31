@@ -35,6 +35,7 @@ const ClockWidget = (): JSX.Element => {
     setIsAttendanceModalOpen
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+  const isLeavePending = attendanceParams.isLeavePending;
 
   const { refetch: getEmployeeStatusRefetch } = useGetEmployeeStatus();
   const { data: timeConfigData } = useDefaultCapacity();
@@ -82,11 +83,13 @@ const ClockWidget = (): JSX.Element => {
       case AttendanceSlotType.NON_WORKING_DAY:
         return translateText(["notAllowedToClockInOnNonWorkingDaysTooltip"]);
       case AttendanceSlotType.LEAVE_DAY:
-        return translateText(["notAllowedToClockInOnLeaveDaysTooltip"]);
+        return isLeavePending
+          ? translateText(["notAllowedToClockInOnPendingLeaveDaysTooltip"])
+          : translateText(["notAllowedToClockInOnLeaveDaysTooltip"]);
       default:
         return "";
     }
-  }, [isDisabled, status, translateText, hasHoveredAfterEnd]);
+  }, [isDisabled, status, translateText, hasHoveredAfterEnd, isLeavePending]);
 
   const showTimer = useMemo(
     () =>

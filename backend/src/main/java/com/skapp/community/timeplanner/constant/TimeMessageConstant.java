@@ -50,6 +50,7 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_INVALID_TIME_BLOCKS("api.error.time.invalid-time-blocks"),
 	TIME_ERROR_MONTH_REQUIRED("api.error.time.month-required"),
 	TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED("api.error.time.time-request-permission.not.found"),
+	TIME_ERROR_MANUAL_ENTRY_RESTRICTED("api.error.time.manual-entry-restricted"),
 	TIME_ERROR_PAUSE_RESUME_NOT_AVAILABLE("api.error.time.pause-resume-not-available");
 
 	private final String messageKey;

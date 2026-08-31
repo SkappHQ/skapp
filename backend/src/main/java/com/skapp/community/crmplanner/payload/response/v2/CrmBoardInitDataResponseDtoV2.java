@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.payload.response.v2;
 
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import lombok.Getter;
@@ -15,14 +14,10 @@ public class CrmBoardInitDataResponseDtoV2 {
 
 	private List<CrmBoardStageResponseDto> stages;
 
-	private List<CrmBoardContactResponseDto> contacts;
-
-	private List<String> crmRoles;
+	private List<CrmBoardContactResponseDtoV2> contacts;
 
 	private List<CrmBoardOwnerResponseDto> owners;
 
 	private List<CrmTaskTypeResponseDto> taskTypes;
-
-	private List<CrmIndustryResponseDto> industries;
 
 }

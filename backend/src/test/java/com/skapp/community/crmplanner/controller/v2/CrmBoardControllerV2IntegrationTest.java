@@ -3,8 +3,12 @@ package com.skapp.community.crmplanner.controller.v2;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.crmplanner.model.CrmIndustry;
-import com.skapp.community.crmplanner.repository.CrmIndustryDao;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
@@ -22,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -35,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("CRM Board Controller V2 Integration Tests")
 class CrmBoardControllerV2IntegrationTest {
 
-	private static final String INIT_DATA_PATH = "/v2/crm/board/init-data";
+	private static final String BASE_PATH = "/v2/crm/board/init-data";
 
 	private final MockMvc mvc;
 
@@ -43,13 +46,21 @@ class CrmBoardControllerV2IntegrationTest {
 
 	private final UserDetailsService userDetailsService;
 
+	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmContactDao crmContactDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
+
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
 
-	private final CrmIndustryDao crmIndustryDao;
-
 	private String repToken;
+
+	private CrmCompany company;
+
+	private CrmContact contact;
 
 	@BeforeEach
 	void setup() {
@@ -57,43 +68,61 @@ class CrmBoardControllerV2IntegrationTest {
 		employeeRoleDao.flush();
 		repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		savedIndustry("Retail");
-		savedIndustry("Education");
-	}
+		company = new CrmCompany();
+		company.setName("Board V2 Company");
+		crmCompanyDao.save(company);
 
-	private CrmIndustry savedIndustry(String name) {
-		CrmIndustry industry = new CrmIndustry();
-		industry.setName(name);
-		return crmIndustryDao.save(industry);
+		contact = new CrmContact();
+		contact.setName("Board V2 Contact");
+		contact.setEmail("board.v2.contact@example.com");
+		contact.setCompany(company);
+		contact.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(contact);
+
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Call");
+		taskType.setOrderIndex(1);
+		crmTaskTypeDao.save(taskType);
 	}
 
 	@Test
-	@DisplayName("Board init data V2 - includes industries alongside the existing board data")
-	void getBoardInitData_ReturnsIndustries() throws Exception {
-		mvc.perform(
-				get(INIT_DATA_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(repToken)))
+	@DisplayName("Board init data - Carries a contact's company as an id, not a nested object")
+	void getBoardInitData_ContactCompanyIsAnIdReference() throws Exception {
+		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].name")
+				.value("Board V2 Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].companyId")
+				.value(company.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company")
+				.doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Board init data - Returns the shared lookup set alongside the contacts")
+	void getBoardInitData_ReturnsSharedLookupSet() throws Exception {
+		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(repToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isNotEmpty())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['crmRoles']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']", org.hamcrest.Matchers.hasSize(2)))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['name']").value("Education"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['name']").value("Retail"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isNotEmpty());
 	}
 
 	@Test
-	@DisplayName("Board init data V2 - without CRM role returns Forbidden")
+	@DisplayName("Board init data without CRM role - Returns Forbidden")
 	void getBoardInitData_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String noCrmRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user4@gmail.com"),
 				1L);
 
-		mvc.perform(get(INIT_DATA_PATH).accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(noCrmRoleToken))).andDo(print()).andExpect(status().isForbidden());
+		mvc.perform(
+				get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(noCrmRoleToken)))
+			.andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 }

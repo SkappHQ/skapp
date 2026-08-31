@@ -53,6 +53,11 @@ class CrmDealControllerV2IntegrationTest {
 
 	private static final String BASE_PATH = "/v2/crm/deal";
 
+	/**
+	 * Mounted on the v1 controller so the v2 clients reach it through their /v1 base URL.
+	 */
+	private static final String BATCH_PATH = "/v1/crm/deal/batch";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
