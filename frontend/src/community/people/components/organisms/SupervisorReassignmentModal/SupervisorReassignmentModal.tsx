@@ -2,6 +2,7 @@ import { ArrowRightIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
+import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -211,7 +212,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   };
 
   const getPrimarySupervisorItems = useCallback(
-    (supervisedEmployeeId: number) =>
+    (supervisedEmployeeId: number): SearchableDropdownItem[] =>
       search.supervisedEmployeeId !== supervisedEmployeeId
         ? []
         : employeeList
@@ -229,7 +230,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   );
 
   const getTeamSupervisorItems = useCallback(
-    () =>
+    (): SearchableDropdownItem[] =>
       search.supervisedEmployeeId !== null
         ? []
         : employeeList.map((employee) => ({

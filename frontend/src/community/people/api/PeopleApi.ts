@@ -10,6 +10,7 @@ import {
 import { rejects } from "assert";
 import { AxiosError, AxiosResponse } from "axios";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -276,7 +277,7 @@ export const useGetSearchedEmployees = (
   permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
   employeeId?: number
 ) => {
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
     permission,
