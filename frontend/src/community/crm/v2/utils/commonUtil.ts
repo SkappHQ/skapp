@@ -46,6 +46,20 @@ export const getOwnerById = (owners: CrmOwnerRecord, ownerId?: number) => {
   }
 };
 
+export const updateOwnerRecord = (
+  existingOwners: CrmOwnerRecord,
+  newOwners: CrmOwnerEntity[]
+): CrmOwnerRecord => {
+  const updatedRecord: CrmOwnerRecord = { ...existingOwners };
+  for (const owner of newOwners) {
+    updatedRecord[owner.employeeId] = {
+      ...updatedRecord[owner.employeeId],
+      ...owner
+    };
+  }
+  return updatedRecord;
+};
+
 export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
   const stageRecord: CrmStageRecord = {};
   for (const stage of stages) {

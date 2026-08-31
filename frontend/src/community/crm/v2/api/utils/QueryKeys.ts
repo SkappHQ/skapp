@@ -4,7 +4,7 @@ import {
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
   CrmOwnerLookupFilterRequest,
-  CrmTaskCompletedFilterRequest
+  CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
 const CRM_COMPANIES = "crm-companies";
@@ -27,10 +27,11 @@ export const crmContactQueryKeys = {
 };
 
 export const crmTaskQueryKeys = {
-  LIST: (params: CrmTaskCompletedFilterRequest) => [CRM_TASKS, "list", params]
+  LIST: (params: CrmTaskFilterRequest) => [CRM_TASKS, "list", params]
 };
 
 export const crmDealQueryKeys = {
+  DEALS_BY_IDS: (dealIds: number[]) => [CRM_DEALS, "by-ids", dealIds],
   GET_DEALS: (filters: CrmDealFilterRequest) => [CRM_DEALS, "list", filters],
   DEAL_BY_ID: (id: number) => [CRM_DEALS, "detail", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => [CRM_DEALS, "name-exists", name],

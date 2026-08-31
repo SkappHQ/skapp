@@ -18,6 +18,17 @@ export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   return dealIds;
 };
 
+export const getMissingDealIds = (
+  dealIds: number[],
+  deals: CrmDealRecord
+): number[] => {
+  const unique = new Set<number>();
+  for (const id of dealIds) {
+    if (!deals[id]) unique.add(id);
+  }
+  return Array.from(unique);
+};
+
 export const mergeDeals = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]

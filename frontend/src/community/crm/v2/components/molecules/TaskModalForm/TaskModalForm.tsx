@@ -27,7 +27,7 @@ import OwnerDropdownItem from "~community/crm/v2/components/atoms/OwnerDropdownI
 import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
-import useGetPriorityOptions from "~community/crm/v2/hooks/useGetPriorityOptions";
+import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
 import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
@@ -96,7 +96,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     }))
   );
 
-  const priorityDropdownOptions = useGetPriorityOptions(translateText);
+  const priorityDropdownOptions = useGetPriorityOptions();
   const taskTypeOptions = useGetTaskTypeOptions(translateText);
 
   const [ownerSearchText, setOwnerSearchText] = useState("");

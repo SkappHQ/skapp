@@ -17,14 +17,14 @@ import {
 } from "~community/crm/v2/api/utils/QueryKeys";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmTaskCompletedFilterRequest,
-  CrmTaskCompletedListResponse
+  CrmTaskFilterRequest,
+  CrmTaskListResponse
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 const fetchTasks = async (
-  params: CrmTaskCompletedFilterRequest
-): Promise<CrmTaskCompletedListResponse> => {
+  params: CrmTaskFilterRequest
+): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
     params
   });
@@ -32,9 +32,9 @@ const fetchTasks = async (
 };
 
 export const useGetTasksInfinite = (
-  params: CrmTaskCompletedFilterRequest
+  params: CrmTaskFilterRequest
 ): UseInfiniteQueryResult<
-  InfiniteData<CrmTaskCompletedListResponse>,
+  InfiniteData<CrmTaskListResponse>,
   AxiosError
 > =>
   useInfiniteQuery({

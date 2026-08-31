@@ -40,7 +40,7 @@ import {
   CrmDealFilterRequest,
   CrmModalTypes,
   CrmSidePanelTypes,
-  CrmTaskCompletedFilterRequest
+  CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 import {
   getCompanyMetricItems,
@@ -109,7 +109,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     }))
   );
 
-  const taskFilters: CrmTaskCompletedFilterRequest = {
+  const taskFilters: CrmTaskFilterRequest = {
     companyId,
     size: TASK_PAGE_SIZE
   };

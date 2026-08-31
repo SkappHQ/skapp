@@ -17,6 +17,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmDealFilterRequest,
+  CrmDealListResponse,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -29,19 +30,43 @@ import {
   crmDealQueryKeys
 } from "./utils/QueryKeys";
 
+const fetchDealsByIds = async (ids: number[]): Promise<CrmDealEntity[]> => {
+  const response = await authFetch.post(crmDealEndpoints.GET_DEALS_BY_IDS, {
+    ids
+  });
+  return response?.data?.results;
+};
+
+export const useGetDealsByIds = (
+  dealIds: number[],
+  enabled: boolean
+): UseQueryResult<CrmDealEntity[]> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.DEALS_BY_IDS(dealIds),
+    queryFn: () => fetchDealsByIds(dealIds),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
 const fetchDeals = async (
   filters: CrmDealFilterRequest
-): Promise<{
-  items: CrmDealEntity[];
-  currentPage: number;
-  totalItems: number;
-  totalPages: number;
-}> => {
+): Promise<CrmDealListResponse> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
     params: filters
   });
   return response?.data?.results?.[0];
 };
+
+export const useGetDealLookupV2 = (
+  filters: CrmDealFilterRequest,
+  enabled: boolean
+): UseQueryResult<CrmDealListResponse> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.GET_DEALS(filters),
+    queryFn: () => fetchDeals(filters),
+    enabled,
+    refetchOnWindowFocus: false
+  });
 
 export const useGetDealsInfinite = (
   filters: CrmDealFilterRequest,

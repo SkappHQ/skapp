@@ -36,7 +36,7 @@ import {
   CrmDealFilterRequest,
   CrmModalTypes,
   CrmSidePanelTypes,
-  CrmTaskCompletedFilterRequest
+  CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 import {
   getContactMetricItems,
@@ -102,7 +102,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const { isCrmSalesManager, userId } = useSessionData();
 
-  const taskFilters: CrmTaskCompletedFilterRequest = {
+  const taskFilters: CrmTaskFilterRequest = {
     contactId,
     size: TASK_PAGE_SIZE
   };

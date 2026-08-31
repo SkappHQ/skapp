@@ -33,6 +33,7 @@ export const crmDealEndpointsV2 = {
 };
 
 export const crmDealEndpoints = {
+  GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
