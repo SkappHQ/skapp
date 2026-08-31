@@ -62,15 +62,13 @@ const DealsSectionV2: FC = () => {
     }))
   );
 
-  const isListView = activeView === DealViewEnum.LIST;
-
   const {
     config: columnConfig,
     handleColumnReorder,
     handleColumnVisibilityChange,
     handleSortChange,
     handleColumnResize
-  } = useDealListViewConfig(isListView);
+  } = useDealListViewConfig(activeView === DealViewEnum.LIST);
 
   const { sortKey, sortOrder } = mapConfigSortToQuery(columnConfig?.sort);
 
@@ -87,7 +85,7 @@ const DealsSectionV2: FC = () => {
       sortOrder,
       searchKeyword: debouncedSearch
     },
-    isListView
+    activeView === DealViewEnum.LIST
   );
 
   const sortConfig = useMemo(
@@ -101,7 +99,8 @@ const DealsSectionV2: FC = () => {
     );
   };
 
-  const enableRowReorder = isListView && !columnConfig?.sort;
+  const enableRowReorder =
+    activeView === DealViewEnum.LIST && !columnConfig?.sort;
 
   const handleRowReorder = (
     movingId: string,
