@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { RefObject, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -9,7 +10,9 @@ import {
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
+import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
 
@@ -32,9 +35,13 @@ const DirectorySteppers = ({
 
   const { user } = useAuth();
 
+  const router = useRouter();
+
   const { isSuperAdmin, isPeopleAdmin, userId } = useSessionData();
 
   const { setNextStep, currentStep } = usePeopleStore((state) => state);
+
+  const { hasChanged } = useFormChangeDetector();
 
   const [prevStep, setPrevStep] = useState<EditPeopleFormTypes | null>(null);
 
@@ -111,6 +118,10 @@ const DirectorySteppers = ({
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
     setNextStep(step);
+
+    if (!hasChanged) {
+      replaceTabQueryParam(router.asPath, step.toLowerCase());
+    }
   };
 
   useEffect(() => {
