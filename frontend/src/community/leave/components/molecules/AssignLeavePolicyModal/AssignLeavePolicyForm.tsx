@@ -15,6 +15,7 @@ import type {
   GridHeader,
   GridRow
 } from "~community/common/components/organisms/TableView/types";
+import { useCalendarPopperPlacement } from "~community/common/hooks/useCalendarPopperPlacement";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   AccrualPreviewRow,
@@ -59,6 +60,13 @@ const AssignLeavePolicyForm: FC<Props> = ({
   joinDateWarning
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicyAssignment");
+
+  const {
+    triggerRef,
+    isCalendarOpen,
+    calendarPopperProps,
+    onCalendarOpenChange
+  } = useCalendarPopperPlacement();
 
   const accrualHeaders: GridHeader[] = [
     { id: "date", label: translateText(["assignModal", "colDate"]) },
@@ -161,9 +169,12 @@ const AssignLeavePolicyForm: FC<Props> = ({
                 date ? (DateTime.fromJSDate(date).toISODate() ?? "") : ""
               )
             }
-            popperProps={{ position: "bottom-start" }}
+            triggerRef={triggerRef}
+            isOpen={isCalendarOpen}
+            onOpenChange={onCalendarOpenChange}
+            popperProps={calendarPopperProps}
           >
-            <div>
+            <div ref={triggerRef}>
               <InputField
                 name="specificDate"
                 value={
