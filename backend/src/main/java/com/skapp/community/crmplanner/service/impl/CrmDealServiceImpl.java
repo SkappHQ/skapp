@@ -29,8 +29,6 @@ import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmIndustryResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
@@ -41,7 +39,6 @@ import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
-import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
@@ -87,8 +84,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 	private final CrmTaskDao crmTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
-
-	private final CrmIndustryDao crmIndustryDao;
 
 	private final MessageUtil messageUtil;
 
@@ -286,44 +281,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		responseDto.setTaskTypes(taskTypes);
 
 		log.info("getBoardInitData: execution ended");
-		return new ResponseEntityDto(false, responseDto);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getBoardInitDataV2() {
-		log.info("getBoardInitDataV2: execution started");
-
-		List<CrmDealStage> visibleStages = filterVisibleDealStages(
-				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
-		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
-
-		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
-			.stream()
-			.map(this::toBoardContactDto)
-			.toList();
-
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
-			.stream()
-			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
-					o.getAuthPic()))
-			.toList();
-
-		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
-			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
-
-		List<CrmIndustryResponseDto> industries = crmMapper
-			.crmIndustriesToCrmIndustryResponseDtos(crmIndustryDao.findAllByOrderByNameAsc());
-
-		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
-		responseDto.setStages(stages);
-		responseDto.setContacts(contacts);
-		responseDto.setCrmRoles(CrmConstants.ASSIGNABLE_CRM_ROLES.stream().map(Enum::name).sorted().toList());
-		responseDto.setOwners(owners);
-		responseDto.setTaskTypes(taskTypes);
-		responseDto.setIndustries(industries);
-
-		log.info("getBoardInitDataV2: execution ended");
 		return new ResponseEntityDto(false, responseDto);
 	}
 
