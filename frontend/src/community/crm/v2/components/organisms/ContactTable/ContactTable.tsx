@@ -43,11 +43,15 @@ import {
 } from "~community/crm/v2/utils/companyUtil";
 import {
   getContactCompanyIds,
-  toContactIds,
-  toContactsRecord
+  mergeContacts,
+  toContactIds
 } from "~community/crm/v2/utils/contactUtil";
 
-export const ContactTable: FC = () => {
+interface ContactTableProps {
+  initializeCrmData: boolean;
+}
+
+export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +67,8 @@ export const ContactTable: FC = () => {
     setContacts,
     setContactIds,
     setSelectedContactId,
-    openCrmSidePanel
+    openCrmSidePanel,
+    isCrmDataInitialized
   } = useCrmStoreV2(
     useShallow((store) => ({
       contacts: store.contacts,
@@ -73,7 +78,8 @@ export const ContactTable: FC = () => {
       setContacts: store.setContacts,
       setContactIds: store.setContactIds,
       setSelectedContactId: store.setSelectedContactId,
-      openCrmSidePanel: store.openCrmSidePanel
+      openCrmSidePanel: store.openCrmSidePanel,
+      isCrmDataInitialized: store.isCrmDataInitialized
     }))
   );
 
@@ -88,8 +94,13 @@ export const ContactTable: FC = () => {
     size: DEFAULT_LOOKUP_PAGE_SIZE
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useGetContactsInfinite(contactFilters);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isContactsLoading
+  } = useGetContactsInfinite(contactFilters, isCrmDataInitialized);
 
   const { data: companyLookupData } = useGetCompanyLookup(companyLookupFilters);
 
@@ -101,7 +112,7 @@ export const ContactTable: FC = () => {
   useEffect(() => {
     if (!fetchedContacts) return;
 
-    setContacts({ ...contacts, ...toContactsRecord(fetchedContacts) });
+    setContacts(mergeContacts(contacts, fetchedContacts));
     setContactIds(toContactIds(fetchedContacts));
   }, [fetchedContacts]);
 
@@ -157,6 +168,8 @@ export const ContactTable: FC = () => {
       }
     }
   }
+
+  const isLoading = isContactsLoading || initializeCrmData;
 
   const tableHeaders: GridHeader[] = [
     {

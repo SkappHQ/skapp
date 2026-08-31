@@ -24,7 +24,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Companies page from the normalized v2 store surface.
-const isCrmCompaniesV2 = false;
+const isCrmCompaniesV2 = true;
 
 const CompaniesV1 = () => {
   const translateText = useTranslator("crmModule");

@@ -8,6 +8,7 @@ import {
   CrmContactEntity,
   CrmContactRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { appendId } from "~community/crm/v2/utils/commonUtil";
 import {
   CrmMetricItem,
   getCompanyNameById
@@ -55,11 +56,57 @@ export const getContactCompanyIds = (
   const companyIds: number[] = [];
   for (const contactId of contactIds) {
     const companyId = contacts[contactId]?.companyId;
-    if (companyId !== undefined) {
+    if (companyId != null) {
       companyIds.push(companyId);
     }
   }
   return companyIds;
+};
+
+export const linkContactToCompany = (
+  contact: CrmContactEntity,
+  companies: CrmCompanyRecord,
+  previousCompanyId?: number | null
+): CrmCompanyRecord => {
+  const contactId = contact.id;
+
+  if (contactId === undefined) {
+    return companies;
+  }
+
+  let linked = companies;
+
+  if (previousCompanyId != null && previousCompanyId !== contact.companyId) {
+    const previousCompany = linked[previousCompanyId];
+
+    if (previousCompany?.contactIds !== undefined) {
+      linked = {
+        ...linked,
+        [previousCompanyId]: {
+          ...previousCompany,
+          contactIds: previousCompany.contactIds.filter(
+            (id) => id !== contactId
+          )
+        }
+      };
+    }
+  }
+
+  if (contact.companyId != null) {
+    const company = linked[contact.companyId];
+
+    if (company !== undefined) {
+      linked = {
+        ...linked,
+        [contact.companyId]: {
+          ...company,
+          contactIds: appendId(company.contactIds, contactId)
+        }
+      };
+    }
+  }
+
+  return linked;
 };
 
 export const getContactDisplayName = (
@@ -135,7 +182,7 @@ export const getContactMetricItems = (
     {
       id: "totalRevenue",
       title: translateText(["metrics", "totalRevenue"]),
-      amount: metrics?.totalRevenue,
+      amount: metrics?.closedDealValue,
       isCurrency: true
     },
     {

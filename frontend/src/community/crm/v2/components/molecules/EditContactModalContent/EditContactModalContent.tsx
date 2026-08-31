@@ -14,6 +14,7 @@ import {
   getContactFormInitialValues,
   getSelectedContact,
   getTrimmedContactValues,
+  linkContactToCompany,
   updateContact
 } from "~community/crm/v2/utils/contactUtil";
 import { getContactValidationSchema } from "~community/crm/v2/utils/contactValidations";
@@ -27,15 +28,23 @@ const EditContactModalContent: FC = () => {
     "editContactModal"
   );
 
-  const { contacts, selectedContactId, setContacts, setIsContactModalOpen } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        contacts: store.contacts,
-        selectedContactId: store.selectedContactId,
-        setContacts: store.setContacts,
-        setIsContactModalOpen: store.setIsContactModalOpen
-      }))
-    );
+  const {
+    contacts,
+    companies,
+    selectedContactId,
+    setContacts,
+    setCompanies,
+    setIsContactModalOpen
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      contacts: store.contacts,
+      companies: store.companies,
+      selectedContactId: store.selectedContactId,
+      setContacts: store.setContacts,
+      setCompanies: store.setCompanies,
+      setIsContactModalOpen: store.setIsContactModalOpen
+    }))
+  );
 
   const selectedContact = getSelectedContact(contacts, selectedContactId);
 
@@ -60,15 +69,20 @@ const EditContactModalContent: FC = () => {
     setSubmitting(false);
 
     if (selectedContactId !== null) {
+      const previousCompanyId = contacts[selectedContactId]?.companyId;
+
       setContacts(updateContact(contacts, selectedContactId, updatedContact));
+      setCompanies(
+        linkContactToCompany(updatedContact, companies, previousCompanyId)
+      );
     }
 
     handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText(["contactToastMessages", "successTitle"]),
+      description: translateText(["contactToastMessages", "successDescription"])
     });
   };
 
@@ -77,8 +91,8 @@ const EditContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText(["contactToastMessages", "errorTitle"]),
+      description: translateText(["contactToastMessages", "errorDescription"])
     });
   };
 

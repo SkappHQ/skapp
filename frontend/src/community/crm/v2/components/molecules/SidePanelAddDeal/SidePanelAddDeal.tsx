@@ -30,7 +30,7 @@ import AddDealContactSearch from "./AddDealContactSearch";
 interface SidePanelAddDealProps {
   onClose: () => void;
   onDealCreated: (deal: CrmDealEntity) => void;
-  companyId?: number;
+  companyId?: number | null;
   defaultContact?: CrmContactEntity;
 }
 
@@ -62,9 +62,12 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
 
   const contactFilters: CrmContactFilterRequest = {
     searchKeyword: debouncedContactSearch,
-    size: DEFAULT_LOOKUP_PAGE_SIZE,
-    companyId
+    size: DEFAULT_LOOKUP_PAGE_SIZE
   };
+
+  if (companyId != null) {
+    contactFilters.companyId = companyId;
+  }
 
   const { data: contactLookupData } = useGetContactLookup(contactFilters);
   const { data: currentUser, isLoading: isUserLoading } =

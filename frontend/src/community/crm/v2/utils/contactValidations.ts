@@ -37,6 +37,6 @@ export const getContactValidationSchema = (
         message: translator(["validations", "contactNumber"]),
         excludeEmptyString: true
       }),
-    companyId: Yup.number().optional(),
+    companyId: Yup.number().nullable().optional(),
     ownerId: Yup.number().required(translator(["validations", "owner"]))
   });

@@ -165,7 +165,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     if (!fetchedCompany || !fetchedMetrics) return;
 
     setCompanies(
-      updateCompany(companies, companyId, {
+      updateCompany(useCrmStoreV2.getState().companies, companyId, {
         ...fetchedCompany,
         metrics: fetchedMetrics
       })
@@ -180,7 +180,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     setTasks({ ...tasks, ...normalizedTasks.tasks });
     setCompanies(
-      updateCompany(companies, companyId, {
+      updateCompany(useCrmStoreV2.getState().companies, companyId, {
         taskIds: normalizedTasks.taskIds
       })
     );
@@ -193,7 +193,9 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     setDeals(mergeDeals(deals, dealItems));
     setCompanies(
-      updateCompany(companies, companyId, { dealIds: toDealIds(dealItems) })
+      updateCompany(useCrmStoreV2.getState().companies, companyId, {
+        dealIds: toDealIds(dealItems)
+      })
     );
   }, [fetchedDeals]);
 
@@ -206,7 +208,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     setContacts(mergeContacts(contacts, contactItems));
     setCompanies(
-      updateCompany(companies, companyId, {
+      updateCompany(useCrmStoreV2.getState().companies, companyId, {
         contactIds: toContactIds(contactItems)
       })
     );

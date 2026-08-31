@@ -60,6 +60,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   const {
     values,
     errors,
+    touched,
     handleChange,
     handleBlur,
     dirty,
@@ -280,6 +281,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     setDealSearchText("");
   };
 
+  const hasFormErrors = Object.keys(errors).length > 0;
+
   const dueDate = parseDueDate(values.dueAt);
 
   return (
@@ -288,8 +291,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
         <InputField
           name="name"
           value={values.name}
-          errorMessage={errors.name}
-          state={errors.name ? "error" : "default"}
+          errorMessage={touched.name ? errors.name : undefined}
+          state={touched.name && errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
           onChange={handleNameChange}
@@ -307,8 +310,10 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
               options={taskTypeOptions}
               value={values.typeId?.toString()}
               onChange={handleTypeSelect}
-              errorMessage={errors.typeId}
-              variant={errors.typeId ? "primary-error" : "primary"}
+              errorMessage={touched.typeId ? errors.typeId : undefined}
+              variant={
+                touched.typeId && errors.typeId ? "primary-error" : "primary"
+              }
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "type"])}
@@ -322,7 +327,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
               options={priorityDropdownOptions}
               value={values.priority}
               onChange={(value) => setFieldValue("priority", value)}
-              errorMessage={errors.priority}
+              errorMessage={touched.priority ? errors.priority : undefined}
               width="100%"
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "priority"])}
@@ -344,8 +349,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
                   value={dueDate?.toLocaleDateString()}
                   label={translateText(["labels", "dueDate"])}
                   placeholder={translateText(["placeholders", "dueDate"])}
-                  state={errors.dueAt ? "error" : "default"}
-                  errorMessage={errors.dueAt}
+                  state={touched.dueAt && errors.dueAt ? "error" : "default"}
+                  errorMessage={touched.dueAt ? errors.dueAt : undefined}
                   aria-label={translateText(["ariaLabels", "dueDate"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
@@ -375,8 +380,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
                 placeholder={translateText(["placeholders", "taskOwner"])}
                 value={ownerSearchText}
                 onChange={(event) => setOwnerSearchText(event.target.value)}
-                state={errors.ownerId ? "error" : "default"}
-                errorMessage={errors.ownerId}
+                state={touched.ownerId && errors.ownerId ? "error" : "default"}
+                errorMessage={touched.ownerId ? errors.ownerId : undefined}
                 emptyMessage={translateText(["emptyStates", "noOwners"])}
                 required
               />
@@ -421,8 +426,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           value={values.notes}
           placeholder={translateText(["placeholders", "notes"])}
           label={translateText(["labels", "notes"])}
-          errorMessage={errors.notes}
-          state={errors.notes ? "error" : "default"}
+          errorMessage={touched.notes ? errors.notes : undefined}
+          state={touched.notes && errors.notes ? "error" : "default"}
           onChange={handleNotesChange}
           onBlur={handleBlur}
           rows={3}
@@ -446,7 +451,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isSubmitting || isPending || !dirty}
+          disabled={isSubmitting || isPending || !dirty || hasFormErrors}
           aria-label={translateText(["ariaLabels", "save"])}
         >
           {translateText(["buttons", "save"])}

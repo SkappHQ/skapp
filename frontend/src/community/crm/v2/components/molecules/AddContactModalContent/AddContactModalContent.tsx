@@ -11,7 +11,8 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getContactFormInitialValues,
-  getTrimmedContactValues
+  getTrimmedContactValues,
+  linkContactToCompany
 } from "~community/crm/v2/utils/contactUtil";
 import { getContactValidationSchema } from "~community/crm/v2/utils/contactValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
@@ -27,15 +28,19 @@ const AddContactModalContent: FC = () => {
 
   const {
     contacts,
+    companies,
     contactIds,
     setContacts,
+    setCompanies,
     setContactIds,
     setIsContactModalOpen
   } = useCrmStoreV2(
     useShallow((store) => ({
       contacts: store.contacts,
+      companies: store.companies,
       contactIds: store.contactIds,
       setContacts: store.setContacts,
+      setCompanies: store.setCompanies,
       setContactIds: store.setContactIds,
       setIsContactModalOpen: store.setIsContactModalOpen
     }))
@@ -67,14 +72,15 @@ const AddContactModalContent: FC = () => {
     if (createdContact.id !== undefined) {
       setContacts({ ...contacts, [createdContact.id]: createdContact });
       setContactIds([createdContact.id, ...contactIds]);
+      setCompanies(linkContactToCompany(createdContact, companies));
     }
 
     handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText(["contactToastMessages", "successTitle"]),
+      description: translateText(["contactToastMessages", "successDescription"])
     });
   };
 
@@ -83,8 +89,8 @@ const AddContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText(["contactToastMessages", "errorTitle"]),
+      description: translateText(["contactToastMessages", "errorDescription"])
     });
   };
 

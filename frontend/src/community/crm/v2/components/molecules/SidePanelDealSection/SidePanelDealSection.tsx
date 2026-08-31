@@ -27,7 +27,7 @@ import DealAccordionItemSkeleton from "./DealAccordionItemSkeleton";
 interface SidePanelDealSectionProps {
   dealIds?: number[];
   onDealCreated: (deal: CrmDealEntity) => void;
-  companyId?: number;
+  companyId?: number | null;
   defaultContact?: CrmContactEntity;
   emptyDescription?: string;
   hasNextPage?: boolean;

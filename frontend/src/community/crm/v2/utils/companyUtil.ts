@@ -136,9 +136,9 @@ export const getChangedCompanyFields = (
 
 export const getCompanyNameById = (
   companies: CrmCompanyRecord,
-  companyId?: number
+  companyId?: number | null
 ) => {
-  if (companyId !== undefined) {
+  if (companyId != null) {
     return companies[companyId]?.name;
   }
 };

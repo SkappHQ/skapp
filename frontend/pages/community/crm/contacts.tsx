@@ -24,7 +24,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Contacts page from the normalized v2 store surface.
-const isCrmContactsV2 = false;
+const isCrmContactsV2 = true;
 
 const ContactsV1 = () => {
   const translateText = useTranslator("crmModule");
@@ -86,7 +86,7 @@ const ContactsV2 = () => {
       }))
     );
 
-  useInitializeCrmData();
+  const { isCrmInitialDataLoading } = useInitializeCrmData();
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
@@ -118,7 +118,7 @@ const ContactsV2 = () => {
 
         <ContactModalControllerV2 />
         <TaskModalControllerV2 />
-        <ContactTableV2 />
+        <ContactTableV2 initializeCrmData={isCrmInitialDataLoading} />
       </>
     </ContentLayout>
   );

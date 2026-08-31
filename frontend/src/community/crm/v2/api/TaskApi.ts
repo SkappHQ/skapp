@@ -115,6 +115,11 @@ export const useUpdateTask = (
           queryKey: crmCompanyQueryKeys.METRICS(updatedTask.companyId)
         });
       }
+      if (updatedTask.contactId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.METRICS(updatedTask.contactId)
+        });
+      }
       onSuccess(updatedTask);
     }
   });

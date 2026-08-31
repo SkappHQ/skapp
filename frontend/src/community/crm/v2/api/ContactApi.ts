@@ -41,7 +41,8 @@ const fetchContacts = async (
 };
 
 export const useGetContactsInfinite = (
-  params: CrmContactFilterRequest
+  params: CrmContactFilterRequest,
+  enabled?: boolean
 ): UseInfiniteQueryResult<InfiniteData<CrmContactListResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmContactQueryKeys.LIST(params),
@@ -57,6 +58,7 @@ export const useGetContactsInfinite = (
       }
       return undefined;
     },
+    enabled: enabled,
     refetchOnWindowFocus: false
   });
 

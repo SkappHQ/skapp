@@ -37,12 +37,15 @@ import {
   CrmSidePanelTypes,
   CrmTaskCompletedFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
-import { appendId } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactMetricItems,
   updateContact
 } from "~community/crm/v2/utils/contactUtil";
-import { mergeDeals, toDealIds } from "~community/crm/v2/utils/dealUtil";
+import {
+  linkDealToRelatedEntities,
+  mergeDeals,
+  toDealIds
+} from "~community/crm/v2/utils/dealUtil";
 import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
@@ -64,11 +67,13 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const {
     contacts,
+    companies,
     tasks,
     deals,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setContacts,
+    setCompanies,
     setTasks,
     setDeals,
     setSelectedContactId,
@@ -78,11 +83,13 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   } = useCrmStoreV2(
     useShallow((store) => ({
       contacts: store.contacts,
+      companies: store.companies,
       tasks: store.tasks,
       deals: store.deals,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       setContacts: store.setContacts,
+      setCompanies: store.setCompanies,
       setTasks: store.setTasks,
       setDeals: store.setDeals,
       setSelectedContactId: store.setSelectedContactId,
@@ -125,39 +132,52 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
 
   useEffect(() => {
-    if (!fetchedContact || !fetchedMetrics || !fetchedTasks || !fetchedDeals) {
-      return;
-    }
+    if (!fetchedContact || !fetchedMetrics) return;
+
+    setContacts(
+      updateContact(useCrmStoreV2.getState().contacts, contactId, {
+        ...fetchedContact,
+        metrics: fetchedMetrics
+      })
+    );
+  }, [fetchedContact, fetchedMetrics]);
+
+  useEffect(() => {
+    if (!fetchedTasks) return;
 
     const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
     const normalizedTasks = normalizeTasks(taskItems);
 
+    setTasks({ ...tasks, ...normalizedTasks.tasks });
+    setContacts(
+      updateContact(useCrmStoreV2.getState().contacts, contactId, {
+        taskIds: normalizedTasks.taskIds
+      })
+    );
+  }, [fetchedTasks]);
+
+  useEffect(() => {
+    if (!fetchedDeals) return;
+
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
 
-    setTasks({ ...tasks, ...normalizedTasks.tasks });
     setDeals(mergeDeals(deals, dealItems));
     setContacts(
-      updateContact(contacts, contactId, {
-        ...fetchedContact,
-        metrics: fetchedMetrics,
-        taskIds: normalizedTasks.taskIds,
+      updateContact(useCrmStoreV2.getState().contacts, contactId, {
         dealIds: toDealIds(dealItems)
       })
     );
-  }, [fetchedContact, fetchedMetrics, fetchedTasks, fetchedDeals]);
+  }, [fetchedDeals]);
 
   const contact = contacts[contactId];
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));
 
-    if (createdDeal.id !== undefined) {
-      setContacts(
-        updateContact(contacts, contactId, {
-          dealIds: appendId(contact?.dealIds ?? [], createdDeal.id)
-        })
-      );
-    }
+    const linked = linkDealToRelatedEntities(createdDeal, companies, contacts);
+
+    setCompanies({ ...companies, ...linked.companies });
+    setContacts({ ...contacts, ...linked.contacts });
   };
 
   const isOpen =

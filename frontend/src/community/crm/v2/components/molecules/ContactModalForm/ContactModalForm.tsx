@@ -57,6 +57,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
   const {
     values,
     errors,
+    touched,
     handleChange,
     handleBlur,
     dirty,
@@ -131,21 +132,23 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
   };
 
   const handleClearCompany = () => {
-    setFieldValue("companyId", undefined);
+    setFieldValue("companyId", null);
     setCompanySearchText("");
   };
 
+  const emailFieldError = touched.email ? errors.email : undefined;
+
   const emailError = isDuplicateEmail
     ? translateText(["validations", "emailExists"])
-    : errors.email;
+    : emailFieldError;
 
   return (
     <div className="flex flex-col h-full justify-between gap-[0.625rem]">
       <InputField
         name="name"
         value={values.name}
-        errorMessage={errors.name}
-        state={errors.name ? "error" : "default"}
+        errorMessage={touched.name ? errors.name : undefined}
+        state={touched.name && errors.name ? "error" : "default"}
         label={translateText(["labels", "name"])}
         placeholder={translateText(["placeholders", "name"])}
         onChange={handleChange}
@@ -171,7 +174,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         fullWidth
       />
 
-      {values.companyId === undefined ? (
+      {values.companyId === null ? (
         <SearchableDropdown
           id="contact-company"
           name="company"
@@ -212,8 +215,10 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
       <InputField
         name="contactNumber"
         value={values.contactNumber}
-        errorMessage={errors.contactNumber}
-        state={errors.contactNumber ? "error" : "default"}
+        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
+        state={
+          touched.contactNumber && errors.contactNumber ? "error" : "default"
+        }
         label={translateText(["labels", "contactNumber"])}
         placeholder={translateText(["placeholders", "contactNumber"])}
         onChange={handleChange}
@@ -226,7 +231,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
       {canEditOwner ? (
         <EditableContactOwnerField
           ownerId={values.ownerId}
-          errorMessage={errors.ownerId}
+          errorMessage={touched.ownerId ? errors.ownerId : undefined}
           translateText={translateText}
           onChange={(owner) => setFieldValue("ownerId", owner?.employeeId)}
         />
@@ -258,9 +263,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={
-            isPending || !dirty || isEmailCheckUnresolved || isDuplicateEmail
-          }
+          disabled={isPending || !dirty}
           isLoading={isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >
