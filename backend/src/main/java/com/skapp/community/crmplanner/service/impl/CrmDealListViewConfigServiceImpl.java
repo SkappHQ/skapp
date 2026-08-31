@@ -10,6 +10,7 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.DefaultCrmDealListViewTemplate;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.service.CrmDealListViewConfigService;
+import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,8 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 	@Transactional
 	public ResponseEntityDto updateListViewConfig(CrmDealListViewConfigDto config) {
 		log.info("updateListViewConfig: execution started");
+
+		CrmValidations.validateDealListViewConfig(config);
 
 		User currentUser = userService.getCurrentUser();
 		Optional<User> optionalUser = userDao.findById(currentUser.getUserId());
