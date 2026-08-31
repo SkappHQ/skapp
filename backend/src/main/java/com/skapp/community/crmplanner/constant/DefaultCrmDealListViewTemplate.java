@@ -27,6 +27,7 @@ public class DefaultCrmDealListViewTemplate {
 		node.putNull("fieldId");
 		node.put("width", value.getWidth());
 		node.put("isVisible", true);
+		node.put("isHideable", value.isHideable());
 		node.put("isSortable", true);
 		node.put("isDraggable", true);
 		node.put("isGroupable", false);
