@@ -15,4 +15,8 @@ public class CrmContactMetrics {
 
 	private final Long overdueTasksCount;
 
+	private final String pipelineRevenue;
+
+	private final Long activeDealsCount;
+
 }
