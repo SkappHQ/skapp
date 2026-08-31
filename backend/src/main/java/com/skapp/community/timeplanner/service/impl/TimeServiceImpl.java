@@ -1199,8 +1199,8 @@ public class TimeServiceImpl implements TimeService {
 			float morningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_MORNING);
 			float eveningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_EVENING);
 
-			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findLeaveRequestsForTodayByUser(currentDate,
-					currentUser.getEmployee().getEmployeeId());
+			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findPendingAndApprovedLeaveRequestsForTodayByUser(
+					currentDate, currentUser.getEmployee().getEmployeeId());
 
 			ResponseEntityDto activeTimeSlotResponseDto1 = getAllActiveSlotsNoLeaveDay(currentDayConfig, morningHours,
 					eveningHours, leaveRequestsList);
@@ -1265,6 +1265,7 @@ public class TimeServiceImpl implements TimeService {
 				if (isEveningLeave || isMorningLeave || isFullDayLeave) {
 					ActiveTimeSlotResponseDto activeTimeSlotResponseDto = new ActiveTimeSlotResponseDto();
 					activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.LEAVE_DAY);
+					activeTimeSlotResponseDto.setIsLeavePending(leaveRequest.getStatus() == LeaveRequestStatus.PENDING);
 					return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 				}
 			}
