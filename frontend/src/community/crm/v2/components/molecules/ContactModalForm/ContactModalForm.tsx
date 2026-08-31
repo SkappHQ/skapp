@@ -16,11 +16,13 @@ import {
   useSearchCompaniesByDomain
 } from "~community/crm/v2/api/CompanyApi";
 import { useCheckContactEmailExists } from "~community/crm/v2/api/ContactApi";
+import AddNewCompanyOption from "~community/crm/v2/components/atoms/AddNewCompanyOption/AddNewCompanyOption";
 import SuggestedBadge from "~community/crm/v2/components/atoms/SuggestedBadge/SuggestedBadge";
 import EditableContactOwnerField from "~community/crm/v2/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import {
+  ADD_NEW_COMPANY_OPTION_ID,
   CONTACT_EMAIL_MAX_LENGTH,
   CONTACT_NAME_MAX_LENGTH,
   CONTACT_NUMBER_MAX_LENGTH
@@ -40,6 +42,7 @@ interface ContactModalFormProps {
   isPending: boolean;
   translateText: TranslatorFunctionType;
   originalEmail?: string;
+  canAddNewCompany?: boolean;
   onCancel: () => void;
 }
 
@@ -48,6 +51,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
   isPending,
   translateText,
   originalEmail,
+  canAddNewCompany,
   onCancel
 }) => {
   const { isCrmSalesManager: canEditOwner } = useSessionData();
@@ -109,30 +113,51 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
 
   const { data: companyLookupData } = useGetCompanyLookup(companyLookupFilters);
 
+  const trimmedCompanySearch = companySearchText.trim();
+
   const companyDropdownItems: SearchableDropdownItem[] = getCompanyOptions(
     companyLookupData?.items,
-    domainSearchData?.companies
+    domainSearchData?.companies,
+    canAddNewCompany === true ? companySearchText : undefined
   ).map((option) => ({
     id: option.id,
-    content: option.isSuggested ? (
-      <SuggestedBadge label={translateText(["labels", "suggested"])}>
-        {option.name}
-      </SuggestedBadge>
-    ) : (
-      option.name
-    )
+    content:
+      option.id === ADD_NEW_COMPANY_OPTION_ID ? (
+        <AddNewCompanyOption
+          label={translateText(["labels", "addNewCompany"], {
+            companyName: trimmedCompanySearch
+          })}
+        />
+      ) : option.isSuggested ? (
+        <SuggestedBadge label={translateText(["labels", "suggested"])}>
+          {option.name}
+        </SuggestedBadge>
+      ) : (
+        option.name
+      )
   }));
 
-  const selectedCompanyName = getCompanyNameById(companies, values.companyId);
+  const selectedCompanyName =
+    values.companyName === undefined
+      ? getCompanyNameById(companies, values.companyId)
+      : values.companyName;
   const selectedOwner = getOwnerById(owners, values.ownerId);
 
   const handleCompanySelect = (item: SearchableDropdownItem) => {
+    if (item.id === ADD_NEW_COMPANY_OPTION_ID) {
+      setFieldValue("companyName", trimmedCompanySearch);
+      setCompanySearchText("");
+      return;
+    }
+
     setFieldValue("companyId", Number(item.id));
+    setFieldValue("companyName", undefined);
     setCompanySearchText("");
   };
 
   const handleClearCompany = () => {
     setFieldValue("companyId", null);
+    setFieldValue("companyName", undefined);
     setCompanySearchText("");
   };
 
@@ -174,7 +199,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         fullWidth
       />
 
-      {values.companyId === null ? (
+      {values.companyId == null && values.companyName === undefined ? (
         <SearchableDropdown
           id="contact-company"
           name="company"

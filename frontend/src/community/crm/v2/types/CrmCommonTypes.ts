@@ -38,6 +38,7 @@ export interface CrmContactEntity {
   lastContactAt?: string;
   lastModifiedDate?: string;
   companyId?: number | null;
+  companyName?: string;
   ownerId?: number;
   metrics?: CrmContactMetrics;
   dealIds?: number[];

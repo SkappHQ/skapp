@@ -1,6 +1,8 @@
 import { DropdownOption } from "@rootcodelabs/skapp-ui";
 
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/v2/constants/contactConstants";
 import { CrmMetricLabelThemeEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
@@ -244,6 +246,7 @@ export const getTrimmedContactValues = (
   email: values.email?.trim(),
   contactNumber: values.contactNumber?.trim(),
   companyId: values.companyId,
+  companyName: values.companyName?.trim(),
   ownerId: values.ownerId
 });
 
@@ -294,7 +297,8 @@ export interface CrmCompanyOption {
  */
 export const getCompanyOptions = (
   lookupCompanies?: CrmCompanyEntity[],
-  suggestedCompanies?: CrmCompanyEntity[]
+  suggestedCompanies?: CrmCompanyEntity[],
+  newCompanyName?: string
 ): CrmCompanyOption[] => {
   const suggestedIds = new Set<number>();
   const options: CrmCompanyOption[] = [];
@@ -315,6 +319,25 @@ export const getCompanyOptions = (
       options.push({
         id: String(company.id),
         name: company.name,
+        isSuggested: false
+      });
+    }
+  }
+
+  if (newCompanyName !== undefined) {
+    const trimmedName = newCompanyName.trim();
+    const isNameAvailable = !options.some(
+      (option) => option.name?.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (
+      trimmedName.length > 0 &&
+      trimmedName.length <= characterLengths.COMPANY_NAME_LENGTH &&
+      isNameAvailable
+    ) {
+      options.push({
+        id: ADD_NEW_COMPANY_OPTION_ID,
+        name: trimmedName,
         isSuggested: false
       });
     }

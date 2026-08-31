@@ -27,7 +27,8 @@
         "contactNumber": "Contact no.",
         "company": "Company",
         "owner": "Contact owner",
-        "suggested": "Suggested"
+        "suggested": "Suggested",
+        "addNewCompany": "Add \"{{companyName}}\" as a new company"
       },
       "placeholders": {
         "name": "Enter name",

@@ -79,8 +79,6 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : nameFieldError;
 
-  const hasFormErrors = Object.keys(errors).length > 0 || isAlreadyNameExists;
-
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
   };
@@ -170,7 +168,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
           variant="primary"
           type="button"
           onClick={submitForm}
-          disabled={isPending || isSubmitting || !dirty || hasFormErrors}
+          disabled={isPending || isSubmitting || isAlreadyNameExists || !dirty}
           isLoading={isPending}
           aria-label={translateText(["ariaLabels", "save"])}
         >
