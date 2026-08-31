@@ -36,7 +36,6 @@ interface DealRow extends BaseRowData {
   dealOwner: ReactNode;
 }
 
-/** Maps a config field to the `DealRow` key that renders it and its i18n title key. */
 const FIELD_META: Record<
   CrmDealColumnFieldEnum,
   { rowKey: keyof DealRow; titleKey: string; minWidth: number }
@@ -142,7 +141,6 @@ const DealsTableV2: FC<Props> = ({
         resizable: fieldConfig.isResizable,
         draggable: fieldConfig.isDraggable,
         sortable: fieldConfig.isSortable,
-        // Non-hideable columns (e.g. deal name) stay visible.
         visible: fieldConfig.isHideable ? fieldConfig.isVisible : true
       };
     });
@@ -252,8 +250,6 @@ const DealsTableV2: FC<Props> = ({
         onColumnReorder={onColumnReorder}
         onColumnVisibilityChange={onColumnVisibilityChange}
         onColumnResize={onColumnResize}
-        // ListTable matches rowDragColumn against column.id at runtime while typing
-        // it as keyof T, so the drag handle is pinned to the Deal Name column by id.
         rowDragColumn={
           enableRowReorder
             ? (CrmDealColumnFieldEnum.DEAL_NAME as unknown as keyof DealRow)

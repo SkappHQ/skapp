@@ -1,9 +1,5 @@
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
-/**
- * Deal table columns. The enum values are the contract shared with the backend
- * (`user_settings.crm_deal_list_view`) and are used as the ListTable column ids.
- */
 export enum CrmDealColumnFieldEnum {
   DEAL_NAME = "DEAL_NAME",
   VALUE = "VALUE",

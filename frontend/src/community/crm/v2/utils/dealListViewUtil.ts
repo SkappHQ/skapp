@@ -7,7 +7,6 @@ import {
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
-/** Maps a table column to the backend sort key used to sort by that column. */
 export const FIELD_TO_SORT_KEY: Record<
   CrmDealColumnFieldEnum,
   CrmDealSortEnum
@@ -21,10 +20,6 @@ export const FIELD_TO_SORT_KEY: Record<
   [CrmDealColumnFieldEnum.DEAL_OWNER]: CrmDealSortEnum.OWNER
 };
 
-/**
- * Derives the deals-query sort params from the saved active sort. Returns an empty object
- * when no sort is active, so the backend falls back to the saved row (list) order.
- */
 export const mapConfigSortToQuery = (
   sort: CrmDealSortConfig | null | undefined
 ): { sortKey?: CrmDealSortEnum; sortOrder?: SortOrderTypes } =>
@@ -32,13 +27,11 @@ export const mapConfigSortToQuery = (
     ? { sortKey: FIELD_TO_SORT_KEY[sort.field], sortOrder: sort.direction }
     : {};
 
-/** Builds the ListTable sortConfig from the saved active sort. */
 export const toListTableSortConfig = (
   sort: CrmDealSortConfig | null | undefined
 ): SortConfig[] =>
   sort ? [{ columnId: sort.field, direction: sort.direction }] : [];
 
-/** Converts a ListTable onSort payload back into the saved-config sort shape. */
 export const fromListTableSortConfig = (
   sortConfig: SortConfig[],
   current: CrmDealSortConfig | null

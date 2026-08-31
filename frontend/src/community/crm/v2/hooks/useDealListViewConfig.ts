@@ -11,17 +11,11 @@ import {
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
-/** Minimal shape read from the ListTable column callbacks. */
 interface ColumnState {
   id: string;
   visible: boolean;
 }
 
-/**
- * Loads the current user's deal list-view config and exposes handlers that mutate it
- * optimistically and persist the whole blob back to the backend. Column order/visibility
- * are display-only; the backend just stores what it receives.
- */
 const useDealListViewConfig = (enabled: boolean) => {
   const { data: fetchedConfig, isLoading } = useGetDealListViewConfig(enabled);
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
@@ -40,8 +34,6 @@ const useDealListViewConfig = (enabled: boolean) => {
     [persistConfig]
   );
 
-  // Resize fires continuously while dragging the column border, so persist is debounced
-  // while the local state updates immediately for a smooth resize.
   const persistTimer = useRef<ReturnType<typeof setTimeout>>();
   const persistDebounced = useCallback(
     (next: CrmDealListViewConfig) => {
@@ -74,7 +66,6 @@ const useDealListViewConfig = (enabled: boolean) => {
       );
       const nextFields = config.fields.map((field) => ({
         ...field,
-        // Non-hideable columns (e.g. deal name) stay visible regardless of the toggle.
         isVisible: field.isHideable
           ? visibilityById.get(field.field) ?? field.isVisible
           : true
