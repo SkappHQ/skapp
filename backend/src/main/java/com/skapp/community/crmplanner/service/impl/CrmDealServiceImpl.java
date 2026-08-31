@@ -48,7 +48,6 @@ import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -89,8 +88,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 	private final MessageUtil messageUtil;
 
-	@Autowired
-	private CrmDealOrderIndexService crmDealOrderIndexService;
+	private final CrmDealOrderIndexService crmDealOrderIndexService;
 
 	@Override
 	@Transactional(readOnly = true)
