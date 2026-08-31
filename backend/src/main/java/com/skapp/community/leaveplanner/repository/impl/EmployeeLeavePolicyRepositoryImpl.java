@@ -26,9 +26,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -96,10 +96,12 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 					cb.not(employee.get(Employee_.ACCOUNT_STATUS).in(AccountStatus.TERMINATED, AccountStatus.DELETED)))
 			.groupBy(policyId);
 
-		return entityManager.createQuery(query)
-			.getResultList()
-			.stream()
-			.collect(Collectors.toMap(result -> result.get(0, Long.class), result -> result.get(1, Long.class)));
+		List<Tuple> results = entityManager.createQuery(query).getResultList();
+		Map<Long, Long> assignedEmployeeCounts = new HashMap<>();
+		for (Tuple result : results) {
+			assignedEmployeeCounts.put(result.get(0, Long.class), result.get(1, Long.class));
+		}
+		return assignedEmployeeCounts;
 	}
 
 	private Predicate[] buildEmployeeStatusPredicates(CriteriaBuilder cb, Root<EmployeeLeavePolicy> root,

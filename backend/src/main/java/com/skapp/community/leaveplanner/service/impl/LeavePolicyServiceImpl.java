@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,10 +147,6 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		int cancelledRequests = cancelPendingPolicyLeaveRequests(leavePolicy.getId());
 		int revokedRequests = revokeFutureApprovedPolicyLeaveRequests(leavePolicy.getId());
 		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
-
-		log.info(
-				"deactivateLeavePolicy: policy deactivated successfully, cancelledRequests: {}, revokedRequests: {}, endedAssignments: {}",
-				cancelledRequests, revokedRequests, endedAssignments);
 
 		return new ResponseEntityDto(false,
 				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
@@ -289,12 +286,19 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			return;
 		}
 
-		List<Long> policyIds = leavePolicyResponseDtos.stream().map(LeavePolicyResponseDto::getId).toList();
+		List<Long> policyIds = new ArrayList<>();
+		
+		for (LeavePolicyResponseDto leavePolicyResponseDto : leavePolicyResponseDtos) {
+			policyIds.add(leavePolicyResponseDto.getId());
+		}
+
 		Map<Long, Long> assignedCounts = employeeLeavePolicyDao.countByPolicyIdsAndStatus(policyIds,
 				EmployeeLeavePolicyStatus.ACTIVE);
 
-		leavePolicyResponseDtos
-			.forEach(dto -> dto.setAssignedEmployeeCount(assignedCounts.getOrDefault(dto.getId(), 0L)));
+		for (LeavePolicyResponseDto leavePolicyResponseDto : leavePolicyResponseDtos) {
+			leavePolicyResponseDto
+				.setAssignedEmployeeCount(assignedCounts.getOrDefault(leavePolicyResponseDto.getId(), 0L));
+		}
 	}
 
 	private int endActivePolicyAssignments(Long policyId) {
