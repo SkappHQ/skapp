@@ -1,4 +1,6 @@
 import {
+  CrmIndustryEntity,
+  CrmIndustryRecord,
   CrmOwnerEntity,
   CrmOwnerRecord,
   CrmStageEntity,
@@ -71,4 +73,16 @@ export const toTaskTypesRecord = (
     }
   }
   return taskTypeRecord;
+};
+
+export const toIndustriesRecord = (
+  industries: CrmIndustryEntity[]
+): CrmIndustryRecord => {
+  const industryRecord: CrmIndustryRecord = {};
+  for (const industry of industries) {
+    if (industry.id != null) {
+      industryRecord[industry.id] = industry;
+    }
+  }
+  return industryRecord;
 };

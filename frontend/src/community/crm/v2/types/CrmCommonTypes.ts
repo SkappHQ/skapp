@@ -115,6 +115,11 @@ export interface CrmTaskTypeEntity {
   orderIndex: number;
 }
 
+export interface CrmIndustryEntity {
+  id: number;
+  name: string;
+}
+
 export type CrmCompanyRecord = Record<number, CrmCompanyEntity>;
 export type CrmContactRecord = Record<number, CrmContactEntity>;
 export type CrmOwnerRecord = Record<number, CrmOwnerEntity>;
@@ -123,3 +128,4 @@ export type CrmStageRecord = Record<number, CrmStageEntity>;
 export type CrmBoardRecord = Record<number, CrmBoardColumn>;
 export type CrmTaskRecord = Record<number, CrmTaskEntity>;
 export type CrmTaskTypeRecord = Record<number, CrmTaskTypeEntity>;
+export type CrmIndustryRecord = Record<number, CrmIndustryEntity>;

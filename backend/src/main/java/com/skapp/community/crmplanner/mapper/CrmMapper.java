@@ -4,12 +4,14 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmIndustryResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
@@ -70,6 +72,10 @@ public interface CrmMapper {
 	List<CrmCompanyResponseDto> crmCompaniesToCrmCompanyResponseDtos(List<CrmCompany> crmCompanies);
 
 	CrmCompanyResponseDtoV2 crmCompanyToCrmCompanyResponseDtoV2(CrmCompany crmCompany);
+
+	CrmIndustryResponseDto crmIndustryToCrmIndustryResponseDto(CrmIndustry crmIndustry);
+
+	List<CrmIndustryResponseDto> crmIndustriesToCrmIndustryResponseDtos(List<CrmIndustry> crmIndustries);
 
 	@Mapping(target = "email", source = "user.email")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
