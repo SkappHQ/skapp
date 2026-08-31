@@ -49,7 +49,9 @@ class AttendanceConfigControllerIntegrationTest extends AbstractControllerIntegr
 		void updateAttendanceConfig_ReturnsOk() throws Exception {
 			when(attendanceConfigService.updateAttendanceConfig(any())).thenReturn(response("updateAttendanceConfig"));
 
-			assertOk(performPatchRequest(new AttendanceConfigRequestDto(true, false, true, false, true, null, null)),
+			assertOk(
+					performPatchRequest(
+							new AttendanceConfigRequestDto(true, false, true, false, true, null, null, null)),
 					"updateAttendanceConfig");
 			verify(attendanceConfigService).updateAttendanceConfig(any(AttendanceConfigRequestDto.class));
 		}
