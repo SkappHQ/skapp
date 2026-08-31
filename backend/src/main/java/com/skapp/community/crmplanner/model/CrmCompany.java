@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.skapp.community.common.model.Auditable;
-import com.skapp.community.crmplanner.type.CrmIndustryName;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +36,7 @@ public class CrmCompany extends Auditable<String> {
 
 	@Column(name = "industry")
 	@Enumerated(EnumType.STRING)
-	private CrmIndustryName industry;
+	private CrmIndustry industry;
 
 	@Column(name = "website")
 	private String website;

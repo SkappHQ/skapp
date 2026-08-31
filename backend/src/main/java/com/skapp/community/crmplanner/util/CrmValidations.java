@@ -11,7 +11,7 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
-import com.skapp.community.crmplanner.type.CrmIndustryName;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import lombok.experimental.UtilityClass;
@@ -251,7 +251,7 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateIndustry(CrmIndustryName industry) {
+	public static void validateIndustry(CrmIndustry industry) {
 		if (industry == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
 		}

@@ -22,7 +22,7 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmIndustryName;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -109,7 +109,7 @@ class CrmTaskControllerV2IntegrationTest {
 
 		company = new CrmCompany();
 		company.setName("Task V2 Corp");
-		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		company.setWebsite("https://task-v2.com");
 		company.setAddress("9 Task Blvd");
 		company = crmCompanyDao.save(company);

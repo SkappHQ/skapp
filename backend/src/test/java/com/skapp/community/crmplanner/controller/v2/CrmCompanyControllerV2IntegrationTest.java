@@ -17,7 +17,7 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmIndustryName;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
@@ -95,7 +95,7 @@ class CrmCompanyControllerV2IntegrationTest {
 	private CrmCompany savedCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		company.setWebsite("https://metrics-v2.com");
 		company.setAddress("123 Metrics St");
 		company.setContactNumber("94771234567");
@@ -169,7 +169,7 @@ class CrmCompanyControllerV2IntegrationTest {
 			.andExpect(jsonPath("['results'][0]['items'][0]['id']").value(company.getId()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("MetricsCoV2Unique"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['industry']")
-				.value(CrmIndustryName.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['website']").value("https://metrics-v2.com"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['address']").value("123 Metrics St"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contactNumber']").value("94771234567"))

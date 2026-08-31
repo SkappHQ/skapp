@@ -1,6 +1,6 @@
 package com.skapp.community.crmplanner.payload.request;
 
-import com.skapp.community.crmplanner.type.CrmIndustryName;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +10,7 @@ public class CrmCompanyCreateDto {
 
 	private String name;
 
-	private CrmIndustryName industry;
+	private CrmIndustry industry;
 
 	private String website;
 
