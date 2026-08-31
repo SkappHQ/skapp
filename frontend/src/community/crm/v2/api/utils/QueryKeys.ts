@@ -1,13 +1,29 @@
 import {
   CrmCompanyFilterRequest,
   CrmDealFilterRequest,
-  CrmDealsByStagesRequest
+  CrmDealsByStagesRequest,
+  CrmRelatedTasksFilterRequest,
+  CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
 const CRM_COMPANIES = "crm-companies";
 
+export const crmTaskQueryKeys = {
+  TASKS: (filter: CrmTaskFilterRequest) => ["crm-tasks-v2", filter],
+  COMPLETED_TASKS: (filter: CrmTaskFilterRequest) => [
+    "crm-completed-tasks-v2",
+    filter
+  ],
+  TASK_BY_ID: (id: number) => ["crm-task-by-id-v2", id],
+  RELATED_TASKS: (filter: CrmRelatedTasksFilterRequest) => [
+    "crm-related-tasks-v2",
+    filter
+  ]
+};
+
 export const crmDealQueryKeys = {
   GET_DEALS_ROOT: ["crm-deals-v2"],
+  DEALS_BY_IDS: (dealIds: number[]) => ["crm-deals-by-ids-v2", dealIds],
   GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
   DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],

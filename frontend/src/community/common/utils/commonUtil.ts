@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
   containsUnicode,
@@ -628,3 +629,8 @@ export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
 
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(1);
+
+export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
+  searchTerm.trim() === ""
+    ? EmptyStateTypeEnum.NO_DATA
+    : EmptyStateTypeEnum.NO_SEARCH_RESULTS;

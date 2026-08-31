@@ -62,6 +62,11 @@ export enum CrmTaskStatusEnum {
   COMPLETED = "COMPLETED"
 }
 
+export enum CrmTaskSortEnum {
+  DUE_AT = "DUE_AT",
+  LAST_MODIFIED_DATE = "LAST_MODIFIED_DATE"
+}
+
 export enum CrmDealSortEnum {
   CREATED_DATE = "CREATED_DATE",
   NAME = "NAME",
