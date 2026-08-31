@@ -8,6 +8,11 @@
     "initData": {
       "errorTitle": "Couldn't load CRM data",
       "errorDescription": "Something went wrong. Please try again"
+    },
+    "priorityOptions": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
     }
   },
   "breadcrumbs": {
@@ -600,6 +605,7 @@
       "markAsDone": "Mark as Done",
       "statusDone": "Done",
       "assignedTo": "Assigned To",
+      "noOwner": "No owner assigned",
       "priority": "Priority",
       "closingDate": "Closing Date",
       "noClosingDate": "No closing date",

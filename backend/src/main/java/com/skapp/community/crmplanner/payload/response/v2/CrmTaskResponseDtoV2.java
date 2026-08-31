@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.response.v2;
 
+import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -20,6 +21,8 @@ public class CrmTaskResponseDtoV2 {
 
 	private String name;
 
+	private Long typeId;
+
 	private CrmTaskPriority priority;
 
 	private Boolean isCompleted;
@@ -30,14 +33,12 @@ public class CrmTaskResponseDtoV2 {
 
 	private String notes;
 
-	private CrmTaskTypeResponseDto type;
+	private Long ownerId;
 
-	private CrmOwnerResponseDto owner;
+	private Long contactId;
 
-	private CrmCompanyResponseDtoV2 company;
+	private CrmCompanyResponseDto company;
 
-	private CrmContactResponseDtoV2 contact;
-
-	private CrmDealResponseDtoV2 deal;
+	private Long dealId;
 
 }
