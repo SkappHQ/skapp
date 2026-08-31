@@ -1,38 +1,39 @@
 package com.skapp.community.crmplanner.constant;
 
+import java.util.List;
+
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
 import com.skapp.community.crmplanner.type.DefaultCrmDealListViewValues;
 
 import lombok.experimental.UtilityClass;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.JsonNodeFactory;
-import tools.jackson.databind.node.ObjectNode;
 
 @UtilityClass
 public class DefaultCrmDealListViewTemplate {
 
-	public static JsonNode build() {
-		ArrayNode fields = JsonNodeFactory.instance.arrayNode();
-		DefaultCrmDealListViewValues.DEFAULT_FIELDS.forEach(value -> fields.add(toFieldNode(value)));
+	public static CrmDealListViewConfigDto build() {
+		List<CrmDealListViewFieldDto> fields = DefaultCrmDealListViewValues.DEFAULT_FIELDS.stream()
+			.map(DefaultCrmDealListViewTemplate::toFieldDto)
+			.toList();
 
-		ObjectNode config = JsonNodeFactory.instance.objectNode();
-		config.set("fields", fields);
-		config.putNull("sort");
+		CrmDealListViewConfigDto config = new CrmDealListViewConfigDto();
+		config.setFields(fields);
+		config.setSort(null);
 		return config;
 	}
 
-	private static ObjectNode toFieldNode(DefaultCrmDealListViewValues value) {
-		ObjectNode node = JsonNodeFactory.instance.objectNode();
-		node.put("field", value.getField().name());
-		node.putNull("fieldId");
-		node.put("width", value.getWidth());
-		node.put("isVisible", true);
-		node.put("isHideable", value.isHideable());
-		node.put("isSortable", true);
-		node.put("isDraggable", true);
-		node.put("isGroupable", false);
-		node.put("isResizable", true);
-		return node;
+	private static CrmDealListViewFieldDto toFieldDto(DefaultCrmDealListViewValues value) {
+		CrmDealListViewFieldDto dto = new CrmDealListViewFieldDto();
+		dto.setField(value.getField());
+		dto.setFieldId(null);
+		dto.setWidth(value.getWidth());
+		dto.setIsVisible(true);
+		dto.setIsHideable(value.isHideable());
+		dto.setIsSortable(true);
+		dto.setIsDraggable(true);
+		dto.setIsGroupable(false);
+		dto.setIsResizable(true);
+		return dto;
 	}
 
 }

@@ -8,12 +8,14 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.DefaultCrmDealListViewTemplate;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.service.CrmDealListViewConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
@@ -21,6 +23,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigService {
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	private final UserService userService;
 
@@ -35,7 +39,8 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 		UserSettings settings = user.getSettings();
 		JsonNode saved = settings != null ? settings.getCrmDealListView() : null;
 
-		JsonNode config = (saved == null || saved.isNull()) ? DefaultCrmDealListViewTemplate.build() : saved;
+		CrmDealListViewConfigDto config = (saved == null || saved.isNull()) ? DefaultCrmDealListViewTemplate.build()
+				: OBJECT_MAPPER.convertValue(saved, CrmDealListViewConfigDto.class);
 
 		log.info("getListViewConfig: execution ended");
 		return new ResponseEntityDto(false, config);
@@ -43,7 +48,7 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 
 	@Override
 	@Transactional
-	public ResponseEntityDto updateListViewConfig(JsonNode config) {
+	public ResponseEntityDto updateListViewConfig(CrmDealListViewConfigDto config) {
 		log.info("updateListViewConfig: execution started");
 
 		User currentUser = userService.getCurrentUser();
@@ -59,7 +64,7 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 			settings.setUser(user);
 			user.setSettings(settings);
 		}
-		settings.setCrmDealListView(config);
+		settings.setCrmDealListView(OBJECT_MAPPER.valueToTree(config));
 		userDao.save(user);
 
 		log.info("updateListViewConfig: execution ended successfully");

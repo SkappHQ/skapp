@@ -1,12 +1,12 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import tools.jackson.databind.JsonNode;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 
 public interface CrmDealListViewConfigService {
 
 	ResponseEntityDto getListViewConfig();
 
-	ResponseEntityDto updateListViewConfig(JsonNode config);
+	ResponseEntityDto updateListViewConfig(CrmDealListViewConfigDto config);
 
 }

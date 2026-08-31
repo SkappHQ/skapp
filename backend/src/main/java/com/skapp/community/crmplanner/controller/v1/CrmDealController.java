@@ -5,6 +5,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.service.CrmDealListViewConfigService;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import tools.jackson.databind.JsonNode;
 
 @RestController
 @RequiredArgsConstructor
@@ -108,10 +108,10 @@ public class CrmDealController {
 	}
 
 	@Operation(summary = "Update the current user's deal list-view config",
-			description = "Persists the deal table config JSON sent by the client as-is; does not affect other users.")
+			description = "Persists the deal table config sent by the client; does not affect other users.")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@PutMapping("/list-view-config")
-	public ResponseEntity<ResponseEntityDto> updateListViewConfig(@RequestBody JsonNode config) {
+	public ResponseEntity<ResponseEntityDto> updateListViewConfig(@RequestBody CrmDealListViewConfigDto config) {
 		ResponseEntityDto response = crmDealListViewConfigService.updateListViewConfig(config);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
