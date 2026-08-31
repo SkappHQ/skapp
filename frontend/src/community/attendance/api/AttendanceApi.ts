@@ -53,6 +53,10 @@ export const useUpdateEmployeeStatus = () => {
   });
 };
 
+export const getLatestPeriodType = (
+  response: AxiosResponse | undefined
+): AttendanceSlotType | undefined => response?.data.results[0]?.periodType;
+
 export const useGetEmployeeStatus = () => {
   const setAttendanceParams = useAttendanceStore(
     (state) => state.setAttendanceParams

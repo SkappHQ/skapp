@@ -3,6 +3,10 @@ import {
   attendanceStatusTypes
 } from "~community/attendance/types/attendanceTypes";
 
+export const parseUtcTimestamp = (timestamp: string | null): Date | null => {
+  return timestamp ? new Date(timestamp) : null;
+};
+
 export const calculateWorkedDuration = (
   attendanceParams: attendanceStatusTypes
 ): number => {
@@ -13,7 +17,7 @@ export const calculateWorkedDuration = (
     slotType === AttendanceSlotType.RESUME ||
     slotType === AttendanceSlotType.END
   ) {
-    const startTime = new Date(slotStartTime + "Z");
+    const startTime = new Date(slotStartTime as string);
     const currentTime = new Date();
     const diff = currentTime.getTime() - startTime.getTime();
     const workHoursInMilliseconds =

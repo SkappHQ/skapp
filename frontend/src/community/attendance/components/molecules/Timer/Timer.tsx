@@ -2,11 +2,17 @@ import { Box, Stack, Typography, useTheme } from "@mui/material";
 import { JSX, useCallback, useEffect, useState } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
-import { useGetEmployeeStatus } from "~community/attendance/api/AttendanceApi";
+import {
+  getLatestPeriodType,
+  useGetEmployeeStatus
+} from "~community/attendance/api/AttendanceApi";
 import PlayButton from "~community/attendance/components/molecules/PlayButton/PlayButton";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
-import { calculateWorkedDuration } from "~community/attendance/utils/CalculateWorkedDuration";
+import {
+  calculateWorkedDuration,
+  parseUtcTimestamp
+} from "~community/attendance/utils/CalculateWorkedDuration";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import {
@@ -43,6 +49,15 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     setIsAttendanceModalOpen(true);
   }, [setIsAttendanceModalOpen]);
 
+  const handleEmployeeStatusRefetched = useCallback(
+    (result: Awaited<ReturnType<typeof refetchEmployeeStatus>>) => {
+      if (getLatestPeriodType(result.data) === AttendanceSlotType.END) {
+        setIsAutoClockOutMidnightModalOpen(true);
+      }
+    },
+    [setIsAutoClockOutMidnightModalOpen]
+  );
+
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
@@ -53,20 +68,13 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         status === AttendanceSlotType.START) &&
       !isAttendanceModalOpen
     ) {
-      const slotStart = attendanceParams.slotStartTime
-        ? new Date(attendanceParams.slotStartTime + "Z")
-        : null;
+      const slotStart = parseUtcTimestamp(attendanceParams.slotStartTime);
       const slotStartDay = slotStart?.toDateString();
 
       interval = setInterval(() => {
         if (slotStartDay && new Date().toDateString() !== slotStartDay) {
           interval && clearInterval(interval);
-          void refetchEmployeeStatus().then((result) => {
-            const latestStatus = result.data?.data.results[0]?.periodType;
-            if (latestStatus === AttendanceSlotType.END) {
-              setIsAutoClockOutMidnightModalOpen(true);
-            }
-          });
+          void refetchEmployeeStatus().then(handleEmployeeStatusRefetched);
           return;
         }
         setTimer((prevTimer) => prevTimer + 1);
@@ -85,7 +93,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     attendanceParams,
     isAttendanceModalOpen,
     refetchEmployeeStatus,
-    setIsAutoClockOutMidnightModalOpen
+    handleEmployeeStatusRefetched
   ]);
 
   return (
