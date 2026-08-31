@@ -42,7 +42,10 @@ import {
 } from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
-import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  EmployeeType,
+  SystemPermissionTypes
+} from "~community/people/types/AddNewResourceTypes";
 import {
   BirthdayNotificationPayloadType,
   BirthdayNotificationTodayResponse,
@@ -270,19 +273,28 @@ export const useAddUserBulkEntitlementsWithoutCSV = (
 
 export const useGetSearchedEmployees = (
   searchTerm: string,
-  permission = "EMPLOYEES"
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
+  employeeId?: number
 ) => {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
-    permission
+    permission,
+    employeeId
   );
 
   const queryFn = async () => {
-    const sanitizedSearchTerm = removeSpecialCharacters(searchTerm, "_");
+    const sanitizedSearchTerm = removeSpecialCharacters(
+      debouncedSearchTerm,
+      "_"
+    );
     const endpoint = peoplesEndpoints.SEARCH_EMPLOYEE;
     const response = await authFetch.get(endpoint, {
-      params: { keyword: sanitizedSearchTerm, permission: permission }
+      params: {
+        keyword: sanitizedSearchTerm,
+        permission: permission,
+        ...(employeeId !== undefined && { employeeId })
+      }
     });
     const processedData = searchEmployeeDataPreProcessor(
       response?.data?.results
