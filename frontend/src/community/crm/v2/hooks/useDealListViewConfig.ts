@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   useGetDealListViewConfig,
@@ -21,80 +21,64 @@ const useDealListViewConfig = (enabled: boolean) => {
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
   const [config, setConfig] = useState<CrmDealListViewConfig | null>(null);
+  const persistTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (fetchedConfig) setConfig(fetchedConfig);
   }, [fetchedConfig]);
 
-  const applyConfig = useCallback(
-    (next: CrmDealListViewConfig) => {
-      setConfig(next);
-      persistConfig(next);
-    },
-    [persistConfig]
-  );
+  const applyConfig = (next: CrmDealListViewConfig) => {
+    setConfig(next);
+    persistConfig(next);
+  };
 
-  const persistTimer = useRef<ReturnType<typeof setTimeout>>();
-  const persistDebounced = useCallback(
-    (next: CrmDealListViewConfig) => {
-      if (persistTimer.current) clearTimeout(persistTimer.current);
-      persistTimer.current = setTimeout(() => persistConfig(next), 500);
-    },
-    [persistConfig]
-  );
+  const persistDebounced = (next: CrmDealListViewConfig) => {
+    if (persistTimer.current) clearTimeout(persistTimer.current);
+    persistTimer.current = setTimeout(() => persistConfig(next), 500);
+  };
 
-  const handleColumnReorder = useCallback(
-    (columns: ReadonlyArray<ColumnState>) => {
-      if (!config) return;
-      const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
-        config.fields.map((field) => [field.field, field])
-      );
-      const nextFields = columns
-        .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
-        .filter((field): field is CrmDealFieldConfig => Boolean(field));
-      if (nextFields.length !== config.fields.length) return;
-      applyConfig({ ...config, fields: nextFields });
-    },
-    [config, applyConfig]
-  );
+  const handleColumnReorder = (columns: ReadonlyArray<ColumnState>) => {
+    if (!config) return;
+    const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
+      config.fields.map((field) => [field.field, field])
+    );
+    const nextFields = columns
+      .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
+      .filter((field): field is CrmDealFieldConfig => Boolean(field));
+    if (nextFields.length !== config.fields.length) return;
+    applyConfig({ ...config, fields: nextFields });
+  };
 
-  const handleColumnVisibilityChange = useCallback(
-    (columns: ReadonlyArray<ColumnState>) => {
-      if (!config) return;
-      const visibilityById = new Map(
-        columns.map((column) => [column.id, column.visible])
-      );
-      const nextFields = config.fields.map((field) => ({
-        ...field,
-        isVisible: field.isHideable
-          ? visibilityById.get(field.field) ?? field.isVisible
-          : true
-      }));
-      applyConfig({ ...config, fields: nextFields });
-    },
-    [config, applyConfig]
-  );
+  const handleColumnVisibilityChange = (
+    columns: ReadonlyArray<ColumnState>
+  ) => {
+    if (!config) return;
+    const visibilityById = new Map(
+      columns.map((column) => [column.id, column.visible])
+    );
+    const nextFields = config.fields.map((field) => ({
+      ...field,
+      isVisible: field.isHideable
+        ? visibilityById.get(field.field) ?? field.isVisible
+        : true
+    }));
+    applyConfig({ ...config, fields: nextFields });
+  };
 
-  const handleSortChange = useCallback(
-    (sort: CrmDealSortConfig | null) => {
-      if (!config) return;
-      applyConfig({ ...config, sort });
-    },
-    [config, applyConfig]
-  );
+  const handleSortChange = (sort: CrmDealSortConfig | null) => {
+    if (!config) return;
+    applyConfig({ ...config, sort });
+  };
 
-  const handleColumnResize = useCallback(
-    (columnId: string, width: number) => {
-      if (!config) return;
-      const nextFields = config.fields.map((field) =>
-        field.field === columnId ? { ...field, width } : field
-      );
-      const next = { ...config, fields: nextFields };
-      setConfig(next);
-      persistDebounced(next);
-    },
-    [config, persistDebounced]
-  );
+  const handleColumnResize = (columnId: string, width: number) => {
+    if (!config) return;
+    const nextFields = config.fields.map((field) =>
+      field.field === columnId ? { ...field, width } : field
+    );
+    const next = { ...config, fields: nextFields };
+    setConfig(next);
+    persistDebounced(next);
+  };
 
   return {
     config,
