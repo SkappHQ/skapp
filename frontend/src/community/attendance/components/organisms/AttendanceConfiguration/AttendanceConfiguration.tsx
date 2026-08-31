@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import { Box, Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useState } from "react";
 
 import {
   useGetAttendanceConfiguration,
@@ -17,19 +17,22 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import FingerprintSettings from "~enterprise/configurations/components/organisms/FingerprintSettings/FingerprintSettings";
 import GeoFencingSettings from "~enterprise/configurations/components/organisms/GeoFencingSettings/GeoFencingSettings";
+import ManualEntryRestrictionSettings from "~enterprise/configurations/components/organisms/ManualEntryRestrictionSettings/ManualEntryRestrictionSettings";
 
 import styles from "./styles";
 
 const AttendanceConfiguration = (): JSX.Element => {
   const classes = styles();
-  const [config, setConfig] = useState<AttendanceConfigurationType | null>(
-    null
-  );
-  const [initialConfig, setInitialConfig] =
-    useState<AttendanceConfigurationType | null>(null);
+  const [edits, setEdits] = useState<Partial<AttendanceConfigurationType>>({});
 
   const { data: configData } = useGetAttendanceConfiguration();
+
+  const config: AttendanceConfigurationType | null = configData
+    ? { ...configData, ...edits }
+    : null;
+
   const onSuccess = () => {
+    setEdits({});
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -54,21 +57,11 @@ const AttendanceConfiguration = (): JSX.Element => {
     "attendanceModule",
     "attendanceConfiguration"
   );
-
-  useEffect(() => {
-    if (configData) {
-      setConfig(configData);
-      setInitialConfig(configData);
-    }
-  }, [configData]);
-
   const handleSwitchChange = (
     key: keyof AttendanceConfigurationType,
     checked: boolean
   ) => {
-    setConfig((prevConfig) =>
-      prevConfig ? { ...prevConfig, [key]: checked } : prevConfig
-    );
+    setEdits((prevEdits) => ({ ...prevEdits, [key]: checked }));
   };
 
   const handleSaveBtnClick = () => {
@@ -78,12 +71,18 @@ const AttendanceConfiguration = (): JSX.Element => {
   };
 
   const handleCancelBtnClick = () => {
-    setConfig(initialConfig);
+    setEdits({});
   };
 
-  const isFormChanged = () => {
-    return JSON.stringify(config) !== JSON.stringify(initialConfig);
-  };
+  const isFormChanged = () =>
+    Object.entries(edits).some(
+      ([key, value]) =>
+        configData?.[key as keyof AttendanceConfigurationType] !== value
+    );
+
+  const isManualEntryRestricted = Boolean(
+    config?.isManualTimeEntryRestrictionEnabled
+  );
 
   return (
     <>
@@ -140,38 +139,47 @@ const AttendanceConfiguration = (): JSX.Element => {
           )}
         </Box>
 
-        <Typography variant="h2" sx={classes.sectionTitle}>
-          {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
-        </Typography>
-        <Typography sx={classes.sectionDescription}>
-          {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
-        </Typography>
+        <ManualEntryRestrictionSettings
+          config={config}
+          initialConfig={configData ?? null}
+        />
 
-        <Box sx={classes.container}>
-          {config && (
-            <SwitchRow
-              labelId="auto-approval-for-changes"
-              label={
-                attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
-              }
-              checked={config.isAutoApprovalForChanges}
-              wrapperStyles={classes.switchWrapper}
-              onChange={(checked) =>
-                handleSwitchChange("isAutoApprovalForChanges", checked)
-              }
-            />
-          )}
-        </Box>
+        {!isManualEntryRestricted && (
+          <>
+            <Typography variant="h2" sx={classes.sectionTitle}>
+              {attendanceConfigurations(["timesheetSettingsTitle"]) ?? ""}
+            </Typography>
+            <Typography sx={classes.sectionDescription}>
+              {attendanceConfigurations(["timesheetSettingsDescription"]) ?? ""}
+            </Typography>
+
+            <Box sx={classes.container}>
+              {config && (
+                <SwitchRow
+                  labelId="auto-approval-for-changes"
+                  label={
+                    attendanceConfigurations(["isAutoApprovalForChanges"]) ?? ""
+                  }
+                  checked={config.isAutoApprovalForChanges}
+                  wrapperStyles={classes.switchWrapper}
+                  onChange={(checked) =>
+                    handleSwitchChange("isAutoApprovalForChanges", checked)
+                  }
+                />
+              )}
+            </Box>
+          </>
+        )}
 
         <GeoFencingSettings
           config={config}
-          initialConfig={initialConfig}
+          initialConfig={configData ?? null}
           onSwitchChange={handleSwitchChange}
         />
 
         <FingerprintSettings
           config={config}
-          initialConfig={initialConfig}
+          initialConfig={configData ?? null}
           onSwitchChange={handleSwitchChange}
         />
 

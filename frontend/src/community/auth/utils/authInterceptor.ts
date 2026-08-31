@@ -4,6 +4,7 @@ import {
   COMMON_ERROR_INVALID_REFRESH_TOKEN,
   COMMON_ERROR_MISSING_COOKIE_IN_TOKEN
 } from "~community/common/constants/errorMessageKeys";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
 import { getTenantId } from "~enterprise/common/utils/tenantUtil";
@@ -43,7 +44,7 @@ authAxios.interceptors.response.use(
   async (error) => {
     const messageKey = error.response?.data?.results?.[0]?.messageKey;
     if (messageKey && SIGN_OUT_ERROR_KEYS.includes(messageKey)) {
-      await signOut();
+      await signOut(useCommonStore.getState());
     }
     return await Promise.reject(error);
   }
