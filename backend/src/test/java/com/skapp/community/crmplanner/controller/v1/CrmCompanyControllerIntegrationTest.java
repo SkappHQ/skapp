@@ -172,7 +172,7 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite("https://acme.com");
 		dto.setAddress("123 Main St");
-		dto.setContactNumber("94771234567");
+		dto.setContactNumber("94 771234567");
 		return dto;
 	}
 
@@ -182,7 +182,7 @@ class CrmCompanyControllerIntegrationTest {
 		dto.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
 		dto.setWebsite(JsonNullable.of("https://acme.com"));
 		dto.setAddress(JsonNullable.of("123 Main St"));
-		dto.setContactNumber(JsonNullable.of("94771234567"));
+		dto.setContactNumber(JsonNullable.of("94 771234567"));
 		return dto;
 	}
 
@@ -232,6 +232,19 @@ class CrmCompanyControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create company with legacy digits-only contact number - Returns Bad Request")
+	void createCompany_LegacyContactNumberFormat_ReturnsBadRequest() throws Exception {
+		CrmCompanyCreateDto dto = createValidPayload();
+		dto.setContactNumber("94771234567");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID)));
 	}
 
 	// --- Check company name exists tests ---
@@ -430,7 +443,7 @@ class CrmCompanyControllerIntegrationTest {
 		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
 		editDto.setWebsite(JsonNullable.of("https://acme-updated.com"));
 		editDto.setAddress(JsonNullable.of("456 New St"));
-		editDto.setContactNumber(JsonNullable.of("94779876543"));
+		editDto.setContactNumber(JsonNullable.of("94 779876543"));
 
 		performPatchRequest(companyId, editDto).andDo(print())
 			.andExpect(status().isOk())
@@ -439,14 +452,14 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']").value(CrmIndustry.FINANCIAL_SERVICES.name()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://acme-updated.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("456 New St"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94779876543"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94 779876543"));
 
 		CrmCompany persisted = crmCompanyDao.findByIdAndIsDeletedFalse(companyId).orElseThrow();
 		assertThat(persisted.getName()).isEqualTo("Acme Corp Updated");
 		assertThat(persisted.getIndustry()).isEqualTo(CrmIndustry.FINANCIAL_SERVICES);
 		assertThat(persisted.getWebsite()).isEqualTo("https://acme-updated.com");
 		assertThat(persisted.getAddress()).isEqualTo("456 New St");
-		assertThat(persisted.getContactNumber()).isEqualTo("94779876543");
+		assertThat(persisted.getContactNumber()).isEqualTo("94 779876543");
 	}
 
 	@Test

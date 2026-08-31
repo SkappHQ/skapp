@@ -5,8 +5,9 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC } from "react";
+import { ChangeEvent, FC } from "react";
 
+import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
@@ -42,6 +43,14 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     setFieldValue,
     submitForm
   } = formik;
+
+  const handleChangeCountry = async (code: string) => {
+    await setFieldValue("countryCode", code);
+  };
+
+  const handleChangeContactNumber = async (e: ChangeEvent<HTMLInputElement>) => {
+    handleChange(e);
+  };
 
   const trimmedName = values.name.trim();
   const trimmedOriginalName = originalName?.trim();
@@ -80,17 +89,16 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <InputField
-        name="contactNumber"
+      <InputPhoneNumber
+        inputName="contactNumber"
         label={translateText(["labels", "contactNumber"])}
         value={values.contactNumber}
-        placeholder={translateText(["placeholders", "contactNumber"])}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        errorMessage={errors.contactNumber}
-        state={errors.contactNumber ? "error" : "default"}
-        aria-label={translateText(["ariaLabels", "contactNumber"])}
-        fullWidth
+        countryCodeValue={values.countryCode}
+        onChangeCountry={handleChangeCountry}
+        onChange={handleChangeContactNumber}
+        placeHolder={translateText(["placeholders", "contactNumber"])}
+        error={errors.contactNumber}
+        ariaLabel={translateText(["ariaLabels", "contactNumber"])}
       />
 
       <InputField

@@ -1,7 +1,8 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useState } from "react";
 
+import InputPhoneNumber from "~community/common/components/molecules/InputPhoneNumber/InputPhoneNumber";
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
@@ -23,8 +24,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import {
   CONTACT_EMAIL_MAX_LENGTH,
-  CONTACT_NAME_MAX_LENGTH,
-  CONTACT_NUMBER_MAX_LENGTH
+  CONTACT_NAME_MAX_LENGTH
 } from "~community/crm/constants/contactConstants";
 import {
   CrmContactFormValues,
@@ -86,6 +86,14 @@ const ContactModalForm = ({
     submitForm,
     dirty
   } = formik;
+
+  const handleChangeCountry = async (code: string) => {
+    await setFieldValue("countryCode", code);
+  };
+
+  const handleChangeContactNumber = async (e: ChangeEvent<HTMLInputElement>) => {
+    handleChange(e);
+  };
 
   const trimmedEmail = values.email.trim();
   const trimmedOriginalEmail = initialValues.email.trim();
@@ -190,9 +198,7 @@ const ContactModalForm = ({
             ? translateContactText(["validations", "emailExists"])
             : emailFieldError
         }
-        state={
-          isDuplicateEmail || emailFieldError ? "error" : "default"
-        }
+        state={isDuplicateEmail || emailFieldError ? "error" : "default"}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}
@@ -240,19 +246,16 @@ const ContactModalForm = ({
         />
       )}
 
-      <InputField
-        name="contactNumber"
+      <InputPhoneNumber
+        inputName="contactNumber"
         value={values.contactNumber}
-        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
-        state={
-          touched.contactNumber && errors.contactNumber ? "error" : "default"
-        }
+        countryCodeValue={values.countryCode}
+        onChangeCountry={handleChangeCountry}
+        onChange={handleChangeContactNumber}
+        error={touched.contactNumber ? errors.contactNumber : undefined}
         label={translateContactText(["labels", "contactNumber"])}
-        placeholder={translateContactText(["placeholders", "contactNumber"])}
-        onChange={handleChange}
-        aria-label={translateContactText(["ariaLabels", "contactNumber"])}
-        maxLength={CONTACT_NUMBER_MAX_LENGTH}
-        fullWidth
+        placeHolder={translateContactText(["placeholders", "contactNumber"])}
+        ariaLabel={translateContactText(["ariaLabels", "contactNumber"])}
       />
 
       {canEditOwner ? (

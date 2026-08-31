@@ -258,7 +258,7 @@ class CrmContactControllerIntegrationTest {
 		dto.setName("Jane Smith");
 		dto.setEmail("jane.smith@example.com");
 		dto.setCompanyId(companyId);
-		dto.setContactNumber("94771234567");
+		dto.setContactNumber("94 771234567");
 		dto.setOwnerId(1L);
 		return dto;
 	}
@@ -268,7 +268,7 @@ class CrmContactControllerIntegrationTest {
 		dto.setName("Jane Smith Updated");
 		dto.setEmail("jane.smith.updated@example.com");
 		dto.setCompanyId(JsonNullable.of(companyId));
-		dto.setContactNumber("94779999999");
+		dto.setContactNumber("94 779999999");
 		dto.setOwnerId(1L);
 		return dto;
 	}
@@ -390,7 +390,7 @@ class CrmContactControllerIntegrationTest {
 		dto.setName("  John Doe  ");
 		dto.setEmail("  john.doe@example.com  ");
 		dto.setCompanyId(companyId);
-		dto.setContactNumber("  9876543210  ");
+		dto.setContactNumber("  94 9876543210  ");
 		dto.setOwnerId(1L);
 
 		performPostRequest(dto).andDo(print())
@@ -398,7 +398,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("John Doe"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("john.doe@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("9876543210"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94 9876543210"));
 	}
 
 	@Test
@@ -423,6 +423,20 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Create contact with malformed country code - Returns Bad Request")
+	void createContact_MalformedCountryCode_ReturnsBadRequest() throws Exception {
+		Long companyId = savedCompany().getId();
+		CrmContactCreateRequestDto dto = createValidPayload(companyId);
+		dto.setContactNumber("+94 771234567");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NUMBER_INVALID)));
 	}
 
 	@Test
@@ -510,7 +524,7 @@ class CrmContactControllerIntegrationTest {
 		dto.setName("  Updated Name  ");
 		dto.setEmail("  updated.email@example.com  ");
 		dto.setCompanyId(JsonNullable.of(companyId));
-		dto.setContactNumber("  5551234567  ");
+		dto.setContactNumber("  94 5551234567  ");
 		dto.setOwnerId(1L);
 
 		performPatchRequest(contactId, dto).andDo(print())
@@ -518,7 +532,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("updated.email@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("5551234567"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94 5551234567"));
 	}
 
 	@Test
