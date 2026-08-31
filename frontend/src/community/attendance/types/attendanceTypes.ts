@@ -6,6 +6,7 @@ export type AttendanceConfigurationType = {
   isGeoFencingEnabled?: boolean;
   isClockInClockOutOnly: boolean;
   isFingerprintAttendanceEnabled: boolean;
+  isManualTimeEntryRestrictionEnabled: boolean;
 };
 
 export interface ManagerTimesheetHeaderType {
