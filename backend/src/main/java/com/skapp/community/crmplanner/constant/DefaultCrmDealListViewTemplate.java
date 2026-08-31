@@ -25,7 +25,6 @@ public class DefaultCrmDealListViewTemplate {
 	private static CrmDealListViewFieldDto toFieldDto(DefaultCrmDealListViewValues value) {
 		CrmDealListViewFieldDto dto = new CrmDealListViewFieldDto();
 		dto.setField(value.getField());
-		dto.setFieldId(null);
 		dto.setWidth(value.getWidth());
 		dto.setIsVisible(true);
 		dto.setIsHideable(value.isHideable());

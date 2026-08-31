@@ -99,7 +99,7 @@ public class CrmDealController {
 	}
 
 	@Operation(summary = "Get the current user's deal list-view config",
-			description = "Returns the user's saved deal table config JSON, or the default config when nothing is saved.")
+			description = "Returns the user's saved deal list-view config, or the default when nothing is saved.")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/list-view-config")
 	public ResponseEntity<ResponseEntityDto> getListViewConfig() {

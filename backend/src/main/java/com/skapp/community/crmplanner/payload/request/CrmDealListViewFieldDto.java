@@ -11,8 +11,6 @@ public class CrmDealListViewFieldDto {
 
 	private CrmDealListViewField field;
 
-	private Long fieldId;
-
 	private Integer width;
 
 	private Boolean isVisible;
