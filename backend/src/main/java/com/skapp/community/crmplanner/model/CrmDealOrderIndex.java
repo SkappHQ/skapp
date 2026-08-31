@@ -19,8 +19,11 @@ import lombok.Setter;
 public class CrmDealOrderIndex {
 
 	@Id
+	@Column(name = "deal_id", nullable = false, updatable = false)
+	private Long dealId;
+
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "deal_id")
+	@JoinColumn(name = "deal_id", insertable = false, updatable = false)
 	private CrmDeal deal;
 
 	@Column(name = "board", nullable = false)
