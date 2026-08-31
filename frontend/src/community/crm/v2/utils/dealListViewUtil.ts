@@ -4,8 +4,14 @@ import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import {
   CrmDealColumnFieldEnum,
+  CrmDealFieldConfig,
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
+
+interface ColumnState {
+  id: string;
+  visible: boolean;
+}
 
 export const FIELD_TO_SORT_KEY: Record<
   CrmDealColumnFieldEnum,
@@ -48,3 +54,40 @@ export const fromListTableSortConfig = (
     direction: changed.direction as SortOrderTypes
   };
 };
+
+export const reorderConfigFields = (
+  fields: CrmDealFieldConfig[],
+  columns: ReadonlyArray<ColumnState>
+): CrmDealFieldConfig[] | null => {
+  const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
+    fields.map((field) => [field.field, field])
+  );
+  const nextFields = columns
+    .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
+    .filter((field): field is CrmDealFieldConfig => Boolean(field));
+  return nextFields.length === fields.length ? nextFields : null;
+};
+
+export const applyColumnVisibility = (
+  fields: CrmDealFieldConfig[],
+  columns: ReadonlyArray<ColumnState>
+): CrmDealFieldConfig[] => {
+  const visibilityById = new Map(
+    columns.map((column) => [column.id, column.visible])
+  );
+  return fields.map((field) => ({
+    ...field,
+    isVisible: field.isHideable
+      ? visibilityById.get(field.field) ?? field.isVisible
+      : true
+  }));
+};
+
+export const applyColumnWidth = (
+  fields: CrmDealFieldConfig[],
+  columnId: string,
+  width: number
+): CrmDealFieldConfig[] =>
+  fields.map((field) =>
+    field.field === columnId ? { ...field, width } : field
+  );

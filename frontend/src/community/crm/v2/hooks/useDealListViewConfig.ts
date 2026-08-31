@@ -5,11 +5,14 @@ import {
   useUpdateDealListViewConfig
 } from "~community/crm/v2/api/DealApi";
 import {
-  CrmDealColumnFieldEnum,
-  CrmDealFieldConfig,
   CrmDealListViewConfig,
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
+import {
+  applyColumnVisibility,
+  applyColumnWidth,
+  reorderConfigFields
+} from "~community/crm/v2/utils/dealListViewUtil";
 
 interface ColumnState {
   id: string;
@@ -39,30 +42,18 @@ const useDealListViewConfig = (enabled: boolean) => {
 
   const handleColumnReorder = (columns: ReadonlyArray<ColumnState>) => {
     if (!config) return;
-    const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
-      config.fields.map((field) => [field.field, field])
-    );
-    const nextFields = columns
-      .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
-      .filter((field): field is CrmDealFieldConfig => Boolean(field));
-    if (nextFields.length !== config.fields.length) return;
-    applyConfig({ ...config, fields: nextFields });
+    const nextFields = reorderConfigFields(config.fields, columns);
+    if (nextFields) applyConfig({ ...config, fields: nextFields });
   };
 
   const handleColumnVisibilityChange = (
     columns: ReadonlyArray<ColumnState>
   ) => {
     if (!config) return;
-    const visibilityById = new Map(
-      columns.map((column) => [column.id, column.visible])
-    );
-    const nextFields = config.fields.map((field) => ({
-      ...field,
-      isVisible: field.isHideable
-        ? visibilityById.get(field.field) ?? field.isVisible
-        : true
-    }));
-    applyConfig({ ...config, fields: nextFields });
+    applyConfig({
+      ...config,
+      fields: applyColumnVisibility(config.fields, columns)
+    });
   };
 
   const handleSortChange = (sort: CrmDealSortConfig | null) => {
@@ -72,10 +63,10 @@ const useDealListViewConfig = (enabled: boolean) => {
 
   const handleColumnResize = (columnId: string, width: number) => {
     if (!config) return;
-    const nextFields = config.fields.map((field) =>
-      field.field === columnId ? { ...field, width } : field
-    );
-    const next = { ...config, fields: nextFields };
+    const next = {
+      ...config,
+      fields: applyColumnWidth(config.fields, columnId, width)
+    };
     setConfig(next);
     persistDebounced(next);
   };
