@@ -13,14 +13,18 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealOrderIndexDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmDealView;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -73,6 +77,8 @@ class CrmDealControllerIntegrationTest {
 
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
+	private static final String REORDER_PATH = BASE_PATH + "/reorder";
+
 	private final MockMvc mvc;
 
 	private final JwtService jwtService;
@@ -98,6 +104,10 @@ class CrmDealControllerIntegrationTest {
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
+
+	private final CrmDealOrderIndexDao crmDealOrderIndexDao;
+
+	private final CrmDealOrderIndexService crmDealOrderIndexService;
 
 	private String authToken;
 
@@ -126,6 +136,22 @@ class CrmDealControllerIntegrationTest {
 
 	private ResultActions performDeleteRequest(Long id) throws Exception {
 		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performReorderRequest(CrmDealListReorderRequestDto dto) throws Exception {
+		return performRequest(patch(REORDER_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmDealListReorderRequestDto reorderPayload(CrmDealView view, Long dealId, Long previousDealId,
+			Long nextDealId) {
+		CrmDealListReorderRequestDto dto = new CrmDealListReorderRequestDto();
+		dto.setView(view);
+		dto.setDealId(dealId);
+		dto.setPreviousDealId(previousDealId);
+		dto.setNextDealId(nextDealId);
+		return dto;
 	}
 
 	private ResultActions performGetExistsRequest(String name) throws Exception {
@@ -1178,6 +1204,84 @@ class CrmDealControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performBatchRequest(List.of(1L)).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view - repositions the deal's list key between its neighbours")
+	void reorderDealInList_ListView_RepositionsDeal() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder@example.com");
+		CrmDeal dealA = savedBatchDeal("Reorder Deal A", stage, company, contact, 1L);
+		CrmDeal dealB = savedBatchDeal("Reorder Deal B", stage, company, contact, 1L);
+		CrmDeal dealC = savedBatchDeal("Reorder Deal C", stage, company, contact, 1L);
+		crmDealOrderIndexService.createForNewDeal(dealA);
+		crmDealOrderIndexService.createForNewDeal(dealB);
+		crmDealOrderIndexService.createForNewDeal(dealC);
+
+		performReorderRequest(reorderPayload(CrmDealView.LIST, dealC.getId(), dealA.getId(), dealB.getId()))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(dealC.getId()));
+
+		String keyA = crmDealOrderIndexDao.findById(dealA.getId()).orElseThrow().getList();
+		String keyB = crmDealOrderIndexDao.findById(dealB.getId()).orElseThrow().getList();
+		String keyC = crmDealOrderIndexDao.findById(dealC.getId()).orElseThrow().getList();
+		assertThat(keyC).isGreaterThan(keyA).isLessThan(keyB);
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view as Sales Representative on another owner's deal - returns edit-denied error")
+	void reorderDealInList_SalesRepOtherOwner_ReturnsEditDenied() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Denial Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder.denial@example.com");
+		CrmDeal target = savedBatchDeal("Admin Owned Reorder Deal", stage, company, contact, 1L);
+		CrmDeal neighbour = savedBatchDeal("Admin Owned Neighbour Deal", stage, company, contact, 1L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performReorderRequest(reorderPayload(CrmDealView.LIST, target.getId(), neighbour.getId(), null)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view without a view - returns view-required error")
+	void reorderDealInList_MissingView_ReturnsViewRequired() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Missing View Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder.view@example.com");
+		CrmDeal deal = savedBatchDeal("Reorder Missing View Deal", stage, company, contact, 1L);
+		CrmDeal neighbour = savedBatchDeal("Reorder Missing View Neighbour", stage, company, contact, 1L);
+
+		performReorderRequest(reorderPayload(null, deal.getId(), neighbour.getId(), null)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_REQUIRED)));
+	}
+
+	@Test
+	@DisplayName("Reorder deal in board view - returns unsupported-view error (not yet integrated)")
+	void reorderDealInList_BoardView_ReturnsUnsupportedView() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Board Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder.board@example.com");
+		CrmDeal deal = savedBatchDeal("Reorder Board Deal", stage, company, contact, 1L);
+		CrmDeal neighbour = savedBatchDeal("Reorder Board Neighbour", stage, company, contact, 1L);
+
+		performReorderRequest(reorderPayload(CrmDealView.BOARD, deal.getId(), neighbour.getId(), null)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_REORDER_VIEW_UNSUPPORTED)));
 	}
 
 }
