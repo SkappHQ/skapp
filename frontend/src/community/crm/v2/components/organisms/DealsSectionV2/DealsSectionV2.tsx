@@ -115,7 +115,7 @@ const DealsSectionV2: FC = () => {
     store.setDealIds(reorderDealIds(store.dealIds, dealId, previousDealId));
 
     reorderDeal(
-      { dealId, previousDealId, nextDealId },
+      { view: DealViewEnum.LIST, dealId, previousDealId, nextDealId },
       {
         onSettled: () =>
           queryClient.invalidateQueries({
