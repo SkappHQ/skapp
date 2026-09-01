@@ -22,7 +22,8 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void createForNewDeal(CrmDeal deal) {
-		if (deal.getId() != null && crmDealOrderIndexDao.existsById(deal.getId())) {
+		log.info("createForNewDeal: execution started for deal id={}", deal.getId());
+		if (crmDealOrderIndexDao.existsById(deal.getId())) {
 			return;
 		}
 		String maxListIndex = resolveMaxListKey();
@@ -39,6 +40,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void syncBoardKey(CrmDeal deal) {
+		log.info("syncBoardKey: execution started for deal id={}", deal.getId());
 		CrmDealOrderIndex orderIndex = crmDealOrderIndexDao.findById(deal.getId()).orElse(null);
 		if (orderIndex == null) {
 			orderIndex = new CrmDealOrderIndex();
@@ -47,11 +49,13 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		}
 		orderIndex.setBoard(deal.getOrderIndex());
 		crmDealOrderIndexDao.save(orderIndex);
+		log.info("syncBoardKey: execution ended");
 	}
 
 	@Override
 	@Transactional
 	public void reorderInList(Long dealId, Long previousDealId, Long nextDealId) {
+		log.info("reorderInList: execution started for deal id={}", dealId);
 		CrmDealOrderIndex target = crmDealOrderIndexDao.findById(dealId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
