@@ -12,6 +12,6 @@ public class PermissionFilterDto {
 
 	private EmployeeUserRole userRole;
 
-	private Long employeeId;
+	private Long selectedEmployeeId;
 
 }

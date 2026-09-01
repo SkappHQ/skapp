@@ -275,13 +275,13 @@ export const useAddUserBulkEntitlementsWithoutCSV = (
 export const useGetSearchedEmployees = (
   searchTerm: string,
   permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
-  employeeId?: number
+  selectedEmployeeId?: number
 ) => {
   const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
     permission,
-    employeeId
+    selectedEmployeeId
   );
 
   const queryFn = async () => {
@@ -294,7 +294,7 @@ export const useGetSearchedEmployees = (
       params: {
         keyword: sanitizedSearchTerm,
         permission: permission,
-        ...(employeeId !== undefined && { employeeId })
+        ...(selectedEmployeeId !== undefined && { selectedEmployeeId })
       }
     });
     const processedData = searchEmployeeDataPreProcessor(

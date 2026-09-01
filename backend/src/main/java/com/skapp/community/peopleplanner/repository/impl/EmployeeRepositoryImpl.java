@@ -532,8 +532,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					.as(Integer.class), criteriaBuilder.literal(minPeoplePrivilege)));
 		}
 
-		if (permissionFilterDto != null && permissionFilterDto.getEmployeeId() != null) {
-			predicates.add(notExistingSupervisorPredicate(permissionFilterDto.getEmployeeId(), criteriaBuilder,
+		if (permissionFilterDto != null && permissionFilterDto.getSelectedEmployeeId() != null) {
+			predicates.add(notExistingSupervisorPredicate(permissionFilterDto.getSelectedEmployeeId(), criteriaBuilder,
 					criteriaQuery, root));
 		}
 
@@ -1519,21 +1519,21 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		}
 	}
 
-	private Predicate notExistingSupervisorPredicate(Long employeeId, CriteriaBuilder criteriaBuilder,
+	private Predicate notExistingSupervisorPredicate(Long selectedEmployeeId, CriteriaBuilder criteriaBuilder,
 			CriteriaQuery<Employee> criteriaQuery, Root<Employee> root) {
 
 		Subquery<Long> existingSupervisors = criteriaQuery.subquery(Long.class);
 		Root<EmployeeManager> employeeManagerRoot = existingSupervisors.from(EmployeeManager.class);
 
-		existingSupervisors.select(employeeManagerRoot.get(EmployeeManager_.manager).get(Employee_.employeeId))
-			.where(criteriaBuilder.and(
-					criteriaBuilder.equal(employeeManagerRoot.get(EmployeeManager_.employee).get(Employee_.employeeId),
-							employeeId),
-					employeeManagerRoot.get(EmployeeManager_.managerType)
-						.in(ManagerType.PRIMARY, ManagerType.SECONDARY)));
+		existingSupervisors.select(criteriaBuilder.literal(1L));
+		existingSupervisors.where(
+				criteriaBuilder.equal(employeeManagerRoot.get(EmployeeManager_.employee).get(Employee_.employeeId),
+						selectedEmployeeId),
+				criteriaBuilder.equal(employeeManagerRoot.get(EmployeeManager_.manager), root),
+				employeeManagerRoot.get(EmployeeManager_.managerType).in(ManagerType.PRIMARY, ManagerType.SECONDARY));
 
-		return criteriaBuilder.and(criteriaBuilder.not(root.get(Employee_.employeeId).in(existingSupervisors)),
-				criteriaBuilder.notEqual(root.get(Employee_.employeeId), employeeId));
+		return criteriaBuilder.and(criteriaBuilder.not(criteriaBuilder.exists(existingSupervisors)),
+				criteriaBuilder.notEqual(root.get(Employee_.employeeId), selectedEmployeeId));
 	}
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,

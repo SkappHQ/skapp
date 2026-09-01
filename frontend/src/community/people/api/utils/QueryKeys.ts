@@ -20,14 +20,14 @@ export const peopleQueryKeys = {
   EMPLOYEE_SEARCH: function (
     searchTerm: string,
     permission: SystemPermissionTypes,
-    employeeId?: number
+    selectedEmployeeId?: number
   ) {
     return [
       ...(this?.all || []),
       "employees-search",
       searchTerm,
       permission,
-      employeeId
+      selectedEmployeeId
     ].filter((val) => val !== undefined);
   },
   EMPLOYEE_DATA_EXIST_KEYS: function (
