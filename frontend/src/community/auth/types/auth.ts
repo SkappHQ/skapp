@@ -12,7 +12,7 @@ export interface AuthContextType {
   user: User | null;
   signIn: (params: EnterpriseSignInParams) => Promise<AuthResponseType>;
   signUp: (params: EnterpriseSignUpParams) => Promise<AuthResponseType>;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => Promise<User | null>;
 }
 
 export interface AuthResponseType {

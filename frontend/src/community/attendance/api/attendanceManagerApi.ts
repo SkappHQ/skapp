@@ -3,6 +3,7 @@ import { rejects } from "assert";
 
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
+  ErrorResponse,
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
@@ -125,9 +126,10 @@ export const useGetManagerTimeSheetRequests = () => {
 
 export const useApproveDenyTimeRequest = (
   onSuccess: () => void,
-  onError: () => void
+  onError: (messageKey: string) => void
 ) => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (requestData: { id: number; status: string }) => {
       const url = managerAttendanceEndpoints.MANAGER_APPROVE_DENY_REQUESTS(
@@ -150,8 +152,8 @@ export const useApproveDenyTimeRequest = (
         })
         .catch(rejects);
     },
-    onError: () => {
-      onError();
+    onError: (error: ErrorResponse) => {
+      onError(error?.response?.data?.results?.[0]?.messageKey ?? "");
     }
   });
 };
