@@ -15,6 +15,7 @@ import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequ
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -123,7 +124,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 
 		CrmDealSort sortKey = filterDto.getSortKey();
 		if (sortKey != null) {
-			Expression<?> sortExpression = resolveDealSortExpression(sortKey, deal, stage, company, contact, owner);
+			Expression<?> sortExpression = resolveDealSortExpression(cb, sortKey, deal, stage, company, contact, owner);
 			boolean ascending = filterDto.getSortOrder() == null || filterDto.getSortOrder().isAscending();
 			Order primary = ascending ? cb.asc(sortExpression) : cb.desc(sortExpression);
 			if (sortKey == CrmDealSort.STAGE_ORDER) {
@@ -155,7 +156,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		return new PageImpl<>(content, pageable, total);
 	}
 
-	private Expression<?> resolveDealSortExpression(CrmDealSort sortKey, Root<CrmDeal> deal,
+	private Expression<?> resolveDealSortExpression(CriteriaBuilder cb, CrmDealSort sortKey, Root<CrmDeal> deal,
 			Join<CrmDeal, CrmDealStage> stage, Join<CrmDeal, CrmCompany> company, Join<CrmDeal, CrmContact> contact,
 			Join<CrmDeal, Employee> owner) {
 		switch (sortKey) {
@@ -168,7 +169,11 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			case CREATED_DATE:
 				return deal.get("createdDate");
 			case PRIORITY:
-				return deal.get(CrmDeal_.priority);
+				return cb.selectCase(deal.get(CrmDeal_.priority))
+					.when(CrmDealPriority.LOW, 1)
+					.when(CrmDealPriority.MEDIUM, 2)
+					.when(CrmDealPriority.HIGH, 3)
+					.otherwise(4);
 			case COMPANY_NAME:
 				return company.get(CrmCompany_.name);
 			case CONTACT_NAME:
