@@ -1,17 +1,8 @@
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-<<<<<<< HEAD
 import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-=======
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import {
-  getSelectedTask,
-  getTaskTypeIcon,
-  getTaskTypeName
-} from "~community/crm/v2/utils/taskUtil";
->>>>>>> 91258951b73650aa39fd2071334125b45a929a31
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";
