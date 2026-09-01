@@ -297,9 +297,10 @@ const Drawer = (): JSX.Element => {
                         );
                       }
                     }}
-                    aria-expanded={isExpanded}
-                    aria-controls={`sub-list-${routeId}`}
-                    aria-label={(!isDrawerExpanded && route?.name) || undefined}
+                    aria-expanded={hasSubTree ? isExpanded : undefined}
+                    aria-controls={
+                      hasSubTree ? `sub-list-${routeId}` : undefined
+                    }
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
@@ -339,7 +340,10 @@ const Drawer = (): JSX.Element => {
                         </Box>
                       )}
                     </ListItemIcon>
-                    <Box sx={classes.listItemContent(isDrawerExpanded)}>
+                    <Box
+                      className={isDrawerExpanded ? undefined : "sr-only"}
+                      sx={classes.listItemContent(isDrawerExpanded)}
+                    >
                       <ListItemText
                         primary={route?.name}
                         sx={classes.listItemText(

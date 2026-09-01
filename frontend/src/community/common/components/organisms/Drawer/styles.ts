@@ -119,7 +119,7 @@ export const styles = ({ theme }: stylesProps) => ({
     }
   }),
   listItemContent: (isDrawerExpanded: boolean) => ({
-    display: isDrawerExpanded ? "flex" : "none",
+    display: "flex",
     alignItems: "center",
     gap: "1rem",
     transition: `opacity ${DRAWER_ANIMATION_DURATION} ease`,
