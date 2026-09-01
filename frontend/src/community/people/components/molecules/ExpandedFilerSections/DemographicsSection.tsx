@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material";
+import { SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject, SyntheticEvent } from "react";
 
-import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
@@ -14,7 +14,6 @@ import { GenderTypes } from "~community/people/types/AddNewResourceTypes";
 import { NationalityList } from "../../../utils/data/employeeSetupStaticData";
 
 const DemographicsSection = ({
-  selected,
   basicChipRef
 }: {
   selected: string;
@@ -55,53 +54,20 @@ const DemographicsSection = ({
   };
 
   return (
-    <div className="overflow-y-auto">
-      <div className="flex flex-col gap-2">
-        <h1 className="subtitle3">Gender</h1>
-        <div className="flex flex-row gap-3">
-          {genderFilters.map((genderItem, index) => (
-            <BasicChip
-              ref={(el: HTMLDivElement | null) => {
-                if (el && basicChipRef.current) {
-                  basicChipRef.current[selected + index] = el;
-                }
-              }}
-              key={index}
-              label={genderItem.label}
-              onClick={() => {
-                if (
-                  employeeDataFilter.gender &&
-                  employeeDataFilter.gender === genderItem.value
-                )
-                  removeGenderFilter();
-                else setEmployeeDataFilter("gender", genderItem.value);
-              }}
-              chipStyles={{
-                display: "flex",
-                alignItems: "center",
-                textAlign: "left",
-                backgroundColor:
-                  employeeDataFilter.gender === genderItem.value
-                    ? theme.palette.secondary.main
-                    : theme.palette.grey[100],
-                color:
-                  employeeDataFilter.gender === genderItem.value
-                    ? theme.palette.primary.dark
-                    : "black",
-                height: "32px",
-                padding: "8px 12px",
-                borderRadius: 5,
-                marginBottom: 2,
-                fontSize: "0.75rem",
-                border:
-                  employeeDataFilter.gender === genderItem.value
-                    ? `1px solid ${theme.palette.secondary.dark}`
-                    : "none"
-              }}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="overflow-y-auto flex flex-col gap-6">
+      <SelectableItemList
+        title="Gender"
+        selectionMode="single"
+        items={genderFilters}
+        selectedValues={
+          employeeDataFilter.gender ? [employeeDataFilter.gender] : []
+        }
+        onChipClick={(value) => {
+          if (employeeDataFilter.gender === value) removeGenderFilter();
+          else setEmployeeDataFilter("gender", value);
+        }}
+        chipRefs={basicChipRef}
+      />
 
       <div>
         <div className="flex flex-col">
