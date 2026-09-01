@@ -1,14 +1,12 @@
-import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
-
-export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
-  const dealRecord: CrmDealRecord = {};
-  for (const deal of deals) {
-    if (deal.id != null) {
-      dealRecord[deal.id] = deal;
-    }
-  }
-  return dealRecord;
-};
+import { CrmDealStageEnum } from "../enums/common";
+import {
+  CrmCompanyRecord,
+  CrmContactRecord,
+  CrmDealEntity,
+  CrmDealRecord,
+  CrmStageRecord
+} from "../types/CrmCommonTypes";
+import { appendId } from "./commonUtil";
 
 export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   const dealIds: number[] = [];
@@ -31,7 +29,7 @@ export const getMissingDealIds = (
   return Array.from(unique);
 };
 
-export const mergeDeals = (
+export const updateDealRecord = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]
 ): CrmDealRecord => {
@@ -42,9 +40,6 @@ export const mergeDeals = (
   }
   return merged;
 };
-
-export const appendDealId = (dealIds: number[], id: number): number[] =>
-  dealIds.includes(id) ? dealIds : [...dealIds, id];
 
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);
@@ -66,3 +61,57 @@ export const resolveDeals = (
   dealIds
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
+
+export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
+  if (dealId !== undefined) {
+    return deals[dealId].name;
+  }
+};
+
+export const linkDealToRelatedEntities = (
+  deal: CrmDealEntity,
+  companies?: CrmCompanyRecord,
+  contacts?: CrmContactRecord
+) => {
+  const dealId = deal.id;
+  const linked = { companies, contacts };
+
+  if (dealId === undefined) {
+    return linked;
+  }
+
+  if (companies !== undefined && deal.companyId !== undefined) {
+    const company = companies[deal.companyId];
+
+    if (company !== undefined) {
+      linked.companies = {
+        ...companies,
+        [deal.companyId]: {
+          ...company,
+          dealIds: appendId(company.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  if (contacts !== undefined && deal.contactId !== undefined) {
+    const contact = contacts[deal.contactId];
+
+    if (contact !== undefined) {
+      linked.contacts = {
+        ...contacts,
+        [deal.contactId]: {
+          ...contact,
+          dealIds: appendId(contact.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  return linked;
+};
+
+export const getInitialStageId = (stages: CrmStageRecord) =>
+  Object.values(stages).find(
+    (stage) => stage.stageType === CrmDealStageEnum.INITIAL
+  )?.id;
