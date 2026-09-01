@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.Optional;
 
@@ -25,11 +25,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigService {
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
 	private final UserService userService;
 
 	private final UserDao userDao;
+
+	private final JsonMapper jsonMapper;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -41,7 +41,7 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 		JsonNode saved = settings != null ? settings.getCrmDealListView() : null;
 
 		CrmDealListViewConfigDto config = (saved == null || saved.isNull()) ? DefaultCrmDealListViewTemplate.build()
-				: OBJECT_MAPPER.convertValue(saved, CrmDealListViewConfigDto.class);
+				: jsonMapper.convertValue(saved, CrmDealListViewConfigDto.class);
 
 		log.info("getListViewConfig: execution ended");
 		return new ResponseEntityDto(false, config);
@@ -67,7 +67,7 @@ public class CrmDealListViewConfigServiceImpl implements CrmDealListViewConfigSe
 			settings.setUser(user);
 			user.setSettings(settings);
 		}
-		settings.setCrmDealListView(OBJECT_MAPPER.valueToTree(config));
+		settings.setCrmDealListView(jsonMapper.valueToTree(config));
 		userDao.save(user);
 
 		log.info("updateListViewConfig: execution ended successfully");
