@@ -91,7 +91,7 @@ export const useGetDealsInfinite = (
 const reorderDealInList = async (
   payload: CrmDealListReorderRequest
 ): Promise<void> => {
-  await authFetchV2.patch(crmDealEndpointsV2.REORDER_DEAL, payload);
+  await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
 };
 
 export const useReorderDealInList = (): UseMutationResult<
