@@ -125,7 +125,12 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			Expression<?> sortExpression = resolveDealSortExpression(sortKey, deal, stage, company, contact, owner);
 			boolean ascending = filterDto.getSortOrder() == null || filterDto.getSortOrder().isAscending();
 			Order primary = ascending ? cb.asc(sortExpression) : cb.desc(sortExpression);
-			query.orderBy(primary, cb.asc(deal.get(CrmDeal_.id)));
+			if (sortKey == CrmDealSort.STAGE_ORDER) {
+				query.orderBy(primary, cb.asc(deal.get(CrmDeal_.orderIndex)), cb.asc(deal.get(CrmDeal_.id)));
+			}
+			else {
+				query.orderBy(primary, cb.asc(deal.get(CrmDeal_.id)));
+			}
 		}
 		else {
 			Join<CrmDeal, CrmDealOrderIndex> orderIndex = deal.join(CrmDeal_.dealOrderIndex, JoinType.LEFT);
