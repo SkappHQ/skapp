@@ -76,6 +76,9 @@ export const useCreateTask = (
 
       if (contactId) {
         queryClient.invalidateQueries({
+          queryKey: contactQueryKeys.ALL
+        });
+        queryClient.invalidateQueries({
           queryKey: contactQueryKeys.CONTACT_BY_ID(contactId)
         });
       }

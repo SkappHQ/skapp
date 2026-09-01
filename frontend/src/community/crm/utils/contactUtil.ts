@@ -75,17 +75,17 @@ export const mergeAndPrioritizeCompanyDropdownItems = (
 };
 
 export const mapContactToMetricItems = (
-  contact: CrmContact,
+  contact: CrmContact | undefined,
   translateText: (
     keys: string[],
     interpolationValues?: Record<string, any>
   ) => string
 ): MetricItem[] => {
   const overdueChip =
-    (contact.overdueTasksCount ?? 0) > 0
+    (contact?.overdueTasksCount ?? 0) > 0
       ? {
           label: translateText(["metrics", "overdueChipLabel"], {
-            count: contact.overdueTasksCount
+            count: contact?.overdueTasksCount
           }),
           variant: CrmMetricLabelThemeEnum.RED
         }
@@ -95,24 +95,24 @@ export const mapContactToMetricItems = (
     {
       id: "openTasksCount",
       title: translateText(["metrics", "openTasks"]),
-      amount: String(contact.openTasksCount ?? 0),
+      amount: String(contact?.openTasksCount ?? 0),
       chip: overdueChip
     },
     {
       id: "activeDealsCount",
       title: translateText(["metrics", "activeDeals"]),
-      amount: String(contact.activeDealsCount ?? 0)
+      amount: String(contact?.activeDealsCount ?? 0)
     },
     {
       id: "totalRevenue",
       title: translateText(["metrics", "totalRevenue"]),
-      amount: contact.totalRevenue ?? "",
+      amount: contact?.totalRevenue ?? "",
       isCurrency: true
     },
     {
       id: "pipelineRevenue",
       title: translateText(["metrics", "pipelineRevenue"]),
-      amount: contact.pipelineRevenue ?? "",
+      amount: contact?.pipelineRevenue ?? "",
       isCurrency: true
     }
   ];

@@ -142,7 +142,7 @@ const ContactSidePanel: FC = () => {
       case SidePanelTabEnum.TASKS:
         return (
           <SidePanelTasksSection
-            tasks={contact?.tasks ?? []}
+            tasks={data?.tasks ?? []}
             emptyDescription={translateText(["tasks", "emptyDescription"])}
           />
         );
@@ -213,7 +213,7 @@ const ContactSidePanel: FC = () => {
               />
               <hr className="border-secondary-accent" />
             </div>
-            {renderTabContent()}
+            {data && renderTabContent()}
           </>
         )}
       </div>
