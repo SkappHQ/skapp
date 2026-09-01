@@ -8,13 +8,13 @@ import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
+import com.skapp.community.crmplanner.constant.CrmConstants;
+import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
@@ -79,6 +79,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	public Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto,
 			Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		List<Long> closedStageIds = getClosedStageIds();
+
 		CriteriaQuery<CrmContactMetricsResponseDtoV2> query = cb.createQuery(CrmContactMetricsResponseDtoV2.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
@@ -113,16 +115,27 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
 
+		Subquery<BigDecimal> pipelineValueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineValueSub.from(CrmDeal.class);
+		pipelineValueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact),
+					cb.not(pipelineDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact),
+					cb.not(activeDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
+
 		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
-						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
-				cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
-						owner.get(Employee_.lastName), owner.get(Employee_.authPic)),
+				company.get(CrmCompany_.id), owner.get(Employee_.employeeId),
 				cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub, openTaskSub,
-						overdueTaskSub)));
+						overdueTaskSub, pipelineValueSub.cast(String.class), activeDealsCountSub)));
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
@@ -137,6 +150,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 	@Override
 	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId) {
+		List<Long> closedStageIds = getClosedStageIds();
+
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactMetrics> query = cb.createQuery(CrmContactMetrics.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
@@ -178,8 +193,23 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
 
+		Subquery<BigDecimal> pipelineValueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineValueSub.from(CrmDeal.class);
+		pipelineValueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact),
+					cb.not(pipelineDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact),
+					cb.not(activeDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
+
 		query.select(cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub,
-				openTaskSub, overdueTaskSub));
+				openTaskSub, overdueTaskSub, pipelineValueSub.cast(String.class), activeDealsCountSub));
 		query.where(cb.equal(contact.get(CrmContact_.id), contactId), cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
 		return Optional.ofNullable(entityManager.createQuery(query).getSingleResultOrNull());
@@ -354,6 +384,18 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		CrmContact results = entityManager.createQuery(query).getSingleResultOrNull();
 		return results;
+	}
+
+	private List<Long> getClosedStageIds() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<Long> query = cb.createQuery(Long.class);
+		Root<CrmDealStage> stage = query.from(CrmDealStage.class);
+
+		query.select(stage.get(CrmDealStage_.id))
+			.where(stage.get(CrmDealStage_.stageType).in(CrmConstants.TERMINAL_STAGES),
+					cb.isFalse(stage.get(CrmDealStage_.isDeleted)));
+
+		return entityManager.createQuery(query).getResultList();
 	}
 
 }
