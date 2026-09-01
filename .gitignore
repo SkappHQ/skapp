@@ -63,4 +63,3 @@ backend/build/
 !**/src/test/**/build/
 
 .npmrc
-frontend/tsconfig.tsbuildinfo
