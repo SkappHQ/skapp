@@ -24,7 +24,11 @@ import {
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
 import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
-import { crmDealQueryKeys } from "./utils/QueryKeys";
+import {
+  crmCompanyQueryKeys,
+  crmContactQueryKeys,
+  crmDealQueryKeys
+} from "./utils/QueryKeys";
 
 const fetchDealsByIds = async (ids: number[]): Promise<CrmDealEntity[]> => {
   const response = await authFetch.post(crmDealEndpoints.GET_DEALS_BY_IDS, {
@@ -86,6 +90,17 @@ export const useGetDealsInfinite = (
     refetchOnWindowFocus: false
   });
 
+export const useGetDealLookup = (
+  filters: CrmDealFilterRequest,
+  enabled?: boolean
+) =>
+  useQuery({
+    queryKey: crmDealQueryKeys.LOOKUP(filters),
+    queryFn: () => fetchDeals(filters),
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
@@ -121,6 +136,19 @@ export const useCreateDeal = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
+      if (createdDeal.companyId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: crmCompanyQueryKeys.METRICS(createdDeal.companyId)
+        });
+      }
+      if (createdDeal.contactId !== undefined) {
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.METRICS(createdDeal.contactId)
+        });
+        queryClient.invalidateQueries({
+          queryKey: crmContactQueryKeys.LISTS
+        });
+      }
       onSuccess(createdDeal);
     },
     onError

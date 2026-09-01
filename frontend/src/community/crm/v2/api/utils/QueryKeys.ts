@@ -1,54 +1,56 @@
 import {
   CrmCompanyFilterRequest,
+  CrmContactFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
-  CrmRelatedTasksFilterRequest,
+  CrmOwnerLookupFilterRequest,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
 const CRM_COMPANIES = "crm-companies";
+const CRM_CONTACTS = "crm-contacts";
+const CRM_DEALS = "crm-deals";
+const CRM_TASKS = "crm-tasks";
+
+export const crmContactQueryKeys = {
+  LISTS: [CRM_CONTACTS, "list"],
+  LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
+  DETAIL: (id: number) => [CRM_CONTACTS, "detail", id],
+  METRICS: (id: number) => [CRM_CONTACTS, "metrics", id],
+  EMAIL_EXISTS: (email: string) => [CRM_CONTACTS, "email-exists", email],
+  LOOKUP: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "lookup", params],
+  OWNER_LOOKUP: (params: CrmOwnerLookupFilterRequest) => [
+    CRM_CONTACTS,
+    "owner-lookup",
+    params
+  ]
+};
 
 export const crmTaskQueryKeys = {
-  TASKS: (filter: CrmTaskFilterRequest) => ["crm-tasks-v2", filter],
-  COMPLETED_TASKS: (filter: CrmTaskFilterRequest) => [
-    "crm-completed-tasks-v2",
-    filter
-  ],
-  TASK_BY_ID: (id: number) => ["crm-task-by-id-v2", id],
-  RELATED_TASKS: (filter: CrmRelatedTasksFilterRequest) => [
-    "crm-related-tasks-v2",
-    filter
-  ]
+  LIST: (params: CrmTaskFilterRequest) => [CRM_TASKS, "list", params]
 };
 
 export const crmDealQueryKeys = {
-  DEALS_BY_IDS: (dealIds: number[]) => ["crm-deals-by-ids-v2", dealIds],
-  GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
-  DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
-  CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
-  DEAL_STAGES: ["crm-deal-stages-v2"]
+  DEALS_BY_IDS: (dealIds: number[]) => [CRM_DEALS, "by-ids", dealIds],
+  GET_DEALS: (filters: CrmDealFilterRequest) => [CRM_DEALS, "list", filters],
+  DEAL_BY_ID: (id: number) => [CRM_DEALS, "detail", id],
+  CHECK_DEAL_NAME_EXISTS: (name: string) => [CRM_DEALS, "name-exists", name],
+  DEAL_STAGES: [CRM_DEALS, "stages"],
+  LOOKUP: (params: CrmDealFilterRequest) => [CRM_DEALS, "lookup", params]
 };
 
 export const crmCompanyQueryKeys = {
-  ALL: [CRM_COMPANIES],
-  COMPANIES_BY_IDS: (ids: number[]) => ["crm-companies-by-ids-v2", ids],
+  COMPANIES_BY_IDS: (ids: number[]) => [CRM_COMPANIES, "by-ids", ids],
   LIST: (params: CrmCompanyFilterRequest) => [CRM_COMPANIES, "list", params],
   DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
   METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
-  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name]
-};
-
-export const crmLookupQueryKeys = {
-  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
-    "crm-contact-lookup-v2",
-    searchKeyword,
-    size
+  NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name],
+  LOOKUP: (params: CrmCompanyFilterRequest) => [
+    CRM_COMPANIES,
+    "lookup",
+    params
   ],
-  OWNER_LOOKUP: (searchKeyword: string, size: number) => [
-    "crm-owner-lookup-v2",
-    searchKeyword,
-    size
-  ]
+  DOMAIN_SEARCH: (domain: string) => [CRM_COMPANIES, "domain-search", domain]
 };
 
 export const crmBoardQueryKeys = {
