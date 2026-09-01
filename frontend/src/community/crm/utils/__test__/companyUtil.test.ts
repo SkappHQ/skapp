@@ -1,7 +1,10 @@
 import { CrmIndustryEnum } from "~community/crm/enums/common";
 import { CrmCompany } from "~community/crm/types/CommonTypes";
 
-import { mapCompanyToMetricItems } from "../companyUtil";
+import {
+  mapCompanyToMetricItems,
+  withIncrementedOpenDeals
+} from "../companyUtil";
 
 const mockTranslateText = (keys: string[]): string => keys.join(".");
 
@@ -52,5 +55,31 @@ describe("mapCompanyToMetricItems", () => {
     expect(result[0].amount).toBe("100000");
     expect(result[1].amount).toBe("4");
     expect(result[2].amount).toBe("7");
+  });
+});
+
+describe("withIncrementedOpenDeals", () => {
+  const companyA: CrmCompany = { ...baseCompany, id: 1, openDeals: 4 };
+  const companyB: CrmCompany = { ...baseCompany, id: 2, openDeals: 9 };
+
+  it("should increment openDeals by 1 for the matching company", () => {
+    const result = withIncrementedOpenDeals([companyA, companyB], 1);
+
+    expect(result[0].openDeals).toBe(5);
+  });
+
+  it("should leave non-matching companies unchanged", () => {
+    const result = withIncrementedOpenDeals([companyA, companyB], 1);
+
+    expect(result[1]).toBe(companyB);
+    expect(result[1].openDeals).toBe(9);
+  });
+
+  it("should return a new array and not mutate the input", () => {
+    const input = [companyA, companyB];
+    const result = withIncrementedOpenDeals(input, 1);
+
+    expect(result).not.toBe(input);
+    expect(companyA.openDeals).toBe(4);
   });
 });

@@ -11,6 +11,7 @@ export interface CrmCompanySliceTypes extends Pick<
   | "companies"
   | "setCompanies"
   | "updateCompany"
+  | "incrementCompanyOpenDeals"
   | "removeCompany"
   | "getCompanyById"
 > {}

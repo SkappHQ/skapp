@@ -25,6 +25,16 @@ export const mergeCompanyUpdate = (
     company.id === update.id ? { ...company, ...update } : company
   );
 
+export const withIncrementedOpenDeals = (
+  companies: CrmCompany[],
+  companyId: number
+): CrmCompany[] =>
+  companies.map((company) =>
+    company.id === companyId
+      ? { ...company, openDeals: company.openDeals + 1 }
+      : company
+  );
+
 export const mapCompanyToMetricItems = (
   company: CrmCompany,
   translateText: TranslatorFunctionType

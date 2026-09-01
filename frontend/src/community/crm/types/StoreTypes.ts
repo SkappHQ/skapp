@@ -16,6 +16,7 @@ interface ActionTypes {
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
   setCompanies: (companies: CrmCompany[]) => void;
   updateCompany: (company: CrmCompany) => void;
+  incrementCompanyOpenDeals: (companyId: number) => void;
   removeCompany: (id: number) => void;
   getCompanyById: (id: number) => CrmCompany | undefined;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;

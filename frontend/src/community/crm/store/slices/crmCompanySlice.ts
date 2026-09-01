@@ -2,7 +2,10 @@ import { SetType } from "~community/common/types/CommonTypes";
 import { CrmCompany } from "~community/crm/types/CommonTypes";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import { CrmCompanySliceTypes } from "~community/crm/types/SliceTypes";
-import { mergeCompanyUpdate } from "~community/crm/utils/companyUtil";
+import {
+  mergeCompanyUpdate,
+  withIncrementedOpenDeals
+} from "~community/crm/utils/companyUtil";
 import { mergeWithExisting } from "~community/crm/utils/crmUtil";
 
 const CrmCompanySlice = (
@@ -23,6 +26,10 @@ const CrmCompanySlice = (
     set({ companies: mergeWithExisting(get().companies, companies) }),
   updateCompany: (company: CrmCompany) =>
     set({ companies: mergeCompanyUpdate(get().companies, company) }),
+  incrementCompanyOpenDeals: (companyId: number) =>
+    set({
+      companies: withIncrementedOpenDeals(get().companies, companyId)
+    }),
   removeCompany: (id: number) =>
     set({ companies: get().companies.filter((company) => company.id !== id) }),
   getCompanyById: (id: number) =>
