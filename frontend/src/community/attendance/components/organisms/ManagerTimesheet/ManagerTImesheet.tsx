@@ -7,6 +7,7 @@ import {
 } from "~community/attendance/api/attendanceManagerApi";
 import ManagerTimesheetRequestTable from "~community/attendance/components/molecules/ManagerTimesheetRequestTable/ManagerTimesheetRequestTable";
 import TimesheetAnalytics from "~community/attendance/components/molecules/TimesheetAnalytics/TimesheetAnalytics";
+import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
 import useApproveDenyTimeRequest from "~community/attendance/hooks/useApproveDenyTimeRequest";
 import { TimeRecordDataResponseType } from "~community/attendance/types/timeSheetTypes";
 import { TableNames } from "~community/common/enums/Table";
@@ -60,6 +61,7 @@ const ManagerTimesheet = ({
           tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         />
       )}
+      <EmployeeTimesheetPopupController />
     </>
   );
 };

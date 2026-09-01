@@ -8,6 +8,7 @@ export const crmDealEndpointsV2 = {
 };
 
 export const crmDealEndpoints = {
+  GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
@@ -27,6 +28,18 @@ export const crmCompanyEndpoints = {
   EDIT_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   DELETE_COMPANY: (id: number) => `${moduleAPIPath.CRM}/company/${id}`,
   CHECK_COMPANY_NAME_EXISTS: `${moduleAPIPath.CRM}/company/exists`
+};
+
+export const crmTaskEndpointsV2 = {
+  GET_TASKS: `${moduleAPIPath.CRM}/task`,
+  GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
+  GET_RELATED_TASKS: (id: number) => `${moduleAPIPath.CRM}/task/${id}/related`,
+  CREATE_TASK: `${moduleAPIPath.CRM}/task`,
+  UPDATE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
+};
+
+export const crmTaskEndpoints = {
+  DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
 export const crmLookupEndpoints = {
