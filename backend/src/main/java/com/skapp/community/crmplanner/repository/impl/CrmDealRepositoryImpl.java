@@ -30,6 +30,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -133,8 +134,11 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			}
 		}
 		else {
-			Join<CrmDeal, CrmDealOrderIndex> orderIndex = deal.join(CrmDeal_.dealOrderIndex, JoinType.LEFT);
-			query.orderBy(cb.asc(orderIndex.get(CrmDealOrderIndex_.list)), cb.asc(deal.get(CrmDeal_.id)));
+			Subquery<String> listKey = query.subquery(String.class);
+			Root<CrmDealOrderIndex> orderIndex = listKey.from(CrmDealOrderIndex.class);
+			listKey.select(orderIndex.get(CrmDealOrderIndex_.list))
+				.where(cb.equal(orderIndex.get(CrmDealOrderIndex_.dealId), deal.get(CrmDeal_.id)));
+			query.orderBy(cb.asc(listKey), cb.asc(deal.get(CrmDeal_.id)));
 		}
 
 		List<CrmDealResponseDtoV2> content = entityManager.createQuery(query)
