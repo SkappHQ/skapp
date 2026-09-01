@@ -11,7 +11,6 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import {
   useGetRelatedTasks,
   useGetTaskById,
@@ -29,7 +28,6 @@ import {
   CrmRelatedTasksFilterRequest,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
-import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 const TASK_DETAIL_ICON_SIZE = 24;
@@ -48,9 +46,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     crmSidePanelType,
     tasks,
     taskTypes,
-    deals,
     setTasks,
-    setDeals,
     setSelectedTaskId,
     closeCrmSidePanel,
     setIsTaskModalOpen,
@@ -61,9 +57,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       crmSidePanelType: store.crmSidePanelType,
       tasks: store.tasks,
       taskTypes: store.taskTypes,
-      deals: store.deals,
       setTasks: store.setTasks,
-      setDeals: store.setDeals,
       setSelectedTaskId: store.setSelectedTaskId,
       closeCrmSidePanel: store.closeCrmSidePanel,
       setIsTaskModalOpen: store.setIsTaskModalOpen,
@@ -85,17 +79,6 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
     setTasks(updateTaskRecord(tasks, [taskDetail]));
   }, [taskDetail]);
-
-  const { data: dealDetail } = useGetDealById(
-    task.dealId ?? 0,
-    isOpen && task.dealId != null
-  );
-
-  useEffect(() => {
-    if (!dealDetail) return;
-
-    setDeals(mergeDeals(deals, [dealDetail]));
-  }, [dealDetail]);
 
   const relatedTasksFilter: CrmRelatedTasksFilterRequest = useMemo(
     () => ({ id: taskId, size: TASK_PAGE_SIZE }),

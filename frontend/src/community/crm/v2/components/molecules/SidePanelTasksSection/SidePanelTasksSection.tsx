@@ -7,7 +7,7 @@ import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 
 interface Props {
   taskIds: number[];
-  emptyDescription: string;
+  emptyDescription?: string;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onFetchNextPage: () => void;
@@ -38,7 +38,7 @@ const SidePanelTasksSection: FC<Props> = ({
       <EmptyDataView
         icon={<SearchIcon width="24" height="24" />}
         title={translateText(["emptyTitle"])}
-        description={emptyDescription}
+        description={emptyDescription ?? translateText(["emptyDescription"])}
         className={{
           wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
         }}
