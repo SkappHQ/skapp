@@ -45,7 +45,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
   const { refetch: refetchEmployeeStatus } = useGetEmployeeStatus();
-  const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
+  const { mutate: updateEmployeeStatus } = useUpdateEmployeeStatus();
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
@@ -56,11 +56,11 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
       if (result.data?.data.results[0]?.periodType === AttendanceSlotType.END) {
         setIsAutoClockOutMidnightModalOpen(true);
       } else {
-        void updateEmployeeStatus(setSlotType(AttendanceSlotType.END)).then(
-          () => {
+        updateEmployeeStatus(setSlotType(AttendanceSlotType.END), {
+          onSuccess: () => {
             setIsAutoClockOutMidnightModalOpen(true);
           }
-        );
+        });
       }
     },
     [updateEmployeeStatus]
