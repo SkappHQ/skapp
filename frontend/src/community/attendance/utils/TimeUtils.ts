@@ -1,6 +1,21 @@
 import { DateTime, Duration } from "luxon";
 
-import { TimeSlotsType } from "~community/attendance/types/timeSheetTypes";
+import {
+  DailyLogType,
+  TimeSlotsType
+} from "~community/attendance/types/timeSheetTypes";
+import { daysTypes } from "~community/common/constants/stringConstants";
+
+export const createEmptyDailyLog = (date: string): DailyLogType => ({
+  timeRecordId: null,
+  date,
+  day: Object.values(daysTypes)[DateTime.fromISO(date).weekday - 1],
+  workedHours: 0,
+  breakHours: 0,
+  timeSlots: [],
+  leaveRequest: null,
+  holiday: null
+});
 
 export const convertTo24HourByDateString = (date: string) => {
   const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });
