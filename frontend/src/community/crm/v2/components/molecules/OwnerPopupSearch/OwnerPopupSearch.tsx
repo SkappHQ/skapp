@@ -13,8 +13,9 @@ import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
-import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
+import { useGetOwnerLookup } from "~community/crm/v2/api/ContactApi";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmOwnerLookupFilterRequest } from "~community/crm/v2/types/CrmTypes";
 
 import OwnerOptionItem from "./OwnerOptionItem";
 import OwnerTriggerContent from "./OwnerTriggerContent";
@@ -42,9 +43,14 @@ const OwnerPopupSearch: FC<Props> = ({
     ownerSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: ownerLookupData } = useGetOwnerLookupV2(
-    debouncedOwnerSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+
+  const ownerFilters: CrmOwnerLookupFilterRequest = {
+    searchKeyword: debouncedOwnerSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
+  const { data: ownerLookupData } = useGetOwnerLookup(
+    ownerFilters,
     isCrmSalesManager ?? false
   );
   const users = useMemo(
@@ -78,8 +84,8 @@ const OwnerPopupSearch: FC<Props> = ({
     : null;
 
   const resolveUser = (id: number): CrmOwnerEntity | null =>
-    (users.find((user) => user.employeeId === id) ??
-      (selectedUser?.employeeId === id ? selectedUser : null));
+    users.find((user) => user.employeeId === id) ??
+    (selectedUser?.employeeId === id ? selectedUser : null);
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {

@@ -4,32 +4,33 @@ import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/commonConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
+import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
+import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/v2/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/v2/components/molecules/PriorityDropdown/PriorityDropdown";
 import PropertyField from "~community/crm/v2/components/molecules/PropertyField/PropertyField";
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
-import {
-  DEFAULT_LOOKUP_PAGE_SIZE,
-  SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
-import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
-import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmContactEntity,
   CrmOwnerEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
+import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
-import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 
 interface DealPropertiesSidebarProps {
   dealId: number;
@@ -69,9 +70,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearchTerm,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+  const contactFilters: CrmContactFilterRequest = {
+    searchKeyword: debouncedContactSearchTerm,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
+  const { data: contactLookupData } = useGetContactLookup(
+    contactFilters,
     debouncedContactSearchTerm.length > 0
   );
   const contacts = useMemo(
@@ -96,7 +101,9 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
       const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      store.setCompanies(
+        updateCompanyRecord(store.companies, fetchedCompanies)
+      );
     }
   }, [fetchedCompanies]);
 
@@ -119,7 +126,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const selectedStageId = deal.stageId != null ? String(deal.stageId) : "";
   const selectedOwner: CrmOwnerEntity | null =
-    deal.ownerId != null ? owners[deal.ownerId] ?? null : null;
+    deal.ownerId != null ? (owners[deal.ownerId] ?? null) : null;
   const selectedContact: CrmContactEntity | null =
     deal.contactId != null
       ? {

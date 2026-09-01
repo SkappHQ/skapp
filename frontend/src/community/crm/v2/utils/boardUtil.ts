@@ -14,11 +14,11 @@ import {
   CrmOwnerRecord
 } from "../types/CrmCommonTypes";
 import { CrmDealsByStagesResponse } from "../types/CrmTypes";
+import { appendId } from "./commonUtil";
 import {
-  appendDealId,
-  mergeDeals,
   removeDealFromRecord,
-  removeDealId
+  removeDealId,
+  updateDealRecord
 } from "./dealUtil";
 
 const appendDealIds = (existing: number[], incoming: number[]): number[] => {
@@ -38,7 +38,7 @@ export const ingestBoardStageDeals = (
   const entities: CrmDealEntity[] = groups.flatMap((group) =>
     group.deals.map((deal) => ({ ...deal, stageId: group.stageId }))
   );
-  const deals = mergeDeals(current.deals, entities);
+  const deals = updateDealRecord(current.deals, entities);
 
   const board: CrmBoardRecord = { ...current.board };
   for (const group of groups) {
@@ -188,14 +188,14 @@ export const ingestCreatedDeal = (
   current: BoardStore,
   deal: CrmDealEntity
 ): BoardStore => {
-  const deals = mergeDeals(current.deals, [deal]);
+  const deals = updateDealRecord(current.deals, [deal]);
   if (deal.id == null) {
     return { deals, board: current.board, dealIds: current.dealIds };
   }
   return {
     deals,
     board: addDealToColumn(current.board, deal),
-    dealIds: appendDealId(current.dealIds, deal.id)
+    dealIds: appendId(current.dealIds, deal.id)
   };
 };
 
@@ -203,7 +203,7 @@ export const ingestEditedDeal = (
   current: { deals: CrmDealRecord; board: CrmBoardRecord },
   deal: CrmDealEntity
 ): { deals: CrmDealRecord; board: CrmBoardRecord } => {
-  const deals = mergeDeals(current.deals, [deal]);
+  const deals = updateDealRecord(current.deals, [deal]);
   if (deal.id == null) return { deals, board: current.board };
 
   const currentColumnStage = findStageIdByDealId(current.board, deal.id);
