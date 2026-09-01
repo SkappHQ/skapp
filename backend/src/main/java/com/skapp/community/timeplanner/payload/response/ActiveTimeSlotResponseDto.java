@@ -12,6 +12,8 @@ public class ActiveTimeSlotResponseDto {
 
 	private TimeRecordActionTypes periodType;
 
+	private Boolean isLeavePending;
+
 	private Instant starTime;
 
 	private float workHours;

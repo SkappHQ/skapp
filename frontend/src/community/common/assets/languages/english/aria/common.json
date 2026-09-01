@@ -74,7 +74,9 @@
     "inputPhoneNumber": {
       "countryCode": "country code",
       "phoneNumber": "phone number",
-      "countryCodeDescription": "Country code +{{countryCode}}"
+      "countryCodeDescription": "Country code +{{countryCode}}",
+      "countryList": "Country List",
+      "countrySearch": "Search countries"
     },
     "search": {
       "label": "Enter Search Keyword",

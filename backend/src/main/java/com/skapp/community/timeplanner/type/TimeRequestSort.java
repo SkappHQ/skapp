@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum TimeRequestSort {
 
-	REQUESTED_START_TIME("requestedStartTime"), REQUESTED_END_TIME("requestedEndTime"), CREATION_DATE("creationDate");
+	REQUESTED_START_TIME("requestedStartTime"), REQUESTED_END_TIME("requestedEndTime"), CREATION_DATE("createdDate");
 
 	private final String sortField;
 

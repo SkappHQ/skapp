@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
@@ -28,6 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class CrmDealController {
 
 	private final CrmDealService crmDealService;
+
+	@Operation(summary = "Get deals by ids",
+			description = "Returns the base details of the deals matching the given ids, used to hydrate the "
+					+ "client's deal store. Unknown, deleted and - for a sales representative - other owners' "
+					+ "deals are omitted.")
+	@PostMapping("/ids")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getDealsByIds(@RequestBody CrmDealIdsRequestDto requestDto) {
+		ResponseEntityDto response = crmDealService.getDealsByIds(requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 	@Operation(summary = "Check if a deal name exists",
 			description = "Check if a deal with the given name already exists")
