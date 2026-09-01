@@ -11,6 +11,7 @@ import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { ComponentProps, JSX, memo, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
@@ -146,6 +147,14 @@ const ContentLayout = ({
     (state) => state
   );
 
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
+
   const isSuperAdmin = user?.roles?.includes(AdminTypes.SUPER_ADMIN);
   const tenantStatus = user?.tenantStatus;
 
@@ -181,7 +190,7 @@ const ContentLayout = ({
         TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
       ].includes(tenantStatus)
     ) {
-      signOut();
+      signOut({ accessToken, setAccessToken, clearAccessToken });
       return;
     }
 
@@ -192,7 +201,7 @@ const ContentLayout = ({
     } else if (tenantStatus === TenantStatusEnums.ACTIVE) {
       setIsSubscriptionEndedModalOpen(false);
     }
-  }, [user?.tenantStatus]);
+  }, [user?.tenantStatus, accessToken, setAccessToken, clearAccessToken]);
 
   const { data: organizationDetails } = useGetOrganization(!!user);
 

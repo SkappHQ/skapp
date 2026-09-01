@@ -3,6 +3,7 @@ import { EmployeeTimesheetModalSliceType } from "~community/attendance/types/att
 import {
   CurrentAddTimeChangesType,
   DailyLogType,
+  DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { SetType } from "~community/common/types/storeTypes";
@@ -15,6 +16,7 @@ export const employeeTimesheetModalSlice = (
   timeAvailabilityForPeriod: {} as TimeAvailabilityType,
   currentAddTimeChanges: {} as CurrentAddTimeChangesType,
   employeeTimesheetModalType: EmployeeTimesheetModalTypes.ADD_TIME_ENTRY,
+  directManualTimeEntryEligibleEmployee: null,
 
   setSelectedDailyRecord: (record: DailyLogType) =>
     set((state: EmployeeTimesheetModalSliceType) => ({
@@ -40,5 +42,12 @@ export const employeeTimesheetModalSlice = (
     set((state: EmployeeTimesheetModalSliceType) => ({
       ...state,
       currentAddTimeChanges: value
+    })),
+  setDirectManualTimeEntryEligibleEmployee: (
+    value: DirectEntryEmployeeType | null
+  ) =>
+    set((state: EmployeeTimesheetModalSliceType) => ({
+      ...state,
+      directManualTimeEntryEligibleEmployee: value
     }))
 });

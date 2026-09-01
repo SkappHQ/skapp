@@ -4,6 +4,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
@@ -18,6 +19,8 @@ public interface CrmDealService {
 	ResponseEntityDto checkDealNameExists(String name);
 
 	ResponseEntityDto getDeals(CrmDealFilterDto filterDto);
+
+	ResponseEntityDto getDealsByIds(CrmDealIdsRequestDto requestDto);
 
 	ResponseEntityDto getDealsByStages(CrmDealsByStagesRequestDto requestDto);
 
