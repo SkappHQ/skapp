@@ -358,4 +358,12 @@ public class CommonModuleUtils {
 				&& Role.PM_GUEST_EMPLOYEE == employee.getEmployeeRole().getPmRole();
 	}
 
+	public static boolean isExternalAuthPicUrl(String authPic) {
+		return authPic != null && authPic.startsWith("https://");
+	}
+
+	public static boolean shouldReplaceAuthPic(String existing, String incoming) {
+		return incoming != null && !incoming.equals(existing) && (existing == null || isExternalAuthPicUrl(existing));
+	}
+
 }
