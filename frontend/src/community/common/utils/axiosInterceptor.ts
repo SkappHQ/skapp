@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { ApiVersions } from "../constants/configs";
@@ -20,7 +21,7 @@ export const authFetchSameOrigin = axios.create({
 });
 
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken(useCommonStore.getState());
 
   if (
     accessToken &&
