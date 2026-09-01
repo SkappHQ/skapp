@@ -1,13 +1,10 @@
 import { useTheme } from "@mui/material";
-import { SelectableItemList } from "@rootcodelabs/skapp-ui";
+import { Chip, SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { RefObject, SyntheticEvent } from "react";
 
-import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownAutocomplete from "~community/common/components/molecules/DropdownAutocomplete/DropdownAutocomplete";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { DropdownListType } from "~community/common/types/CommonTypes";
-import { IconName } from "~community/common/types/IconTypes";
 import { usePeopleStore } from "~community/people/store/store";
 import { GenderTypes } from "~community/people/types/AddNewResourceTypes";
 
@@ -56,7 +53,7 @@ const DemographicsSection = ({
   return (
     <div className="overflow-y-auto flex flex-col gap-6">
       <SelectableItemList
-        title="Gender"
+        title={translateText(["gender"])}
         selectionMode="single"
         items={genderFilters}
         selectedValues={
@@ -74,8 +71,8 @@ const DemographicsSection = ({
           <DropdownAutocomplete
             itemList={NationalityList}
             inputName="nationalty"
-            label={"Nationality"}
-            placeholder={"Nationality"}
+            label={translateText(["nationality"])}
+            placeholder={translateText(["nationality"])}
             onChange={handleSetNationality}
             value={undefined}
             componentStyle={{
@@ -90,20 +87,10 @@ const DemographicsSection = ({
               employeeDataFilter?.nationality.length > 0 &&
               employeeDataFilter?.nationality.map((nationality, index) => (
                 <div key={index}>
-                  <IconChip
+                  <Chip
                     label={nationality}
-                    icon={
-                      <Icon
-                        name={IconName.SELECTED_ICON}
-                        fill={theme.palette.primary.dark}
-                      />
-                    }
-                    chipStyles={{
-                      backgroundColor: theme.palette.secondary.main,
-                      color: theme.palette.primary.dark,
-                      padding: "8px 12px",
-                      border: `1px solid ${theme.palette.secondary.dark}`
-                    }}
+                    size="sm"
+                    isSelected
                     onClick={() => {
                       setEmployeeDataFilter(
                         "nationality",
