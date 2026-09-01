@@ -24,13 +24,14 @@ import {
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
+import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
-import { getEmoji } from "~community/common/utils/commonUtil";
+import { concatStrings, getEmoji } from "~community/common/utils/commonUtil";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
@@ -38,6 +39,7 @@ import {
   shouldMoveDownward,
   shouldMoveUpward
 } from "~community/common/utils/keyboardUtils";
+import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
 
 import TimesheetTimelineBar from "../TimesheetTimelineBar/TimesheetTimelineBar";
 import styles from "./styles";
@@ -45,9 +47,20 @@ import styles from "./styles";
 interface Props {
   record: DailyLogType;
   headerLength: number;
+  targetEmployeeId?: number;
+  targetEmployeeDetails?: EmployeeDetails;
+  isRowInteractive: boolean;
+  isManualEntryRestricted: boolean;
 }
 
-const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
+const TimesheetDailyRecordTableRow: FC<Props> = ({
+  record,
+  headerLength,
+  targetEmployeeId,
+  targetEmployeeDetails,
+  isRowInteractive,
+  isManualEntryRestricted
+}) => {
   const { isFreeTier } = useSessionData();
 
   const theme: Theme = useTheme();
@@ -66,55 +79,20 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
     attendanceParams,
     setSelectedDailyRecord,
     setIsEmployeeTimesheetModalOpen,
-    setEmployeeTimesheetModalType
+    setEmployeeTimesheetModalType,
+    setDirectManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
   const handleEdit = useCallback(() => {
     setSelectedDailyRecord(record);
-    if (
-      !record?.timeRecordId &&
-      (record.leaveRequest || record?.holiday) &&
-      !record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY
-      );
-    } else if (
-      record?.timeRecordId &&
-      (record.leaveRequest || record?.holiday) &&
-      record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-      );
-    } else if (
-      record?.timeRecordId &&
-      !record.leaveRequest &&
-      record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
-      );
-    } else if (
-      !record?.timeRecordId &&
-      !record.leaveRequest &&
-      !record.timeSlots.length
-    ) {
-      setIsEmployeeTimesheetModalOpen(true);
-      setEmployeeTimesheetModalType(
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-      );
-    }
-  }, [
-    record,
-    setIsEmployeeTimesheetModalOpen,
-    setSelectedDailyRecord,
-    setEmployeeTimesheetModalType
-  ]);
+
+    const modalType = getTimeEntryModalType(record);
+    if (modalType === null) return;
+
+    setIsEmployeeTimesheetModalOpen(true);
+    setEmployeeTimesheetModalType(modalType);
+  }, [record]);
 
   const getLeaveLength = (leaveState: string) => {
     if (leaveState === LeaveStates.FULL_DAY) {
@@ -196,17 +174,44 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({ record, headerLength }) => {
     handleAvailability
   );
 
+  const handleRowActivate = () => {
+    if (!isRowInteractive) return;
+
+    if (targetEmployeeDetails && targetEmployeeId) {
+      if (getTimeEntryModalType(record) === null) return;
+
+      setDirectManualTimeEntryEligibleEmployee({
+        employeeId: targetEmployeeId,
+        employeeName: concatStrings([
+          targetEmployeeDetails.firstName ?? "",
+          targetEmployeeDetails.lastName ?? ""
+        ]).trim()
+      });
+      handleEdit();
+      return;
+    }
+
+    setDirectManualTimeEntryEligibleEmployee(null);
+    mutate();
+  };
+
   return (
     <Stack
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={classes.stackContainerStyle}
-      onClick={() => mutate()}
+      sx={classes.stackContainerStyle(isRowInteractive)}
+      onClick={handleRowActivate}
+      aria-disabled={!isRowInteractive}
+      title={
+        isManualEntryRestricted && !targetEmployeeDetails
+          ? translateText(["manualEntryRestrictedCellTooltip"])
+          : undefined
+      }
       tabIndex={getTabIndex(isFreeTier)}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {
-          mutate();
+          handleRowActivate();
         }
         if (shouldMoveUpward(e.key)) {
           const previousRow = e.currentTarget
