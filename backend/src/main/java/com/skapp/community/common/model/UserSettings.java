@@ -38,7 +38,7 @@ public class UserSettings {
 	@Convert(converter = JsonTypeConverter.class)
 	private JsonNode notifications;
 
-	@Column(name = "crm_deal_list_view")
+	@Column(name = "crm_deal_list_view", length = 10000)
 	@Convert(converter = JsonTypeConverter.class)
 	private JsonNode crmDealListView;
 
