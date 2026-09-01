@@ -445,7 +445,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds) {
+	public Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId) {
 		if (dealIds == null || dealIds.isEmpty()) {
 			return Collections.emptyMap();
 		}
@@ -453,9 +453,17 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<Tuple> query = cb.createTupleQuery();
 		Root<CrmTask> task = query.from(CrmTask.class);
 
+		List<Predicate> predicates = new ArrayList<>();
+		predicates.add(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds));
+		predicates.add(cb.isFalse(task.get(CrmTask_.isDeleted)));
+		predicates.add(cb.isFalse(task.get(CrmTask_.isCompleted)));
+
+		if (ownerId != null) {
+			predicates.add(cb.equal(task.get(CrmTask_.owner).get(Employee_.employeeId), ownerId));
+		}
+
 		query.select(cb.tuple(task.get(CrmTask_.deal).get(CrmDeal_.id), cb.count(task.get(CrmTask_.id))));
-		query.where(task.get(CrmTask_.deal).get(CrmDeal_.id).in(dealIds), cb.isFalse(task.get(CrmTask_.isDeleted)),
-				cb.isFalse(task.get(CrmTask_.isCompleted)));
+		query.where(predicates.toArray(new Predicate[0]));
 		query.groupBy(task.get(CrmTask_.deal).get(CrmDeal_.id));
 
 		Map<Long, Long> counts = new HashMap<>();
