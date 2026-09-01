@@ -154,7 +154,7 @@ export const getMissingCompanyIds = (
   return Array.from(unique);
 };
 
-export const mergeCompanies = (
+export const updateCompanyRecord = (
   existing: CrmCompanyRecord,
   incoming: CrmCompanyEntity[]
 ): CrmCompanyRecord => {

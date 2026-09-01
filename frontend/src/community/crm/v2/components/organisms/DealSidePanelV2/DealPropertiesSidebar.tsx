@@ -27,7 +27,7 @@ import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
@@ -101,7 +101,9 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
       const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      store.setCompanies(
+        updateCompanyRecord(store.companies, fetchedCompanies)
+      );
     }
   }, [fetchedCompanies]);
 

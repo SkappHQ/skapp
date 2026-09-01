@@ -26,8 +26,8 @@ import {
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
 import {
-  mergeCompanies,
-  toCompanyIds
+  toCompanyIds,
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 
 export const CompanyTable: FC = () => {
@@ -69,7 +69,7 @@ export const CompanyTable: FC = () => {
 
     const items = data.pages.flatMap((page) => page.items);
 
-    setCompanies(mergeCompanies(companies, items));
+    setCompanies(updateCompanyRecord(companies, items));
     setCompanyIds(toCompanyIds(items));
   }, [data]);
 

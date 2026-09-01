@@ -33,10 +33,7 @@ const fetchTasks = async (
 
 export const useGetTasksInfinite = (
   params: CrmTaskFilterRequest
-): UseInfiniteQueryResult<
-  InfiniteData<CrmTaskListResponse>,
-  AxiosError
-> =>
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>, AxiosError> =>
   useInfiniteQuery({
     queryKey: crmTaskQueryKeys.LIST(params),
     queryFn: ({ pageParam }) => fetchTasks({ ...params, page: pageParam }),

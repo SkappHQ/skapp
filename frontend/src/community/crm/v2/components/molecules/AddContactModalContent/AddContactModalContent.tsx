@@ -9,7 +9,7 @@ import { useCreateContact } from "~community/crm/v2/api/ContactApi";
 import ContactModalForm from "~community/crm/v2/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { mergeCompanies } from "~community/crm/v2/utils/companyUtil";
+import { updateCompanyRecord } from "~community/crm/v2/utils/companyUtil";
 import {
   getContactFormInitialValues,
   getTrimmedContactValues,
@@ -77,7 +77,7 @@ const AddContactModalContent: FC = () => {
       const knownCompanies =
         createdContact.companyId != null &&
         formik.values.companyName !== undefined
-          ? mergeCompanies(companies, [
+          ? updateCompanyRecord(companies, [
               {
                 id: createdContact.companyId,
                 name: formik.values.companyName

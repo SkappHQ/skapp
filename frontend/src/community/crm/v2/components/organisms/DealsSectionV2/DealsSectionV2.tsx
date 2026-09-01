@@ -16,12 +16,12 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import {
-  mergeDeals,
   resolveDeals,
-  toDealIds
+  toDealIds,
+  updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
 
 import DealsHeaderV2 from "./DealsHeaderV2";
@@ -74,7 +74,7 @@ const DealsSectionV2: FC = () => {
     if (!data) return;
     const store = useCrmStoreV2.getState();
     const items = data.pages.flatMap((page) => page.items);
-    store.setDeals(mergeDeals(store.deals, items));
+    store.setDeals(updateDealRecord(store.deals, items));
     store.setDealIds(toDealIds(items));
   }, [data]);
 
@@ -99,7 +99,9 @@ const DealsSectionV2: FC = () => {
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
       const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      store.setCompanies(
+        updateCompanyRecord(store.companies, fetchedCompanies)
+      );
     }
   }, [fetchedCompanies]);
 

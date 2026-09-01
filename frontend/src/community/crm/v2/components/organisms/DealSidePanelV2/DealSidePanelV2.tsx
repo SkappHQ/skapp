@@ -19,7 +19,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
-import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { updateDealRecord } from "~community/crm/v2/utils/dealUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -76,7 +76,7 @@ const DealSidePanelV2: FC = () => {
   useEffect(() => {
     if (dealDetail) {
       const store = useCrmStoreV2.getState();
-      store.setDeals(mergeDeals(store.deals, [dealDetail]));
+      store.setDeals(updateDealRecord(store.deals, [dealDetail]));
     }
   }, [dealDetail]);
 

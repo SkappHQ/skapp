@@ -31,7 +31,7 @@ import {
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
 
@@ -123,7 +123,9 @@ const AddDealSidePanelV2: FC = () => {
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
       const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      store.setCompanies(
+        updateCompanyRecord(store.companies, fetchedCompanies)
+      );
     }
   }, [fetchedCompanies]);
 

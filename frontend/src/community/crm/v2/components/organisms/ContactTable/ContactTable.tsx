@@ -39,12 +39,12 @@ import {
 import {
   getCompanyNameById,
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import {
   getContactCompanyIds,
-  mergeContacts,
-  toContactIds
+  toContactIds,
+  updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
 
 interface ContactTableProps {
@@ -112,7 +112,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
   useEffect(() => {
     if (!fetchedContacts) return;
 
-    setContacts(mergeContacts(contacts, fetchedContacts));
+    setContacts(updateContactRecord(contacts, fetchedContacts));
     setContactIds(toContactIds(fetchedContacts));
   }, [fetchedContacts]);
 
@@ -134,7 +134,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
     if (!fetchedCompanies) return;
 
     const store = useCrmStoreV2.getState();
-    store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+    store.setCompanies(updateCompanyRecord(store.companies, fetchedCompanies));
   }, [fetchedCompanies]);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
 
     const store = useCrmStoreV2.getState();
     store.setCompanies(
-      mergeCompanies(store.companies, companyLookupData.items)
+      updateCompanyRecord(store.companies, companyLookupData.items)
     );
   }, [companyLookupData]);
 

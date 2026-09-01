@@ -29,7 +29,7 @@ export const getMissingDealIds = (
   return Array.from(unique);
 };
 
-export const mergeDeals = (
+export const updateDealRecord = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]
 ): CrmDealRecord => {

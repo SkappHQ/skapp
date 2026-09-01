@@ -47,13 +47,13 @@ import {
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
 import {
-  mergeContacts,
-  toContactIds
+  toContactIds,
+  updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
 import {
   linkDealToRelatedEntities,
-  mergeDeals,
-  toDealIds
+  toDealIds,
+  updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
 import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
 
@@ -191,7 +191,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
 
-    setDeals(mergeDeals(deals, dealItems));
+    setDeals(updateDealRecord(deals, dealItems));
     setCompanies(
       updateCompany(useCrmStoreV2.getState().companies, companyId, {
         dealIds: toDealIds(dealItems)
@@ -206,7 +206,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       (page) => page.items ?? []
     );
 
-    setContacts(mergeContacts(contacts, contactItems));
+    setContacts(updateContactRecord(contacts, contactItems));
     setCompanies(
       updateCompany(useCrmStoreV2.getState().companies, companyId, {
         contactIds: toContactIds(contactItems)
@@ -227,7 +227,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   }, [isCompanyError]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
-    setDeals(mergeDeals(deals, [createdDeal]));
+    setDeals(updateDealRecord(deals, [createdDeal]));
 
     const linked = linkDealToRelatedEntities(createdDeal, companies, contacts);
 

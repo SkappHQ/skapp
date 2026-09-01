@@ -44,8 +44,8 @@ import {
 } from "~community/crm/v2/utils/contactUtil";
 import {
   linkDealToRelatedEntities,
-  mergeDeals,
-  toDealIds
+  toDealIds,
+  updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
 import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
 
@@ -164,7 +164,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
 
-    setDeals(mergeDeals(deals, dealItems));
+    setDeals(updateDealRecord(deals, dealItems));
     setContacts(
       updateContact(useCrmStoreV2.getState().contacts, contactId, {
         dealIds: toDealIds(dealItems)
@@ -179,7 +179,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const canDeleteContact = isCrmSalesManager;
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
-    setDeals(mergeDeals(deals, [createdDeal]));
+    setDeals(updateDealRecord(deals, [createdDeal]));
 
     const linked = linkDealToRelatedEntities(createdDeal, companies, contacts);
 

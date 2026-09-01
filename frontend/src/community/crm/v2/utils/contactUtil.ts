@@ -38,7 +38,7 @@ export const toContactIds = (contacts: CrmContactEntity[]): number[] => {
   return contactIds;
 };
 
-export const mergeContacts = (
+export const updateContactRecord = (
   existing: CrmContactRecord,
   incoming: CrmContactEntity[]
 ): CrmContactRecord => {
