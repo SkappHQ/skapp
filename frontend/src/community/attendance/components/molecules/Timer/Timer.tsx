@@ -3,8 +3,8 @@ import { JSX, useCallback, useEffect, useState } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import {
-  getLatestPeriodType,
-  useGetEmployeeStatus
+  useGetEmployeeStatus,
+  useUpdateEmployeeStatus
 } from "~community/attendance/api/AttendanceApi";
 import PlayButton from "~community/attendance/components/molecules/PlayButton/PlayButton";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
@@ -32,7 +32,8 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     attendanceParams,
     isAttendanceModalOpen,
     setIsAttendanceModalOpen,
-    setIsAutoClockOutMidnightModalOpen
+    setIsAutoClockOutMidnightModalOpen,
+    setSlotType
   } = useAttendanceStore((state) => state);
   const theme = useTheme();
   const classes = styles(theme);
@@ -44,6 +45,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
   const { refetch: refetchEmployeeStatus } = useGetEmployeeStatus();
+  const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
@@ -51,11 +53,17 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
 
   const handleEmployeeStatusRefetched = useCallback(
     (result: Awaited<ReturnType<typeof refetchEmployeeStatus>>) => {
-      if (getLatestPeriodType(result.data) === AttendanceSlotType.END) {
+      if (result.data?.data.results[0]?.periodType === AttendanceSlotType.END) {
         setIsAutoClockOutMidnightModalOpen(true);
+      } else {
+        void updateEmployeeStatus(setSlotType(AttendanceSlotType.END)).then(
+          () => {
+            setIsAutoClockOutMidnightModalOpen(true);
+          }
+        );
       }
     },
-    [setIsAutoClockOutMidnightModalOpen]
+    [setIsAutoClockOutMidnightModalOpen, updateEmployeeStatus, setSlotType]
   );
 
   useEffect(() => {
@@ -68,7 +76,9 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         status === AttendanceSlotType.START) &&
       !isAttendanceModalOpen
     ) {
-      const slotStart = parseUtcTimestamp(attendanceParams.slotStartTime);
+      const slotStart = attendanceParams.slotStartTime
+        ? parseUtcTimestamp(attendanceParams.slotStartTime)
+        : null;
       const slotStartDay = slotStart?.toDateString();
 
       interval = setInterval(() => {
