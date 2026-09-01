@@ -25,8 +25,8 @@ export const toStageIds = (stages: CrmStageEntity[]): number[] => {
 };
 
 export const getChangedStageFields = (
-  currentValues: CrmStageEntity,
-  initialValues: CrmStageEntity
+  initialValues: CrmStageEntity,
+  currentValues: CrmStageEntity
 ): CrmStageEntity => {
   const changedFields: CrmStageEntity = {};
 

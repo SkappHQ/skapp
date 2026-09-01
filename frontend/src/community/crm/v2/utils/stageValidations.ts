@@ -34,7 +34,6 @@ export const getStageValidationSchema = (
       ),
     description: Yup.string()
       .trim()
-      .optional()
       .max(
         characterLengths.DEAL_STAGE_DESCRIPTION_LENGTH,
         translator(["dealStageModal", "validations", "descriptionLength"])

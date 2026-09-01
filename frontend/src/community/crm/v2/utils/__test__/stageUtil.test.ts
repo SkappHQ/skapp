@@ -1,6 +1,7 @@
+import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-import { isStageNameTaken } from "../stageUtil";
+import { isStageNameTaken, toStageReorderPayload } from "../stageUtil";
 
 const stages: CrmStageEntity[] = [
   { id: 1, name: "DEMO_SCHEDULED" },
@@ -34,5 +35,23 @@ describe("isStageNameTaken", () => {
 
   it("skips stages without a name", () => {
     expect(isStageNameTaken([{ id: 3 }], "Follow Up")).toBe(false);
+  });
+});
+
+describe("toStageReorderPayload", () => {
+  it("drops the terminal stages and numbers the rest from one", () => {
+    const orderedStages: CrmStageEntity[] = [
+      { id: 10, stageType: CrmDealStageEnum.INITIAL },
+      { id: 20, stageType: CrmDealStageEnum.OPEN },
+      { id: 30, stageType: CrmDealStageEnum.WON },
+      { id: 40, stageType: CrmDealStageEnum.OPEN },
+      { id: 50, stageType: CrmDealStageEnum.LOST }
+    ];
+
+    expect(toStageReorderPayload(orderedStages)).toEqual([
+      { id: 10, orderIndex: 1 },
+      { id: 20, orderIndex: 2 },
+      { id: 40, orderIndex: 3 }
+    ]);
   });
 });
