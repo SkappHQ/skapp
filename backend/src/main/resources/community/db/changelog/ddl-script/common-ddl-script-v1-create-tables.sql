@@ -601,12 +601,12 @@ CREATE TABLE IF NOT EXISTS `crm_task_type`
 CREATE TABLE IF NOT EXISTS `crm_industry`
 (
     `id`                 bigint  NOT NULL AUTO_INCREMENT,
-    `created_by`         text             DEFAULT NULL,
-    `created_date`       datetime(6)      DEFAULT NULL,
-    `last_modified_by`   text             DEFAULT NULL,
-    `last_modified_date` datetime(6)      DEFAULT NULL,
+    `created_by`         text,
+    `created_date`       datetime(6),
+    `last_modified_by`   text,
+    `last_modified_date` datetime(6),
     `name`               text    NOT NULL,
-    `is_deleted`         boolean NOT NULL DEFAULT FALSE,
+    `is_deleted`         boolean NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
 
@@ -619,7 +619,7 @@ CREATE TABLE IF NOT EXISTS `crm_company`
     `last_modified_date` datetime(6)      DEFAULT NULL,
     `name`               text    NOT NULL,
     `industry`           text             DEFAULT NULL,
-    `industry_id`        bigint           DEFAULT NULL,
+    `industry_id`        bigint,
     `website`            text             DEFAULT NULL,
     `address`            text             DEFAULT NULL,
     `contact_number`     text             DEFAULT NULL,
