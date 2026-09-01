@@ -36,7 +36,11 @@ const TaskRow: FC<Props> = ({
     }))
   );
 
+<<<<<<< HEAD
   const task = tasks[taskId];
+=======
+  const task = getSelectedTask(tasks, taskId);
+>>>>>>> 91258951b73650aa39fd2071334125b45a929a31
 
   const { mutate: updateCompletion } = useUpdateTask();
 
@@ -46,7 +50,11 @@ const TaskRow: FC<Props> = ({
   const isCompletedStyleApplied = isCompleted && isCheckTaskVisible;
 
   const applyCompletion = (completed: boolean) => {
+<<<<<<< HEAD
     setTasks(updateTaskRecord(tasks, [{ id: taskId, isCompleted: completed }]));
+=======
+    setTasks(mergeTasks(tasks, [{ id: taskId, isCompleted: completed }]));
+>>>>>>> 91258951b73650aa39fd2071334125b45a929a31
   };
 
   const handleToggleComplete = (completed: boolean) => {
