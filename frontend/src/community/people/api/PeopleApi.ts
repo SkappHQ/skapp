@@ -307,7 +307,8 @@ export const useGetSearchedEmployees = (
     queryKey,
     queryFn,
     refetchOnWindowFocus: false,
-    enabled: debouncedSearchTerm.length > 0
+    enabled:
+      debouncedSearchTerm.length > 0 && debouncedSearchTerm === searchTerm
   });
 };
 
