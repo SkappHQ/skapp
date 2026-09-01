@@ -26,7 +26,8 @@ const TaskRowContent: FC<Props> = ({
   );
 
   const task = tasks[taskId];
-  const typeName = task?.typeId ? taskTypes[task.typeId]?.name : undefined;
+  const typeName =
+    task?.typeId != null ? taskTypes[task.typeId]?.name : undefined;
 
   return (
     <div className="flex-1 min-w-0 flex items-center gap-4">

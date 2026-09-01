@@ -20,7 +20,7 @@ const TaskRowMeta: FC<Props> = ({ taskId, isCompletedStyleApplied }) => {
   );
 
   const task = tasks[taskId];
-  const owner = task?.ownerId ? owners[task.ownerId] : undefined;
+  const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
 
   const priorityConfig = getPriorityConfig(task?.priority);
   const imageUrl = useGetImageUrl(owner?.authPic ?? "");

@@ -2,14 +2,16 @@ import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { UNPAGINATED_SIZE } from "~community/common/constants/commonConstants";
+import {
+  SEARCH_DEBOUNCE_DELAY,
+  UNPAGINATED_SIZE
+} from "~community/common/constants/commonConstants";
 import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getEmptyStateType } from "~community/common/utils/commonUtil";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 import { useGetDealsByIds } from "~community/crm/v2/api/DealApi";
 import {
   useGetCompletedTasks,
@@ -48,17 +50,15 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
 
-  const { tasks, taskIds, deals, setTasks, setTaskIds, setDeals } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        tasks: store.tasks,
-        taskIds: store.taskIds,
-        deals: store.deals,
-        setTasks: store.setTasks,
-        setTaskIds: store.setTaskIds,
-        setDeals: store.setDeals
-      }))
-    );
+  const { tasks, deals, setTasks, setTaskIds, setDeals } = useCrmStoreV2(
+    useShallow((store) => ({
+      tasks: store.tasks,
+      deals: store.deals,
+      setTasks: store.setTasks,
+      setTaskIds: store.setTaskIds,
+      setDeals: store.setDeals
+    }))
+  );
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -96,7 +96,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   } = useGetCompletedTasks(completedTasksFilter, isCompletedTab);
 
   const completedTasks = useMemo(
-    () => completedTaskData?.pages.flatMap((page) => page.items) ?? [],
+    () => completedTaskData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [completedTaskData]
   );
 
@@ -105,11 +105,16 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     [isCompletedTab, completedTasks, openTaskData]
   );
 
+  const visibleTaskIds = useMemo(
+    () => toTaskIds(fetchedTasks),
+    [fetchedTasks]
+  );
+
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
     setTasks(updateTaskRecord(tasks, fetchedTasks));
-    setTaskIds(toTaskIds(fetchedTasks));
+    setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
   const missingDealIds = useMemo(
@@ -129,8 +134,8 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   }, [fetchedDeals]);
 
   const tasksInView = useMemo(
-    () => resolveTasks(taskIds, tasks),
-    [taskIds, tasks]
+    () => resolveTasks(visibleTaskIds, tasks),
+    [visibleTaskIds, tasks]
   );
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
@@ -182,13 +187,16 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const renderCompletedTasksContent = () => (
     <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
-      <TaskGroup taskIds={taskIds} isCheckTaskVisible={false} />
+      <TaskGroup taskIds={visibleTaskIds} isCheckTaskVisible={false} />
       <div ref={loadingRef} />
     </div>
   );
 
+  const isLoading = isCompletedTab ? isCompletedTasksLoading : isOpenTasksLoading;
+  const isError = isCompletedTab ? isCompletedTasksError : isOpenTasksError;
+
   const renderContent = () => {
-    if (isOpenTasksLoading || isCompletedTasksLoading) {
+    if (isLoading) {
       const skeletonProps = isCompletedTab
         ? TASK_SKELETON_CONFIG.COMPLETED
         : TASK_SKELETON_CONFIG.OPEN;
@@ -196,7 +204,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       return <TaskTabSkeleton {...skeletonProps} />;
     }
 
-    if (isOpenTasksError || isCompletedTasksError) {
+    if (isError) {
       return (
         <EmptyDataView
           title={translateText(["table", "errorState", "title"])}
@@ -206,7 +214,9 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       );
     }
 
-    const isEmpty = isCompletedTab ? taskIds.length === 0 : isOpenTasksEmpty;
+    const isEmpty = isCompletedTab
+      ? visibleTaskIds.length === 0
+      : isOpenTasksEmpty;
 
     if (isEmpty) {
       return (
