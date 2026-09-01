@@ -19,6 +19,7 @@ import {
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
+  leavePolicyManagementRestrictedRoutes,
   managerRestrictedRoutes,
   nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
@@ -83,8 +84,12 @@ const superAdminRoutes = {
 };
 
 const adminRoutes = {
-  [AdminTypes.PEOPLE_ADMIN]: [ROUTES.PEOPLE.BASE, ROUTES.CONFIGURATIONS.BASE],
-  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
+  [AdminTypes.PEOPLE_ADMIN]: [
+    ROUTES.PEOPLE.BASE,
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.LEAVE.LEAVE_POLICIES
+  ],
+  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
     ROUTES.CONFIGURATIONS.BASE
@@ -316,6 +321,20 @@ const resolveLeaveReportAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
+// Leave policy management is for leave admins and super admins only
+const resolveLeavePolicyManagementAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) =>
+  leavePolicyManagementRestrictedRoutes.some((url) =>
+    currentPath.startsWith(url)
+  ) &&
+  !roles.includes(AdminTypes.LEAVE_ADMIN) &&
+  !roles.includes(ROLE_SUPER_ADMIN)
+    ? redirectToUnauthorized(request)
+    : null;
+
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
   request,
@@ -373,6 +392,7 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
   resolveRemovePeopleAccess,
   resolveFirstTimePasswordAccess,
   resolveLeaveReportAccess,
+  resolveLeavePolicyManagementAccess,
   resolveDashboardAccess
 ];
 
