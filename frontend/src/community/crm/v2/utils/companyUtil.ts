@@ -1,29 +1,34 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
-export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
-  const companies: CrmCompanyRecord = {};
+export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
-
-  items.forEach((company) => {
+  for (const company of companies) {
     if (company.id !== undefined) {
-      companies[company.id] = company;
       companyIds.push(company.id);
     }
-  });
-
-  return { companies, companyIds };
+  }
+  return companyIds;
 };
+
+export interface CrmMetricChip {
+  label: string;
+  variant: CrmMetricLabelThemeEnum;
+}
 
 export interface CrmMetricItem {
   id: string;
   title: string;
   amount?: string | number;
   isCurrency?: boolean;
+  chip?: CrmMetricChip;
 }
 
 export const getCompanyMetricItems = (
@@ -129,16 +134,13 @@ export const getChangedCompanyFields = (
   return changedFields;
 };
 
-export const toCompaniesRecord = (
-  companies: CrmCompanyEntity[]
-): CrmCompanyRecord => {
-  const companyRecord: CrmCompanyRecord = {};
-  for (const company of companies) {
-    if (company.id != null) {
-      companyRecord[company.id] = company;
-    }
+export const getCompanyNameById = (
+  companies: CrmCompanyRecord,
+  companyId?: number | null
+) => {
+  if (companyId != null) {
+    return companies[companyId]?.name;
   }
-  return companyRecord;
 };
 
 export const getMissingCompanyIds = (
@@ -152,7 +154,7 @@ export const getMissingCompanyIds = (
   return Array.from(unique);
 };
 
-export const mergeCompanies = (
+export const updateCompanyRecord = (
   existing: CrmCompanyRecord,
   incoming: CrmCompanyEntity[]
 ): CrmCompanyRecord => {
