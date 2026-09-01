@@ -11,12 +11,14 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import {
   useGetRelatedTasks,
   useGetTaskById,
   useUpdateTask
 } from "~community/crm/v2/api/TaskApi";
 import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
+import SidePanelDealSection from "~community/crm/v2/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
@@ -27,6 +29,7 @@ import {
   CrmRelatedTasksFilterRequest,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
+import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 const TASK_DETAIL_ICON_SIZE = 24;
@@ -45,7 +48,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     crmSidePanelType,
     tasks,
     taskTypes,
+    deals,
     setTasks,
+    setDeals,
     setSelectedTaskId,
     closeCrmSidePanel,
     setIsTaskModalOpen,
@@ -56,7 +61,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       crmSidePanelType: store.crmSidePanelType,
       tasks: store.tasks,
       taskTypes: store.taskTypes,
+      deals: store.deals,
       setTasks: store.setTasks,
+      setDeals: store.setDeals,
       setSelectedTaskId: store.setSelectedTaskId,
       closeCrmSidePanel: store.closeCrmSidePanel,
       setIsTaskModalOpen: store.setIsTaskModalOpen,
@@ -78,6 +85,17 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
     setTasks(updateTaskRecord(tasks, [taskDetail]));
   }, [taskDetail]);
+
+  const { data: dealDetail } = useGetDealById(
+    task.dealId ?? 0,
+    isOpen && task.dealId != null
+  );
+
+  useEffect(() => {
+    if (!dealDetail) return;
+
+    setDeals(mergeDeals(deals, [dealDetail]));
+  }, [dealDetail]);
 
   const relatedTasksFilter: CrmRelatedTasksFilterRequest = useMemo(
     () => ({ id: taskId, size: TASK_PAGE_SIZE }),
@@ -198,6 +216,18 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
             <p className="subtitle3">
               {task.notes ?? translateText(["sidePanel", "noNotes"])}
             </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <h2 className="h2">{translateText(["sidePanel", "dealsTitle"])}</h2>
+            <hr className="border-secondary-accent" />
+            <SidePanelDealSection
+              dealId={task.dealId}
+              emptyDescription={translateText([
+                "sidePanel",
+                "noDealsDescription"
+              ])}
+            />
           </div>
 
           <div className="flex flex-col gap-3">
