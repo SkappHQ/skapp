@@ -11,6 +11,7 @@ import { useAttendanceStore } from "~community/attendance/store/attendanceStore"
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import { calculateWorkedDuration } from "~community/attendance/utils/CalculateWorkedDuration";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
+import { unitConversion } from "~community/common/constants/configs";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import {
   MediaQueries,
@@ -94,11 +95,11 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
             return;
           }
           setTimer((prevTimer) => prevTimer + 1);
-        }, 1000);
+        }, unitConversion.MILLISECONDS_PER_SECOND);
       } else {
         interval = setInterval(() => {
           setTimer((prevTimer) => prevTimer + 1);
-        }, 1000);
+        }, unitConversion.MILLISECONDS_PER_SECOND);
       }
     } else if (status === AttendanceSlotType.END) {
       setTimer(0);
