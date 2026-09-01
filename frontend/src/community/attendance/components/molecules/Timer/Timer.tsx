@@ -1,6 +1,4 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
-import { QueryObserverResult } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 import { JSX, useCallback, useEffect, useState } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
@@ -44,27 +42,38 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timeWidget");
 
   const { data: attendanceConfig } = useGetAttendanceConfiguration();
-  const { refetch: refetchEmployeeStatus } = useGetEmployeeStatus();
-  const { mutate: updateEmployeeStatus } = useUpdateEmployeeStatus();
+  const { data: employeeStatusData, refetch: refetchEmployeeStatus } =
+    useGetEmployeeStatus(false);
+  const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
+
+  const slotStart = attendanceParams.slotStartTime
+    ? parseTimestampToDate(attendanceParams.slotStartTime)
+    : null;
+  const slotStartDay = slotStart?.toDateString();
 
   const handleClockOut = useCallback(() => {
     setIsAttendanceModalOpen(true);
   }, [setIsAttendanceModalOpen]);
 
-  const handleEmployeeStatusRefetched = useCallback(
-    (result: QueryObserverResult<AxiosResponse, Error>) => {
-      if (result.data?.data.results[0]?.periodType === AttendanceSlotType.END) {
-        setIsAutoClockOutMidnightModalOpen(true);
-      } else {
-        updateEmployeeStatus(setSlotType(AttendanceSlotType.END), {
-          onSuccess: () => {
-            setIsAutoClockOutMidnightModalOpen(true);
-          }
-        });
-      }
-    },
-    [updateEmployeeStatus]
-  );
+  const handleClockOutSuccess = useCallback(() => {
+    setIsAutoClockOutMidnightModalOpen(true);
+  }, [setIsAutoClockOutMidnightModalOpen]);
+
+  useEffect(() => {
+    const currentDate = new Date().toDateString();
+    if (!employeeStatusData || !slotStartDay || currentDate === slotStartDay) {
+      return;
+    }
+    if (
+      employeeStatusData.data.results[0]?.periodType === AttendanceSlotType.END
+    ) {
+      setIsAutoClockOutMidnightModalOpen(true);
+    } else {
+      updateEmployeeStatus(setSlotType(AttendanceSlotType.END), {
+        onSuccess: handleClockOutSuccess
+      });
+    }
+  }, [employeeStatusData, slotStartDay, updateEmployeeStatus, handleClockOutSuccess]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -76,17 +85,12 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         status === AttendanceSlotType.START) &&
       !isAttendanceModalOpen
     ) {
-      const slotStart = attendanceParams.slotStartTime
-        ? parseTimestampToDate(attendanceParams.slotStartTime)
-        : null;
-      const slotStartDay = slotStart?.toDateString();
-
       if (slotStartDay) {
         interval = setInterval(() => {
           const currentDay = new Date().toDateString();
           if (currentDay !== slotStartDay) {
             interval && clearInterval(interval);
-            void refetchEmployeeStatus().then(handleEmployeeStatusRefetched);
+            void refetchEmployeeStatus();
             return;
           }
           setTimer((prevTimer) => prevTimer + 1);
@@ -110,7 +114,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     attendanceParams,
     isAttendanceModalOpen,
     refetchEmployeeStatus,
-    handleEmployeeStatusRefetched
+    slotStartDay
   ]);
 
   return (
