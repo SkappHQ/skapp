@@ -8,22 +8,25 @@ import React, {
   useRef,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { internalApiEndpoints } from "~community/common/api/utils/ApiEndpoints";
+import { HttpMethods } from "~community/common/constants/stringConstants";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   EnterpriseSignInParams,
   EnterpriseSignUpParams
 } from "~enterprise/auth/utils/authUtils";
 
 import FullScreenLoader from "../../common/components/molecules/FullScreenLoader/FullScreenLoader";
-import ROUTES from "../../common/constants/routes";
-import { getCookieValue } from "../../common/utils/commonUtil";
 import { SignInStatus } from "../enums/auth";
 import { AuthContextType, AuthResponseType } from "../types/auth";
 import {
   User,
   checkUserAuthentication,
   handleSignIn,
-  handleSignUp
+  handleSignUp,
+  resolvePostSignInPath
 } from "../utils/authUtils";
 
 interface AuthProviderProps {
@@ -40,32 +43,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
+
   // Use ref to track if initial auth check is done
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
   // Check authentication status
-  const checkAuth = useCallback(async () => {
-    if (isCheckingAuth.current) return;
+  const checkAuth = useCallback(async (): Promise<User | null> => {
+    if (isCheckingAuth.current) return null;
     isCheckingAuth.current = true;
     setIsLoading(true);
 
     try {
-      const userData = await checkUserAuthentication();
+      const userData = await checkUserAuthentication({
+        accessToken,
+        setAccessToken,
+        clearAccessToken
+      });
 
       setUser(userData);
       setIsAuthenticated(!!userData);
+
+      return userData;
     } finally {
       setIsLoading(false);
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
     }
-  }, []);
+  }, [accessToken, setAccessToken, clearAccessToken]);
 
   const signUp = useCallback(
     async (params: EnterpriseSignUpParams): Promise<AuthResponseType> => {
       try {
-        const response = await handleSignUp(params);
+        const response = await handleSignUp(params, {
+          accessToken,
+          setAccessToken,
+          clearAccessToken
+        });
 
         if (response.status === SignInStatus.SUCCESS) {
           await checkAuth();
@@ -77,49 +98,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw error;
       }
     },
-    [checkAuth]
+    [checkAuth, accessToken, setAccessToken, clearAccessToken]
   );
 
   // Sign In function
   const signIn = useCallback(
     async (params: EnterpriseSignInParams): Promise<AuthResponseType> => {
       try {
-        // Clear all existing cookies before signing in
-        await fetch("/api/clear-cookies", {
-          method: "POST"
+        // Clear all existing cookies and the in memory token before signing in
+        clearAccessToken();
+
+        await fetch(internalApiEndpoints.CLEAR_COOKIES, {
+          method: HttpMethods.POST
         });
 
-        const response = await handleSignIn(params);
+        const response = await handleSignIn(params, {
+          accessToken,
+          setAccessToken,
+          clearAccessToken
+        });
 
         if (response.status === SignInStatus.SUCCESS) {
           setIsLoading(true);
           // Refresh auth state after successful sign in
-          await checkAuth();
+          const userData = await checkAuth();
 
           if (params.redirect) {
-            // Verify that cookies are set before redirecting
-            const accessToken = getCookieValue("accessToken");
-            const isPasswordChangedForTheFirstTime = getCookieValue(
-              "isPasswordChangedForTheFirstTime"
-            );
-
-            // Ensure critical cookies are available before redirect
-            if (accessToken && isPasswordChangedForTheFirstTime !== null) {
-              const callback = router.query.callback as string;
-              const currentPath = router.asPath.split("?")[0];
-              const isSafeRedirect =
-                callback &&
-                callback.startsWith("/") &&
-                !callback.startsWith("//") &&
-                !callback.startsWith("/\\") &&
-                callback !== currentPath;
-              const redirectPath = isSafeRedirect
-                ? callback
-                : ROUTES.DASHBOARD.BASE;
-              window.location.href = redirectPath;
+            if (userData) {
+              window.location.href = resolvePostSignInPath(
+                router.query.callback,
+                router.asPath.split("?")[0]
+              );
             } else {
-              console.error("Access token cookie not found after sign-in");
-              throw new Error("Authentication cookies not properly set");
+              throw new Error(
+                "Authentication was not established after sign-in"
+              );
             }
           }
         }
@@ -130,7 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw error;
       }
     },
-    [router, checkAuth]
+    [router, checkAuth, accessToken, setAccessToken, clearAccessToken]
   );
 
   // Initial authentication check on mount
