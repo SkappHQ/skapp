@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import React, { FC, MouseEvent, ReactNode, useState } from "react";
+import React, { FC, MouseEvent, ReactNode, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
@@ -46,6 +46,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
   const theme = useTheme();
   const classes = styles(theme);
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
@@ -74,7 +75,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
   };
 
   return (
-    <Box sx={{ ...classes.wrapper, ...customStyles.wrapper }}>
+    <Box ref={wrapperRef} sx={{ ...classes.wrapper, ...customStyles.wrapper }}>
       <Box
         onClick={handleMenuBtnClick}
         onKeyDown={handleMenuBtnKeyDown}
@@ -94,6 +95,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
           anchorOrigin={menuAlign.anchorOrigin}
           transformOrigin={menuAlign.transformOrigin}
           disableScrollLock={true}
+          container={() => wrapperRef.current}
           sx={{ ...classes.menu, ...customStyles.menu }}
         >
           {menuItems?.map((item: MenuItemTypes) => (
