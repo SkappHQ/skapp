@@ -79,7 +79,7 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
               id: String(owner.employeeId),
               firstName: owner.firstName,
               lastName: owner.lastName,
-              src: owner.authPic,
+              src: owner.authPic ?? undefined,
               size: "sm"
             }}
             label={getOwnerName(owner)}
