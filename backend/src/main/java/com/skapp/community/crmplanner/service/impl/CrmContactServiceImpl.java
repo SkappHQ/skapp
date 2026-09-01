@@ -29,6 +29,7 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
@@ -79,6 +80,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmOwnerResolverService crmOwnerResolver;
 
+	private final CrmCompanyService crmCompanyService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkContactEmailExists(String email) {
@@ -117,10 +120,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
-		CrmCompany company = requestDto.getCompanyId() != null
-				? crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND))
-				: null;
+		CrmCompany company = resolveContactCompany(requestDto);
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
@@ -134,6 +134,20 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("persistNewContact: execution ended");
 		return savedContact;
+	}
+
+	private CrmCompany resolveContactCompany(CrmContactCreateRequestDto requestDto) {
+		if (requestDto.getCompanyId() != null) {
+			return crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+		}
+
+		String companyName = requestDto.getCompanyName();
+		if (companyName != null && !companyName.isBlank()) {
+			return crmCompanyService.findOrCreateCompanyByName(companyName);
+		}
+
+		return null;
 	}
 
 	protected void validateContactCreationLimit() {
