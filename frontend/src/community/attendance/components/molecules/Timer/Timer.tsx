@@ -1,4 +1,6 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
+import { QueryObserverResult } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 import { JSX, useCallback, useEffect, useState } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
@@ -9,10 +11,7 @@ import {
 import PlayButton from "~community/attendance/components/molecules/PlayButton/PlayButton";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
-import {
-  calculateWorkedDuration,
-  parseUtcTimestamp
-} from "~community/attendance/utils/CalculateWorkedDuration";
+import { calculateWorkedDuration } from "~community/attendance/utils/CalculateWorkedDuration";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
 import {
@@ -20,6 +19,7 @@ import {
   useMediaQuery
 } from "~community/common/hooks/useMediaQuery";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { parseTimestampToDate } from "~community/common/utils/dateTimeUtils";
 
 import styles from "./styles";
 
@@ -52,7 +52,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
   }, [setIsAttendanceModalOpen]);
 
   const handleEmployeeStatusRefetched = useCallback(
-    (result: Awaited<ReturnType<typeof refetchEmployeeStatus>>) => {
+    (result: QueryObserverResult<AxiosResponse, Error>) => {
       if (result.data?.data.results[0]?.periodType === AttendanceSlotType.END) {
         setIsAutoClockOutMidnightModalOpen(true);
       } else {
@@ -63,7 +63,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         );
       }
     },
-    [setIsAutoClockOutMidnightModalOpen, updateEmployeeStatus, setSlotType]
+    [updateEmployeeStatus]
   );
 
   useEffect(() => {
@@ -77,18 +77,25 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
       !isAttendanceModalOpen
     ) {
       const slotStart = attendanceParams.slotStartTime
-        ? parseUtcTimestamp(attendanceParams.slotStartTime)
+        ? parseTimestampToDate(attendanceParams.slotStartTime)
         : null;
       const slotStartDay = slotStart?.toDateString();
 
-      interval = setInterval(() => {
-        if (slotStartDay && new Date().toDateString() !== slotStartDay) {
-          interval && clearInterval(interval);
-          void refetchEmployeeStatus().then(handleEmployeeStatusRefetched);
-          return;
-        }
-        setTimer((prevTimer) => prevTimer + 1);
-      }, 1000);
+      if (slotStartDay) {
+        interval = setInterval(() => {
+          const currentDay = new Date().toDateString();
+          if (currentDay !== slotStartDay) {
+            interval && clearInterval(interval);
+            void refetchEmployeeStatus().then(handleEmployeeStatusRefetched);
+            return;
+          }
+          setTimer((prevTimer) => prevTimer + 1);
+        }, 1000);
+      } else {
+        interval = setInterval(() => {
+          setTimer((prevTimer) => prevTimer + 1);
+        }, 1000);
+      }
     } else if (status === AttendanceSlotType.END) {
       setTimer(0);
     } else {

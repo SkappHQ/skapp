@@ -3,10 +3,6 @@ import {
   attendanceStatusTypes
 } from "~community/attendance/types/attendanceTypes";
 
-export const parseUtcTimestamp = (timestamp: string): Date => {
-  return new Date(timestamp);
-};
-
 export const calculateWorkedDuration = (
   attendanceParams: attendanceStatusTypes
 ): number => {
