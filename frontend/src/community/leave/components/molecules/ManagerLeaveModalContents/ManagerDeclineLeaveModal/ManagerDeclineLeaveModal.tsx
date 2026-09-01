@@ -36,11 +36,18 @@ const ManagerDeclineLeaveModal = ({
   const [reason, setReason] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
 
-  const { mutate, isSuccess, error: leaveCancelError } = useHandelLeaves();
+  const {
+    mutate,
+    isPending,
+    isSuccess,
+    error: leaveCancelError
+  } = useHandelLeaves();
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
   const handelDecline = (): void => {
+    if (isPending) return;
+
     if (validateDescription(reason)) setError(true);
     else {
       setError(false);
@@ -92,6 +99,7 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"tertiary"}
           onClick={closeModel}
+          disabled={isPending}
           icon={<CloseIcon />}
           iconPosition="end"
         >
@@ -100,6 +108,7 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"error"}
           onClick={handelDecline}
+          isLoading={isPending}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
         >
