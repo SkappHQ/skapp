@@ -9,6 +9,7 @@ import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUti
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
@@ -28,8 +29,8 @@ const SidePanelTaskInfo: FC<Props> = ({ taskId, onMarkAsDone }) => {
   );
 
   const task = tasks[taskId];
-  const owner = task.ownerId ? owners[task.ownerId] : undefined;
-  const contact = task.contactId ? contacts[task.contactId] : undefined;
+  const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
+  const contact = task?.contactId != null ? contacts[task.contactId] : undefined;
 
   const priorityConfig = getPriorityConfig(task.priority);
   const isCompleted = task.isCompleted === true;
@@ -93,7 +94,7 @@ const SidePanelTaskInfo: FC<Props> = ({ taskId, onMarkAsDone }) => {
 
         <PropertyRow label={translateText(["contactName"])}>
           <span className="body2">
-            {contact?.name ?? translateText(["noContact"])}
+            {getContactDisplayName(contact) || translateText(["noContact"])}
           </span>
         </PropertyRow>
       </div>

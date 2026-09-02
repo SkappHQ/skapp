@@ -18,6 +18,8 @@ import {
 } from "~community/crm/v2/api/TaskApi";
 import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
 import SidePanelDealSection from "~community/crm/v2/components/molecules/SidePanelDealSection/SidePanelDealSection";
+import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
+import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
@@ -25,7 +27,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmModalTypes,
-  CrmRelatedTasksFilterRequest,
+  CrmRelatedTasksFilter,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
@@ -70,19 +72,13 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
 
   const task = tasks[taskId];
-  const typeName = task.typeId ? taskTypes[task.typeId]?.name : undefined;
+  const typeName = task?.typeId != null ? taskTypes[task.typeId]?.name : undefined;
 
-  const { data: taskDetail } = useGetTaskById(taskId, isOpen);
+  const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
 
-  useEffect(() => {
-    if (!taskDetail) return;
-
-    setTasks(updateTaskRecord(tasks, [taskDetail]));
-  }, [taskDetail]);
-
-  const relatedTasksFilter: CrmRelatedTasksFilterRequest = useMemo(
-    () => ({ id: taskId, size: TASK_PAGE_SIZE }),
-    [taskId]
+  const relatedTasksFilter: CrmRelatedTasksFilter = useMemo(
+    () => ({ size: TASK_PAGE_SIZE }),
+    []
   );
 
   const {
@@ -90,7 +86,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetRelatedTasks(relatedTasksFilter, isOpen);
+  } = useGetRelatedTasks(taskId, relatedTasksFilter, isOpen);
 
   const relatedTasks = useMemo(
     () => relatedTasksData?.pages.flatMap((page) => page.items) ?? [],
@@ -98,16 +94,16 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   );
 
   useEffect(() => {
-    if (!relatedTasksData) return;
+    if (!taskDetail && !relatedTasksData) return;
 
-    const updatedTasks = updateTaskRecord(tasks, relatedTasks);
+    const currentTask: CrmTaskEntity = { ...taskDetail, id: taskId };
 
-    setTasks(
-      updateTaskRecord(updatedTasks, [
-        { id: taskId, relatedTaskIds: toTaskIds(relatedTasks) }
-      ])
-    );
-  }, [relatedTasksData]);
+    if (relatedTasksData) {
+      currentTask.relatedTaskIds = toTaskIds(relatedTasks);
+    }
+
+    setTasks(updateTaskRecord(tasks, [currentTask, ...relatedTasks]));
+  }, [taskDetail, relatedTasksData]);
 
   const handleClose = () => {
     setSelectedTaskId(null);
@@ -173,23 +169,31 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       onClose={handleClose}
       closeOnBackdropClick
       header={
-        <div className="flex items-center gap-4 pl-2">
-          <TaskTypeIcon typeName={typeName} size={TASK_DETAIL_ICON_SIZE} />
-          <span className="h1 text-black">{task.name}</span>
-        </div>
+        isLoading ? (
+          <SidePanelHeaderSkeleton isShowLastUpdate={false} />
+        ) : (
+          <div className="flex items-center gap-4 pl-2">
+            <TaskTypeIcon typeName={typeName} size={TASK_DETAIL_ICON_SIZE} />
+            <span className="h1 text-black">{task.name}</span>
+          </div>
+        )
       }
       headerActions={
-        <KebabMenu
-          id="task-actions"
-          menuItems={menuItems}
-          anchorButton={{
-            "aria-label": translateText(["sidePanel", "kebabMenuAriaLabel"])
-          }}
-          className={{
-            anchorElement:
-              "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-          }}
-        />
+        isLoading ? (
+          <SidePanelHeaderActionsSkeleton />
+        ) : (
+          <KebabMenu
+            id="task-actions"
+            menuItems={menuItems}
+            anchorButton={{
+              "aria-label": translateText(["sidePanel", "kebabMenuAriaLabel"])
+            }}
+            className={{
+              anchorElement:
+                "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+            }}
+          />
+        )
       }
     >
       <div className="flex gap-6 pb-4">
