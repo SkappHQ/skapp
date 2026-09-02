@@ -100,6 +100,7 @@ const ManagerDeclineLeaveModal = ({
           variant={"tertiary"}
           onClick={closeModel}
           disabled={isPending}
+          aria-label={translateText(["cancelDeclineAreaLabel"])}
           icon={<CloseIcon />}
           iconPosition="end"
         >
@@ -109,6 +110,8 @@ const ManagerDeclineLeaveModal = ({
           variant={"error"}
           onClick={handelDecline}
           isLoading={isPending}
+          aria-busy={isPending}
+          aria-label={translateText(["declineAreaLabel"])}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
         >
