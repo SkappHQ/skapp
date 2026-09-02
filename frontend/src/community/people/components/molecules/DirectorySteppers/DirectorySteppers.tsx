@@ -117,6 +117,10 @@ const DirectorySteppers = ({
   ];
 
   const handleStepClick = (step: EditPeopleFormTypes) => {
+    if (step === currentStep) {
+      return;
+    }
+
     setNextStep(step);
 
     if (!hasChanged) {
