@@ -6,15 +6,20 @@ import {
   SEARCH_DEBOUNCE_DELAY,
   UNPAGINATED_SIZE
 } from "~community/common/constants/commonConstants";
-import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
+import {
+  EmptyStateTypeEnum,
+  ToastType
+} from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import { getEmptyStateType } from "~community/common/utils/commonUtil";
 import {
   useGetCompletedTasks,
-  useGetTasks
+  useGetTasks,
+  useUpdateTask
 } from "~community/crm/v2/api/TaskApi";
 import TaskGroup from "~community/crm/v2/components/molecules/TaskGroup/TaskGroup";
 import {
@@ -23,7 +28,10 @@ import {
 } from "~community/crm/v2/constants/taskConstants";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskFilterRequest } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmSidePanelTypes,
+  CrmTaskFilterRequest
+} from "~community/crm/v2/types/CrmTypes";
 import {
   getTaskGroups,
   resolveTasks,
@@ -40,17 +48,28 @@ interface Props {
 const TaskTabContent: FC<Props> = ({ tab }) => {
   const translateText = useTranslator("crmModule", "tasks");
   const { userId } = useSessionData();
+  const { setToastMessage } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const { tasks, setTasks, setTaskIds } = useCrmStoreV2(
+  const {
+    tasks,
+    setTasks,
+    setTaskIds,
+    setSelectedTaskId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
     useShallow((store) => ({
       tasks: store.tasks,
       setTasks: store.setTasks,
-      setTaskIds: store.setTaskIds
+      setTaskIds: store.setTaskIds,
+      setSelectedTaskId: store.setSelectedTaskId,
+      openCrmSidePanel: store.openCrmSidePanel
     }))
   );
+
+  const { mutate: updateCompletion } = useUpdateTask();
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -132,30 +151,68 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setSearchTerm(event.target.value);
   };
 
+  const handleRowClick = (taskId: number) => {
+    setSelectedTaskId(taskId);
+    openCrmSidePanel(CrmSidePanelTypes.TASK_SIDE_PANEL);
+  };
+
+  const applyCompletion = (taskId: number, completed: boolean) => {
+    setTasks(updateTaskRecord(tasks, [{ id: taskId, isCompleted: completed }]));
+  };
+
+  const handleToggleError = (taskId: number, wasCompleted: boolean) => {
+    applyCompletion(taskId, wasCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  };
+
+  const handleToggleComplete = (taskId: number, completed: boolean) => {
+    const wasCompleted = tasks[taskId]?.isCompleted === true;
+
+    applyCompletion(taskId, completed);
+
+    updateCompletion(
+      { id: taskId, task: { isCompleted: completed } },
+      { onError: () => handleToggleError(taskId, wasCompleted) }
+    );
+  };
+
   const renderOpenTasksContent = () => (
     <div className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto">
       {overdue.length > 0 && (
         <TaskGroup
           label={translateText(["table", "groupLabels", "overdue"])}
-          taskIds={overdue}
+          tasks={overdue}
+          onRowClick={handleRowClick}
+          onToggleComplete={handleToggleComplete}
         />
       )}
       {dueToday.length > 0 && (
         <TaskGroup
           label={translateText(["table", "groupLabels", "dueToday"])}
-          taskIds={dueToday}
+          tasks={dueToday}
+          onRowClick={handleRowClick}
+          onToggleComplete={handleToggleComplete}
         />
       )}
       {dueTomorrow.length > 0 && (
         <TaskGroup
           label={translateText(["table", "groupLabels", "dueTomorrow"])}
-          taskIds={dueTomorrow}
+          tasks={dueTomorrow}
+          onRowClick={handleRowClick}
+          onToggleComplete={handleToggleComplete}
         />
       )}
       {upcoming.length > 0 && (
         <TaskGroup
           label={translateText(["table", "groupLabels", "upcoming"])}
-          taskIds={upcoming}
+          tasks={upcoming}
+          onRowClick={handleRowClick}
+          onToggleComplete={handleToggleComplete}
         />
       )}
     </div>
@@ -163,7 +220,12 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const renderCompletedTasksContent = () => (
     <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
-      <TaskGroup taskIds={visibleTaskIds} isCheckTaskVisible={false} />
+      <TaskGroup
+        tasks={tasksInView}
+        isCheckTaskVisible={false}
+        onRowClick={handleRowClick}
+        onToggleComplete={handleToggleComplete}
+      />
       <div ref={loadingRef} />
     </div>
   );

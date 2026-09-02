@@ -3,56 +3,61 @@ import { useShallow } from "zustand/react/shallow";
 
 import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTypeIcon";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 import TaskRowMeta from "./TaskRowMeta";
 import TaskRowSubtitle from "./TaskRowSubtitle";
 
 interface Props {
-  taskId: number;
+  task: CrmTaskEntity;
   isShowContact: boolean;
   isCompletedStyleApplied: boolean;
 }
 
 const TaskRowContent: FC<Props> = ({
-  taskId,
+  task,
   isShowContact,
   isCompletedStyleApplied
 }) => {
-  const { tasks, taskTypes } = useCrmStoreV2(
+  const { taskTypes, owners, contacts } = useCrmStoreV2(
     useShallow((store) => ({
-      tasks: store.tasks,
-      taskTypes: store.taskTypes
+      taskTypes: store.taskTypes,
+      owners: store.owners,
+      contacts: store.contacts
     }))
   );
 
-  const task = tasks[taskId];
   const typeName =
-    task?.typeId != null ? taskTypes[task.typeId]?.name : undefined;
+    task.typeId != null ? taskTypes[task.typeId]?.name : undefined;
+  const owner = task.ownerId != null ? owners[task.ownerId] : undefined;
+  const contact = task.contactId != null ? contacts[task.contactId] : undefined;
 
   return (
     <div className="flex-1 min-w-0 flex items-center gap-4">
       <div
         className={`shrink-0 flex items-center justify-center ${isCompletedStyleApplied ? "opacity-40" : ""}`}
       >
-        <TaskTypeIcon typeName={typeName} />
+        {typeName && <TaskTypeIcon typeName={typeName} size={20} />}
       </div>
 
       <div className="flex-1 min-w-0">
         <p
           className={`body2 leading-snug truncate ${isCompletedStyleApplied ? "line-through text-secondary-icon" : "text-black"}`}
         >
-          {task?.name}
+          {task.name}
         </p>
 
         <TaskRowSubtitle
-          taskId={taskId}
+          task={task}
+          contact={contact}
           isShowContact={isShowContact}
           isCompletedStyleApplied={isCompletedStyleApplied}
         />
       </div>
 
       <TaskRowMeta
-        taskId={taskId}
+        task={task}
+        owner={owner}
         isCompletedStyleApplied={isCompletedStyleApplied}
       />
     </div>

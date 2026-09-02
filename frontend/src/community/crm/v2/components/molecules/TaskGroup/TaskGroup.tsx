@@ -1,53 +1,46 @@
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface Props {
   label?: string;
-  taskIds: number[];
+  tasks: CrmTaskEntity[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
+  onRowClick: (taskId: number) => void;
+  onToggleComplete: (taskId: number, completed: boolean) => void;
 }
 
 const TaskGroup: FC<Props> = ({
   label,
-  taskIds,
+  tasks,
   isCheckTaskVisible = true,
-  isShowContact = true
-}) => {
-  const { setSelectedTaskId, openCrmSidePanel } = useCrmStoreV2(
-    useShallow((store) => ({
-      setSelectedTaskId: store.setSelectedTaskId,
-      openCrmSidePanel: store.openCrmSidePanel
-    }))
-  );
-
-  const handleRowClick = (taskId: number) => {
-    setSelectedTaskId(taskId);
-    openCrmSidePanel(CrmSidePanelTypes.TASK_SIDE_PANEL);
-  };
-
-  return (
-    <div className="flex flex-col">
-      {label && (
-        <div className="subtitle2 mb-2 sticky top-0 bg-white z-10">{label}</div>
+  isShowContact = true,
+  onRowClick,
+  onToggleComplete
+}) => (
+  <div className="flex flex-col">
+    {label && (
+      <div className="subtitle2 mb-2 sticky top-0 bg-white z-10">{label}</div>
+    )}
+    <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
+      {tasks.map(
+        (task) =>
+         task && task.id && (
+            <TaskRow
+              key={task.id}
+              task={task}
+              taskId={task.id}
+              isCheckTaskVisible={isCheckTaskVisible}
+              isShowContact={isShowContact}
+              onRowClick={onRowClick}
+              onToggleComplete={onToggleComplete}
+            />
+          )
       )}
-      <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
-        {taskIds.map((taskId) => (
-          <TaskRow
-            key={taskId}
-            taskId={taskId}
-            isCheckTaskVisible={isCheckTaskVisible}
-            isShowContact={isShowContact}
-            onRowClick={() => handleRowClick(taskId)}
-          />
-        ))}
-      </div>
     </div>
-  );
-};
+  </div>
+);
 
 export default TaskGroup;

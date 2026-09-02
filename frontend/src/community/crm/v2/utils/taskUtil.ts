@@ -13,7 +13,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmTaskTypeOption,
-  GroupedTaskIds,
+  GroupedTasks,
   TaskDueDateInfo
 } from "~community/crm/v2/types/CrmTypes";
 import {
@@ -140,31 +140,27 @@ export const getDueDateStatus = (
   };
 };
 
-export const groupTaskIdsByDueDate = (
-  tasks: CrmTaskEntity[]
-): GroupedTaskIds => {
-  const overdue: number[] = [];
-  const dueToday: number[] = [];
-  const dueTomorrow: number[] = [];
-  const upcoming: number[] = [];
+export const groupTasksByDueDate = (tasks: CrmTaskEntity[]): GroupedTasks => {
+  const overdue: CrmTaskEntity[] = [];
+  const dueToday: CrmTaskEntity[] = [];
+  const dueTomorrow: CrmTaskEntity[] = [];
+  const upcoming: CrmTaskEntity[] = [];
 
   for (const task of tasks) {
-    if (task.id == null) continue;
-
     const localDueDate = task.dueAt
       ? convertUTCStringToLocalDateTime(task.dueAt).toISO()
       : null;
 
     if (!localDueDate) {
-      upcoming.push(task.id);
+      upcoming.push(task);
     } else if (isOverdue(localDueDate)) {
-      overdue.push(task.id);
+      overdue.push(task);
     } else if (isDueToday(localDueDate)) {
-      dueToday.push(task.id);
+      dueToday.push(task);
     } else if (isDueTomorrow(localDueDate)) {
-      dueTomorrow.push(task.id);
+      dueTomorrow.push(task);
     } else {
-      upcoming.push(task.id);
+      upcoming.push(task);
     }
   }
 
@@ -185,10 +181,10 @@ export const getTaskGroups = (
   tasks: CrmTaskEntity[],
   tab: CrmTaskTabEnum,
   userId?: number
-): GroupedTaskIds => {
+): GroupedTasks => {
   const openTasks = tasks.filter((task) => !task.isCompleted);
 
-  return groupTaskIdsByDueDate(
+  return groupTasksByDueDate(
     tab === CrmTaskTabEnum.MY_TASKS
       ? openTasks.filter((task) => task.ownerId === userId)
       : openTasks
