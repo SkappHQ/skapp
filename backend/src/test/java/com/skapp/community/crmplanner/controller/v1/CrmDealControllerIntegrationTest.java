@@ -60,6 +60,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,6 +75,8 @@ class CrmDealControllerIntegrationTest {
 	private static final String BASE_PATH = "/v1/crm/deal";
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
+
+	private static final String LIST_VIEW_CONFIG_PATH = BASE_PATH + "/list-view-config";
 
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
@@ -161,6 +164,16 @@ class CrmDealControllerIntegrationTest {
 	private ResultActions performGetDealsRequest(Long companyId) throws Exception {
 		return performRequest(
 				get(BASE_PATH).param("companyId", companyId.toString()).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetListViewConfigRequest() throws Exception {
+		return performRequest(get(LIST_VIEW_CONFIG_PATH).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPutListViewConfigRequest(String configJson) throws Exception {
+		return performRequest(put(LIST_VIEW_CONFIG_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(configJson)
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmDealStage savedStage() {
@@ -1006,6 +1019,70 @@ class CrmDealControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	// --- List-view config tests ---
+
+	@Test
+	@DisplayName("Get list-view config - No saved config - Returns default config")
+	void getListViewConfig_NoSavedConfig_ReturnsDefault() throws Exception {
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(400))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Update then get list-view config - Round-trips the saved config")
+	void updateThenGetListViewConfig_RoundTripsSavedConfig() throws Exception {
+		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":{\"field\":\"VALUE\",\"direction\":\"ASC\"}}";
+
+		performPutListViewConfigRequest(config).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"));
+
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(200))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("VALUE"));
+	}
+
+	@Test
+	@DisplayName("Update list-view config for one user - Does not affect another user's config")
+	void updateListViewConfig_DoesNotAffectAnotherUser() throws Exception {
+		// user1 (admin) saves a custom config
+		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":null}";
+		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
+
+		// user2 is a CRM sales representative who has never saved a config
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		// user2 still gets the default, unaffected by user1's save
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"));
+	}
+
+	@Test
+	@DisplayName("Get list-view config - Without CRM role returns forbidden")
+	void getListViewConfig_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(get(LIST_VIEW_CONFIG_PATH).accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
 	}
 
 	// --- getDealsByIds (batch) ---
