@@ -210,8 +210,8 @@ class CrmContactControllerV2IntegrationTest {
 	// --- createContact ---
 
 	@Test
-	@DisplayName("Create contact - Returns Created with base contact carrying full company and owner without email")
-	void createContact_HappyPath_ReturnsBaseContactWithFullCompanyAndOwner() throws Exception {
+	@DisplayName("Create contact - Returns Created with base contact carrying scalar companyId and ownerId")
+	void createContact_HappyPath_ReturnsBaseContactWithCompanyIdAndOwnerId() throws Exception {
 		Long companyId = savedCompany("Contact V2 Corp").getId();
 
 		performPostRequest(createValidPayload(companyId)).andDo(print())
@@ -296,7 +296,9 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealValue']").value("0"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(0))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(0))
-			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(0));
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['pipelineRevenue']").value("0"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['activeDealsCount']").value(0));
 	}
 
 	@Test
@@ -307,9 +309,11 @@ class CrmContactControllerV2IntegrationTest {
 
 		CrmDealStage openStage = savedStage("V2 Open Stage", CrmDealStageType.OPEN, 1);
 		CrmDealStage wonStage = savedStage("V2 Won Stage", CrmDealStageType.WON, 2);
+		CrmDealStage lostStage = savedStage("V2 Lost Stage", CrmDealStageType.LOST, 3);
 		savedDeal(contact, openStage, "150", "a0");
 		savedDeal(contact, wonStage, "400", "a1");
 		savedDeal(contact, wonStage, "600", "a2");
+		savedDeal(contact, lostStage, "999", "a3");
 
 		savedTask(contact, LocalDateTime.now().plusDays(3));
 		savedTask(contact, LocalDateTime.now().minusDays(2));
@@ -321,6 +325,7 @@ class CrmContactControllerV2IntegrationTest {
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(2))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
 			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['activeDealsCount']").value(1))
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
@@ -328,6 +333,10 @@ class CrmContactControllerV2IntegrationTest {
 		String closedDealValue = JsonPath.read(content, "$.results[0].items[0].metrics.closedDealValue");
 		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
 			.isEqualByComparingTo("1000");
+
+		String pipelineRevenue = JsonPath.read(content, "$.results[0].items[0].metrics.pipelineRevenue");
+		assertThat(new BigDecimal(pipelineRevenue)).as("pipeline revenue excludes WON and LOST deals")
+			.isEqualByComparingTo("150");
 	}
 
 	@Test
