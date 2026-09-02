@@ -27,13 +27,11 @@ const TaskRowCheckbox: FC<Props> = ({
   const task = tasks[taskId];
 
   return (
-    <div
-      className="shrink-0 flex items-center justify-center pr-1"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="shrink-0 flex items-center justify-center pr-1">
       <CheckTask
         checked={isCompleted}
         onChange={onToggleComplete}
+        onClick={(e) => e.stopPropagation()}
         aria-label={translateText(
           [isCompleted ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"],
           { name: task.name }
