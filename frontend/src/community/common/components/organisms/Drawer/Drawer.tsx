@@ -339,10 +339,10 @@ const Drawer = (): JSX.Element => {
                         </Box>
                       )}
                     </ListItemIcon>
-                    {!isDrawerExpanded && (
-                      <span className="sr-only">{route?.name}</span>
-                    )}
-                    <Box sx={classes.listItemContent(isDrawerExpanded)}>
+                    <Box
+                      aria-label={route?.name}
+                      sx={classes.listItemContent(isDrawerExpanded)}
+                    >
                       <ListItemText
                         primary={route?.name}
                         sx={classes.listItemText(
