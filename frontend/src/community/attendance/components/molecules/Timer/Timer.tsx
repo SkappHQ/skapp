@@ -74,7 +74,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
         onSuccess: handleClockOutSuccess
       });
     }
-  }, [employeeStatusData, slotStartDay, updateEmployeeStatus, handleClockOutSuccess]);
+  }, [employeeStatusData, slotStartDay]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -110,13 +110,7 @@ const Timer = ({ disabled }: TimerProps): JSX.Element => {
     return () => {
       interval && clearInterval(interval);
     };
-  }, [
-    status,
-    attendanceParams,
-    isAttendanceModalOpen,
-    refetchEmployeeStatus,
-    slotStartDay
-  ]);
+  }, [status, attendanceParams, isAttendanceModalOpen, slotStartDay]);
 
   return (
     <Stack
