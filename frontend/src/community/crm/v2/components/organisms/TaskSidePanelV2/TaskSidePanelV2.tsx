@@ -32,6 +32,8 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
+import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
+
 const TASK_DETAIL_ICON_SIZE = 24;
 
 interface Props {
@@ -133,35 +135,39 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
   };
 
-  const menuItems: MenuItemProps[] = [
-    {
-      id: "edit",
-      label: translateText(["sidePanel", "editTask"]),
-      icon: { start: <EditIcon width="16px" height="16px" /> },
-      onClick: () => {
-        setTaskModalType(CrmModalTypes.EDIT_TASK_MODAL);
-        setIsTaskModalOpen(true);
-      }
-    },
-    {
-      id: "delete",
-      label: translateText(["sidePanel", "deleteTask"]),
-      icon: {
-        start: (
-          <DeleteButtonIcon
-            width="12px"
-            height="14px"
-            fill="var(--color-semantic-red-text)"
-          />
-        )
+  const menuItems: MenuItemProps[] = useMemo(
+    () => [
+      {
+        id: "edit",
+        label: translateText(["sidePanel", "editTask"]),
+        icon: { start: <EditIcon width="16px" height="16px" /> },
+        onClick: () => {
+          setTaskModalType(CrmModalTypes.EDIT_TASK_MODAL);
+          setIsTaskModalOpen(true);
+        }
       },
-      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => {
-        setTaskModalType(CrmModalTypes.DELETE_TASK_MODAL);
-        setIsTaskModalOpen(true);
+      {
+        id: "delete",
+        label: translateText(["sidePanel", "deleteTask"]),
+        icon: {
+          start: (
+            <DeleteButtonIcon
+              width="12px"
+              height="14px"
+              fill="var(--color-semantic-red-text)"
+            />
+          )
+        },
+        activeBehavior:
+          "hover:bg-semantic-red-background text-semantic-red-text",
+        onClick: () => {
+          setTaskModalType(CrmModalTypes.DELETE_TASK_MODAL);
+          setIsTaskModalOpen(true);
+        }
       }
-    }
-  ];
+    ],
+    [translateText]
+  );
 
   return (
     <SidePanel
@@ -196,49 +202,61 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         )
       }
     >
-      <div className="flex gap-6 pb-4">
-        <div className="flex flex-col flex-1 gap-6 min-w-0">
-          <div className="flex flex-col gap-1">
-            <p className="subtitle1">{translateText(["sidePanel", "notes"])}</p>
-            <p className="subtitle3">
-              {task.notes ?? translateText(["sidePanel", "noNotes"])}
-            </p>
+      {isLoading ? (
+        <TaskSidePanelSkeleton />
+      ) : (
+        <div className="flex gap-6 pb-4">
+          <div className="flex flex-col flex-1 gap-6 min-w-0">
+            <div className="flex flex-col gap-1">
+              <p className="subtitle1">
+                {translateText(["sidePanel", "notes"])}
+              </p>
+              <p className="subtitle3">
+                {task.notes ?? translateText(["sidePanel", "noNotes"])}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h2 className="h2">
+                {translateText(["sidePanel", "dealsTitle"])}
+              </h2>
+              <hr className="border-secondary-accent" />
+              <SidePanelDealSection
+                dealId={task.dealId}
+                emptyDescription={translateText([
+                  "sidePanel",
+                  "noDealsDescription"
+                ])}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <h2 className="h2">
+                {translateText(["sidePanel", "relatedTasksTitle"])}
+              </h2>
+              <hr className="border-secondary-accent" />
+              <SidePanelTasksSection
+                taskIds={task.relatedTaskIds ?? []}
+                emptyTitle={translateText([
+                  "sidePanel",
+                  "noRelatedTasksTitle"
+                ])}
+                emptyDescription={translateText([
+                  "sidePanel",
+                  "noRelatedTasksDescription"
+                ])}
+                hasNextPage={hasNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                onFetchNextPage={fetchNextPage}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <h2 className="h2">{translateText(["sidePanel", "dealsTitle"])}</h2>
-            <hr className="border-secondary-accent" />
-            <SidePanelDealSection
-              dealId={task.dealId}
-              emptyDescription={translateText([
-                "sidePanel",
-                "noDealsDescription"
-              ])}
-            />
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <h2 className="h2">
-              {translateText(["sidePanel", "relatedTasksTitle"])}
-            </h2>
-            <hr className="border-secondary-accent" />
-            <SidePanelTasksSection
-              taskIds={task.relatedTaskIds ?? []}
-              emptyDescription={translateText([
-                "sidePanel",
-                "noRelatedTasksDescription"
-              ])}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              onFetchNextPage={fetchNextPage}
-            />
+          <div className="w-[18.438rem] shrink-0">
+            <SidePanelTaskInfo taskId={taskId} onMarkAsDone={handleMarkAsDone} />
           </div>
         </div>
-
-        <div className="w-[18.438rem] shrink-0">
-          <SidePanelTaskInfo taskId={taskId} onMarkAsDone={handleMarkAsDone} />
-        </div>
-      </div>
+      )}
     </SidePanel>
   );
 };

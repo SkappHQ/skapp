@@ -601,6 +601,7 @@
       "dealsTitle": "Deals",
       "noDealsDescription": "No deals associated with this task",
       "relatedTasksTitle": "Related Tasks",
+      "noRelatedTasksTitle": "No tasks",
       "noRelatedTasksDescription": "No related tasks yet",
       "markAsDone": "Mark as Done",
       "statusDone": "Done",

@@ -2,12 +2,12 @@ import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
 
 interface Props {
   taskIds: number[];
-  emptyDescription?: string;
+  emptyTitle: string;
+  emptyDescription: string;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onFetchNextPage: () => void;
@@ -15,18 +15,12 @@ interface Props {
 
 const SidePanelTasksSection: FC<Props> = ({
   taskIds,
+  emptyTitle,
   emptyDescription,
   hasNextPage,
   isFetchingNextPage,
   onFetchNextPage
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
-
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
@@ -37,8 +31,8 @@ const SidePanelTasksSection: FC<Props> = ({
     return (
       <EmptyDataView
         icon={<SearchIcon width="24" height="24" />}
-        title={translateText(["emptyTitle"])}
-        description={emptyDescription ?? translateText(["emptyDescription"])}
+        title={emptyTitle}
+        description={emptyDescription}
         className={{
           wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
         }}
