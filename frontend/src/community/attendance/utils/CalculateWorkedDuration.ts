@@ -9,13 +9,10 @@ export const calculateWorkedDuration = (
   const { slotType, slotStartTime, workHours } = attendanceParams;
 
   if (
-    slotType === AttendanceSlotType.START ||
+    (slotType === AttendanceSlotType.START ||
     slotType === AttendanceSlotType.RESUME ||
-    slotType === AttendanceSlotType.END
+    slotType === AttendanceSlotType.END) && slotStartTime
   ) {
-    if (!slotStartTime) {
-      return 0;
-    }
     const startTime = new Date(slotStartTime);
     const currentTime = new Date();
     const diff = currentTime.getTime() - startTime.getTime();
