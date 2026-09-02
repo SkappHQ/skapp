@@ -44,25 +44,7 @@ interface EditLeavePolicyFormValues {
 }
 
 const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
-  const translateText = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "editPolicy"
-  );
-
-  const translateEntitlement = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "createPolicy",
-    "entitlementSetup"
-  );
-
-  const translateOptions = useTranslator(
-    "leaveModule",
-    "leavePolicies",
-    "createPolicy",
-    "options"
-  );
+  const translateText = useTranslator("leaveModule", "leavePolicies");
 
   const { setToastMessage } = useToast();
 
@@ -72,8 +54,8 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["successToastTitle"]),
-      description: translateText(["successToastDescription"]),
+      title: translateText(["editPolicy", "successToastTitle"]),
+      description: translateText(["editPolicy", "successToastDescription"]),
       isIcon: true
     });
     onClose();
@@ -85,8 +67,8 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText([title]),
-      description: translateText([description]),
+      title: translateText(["editPolicy", title]),
+      description: translateText(["editPolicy", description]),
       isIcon: true
     });
   };
@@ -106,7 +88,9 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
     useFormik<EditLeavePolicyFormValues>({
       initialValues: { policyName: policy.name },
-      validationSchema: editLeavePolicyValidation(translateText),
+      validationSchema: editLeavePolicyValidation((suffixes: string[]) =>
+        translateText(["editPolicy", ...suffixes])
+      ),
       enableReinitialize: true,
       onSubmit
     });
@@ -131,17 +115,20 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
   const accrualFrequencyOptions = buildTranslatedOptionList(
     accrualFrequencyItemList,
     "accrualFrequency",
-    translateOptions
+    (suffixes: string[]) =>
+      translateText(["createPolicy", "options", ...suffixes])
   );
   const firstAccrualOptions = buildTranslatedOptionList(
     firstAccrualItemList,
     "firstAccrual",
-    translateOptions
+    (suffixes: string[]) =>
+      translateText(["createPolicy", "options", ...suffixes])
   );
   const receiveAccruedTimeOptions = buildTranslatedOptionList(
     receiveAccruedTimeItemList,
     "receiveAccruedTime",
-    translateOptions
+    (suffixes: string[]) =>
+      translateText(["createPolicy", "options", ...suffixes])
   );
 
   const hasWaitingPeriod = Number(policy.waitingPeriodDays ?? 0) > 0;
@@ -160,22 +147,29 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
           isRounded
           variant="tertiary"
           onClick={onClose}
-          aria-label={translateText(["closeBtnAriaLabel"])}
+          aria-label={translateText(["editPolicy", "closeBtnAriaLabel"])}
         />
-        <h1 className="h1 text-black">{translateText(["title"])}</h1>
+        <h1 className="h1 text-black">
+          {translateText(["editPolicy", "title"])}
+        </h1>
       </div>
 
       <div className="flex flex-1 flex-col gap-8">
-        <WizardSection title={translateText(["basicDetailsTitle"])}>
+        <WizardSection
+          title={translateText(["editPolicy", "basicDetailsTitle"])}
+        >
           <div className="flex max-w-3xl flex-col gap-4">
             <div className="w-1/2">
               <InputField
-                label={translateText(["policyNameLabel"])}
+                label={translateText(["editPolicy", "policyNameLabel"])}
                 name="policyName"
                 type="text"
                 required
                 value={values.policyName}
-                placeholder={translateText(["policyNamePlaceholder"])}
+                placeholder={translateText([
+                  "editPolicy",
+                  "policyNamePlaceholder"
+                ])}
                 state={policyNameError ? "error" : "default"}
                 errorMessage={policyNameError}
                 onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -189,7 +183,7 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
             <div className="w-1/2">
               <Dropdown
                 id="edit-leave-policy-leave-type"
-                label={translateText(["leaveTypeLabel"])}
+                label={translateText(["editPolicy", "leaveTypeLabel"])}
                 required
                 value={String(policy.leaveTypeId)}
                 options={leaveTypeOptions}
@@ -204,15 +198,25 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
         {isAccrual && (
           <>
             <WizardSection
-              title={translateEntitlement(["accrualScheduleTitle"])}
+              title={translateText([
+                "createPolicy",
+                "entitlementSetup",
+                "accrualScheduleTitle"
+              ])}
             >
               <div className="flex max-w-3xl flex-col gap-4 md:flex-row">
                 <div className="flex flex-1 flex-col gap-1.5">
                   <InputField
-                    label={translateEntitlement(["employeesAccrueLabel"])}
+                    label={translateText([
+                      "createPolicy",
+                      "entitlementSetup",
+                      "employeesAccrueLabel"
+                    ])}
                     name="accrualDays"
                     value={policy.accrualDays ?? ""}
-                    placeholder={translateEntitlement([
+                    placeholder={translateText([
+                      "createPolicy",
+                      "entitlementSetup",
                       "employeesAccruePlaceholder"
                     ])}
                     disabled
@@ -223,9 +227,17 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                 <div className="flex flex-1 flex-col gap-1.5">
                   <Dropdown
                     id="edit-leave-policy-accrual-frequency"
-                    label={translateEntitlement(["frequencyLabel"])}
+                    label={translateText([
+                      "createPolicy",
+                      "entitlementSetup",
+                      "frequencyLabel"
+                    ])}
                     value={policy.frequency ?? ""}
-                    placeholder={translateEntitlement(["frequencyPlaceholder"])}
+                    placeholder={translateText([
+                      "createPolicy",
+                      "entitlementSetup",
+                      "frequencyPlaceholder"
+                    ])}
                     options={accrualFrequencyOptions}
                     variant="primary-disabled"
                     width="100%"
@@ -236,21 +248,41 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
             </WizardSection>
 
             <WizardSection
-              title={translateEntitlement(["accrualOptionsTitle"])}
+              title={translateText([
+                "createPolicy",
+                "entitlementSetup",
+                "accrualOptionsTitle"
+              ])}
             >
               <div className="flex max-w-3xl flex-col gap-4">
                 <RadioGroup
-                  label={translateEntitlement(["waitingPeriodLabel"])}
+                  label={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "waitingPeriodLabel"
+                  ])}
                   name="editWaitingPeriod"
-                  noLabel={translateEntitlement(["waitingPeriodNo"])}
-                  yesLabel={translateEntitlement(["waitingPeriodYes"])}
+                  noLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "waitingPeriodNo"
+                  ])}
+                  yesLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "waitingPeriodYes"
+                  ])}
                   value={hasWaitingPeriod}
                   isDisabled
                 />
                 {hasWaitingPeriod && (
                   <div className="w-full md:w-64">
                     <InputField
-                      label={translateEntitlement(["waitingPeriodDaysLabel"])}
+                      label={translateText([
+                        "createPolicy",
+                        "entitlementSetup",
+                        "waitingPeriodDaysLabel"
+                      ])}
                       name="waitingPeriodDays"
                       value={policy.waitingPeriodDays ?? ""}
                       disabled
@@ -260,17 +292,33 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                   </div>
                 )}
                 <RadioGroup
-                  label={translateEntitlement(["accrualCapLabel"])}
+                  label={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "accrualCapLabel"
+                  ])}
                   name="editAccrualCap"
-                  noLabel={translateEntitlement(["accrualCapNo"])}
-                  yesLabel={translateEntitlement(["accrualCapYes"])}
+                  noLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "accrualCapNo"
+                  ])}
+                  yesLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "accrualCapYes"
+                  ])}
                   value={hasAccrualCap}
                   isDisabled
                 />
                 {hasAccrualCap && (
                   <div className="w-full md:w-64">
                     <InputField
-                      label={translateEntitlement(["accrualCapDaysLabel"])}
+                      label={translateText([
+                        "createPolicy",
+                        "entitlementSetup",
+                        "accrualCapDaysLabel"
+                      ])}
                       name="accrualCapDays"
                       value={policy.accrualCapDays ?? ""}
                       disabled
@@ -280,10 +328,22 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                   </div>
                 )}
                 <RadioGroup
-                  label={translateEntitlement(["carryOverLabel"])}
+                  label={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "carryOverLabel"
+                  ])}
                   name="editCarryOver"
-                  noLabel={translateEntitlement(["carryOverNo"])}
-                  yesLabel={translateEntitlement(["carryOverYes"])}
+                  noLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "carryOverNo"
+                  ])}
+                  yesLabel={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "carryOverYes"
+                  ])}
                   value={canCarryOver}
                   isDisabled
                 />
@@ -291,12 +351,16 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                   <div className="flex flex-col gap-4 md:flex-row">
                     <div className="flex flex-1 flex-col gap-1.5">
                       <InputField
-                        label={translateEntitlement([
+                        label={translateText([
+                          "createPolicy",
+                          "entitlementSetup",
                           "carryoverExpiryDateLabel"
                         ])}
                         name="carryoverExpiryDate"
                         value={carryoverExpiryDate}
-                        placeholder={translateEntitlement([
+                        placeholder={translateText([
+                          "createPolicy",
+                          "entitlementSetup",
                           "carryoverExpiryDatePlaceholder"
                         ])}
                         disabled
@@ -306,10 +370,16 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                     </div>
                     <div className="flex flex-1 flex-col gap-1.5">
                       <InputField
-                        label={translateEntitlement(["maxCarryOverDaysLabel"])}
+                        label={translateText([
+                          "createPolicy",
+                          "entitlementSetup",
+                          "maxCarryOverDaysLabel"
+                        ])}
                         name="maxCarryOverDays"
                         value={policy.maxCarryoverDays ?? ""}
-                        placeholder={translateEntitlement([
+                        placeholder={translateText([
+                          "createPolicy",
+                          "entitlementSetup",
                           "maxCarryOverDaysPlaceholder"
                         ])}
                         disabled
@@ -322,11 +392,17 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
               </div>
             </WizardSection>
 
-            <WizardSection title={translateText(["fineTuningTitle"])}>
+            <WizardSection
+              title={translateText(["editPolicy", "fineTuningTitle"])}
+            >
               <div className="flex max-w-3xl flex-col gap-4">
                 <Dropdown
                   id="edit-leave-policy-first-accrual"
-                  label={translateEntitlement(["firstAccrualLabel"])}
+                  label={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "firstAccrualLabel"
+                  ])}
                   value={policy.firstAccrual ?? ""}
                   options={firstAccrualOptions}
                   variant="primary-disabled"
@@ -335,7 +411,11 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
                 />
                 <Dropdown
                   id="edit-leave-policy-receive-accrued-time"
-                  label={translateEntitlement(["receiveAccruedTimeLabel"])}
+                  label={translateText([
+                    "createPolicy",
+                    "entitlementSetup",
+                    "receiveAccruedTimeLabel"
+                  ])}
                   value={policy.accrualTiming ?? ""}
                   options={receiveAccruedTimeOptions}
                   variant="primary-disabled"
@@ -357,7 +437,7 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
           onClick={onClose}
           disabled={isPending}
         >
-          {translateText(["backBtnTxt"])}
+          {translateText(["editPolicy", "backBtnTxt"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -367,7 +447,10 @@ const EditLeavePolicyView: FC<Props> = ({ policy, onClose }) => {
           onClick={() => handleSubmit()}
           disabled={isSaveDisabled}
         >
-          {translateText([isPending ? "savingBtnTxt" : "saveChangesBtnTxt"])}
+          {translateText([
+            "editPolicy",
+            isPending ? "savingBtnTxt" : "saveChangesBtnTxt"
+          ])}
         </ButtonV2>
       </div>
     </div>
