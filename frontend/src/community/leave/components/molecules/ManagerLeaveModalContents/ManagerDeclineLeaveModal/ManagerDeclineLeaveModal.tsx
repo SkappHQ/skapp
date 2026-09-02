@@ -48,13 +48,15 @@ const ManagerDeclineLeaveModal = ({
   const handelDecline = (): void => {
     if (isPending) return;
 
-    if (validateDescription(reason)) setError(true);
+    const trimmedReason = reason.trim();
+
+    if (validateDescription(trimmedReason)) setError(true);
     else {
       setError(false);
       const data = {
         leaveRequestId: leaveRequestData.leaveId as number,
         status: LeaveStatusTypes.DENIED.toUpperCase(),
-        reviewerComment: reason
+        reviewerComment: trimmedReason
       };
       mutate(data);
     }
