@@ -43,10 +43,12 @@ const ManagerDeclineLeaveModal = ({
     error: leaveCancelError
   } = useHandelLeaves();
 
+  const isSubmitting = isPending || isSuccess;
+
   const { sendEvent } = useGoogleAnalyticsEvent();
 
   const handelDecline = (): void => {
-    if (isPending) return;
+    if (isSubmitting) return;
 
     const trimmedReason = reason.trim();
 
@@ -101,7 +103,7 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"tertiary"}
           onClick={closeModel}
-          disabled={isPending}
+          disabled={isSubmitting}
           aria-label={translateText(["cancelDeclineAreaLabel"])}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -111,8 +113,8 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"error"}
           onClick={handelDecline}
-          isLoading={isPending}
-          aria-busy={isPending}
+          isLoading={isSubmitting}
+          aria-busy={isSubmitting}
           aria-label={translateText(["declineAreaLabel"])}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
