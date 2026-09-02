@@ -17,19 +17,11 @@ export const peopleQueryKeys = {
   EMPLOYEE_COUNT: function () {
     return [...(this?.all || []), "employee-count"];
   },
-  EMPLOYEE_SEARCH: function (
+  EMPLOYEE_SEARCH: (
     searchTerm: string,
     permission: SystemPermissionTypes,
     selectedEmployeeId?: number
-  ) {
-    return [
-      ...(this?.all || []),
-      "employees-search",
-      searchTerm,
-      permission,
-      selectedEmployeeId
-    ].filter((val) => val !== undefined);
-  },
+  ) => ["employees-search", searchTerm, permission, selectedEmployeeId],
   EMPLOYEE_DATA_EXIST_KEYS: function (
     workEmail?: string,
     identificationNo?: string
