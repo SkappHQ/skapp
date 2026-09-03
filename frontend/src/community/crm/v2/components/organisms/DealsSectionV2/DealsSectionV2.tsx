@@ -1,6 +1,6 @@
 import { SortConfig } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -99,52 +99,60 @@ const DealsSectionV2: FC = () => {
     [columnConfig?.sort]
   );
 
-  const handleSort = (nextSortConfig: SortConfig[]): void => {
-    handleSortChange(
-      fromListTableSortConfig(nextSortConfig, columnConfig?.sort ?? null)
-    );
-  };
+  const handleSort = useCallback(
+    (nextSortConfig: SortConfig[]): void => {
+      handleSortChange(
+        fromListTableSortConfig(nextSortConfig, columnConfig?.sort ?? null)
+      );
+    },
+    [handleSortChange, columnConfig?.sort]
+  );
 
   const enableRowReorder =
-    activeView === DealViewEnum.LIST && !columnConfig?.sort;
+    activeView === DealViewEnum.LIST &&
+    !columnConfig?.sort &&
+    !debouncedSearch.trim();
 
-  const handleRowReorder = (
-    movingId: string,
-    previousId?: string,
-    nextId?: string
-  ): void => {
-    const dealId = Number(movingId);
-    const previousDealId = previousId != null ? Number(previousId) : null;
-    const nextDealId = nextId != null ? Number(nextId) : null;
+  const handleRowReorder = useCallback(
+    (movingId: string, previousId?: string, nextId?: string): void => {
+      const dealId = Number(movingId);
+      const previousDealId = previousId != null ? Number(previousId) : null;
+      const nextDealId = nextId != null ? Number(nextId) : null;
 
-    const store = useCrmStoreV2.getState();
-    const previousDealIds = store.dealIds;
-    store.setDealIds(
-      reorderDealIds(store.dealIds, dealId, previousDealId, nextDealId)
-    );
+      const store = useCrmStoreV2.getState();
+      const previousDealIds = store.dealIds;
+      store.setDealIds(
+        reorderDealIds(store.dealIds, dealId, previousDealId, nextDealId)
+      );
 
-    reorderDeal(
-      { dealId, previousDealId, nextDealId },
-      {
-        onError: () => {
-          useCrmStoreV2.getState().setDealIds(previousDealIds);
-          setToastMessage({
-            open: true,
-            toastType: ToastType.ERROR,
-            title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
-            description: translateText([
-              "inlineEdit",
-              "toastMessages",
-              "editErrorDescription"
-            ])
-          });
-          queryClient.invalidateQueries({
-            queryKey: crmDealQueryKeys.GET_DEALS_ROOT
-          });
+      reorderDeal(
+        { dealId, previousDealId, nextDealId },
+        {
+          onError: () => {
+            useCrmStoreV2.getState().setDealIds(previousDealIds);
+            setToastMessage({
+              open: true,
+              toastType: ToastType.ERROR,
+              title: translateText([
+                "inlineEdit",
+                "toastMessages",
+                "editErrorTitle"
+              ]),
+              description: translateText([
+                "inlineEdit",
+                "toastMessages",
+                "editErrorDescription"
+              ])
+            });
+            queryClient.invalidateQueries({
+              queryKey: crmDealQueryKeys.GET_DEALS_ROOT
+            });
+          }
         }
-      }
-    );
-  };
+      );
+    },
+    [reorderDeal, setToastMessage, translateText, queryClient]
+  );
 
   const hasNextPage = Boolean(hasNextPageRaw);
   const deals = useMemo(
@@ -185,16 +193,19 @@ const DealsSectionV2: FC = () => {
     }
   }, [fetchedCompanies]);
 
-  const loadMore = async (): Promise<void> => {
+  const loadMore = useCallback(async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {
       await fetchNextPage();
     }
-  };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleDealClick = (dealId: number): void => {
-    setSelectedDealId(dealId);
-    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
-  };
+  const handleDealClick = useCallback(
+    (dealId: number): void => {
+      setSelectedDealId(dealId);
+      openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
+    },
+    [setSelectedDealId, openCrmSidePanel]
+  );
 
   useEffect(() => {
     const updateHeight = () => {

@@ -28,7 +28,13 @@ const DealPriorityCell: FC<Props> = ({ priority, onSave }) => {
       ariaLabel={translateText(["inlineEdit", "ariaLabels", "priority"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
-      display={<PriorityLabel priority={priority} showLabel />}
+      display={
+        priority ? (
+          <PriorityLabel priority={priority} showLabel />
+        ) : (
+          <span className="body2">-</span>
+        )
+      }
     >
       <PriorityDropdown
         value={priority ?? CrmPriorityEnum.MEDIUM}

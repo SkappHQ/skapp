@@ -30,3 +30,8 @@ export interface CrmDealListViewConfig {
   fields: CrmDealFieldConfig[];
   sort: CrmDealSortConfig | null;
 }
+
+export interface ColumnState {
+  id: string;
+  visible: boolean;
+}

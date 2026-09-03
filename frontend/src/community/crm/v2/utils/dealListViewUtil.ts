@@ -3,15 +3,16 @@ import { SortConfig } from "@rootcodelabs/skapp-ui";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import {
+  ColumnState,
   CrmDealColumnFieldEnum,
   CrmDealFieldConfig,
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
-interface ColumnState {
-  id: string;
-  visible: boolean;
-}
+const toSortOrder = (direction: string): SortOrderTypes =>
+  direction?.toUpperCase() === SortOrderTypes.DESC
+    ? SortOrderTypes.DESC
+    : SortOrderTypes.ASC;
 
 export const FIELD_TO_SORT_KEY: Record<
   CrmDealColumnFieldEnum,
@@ -51,7 +52,7 @@ export const fromListTableSortConfig = (
     ) ?? sortConfig[sortConfig.length - 1];
   return {
     field: changed.columnId as CrmDealColumnFieldEnum,
-    direction: changed.direction as SortOrderTypes
+    direction: toSortOrder(changed.direction)
   };
 };
 

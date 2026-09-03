@@ -21,10 +21,12 @@ export const crmTaskQueryKeys = {
   ]
 };
 
+const CRM_DEALS_V2 = "crm-deals-v2";
+
 export const crmDealQueryKeys = {
-  GET_DEALS_ROOT: ["crm-deals-v2"],
+  GET_DEALS_ROOT: [CRM_DEALS_V2],
   DEALS_BY_IDS: (dealIds: number[]) => ["crm-deals-by-ids-v2", dealIds],
-  GET_DEALS: (filters: CrmDealFilterRequest) => ["crm-deals-v2", filters],
+  GET_DEALS: (filters: CrmDealFilterRequest) => [CRM_DEALS_V2, filters],
   DEAL_BY_ID: (id: number) => ["crm-deal-v2", id],
   CHECK_DEAL_NAME_EXISTS: (name: string) => ["crm-deal-name-exists-v2", name],
   DEAL_STAGES: ["crm-deal-stages-v2"],

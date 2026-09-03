@@ -205,11 +205,24 @@ const updateDealListViewConfig = async (
   return response?.data?.results?.[0];
 };
 
-export const useUpdateDealListViewConfig = (): UseMutationResult<
+export const useUpdateDealListViewConfig = (
+  onError?: (error: AxiosError) => void
+): UseMutationResult<
   CrmDealListViewConfig,
   AxiosError,
   CrmDealListViewConfig
-> => useMutation({ mutationFn: updateDealListViewConfig });
+> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDealListViewConfig,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG
+      });
+    },
+    onError
+  });
+};
 
 const deleteDeal = async (id: number): Promise<void> => {
   await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));

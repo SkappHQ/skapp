@@ -5,6 +5,7 @@ import {
   useUpdateDealListViewConfig
 } from "~community/crm/v2/api/DealApi";
 import {
+  ColumnState,
   CrmDealListViewConfig,
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
@@ -14,17 +15,19 @@ import {
   reorderConfigFields
 } from "~community/crm/v2/utils/dealListViewUtil";
 
-interface ColumnState {
-  id: string;
-  visible: boolean;
-}
-
 const useDealListViewConfig = (enabled: boolean) => {
   const { data: fetchedConfig, isLoading } = useGetDealListViewConfig(enabled);
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
   const [config, setConfig] = useState<CrmDealListViewConfig | null>(null);
   const persistTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(
+    () => () => {
+      if (persistTimer.current) clearTimeout(persistTimer.current);
+    },
+    []
+  );
 
   useEffect(() => {
     if (fetchedConfig) setConfig(fetchedConfig);
@@ -74,7 +77,6 @@ const useDealListViewConfig = (enabled: boolean) => {
   return {
     config,
     isConfigLoading: isLoading,
-    applyConfig,
     handleColumnReorder,
     handleColumnVisibilityChange,
     handleSortChange,
