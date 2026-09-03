@@ -7,13 +7,12 @@ import InputDate from "~community/common/components/molecules/InputDate/InputDat
 import { FULL_MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  accrualFrequencyItemList,
-  firstAccrualItemList,
-  receiveAccruedTimeItemList
-} from "~community/leave/constants/leavePolicyConstants";
-import { LeavePolicyFormData } from "~community/leave/types/LeavePolicyTypes";
+  AccrualFrequency,
+  AccrualTiming,
+  FirstAccrualType,
+  LeavePolicyFormData
+} from "~community/leave/types/LeavePolicyTypes";
 import {
-  buildTranslatedOptionList,
   getCarryoverExpiryReferenceDate,
   parseCarryoverExpiryDate,
   toCarryoverExpiryMonthDay
@@ -69,21 +68,79 @@ const EntitlementSetupStep: FC<Props> = ({
     });
   };
 
-  const accrualFrequencyOptions = buildTranslatedOptionList(
-    accrualFrequencyItemList,
-    "accrualFrequency",
-    translateOptions
-  );
-  const firstAccrualOptions = buildTranslatedOptionList(
-    firstAccrualItemList,
-    "firstAccrual",
-    translateOptions
-  );
-  const receiveAccruedTimeOptions = buildTranslatedOptionList(
-    receiveAccruedTimeItemList,
-    "receiveAccruedTime",
-    translateOptions
-  );
+  const accrualFrequencyOptions = [
+    {
+      id: "daily",
+      label: translateOptions(["accrualFrequency", "daily"]),
+      value: AccrualFrequency.DAILY
+    },
+    {
+      id: "weekly",
+      label: translateOptions(["accrualFrequency", "weekly"]),
+      value: AccrualFrequency.WEEKLY
+    },
+    {
+      id: "every-other-week",
+      label: translateOptions(["accrualFrequency", "everyOtherWeek"]),
+      value: AccrualFrequency.EVERY_OTHER_WEEK
+    },
+    {
+      id: "twice-a-month",
+      label: translateOptions(["accrualFrequency", "twiceAMonth"]),
+      value: AccrualFrequency.TWICE_A_MONTH
+    },
+    {
+      id: "monthly",
+      label: translateOptions(["accrualFrequency", "monthly"]),
+      value: AccrualFrequency.MONTHLY
+    },
+    {
+      id: "quarterly",
+      label: translateOptions(["accrualFrequency", "quarterly"]),
+      value: AccrualFrequency.QUARTERLY
+    },
+    {
+      id: "twice-a-year",
+      label: translateOptions(["accrualFrequency", "twiceAYear"]),
+      value: AccrualFrequency.TWICE_A_YEAR
+    },
+    {
+      id: "yearly",
+      label: translateOptions(["accrualFrequency", "yearly"]),
+      value: AccrualFrequency.YEARLY
+    },
+    {
+      id: "on-anniversary",
+      label: translateOptions(["accrualFrequency", "onAnniversary"]),
+      value: AccrualFrequency.ON_ANNIVERSARY
+    }
+  ];
+
+  const firstAccrualOptions = [
+    {
+      id: "prorated",
+      label: translateOptions(["firstAccrual", "prorated"]),
+      value: FirstAccrualType.PRORATED
+    },
+    {
+      id: "full",
+      label: translateOptions(["firstAccrual", "full"]),
+      value: FirstAccrualType.FULL
+    }
+  ];
+
+  const receiveAccruedTimeOptions = [
+    {
+      id: "start-of-period",
+      label: translateOptions(["receiveAccruedTime", "startOfPeriod"]),
+      value: AccrualTiming.PERIOD_START
+    },
+    {
+      id: "end-of-period",
+      label: translateOptions(["receiveAccruedTime", "endOfPeriod"]),
+      value: AccrualTiming.PERIOD_END
+    }
+  ];
 
   return (
     <div className="flex flex-1 flex-col gap-8">

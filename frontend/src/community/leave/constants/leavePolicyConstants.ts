@@ -1,5 +1,4 @@
 import {
-  AccrualFrequency,
   AccrualTiming,
   FirstAccrualType,
   LeavePolicyFormData
@@ -29,63 +28,9 @@ export const MAX_BULK_ASSIGN_ROWS = 1000;
 
 export const CSV_DELIMITER = ",";
 
-export const accrualFrequencyItemList = [
-  { id: "daily", labelKey: "daily", value: AccrualFrequency.DAILY },
-  { id: "weekly", labelKey: "weekly", value: AccrualFrequency.WEEKLY },
-  {
-    id: "every-other-week",
-    labelKey: "everyOtherWeek",
-    value: AccrualFrequency.EVERY_OTHER_WEEK
-  },
-  {
-    id: "twice-a-month",
-    labelKey: "twiceAMonth",
-    value: AccrualFrequency.TWICE_A_MONTH
-  },
-  { id: "monthly", labelKey: "monthly", value: AccrualFrequency.MONTHLY },
-  { id: "quarterly", labelKey: "quarterly", value: AccrualFrequency.QUARTERLY },
-  {
-    id: "twice-a-year",
-    labelKey: "twiceAYear",
-    value: AccrualFrequency.TWICE_A_YEAR
-  },
-  { id: "yearly", labelKey: "yearly", value: AccrualFrequency.YEARLY },
-  {
-    id: "on-anniversary",
-    labelKey: "onAnniversary",
-    value: AccrualFrequency.ON_ANNIVERSARY
-  }
-];
-
 export const CARRYOVER_EXPIRY_DATE_FORMAT = "MM-dd";
 
 export const CARRYOVER_EXPIRY_REFERENCE_YEAR = 2025;
-
-export const firstAccrualItemList = [
-  {
-    id: "prorated",
-    labelKey: "prorated",
-    value: FirstAccrualType.PRORATED
-  },
-  {
-    id: "full",
-    labelKey: "full",
-    value: FirstAccrualType.FULL
-  }
-];
-
-export const receiveAccruedTimeItemList = [
-  {
-    id: "start-of-period",
-    labelKey: "startOfPeriod",
-    value: AccrualTiming.PERIOD_START
-  },
-  {
-    id: "end-of-period",
-    labelKey: "endOfPeriod",
-    value: AccrualTiming.PERIOD_END
-  }
-];
 
 export const leavePolicyFormInitialValues: LeavePolicyFormData = {
   policyType: null,
