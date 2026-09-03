@@ -6,8 +6,6 @@ public interface CrmDealOrderIndexService {
 
 	void createForNewDeal(CrmDeal deal);
 
-	void syncBoardKey(CrmDeal deal);
-
 	void reorderInList(Long dealId, Long previousDealId, Long nextDealId);
 
 }

@@ -327,7 +327,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOrderIndex(newOrderIndex);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		crmDealOrderIndexService.syncBoardKey(savedDeal);
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("reorderDeal: deal reordered with id={}, new orderIndex={}", savedDeal.getId(), newOrderIndex);
@@ -405,7 +404,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		deal.setOrderIndex(newOrderIndex);
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		crmDealOrderIndexService.syncBoardKey(savedDeal);
 		CrmDealResponseDto responseDto = crmMapper.crmDealToCrmDealResponseDto(savedDeal);
 
 		log.info("updateDealStage: execution ended");
@@ -574,9 +572,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		CrmDeal savedDeal = crmDealDao.save(deal);
-		if (requestDto.getStageId() != null) {
-			crmDealOrderIndexService.syncBoardKey(savedDeal);
-		}
 
 		log.info("applyDealEdit: execution ended");
 		return savedDeal;
