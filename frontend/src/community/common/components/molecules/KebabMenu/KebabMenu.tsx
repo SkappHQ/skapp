@@ -30,7 +30,6 @@ interface KebabMenuProps {
     menuItem?: object;
     menuItemText?: object;
   };
-  disablePortal?: boolean;
 }
 
 const KebabMenu: FC<KebabMenuProps> = ({
@@ -42,8 +41,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
     anchorOrigin: { vertical: "bottom", horizontal: "left" },
     transformOrigin: { vertical: "top", horizontal: "left" }
   },
-  customStyles = {},
-  disablePortal = false
+  customStyles = {}
 }) => {
   const theme = useTheme();
   const classes = styles(theme);
@@ -96,7 +94,6 @@ const KebabMenu: FC<KebabMenuProps> = ({
           anchorOrigin={menuAlign.anchorOrigin}
           transformOrigin={menuAlign.transformOrigin}
           disableScrollLock={true}
-          disablePortal={disablePortal}
           sx={{ ...classes.menu, ...customStyles.menu }}
         >
           {menuItems?.map((item: MenuItemTypes) => (
