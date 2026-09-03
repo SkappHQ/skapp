@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -167,7 +168,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			case CLOSING_AT:
 				return deal.get(CrmDeal_.closingAt);
 			case CREATED_DATE:
-				return deal.get("createdDate");
+				return deal.get(Auditable_.createdDate);
 			case PRIORITY:
 				return buildPrioritySeverityExpression(cb, deal);
 			case COMPANY_NAME:
