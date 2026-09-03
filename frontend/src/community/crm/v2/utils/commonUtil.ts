@@ -33,13 +33,8 @@ export const formatMonetaryValueWithDecimals = (value?: string | number) => {
   return `$${parsed.toFixed(2)}`;
 };
 
-export const appendId = (ids: number[] | undefined, id: number): number[] => {
-  if (ids === undefined) {
-    return [id];
-  }
-
-  return ids.includes(id) ? ids : [...ids, id];
-};
+export const appendId = (ids: number[] = [], id: number): number[] =>
+  ids.includes(id) ? ids : [...ids, id];
 
 export const getOwnerById = (
   owners: CrmOwnerRecord,
