@@ -340,9 +340,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}
-		if (requestDto.getView() == null) {
-			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_REQUIRED);
-		}
 		if (requestDto.getPreviousDealId() == null && requestDto.getNextDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED);
 		}
@@ -355,14 +352,8 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED);
 		}
 
-		switch (requestDto.getView()) {
-			case LIST:
-				crmDealOrderIndexService.reorderInList(requestDto.getDealId(), requestDto.getPreviousDealId(),
-						requestDto.getNextDealId());
-				break;
-			default:
-				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_REORDER_VIEW_UNSUPPORTED);
-		}
+		crmDealOrderIndexService.reorderInList(requestDto.getDealId(), requestDto.getPreviousDealId(),
+				requestDto.getNextDealId());
 
 		log.info("reorderDealInList: execution ended");
 		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));

@@ -81,8 +81,6 @@ public enum CrmMessageConstant implements MessageConstant {
 	CRM_ERROR_DEAL_EDIT_DENIED("api.error.crm.deal.edit-denied"),
 	CRM_ERROR_DEAL_VIEW_DENIED("api.error.crm.deal.view-denied"),
 	CRM_ERROR_DEAL_ORDER_NEIGHBOURS_REQUIRED("api.error.crm.deal.order-neighbours-required"),
-	CRM_ERROR_DEAL_VIEW_REQUIRED("api.error.crm.deal.view-required"),
-	CRM_ERROR_DEAL_REORDER_VIEW_UNSUPPORTED("api.error.crm.deal.reorder-view-unsupported"),
 	CRM_ERROR_DEAL_ALREADY_IN_STAGE("api.error.crm.deal.already-in-stage"),
 	CRM_ERROR_DEAL_LIST_VIEW_FIELDS_REQUIRED("api.error.crm.deal.list-view-fields-required"),
 	CRM_ERROR_DEAL_LIST_VIEW_FIELD_REQUIRED("api.error.crm.deal.list-view-field-required"),

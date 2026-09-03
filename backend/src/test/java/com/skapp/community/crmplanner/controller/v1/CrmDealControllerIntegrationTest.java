@@ -24,7 +24,6 @@ import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmDealView;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -147,10 +146,8 @@ class CrmDealControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
-	private CrmDealListReorderRequestDto reorderPayload(CrmDealView view, Long dealId, Long previousDealId,
-			Long nextDealId) {
+	private CrmDealListReorderRequestDto reorderPayload(Long dealId, Long previousDealId, Long nextDealId) {
 		CrmDealListReorderRequestDto dto = new CrmDealListReorderRequestDto();
-		dto.setView(view);
 		dto.setDealId(dealId);
 		dto.setPreviousDealId(previousDealId);
 		dto.setNextDealId(nextDealId);
@@ -1296,8 +1293,7 @@ class CrmDealControllerIntegrationTest {
 		crmDealOrderIndexService.createForNewDeal(dealB);
 		crmDealOrderIndexService.createForNewDeal(dealC);
 
-		performReorderRequest(reorderPayload(CrmDealView.LIST, dealC.getId(), dealA.getId(), dealB.getId()))
-			.andDo(print())
+		performReorderRequest(reorderPayload(dealC.getId(), dealA.getId(), dealB.getId())).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(dealC.getId()));
@@ -1322,43 +1318,11 @@ class CrmDealControllerIntegrationTest {
 
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performReorderRequest(reorderPayload(CrmDealView.LIST, target.getId(), neighbour.getId(), null)).andDo(print())
+		performReorderRequest(reorderPayload(target.getId(), neighbour.getId(), null)).andDo(print())
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED)));
-	}
-
-	@Test
-	@DisplayName("Reorder deal in list view without a view - returns view-required error")
-	void reorderDealInList_MissingView_ReturnsViewRequired() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Reorder Missing View Co");
-		CrmContact contact = savedBatchContact(company, "deal.reorder.view@example.com");
-		CrmDeal deal = savedBatchDeal("Reorder Missing View Deal", stage, company, contact, 1L);
-		CrmDeal neighbour = savedBatchDeal("Reorder Missing View Neighbour", stage, company, contact, 1L);
-
-		performReorderRequest(reorderPayload(null, deal.getId(), neighbour.getId(), null)).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_REQUIRED)));
-	}
-
-	@Test
-	@DisplayName("Reorder deal in board view - returns unsupported-view error (not yet integrated)")
-	void reorderDealInList_BoardView_ReturnsUnsupportedView() throws Exception {
-		CrmDealStage stage = savedStage();
-		CrmCompany company = savedCompany("Reorder Board Co");
-		CrmContact contact = savedBatchContact(company, "deal.reorder.board@example.com");
-		CrmDeal deal = savedBatchDeal("Reorder Board Deal", stage, company, contact, 1L);
-		CrmDeal neighbour = savedBatchDeal("Reorder Board Neighbour", stage, company, contact, 1L);
-
-		performReorderRequest(reorderPayload(CrmDealView.BOARD, deal.getId(), neighbour.getId(), null)).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_REORDER_VIEW_UNSUPPORTED)));
 	}
 
 }
