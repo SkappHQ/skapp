@@ -1,37 +1,30 @@
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
+import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import SidePanelDealCard from "~community/crm/v2/components/molecules/SidePanelDealCard/SidePanelDealCard";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import {
+  CrmDealEntity,
+  CrmOwnerEntity,
+  CrmStageEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 
 interface Props {
-  dealId?: number;
+  deal?: CrmDealEntity;
+  owner?: CrmOwnerEntity;
+  stage?: CrmStageEntity;
   emptyDescription?: string;
 }
 
-const SidePanelDealSection: FC<Props> = ({ dealId, emptyDescription }) => {
+const SidePanelDealSection: FC<Props> = ({
+  deal,
+  owner,
+  stage,
+  emptyDescription
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { deals, setDeals } = useCrmStoreV2(
-    useShallow((store) => ({
-      deals: store.deals,
-      setDeals: store.setDeals
-    }))
-  );
-
-  const { data: dealDetail } = useGetDealById(dealId ?? 0, dealId != null);
-
-  useEffect(() => {
-    if (!dealDetail) return;
-
-    setDeals(mergeDeals(deals, [dealDetail]));
-  }, [dealDetail]);
-
-  if (dealId == null) {
+  if (!deal) {
     return (
       <EmptyDataView
         icon={<SearchIcon width="24" height="24" />}
@@ -44,7 +37,7 @@ const SidePanelDealSection: FC<Props> = ({ dealId, emptyDescription }) => {
     );
   }
 
-  return <SidePanelDealCard dealId={dealId} />;
+  return <SidePanelDealCard deal={deal} owner={owner} stage={stage} />;
 };
 
 export default SidePanelDealSection;

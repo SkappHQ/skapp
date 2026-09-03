@@ -1,6 +1,5 @@
 import { ButtonV2, Label } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -8,29 +7,28 @@ import { IconName } from "~community/common/types/IconTypes";
 import { formatDateWithOrdinalSuffix } from "~community/common/utils/dateTimeUtils";
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import PropertyRow from "~community/crm/v2/components/molecules/PropertyRow/PropertyRow";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import {
+  CrmContactEntity,
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
-  taskId: number;
+  task: CrmTaskEntity;
+  owner?: CrmOwnerEntity;
+  contact?: CrmContactEntity;
   onMarkAsDone: () => void;
 }
 
-const SidePanelTaskInfo: FC<Props> = ({ taskId, onMarkAsDone }) => {
+const SidePanelTaskInfo: FC<Props> = ({
+  task,
+  owner,
+  contact,
+  onMarkAsDone
+}) => {
   const translateText = useTranslator("crmModule", "tasks", "sidePanel");
-
-  const { tasks, owners, contacts } = useCrmStoreV2(
-    useShallow((store) => ({
-      tasks: store.tasks,
-      owners: store.owners,
-      contacts: store.contacts
-    }))
-  );
-
-  const task = tasks[taskId];
-  const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
-  const contact = task?.contactId != null ? contacts[task.contactId] : undefined;
 
   const priorityConfig = getPriorityConfig(task.priority);
   const isCompleted = task.isCompleted === true;

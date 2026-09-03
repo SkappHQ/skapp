@@ -1,31 +1,23 @@
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { concatStrings } from "~community/common/utils/commonUtil";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import {
+  CrmDealEntity,
+  CrmOwnerEntity,
+  CrmStageEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 
 interface Props {
-  dealId: number;
+  deal: CrmDealEntity;
+  owner?: CrmOwnerEntity;
+  stage?: CrmStageEntity;
 }
 
-const SidePanelDealCard: FC<Props> = ({ dealId }) => {
+const SidePanelDealCard: FC<Props> = ({ deal, owner, stage }) => {
   const { getStageByName } = useStageNameMapper();
-
-  const { deal, owner, stage } = useCrmStoreV2(
-    useShallow((store) => {
-      const deal = store.deals[dealId];
-      return {
-        deal,
-        owner: deal?.ownerId != null ? store.owners[deal.ownerId] : undefined,
-        stage: deal?.stageId != null ? store.stages[deal.stageId] : undefined
-      };
-    })
-  );
-
-  if (!deal) return null;
 
   const ownerName = concatStrings([
     owner?.firstName ?? "",

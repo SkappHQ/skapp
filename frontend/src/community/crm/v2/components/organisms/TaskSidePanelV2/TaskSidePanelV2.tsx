@@ -11,6 +11,7 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import {
   useGetRelatedTasks,
   useGetTaskById,
@@ -22,7 +23,10 @@ import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecul
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
+import {
+  TASK_DETAIL_ICON_SIZE,
+  TASK_PAGE_SIZE
+} from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -30,11 +34,10 @@ import {
   CrmRelatedTasksFilter,
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
+import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
-
-const TASK_DETAIL_ICON_SIZE = 24;
 
 interface Props {
   taskId: number;
@@ -50,7 +53,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     crmSidePanelType,
     tasks,
     taskTypes,
+    owners,
+    contacts,
+    deals,
+    stages,
     setTasks,
+    setDeals,
     setSelectedTaskId,
     closeCrmSidePanel,
     setIsTaskModalOpen,
@@ -61,7 +69,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
       crmSidePanelType: store.crmSidePanelType,
       tasks: store.tasks,
       taskTypes: store.taskTypes,
+      owners: store.owners,
+      contacts: store.contacts,
+      deals: store.deals,
+      stages: store.stages,
       setTasks: store.setTasks,
+      setDeals: store.setDeals,
       setSelectedTaskId: store.setSelectedTaskId,
       closeCrmSidePanel: store.closeCrmSidePanel,
       setIsTaskModalOpen: store.setIsTaskModalOpen,
@@ -74,9 +87,19 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     crmSidePanelType === CrmSidePanelTypes.TASK_SIDE_PANEL;
 
   const task = tasks[taskId];
-  const typeName = task?.typeId != null ? taskTypes[task.typeId]?.name : undefined;
+  const taskType = task?.typeId != null ? taskTypes[task.typeId] : undefined;
+  const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
+  const contact = task?.contactId != null ? contacts[task.contactId] : undefined;
+  const deal = task?.dealId != null ? deals[task.dealId] : undefined;
+  const dealOwner = deal?.ownerId != null ? owners[deal.ownerId] : undefined;
+  const dealStage = deal?.stageId != null ? stages[deal.stageId] : undefined;
 
   const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
+
+  const { data: dealDetail, isLoading: isDealLoading } = useGetDealById(
+    task?.dealId ?? 0,
+    isOpen && task?.dealId != null
+  );
 
   const relatedTasksFilter: CrmRelatedTasksFilter = useMemo(
     () => ({ size: TASK_PAGE_SIZE }),
@@ -106,6 +129,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
     setTasks(updateTaskRecord(tasks, [currentTask, ...relatedTasks]));
   }, [taskDetail, relatedTasksData]);
+
+  useEffect(() => {
+    if (!dealDetail) return;
+
+    setDeals(mergeDeals(deals, [dealDetail]));
+  }, [dealDetail]);
 
   const handleClose = () => {
     setSelectedTaskId(null);
@@ -179,7 +208,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
           <div className="flex items-center gap-4 pl-2">
-            <TaskTypeIcon typeName={typeName} size={TASK_DETAIL_ICON_SIZE} />
+            <TaskTypeIcon typeName={taskType?.name} size={TASK_DETAIL_ICON_SIZE} />
             <span className="h1 text-black">{task.name}</span>
           </div>
         )
@@ -221,13 +250,17 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
                 {translateText(["sidePanel", "dealsTitle"])}
               </h2>
               <hr className="border-secondary-accent" />
-              <SidePanelDealSection
-                dealId={task.dealId}
-                emptyDescription={translateText([
-                  "sidePanel",
-                  "noDealsDescription"
-                ])}
-              />
+              {!isDealLoading && (
+                <SidePanelDealSection
+                  deal={deal}
+                  owner={dealOwner}
+                  stage={dealStage}
+                  emptyDescription={translateText([
+                    "sidePanel",
+                    "noDealsDescription"
+                  ])}
+                />
+              )}
             </div>
 
             <div className="flex flex-col gap-3">
@@ -253,7 +286,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           </div>
 
           <div className="w-[18.438rem] shrink-0">
-            <SidePanelTaskInfo taskId={taskId} onMarkAsDone={handleMarkAsDone} />
+            <SidePanelTaskInfo
+              task={task}
+              owner={owner}
+              contact={contact}
+              onMarkAsDone={handleMarkAsDone}
+            />
           </div>
         </div>
       )}
