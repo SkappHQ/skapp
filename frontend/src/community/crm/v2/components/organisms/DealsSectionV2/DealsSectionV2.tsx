@@ -132,12 +132,12 @@ const DealsSectionV2: FC = () => {
   );
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || activeView !== DealViewEnum.LIST) return;
     const store = useCrmStoreV2.getState();
     const items = data.pages.flatMap((page) => page.items);
     store.setDeals(mergeDeals(store.deals, items));
     store.setDealIds(toDealIds(items));
-  }, [data]);
+  }, [data, activeView]);
 
   const companyIds = useMemo(
     () =>
