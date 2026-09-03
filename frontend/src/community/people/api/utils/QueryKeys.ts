@@ -20,7 +20,7 @@ export const peopleQueryKeys = {
   EMPLOYEE_SEARCH: (
     searchTerm: string,
     permission: SystemPermissionTypes,
-    selectedEmployeeId?: number
+    selectedEmployeeId?: number | null
   ) => ["employees-search", searchTerm, permission, selectedEmployeeId],
   EMPLOYEE_DATA_EXIST_KEYS: function (
     workEmail?: string,

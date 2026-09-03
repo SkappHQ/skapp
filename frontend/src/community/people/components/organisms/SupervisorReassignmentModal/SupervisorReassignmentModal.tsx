@@ -53,7 +53,9 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchedEmployeeId, setSearchedEmployeeId] = useState<number>();
+  const [searchedEmployeeId, setSearchedEmployeeId] = useState<number | null>(
+    null
+  );
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
@@ -72,7 +74,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setTeamSupervisorAssignments({});
     setIsSubmitting(false);
     setSearchTerm("");
-    setSearchedEmployeeId(undefined);
+    setSearchedEmployeeId(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -188,7 +190,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       [supervisedEmployeeId]: { id: newSupervisorId, name: newSupervisorName }
     }));
     setSearchTerm("");
-    setSearchedEmployeeId(undefined);
+    setSearchedEmployeeId(null);
   };
 
   const handleSelectTeamSupervisor = (
@@ -201,7 +203,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       [teamId]: { id: newSupervisorId, name: newSupervisorName }
     }));
     setSearchTerm("");
-    setSearchedEmployeeId(undefined);
+    setSearchedEmployeeId(null);
   };
 
   const getPrimarySupervisorItems = useCallback(
@@ -224,7 +226,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
 
   const getTeamSupervisorItems = useCallback(
     (): SearchableDropdownItem[] =>
-      searchedEmployeeId !== undefined
+      searchedEmployeeId !== null
         ? []
         : employeeList.map((employee) => ({
             id: String(employee.employeeId),
@@ -310,7 +312,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               getItems={getTeamSupervisorItems}
               onSearch={(term) => {
                 setSearchTerm(term);
-                setSearchedEmployeeId(undefined);
+                setSearchedEmployeeId(null);
               }}
               onSelect={(teamId, selectedId, selectedName) => {
                 handleSelectTeamSupervisor(
