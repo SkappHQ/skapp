@@ -694,6 +694,7 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
 CREATE TABLE IF NOT EXISTS `crm_deal_order_index`
 (
     `deal_id` bigint                                         NOT NULL,
+    `board`   text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
     `list`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
     PRIMARY KEY (`deal_id`),
     CONSTRAINT `FK_crm_deal_order_index_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`)
