@@ -19,9 +19,6 @@ public class CrmDealOrderIndex {
 	@Column(name = "deal_id", nullable = false, updatable = false)
 	private Long dealId;
 
-	@Column(name = "board")
-	private String board;
-
 	@Column(name = "list", nullable = false)
 	private String list;
 
