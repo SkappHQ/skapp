@@ -23,16 +23,6 @@ import {
 } from "~community/people/types/PeopleTypes";
 import { concatStrings } from "~community/common/utils/commonUtil";
 
-interface SupervisorSearchState {
-  term: string;
-  supervisedEmployeeId: number | null;
-}
-
-const INITIAL_SEARCH_STATE: SupervisorSearchState = {
-  term: "",
-  supervisedEmployeeId: null
-};
-
 interface SupervisorReassignmentModalProps {
   isOpen: boolean;
   onCancel: () => void;
@@ -62,16 +52,16 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     Record<number, OptionType>
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [search, setSearch] =
-    useState<SupervisorSearchState>(INITIAL_SEARCH_STATE);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchedEmployeeId, setSearchedEmployeeId] = useState<number>();
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
   const { data: searchedEmployees, isLoading: isEmployeeSearchLoading } =
     useGetSearchedEmployees(
-      search.term,
+      searchTerm,
       SystemPermissionTypes.EMPLOYEES,
-      search.supervisedEmployeeId ?? undefined
+      searchedEmployeeId
     );
 
   const isSearchLoading =
@@ -81,7 +71,8 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setPrimarySupervisorAssignments({});
     setTeamSupervisorAssignments({});
     setIsSubmitting(false);
-    setSearch(INITIAL_SEARCH_STATE);
+    setSearchTerm("");
+    setSearchedEmployeeId(undefined);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -196,7 +187,8 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       ...prev,
       [supervisedEmployeeId]: { id: newSupervisorId, name: newSupervisorName }
     }));
-    setSearch(INITIAL_SEARCH_STATE);
+    setSearchTerm("");
+    setSearchedEmployeeId(undefined);
   };
 
   const handleSelectTeamSupervisor = (
@@ -208,12 +200,13 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       ...prev,
       [teamId]: { id: newSupervisorId, name: newSupervisorName }
     }));
-    setSearch(INITIAL_SEARCH_STATE);
+    setSearchTerm("");
+    setSearchedEmployeeId(undefined);
   };
 
   const getPrimarySupervisorItems = useCallback(
     (supervisedEmployeeId: number): SearchableDropdownItem[] =>
-      search.supervisedEmployeeId !== supervisedEmployeeId
+      searchedEmployeeId !== supervisedEmployeeId
         ? []
         : employeeList
             .filter(
@@ -226,12 +219,12 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
                 employee.lastName
               ]).trim()
             })),
-    [employeeList, search.supervisedEmployeeId]
+    [employeeList, searchedEmployeeId]
   );
 
   const getTeamSupervisorItems = useCallback(
     (): SearchableDropdownItem[] =>
-      search.supervisedEmployeeId !== null
+      searchedEmployeeId !== undefined
         ? []
         : employeeList.map((employee) => ({
             id: String(employee.employeeId),
@@ -240,7 +233,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               employee.lastName
             ]).trim()
           })),
-    [employeeList, search.supervisedEmployeeId]
+    [employeeList, searchedEmployeeId]
   );
 
   const proceedButtonLabel =
@@ -288,9 +281,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
               getItems={getPrimarySupervisorItems}
-              onSearch={(supervisedEmployeeId, term) =>
-                setSearch({ term, supervisedEmployeeId })
-              }
+              onSearch={(supervisedEmployeeId, term) => {
+                setSearchTerm(term);
+                setSearchedEmployeeId(supervisedEmployeeId);
+              }}
               onSelect={(supervisedEmployeeId, selectedId, selectedName) => {
                 handleSelectPrimarySupervisor(
                   Number(selectedId),
@@ -314,9 +308,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
               getItems={getTeamSupervisorItems}
-              onSearch={(_teamId, term) =>
-                setSearch({ ...INITIAL_SEARCH_STATE, term })
-              }
+              onSearch={(_, term) => {
+                setSearchTerm(term);
+                setSearchedEmployeeId(undefined);
+              }}
               onSelect={(teamId, selectedId, selectedName) => {
                 handleSelectTeamSupervisor(
                   Number(selectedId),
