@@ -835,6 +835,8 @@
       "reasonData": "{{reason}}",
       "approveAreaLabel": "Pressing enter on this button will approve the leave request.",
       "cancelAreaLabel": "Pressing enter on this button will open the decline lave modal. In that modal you can decline the leave request",
+      "declineAreaLabel": "Pressing enter on this button will decline the leave request.",
+      "cancelDeclineAreaLabel": "Pressing enter on this button will close the decline leave modal without declining the leave request.",
       "memberHeader": "MEMBER",
       "leavePeriodHeader": "LEAVE PERIOD",
       "leaveTypeHeader": "TYPE",
