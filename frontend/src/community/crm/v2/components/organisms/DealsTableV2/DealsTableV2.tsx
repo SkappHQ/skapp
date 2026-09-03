@@ -83,6 +83,7 @@ const FIELD_META: Record<
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
+  isConfigLoading: boolean;
   deals: CrmDealEntity[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
@@ -100,6 +101,7 @@ interface Props {
 const DealsTableV2: FC<Props> = ({
   searchKeyword,
   isLoading,
+  isConfigLoading,
   deals,
   hasNextPage,
   onLoadMore,
@@ -157,20 +159,22 @@ const DealsTableV2: FC<Props> = ({
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];
-    return fields.map((fieldConfig): Column<DealRow> => {
-      const meta = FIELD_META[fieldConfig.field];
-      return {
-        id: fieldConfig.field,
-        title: translateText([meta.titleKey]),
-        field: meta.rowKey,
-        width: fieldConfig.width,
-        minWidth: meta.minWidth,
-        resizable: fieldConfig.isResizable,
-        draggable: fieldConfig.isDraggable,
-        sortable: fieldConfig.isSortable,
-        visible: fieldConfig.isHideable ? fieldConfig.isVisible : true
-      };
-    });
+    return fields
+      .filter((fieldConfig) => FIELD_META[fieldConfig.field] != null)
+      .map((fieldConfig): Column<DealRow> => {
+        const meta = FIELD_META[fieldConfig.field];
+        return {
+          id: fieldConfig.field,
+          title: translateText([meta.titleKey]),
+          field: meta.rowKey,
+          width: fieldConfig.width,
+          minWidth: meta.minWidth,
+          resizable: fieldConfig.isResizable,
+          draggable: fieldConfig.isDraggable,
+          sortable: fieldConfig.isSortable,
+          visible: fieldConfig.isHideable ? fieldConfig.isVisible : true
+        };
+      });
   }, [columnConfig, translateText]);
 
   const tableRows = useMemo(
@@ -264,10 +268,21 @@ const DealsTableV2: FC<Props> = ({
     [tableRows]
   );
 
-  if (isLoading || !columnConfig) {
+  if (isLoading || isConfigLoading) {
     return (
       <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
+      </div>
+    );
+  }
+
+  if (columnHeaders.length === 0) {
+    return (
+      <div className="h-full rounded-lg flex flex-col items-center justify-center gap-2 text-center">
+        <p className="subtitle2">{translateText(["configErrorTitle"])}</p>
+        <p className="body2 text-secondary-icon">
+          {translateText(["configErrorDescription"])}
+        </p>
       </div>
     );
   }

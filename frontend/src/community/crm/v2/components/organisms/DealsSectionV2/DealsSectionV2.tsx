@@ -3,7 +3,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   DEAL_PAGE_SIZE,
   DEAL_SEARCH_DEBOUNCE_DELAY
@@ -45,6 +48,8 @@ const DealsSectionV2: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { mutate: reorderDeal } = useReorderDealInList();
+  const sidePanelText = useTranslator("crmModule", "deals", "sidePanel");
+  const { setToastMessage } = useToast();
 
   const {
     companies,
@@ -64,6 +69,7 @@ const DealsSectionV2: FC = () => {
 
   const {
     config: columnConfig,
+    isConfigLoading,
     handleColumnReorder,
     handleColumnVisibilityChange,
     handleSortChange,
@@ -112,15 +118,26 @@ const DealsSectionV2: FC = () => {
     const nextDealId = nextId != null ? Number(nextId) : null;
 
     const store = useCrmStoreV2.getState();
-    store.setDealIds(reorderDealIds(store.dealIds, dealId, previousDealId));
+    const previousDealIds = store.dealIds;
+    store.setDealIds(
+      reorderDealIds(store.dealIds, dealId, previousDealId, nextDealId)
+    );
 
     reorderDeal(
       { dealId, previousDealId, nextDealId },
       {
-        onSettled: () =>
+        onError: () => {
+          useCrmStoreV2.getState().setDealIds(previousDealIds);
+          setToastMessage({
+            open: true,
+            toastType: ToastType.ERROR,
+            title: sidePanelText(["toastMessages", "editErrorTitle"]),
+            description: sidePanelText(["toastMessages", "editErrorDescription"])
+          });
           queryClient.invalidateQueries({
             queryKey: crmDealQueryKeys.GET_DEALS_ROOT
-          })
+          });
+        }
       }
     );
   };
@@ -209,6 +226,7 @@ const DealsSectionV2: FC = () => {
           <DealsTableV2
             searchKeyword={debouncedSearch}
             isLoading={isLoading}
+            isConfigLoading={isConfigLoading}
             deals={deals}
             hasNextPage={hasNextPage}
             onLoadMore={loadMore}

@@ -70,11 +70,32 @@ export const resolveDeals = (
 export const reorderDealIds = (
   dealIds: number[],
   movingId: number,
-  previousId: number | null
+  previousId: number | null,
+  nextId: number | null = null
 ): number[] => {
   const without = dealIds.filter((id) => id !== movingId);
-  if (previousId == null) return [movingId, ...without];
-  const index = without.indexOf(previousId);
-  if (index === -1) return [...without, movingId];
-  return [...without.slice(0, index + 1), movingId, ...without.slice(index + 1)];
+
+  if (previousId != null) {
+    const previousIndex = without.indexOf(previousId);
+    if (previousIndex !== -1) {
+      return [
+        ...without.slice(0, previousIndex + 1),
+        movingId,
+        ...without.slice(previousIndex + 1)
+      ];
+    }
+  }
+
+  if (nextId != null) {
+    const nextIndex = without.indexOf(nextId);
+    if (nextIndex !== -1) {
+      return [
+        ...without.slice(0, nextIndex),
+        movingId,
+        ...without.slice(nextIndex)
+      ];
+    }
+  }
+
+  return previousId == null ? [movingId, ...without] : [...without, movingId];
 };
