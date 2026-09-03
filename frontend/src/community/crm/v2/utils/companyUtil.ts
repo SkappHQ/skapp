@@ -11,7 +11,7 @@ import {
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
   for (const company of companies) {
-    if (company.id !== undefined) {
+    if (company.id != null) {
       companyIds.push(company.id);
     }
   }
@@ -137,7 +137,7 @@ export const getChangedCompanyFields = (
 export const getCompanyNameById = (
   companies: CrmCompanyRecord,
   companyId?: number | null
-) => {
+): string | undefined => {
   if (companyId != null) {
     return companies[companyId]?.name;
   }
