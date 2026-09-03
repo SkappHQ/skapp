@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -29,11 +30,11 @@ const DealsV1 = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
+    useShallow((store) => ({
       openCrmSidePanel: store.openCrmSidePanel,
       selectedDealId: store.selectedDealId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen
-    })
+    }))
   );
 
   const handleAddDeal = () => {

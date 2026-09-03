@@ -9,6 +9,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { ChangeEvent, JSX, useCallback, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
@@ -54,11 +55,13 @@ const EntitlementsDetailsSection = (): JSX.Element => {
     employeeEntitlementsDetails,
     employeeEmploymentDetails,
     setEmployeeEntitlementsDetails
-  } = usePeopleStore((state) => ({
-    employeeEntitlementsDetails: state.entitlementDetails,
-    setEmployeeEntitlementsDetails: state.setEntitlementDetails,
-    employeeEmploymentDetails: state.employeeEmploymentDetails
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      employeeEntitlementsDetails: state.entitlementDetails,
+      setEmployeeEntitlementsDetails: state.setEntitlementDetails,
+      employeeEmploymentDetails: state.employeeEmploymentDetails
+    }))
+  );
 
   const { data: leaveCycleData } = useGetLeaveCycle();
 

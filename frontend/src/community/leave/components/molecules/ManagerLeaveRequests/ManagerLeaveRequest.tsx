@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { useShallow } from "zustand/react/shallow";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import TableView from "~community/common/components/organisms/TableView/TableView";
@@ -71,19 +72,21 @@ const ManagerLeaveRequest: FC<Props> = ({
     newLeaveId,
     leaveRequestParams,
     leaveRequestsFilter
-  } = useLeaveStore((state) => ({
-    resetLeaveRequestParams: state.resetLeaveRequestParams,
-    leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestParams: state.setLeaveRequestParams,
-    setPagination: state.setPagination,
-    handleLeaveRequestsSort: state.handleLeaveRequestsSort,
-    setIsManagerModal: state.setIsManagerModal,
-    setLeaveRequestData: state.setLeaveRequestData,
-    setNewLeaveId: state.setNewLeaveId,
-    newLeaveId: state.newLeaveId,
-    leaveRequestParams: state.leaveRequestParams,
-    leaveRequestsFilter: state.leaveRequestsFilter
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      resetLeaveRequestParams: state.resetLeaveRequestParams,
+      leaveRequestFilterOrder: state.leaveRequestFilterOrder,
+      setLeaveRequestParams: state.setLeaveRequestParams,
+      setPagination: state.setPagination,
+      handleLeaveRequestsSort: state.handleLeaveRequestsSort,
+      setIsManagerModal: state.setIsManagerModal,
+      setLeaveRequestData: state.setLeaveRequestData,
+      setNewLeaveId: state.setNewLeaveId,
+      newLeaveId: state.newLeaveId,
+      leaveRequestParams: state.leaveRequestParams,
+      leaveRequestsFilter: state.leaveRequestsFilter
+    }))
+  );
 
   const currentPage = useLeaveStore((state) => state.leaveRequestParams.page);
 

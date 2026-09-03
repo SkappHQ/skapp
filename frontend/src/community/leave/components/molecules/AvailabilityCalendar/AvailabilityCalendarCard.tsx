@@ -3,6 +3,7 @@ import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { DateTime } from "luxon";
 import { JSX } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
@@ -49,12 +50,14 @@ const AvailabilityCalendarCard = ({
     setIsOnLeaveModalOpen,
     setOnLeaveModalTitle,
     setTodaysAvailability
-  } = useLeaveStore((state) => ({
-    setIsManagerModal: state.setIsManagerModal,
-    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen,
-    setOnLeaveModalTitle: state.setOnLeaveModalTitle,
-    setTodaysAvailability: state.setTodaysAvailability
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      setIsManagerModal: state.setIsManagerModal,
+      setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen,
+      setOnLeaveModalTitle: state.setOnLeaveModalTitle,
+      setTodaysAvailability: state.setTodaysAvailability
+    }))
+  );
 
   const getOnLeaveModalTitle = (): string => {
     const { today, yesterday, tomorrow } = getRelativeDates();

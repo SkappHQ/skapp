@@ -1,5 +1,6 @@
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
@@ -31,14 +32,16 @@ const OnLeaveModal = () => {
     newLeaveId,
     todaysAvailability,
     setIsOnLeaveModalOpen
-  } = useLeaveStore((state) => ({
-    setIsManagerModal: state.setIsManagerModal,
-    setLeaveRequestData: state.setLeaveRequestData,
-    setNewLeaveId: state.setNewLeaveId,
-    newLeaveId: state.newLeaveId,
-    todaysAvailability: state.todaysAvailability,
-    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      setIsManagerModal: state.setIsManagerModal,
+      setLeaveRequestData: state.setLeaveRequestData,
+      setNewLeaveId: state.setNewLeaveId,
+      newLeaveId: state.newLeaveId,
+      todaysAvailability: state.todaysAvailability,
+      setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
+    }))
+  );
 
   const { isSuccess: getLeaveByIdSuccess, data: getLeaveByIdData } =
     useGetLeaveRequestData(newLeaveId as number);

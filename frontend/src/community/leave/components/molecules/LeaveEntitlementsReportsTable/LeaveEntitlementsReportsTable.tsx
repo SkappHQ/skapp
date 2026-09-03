@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { ButtonV2, SelectableItemList } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import TableHeaderFill from "~community/attendance/components/molecules/TimesheetTableHeader/TableHeaderFill";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -48,9 +49,11 @@ const LeaveEntitlementsReportsTable: FC = () => {
 
   const years = getRecentYearsInStrings();
 
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   const {
     reportsParams,

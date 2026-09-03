@@ -11,6 +11,7 @@ import {
   useMemo,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -76,15 +77,17 @@ const AddEditHolidayModal = ({
     resetHolidayDetails,
     setIsBulkUpload,
     selectedYear
-  } = usePeopleStore((state) => ({
-    selectedYear: state.selectedYear,
-    newHolidayDetails: state.newHolidayDetails,
-    setIsBulkUpload: state.setIsBulkUpload,
-    setHolidayDetails: state.setHolidayDetails,
-    setHolidayModalType: state.setHolidayModalType,
-    resetHolidayDetails: state.resetHolidayDetails,
-    setIsHolidayModalOpen: state.setIsHolidayModalOpen
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      selectedYear: state.selectedYear,
+      newHolidayDetails: state.newHolidayDetails,
+      setIsBulkUpload: state.setIsBulkUpload,
+      setHolidayDetails: state.setHolidayDetails,
+      setHolidayModalType: state.setHolidayModalType,
+      resetHolidayDetails: state.resetHolidayDetails,
+      setIsHolidayModalOpen: state.setIsHolidayModalOpen
+    }))
+  );
 
   const [duration, setDuration] = useState<string>(
     newHolidayDetails?.duration || ""

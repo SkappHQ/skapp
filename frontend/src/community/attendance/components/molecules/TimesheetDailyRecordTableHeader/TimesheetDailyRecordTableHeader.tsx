@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { Theme, useTheme } from "@mui/material/styles";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -14,9 +15,11 @@ interface Props {
 const TimesheetDailyRecordTableHeader: FC<Props> = ({ headerLabels }) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
   const classes = styles(theme);
 
   return (

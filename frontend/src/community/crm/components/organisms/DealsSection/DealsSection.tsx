@@ -1,4 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
@@ -23,12 +24,12 @@ const DealsSection: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { deals, setDeals, setSelectedDealId, openCrmSidePanel } = useCrmStore(
-    (store) => ({
+    useShallow((store) => ({
       deals: store.deals,
       setDeals: store.setDeals,
       setSelectedDealId: store.setSelectedDealId,
       openCrmSidePanel: store.openCrmSidePanel
-    })
+    }))
   );
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =

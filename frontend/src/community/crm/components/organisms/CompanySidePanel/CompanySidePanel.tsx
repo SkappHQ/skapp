@@ -7,6 +7,7 @@ import {
   Tabs
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -54,17 +55,19 @@ const CompanySidePanel: FC = () => {
     setSelectedCompanyId,
     closeCrmSidePanel,
     updateCompany
-  } = useCrmStore((store) => ({
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    setCompanyModalType: store.setCompanyModalType,
-    selectedCompanyId: store.selectedCompanyId,
-    getCompanyById: store.getCompanyById,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    setSelectedCompanyId: store.setSelectedCompanyId,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    updateCompany: store.updateCompany
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+      setCompanyModalType: store.setCompanyModalType,
+      selectedCompanyId: store.selectedCompanyId,
+      getCompanyById: store.getCompanyById,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      updateCompany: store.updateCompany
+    }))
+  );
 
   const selectedCompany = getCompanyById(selectedCompanyId!);
   const hasSelectedCompany = !!selectedCompanyId;
