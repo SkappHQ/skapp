@@ -124,7 +124,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
     useUpdateDealStage(handleEditSuccess, handleError);
 
   const handleEdit = (values: CrmStageEntity) => {
-    const changedFields = getChangedStageFields(values, initialValues);
+    const changedFields = getChangedStageFields(initialValues, values);
     if (
       Object.keys(changedFields).length === 0 ||
       selectedDealStage?.id === undefined
