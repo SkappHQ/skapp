@@ -7,7 +7,7 @@ import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
 interface Props {
   task: CrmTaskEntity;
-  contact: CrmContactEntity | undefined;
+  contact?: CrmContactEntity;
   isShowContact: boolean;
   isCompletedStyleApplied: boolean;
 }
@@ -24,8 +24,10 @@ const TaskRowSubtitle: FC<Props> = ({
     ? getDueDateStatus(task.dueAt, task.isCompleted === true)
     : null;
 
+  const isContactVisible = isShowContact && contact != null;
+
   return (
-    <p className="body3 leading-none mt-0.5 flex items-center gap-2">
+    <div className="body3 leading-none mt-0.5 flex items-center gap-2">
       {dueDateStatus && (
         <span
           className={
@@ -41,11 +43,14 @@ const TaskRowSubtitle: FC<Props> = ({
         </span>
       )}
 
-      {isShowContact && contact && dueDateStatus && (
-        <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
+      {dueDateStatus && isContactVisible && (
+        <span
+          aria-hidden="true"
+          className="w-1 h-1 rounded-full bg-secondary-accent shrink-0"
+        />
       )}
 
-      {isShowContact && contact && (
+      {isContactVisible && (
         <span
           className={
             isCompletedStyleApplied
@@ -56,7 +61,7 @@ const TaskRowSubtitle: FC<Props> = ({
           {getContactDisplayName(contact)}
         </span>
       )}
-    </p>
+    </div>
   );
 };
 

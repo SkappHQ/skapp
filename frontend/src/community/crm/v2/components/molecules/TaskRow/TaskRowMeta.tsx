@@ -2,12 +2,15 @@ import { Avatar, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
-import { CrmOwnerEntity, CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface Props {
   task: CrmTaskEntity;
-  owner: CrmOwnerEntity | undefined;
+  owner?: CrmOwnerEntity;
   isCompletedStyleApplied: boolean;
 }
 
@@ -24,13 +27,15 @@ const TaskRowMeta: FC<Props> = ({ task, owner, isCompletedStyleApplied }) => {
         bgColor={priorityConfig.bgColor}
       />
 
-      <Avatar
-        id={`task-owner-${task.id}`}
-        size="xs"
-        src={imageUrl ?? undefined}
-        firstName={owner?.firstName ?? ""}
-        lastName={owner?.lastName}
-      />
+      {owner && (
+        <Avatar
+          id={`task-owner-${task.id}`}
+          size="xs"
+          src={imageUrl ?? undefined}
+          firstName={owner.firstName}
+          lastName={owner.lastName}
+        />
+      )}
     </div>
   );
 };
