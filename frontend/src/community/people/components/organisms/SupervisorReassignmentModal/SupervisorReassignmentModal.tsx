@@ -281,7 +281,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
               getItems={getPrimarySupervisorItems}
-              onSearch={(supervisedEmployeeId, term) => {
+              onSearch={(term, supervisedEmployeeId) => {
                 setSearchTerm(term);
                 setSearchedEmployeeId(supervisedEmployeeId);
               }}
@@ -308,7 +308,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
               getItems={getTeamSupervisorItems}
-              onSearch={(_, term) => {
+              onSearch={(term) => {
                 setSearchTerm(term);
                 setSearchedEmployeeId(undefined);
               }}
