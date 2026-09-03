@@ -129,7 +129,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			boolean ascending = filterDto.getSortOrder() == null || filterDto.getSortOrder().isAscending();
 			Order primary = ascending ? cb.asc(sortExpression) : cb.desc(sortExpression);
 			if (sortKey == CrmDealSort.STAGE_ORDER) {
-				query.orderBy(primary, cb.asc(deal.get(CrmDeal_.orderIndex)), cb.asc(deal.get(CrmDeal_.id)));
+				query.orderBy(primary, cb.asc(deal.get(CrmDeal_.orderIndex)));
 			}
 			else {
 				query.orderBy(primary, cb.asc(deal.get(CrmDeal_.id)));
@@ -140,7 +140,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			Root<CrmDealOrderIndex> orderIndex = listKey.from(CrmDealOrderIndex.class);
 			listKey.select(orderIndex.get(CrmDealOrderIndex_.list))
 				.where(cb.equal(orderIndex.get(CrmDealOrderIndex_.dealId), deal.get(CrmDeal_.id)));
-			query.orderBy(cb.asc(listKey), cb.asc(deal.get(CrmDeal_.id)));
+			query.orderBy(cb.asc(listKey));
 		}
 
 		List<CrmDealResponseDtoV2> content = entityManager.createQuery(query)
