@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo } from "react";
+import { ChangeEvent, type JSX, useMemo } from "react";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
