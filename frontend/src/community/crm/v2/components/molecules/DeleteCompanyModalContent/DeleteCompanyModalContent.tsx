@@ -8,7 +8,7 @@ import { useDeleteCompany } from "~community/crm/v2/api/CompanyApi";
 import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  getSelectedCompany,
+  getCompanyById,
   removeCompany
 } from "~community/crm/v2/utils/companyUtil";
 
@@ -43,7 +43,7 @@ const DeleteCompanyModalContent: FC = () => {
     }))
   );
 
-  const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
+  const selectedCompany = getCompanyById(companies, selectedCompanyId);
 
   const handleCloseModal = () => {
     setIsCompanyModalOpen(false);

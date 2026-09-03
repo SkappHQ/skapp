@@ -8,7 +8,7 @@ import { FC } from "react";
 import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getCompanyNameById } from "~community/crm/v2/utils/companyUtil";
+import { getCompanyById } from "~community/crm/v2/utils/companyUtil";
 
 interface SidePanelContactInfoProps {
   contact: CrmContactEntity;
@@ -17,7 +17,7 @@ interface SidePanelContactInfoProps {
 const SidePanelContactInfo: FC<SidePanelContactInfoProps> = ({ contact }) => {
   const companies = useCrmStoreV2((store) => store.companies);
 
-  const companyName = getCompanyNameById(companies, contact.companyId);
+  const companyName = getCompanyById(companies, contact.companyId)?.name;
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">

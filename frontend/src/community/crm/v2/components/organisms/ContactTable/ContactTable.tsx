@@ -37,7 +37,7 @@ import {
   getOwnerById
 } from "~community/crm/v2/utils/commonUtil";
 import {
-  getCompanyNameById,
+  getCompanyById,
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
@@ -209,7 +209,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
     contactIds.map((id) => {
       const contact = contacts[id];
       const metrics = contact.metrics;
-      const companyName = getCompanyNameById(companies, contact.companyId);
+      const companyName = getCompanyById(companies, contact.companyId)?.name;
       const owner = getOwnerById(owners, contact.ownerId);
 
       return {

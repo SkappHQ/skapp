@@ -13,7 +13,7 @@ import {
 import { appendId } from "~community/crm/v2/utils/commonUtil";
 import {
   CrmMetricItem,
-  getCompanyNameById
+  getCompanyById
 } from "~community/crm/v2/utils/companyUtil";
 
 export const toContactsRecord = (
@@ -137,7 +137,7 @@ export const buildContactOptions = (
   for (const contact of contacts) {
     if (contact.id !== undefined) {
       const contactName = getContactDisplayName(contact);
-      const companyName = getCompanyNameById(companies, contact.companyId);
+      const companyName = getCompanyById(companies, contact.companyId)?.name;
 
       options.push({
         id: contact.id,

@@ -14,7 +14,7 @@ import {
   formatMonetaryValue,
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
-import { getCompanyNameById } from "~community/crm/v2/utils/companyUtil";
+import { getCompanyById } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface SidePanelContactsSectionProps {
@@ -92,7 +92,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
           <div className="flex flex-col gap-1 min-w-0">
             <div className="truncate">{contactName}</div>
             <div className="body2 text-secondary-text truncate">
-              {getCompanyNameById(companies, contact.companyId)}
+              {getCompanyById(companies, contact.companyId)?.name}
             </div>
           </div>
         ),

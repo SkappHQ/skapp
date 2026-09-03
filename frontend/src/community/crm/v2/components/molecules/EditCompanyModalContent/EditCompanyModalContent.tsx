@@ -11,8 +11,8 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getChangedCompanyFields,
+  getCompanyById,
   getCompanyFormInitialValues,
-  getSelectedCompany,
   getTrimmedCompanyValues,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
@@ -33,7 +33,7 @@ const EditCompanyModalContent: FC = () => {
       }))
     );
 
-  const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
+  const selectedCompany = getCompanyById(companies, selectedCompanyId);
 
   const initialValues = useMemo(
     () => getCompanyFormInitialValues(selectedCompany),

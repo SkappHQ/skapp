@@ -31,7 +31,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
-import { getCompanyNameById } from "~community/crm/v2/utils/companyUtil";
+import { getCompanyById } from "~community/crm/v2/utils/companyUtil";
 import {
   getCompanyOptions,
   getEmailDomain
@@ -139,7 +139,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
 
   const selectedCompanyName =
     values.companyName === undefined
-      ? getCompanyNameById(companies, values.companyId)
+      ? getCompanyById(companies, values.companyId)?.name
       : values.companyName;
   const selectedOwner = getOwnerById(owners, values.ownerId);
 
