@@ -189,7 +189,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		for (CrmDealPriority priority : CrmDealPriority.values()) {
 			severity = severity.when(priority, priority.ordinal());
 		}
-		return severity.otherwise(CrmDealPriority.values().length);
+		return severity;
 	}
 
 	@Override
