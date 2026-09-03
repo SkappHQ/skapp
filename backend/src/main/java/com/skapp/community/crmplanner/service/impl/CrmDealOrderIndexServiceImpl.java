@@ -23,9 +23,6 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Transactional
 	public void createForNewDeal(CrmDeal deal) {
 		log.info("createForNewDeal: execution started");
-		if (crmDealOrderIndexDao.existsById(deal.getId())) {
-			return;
-		}
 		String maxListIndex = resolveMaxListKey();
 
 		CrmDealOrderIndex orderIndex = new CrmDealOrderIndex();
