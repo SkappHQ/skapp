@@ -499,7 +499,27 @@
       "kanbanViewAriaLabel": "Kanban view",
       "switchDealViewAriaLabel": "Switch deal view",
       "configErrorTitle": "Table layout unavailable",
-      "configErrorDescription": "We couldn't load your table layout. Please refresh the page to try again."
+      "configErrorDescription": "We couldn't load your table layout. Please refresh the page to try again.",
+      "inlineEdit": {
+        "placeholders": {
+          "none": "None",
+          "stage": "Select stage",
+          "ownerSearch": "Search employees",
+          "contactSearch": "Search contacts",
+          "noResults": "No results"
+        },
+        "ariaLabels": {
+          "value": "Value",
+          "stage": "Stage",
+          "priority": "Priority",
+          "dealOwner": "Deal Owner",
+          "contactName": "Contact Name"
+        },
+        "toastMessages": {
+          "editErrorTitle": "Failed to update deal",
+          "editErrorDescription": "Oops! Something went wrong. Please try again"
+        }
+      }
     },
     "kanban": {
       "addDealBtn": "Add deal",

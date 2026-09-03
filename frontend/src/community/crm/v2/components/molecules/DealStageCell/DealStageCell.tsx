@@ -15,7 +15,7 @@ interface Props {
 }
 
 const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { getStageByName } = useStageNameMapper();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -49,7 +49,7 @@ const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["ariaLabels", "stage"])}
+      ariaLabel={translateText(["inlineEdit", "ariaLabels", "stage"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -66,8 +66,8 @@ const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
         variant="primary"
         className="rounded-lg"
         width="100%"
-        placeholder={translateText(["placeholders", "stage"])}
-        ariaLabel={translateText(["ariaLabels", "stage"])}
+        placeholder={translateText(["inlineEdit", "placeholders", "stage"])}
+        ariaLabel={translateText(["inlineEdit", "ariaLabels", "stage"])}
       />
     </EditableCell>
   );

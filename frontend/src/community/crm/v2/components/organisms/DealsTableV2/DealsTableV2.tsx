@@ -116,7 +116,6 @@ const DealsTableV2: FC<Props> = ({
   onRowReorder
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
-  const sidePanelText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
   const handleEditSuccess = (updatedDeal: CrmDealEntity): void => {
@@ -133,8 +132,12 @@ const DealsTableV2: FC<Props> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: sidePanelText(["toastMessages", "editErrorTitle"]),
-      description: sidePanelText(["toastMessages", "editErrorDescription"])
+      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      description: translateText([
+        "inlineEdit",
+        "toastMessages",
+        "editErrorDescription"
+      ])
     });
   };
 

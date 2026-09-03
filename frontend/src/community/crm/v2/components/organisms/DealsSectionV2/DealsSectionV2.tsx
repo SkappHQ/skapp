@@ -48,7 +48,7 @@ const DealsSectionV2: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { mutate: reorderDeal } = useReorderDealInList();
-  const sidePanelText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { setToastMessage } = useToast();
 
   const {
@@ -131,8 +131,12 @@ const DealsSectionV2: FC = () => {
           setToastMessage({
             open: true,
             toastType: ToastType.ERROR,
-            title: sidePanelText(["toastMessages", "editErrorTitle"]),
-            description: sidePanelText(["toastMessages", "editErrorDescription"])
+            title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+            description: translateText([
+              "inlineEdit",
+              "toastMessages",
+              "editErrorDescription"
+            ])
           });
           queryClient.invalidateQueries({
             queryKey: crmDealQueryKeys.GET_DEALS_ROOT

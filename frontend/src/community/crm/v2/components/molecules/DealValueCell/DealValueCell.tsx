@@ -13,7 +13,7 @@ interface Props {
 }
 
 const DealValueCell: FC<Props> = ({ amount, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
   const {
     isEditing,
@@ -43,7 +43,7 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["ariaLabels", "amount"])}
+      ariaLabel={translateText(["inlineEdit", "ariaLabels", "value"])}
       onStartEditing={startEditing}
       onClickOutside={save}
       display={
@@ -56,13 +56,13 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder={translateText(["placeholders", "none"])}
+        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
         className="w-full"
         variant="sm"
         type="text"
         state={error ? "error" : "default"}
         errorMessage={error}
-        aria-label={translateText(["ariaLabels", "amount"])}
+        aria-label={translateText(["inlineEdit", "ariaLabels", "value"])}
         autoFocus
       />
     </EditableCell>

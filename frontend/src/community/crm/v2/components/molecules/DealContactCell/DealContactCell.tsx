@@ -26,7 +26,7 @@ interface Props {
 }
 
 const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -91,7 +91,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["contact"])}
+      ariaLabel={translateText(["inlineEdit", "ariaLabels", "contactName"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -106,9 +106,9 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
         selectedContact={selectedContact}
         onChange={handleChange}
         onSearch={setSearchTerm}
-        placeholder={translateText(["placeholders", "none"])}
-        searchPlaceholder={translateText(["placeholders", "contactSearch"])}
-        noResultsText={translateText(["placeholders", "noResults"])}
+        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
+        searchPlaceholder={translateText(["inlineEdit", "placeholders", "contactSearch"])}
+        noResultsText={translateText(["inlineEdit", "placeholders", "noResults"])}
       />
     </EditableCell>
   );

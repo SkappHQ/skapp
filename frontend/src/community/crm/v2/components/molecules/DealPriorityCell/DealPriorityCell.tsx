@@ -12,7 +12,7 @@ interface Props {
 }
 
 const DealPriorityCell: FC<Props> = ({ priority, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const [isEditing, setIsEditing] = useState(false);
 
   const handleChange = (value: CrmPriorityEnum): void => {
@@ -25,7 +25,7 @@ const DealPriorityCell: FC<Props> = ({ priority, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["priority"])}
+      ariaLabel={translateText(["inlineEdit", "ariaLabels", "priority"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={<PriorityLabel priority={priority} showLabel />}
