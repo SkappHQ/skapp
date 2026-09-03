@@ -53,7 +53,7 @@ export const useUpdateEmployeeStatus = () => {
   });
 };
 
-export const useGetEmployeeStatus = () => {
+export const useGetEmployeeStatus = (enabled: boolean = true) => {
   const setAttendanceParams = useAttendanceStore(
     (state) => state.setAttendanceParams
   );
@@ -62,7 +62,8 @@ export const useGetEmployeeStatus = () => {
     queryKey: getAttendanceQueryKeys.employeeStatus(),
     queryFn: async () => {
       return await authFetch.get(attendanceEndpoints.GET_EMPLOYEE_STATUS());
-    }
+    },
+    enabled
   });
 
   const { data, isSuccess } = query;
