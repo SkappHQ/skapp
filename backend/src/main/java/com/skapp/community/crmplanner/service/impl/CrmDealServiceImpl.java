@@ -337,7 +337,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto reorderDealInList(CrmDealListReorderRequestDto requestDto) {
-		log.info("reorderDealInList: reordering deal id={} in {} view", requestDto.getDealId(), requestDto.getView());
+		log.info("reorderDealInList: execution started");
 		if (requestDto.getDealId() == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_ID_REQUIRED);
 		}

@@ -22,7 +22,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void createForNewDeal(CrmDeal deal) {
-		log.info("createForNewDeal: execution started for deal id={}", deal.getId());
+		log.info("createForNewDeal: execution started");
 		if (crmDealOrderIndexDao.existsById(deal.getId())) {
 			return;
 		}
@@ -34,13 +34,13 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		orderIndex.setList(FractionalIndexUtil.generateKeyBetween(maxListIndex, null));
 		crmDealOrderIndexDao.save(orderIndex);
 
-		log.info("createForNewDeal: order index created for deal id={}", deal.getId());
+		log.info("createForNewDeal: execution ended");
 	}
 
 	@Override
 	@Transactional
 	public void syncBoardKey(CrmDeal deal) {
-		log.info("syncBoardKey: execution started for deal id={}", deal.getId());
+		log.info("syncBoardKey: execution started");
 		CrmDealOrderIndex orderIndex = crmDealOrderIndexDao.findById(deal.getId()).orElse(null);
 		if (orderIndex == null) {
 			orderIndex = new CrmDealOrderIndex();
@@ -55,7 +55,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 	@Override
 	@Transactional
 	public void reorderInList(Long dealId, Long previousDealId, Long nextDealId) {
-		log.info("reorderInList: execution started for deal id={}", dealId);
+		log.info("reorderInList: execution started");
 		CrmDealOrderIndex target = crmDealOrderIndexDao.findById(dealId)
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND));
 
@@ -64,7 +64,7 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 		target.setList(FractionalIndexUtil.generateKeyBetween(previousKey, nextKey));
 		crmDealOrderIndexDao.save(target);
 
-		log.info("reorderInList: deal id={} repositioned between {} and {}", dealId, previousDealId, nextDealId);
+		log.info("reorderInList: execution ended");
 	}
 
 	private String resolveListKey(Long dealId) {

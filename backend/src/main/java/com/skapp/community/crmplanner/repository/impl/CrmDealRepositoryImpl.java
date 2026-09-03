@@ -169,11 +169,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			case CREATED_DATE:
 				return deal.get("createdDate");
 			case PRIORITY:
-				return cb.selectCase(deal.get(CrmDeal_.priority))
-					.when(CrmDealPriority.LOW, 1)
-					.when(CrmDealPriority.MEDIUM, 2)
-					.when(CrmDealPriority.HIGH, 3)
-					.otherwise(4);
+				return buildPrioritySeverityExpression(cb, deal);
 			case COMPANY_NAME:
 				return company.get(CrmCompany_.name);
 			case CONTACT_NAME:
@@ -186,6 +182,14 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			default:
 				return stage.get(CrmDealStage_.orderIndex);
 		}
+	}
+
+	private Expression<Integer> buildPrioritySeverityExpression(CriteriaBuilder cb, Root<CrmDeal> deal) {
+		CriteriaBuilder.SimpleCase<CrmDealPriority, Integer> severity = cb.selectCase(deal.get(CrmDeal_.priority));
+		for (CrmDealPriority priority : CrmDealPriority.values()) {
+			severity = severity.when(priority, priority.ordinal());
+		}
+		return severity.otherwise(CrmDealPriority.values().length);
 	}
 
 	@Override
