@@ -1,17 +1,22 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
+import com.skapp.community.crmplanner.model.CrmDealOrderIndex;
+import com.skapp.community.crmplanner.model.CrmDealOrderIndex_;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
+import com.skapp.community.crmplanner.type.CrmDealSort;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -24,8 +29,10 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -115,8 +122,21 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 				owner.get(Employee_.employeeId), company.get(CrmCompany_.id), contact.get(CrmContact_.id)));
 
 		query.where(buildPredicates(cb, deal, filterDto, ownerId).toArray(new Predicate[0]));
-		query.orderBy(cb.asc(stage.get(CrmDealStage_.orderIndex)), cb.asc(deal.get(CrmDeal_.orderIndex)),
-				cb.asc(deal.get(CrmDeal_.id)));
+
+		CrmDealSort sortKey = filterDto.getSortKey();
+		if (sortKey != null) {
+			Expression<?> sortExpression = resolveDealSortExpression(cb, sortKey, deal, stage, company, contact, owner);
+			boolean ascending = filterDto.getSortOrder() == null || filterDto.getSortOrder().isAscending();
+			Order primary = ascending ? cb.asc(sortExpression) : cb.desc(sortExpression);
+			query.orderBy(primary);
+		}
+		else {
+			Subquery<String> listKey = query.subquery(String.class);
+			Root<CrmDealOrderIndex> orderIndex = listKey.from(CrmDealOrderIndex.class);
+			listKey.select(orderIndex.get(CrmDealOrderIndex_.list))
+				.where(cb.equal(orderIndex.get(CrmDealOrderIndex_.dealId), deal.get(CrmDeal_.id)));
+			query.orderBy(cb.asc(listKey));
+		}
 
 		List<CrmDealResponseDtoV2> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
@@ -130,6 +150,42 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		Long total = entityManager.createQuery(countQuery).getSingleResult();
 
 		return new PageImpl<>(content, pageable, total);
+	}
+
+	private Expression<?> resolveDealSortExpression(CriteriaBuilder cb, CrmDealSort sortKey, Root<CrmDeal> deal,
+			Join<CrmDeal, CrmDealStage> stage, Join<CrmDeal, CrmCompany> company, Join<CrmDeal, CrmContact> contact,
+			Join<CrmDeal, Employee> owner) {
+		switch (sortKey) {
+			case NAME:
+				return deal.get(CrmDeal_.name);
+			case AMOUNT:
+				return deal.get(CrmDeal_.amount).cast(BigDecimal.class);
+			case CLOSING_AT:
+				return deal.get(CrmDeal_.closingAt);
+			case CREATED_DATE:
+				return deal.get(Auditable_.createdDate);
+			case PRIORITY:
+				return buildPrioritySeverityExpression(cb, deal);
+			case COMPANY_NAME:
+				return company.get(CrmCompany_.name);
+			case CONTACT_NAME:
+				return contact.get(CrmContact_.name);
+			case OWNER:
+				return owner.get(Employee_.firstName);
+			case STAGE_TYPE:
+				return stage.get(CrmDealStage_.stageType);
+			case STAGE_ORDER:
+			default:
+				return stage.get(CrmDealStage_.orderIndex);
+		}
+	}
+
+	private Expression<Integer> buildPrioritySeverityExpression(CriteriaBuilder cb, Root<CrmDeal> deal) {
+		CriteriaBuilder.SimpleCase<CrmDealPriority, Integer> severity = cb.selectCase(deal.get(CrmDeal_.priority));
+		for (CrmDealPriority priority : CrmDealPriority.values()) {
+			severity = severity.when(priority, priority.ordinal());
+		}
+		return severity;
 	}
 
 	@Override

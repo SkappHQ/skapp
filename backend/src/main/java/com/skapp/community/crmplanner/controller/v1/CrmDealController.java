@@ -5,6 +5,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
 import com.skapp.community.crmplanner.service.CrmDealListViewConfigService;
 import com.skapp.community.crmplanner.service.CrmDealService;
@@ -78,6 +79,15 @@ public class CrmDealController {
 	public ResponseEntity<ResponseEntityDto> editDeal(@PathVariable Long id,
 			@RequestBody CrmDealEditRequestDto requestDto) {
 		ResponseEntityDto response = crmDealService.editDeal(id, requestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Reorder a deal in the list view",
+			description = "Repositions a deal within the table (list) view order between two neighbours.")
+	@PatchMapping("/reorder")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> reorderDealInList(@RequestBody CrmDealListReorderRequestDto requestDto) {
+		ResponseEntityDto response = crmDealService.reorderDealInList(requestDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

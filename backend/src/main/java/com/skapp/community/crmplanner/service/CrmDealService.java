@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealReorderRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 
 public interface CrmDealService {
@@ -29,6 +30,8 @@ public interface CrmDealService {
 	ResponseEntityDto updateDealStage(CrmDealUpdateStageRequestDto requestDto);
 
 	ResponseEntityDto reorderDeal(CrmDealReorderRequestDto requestDto);
+
+	ResponseEntityDto reorderDealInList(CrmDealListReorderRequestDto requestDto);
 
 	ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto);
 
