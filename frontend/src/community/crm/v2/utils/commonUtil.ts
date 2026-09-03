@@ -16,6 +16,10 @@ export const formatTableValue = (value?: string | number, prefix = "") =>
 export const formatMonetaryValue = (value?: string) => {
   if (isEmptyValue(value)) return "-";
 
+  const parsed = Number(value);
+
+  if (Number.isNaN(parsed)) return "-";
+
   return `$${value?.split(".")[0]}`;
 };
 
@@ -37,10 +41,10 @@ export const appendId = (ids: number[] | undefined, id: number): number[] => {
   return ids.includes(id) ? ids : [...ids, id];
 };
 
-export const getOwnerName = (owner: CrmOwnerEntity): string =>
-  [owner.firstName, owner.lastName].filter(Boolean).join(" ");
-
-export const getOwnerById = (owners: CrmOwnerRecord, ownerId?: number) => {
+export const getOwnerById = (
+  owners: CrmOwnerRecord,
+  ownerId?: number
+): CrmOwnerEntity | undefined => {
   if (ownerId !== undefined) {
     return owners[ownerId];
   }

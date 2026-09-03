@@ -6,14 +6,12 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { concatStrings } from "~community/common/utils/commonUtil";
-import {
-  DEFAULT_LOOKUP_PAGE_SIZE,
-  SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
 import { useGetOwnerLookup } from "~community/crm/v2/api/ContactApi";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmOwnerLookupFilterRequest } from "~community/crm/v2/types/CrmTypes";
 

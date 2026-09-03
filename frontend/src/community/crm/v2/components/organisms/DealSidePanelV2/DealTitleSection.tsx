@@ -6,9 +6,9 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEventHandler } from "react";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/constants/commonConstants";
 import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 import { useCheckDealNameExists } from "~community/crm/v2/api/DealApi";
 import { validateDealName } from "~community/crm/v2/utils/dealValidations";

@@ -7,13 +7,14 @@ import SearchableDropdown, {
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { useGetOwnerLookup } from "~community/crm/v2/api/ContactApi";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmOwnerLookupFilterRequest } from "~community/crm/v2/types/CrmTypes";
-import { getOwnerById, getOwnerName } from "~community/crm/v2/utils/commonUtil";
+import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 
 interface EditableContactOwnerFieldProps {
   ownerId?: number;
@@ -82,7 +83,10 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
               src: owner.authPic ?? undefined,
               size: "sm"
             }}
-            label={getOwnerName(owner)}
+            label={concatStrings([
+              owner.firstName,
+              owner.lastName ?? ""
+            ]).trim()}
           />
         )
       });
