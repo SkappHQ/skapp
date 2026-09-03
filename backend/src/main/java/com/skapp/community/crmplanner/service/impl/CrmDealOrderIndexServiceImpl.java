@@ -27,7 +27,6 @@ public class CrmDealOrderIndexServiceImpl implements CrmDealOrderIndexService {
 
 		CrmDealOrderIndex orderIndex = new CrmDealOrderIndex();
 		orderIndex.setDealId(deal.getId());
-		orderIndex.setBoard(deal.getOrderIndex());
 		orderIndex.setList(FractionalIndexUtil.generateKeyBetween(maxListIndex, null));
 		crmDealOrderIndexDao.save(orderIndex);
 
