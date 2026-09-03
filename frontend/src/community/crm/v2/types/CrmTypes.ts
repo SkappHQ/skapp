@@ -7,8 +7,7 @@ import {
   CrmKanbanDragType,
   CrmPriorityEnum,
   CrmTaskSortEnum,
-  CrmTaskTabEnum,
-  DealViewEnum
+  CrmTaskTabEnum
 } from "../enums/common";
 import {
   CrmCompanyEntity,
@@ -50,7 +49,6 @@ export interface CrmDealReorderWithinStageRequest {
 }
 
 export interface CrmDealListReorderRequest {
-  view: DealViewEnum;
   dealId: number;
   previousDealId: number | null;
   nextDealId: number | null;
