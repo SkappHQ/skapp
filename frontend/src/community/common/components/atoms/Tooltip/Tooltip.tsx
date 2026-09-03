@@ -105,6 +105,7 @@ const Tooltip: FC<Props> = ({
       }}
     >
       <span
+        role="button"
         tabIndex={tabIndex !== undefined ? tabIndex : isDisabled ? -1 : 0}
         aria-disabled={isDisabled}
         onKeyDown={handleKeyDown}
