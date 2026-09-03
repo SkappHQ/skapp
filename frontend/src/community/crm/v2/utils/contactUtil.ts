@@ -102,7 +102,7 @@ export const linkContactToCompany = (
         ...linked,
         [contact.companyId]: {
           ...company,
-          contactIds: appendId(company.contactIds, contactId)
+          contactIds: appendId(company.contactIds ?? [], contactId)
         }
       };
     }

@@ -55,8 +55,8 @@ describe("formatMonetaryValueWithDecimals", () => {
 });
 
 describe("appendId", () => {
-  it("starts a new list when there is none", () => {
-    expect(appendId(undefined, 1)).toEqual([1]);
+  it("appends to an empty list", () => {
+    expect(appendId([], 1)).toEqual([1]);
   });
 
   it("does not append an id that is already there", () => {

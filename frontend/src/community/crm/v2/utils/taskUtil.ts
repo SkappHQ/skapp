@@ -157,7 +157,7 @@ export const linkTaskToRelatedEntities = (
         ...companies,
         [task.companyId]: {
           ...company,
-          taskIds: appendId(company.taskIds, taskId)
+          taskIds: appendId(company.taskIds ?? [], taskId)
         }
       };
     }
@@ -171,7 +171,7 @@ export const linkTaskToRelatedEntities = (
         ...contacts,
         [task.contactId]: {
           ...contact,
-          taskIds: appendId(contact.taskIds, taskId)
+          taskIds: appendId(contact.taskIds ?? [], taskId)
         }
       };
     }
@@ -183,7 +183,10 @@ export const linkTaskToRelatedEntities = (
     if (deal !== undefined) {
       linked.deals = {
         ...deals,
-        [task.dealId]: { ...deal, taskIds: appendId(deal.taskIds, taskId) }
+        [task.dealId]: {
+          ...deal,
+          taskIds: appendId(deal.taskIds ?? [], taskId)
+        }
       };
     }
   }

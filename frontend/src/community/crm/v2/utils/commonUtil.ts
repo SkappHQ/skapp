@@ -33,7 +33,7 @@ export const formatMonetaryValueWithDecimals = (value?: string | number) => {
   return `$${parsed.toFixed(2)}`;
 };
 
-export const appendId = (ids: number[] = [], id: number): number[] =>
+export const appendId = (ids: number[], id: number): number[] =>
   ids.includes(id) ? ids : [...ids, id];
 
 export const getOwnerById = (

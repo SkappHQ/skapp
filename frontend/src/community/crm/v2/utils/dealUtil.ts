@@ -88,7 +88,7 @@ export const linkDealToRelatedEntities = (
         ...companies,
         [deal.companyId]: {
           ...company,
-          dealIds: appendId(company.dealIds, dealId)
+          dealIds: appendId(company.dealIds ?? [], dealId)
         }
       };
     }
@@ -102,7 +102,7 @@ export const linkDealToRelatedEntities = (
         ...contacts,
         [deal.contactId]: {
           ...contact,
-          dealIds: appendId(contact.dealIds, dealId)
+          dealIds: appendId(contact.dealIds ?? [], dealId)
         }
       };
     }
