@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import React, { FC, MouseEvent, ReactNode, useRef, useState } from "react";
+import React, { FC, MouseEvent, ReactNode, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { IconName } from "~community/common/types/IconTypes";
@@ -30,6 +30,7 @@ interface KebabMenuProps {
     menuItem?: object;
     menuItemText?: object;
   };
+  disablePortal?: boolean;
 }
 
 const KebabMenu: FC<KebabMenuProps> = ({
@@ -41,12 +42,12 @@ const KebabMenu: FC<KebabMenuProps> = ({
     anchorOrigin: { vertical: "bottom", horizontal: "left" },
     transformOrigin: { vertical: "top", horizontal: "left" }
   },
-  customStyles = {}
+  customStyles = {},
+  disablePortal = false
 }) => {
   const theme = useTheme();
   const classes = styles(theme);
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const open = Boolean(anchorEl);
@@ -75,7 +76,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
   };
 
   return (
-    <Box ref={wrapperRef} sx={{ ...classes.wrapper, ...customStyles.wrapper }}>
+    <Box sx={{ ...classes.wrapper, ...customStyles.wrapper }}>
       <Box
         onClick={handleMenuBtnClick}
         onKeyDown={handleMenuBtnKeyDown}
@@ -95,7 +96,7 @@ const KebabMenu: FC<KebabMenuProps> = ({
           anchorOrigin={menuAlign.anchorOrigin}
           transformOrigin={menuAlign.transformOrigin}
           disableScrollLock={true}
-          container={() => wrapperRef.current}
+          disablePortal={disablePortal}
           sx={{ ...classes.menu, ...customStyles.menu }}
         >
           {menuItems?.map((item: MenuItemTypes) => (

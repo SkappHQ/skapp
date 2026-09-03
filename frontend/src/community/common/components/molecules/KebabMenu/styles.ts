@@ -15,7 +15,10 @@ const styles = (theme: Theme): StyleProps => ({
       position: "absolute",
       top: "0rem",
       left: "-1.25rem",
-      zIndex: ZIndexEnums.POPOVER
+      zIndex: ZIndexEnums.POPOVER,
+      textAlign: "left",
+      whiteSpace: "nowrap",
+      textTransform: "none"
     }
   },
   menuItem: {
