@@ -13,6 +13,8 @@ import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import lombok.experimental.UtilityClass;
 
@@ -135,6 +137,18 @@ public class CrmValidations {
 
 		if (!name.matches(CrmConstants.DEAL_NAME_REGEX)) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NAME_INVALID_CHARS);
+		}
+	}
+
+	public static void validateDealListViewConfig(CrmDealListViewConfigDto config) {
+		if (config == null || config.getFields() == null || config.getFields().isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_LIST_VIEW_FIELDS_REQUIRED);
+		}
+
+		for (CrmDealListViewFieldDto field : config.getFields()) {
+			if (field.getField() == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_LIST_VIEW_FIELD_REQUIRED);
+			}
 		}
 	}
 

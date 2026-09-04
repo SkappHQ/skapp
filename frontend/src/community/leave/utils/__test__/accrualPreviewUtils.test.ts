@@ -20,6 +20,7 @@ const basePolicy = (
   leaveTypeEmoji: null,
   policyType: PolicyType.ACCRUAL,
   status: LeavePolicyStatus.ACTIVE,
+  assignedEmployeeCount: 0,
   accrualDays: 2,
   frequency: AccrualFrequency.MONTHLY,
   waitingPeriodDays: null,
