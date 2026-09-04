@@ -38,16 +38,9 @@ public class CommonModuleUtils {
 	 * @param timeConfigs List of time configurations for working days.
 	 * @return True if the date is a working day, false otherwise.
 	 */
-	public static boolean checkIfDayIsWorkingDay(LocalDate date, List<TimeConfig> timeConfigs,
-			String organizationTimeZone) {
+	public static boolean checkIfDayIsWorkingDay(LocalDate date, List<TimeConfig> timeConfigs) {
 
 		DayOfWeek checkingDay = date.getDayOfWeek();
-
-		if (organizationTimeZone != null) {
-			ZoneId orgTimeZone = ZoneId.of(organizationTimeZone);
-			ZonedDateTime orgDateTime = date.atStartOfDay(ZoneOffset.UTC).withZoneSameInstant(orgTimeZone);
-			checkingDay = orgDateTime.getDayOfWeek();
-		}
 
 		if (timeConfigs.isEmpty()) {
 			return true;
@@ -152,7 +145,7 @@ public class CommonModuleUtils {
 		LocalDate currentDate = startDate;
 
 		while (!currentDate.isAfter(endDate)) {
-			if (checkIfDayIsWorkingDay(currentDate, timeConfigs, organizationTimeZone)
+			if (checkIfDayIsWorkingDay(currentDate, timeConfigs)
 					&& checkIfDayIsNotAHoliday(leaveRequest, holidayObjects, holidays, currentDate)) {
 				workDays++;
 			}

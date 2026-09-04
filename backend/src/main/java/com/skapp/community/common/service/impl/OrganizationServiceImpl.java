@@ -21,6 +21,7 @@ import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
@@ -100,6 +101,15 @@ public class OrganizationServiceImpl implements OrganizationService {
 		}
 	}
 
+	protected static void validateOrganizationTimeZone(String organizationTimeZone) {
+		if (StringUtils.isNullOrBlank(organizationTimeZone)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_REQUIRED);
+		}
+		if (!DateTimeUtils.isValidTimeZone(organizationTimeZone)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
+		}
+	}
+
 	@Override
 	public ResponseEntityDto saveOrganization(OrganizationDto organizationDto) {
 		User currentUser = userService.getCurrentUser();
@@ -107,6 +117,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 		if (organizationDto.getThemeColor() != null && !isValidThemeColor(organizationDto.getThemeColor()))
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID);
+
+		validateOrganizationTimeZone(organizationDto.getOrganizationTimeZone());
 
 		if (organizationDao.count() > 0)
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EXCEED_MAX_ORGANIZATION_COUNT);
@@ -231,7 +243,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 	@Override
 	public ZoneId getOrganizationZoneId() {
-		return DateTimeUtils.resolveZoneId(getOrganizationTimeZone());
+		return DateTimeUtils.requireZoneId(getOrganizationTimeZone());
 	}
 
 	public void getDefaultTimeConfigs() {
