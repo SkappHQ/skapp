@@ -97,7 +97,7 @@ export const linkContactToCompany = (
   if (contact.companyId != null) {
     const company = linked[contact.companyId];
 
-    if (company !== undefined) {
+    if (company?.contactIds !== undefined) {
       linked = {
         ...linked,
         [contact.companyId]: {
@@ -117,15 +117,6 @@ export const getContactDisplayName = (
   if (!contact) return "";
   if (contact.name) return contact.name;
   return [contact.firstName, contact.lastName].filter(Boolean).join(" ");
-};
-
-export const getContactNameById = (
-  contacts: CrmContactRecord,
-  contactId?: number
-) => {
-  if (contactId !== undefined) {
-    return getContactDisplayName(contacts[contactId]);
-  }
 };
 
 export const buildContactOptions = (
@@ -159,7 +150,7 @@ export const getContactMetricItems = (
   const openTasks: CrmMetricItem = {
     id: "openTasksCount",
     title: translateText(["metrics", "openTasks"]),
-    amount: metrics?.openTasksCount
+    amount: metrics?.openTasksCount ?? 0
   };
 
   if (
@@ -179,10 +170,10 @@ export const getContactMetricItems = (
     {
       id: "activeDealsCount",
       title: translateText(["metrics", "activeDeals"]),
-      amount: metrics?.activeDealsCount
+      amount: metrics?.activeDealsCount ?? 0
     },
     {
-      id: "totalRevenue",
+      id: "closedDealValue",
       title: translateText(["metrics", "totalRevenue"]),
       amount: metrics?.closedDealValue,
       isCurrency: true
@@ -228,29 +219,7 @@ export const getSelectedContact = (
   }
 };
 
-export const getContactFormInitialValues = (
-  contact?: CrmContactEntity,
-  defaultOwnerId?: number
-): CrmContactEntity => ({
-  name: contact?.name ?? "",
-  email: contact?.email ?? "",
-  contactNumber: contact?.contactNumber ?? "",
-  companyId: contact?.companyId,
-  ownerId: contact?.ownerId ?? defaultOwnerId
-});
-
-export const getTrimmedContactValues = (
-  values: CrmContactEntity
-): CrmContactEntity => ({
-  name: values.name?.trim(),
-  email: values.email?.trim(),
-  contactNumber: values.contactNumber?.trim(),
-  companyId: values.companyId,
-  companyName: values.companyName?.trim(),
-  ownerId: values.ownerId
-});
-
-export const getChangedContactFields = (
+export const getContactFieldDiff = (
   initialValues: CrmContactEntity,
   currentValues: CrmContactEntity
 ): CrmContactEntity => {
