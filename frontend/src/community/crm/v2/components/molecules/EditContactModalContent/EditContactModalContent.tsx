@@ -124,7 +124,7 @@ const EditContactModalContent: FC = () => {
       return;
     }
 
-    editSelectedContact({ id: selectedContactId, ...changedFields });
+    editSelectedContact({ id: selectedContactId, contact: changedFields });
   };
 
   return (
