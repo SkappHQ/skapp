@@ -1126,9 +1126,11 @@ class CrmContactControllerIntegrationTest {
 
 		CrmDealStage openStage = savedStage(CrmDealStageType.OPEN);
 		CrmDealStage wonStage = savedStage(CrmDealStageType.WON);
+		CrmDealStage lostStage = savedStage(CrmDealStageType.LOST);
 		savedDeal(contactId, companyId, openStage, "150");
 		savedDeal(contactId, companyId, wonStage, "400");
 		savedDeal(contactId, companyId, wonStage, "600");
+		savedDeal(contactId, companyId, lostStage, "999");
 		savedTask(contactId, false, LocalDateTime.now().plusDays(3));
 		savedTask(contactId, false, LocalDateTime.now().minusDays(2));
 
@@ -1138,6 +1140,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealCount']").value(2))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(2))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(1))
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
@@ -1145,6 +1148,10 @@ class CrmContactControllerIntegrationTest {
 		String closedDealValue = JsonPath.read(content, "$.results[0].closedDealValue");
 		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
 			.isEqualByComparingTo("1000");
+
+		String pipelineRevenue = JsonPath.read(content, "$.results[0].pipelineRevenue");
+		assertThat(new BigDecimal(pipelineRevenue)).as("pipeline revenue excludes WON and LOST deals")
+			.isEqualByComparingTo("150");
 	}
 
 	@Test
@@ -1243,7 +1250,9 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealValue']").value("0"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealCount']").value(0))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(0));
 	}
 
 	@Test
