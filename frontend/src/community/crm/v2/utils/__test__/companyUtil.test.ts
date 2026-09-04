@@ -1,13 +1,13 @@
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-import { getChangedCompanyFields, removeCompany } from "../companyUtil";
+import { getCompanyFieldDiff, removeCompany } from "../companyUtil";
 
 const acme: CrmCompanyEntity = { id: 1, name: "Acme Corp" };
 const globex: CrmCompanyEntity = { id: 2, name: "Globex" };
 
-describe("getChangedCompanyFields", () => {
+describe("getCompanyFieldDiff", () => {
   it("returns only the fields that changed", () => {
-    const result = getChangedCompanyFields(
+    const result = getCompanyFieldDiff(
       { name: "Acme Corp", website: "https://acme.com" },
       { name: "Acme Renamed", website: "https://acme.com" }
     );
@@ -16,7 +16,7 @@ describe("getChangedCompanyFields", () => {
   });
 
   it("returns an empty object when nothing changed", () => {
-    const result = getChangedCompanyFields(
+    const result = getCompanyFieldDiff(
       { name: "Acme Corp" },
       { name: "Acme Corp" }
     );
