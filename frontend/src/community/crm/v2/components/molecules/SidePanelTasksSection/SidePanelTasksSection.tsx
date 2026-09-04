@@ -9,7 +9,11 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
-import { resolveTasks, updateTask } from "~community/crm/v2/utils/taskUtil";
+import {
+  applyTaskCompletion,
+  resolveTasks,
+  updateTask
+} from "~community/crm/v2/utils/taskUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -48,11 +52,16 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const [optimisticTasks, applyOptimisticCompletion] = useOptimistic(
     tasks,
-    (
-      current,
-      { taskId, isCompleted }: { taskId: number; isCompleted: boolean }
-    ) => updateTask(current, taskId, { isCompleted })
+    applyTaskCompletion
   );
+
+  const showToggleError = () =>
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateTaskText(["toggleErrorTitle"]),
+      description: translateTaskText(["toggleErrorDescription"])
+    });
 
   const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
     if (updatedTask.id !== undefined) {
@@ -64,18 +73,9 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     startTransition(async () => {
       applyOptimisticCompletion({ taskId, isCompleted });
 
-      try {
-        await updateCompletion({ id: taskId, task: { isCompleted } });
-      } catch {
-        // The optimistic row reverts on its own once this transition ends,
-        // because the store was never written to.
-        setToastMessage({
-          open: true,
-          toastType: ToastType.ERROR,
-          title: translateTaskText(["toggleErrorTitle"]),
-          description: translateTaskText(["toggleErrorDescription"])
-        });
-      }
+      await updateCompletion({ id: taskId, task: { isCompleted } }).catch(
+        showToggleError
+      );
     });
   };
 

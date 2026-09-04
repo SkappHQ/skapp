@@ -41,6 +41,7 @@ import {
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 import {
+  applyTaskCompletion,
   getTaskGroups,
   resolveTasks,
   toTaskIds,
@@ -72,7 +73,19 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       }))
     );
 
-  const { mutateAsync: updateCompletion } = useUpdateTask();
+  const showToggleError = () =>
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+
+  const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
+    if (updatedTask.id !== undefined) {
+      applyCompletion(updatedTask.id, updatedTask.isCompleted === true);
+    }
+  });
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -130,10 +143,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const [optimisticTasks, applyOptimisticCompletion] = useOptimistic(
     tasks,
-    (
-      current,
-      { taskId, isCompleted }: { taskId: number; isCompleted: boolean }
-    ) => updateTaskRecord(current, [{ id: taskId, isCompleted }])
+    applyTaskCompletion
   );
 
   const tasksInView = useMemo(
@@ -172,22 +182,10 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     startTransition(async () => {
       applyOptimisticCompletion({ taskId, isCompleted: completed });
 
-      try {
-        const updatedTask = await updateCompletion({
-          id: taskId,
-          task: { isCompleted: completed }
-        });
-        applyCompletion(taskId, updatedTask.isCompleted === true);
-      } catch {
-        // The optimistic row reverts on its own once this transition ends,
-        // because the store was never written to.
-        setToastMessage({
-          open: true,
-          toastType: ToastType.ERROR,
-          title: translateText(["toggleErrorTitle"]),
-          description: translateText(["toggleErrorDescription"])
-        });
-      }
+      await updateCompletion({
+        id: taskId,
+        task: { isCompleted: completed }
+      }).catch(showToggleError);
     });
   };
 
