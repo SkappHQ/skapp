@@ -332,7 +332,6 @@
             </exclusions>
         </dependency>
 
-        <!-- Apache POI - XLSX report exports -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
