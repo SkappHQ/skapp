@@ -44,12 +44,12 @@ export const getCompanyMetricItems = (
   {
     id: "openDeals",
     title: translateText(["metrics", "openDeals"]),
-    amount: company.metrics?.openDealsCount
+    amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
     title: translateText(["metrics", "closedDeals"]),
-    amount: company.metrics?.closedDealsCount
+    amount: company.metrics?.closedDealsCount ?? 0
   }
 ];
 
