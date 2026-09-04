@@ -1,37 +1,40 @@
-import { PriorityIcon } from "@rootcodelabs/skapp-ui";
+import { Avatar, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import OwnerAvatar from "~community/crm/v2/components/atoms/OwnerAvatar/OwnerAvatar";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
-import { getPriorityConfig } from "~community/crm/v2/utils/taskUtil";
+import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import {
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
-interface TaskRowMetaProps {
+interface Props {
   task: CrmTaskEntity;
-  applyCompletedStyle: boolean;
+  owner?: CrmOwnerEntity;
+  isCompletedStyleApplied: boolean;
 }
 
-const TaskRowMeta: FC<TaskRowMetaProps> = ({ task, applyCompletedStyle }) => {
-  const owners = useCrmStoreV2((store) => store.owners);
-
+const TaskRowMeta: FC<Props> = ({ task, owner, isCompletedStyleApplied }) => {
   const priorityConfig = getPriorityConfig(task.priority);
-
-  const owner = getOwnerById(owners, task.ownerId);
+  const imageUrl = useGetImageUrl(owner?.authPic ?? "");
 
   return (
     <div
-      className={`flex items-center gap-6 shrink-0 ${applyCompletedStyle ? "opacity-40" : ""}`}
+      className={`flex items-center gap-6 shrink-0 ${isCompletedStyleApplied ? "opacity-40" : ""}`}
     >
-      {priorityConfig && (
-        <PriorityIcon
-          icon={priorityConfig.icon}
-          bgColor={priorityConfig.bgColor}
-        />
-      )}
+      <PriorityIcon
+        icon={priorityConfig.icon}
+        bgColor={priorityConfig.bgColor}
+      />
 
-      {owner !== undefined && (
-        <OwnerAvatar id={`task-owner-${task.id}`} owner={owner} size="xs" />
+      {owner && (
+        <Avatar
+          id={`task-owner-${task.id}`}
+          size="xs"
+          src={imageUrl ?? undefined}
+          firstName={owner.firstName}
+          lastName={owner.lastName}
+        />
       )}
     </div>
   );
