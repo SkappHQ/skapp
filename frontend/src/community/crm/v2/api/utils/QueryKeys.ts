@@ -4,6 +4,7 @@ import {
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
   CrmOwnerLookupFilterRequest,
+  CrmRelatedTasksFilterRequest,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
@@ -27,7 +28,19 @@ export const crmContactQueryKeys = {
 };
 
 export const crmTaskQueryKeys = {
-  LIST: (params: CrmTaskFilterRequest) => [CRM_TASKS, "list", params]
+  LISTS: [CRM_TASKS, "list"],
+  LIST: (params: CrmTaskFilterRequest) => [CRM_TASKS, "list", params],
+  COMPLETED_LIST: (params: CrmTaskFilterRequest) => [
+    CRM_TASKS,
+    "completed-list",
+    params
+  ],
+  DETAIL: (id: number) => [CRM_TASKS, "detail", id],
+  RELATED: (params: CrmRelatedTasksFilterRequest) => [
+    CRM_TASKS,
+    "related",
+    params
+  ]
 };
 
 export const crmDealQueryKeys = {
