@@ -45,8 +45,6 @@ import java.util.Optional;
 public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 
 	@NonNull
-	private final TimeZoneService timeZoneService;
-
 	private final EmployeeDao employeeDao;
 
 	@NonNull
@@ -57,6 +55,8 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 
 	@NonNull
 	private final PeopleMapper peopleMapper;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	public ResponseEntityDto getDashBoardSummary(PeopleAnalyticsFilterDto peopleAnalyticsFilterDto) {
