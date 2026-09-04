@@ -3,9 +3,10 @@ import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface SidePanelTasksListProps {
-  taskIds: number[];
+  tasks: CrmTaskEntity[];
   onAddTask: () => void;
   isAddTaskDisabled?: boolean;
   onRowClick?: (taskId: number) => void;
@@ -13,9 +14,11 @@ interface SidePanelTasksListProps {
 }
 
 const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
-  taskIds,
+  tasks,
   onAddTask,
-  isAddTaskDisabled
+  isAddTaskDisabled,
+  onRowClick,
+  onToggleComplete
 }) => {
   const translateText = useTranslator(
     "crmModule",
@@ -27,9 +30,17 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
   return (
     <>
       <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
-        {taskIds.map((taskId) => (
-          <TaskRow key={taskId} taskId={taskId} />
-        ))}
+        {tasks.map((task) =>
+          task.id === undefined ? null : (
+            <TaskRow
+              key={task.id}
+              task={task}
+              taskId={task.id}
+              onRowClick={onRowClick}
+              onToggleComplete={onToggleComplete}
+            />
+          )
+        )}
       </div>
       <div className=" flex">
         <ButtonV2
