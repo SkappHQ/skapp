@@ -7,9 +7,10 @@ import {
 import { FC, useMemo } from "react";
 
 import {
-  CrmContactEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmContactEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { getCompanyById } from "~community/crm/v2/utils/companyUtil";
 import {
   buildContactOptions,
   getContactDisplayName
@@ -43,9 +44,6 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
-  const resolveCompanyName = (contact: CrmContactEntity): string | undefined =>
-    contact.companyId != null ? companies[contact.companyId]?.name : undefined;
-
   const dropdownOptions: DropdownOption[] = useMemo(
     () => buildContactOptions(contacts, companies),
     [contacts, companies]
@@ -71,8 +69,10 @@ const ContactPopupSearch: FC<Props> = ({
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
-      name={selectedContact ? getContactDisplayName(selectedContact) : undefined}
-      companyName={selectedContact ? resolveCompanyName(selectedContact) : undefined}
+      name={
+        selectedContact ? getContactDisplayName(selectedContact) : undefined
+      }
+      companyName={getCompanyById(companies, selectedContact?.companyId)?.name}
       placeholder={placeholder}
       triggerProps={triggerProps}
     />
@@ -89,7 +89,7 @@ const ContactPopupSearch: FC<Props> = ({
       <ContactOptionItem
         key={option.id}
         contact={contact}
-        companyName={resolveCompanyName(contact)}
+        companyName={getCompanyById(companies, contact.companyId)?.name}
         option={option}
         onSelect={onSelect}
       />
