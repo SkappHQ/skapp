@@ -11,7 +11,7 @@ import {
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
   for (const company of companies) {
-    if (company.id !== undefined) {
+    if (company.id != null) {
       companyIds.push(company.id);
     }
   }
@@ -53,13 +53,13 @@ export const getCompanyMetricItems = (
   }
 ];
 
-export const getSelectedCompany = (
+export const getCompanyById = (
   companies: CrmCompanyRecord,
-  companyId: number | null
-) => {
-  if (companyId === null) return undefined;
-
-  return companies[companyId];
+  companyId?: number | null
+): CrmCompanyEntity | undefined => {
+  if (companyId != null) {
+    return companies[companyId];
+  }
 };
 
 export const updateCompany = (
@@ -132,15 +132,6 @@ export const getChangedCompanyFields = (
   }
 
   return changedFields;
-};
-
-export const getCompanyNameById = (
-  companies: CrmCompanyRecord,
-  companyId?: number | null
-) => {
-  if (companyId != null) {
-    return companies[companyId]?.name;
-  }
 };
 
 export const getMissingCompanyIds = (
