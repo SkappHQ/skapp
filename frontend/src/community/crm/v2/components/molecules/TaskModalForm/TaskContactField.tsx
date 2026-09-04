@@ -3,7 +3,7 @@ import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import SelectableSearchField from "~community/common/components/molecules/SelectableSearchField/SelectableSearchField";
+import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
