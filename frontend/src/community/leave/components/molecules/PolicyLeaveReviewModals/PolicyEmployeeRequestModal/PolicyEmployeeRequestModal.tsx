@@ -5,10 +5,11 @@ import { FC } from "react";
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import {
   useCheckPolicyLeaveAlreadyNudged,
   useNudgePolicyLeaveRequestManagers
@@ -36,6 +37,7 @@ interface Props {
 
 const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
   const translateText = useTranslator("leaveModule", "myRequests");
+  const displayZone = useDisplayZone();
   const { setToastMessage } = useToast();
 
   const { data: nudgeLog } = useCheckPolicyLeaveAlreadyNudged(
@@ -107,8 +109,9 @@ const PolicyEmployeeRequestModal: FC<Props> = ({ request, setPopupType }) => {
       />
       <StatusPopupRow
         label={translateText(["myLeaveRequests", "dateApplied"])}
-        durationDate={convertDateToFormat(
-          new Date(request.createdDate ?? ""),
+        durationDate={formatInstant(
+          request.createdDate,
+          displayZone,
           DAY_MONTH_YEAR_FORMAT
         )}
       />

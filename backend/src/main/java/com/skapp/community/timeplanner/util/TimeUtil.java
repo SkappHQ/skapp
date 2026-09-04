@@ -5,6 +5,7 @@ import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +35,19 @@ public class TimeUtil {
 		return hoursMap;
 	}
 
-	public static boolean isCurrentTimeInEvening(TimeConfig currentDayConfig, float morningHours, float eveningHours) {
+	public static boolean isCurrentTimeInEvening(TimeConfig currentDayConfig, float morningHours, float eveningHours,
+			ZoneId zoneId) {
 		LocalTime startTime = LocalTime.of(currentDayConfig.getStartHour(), currentDayConfig.getStartMinute());
 		LocalTime morningEndTime = startTime.plusHours((long) morningHours);
 		LocalTime eveningEndTime = morningEndTime.plusHours((long) eveningHours);
-		LocalTime currentTime = LocalTime.now();
+		LocalTime currentTime = LocalTime.now(zoneId);
 		return currentTime.isAfter(morningEndTime) && currentTime.isBefore(eveningEndTime);
 	}
 
-	public static boolean isCurrentTimeInMorning(TimeConfig currentDayConfig, float morningHours) {
+	public static boolean isCurrentTimeInMorning(TimeConfig currentDayConfig, float morningHours, ZoneId zoneId) {
 		LocalTime startTime = LocalTime.of(currentDayConfig.getStartHour(), currentDayConfig.getStartMinute());
 		LocalTime endTime = startTime.plusHours((long) morningHours);
-		LocalTime currentTime = LocalTime.now();
+		LocalTime currentTime = LocalTime.now(zoneId);
 		return currentTime.isAfter(startTime) && currentTime.isBefore(endTime);
 	}
 

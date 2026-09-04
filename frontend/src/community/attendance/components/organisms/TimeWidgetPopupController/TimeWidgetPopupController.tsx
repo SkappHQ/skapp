@@ -6,12 +6,18 @@ import AutoClockOutMidnightModal from "~community/attendance/components/molecule
 import ClockOutModal from "~community/attendance/components/molecules/AttendanceModals/ClockOutModal/ClockOutModal";
 import LeaveClockInModal from "~community/attendance/components/molecules/AttendanceModals/LeaveClockInModal/LeaveClockInModal";
 import PreMidnightClockOutAlertModal from "~community/attendance/components/molecules/AttendanceModals/PreMidnightClockOutAlertModal/PreMidnightClockOutAlertModal";
+import {
+  AUTO_CLOCK_OUT_TIME,
+  PRE_MIDNIGHT_ALERT_TIME
+} from "~community/attendance/constants/constants";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   AttendancePopupTypes,
   AttendanceSlotType
 } from "~community/attendance/types/attendanceTypes";
+import { useBusinessZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { millisUntilTodayAt } from "~community/common/utils/dateTimeUtils";
 
 const TimeWidgetPopupController = (): JSX.Element => {
   const [popupType, setPopupType] = useState<AttendancePopupTypes>(
@@ -28,6 +34,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
     setIsPreMidnightClockOutAlertOpen,
     setIsAutoClockOutMidnightModalOpen
   } = useAttendanceStore((state) => state);
+  const businessZone = useBusinessZone();
 
   const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
 
@@ -57,14 +64,11 @@ const TimeWidgetPopupController = (): JSX.Element => {
   }, [status, isLeave]);
 
   useEffect(() => {
-    const firstTarget = new Date();
-    firstTarget.setHours(23, 50, 0, 0);
-
-    const now = new Date();
-    let timeUntilAlert = 0;
-    if (now <= firstTarget) {
-      timeUntilAlert = firstTarget.getTime() - now.getTime();
-    } else {
+    const timeUntilAlert = millisUntilTodayAt(
+      PRE_MIDNIGHT_ALERT_TIME,
+      businessZone
+    );
+    if (timeUntilAlert === undefined) {
       return;
     }
 
@@ -78,19 +82,17 @@ const TimeWidgetPopupController = (): JSX.Element => {
     }, timeUntilAlert);
 
     return () => clearTimeout(timeoutId);
-  }, [status]);
+  }, [status, businessZone]);
 
   useEffect(() => {
-    const secondTarget = new Date();
-    secondTarget.setHours(23, 59, 58, 0);
-
-    const now = new Date();
-    let timeUntilAlert = 0;
-    if (now <= secondTarget) {
-      timeUntilAlert = secondTarget.getTime() - now.getTime();
-    } else {
+    const timeUntilAlert = millisUntilTodayAt(
+      AUTO_CLOCK_OUT_TIME,
+      businessZone
+    );
+    if (timeUntilAlert === undefined) {
       return;
     }
+
     const timeoutId = setTimeout(async () => {
       if (
         status === AttendanceSlotType.START ||
@@ -102,7 +104,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
     }, timeUntilAlert);
 
     return () => clearTimeout(timeoutId);
-  }, [status]);
+  }, [status, businessZone]);
 
   const getModalTitle = (): string => {
     if (isAttendanceModalOpen && popupType === AttendancePopupTypes.CLOCK_OUT) {

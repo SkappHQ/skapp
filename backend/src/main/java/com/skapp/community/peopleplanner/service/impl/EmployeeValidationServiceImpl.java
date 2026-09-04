@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class EmployeeValidationServiceImpl implements EmployeeValidationService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final TeamDao teamDao;
 
@@ -287,7 +290,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 				}
 
 				if (employeePersonalDetailsDto.getGeneral().getDateOfBirth() != null
-						&& employeePersonalDetailsDto.getGeneral().getDateOfBirth().isAfter(LocalDate.now())) {
+						&& employeePersonalDetailsDto.getGeneral()
+							.getDateOfBirth()
+							.isAfter(timeZoneService.currentBusinessDate())) {
 					throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_DOB_FUTURE_DATE);
 				}
 			}
@@ -345,7 +350,8 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 					if (familyDto.getParentName() != null && !familyDto.getParentName().isEmpty()) {
 						Validations.validateFamilyParentName(familyDto.getParentName());
 					}
-					if (familyDto.getDateOfBirth() != null && familyDto.getDateOfBirth().isAfter(LocalDate.now())) {
+					if (familyDto.getDateOfBirth() != null
+							&& familyDto.getDateOfBirth().isAfter(timeZoneService.currentBusinessDate())) {
 						throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE);
 					}
 				});

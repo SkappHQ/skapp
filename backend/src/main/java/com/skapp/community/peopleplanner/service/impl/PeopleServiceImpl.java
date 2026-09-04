@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
@@ -177,6 +178,8 @@ import java.util.stream.Collectors;
 public class PeopleServiceImpl implements PeopleService {
 
 	protected final UserService userService;
+
+	private final TimeZoneService timeZoneService;
 
 	private final MessageUtil messageUtil;
 
@@ -1652,7 +1655,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private LocalDate resolveBirthdayNotificationDate() {
-		return LocalDate.now(ZoneId.of(organizationService.getOrganizationTimeZone()));
+		return timeZoneService.currentBusinessDate();
 	}
 
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
@@ -2949,7 +2952,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);
 		employee.setAccountStatus(status);
-		employee.setTerminationDate(DateTimeUtils.getCurrentUtcDate());
+		employee.setTerminationDate(timeZoneService.currentBusinessDate());
 
 		user.setIsActive(false);
 
