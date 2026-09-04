@@ -1,8 +1,5 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import {
-  CrmIndustryEnum,
-  CrmMetricLabelThemeEnum
-} from "~community/crm/v2/enums/common";
+import { CrmMetricLabelThemeEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
@@ -55,12 +52,8 @@ export const getCompanyMetricItems = (
 
 export const getCompanyById = (
   companies: CrmCompanyRecord,
-  companyId?: number | null
-): CrmCompanyEntity | undefined => {
-  if (companyId != null) {
-    return companies[companyId];
-  }
-};
+  companyId: number
+): CrmCompanyEntity | undefined => companies[companyId];
 
 export const updateCompany = (
   companies: CrmCompanyRecord,
@@ -85,27 +78,7 @@ export const removeCompany = (
   };
 };
 
-export const getCompanyFormInitialValues = (
-  company?: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: company?.name ?? "",
-  industry: company?.industry ?? CrmIndustryEnum.NONE,
-  website: company?.website ?? "",
-  address: company?.address ?? "",
-  contactNumber: company?.contactNumber ?? ""
-});
-
-export const getTrimmedCompanyValues = (
-  values: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: values.name?.trim(),
-  industry: values.industry,
-  website: values.website?.trim(),
-  address: values.address?.trim(),
-  contactNumber: values.contactNumber?.trim()
-});
-
-export const getChangedCompanyFields = (
+export const getCompanyFieldDiff = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
 ): CrmCompanyEntity => {
