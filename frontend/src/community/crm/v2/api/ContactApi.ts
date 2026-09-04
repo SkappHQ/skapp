@@ -4,6 +4,7 @@ import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
 import {
+  CrmContactFilterRequest,
   CrmContactLookupResponse,
   CrmOwnerListResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -12,23 +13,21 @@ import { crmLookupEndpoints } from "./utils/ApiEndpoints";
 import { crmLookupQueryKeys } from "./utils/QueryKeys";
 
 const fetchContactLookup = async (
-  searchKeyword: string,
-  size: number
+  filters: CrmContactFilterRequest
 ): Promise<CrmContactLookupResponse> => {
   const response = await authFetchV2.get(crmLookupEndpoints.CONTACT_LOOKUP, {
-    params: { searchKeyword, size }
+    params: filters
   });
   return response?.data?.results?.[0];
 };
 
 export const useGetContactLookupV2 = (
-  searchKeyword: string,
-  size: number,
+  filters: CrmContactFilterRequest,
   enabled: boolean
-) =>
+): UseQueryResult<CrmContactLookupResponse> =>
   useQuery({
-    queryKey: crmLookupQueryKeys.CONTACT_LOOKUP(searchKeyword, size),
-    queryFn: () => fetchContactLookup(searchKeyword, size),
+    queryKey: crmLookupQueryKeys.CONTACT_LOOKUP(filters),
+    queryFn: () => fetchContactLookup(filters),
     enabled,
     refetchOnWindowFocus: false
   });
