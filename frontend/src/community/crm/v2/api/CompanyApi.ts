@@ -15,7 +15,7 @@ import authFetch, {
 } from "~community/common/utils/axiosInterceptor";
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { DOMAIN_SEARCH_LIMIT } from "~community/crm/v2/constants/commonConstants";
 import {
   CrmCompanyEntity,
   CrmCompanyMetrics
@@ -224,7 +224,7 @@ const searchCompaniesByDomain = async (
 ): Promise<CrmCompanyDomainSearchResponse> => {
   const response = await authFetch.get(
     crmCompanyEndpoints.SEARCH_COMPANIES_BY_DOMAIN,
-    { params: { domain, limit: DEFAULT_LOOKUP_PAGE_SIZE } }
+    { params: { domain, limit: DOMAIN_SEARCH_LIMIT } }
   );
   return response?.data?.results?.[0];
 };

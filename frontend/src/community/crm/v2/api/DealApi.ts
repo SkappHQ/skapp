@@ -57,17 +57,6 @@ const fetchDeals = async (
   return response?.data?.results?.[0];
 };
 
-export const useGetDealLookupV2 = (
-  filters: CrmDealFilterRequest,
-  enabled: boolean
-): UseQueryResult<CrmDealListResponse> =>
-  useQuery({
-    queryKey: crmDealQueryKeys.GET_DEALS(filters),
-    queryFn: () => fetchDeals(filters),
-    enabled,
-    refetchOnWindowFocus: false
-  });
-
 export const useGetDealsInfinite = (
   filters: CrmDealFilterRequest,
   enabled?: boolean
@@ -93,7 +82,7 @@ export const useGetDealsInfinite = (
 export const useGetDealLookup = (
   filters: CrmDealFilterRequest,
   enabled?: boolean
-) =>
+): UseQueryResult<CrmDealListResponse> =>
   useQuery({
     queryKey: crmDealQueryKeys.LOOKUP(filters),
     queryFn: () => fetchDeals(filters),
