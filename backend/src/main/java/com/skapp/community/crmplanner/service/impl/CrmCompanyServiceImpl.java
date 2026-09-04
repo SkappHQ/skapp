@@ -33,6 +33,7 @@ import org.springframework.data.domain.PageRequest;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -104,6 +105,30 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		log.info("createCompany: execution ended successfully");
 		return new ResponseEntityDto(false, responseDto);
+	}
+
+	@Override
+	@Transactional
+	public CrmCompany findOrCreateCompanyByName(String name) {
+		log.info("findOrCreateCompanyByName: execution started");
+
+		String trimmedName = name.trim();
+		CrmValidations.validateCompanyName(trimmedName);
+
+		Optional<CrmCompany> existingCompany = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse(trimmedName);
+		if (existingCompany.isPresent()) {
+			log.info("findOrCreateCompanyByName: matched an existing company");
+			return existingCompany.get();
+		}
+
+		validateCompanyCreationLimit();
+
+		CrmCompany newCompany = new CrmCompany();
+		newCompany.setName(trimmedName);
+		CrmCompany savedCompany = crmCompanyDao.save(newCompany);
+
+		log.info("findOrCreateCompanyByName: execution ended");
+		return savedCompany;
 	}
 
 	protected void validateCompanyCreationLimit() {
