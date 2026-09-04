@@ -5,10 +5,11 @@ import { Dispatch, FC, SetStateAction, useEffect } from "react";
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import {
   useCheckLeaveAlreadyNudged,
   useNudgeManager
@@ -36,6 +37,7 @@ const EmployeePendingLeaveStatusPopup: FC<Props> = ({ setPopupType }) => {
   const { setToastMessage } = useToast();
   const { mutate: nudgeManager, isSuccess, isError } = useNudgeManager();
   const translateText = useTranslator("leaveModule", "myRequests");
+  const displayZone = useDisplayZone();
 
   useEffect(() => {
     if (isSuccess) {
@@ -113,8 +115,9 @@ const EmployeePendingLeaveStatusPopup: FC<Props> = ({ setPopupType }) => {
         />
         <StatusPopupRow
           label={translateText(["myLeaveRequests", "dateApplied"])}
-          durationDate={convertDateToFormat(
-            new Date(employeeLeaveRequestData.createdDate ?? ""),
+          durationDate={formatInstant(
+            employeeLeaveRequestData.createdDate,
+            displayZone,
             DAY_MONTH_YEAR_FORMAT
           )}
         />

@@ -101,6 +101,7 @@ public enum CommonMessageConstant implements MessageConstant {
 	COMMON_ERROR_VALIDATION_ENTER_DEGREE("api.error.common.validation.enter-degree"),
 	COMMON_ERROR_VALIDATION_ENTER_SPECIALIZATION("api.error.common.validation.enter-specialization"),
 	COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID("api.error.common.organization.timezone-format-invalid"),
+	COMMON_ERROR_ORGANIZATION_TIMEZONE_REQUIRED("api.error.common.organization.timezone-required"),
 	COMMON_ERROR_ORGANIZATION_THEME_COLOR_FORMAT_INVALID("api.error.common.organization.theme-color-format-invalid"),
 	COMMON_ERROR_DATABASE_ERROR("api.error.common.database-error"),
 	COMMON_ERROR_SERVLET_EXCEPTION("api.error.common.servlet-exception"),
