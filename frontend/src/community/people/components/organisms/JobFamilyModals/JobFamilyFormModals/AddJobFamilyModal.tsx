@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -29,19 +30,23 @@ const AddJobFamilyModal = ({
 
   const { setToastMessage } = useToast();
 
-  const { setJobFamilyModalType } = usePeopleStore((state) => ({
-    setJobFamilyModalType: state.setJobFamilyModalType
-  }));
+  const { setJobFamilyModalType } = usePeopleStore(
+    useShallow((state) => ({
+      setJobFamilyModalType: state.setJobFamilyModalType
+    }))
+  );
 
   const {
     setQuickSetupModalType,
     stopAllOngoingQuickSetup,
     ongoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const addLatestFamilyLabel = (jobTitleId: number) => {
     if (from && from === "add-new-resource" && setLatestRoleLabel) {

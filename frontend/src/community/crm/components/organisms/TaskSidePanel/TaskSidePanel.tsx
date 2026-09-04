@@ -5,6 +5,7 @@ import {
   SidePanel
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -45,17 +46,19 @@ const TaskSidePanel: FC = () => {
     selectedTaskId,
     getTaskById,
     updateTask
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    setSelectedTaskId: store.setSelectedTaskId,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType,
-    selectedTaskId: store.selectedTaskId,
-    getTaskById: store.getTaskById,
-    updateTask: store.updateTask
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      setSelectedTaskId: store.setSelectedTaskId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      selectedTaskId: store.selectedTaskId,
+      getTaskById: store.getTaskById,
+      updateTask: store.updateTask
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

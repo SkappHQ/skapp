@@ -7,6 +7,7 @@ import {
   useEffect,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -18,7 +19,11 @@ import TeamActionModal from "~community/people/components/molecules/TeamModals/T
 import UnsavedAddTeamModal from "~community/people/components/molecules/TeamModals/UnsavedAddTeamModal/UnsavedAddTeamModal";
 import UnsavedEditTeamModal from "~community/people/components/molecules/TeamModals/UnsavedEditTeamModal/UnsavedEditTeamModal";
 import { usePeopleStore } from "~community/people/store/store";
-import { AddTeamType, TeamModelTypes, TeamNamesType } from "~community/people/types/TeamTypes";
+import {
+  AddTeamType,
+  TeamModelTypes,
+  TeamNamesType
+} from "~community/people/types/TeamTypes";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 interface Props {
@@ -39,19 +44,23 @@ const TeamModalController: FC<Props> = ({ setLatestTeamId }) => {
     setIsTeamModalOpen,
     currentDeletingTeam,
     setProjectTeamNames
-  } = usePeopleStore((state) => ({
-    isTeamModalOpen: state.isTeamModalOpen,
-    teamModalType: state.teamModalType,
-    currentEditingTeam: state.currentEditingTeam,
-    setTeamModalType: state.setTeamModalType,
-    setIsTeamModalOpen: state.setIsTeamModalOpen,
-    currentDeletingTeam: state.currentDeletingTeam,
-    setProjectTeamNames: state.setProjectTeamNames
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      isTeamModalOpen: state.isTeamModalOpen,
+      teamModalType: state.teamModalType,
+      currentEditingTeam: state.currentEditingTeam,
+      setTeamModalType: state.setTeamModalType,
+      setIsTeamModalOpen: state.setIsTeamModalOpen,
+      currentDeletingTeam: state.currentDeletingTeam,
+      setProjectTeamNames: state.setProjectTeamNames
+    }))
+  );
 
-  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [tempTeamDetails, setTempTeamDetails] = useState<AddTeamType>();
   const [currentTeamFormData, setCurrentTeamFormData] = useState<AddTeamType>();

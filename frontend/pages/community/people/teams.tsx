@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { NextPage } from "next";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -16,10 +17,12 @@ const Teams: NextPage = () => {
   const translateText = useTranslator("peopleModule");
   const [teamSearchTerm, setTeamSearchTerm] = useState<string>("");
 
-  const { setTeamModalType, setIsTeamModalOpen } = usePeopleStore((state) => ({
-    setTeamModalType: state.setTeamModalType,
-    setIsTeamModalOpen: state.setIsTeamModalOpen
-  }));
+  const { setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
+    useShallow((state) => ({
+      setTeamModalType: state.setTeamModalType,
+      setIsTeamModalOpen: state.setIsTeamModalOpen
+    }))
+  );
 
   const { isPeopleAdmin } = useSessionData();
 

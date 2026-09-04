@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
@@ -11,11 +12,13 @@ const DealStageModalController = () => {
   const translateText = useTranslator("configurations", "crm");
 
   const { isDealStageModalOpen, dealStageModalType, setIsDealStageModalOpen } =
-    useConfigurationStore((store) => ({
-      isDealStageModalOpen: store.isDealStageModalOpen,
-      dealStageModalType: store.dealStageModalType,
-      setIsDealStageModalOpen: store.setIsDealStageModalOpen
-    }));
+    useConfigurationStore(
+      useShallow((store) => ({
+        isDealStageModalOpen: store.isDealStageModalOpen,
+        dealStageModalType: store.dealStageModalType,
+        setIsDealStageModalOpen: store.setIsDealStageModalOpen
+      }))
+    );
 
   const handleCloseModal = (): void => {
     setIsDealStageModalOpen(false);
@@ -58,4 +61,3 @@ const DealStageModalController = () => {
 };
 
 export default DealStageModalController;
-

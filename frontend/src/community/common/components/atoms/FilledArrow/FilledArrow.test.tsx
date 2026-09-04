@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
@@ -36,7 +36,7 @@ describe("FilledArrow", () => {
   test("applies custom background color", () => {
     render(<FilledArrow onClick={jest.fn()} backgroundColor="red" />);
     const button = screen.getByRole("button");
-    expect(button).toHaveStyle("background-color: red");
+    expect(button).toHaveStyle("background-color: rgb(255, 0, 0)");
   });
 
   test("sets aria-disabled when disabled", () => {

@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -24,12 +25,14 @@ const Tasks: NextPage = () => {
     setTaskModalType,
     selectedTaskId,
     setSelectedTaskId
-  } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType,
-    selectedTaskId: store.selectedTaskId,
-    setSelectedTaskId: store.setSelectedTaskId
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId
+    }))
+  );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.TASKS, () => {
