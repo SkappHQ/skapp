@@ -2,6 +2,7 @@ FROM node:20-alpine3.19
 
 WORKDIR /app
 ENV NODE_ENV=production
+ENV TZ=UTC
 
 COPY public ./public
 COPY .next/standalone ./

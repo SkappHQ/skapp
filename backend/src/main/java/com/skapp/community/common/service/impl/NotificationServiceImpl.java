@@ -339,13 +339,10 @@ public class NotificationServiceImpl implements NotificationService {
 
 	public List<NotificationResponseDto> mapNotifications(List<Notification> notifications) {
 
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
-
 		return notifications.stream().map(notification -> {
 			NotificationResponseDto notificationResponseDto = new NotificationResponseDto();
 			notificationResponseDto.setId(notification.getId());
-			notificationResponseDto
-				.setCreatedDate(convertToOrganizationTimeZone(notification.getCreatedDate(), organizationTimeZone));
+			notificationResponseDto.setCreatedDate(notification.getCreatedDate());
 			notificationResponseDto.setBody(notification.getBody());
 			notificationResponseDto.setIsViewed(notification.getIsViewed());
 			notificationResponseDto.setResourceId(notification.getResourceId());
@@ -363,13 +360,6 @@ public class NotificationServiceImpl implements NotificationService {
 
 			return notificationResponseDto;
 		}).toList();
-	}
-
-	private LocalDateTime convertToOrganizationTimeZone(LocalDateTime createdDate, String organizationTimeZone) {
-		if (createdDate == null)
-			return null;
-		ZonedDateTime utcTime = createdDate.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
-		return utcTime.withZoneSameInstant(ZoneId.of(organizationTimeZone)).toLocalDateTime();
 	}
 
 }
