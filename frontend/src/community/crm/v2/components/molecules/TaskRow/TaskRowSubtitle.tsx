@@ -1,35 +1,39 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmContactEntity, CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 
-interface TaskRowSubtitleProps {
+interface Props {
   task: CrmTaskEntity;
-  applyCompletedStyle: boolean;
+  contact?: CrmContactEntity;
+  isShowContact: boolean;
+  isCompletedStyleApplied: boolean;
 }
 
-const TaskRowSubtitle: FC<TaskRowSubtitleProps> = ({
+const TaskRowSubtitle: FC<Props> = ({
   task,
-  applyCompletedStyle
+  contact,
+  isShowContact,
+  isCompletedStyleApplied
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
+  const translateText = useTranslator("crmModule", "tasks", "table");
 
-  const dueDateStatus = getDueDateStatus(task.dueAt, task.isCompleted);
+  const dueDateStatus = task.dueAt
+    ? getDueDateStatus(task.dueAt, task.isCompleted === true)
+    : null;
+
+  const isContactVisible = isShowContact && contact != null;
 
   return (
-    <p className="body3 leading-none mt-0.5 flex items-center gap-2">
+    <div className="body3 leading-none mt-0.5 flex items-center gap-2">
       {dueDateStatus && (
         <span
           className={
-            applyCompletedStyle
+            isCompletedStyleApplied
               ? "line-through text-secondary-icon"
-              : dueDateStatus.colorClass
+              : dueDateStatus.textColorClass
           }
         >
           {translateText([dueDateStatus.textKey], {
@@ -38,7 +42,26 @@ const TaskRowSubtitle: FC<TaskRowSubtitleProps> = ({
           })}
         </span>
       )}
-    </p>
+
+      {dueDateStatus && isContactVisible && (
+        <span
+          aria-hidden="true"
+          className="w-1 h-1 rounded-full bg-secondary-accent shrink-0"
+        />
+      )}
+
+      {isContactVisible && (
+        <span
+          className={
+            isCompletedStyleApplied
+              ? "line-through text-secondary-icon"
+              : "text-secondary-text"
+          }
+        >
+          {getContactDisplayName(contact)}
+        </span>
+      )}
+    </div>
   );
 };
 

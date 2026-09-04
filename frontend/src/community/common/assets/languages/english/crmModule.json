@@ -808,7 +808,11 @@
         "dueToday": "Today",
         "dueTomorrow": "Tomorrow",
         "upcoming": "Upcoming"
-      }
+      },
+      "dueDateOverdue_one": "Overdue by {{count}} day",
+      "dueDateOverdue_other": "Overdue by {{count}} days",
+      "dueDateToday": "Due today",
+      "dueDateDueOn": "Due on {{date}}"
     }
   }
 }
