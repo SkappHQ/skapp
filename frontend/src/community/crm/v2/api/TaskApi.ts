@@ -10,8 +10,13 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import { authFetchV2 } from "~community/common/utils/axiosInterceptor";
-import { crmTaskEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
+import authFetch, {
+  authFetchV2
+} from "~community/common/utils/axiosInterceptor";
+import {
+  crmTaskEndpoints,
+  crmTaskEndpointsV2
+} from "~community/crm/v2/api/utils/ApiEndpoints";
 import {
   crmCompanyQueryKeys,
   crmContactQueryKeys,
@@ -29,7 +34,7 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchTasks = async (
   params: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASKS, {
+  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
     params
   });
   return response?.data?.results?.[0];
@@ -89,7 +94,7 @@ export const useGetCompletedTasks = (
   });
 
 const fetchTaskById = async (id: number): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.get(crmTaskEndpoints.GET_TASK_BY_ID(id));
+  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASK_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
@@ -109,7 +114,7 @@ const fetchRelatedTasks = async (
 ): Promise<CrmTaskListResponse> => {
   const { id, ...query } = params;
   const response = await authFetchV2.get(
-    crmTaskEndpoints.GET_RELATED_TASKS(id),
+    crmTaskEndpointsV2.GET_RELATED_TASKS(id),
     { params: query }
   );
   return response?.data?.results?.[0];
@@ -140,7 +145,7 @@ export const useGetRelatedTasks = (
 
 const createTask = async (payload: CrmTaskEntity): Promise<CrmTaskEntity> => {
   const response = await authFetchV2.post(
-    crmTaskEndpoints.CREATE_TASK,
+    crmTaskEndpointsV2.CREATE_TASK,
     payload
   );
   return response?.data?.results?.[0];
@@ -183,7 +188,7 @@ const updateTask = async ({
   task
 }: CrmTaskUpdateRequest): Promise<CrmTaskEntity> => {
   const response = await authFetchV2.patch(
-    crmTaskEndpoints.UPDATE_TASK(id),
+    crmTaskEndpointsV2.UPDATE_TASK(id),
     task
   );
   return response?.data?.results?.[0];
@@ -217,7 +222,7 @@ export const useUpdateTask = (
 };
 
 const deleteTask = async (id: number): Promise<void> => {
-  await authFetchV2.delete(crmTaskEndpoints.DELETE_TASK(id));
+  await authFetch.delete(crmTaskEndpoints.DELETE_TASK(id));
 };
 
 export const useDeleteTask = (
