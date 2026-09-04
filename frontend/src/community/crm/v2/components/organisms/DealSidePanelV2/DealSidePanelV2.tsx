@@ -14,7 +14,7 @@ import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSideP
 import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
-import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";

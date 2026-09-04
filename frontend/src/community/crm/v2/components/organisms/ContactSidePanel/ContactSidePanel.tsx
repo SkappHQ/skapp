@@ -25,10 +25,8 @@ import SidePanelMetricCards from "~community/crm/v2/components/molecules/SidePan
 import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
-import {
-  DEAL_PAGE_SIZE,
-  TASK_PAGE_SIZE
-} from "~community/crm/v2/constants/commonConstants";
+import { DEAL_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
