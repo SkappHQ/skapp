@@ -11,7 +11,7 @@ import {
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
   for (const company of companies) {
-    if (company.id != null) {
+    if (company.id !== undefined) {
       companyIds.push(company.id);
     }
   }
@@ -151,7 +151,7 @@ export const updateCompanyRecord = (
 ): CrmCompanyRecord => {
   const merged: CrmCompanyRecord = { ...existing };
   for (const company of incoming) {
-    if (company.id == null) continue;
+    if (company.id === undefined) continue;
     merged[company.id] = { ...merged[company.id], ...company };
   }
   return merged;
