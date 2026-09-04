@@ -4,27 +4,25 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-interface TaskRowCheckboxProps {
+interface Props {
   task: CrmTaskEntity;
   isCompleted: boolean;
-  handleToggleChange: (isCompleted: boolean) => void;
+  onToggleComplete: (isCompleted: boolean) => void;
 }
 
-const TaskRowCheckbox: FC<TaskRowCheckboxProps> = ({
+const TaskRowCheckbox: FC<Props> = ({
   task,
   isCompleted,
-  handleToggleChange
+  onToggleComplete
 }) => {
   const translateText = useTranslator("crmModule", "tasks");
 
   return (
-    <div
-      className="shrink-0 flex items-center justify-center pr-1"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="shrink-0 flex items-center justify-center pr-1">
       <CheckTask
         checked={isCompleted}
-        onChange={handleToggleChange}
+        onChange={onToggleComplete}
+        onClick={(e) => e.stopPropagation()}
         aria-label={translateText(
           [isCompleted ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"],
           { name: task.name }
