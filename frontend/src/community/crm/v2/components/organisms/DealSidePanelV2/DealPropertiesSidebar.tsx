@@ -23,6 +23,7 @@ import {
   CrmContactEntity,
   CrmOwnerEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
   mergeCompanies
@@ -69,9 +70,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupFilter: CrmContactFilterRequest = useMemo(
+    () => ({
+      searchKeyword: debouncedContactSearchTerm,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    }),
+    [debouncedContactSearchTerm]
+  );
   const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearchTerm,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupFilter,
     debouncedContactSearchTerm.length > 0
   );
   const contacts = useMemo(

@@ -24,7 +24,10 @@ import {
   CrmContactEntity,
   CrmDealEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactFilterRequest,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
@@ -89,9 +92,15 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupFilter: CrmContactFilterRequest = useMemo(
+    () => ({
+      searchKeyword: debouncedContactSearch,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    }),
+    [debouncedContactSearch]
+  );
   const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupFilter,
     isOpen
   );
   const contacts = useMemo(

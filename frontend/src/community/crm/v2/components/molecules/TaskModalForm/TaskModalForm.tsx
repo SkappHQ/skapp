@@ -19,7 +19,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
-import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
+import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
@@ -35,6 +35,11 @@ import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmContactFilterRequest,
+  CrmDealFilterRequest,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactDisplayName,
@@ -74,6 +79,9 @@ const TaskModalForm: FC<Props> = ({
     contacts,
     deals,
     owners,
+    isCrmSidePanelOpen,
+    crmSidePanelType,
+    selectedCompanyId,
     setContacts,
     setDeals,
     setOwners
@@ -83,6 +91,9 @@ const TaskModalForm: FC<Props> = ({
       contacts: store.contacts,
       deals: store.deals,
       owners: store.owners,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedCompanyId: store.selectedCompanyId,
       setContacts: store.setContacts,
       setDeals: store.setDeals,
       setOwners: store.setOwners
@@ -106,10 +117,27 @@ const TaskModalForm: FC<Props> = ({
     SEARCH_DEBOUNCE_DELAY
   );
 
+  const companyScopeId =
+    isCrmSidePanelOpen &&
+    crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL
+      ? (selectedCompanyId ?? undefined)
+      : undefined;
+
+  const contactLookupCompanyId = values.contactId != null ? undefined : companyScopeId;
+  const dealLookupCompanyId = values.dealId != null ? undefined : companyScopeId;
+
   const isOwnerSearchEnabled =
     Boolean(isCrmSalesManager) && debouncedOwnerSearch.length > 0;
-  const isContactSearchEnabled = debouncedContactSearch.length > 0;
-  const isDealSearchEnabled = debouncedDealSearch.length > 0;
+
+  const isContactSearchEnabled =
+    debouncedContactSearch.length > 0 ||
+    values.dealId != null ||
+    contactLookupCompanyId != null;
+
+  const isDealSearchEnabled =
+    debouncedDealSearch.length > 0 ||
+    values.contactId != null ||
+    dealLookupCompanyId != null;
 
   const { data: ownerLookupData } = useGetOwnerLookupV2(
     debouncedOwnerSearch,
@@ -117,18 +145,29 @@ const TaskModalForm: FC<Props> = ({
     isOwnerSearchEnabled
   );
 
+  const contactLookupFilter: CrmContactFilterRequest = useMemo(
+    () => ({
+      searchKeyword: debouncedContactSearch,
+      size: DEFAULT_LOOKUP_PAGE_SIZE,
+      dealId: values.dealId,
+      companyId: contactLookupCompanyId
+    }),
+    [debouncedContactSearch, values.dealId, contactLookupCompanyId]
+  );
+
   const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupFilter,
     isContactSearchEnabled
   );
 
-  const dealLookupFilter = useMemo(
+  const dealLookupFilter: CrmDealFilterRequest = useMemo(
     () => ({
       searchKeyword: debouncedDealSearch,
-      size: DEFAULT_LOOKUP_PAGE_SIZE
+      size: DEFAULT_LOOKUP_PAGE_SIZE,
+      contactId: values.contactId,
+      companyId: dealLookupCompanyId
     }),
-    [debouncedDealSearch]
+    [debouncedDealSearch, values.contactId, dealLookupCompanyId]
   );
 
   const { data: dealLookupData } = useGetDealLookupV2(
@@ -235,6 +274,11 @@ const TaskModalForm: FC<Props> = ({
 
     setFieldValue("dealId", deal?.id);
     setDealSearchTerm("");
+
+    if (deal?.contactId != null) {
+      setFieldValue("contactId", deal.contactId);
+      setContactSearchTerm("");
+    }
   };
 
   const handleClearOwner = () => {

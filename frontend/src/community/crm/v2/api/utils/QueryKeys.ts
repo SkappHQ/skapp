@@ -1,5 +1,6 @@
 import {
   CrmCompanyFilterRequest,
+  CrmContactFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
   CrmRelatedTasksFilterRequest,
@@ -39,10 +40,9 @@ export const crmCompanyQueryKeys = {
 };
 
 export const crmLookupQueryKeys = {
-  CONTACT_LOOKUP: (searchKeyword: string, size: number) => [
+  CONTACT_LOOKUP: (filters: CrmContactFilterRequest) => [
     "crm-contact-lookup-v2",
-    searchKeyword,
-    size
+    filters
   ],
   OWNER_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-owner-lookup-v2",
