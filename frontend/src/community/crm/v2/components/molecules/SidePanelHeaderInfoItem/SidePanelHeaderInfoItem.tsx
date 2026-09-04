@@ -5,7 +5,7 @@ import { IconName } from "~community/common/types/IconTypes";
 
 interface SidePanelHeaderInfoItemProps {
   icon: ReactElement;
-  value: string;
+  value?: string;
   endIcon?: IconName;
   onClick?: () => void;
 }
