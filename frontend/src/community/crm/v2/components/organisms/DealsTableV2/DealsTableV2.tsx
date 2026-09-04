@@ -184,6 +184,11 @@ const DealsTableV2: FC<Props> = ({
       });
   }, [columnConfig, translateText]);
 
+  const rowDragColumnId = useMemo(
+    () => columnHeaders.find((column) => column.visible)?.id,
+    [columnHeaders]
+  );
+
   const tableRows = useMemo(
     (): DealRow[] =>
       deals.map((deal) => {
@@ -295,7 +300,7 @@ const DealsTableV2: FC<Props> = ({
   }
 
   return (
-    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
+    <div ref={containerRef} className="rounded-lg h-full overflow-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
@@ -306,7 +311,7 @@ const DealsTableV2: FC<Props> = ({
         onColumnResize={onColumnResize}
         rowDragColumn={
           enableRowReorder
-            ? (CrmDealColumnFieldEnum.DEAL_NAME as unknown as keyof DealRow)
+            ? (rowDragColumnId as unknown as keyof DealRow)
             : undefined
         }
         onRowReorder={enableRowReorder ? onRowReorder : undefined}

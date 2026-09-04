@@ -91,7 +91,7 @@ const DealsSectionV2: FC = () => {
       sortOrder,
       searchKeyword: debouncedSearch
     },
-    activeView === DealViewEnum.LIST
+    activeView === DealViewEnum.LIST && !!columnConfig
   );
 
   const sortConfig = useMemo(

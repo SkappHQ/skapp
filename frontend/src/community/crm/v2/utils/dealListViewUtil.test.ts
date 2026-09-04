@@ -129,11 +129,21 @@ describe("reorderConfigFields", () => {
     ]);
   });
 
-  it("returns null when the columns do not cover every stored field", () => {
+  it("keeps fields the table did not report at their original index", () => {
+    const next = reorderConfigFields(fields, [
+      { id: CrmDealColumnFieldEnum.STAGE, visible: true },
+      { id: CrmDealColumnFieldEnum.VALUE, visible: true }
+    ]);
+    expect(next?.map((item) => item.field)).toEqual([
+      CrmDealColumnFieldEnum.DEAL_NAME,
+      CrmDealColumnFieldEnum.STAGE,
+      CrmDealColumnFieldEnum.VALUE
+    ]);
+  });
+
+  it("returns null when no reported column matches a stored field", () => {
     expect(
-      reorderConfigFields(fields, [
-        { id: CrmDealColumnFieldEnum.STAGE, visible: true }
-      ])
+      reorderConfigFields(fields, [{ id: "UNKNOWN", visible: true }])
     ).toBeNull();
   });
 });

@@ -63,10 +63,17 @@ export const reorderConfigFields = (
   const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
     fields.map((field) => [field.field, field])
   );
-  const nextFields = columns
+  const reordered = columns
     .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
     .filter((field): field is CrmDealFieldConfig => Boolean(field));
-  return nextFields.length === fields.length ? nextFields : null;
+  if (!reordered.length) return null;
+
+  const reportedFields = new Set(reordered.map((field) => field.field));
+  const nextFields = [...reordered];
+  fields.forEach((field, index) => {
+    if (!reportedFields.has(field.field)) nextFields.splice(index, 0, field);
+  });
+  return nextFields;
 };
 
 export const applyColumnVisibility = (
@@ -79,7 +86,7 @@ export const applyColumnVisibility = (
   return fields.map((field) => ({
     ...field,
     isVisible: field.isHideable
-      ? visibilityById.get(field.field) ?? field.isVisible
+      ? (visibilityById.get(field.field) ?? field.isVisible)
       : true
   }));
 };
