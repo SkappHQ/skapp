@@ -199,6 +199,10 @@ export const nonSuperAdminRestrictedRoutes = [
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
+export const leavePolicyManagementRestrictedRoutes = [
+  ROUTES.LEAVE.CREATE_LEAVE_POLICY
+];
+
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 
 export const oAuthCallbackRoutes = [
