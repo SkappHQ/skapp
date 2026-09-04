@@ -1,5 +1,5 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, startTransition, useOptimistic } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -46,37 +46,37 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const translateTaskText = useTranslator("crmModule", "tasks");
 
-  const { mutate: updateCompletion } = useUpdateTask((updatedTask) => {
+  const [optimisticTasks, applyOptimisticCompletion] = useOptimistic(
+    tasks,
+    (
+      current,
+      { taskId, isCompleted }: { taskId: number; isCompleted: boolean }
+    ) => updateTask(current, taskId, { isCompleted })
+  );
+
+  const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
     if (updatedTask.id !== undefined) {
       setTasks(updateTask(tasks, updatedTask.id, updatedTask));
     }
   });
 
-  // This list renders inside the contact, company and deal side panels, where
-  // opening the task side panel would replace the panel the row was clicked
-  // from. Row clicks did nothing before the task row became presentational, so
-  // that stands until the nested-panel behaviour is decided.
-  const handleRowClick = () => undefined;
-
   const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
-    const wasCompleted = Boolean(tasks[taskId]?.isCompleted);
+    startTransition(async () => {
+      applyOptimisticCompletion({ taskId, isCompleted });
 
-    setTasks(updateTask(tasks, taskId, { isCompleted }));
-
-    updateCompletion(
-      { id: taskId, task: { isCompleted } },
-      {
-        onError: () => {
-          setTasks(updateTask(tasks, taskId, { isCompleted: wasCompleted }));
-          setToastMessage({
-            open: true,
-            toastType: ToastType.ERROR,
-            title: translateTaskText(["toggleErrorTitle"]),
-            description: translateTaskText(["toggleErrorDescription"])
-          });
-        }
+      try {
+        await updateCompletion({ id: taskId, task: { isCompleted } });
+      } catch {
+        // The optimistic row reverts on its own once this transition ends,
+        // because the store was never written to.
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateTaskText(["toggleErrorTitle"]),
+          description: translateTaskText(["toggleErrorDescription"])
+        });
       }
-    );
+    });
   };
 
   const translateText = useTranslator(
@@ -102,10 +102,9 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     return (
       <div>
         <SidePanelTasksList
-          tasks={resolveTasks(taskIds, tasks)}
+          tasks={resolveTasks(taskIds, optimisticTasks)}
           onAddTask={handleAddTask}
           isAddTaskDisabled={isCheckingCrmLimit}
-          onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
         />
         <div ref={loadingRef} />

@@ -8,6 +8,8 @@ interface SidePanelTasksListProps {
   taskIds: number[];
   onAddTask: () => void;
   isAddTaskDisabled?: boolean;
+  onRowClick?: (taskId: number) => void;
+  onToggleComplete: (taskId: number, isCompleted: boolean) => void;
 }
 
 const SidePanelTasksList: FC<SidePanelTasksListProps> = ({

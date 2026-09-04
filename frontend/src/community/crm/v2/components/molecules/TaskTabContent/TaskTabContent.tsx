@@ -1,5 +1,13 @@
 import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  startTransition,
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState
+} from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import {
@@ -64,7 +72,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       }))
     );
 
-  const { mutate: updateCompletion } = useUpdateTask();
+  const { mutateAsync: updateCompletion } = useUpdateTask();
 
   const isCompletedTab = tab === CrmTaskTabEnum.COMPLETED_TASKS;
 
@@ -120,9 +128,17 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
+  const [optimisticTasks, applyOptimisticCompletion] = useOptimistic(
+    tasks,
+    (
+      current,
+      { taskId, isCompleted }: { taskId: number; isCompleted: boolean }
+    ) => updateTaskRecord(current, [{ id: taskId, isCompleted }])
+  );
+
   const tasksInView = useMemo(
-    () => resolveTasks(visibleTaskIds, tasks),
-    [visibleTaskIds, tasks]
+    () => resolveTasks(visibleTaskIds, optimisticTasks),
+    [visibleTaskIds, optimisticTasks]
   );
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
@@ -152,25 +168,27 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setTasks(updateTaskRecord(tasks, [{ id: taskId, isCompleted: completed }]));
   };
 
-  const handleToggleError = (taskId: number, wasCompleted: boolean) => {
-    applyCompletion(taskId, wasCompleted);
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
-    });
-  };
-
   const handleToggleComplete = (taskId: number, completed: boolean) => {
-    const wasCompleted = tasks[taskId]?.isCompleted === true;
+    startTransition(async () => {
+      applyOptimisticCompletion({ taskId, isCompleted: completed });
 
-    applyCompletion(taskId, completed);
-
-    updateCompletion(
-      { id: taskId, task: { isCompleted: completed } },
-      { onError: () => handleToggleError(taskId, wasCompleted) }
-    );
+      try {
+        const updatedTask = await updateCompletion({
+          id: taskId,
+          task: { isCompleted: completed }
+        });
+        applyCompletion(taskId, updatedTask.isCompleted === true);
+      } catch {
+        // The optimistic row reverts on its own once this transition ends,
+        // because the store was never written to.
+        setToastMessage({
+          open: true,
+          toastType: ToastType.ERROR,
+          title: translateText(["toggleErrorTitle"]),
+          description: translateText(["toggleErrorDescription"])
+        });
+      }
+    });
   };
 
   const renderOpenTasksContent = () => (
