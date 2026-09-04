@@ -27,7 +27,7 @@ const TaskGroup: FC<Props> = ({
     <div className="border border-secondary-accent rounded-lg overflow-hidden divide-y divide-secondary-accent">
       {tasks.map(
         (task) =>
-         task && task.id && (
+          task?.id && (
             <TaskRow
               key={task.id}
               task={task}
