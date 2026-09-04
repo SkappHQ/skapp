@@ -193,19 +193,16 @@ const DealsSectionV2: FC = () => {
     }
   }, [fetchedCompanies]);
 
-  const loadMore = useCallback(async (): Promise<void> => {
+  const loadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {
       await fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  };
 
-  const handleDealClick = useCallback(
-    (dealId: number): void => {
-      setSelectedDealId(dealId);
-      openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
-    },
-    [setSelectedDealId, openCrmSidePanel]
-  );
+  const handleDealClick = (dealId: number): void => {
+    setSelectedDealId(dealId);
+    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
+  };
 
   useEffect(() => {
     const updateHeight = () => {
