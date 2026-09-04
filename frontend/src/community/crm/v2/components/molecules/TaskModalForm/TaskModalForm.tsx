@@ -106,16 +106,21 @@ const TaskModalForm: FC<Props> = ({
     SEARCH_DEBOUNCE_DELAY
   );
 
+  const isOwnerSearchEnabled =
+    Boolean(isCrmSalesManager) && debouncedOwnerSearch.length > 0;
+  const isContactSearchEnabled = debouncedContactSearch.length > 0;
+  const isDealSearchEnabled = debouncedDealSearch.length > 0;
+
   const { data: ownerLookupData } = useGetOwnerLookupV2(
     debouncedOwnerSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    Boolean(isCrmSalesManager)
+    isOwnerSearchEnabled
   );
 
   const { data: contactLookupData } = useGetContactLookupV2(
     debouncedContactSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,
-    true
+    isContactSearchEnabled
   );
 
   const dealLookupFilter = useMemo(
@@ -126,68 +131,81 @@ const TaskModalForm: FC<Props> = ({
     [debouncedDealSearch]
   );
 
-  const { data: dealLookupData } = useGetDealLookupV2(dealLookupFilter, true);
+  const { data: dealLookupData } = useGetDealLookupV2(
+    dealLookupFilter,
+    isDealSearchEnabled
+  );
 
   const ownerLookupItems = useMemo(
     () => ownerLookupData?.items ?? [],
-    [ownerLookupData]
+    [ownerLookupData?.items]
   );
   const contactLookupItems = useMemo(
     () => contactLookupData?.items ?? [],
-    [contactLookupData]
+    [contactLookupData?.items]
   );
   const dealLookupItems = useMemo(
     () => dealLookupData?.items ?? [],
-    [dealLookupData]
+    [dealLookupData?.items]
   );
 
-  const ownerDropdownItems: SearchableDropdownItem[] = ownerLookupItems.map(
-    (owner) => {
-      const ownerId = String(owner.employeeId);
-      return {
-        id: ownerId,
-        content: <OwnerAvatarChip id={ownerId} owner={owner} />
-      };
-    }
+  const ownerDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      ownerLookupItems.map((owner) => {
+        const ownerId = String(owner.employeeId);
+        return {
+          id: ownerId,
+          content: <OwnerAvatarChip id={ownerId} owner={owner} />
+        };
+      }),
+    [ownerLookupItems]
   );
 
-  const contactDropdownItems: SearchableDropdownItem[] = contactLookupItems.map(
-    (contact) => {
-      const contactName = getContactDisplayName(contact);
-      return {
-        id: String(contact.id),
+  const contactDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      contactLookupItems.map((contact) => {
+        const contactName = getContactDisplayName(contact);
+        return {
+          id: String(contact.id),
+          content: (
+            <div className="w-full truncate" title={contactName}>
+              {contactName}
+            </div>
+          )
+        };
+      }),
+    [contactLookupItems]
+  );
+
+  const dealDropdownItems: SearchableDropdownItem[] = useMemo(
+    () =>
+      dealLookupItems.map((deal) => ({
+        id: String(deal.id),
         content: (
-          <div className="w-full truncate" title={contactName}>
-            {contactName}
+          <div className="w-full truncate" title={deal.name}>
+            {deal.name}
           </div>
         )
-      };
-    }
+      })),
+    [dealLookupItems]
   );
 
-  const dealDropdownItems: SearchableDropdownItem[] = dealLookupItems.map(
-    (deal) => ({
-      id: String(deal.id),
-      content: (
-        <div className="w-full truncate" title={deal.name}>
-          {deal.name}
-        </div>
-      )
-    })
+  const taskTypeOptions = useMemo(
+    () =>
+      getTaskTypeOptions(taskTypes).map((option) => ({
+        ...option,
+        label: translateText(["taskTypes", option.label])
+      })),
+    [taskTypes, translateText]
   );
-
-  const taskTypeOptions = getTaskTypeOptions(taskTypes).map((option) => ({
-    ...option,
-    label: translateText(["taskTypes", option.label])
-  }));
 
   const priorityOptions = useGetPriorityOptions();
 
-  const selectedOwner = values.ownerId ? owners[values.ownerId] : undefined;
-  const selectedContact = values.contactId
-    ? contacts[values.contactId]
-    : undefined;
-  const selectedDeal = values.dealId ? deals[values.dealId] : undefined;
+  const selectedOwner =
+    values.ownerId != null ? owners[values.ownerId] : undefined;
+  const selectedContact =
+    values.contactId != null ? contacts[values.contactId] : undefined;
+  const selectedDeal = values.dealId != null ? deals[values.dealId] : undefined;
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
     const owner = ownerLookupItems.find(
@@ -220,17 +238,17 @@ const TaskModalForm: FC<Props> = ({
   };
 
   const handleClearOwner = () => {
-    setFieldValue("ownerId", "");
+    setFieldValue("ownerId", null);
     setOwnerSearchTerm("");
   };
 
   const handleClearContact = () => {
-    setFieldValue("contactId", "");
+    setFieldValue("contactId", null);
     setContactSearchTerm("");
   };
 
   const handleClearDeal = () => {
-    setFieldValue("dealId", "");
+    setFieldValue("dealId", null);
     setDealSearchTerm("");
   };
 
@@ -243,7 +261,7 @@ const TaskModalForm: FC<Props> = ({
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
-    setFieldValue("dueAt", date?.toISOString());
+    setFieldValue("dueAt", date?.toISOString() ?? null);
   };
 
   const dueDate = values.dueAt
@@ -255,7 +273,7 @@ const TaskModalForm: FC<Props> = ({
       <div className="flex flex-col gap-[0.625rem] overflow-y-auto pr-1">
         <InputField
           name="name"
-          value={values.name}
+          value={values.name ?? ""}
           errorMessage={errors.name}
           state={errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
@@ -365,6 +383,7 @@ const TaskModalForm: FC<Props> = ({
           onSearchChange={(event) => setContactSearchTerm(event.target.value)}
           items={contactDropdownItems}
           onSelect={handleContactSelect}
+          isOpenOnFocus={isContactSearchEnabled}
           emptyMessage={translateText(["emptyStates", "noContacts"])}
         />
 
@@ -380,12 +399,13 @@ const TaskModalForm: FC<Props> = ({
           onSearchChange={(event) => setDealSearchTerm(event.target.value)}
           items={dealDropdownItems}
           onSelect={handleDealSelect}
+          isOpenOnFocus={isDealSearchEnabled}
           emptyMessage={translateText(["emptyStates", "noDeals"])}
         />
 
         <TextArea
           name="notes"
-          value={values.notes}
+          value={values.notes ?? ""}
           label={translateText(["labels", "notes"])}
           placeholder={translateText(["placeholders", "notes"])}
           errorMessage={errors.notes}
@@ -393,6 +413,7 @@ const TaskModalForm: FC<Props> = ({
           onChange={handleChange}
           onBlur={handleBlur}
           rows={3}
+          maxLength={characterLengths.TASK_NOTES_LENGTH}
           aria-label={translateText(["ariaLabels", "notes"])}
         />
       </div>
