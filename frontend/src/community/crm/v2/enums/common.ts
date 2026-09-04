@@ -73,7 +73,11 @@ export enum CrmDealSortEnum {
   CLOSING_AT = "CLOSING_AT",
   AMOUNT = "AMOUNT",
   STAGE_TYPE = "STAGE_TYPE",
-  STAGE_ORDER = "STAGE_ORDER"
+  STAGE_ORDER = "STAGE_ORDER",
+  COMPANY_NAME = "COMPANY_NAME",
+  CONTACT_NAME = "CONTACT_NAME",
+  PRIORITY = "PRIORITY",
+  OWNER = "OWNER"
 }
 
 export enum CrmDealStageColorsEnum {

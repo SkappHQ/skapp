@@ -9,7 +9,9 @@ export const crmDealEndpointsV2 = {
 
 export const crmDealEndpoints = {
   GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
+  REORDER_DEAL: `${moduleAPIPath.CRM}/deal/reorder`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
+  LIST_VIEW_CONFIG: `${moduleAPIPath.CRM}/deal/list-view-config`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,

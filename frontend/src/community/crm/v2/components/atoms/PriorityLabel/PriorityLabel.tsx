@@ -1,17 +1,32 @@
-import { PriorityIcon } from "@rootcodelabs/skapp-ui";
+import { Label, PriorityIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { getPriorityConfig } from "~community/crm/v2/utils/priorityUtil";
 
 interface PriorityLabelProps {
   priority?: CrmPriorityEnum;
+  showLabel?: boolean;
 }
 
-const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
-  const { icon, bgColor } = getPriorityConfig(priority);
+const PriorityLabel: FC<PriorityLabelProps> = ({
+  priority,
+  showLabel = false
+}) => {
+  const translateText = useTranslator("crmModule", "common", "priorityOptions");
+  const { key, icon, bgColor, textColor } = getPriorityConfig(priority);
 
-  return <PriorityIcon bgColor={bgColor} icon={icon} />;
+  if (!showLabel) {
+    return <PriorityIcon bgColor={bgColor} icon={icon} />;
+  }
+
+  return (
+    <Label backgroundColor={bgColor} className="py-2 px-3">
+      {icon}
+      <span className={`body3 ${textColor}`}>{translateText([key])}</span>
+    </Label>
+  );
 };
 
 export default PriorityLabel;

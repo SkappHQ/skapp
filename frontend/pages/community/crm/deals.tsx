@@ -22,7 +22,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Deals page from the normalized v2 store surface.
-const isCrmDealsV2 = false;
+const isCrmDealsV2 = true;
 
 const DealsV1 = () => {
   const translateText = useTranslator("crmModule");

@@ -42,7 +42,7 @@ export enum CrmSidePanelTypes {
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
 }
 
-export interface CrmDealReorderWithinStageRequest {
+export interface CrmDealReorderRequest {
   dealId: number;
   previousDealId: number | null;
   nextDealId: number | null;

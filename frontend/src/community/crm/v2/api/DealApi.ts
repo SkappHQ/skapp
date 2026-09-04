@@ -15,9 +15,11 @@ import {
   CrmDealEntity,
   CrmStageEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmDealListViewConfig } from "~community/crm/v2/types/CrmListViewConfigTypes";
 import {
   CrmDealFilterRequest,
   CrmDealListResponse,
+  CrmDealReorderRequest,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -85,6 +87,18 @@ export const useGetDealsInfinite = (
     },
     refetchOnWindowFocus: false
   });
+
+const reorderDealInList = async (
+  payload: CrmDealReorderRequest
+): Promise<void> => {
+  await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
+};
+
+export const useReorderDealInList = (): UseMutationResult<
+  void,
+  AxiosError,
+  CrmDealReorderRequest
+> => useMutation({ mutationFn: reorderDealInList });
 
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));
@@ -165,6 +179,50 @@ export const useCheckDealNameExists = (
     queryFn: () => checkDealNameExists(name),
     enabled
   });
+
+const fetchDealListViewConfig = async (): Promise<CrmDealListViewConfig> => {
+  const response = await authFetch.get(crmDealEndpoints.LIST_VIEW_CONFIG);
+  return response?.data?.results?.[0];
+};
+
+export const useGetDealListViewConfig = (
+  enabled?: boolean
+): UseQueryResult<CrmDealListViewConfig> =>
+  useQuery({
+    queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG,
+    queryFn: fetchDealListViewConfig,
+    enabled,
+    refetchOnWindowFocus: false
+  });
+
+const updateDealListViewConfig = async (
+  config: CrmDealListViewConfig
+): Promise<CrmDealListViewConfig> => {
+  const response = await authFetch.put(
+    crmDealEndpoints.LIST_VIEW_CONFIG,
+    config
+  );
+  return response?.data?.results?.[0];
+};
+
+export const useUpdateDealListViewConfig = (
+  onError?: (error: AxiosError) => void
+): UseMutationResult<
+  CrmDealListViewConfig,
+  AxiosError,
+  CrmDealListViewConfig
+> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateDealListViewConfig,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG
+      });
+    },
+    onError
+  });
+};
 
 const deleteDeal = async (id: number): Promise<void> => {
   await authFetch.delete(crmDealEndpoints.DELETE_DEAL(id));

@@ -482,7 +482,11 @@
       "stageColumn": "Stage",
       "contactNameColumn": "Contact Name",
       "companyNameColumn": "Company Name",
+      "priorityColumn": "Priority",
       "dealOwnerColumn": "Deal Owner",
+      "sortAscending": "Ascending (A → Z)",
+      "sortDescending": "Descending (Z → A)",
+      "hideColumn": "Hide column",
       "searchPlaceholder": "Search deals",
       "clearSearchAriaLabel": "Clear search",
       "noDealsTitle": "No deals available.",
@@ -493,7 +497,29 @@
       "openDealDetails": "Open deal details for {{name}}",
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
-      "switchDealViewAriaLabel": "Switch deal view"
+      "switchDealViewAriaLabel": "Switch deal view",
+      "configErrorTitle": "Table layout unavailable",
+      "configErrorDescription": "We couldn't load your table layout. Please refresh the page to try again.",
+      "inlineEdit": {
+        "placeholders": {
+          "none": "None",
+          "stage": "Select stage",
+          "ownerSearch": "Search employees",
+          "contactSearch": "Search contacts",
+          "noResults": "No results"
+        },
+        "ariaLabels": {
+          "value": "Value",
+          "stage": "Stage",
+          "priority": "Priority",
+          "dealOwner": "Deal Owner",
+          "contactName": "Contact Name"
+        },
+        "toastMessages": {
+          "editErrorTitle": "Failed to update deal",
+          "editErrorDescription": "Oops! Something went wrong. Please try again"
+        }
+      }
     },
     "kanban": {
       "addDealBtn": "Add deal",

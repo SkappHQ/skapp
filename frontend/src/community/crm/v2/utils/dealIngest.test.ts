@@ -7,6 +7,7 @@ import {
   ingestEditedDeal,
   removeDeal
 } from "./boardUtil";
+import { reorderDealIds } from "./dealUtil";
 
 const STAGE_A = 1;
 const STAGE_B = 2;
@@ -107,5 +108,33 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
     expect(board[STAGE_A].dealIds).toEqual([2]);
     expect(dealIds).toEqual([2]);
     expect(deals[1]).toBeUndefined();
+  });
+});
+
+describe("reorderDealIds", () => {
+  const ids = [1, 2, 3, 4];
+
+  it("inserts after the previous neighbour", () => {
+    expect(reorderDealIds(ids, 4, 1, 2)).toEqual([1, 4, 2, 3]);
+  });
+
+  it("inserts before the next neighbour when there is no previous one", () => {
+    expect(reorderDealIds(ids, 3, null, 1)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("moves to the top when neither neighbour is known", () => {
+    expect(reorderDealIds(ids, 3, null, null)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("falls back to the next neighbour when the previous one is missing", () => {
+    expect(reorderDealIds(ids, 4, 99, 2)).toEqual([1, 4, 2, 3]);
+  });
+
+  it("appends when neither neighbour is present in the list", () => {
+    expect(reorderDealIds(ids, 2, 99, 98)).toEqual([1, 3, 4, 2]);
+  });
+
+  it("leaves the order unchanged when the deal is already in place", () => {
+    expect(reorderDealIds(ids, 2, 1, 3)).toEqual([1, 2, 3, 4]);
   });
 });
