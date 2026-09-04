@@ -92,7 +92,8 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
           <div className="flex flex-col gap-1 min-w-0">
             <div className="truncate">{contactName}</div>
             <div className="body2 text-secondary-text truncate">
-              {getCompanyById(companies, contact.companyId)?.name}
+              {contact.companyId != null &&
+                getCompanyById(companies, contact.companyId)?.name}
             </div>
           </div>
         ),

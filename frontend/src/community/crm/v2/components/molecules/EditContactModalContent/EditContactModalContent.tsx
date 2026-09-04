@@ -10,10 +10,8 @@ import ContactModalForm from "~community/crm/v2/components/molecules/ContactModa
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  getChangedContactFields,
-  getContactFormInitialValues,
+  getContactFieldDiff,
   getSelectedContact,
-  getTrimmedContactValues,
   linkContactToCompany,
   updateContact
 } from "~community/crm/v2/utils/contactUtil";
@@ -48,7 +46,13 @@ const EditContactModalContent: FC = () => {
 
   const selectedContact = getSelectedContact(contacts, selectedContactId);
 
-  const initialValues = getContactFormInitialValues(selectedContact);
+  const initialValues = {
+    name: selectedContact?.name ?? "",
+    email: selectedContact?.email ?? "",
+    contactNumber: selectedContact?.contactNumber ?? "",
+    companyId: selectedContact?.companyId,
+    ownerId: selectedContact?.ownerId
+  };
 
   const formik = useFormik<CrmContactEntity>({
     initialValues,
@@ -106,10 +110,14 @@ const EditContactModalContent: FC = () => {
       return;
     }
 
-    const changedFields = getChangedContactFields(
-      initialValues,
-      getTrimmedContactValues(values)
-    );
+    const changedFields = getContactFieldDiff(initialValues, {
+      name: values.name?.trim(),
+      email: values.email?.trim(),
+      contactNumber: values.contactNumber?.trim(),
+      companyId: values.companyId,
+      companyName: values.companyName?.trim(),
+      ownerId: values.ownerId
+    });
 
     if (Object.keys(changedFields).length === 0) {
       handleCloseModal();

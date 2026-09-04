@@ -17,7 +17,10 @@ interface SidePanelContactInfoProps {
 const SidePanelContactInfo: FC<SidePanelContactInfoProps> = ({ contact }) => {
   const companies = useCrmStoreV2((store) => store.companies);
 
-  const companyName = getCompanyById(companies, contact.companyId)?.name;
+  const companyName =
+    contact.companyId != null
+      ? getCompanyById(companies, contact.companyId)?.name
+      : undefined;
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">

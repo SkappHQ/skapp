@@ -43,7 +43,10 @@ const DeleteCompanyModalContent: FC = () => {
     }))
   );
 
-  const selectedCompany = getCompanyById(companies, selectedCompanyId);
+  const selectedCompany =
+    selectedCompanyId !== null
+      ? getCompanyById(companies, selectedCompanyId)
+      : undefined;
 
   const handleCloseModal = () => {
     setIsCompanyModalOpen(false);

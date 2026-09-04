@@ -209,7 +209,10 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
     contactIds.map((id) => {
       const contact = contacts[id];
       const metrics = contact.metrics;
-      const companyName = getCompanyById(companies, contact.companyId)?.name;
+      const companyName =
+        contact.companyId != null
+          ? getCompanyById(companies, contact.companyId)?.name
+          : undefined;
       const owner = getOwnerById(owners, contact.ownerId);
 
       return {

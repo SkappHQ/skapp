@@ -9,11 +9,7 @@ import { useCreateContact } from "~community/crm/v2/api/ContactApi";
 import ContactModalForm from "~community/crm/v2/components/molecules/ContactModalForm/ContactModalForm";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  getContactFormInitialValues,
-  getTrimmedContactValues,
-  linkContactToCompany
-} from "~community/crm/v2/utils/contactUtil";
+import { linkContactToCompany } from "~community/crm/v2/utils/contactUtil";
 import { getContactValidationSchema } from "~community/crm/v2/utils/contactValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -49,10 +45,13 @@ const AddContactModalContent: FC = () => {
   const { data: currentUser } = useGetUserPersonalDetails();
 
   const formik = useFormik<CrmContactEntity>({
-    initialValues: getContactFormInitialValues(
-      undefined,
-      Number(currentUser?.employeeId)
-    ),
+    initialValues: {
+      name: "",
+      email: "",
+      contactNumber: "",
+      companyId: undefined,
+      ownerId: Number(currentUser?.employeeId)
+    },
     onSubmit: (values) => createContact(values),
     validationSchema: getContactValidationSchema(translateText),
     validateOnChange: false,
@@ -101,7 +100,14 @@ const AddContactModalContent: FC = () => {
   );
 
   const createContact = (values: CrmContactEntity) => {
-    createNewContact(getTrimmedContactValues(values));
+    createNewContact({
+      name: values.name?.trim(),
+      email: values.email?.trim(),
+      contactNumber: values.contactNumber?.trim(),
+      companyId: values.companyId,
+      companyName: values.companyName?.trim(),
+      ownerId: values.ownerId
+    });
   };
 
   return (

@@ -40,7 +40,6 @@ import {
 import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactDisplayName,
-  getContactNameById,
   updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
 import {
@@ -182,7 +181,10 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   }, [dealLookupData]);
 
   const selectedOwner = getOwnerById(owners, values.ownerId);
-  const selectedContactName = getContactNameById(contacts, values.contactId);
+  const selectedContactName =
+    values.contactId !== undefined
+      ? getContactDisplayName(contacts[values.contactId])
+      : undefined;
   const selectedDealName = getDealNameById(deals, values.dealId);
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(() => {

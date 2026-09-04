@@ -138,7 +138,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
   }));
 
   const selectedCompanyName =
-    values.companyName === undefined
+    values.companyName === undefined && values.companyId != null
       ? getCompanyById(companies, values.companyId)?.name
       : values.companyName;
   const selectedOwner = getOwnerById(owners, values.ownerId);
