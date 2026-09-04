@@ -228,8 +228,7 @@ export interface CrmTaskFilterRequest {
   size?: number;
 }
 
-export interface CrmRelatedTasksFilterRequest {
-  id: number;
+export interface CrmRelatedTasksFilter {
   page?: number;
   size?: number;
 }
