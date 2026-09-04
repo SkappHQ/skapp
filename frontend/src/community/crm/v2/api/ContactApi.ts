@@ -25,6 +25,7 @@ import {
 import {
   CrmContactFilterRequest,
   CrmContactListResponse,
+  CrmContactUpdateRequest,
   CrmExistsResponse,
   CrmOwnerListResponse,
   CrmOwnerLookupFilterRequest
@@ -58,7 +59,7 @@ export const useGetContactsInfinite = (
       }
       return undefined;
     },
-    enabled: enabled,
+    enabled,
     refetchOnWindowFocus: false
   });
 
@@ -180,13 +181,13 @@ export const useCreateContact = (
   });
 };
 
-const editContact = async (
-  contact: CrmContactEntity
-): Promise<CrmContactEntity> => {
-  const { id, ...payload } = contact;
+const editContact = async ({
+  id,
+  contact
+}: CrmContactUpdateRequest): Promise<CrmContactEntity> => {
   const response = await authFetchV2.patch(
-    crmContactEndpoints.EDIT_CONTACT(id!),
-    payload
+    crmContactEndpoints.EDIT_CONTACT(id),
+    contact
   );
   return response?.data?.results?.[0];
 };
@@ -194,7 +195,7 @@ const editContact = async (
 export const useEditContact = (
   onSuccess: (contact: CrmContactEntity) => void,
   onError: (error: AxiosError) => void
-): UseMutationResult<CrmContactEntity, AxiosError, CrmContactEntity> =>
+): UseMutationResult<CrmContactEntity, AxiosError, CrmContactUpdateRequest> =>
   useMutation({
     mutationFn: editContact,
     onSuccess,
