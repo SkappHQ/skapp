@@ -225,7 +225,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			.flatMap(p -> p.getContent().stream())
 			.map(CrmDeal::getId)
 			.toList();
-		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds);
+		Map<Long, Long> taskCountMap = crmTaskDao.countTasksByDealIds(allDealIds, ownerId);
 
 		List<CrmDealsByStageResponseDto> result = uniqueStageIds.stream().map(stageId -> {
 			Page<CrmDeal> dealsPage = dealPagesByStage.get(stageId);
