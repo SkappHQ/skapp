@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -54,6 +55,8 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class RolesServiceImpl implements RolesService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final EmployeeRoleDao employeeRoleDao;
 
@@ -310,7 +313,7 @@ public class RolesServiceImpl implements RolesService {
 		employeeRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		employeeRole.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		employeeRole.setIsSuperAdmin(false);
-		employeeRole.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+		employeeRole.setChangedDate(timeZoneService.currentBusinessDate());
 		employeeRole.setRoleChangedBy(employee);
 		return employeeRole;
 	}
@@ -515,7 +518,7 @@ public class RolesServiceImpl implements RolesService {
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setCrmRole(Role.CRM_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
-		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+		superAdminRoles.setChangedDate(timeZoneService.currentBusinessDate());
 		superAdminRoles.setRoleChangedBy(employee);
 
 		employeeRoleDao.save(superAdminRoles);

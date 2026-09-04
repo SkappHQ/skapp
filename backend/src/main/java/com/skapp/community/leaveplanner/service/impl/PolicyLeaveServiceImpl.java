@@ -11,6 +11,7 @@ import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.NotificationService;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
@@ -98,6 +99,8 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
+	private final TimeZoneService timeZoneService;
+
 	private final UserService userService;
 
 	private final OrganizationService organizationService;
@@ -139,7 +142,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
 		boolean hasSupervisor = employeeManagerDao.existsByEmployee(currentUser.getEmployee());
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate today = timeZoneService.currentBusinessDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
@@ -253,7 +256,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		User currentUser = userService.getCurrentUser();
 		MonthDay cycleAnchor = resolveCycleAnchor();
-		int resolvedYear = resolveCycleYear(filterDto.getYear(), DateTimeUtils.getCurrentUtcDate(), cycleAnchor);
+		int resolvedYear = resolveCycleYear(filterDto.getYear(), timeZoneService.currentBusinessDate(), cycleAnchor);
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolvedYear, cycleAnchor);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
@@ -417,7 +420,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			List<EmployeeLeavePolicy> assignments, Integer year) {
 		log.info("calculateBalancesForYear: execution started");
 
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate today = timeZoneService.currentBusinessDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
 				cycleAnchor);

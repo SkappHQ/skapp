@@ -5,8 +5,8 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
@@ -59,9 +59,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -101,7 +98,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private final AttendanceConfigService attendanceConfigService;
 
-	private final OrganizationService organizationService;
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -164,7 +161,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		log.info("attendanceDashboardSummary: execution started");
 
 		validateAndFilterTeams(filterDto.getTeams());
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentBusinessDate();
 
 		if (isHolidayOrNoTimeConfig(currentDate)) {
 			return buildEmptyDashboardSummary();
@@ -277,7 +274,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 
 		List<LeaveRequest> leaveRequestsList = leaveRequestDao
-			.findLeaveRequestsForTodayByUser(DateTimeUtils.getCurrentUtcDate(), employee.getEmployeeId());
+			.findLeaveRequestsForTodayByUser(timeZoneService.currentBusinessDate(), employee.getEmployeeId());
 
 		boolean clockInOnLeaveDaysStatus = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
@@ -316,9 +313,11 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		if (timeRecord != null) {
 			responseDto.setTimeRecordId(timeRecord.getTimeRecordId());
 			responseDto.setClockInTime(timeRecord.getClockInTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime()) : null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime(), timeZoneService.display())
+					: null);
 			responseDto.setClockOutTime(timeRecord.getClockOutTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime()) : null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime(), timeZoneService.display())
+					: null);
 			responseDto.setWorkedHours(formatWorkedHours(timeRecord.getWorkedHours()));
 		}
 
@@ -395,13 +394,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		if (timeConfig == null)
 			return false;
 
-		ZoneId orgTimeZone = ZoneId.of(organizationService.getOrganizationTimeZone());
-		LocalTime utcTime = DateTimeUtils.epochMillisToUtcLocalTime(timeRecord.getClockInTime());
-
-		ZonedDateTime orgDateTime = ZonedDateTime.of(timeRecord.getDate(), utcTime, ZoneOffset.UTC)
-			.withZoneSameInstant(orgTimeZone);
-
-		LocalTime recordStartTime = orgDateTime.toLocalTime();
+		LocalTime recordStartTime = DateTimeUtils.toTimeAt(timeRecord.getClockInTime(), timeZoneService.business());
 		LocalTime lateThreshold = LocalTime.of(timeConfig.getStartHour(), timeConfig.getStartMinute());
 
 		LeaveRequest leaveRequest = leaveRequestDao.findByEmployeeAndDate(timeRecord.getEmployee().getEmployeeId(),
@@ -460,7 +453,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,
 			Month selectedMonth, List<Long> teamIds) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
-		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), selectedMonth, 1);
+		LocalDate startOfMonth = LocalDate.of(Year.now(timeZoneService.business()).getValue(), selectedMonth, 1);
 		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 
 		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
@@ -478,7 +471,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private Map<String, Double> calculateDailyAverageHoursForEmployee(Map<LocalDate, Double> dailyWorkedHours,
 			Month selectedMonth) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
-		int year = Year.now().getValue();
+		int year = Year.now(timeZoneService.business()).getValue();
 		int daysInMonth = selectedMonth.length(Year.isLeap(year));
 		for (int day = 1; day <= daysInMonth; day++) {
 			LocalDate date = LocalDate.of(year, selectedMonth, day);
@@ -490,9 +483,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private Map<String, Long> calculateWeeklyLateArrivalCount(List<TimeRecord> lateArrivals) {
 		Map<String, Long> weeklyCount = new LinkedHashMap<>();
-		LocalDate currentWeekStart = LocalDate.of(Year.now().getValue(), Month.JANUARY, 1);
+		int currentYear = Year.now(timeZoneService.business()).getValue();
+		LocalDate currentWeekStart = LocalDate.of(currentYear, Month.JANUARY, 1);
 
-		while (currentWeekStart.getYear() == Year.now().getValue()) {
+		while (currentWeekStart.getYear() == currentYear) {
 			LocalDate currentWeekEnd = currentWeekStart.plusDays(6);
 			String weekLabel = formatWeekRange(currentWeekStart, currentWeekEnd);
 
@@ -507,9 +501,10 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private Map<String, Long> calculateMonthlyLateArrivalCount(List<TimeRecord> lateArrivals) {
 		Map<String, Long> monthlyCount = new LinkedHashMap<>();
-		LocalDate startOfMonth = LocalDate.of(Year.now().getValue(), Month.JANUARY, 1);
+		int currentYear = Year.now(timeZoneService.business()).getValue();
+		LocalDate startOfMonth = LocalDate.of(currentYear, Month.JANUARY, 1);
 
-		while (startOfMonth.getYear() == Year.now().getValue()) {
+		while (startOfMonth.getYear() == currentYear) {
 			LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 			String monthLabel = startOfMonth.format(DateTimeFormatter.ofPattern("MMM"));
 
@@ -524,7 +519,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private long countRecordsInRange(List<TimeRecord> records, LocalDate start, LocalDate end) {
 		return records.stream().filter(timeRecord -> {
-			LocalDate slotDate = DateTimeUtils.epochMillisToUtcLocalDate(timeRecord.getClockInTime());
+			LocalDate slotDate = DateTimeUtils.toDateAt(timeRecord.getClockInTime(), timeZoneService.business());
 			return !slotDate.isBefore(start) && !slotDate.isAfter(end);
 		}).count();
 	}

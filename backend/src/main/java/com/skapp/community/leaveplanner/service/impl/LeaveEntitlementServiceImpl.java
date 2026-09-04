@@ -12,6 +12,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.BulkItemStatus;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -94,6 +95,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
+	private final TimeZoneService timeZoneService;
+
 	private final MessageUtil messageUtil;
 
 	private final EmployeeDao employeeDao;
@@ -124,7 +127,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 	private final BulkContextService bulkContextService;
 
-	public static void processLeaveEntitlements(LeaveMapper mapStructMapper, PeopleMapper peopleMapper,
+	public void processLeaveEntitlements(LeaveMapper mapStructMapper, PeopleMapper peopleMapper,
 			Map<Long, LeaveEntitlementResponseDto> responseDtoList, LeaveEntitlement entitlement) {
 
 		if (entitlement.getTotalDaysAllocated() <= 0) {
@@ -167,20 +170,20 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		}
 	}
 
-	public static LocalDate getEntitlementValidFromDate(LocalDate date) {
+	public LocalDate getEntitlementValidFromDate(LocalDate date) {
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
-				leaveCycleDetailsDto.getStartDate());
+				leaveCycleDetailsDto.getStartDate(), timeZoneService.business());
 		int leaveCycleStartYear = leaveCycleDetailsDto.getStartMonth() == 1 && leaveCycleDetailsDto.getStartDate() == 1
 				? cycleEndYear : cycleEndYear - 1;
 		return date == null ? DateTimeUtils.getUtcLocalDate(leaveCycleStartYear,
 				leaveCycleDetailsDto.getStartMonth() - 1, leaveCycleDetailsDto.getStartDate()) : date;
 	}
 
-	public static LocalDate getEntitlementValidToDate(LocalDate date) {
+	public LocalDate getEntitlementValidToDate(LocalDate date) {
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
-				leaveCycleDetailsDto.getStartDate());
+				leaveCycleDetailsDto.getStartDate(), timeZoneService.business());
 		return date == null ? DateTimeUtils.getUtcLocalDate(cycleEndYear, leaveCycleDetailsDto.getEndMonth() - 1,
 				leaveCycleDetailsDto.getEndDate()) : date;
 	}
@@ -192,7 +195,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		LeaveCycleDetailsDto leaveCycleDetails = leaveCycleService.getLeaveCycleConfigs();
 
 		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetails.getStartMonth(),
-				leaveCycleDetails.getStartDate());
+				leaveCycleDetails.getStartDate(), timeZoneService.business());
 
 		LocalDate leaveCycleStartingDate = DateTimeUtils
 			.getUtcLocalDate(
@@ -552,12 +555,12 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 		// If the valid_from and valid_to dates are not given, the default value is set
 		// from the current date, till the end of the current year.
 		if (customLeaveEntitlementDto.getValidFromDate() == null) {
-			customLeaveEntitlementDto.setValidFromDate(DateTimeUtils.getCurrentUtcDate());
+			customLeaveEntitlementDto.setValidFromDate(timeZoneService.currentBusinessDate());
 		}
 		if (customLeaveEntitlementDto.getValidToDate() == null) {
 			LeaveCycleDetailsDto leaveCycleDetails = leaveCycleService.getLeaveCycleConfigs();
 			int year = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetails.getStartMonth() - 1,
-					leaveCycleDetails.getStartDate());
+					leaveCycleDetails.getStartDate(), timeZoneService.business());
 			LocalDate endOfYear = DateTimeUtils.getUtcLocalDate(year, leaveCycleDetails.getEndMonth() - 1,
 					leaveCycleDetails.getEndDate());
 			customLeaveEntitlementDto.setValidToDate(endOfYear);

@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.model.CrmCompany;
@@ -55,6 +56,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
+	private final TimeZoneService timeZoneService;
+
 	private final EntityManager entityManager;
 
 	@Override
@@ -71,7 +74,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.count(task.get(CrmTask_.id)),
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
-							cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay()))), 1L)
+							cb.lessThan(task.get(CrmTask_.dueAt),
+									cb.literal(timeZoneService.currentBusinessDate().atStartOfDay()))),
+							1L)
 					.otherwise(0L))));
 
 		query.where(task.get(CrmTask_.contact).get(CrmContact_.id).in(contactIds),
@@ -141,7 +146,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		Expression<Long> overdueCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isNotNull(task.get(CrmTask_.dueAt)),
-					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay()))), 1L)
+					cb.lessThan(task.get(CrmTask_.dueAt),
+							cb.literal(timeZoneService.currentBusinessDate().atStartOfDay()))),
+					1L)
 			.otherwise(0L)), 0L);
 
 		query.select(cb.construct(CrmContactTaskMetrics.class, openCount, overdueCount));
