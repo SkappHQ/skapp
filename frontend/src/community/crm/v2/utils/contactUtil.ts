@@ -128,7 +128,10 @@ export const buildContactOptions = (
   for (const contact of contacts) {
     if (contact.id !== undefined) {
       const contactName = getContactDisplayName(contact);
-      const companyName = getCompanyById(companies, contact.companyId)?.name;
+      const companyName =
+        contact.companyId != null
+          ? getCompanyById(companies, contact.companyId)?.name
+          : undefined;
 
       options.push({
         id: contact.id,
