@@ -7,7 +7,8 @@ interface Props {
   noLabel: string;
   yesLabel: string;
   value: boolean;
-  onChange: (value: boolean) => void;
+  onChange?: (value: boolean) => void;
+  isDisabled?: boolean;
 }
 
 const RadioGroup: FC<Props> = ({
@@ -16,7 +17,8 @@ const RadioGroup: FC<Props> = ({
   noLabel,
   yesLabel,
   value,
-  onChange
+  onChange,
+  isDisabled = false
 }) => {
   const options = [
     { id: `${name}-no`, label: noLabel, optionValue: false },
@@ -34,8 +36,12 @@ const RadioGroup: FC<Props> = ({
             type="button"
             role="radio"
             aria-checked={value === option.optionValue}
-            onClick={() => onChange(option.optionValue)}
-            className="flex w-fit cursor-pointer items-center gap-3"
+            aria-disabled={isDisabled}
+            disabled={isDisabled}
+            onClick={() => onChange?.(option.optionValue)}
+            className={`flex w-fit items-center gap-3 ${
+              isDisabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+            }`}
           >
             <RadioButton
               isSelected={value === option.optionValue}

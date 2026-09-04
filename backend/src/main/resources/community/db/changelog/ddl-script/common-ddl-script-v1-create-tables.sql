@@ -528,8 +528,9 @@ CREATE TABLE IF NOT EXISTS `rule_property`
 
 CREATE TABLE IF NOT EXISTS `user_settings`
 (
-    `user_id`       bigint NOT NULL,
-    `notifications` json DEFAULT NULL,
+    `user_id`            bigint NOT NULL,
+    `notifications`      json DEFAULT NULL,
+    `crm_deal_list_view` json,
     PRIMARY KEY (`user_id`),
     CONSTRAINT `FK_user_settings_user_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
 ) ENGINE = InnoDB;
@@ -598,6 +599,18 @@ CREATE TABLE IF NOT EXISTS `crm_task_type`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `crm_industry`
+(
+    `id`                 bigint  NOT NULL AUTO_INCREMENT,
+    `created_by`         text,
+    `created_date`       datetime(6),
+    `last_modified_by`   text,
+    `last_modified_date` datetime(6),
+    `name`               text    NOT NULL,
+    `is_deleted`         boolean NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB;
+
 CREATE TABLE IF NOT EXISTS `crm_company`
 (
     `id`                 bigint  NOT NULL AUTO_INCREMENT,
@@ -607,11 +620,13 @@ CREATE TABLE IF NOT EXISTS `crm_company`
     `last_modified_date` datetime(6)      DEFAULT NULL,
     `name`               text    NOT NULL,
     `industry`           text             DEFAULT NULL,
+    `industry_id`        bigint,
     `website`            text             DEFAULT NULL,
     `address`            text             DEFAULT NULL,
     `contact_number`     text             DEFAULT NULL,
     `is_deleted`         boolean NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_crm_company_crm_industry_industry_id` FOREIGN KEY (`industry_id`) REFERENCES `crm_industry` (`id`)
 ) ENGINE = InnoDB;
 
 CREATE TABLE IF NOT EXISTS `crm_contact`
@@ -676,6 +691,15 @@ CREATE TABLE IF NOT EXISTS `crm_deal`
     CONSTRAINT `FK_crm_deal_employee_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `employee` (`employee_id`)
 ) ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `crm_deal_order_index`
+(
+    `deal_id` bigint                                         NOT NULL,
+    `board`   text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    `list`    text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    PRIMARY KEY (`deal_id`),
+    CONSTRAINT `FK_crm_deal_order_index_crm_deal_deal_id` FOREIGN KEY (`deal_id`) REFERENCES `crm_deal` (`id`)
+) ENGINE = InnoDB;
+
 CREATE TABLE IF NOT EXISTS `crm_task`
 (
     `id`                 bigint  NOT NULL AUTO_INCREMENT,
@@ -703,10 +727,12 @@ CREATE TABLE IF NOT EXISTS `crm_task`
 ) ENGINE = InnoDB;
 
 -- rollback drop table crm_task;
+-- rollback drop table crm_deal_order_index;
 -- rollback drop table crm_deal;
 -- rollback drop table crm_deal_stage;
 -- rollback drop table crm_contact;
 -- rollback drop table crm_company;
+-- rollback drop table crm_industry;
 -- rollback drop table crm_task_type;
 
 -- changeset anusham:crm-ddl-script-v1-create-table-crm-config
