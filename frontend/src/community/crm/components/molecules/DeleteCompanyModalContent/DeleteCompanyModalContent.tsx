@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -17,14 +18,16 @@ const DeleteCompanyModalContent: FC = () => {
     closeCrmSidePanel,
     setIsCompanyModalOpen,
     removeCompany
-  } = useCrmStore((store) => ({
-    selectedCompanyId: store.selectedCompanyId,
-    getCompanyById: store.getCompanyById,
-    setSelectedCompanyId: store.setSelectedCompanyId,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-    removeCompany: store.removeCompany
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      selectedCompanyId: store.selectedCompanyId,
+      getCompanyById: store.getCompanyById,
+      setSelectedCompanyId: store.setSelectedCompanyId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+      removeCompany: store.removeCompany
+    }))
+  );
 
   const selectedCompany = getCompanyById(selectedCompanyId!);
 

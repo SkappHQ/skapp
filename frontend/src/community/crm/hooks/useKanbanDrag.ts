@@ -4,6 +4,7 @@ import type {
   DragStartEvent
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -42,10 +43,12 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
-    boardStageDeals: store.boardStageDeals,
-    setBoardStageDeals: store.setBoardStageDeals
-  }));
+  const { boardStageDeals, setBoardStageDeals } = useCrmStore(
+    useShallow((store) => ({
+      boardStageDeals: store.boardStageDeals,
+      setBoardStageDeals: store.setBoardStageDeals
+    }))
+  );
 
   const [activeDeal, setActiveDeal] = useState<CrmBoardDealSliceType | null>(
     null

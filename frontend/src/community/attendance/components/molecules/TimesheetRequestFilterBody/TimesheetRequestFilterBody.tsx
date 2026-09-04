@@ -36,11 +36,14 @@ const TimesheetRequestFilterBody: FC<Props> = ({
   } = useTimesheetRequestFilterState(isManager, false);
 
   const [selectedStatus, setSelectedStatus] = useState<string[]>(appliedStatus);
-  const [selectedDateRange, setSelectedDateRange] = useState<DateRange | undefined>(
-    convertDateRangeArrayToDateRange(appliedDates)
-  );
+  const [selectedDateRange, setSelectedDateRange] = useState<
+    DateRange | undefined
+  >(convertDateRangeArrayToDateRange(appliedDates));
 
-  const isEmpty = selectedStatus.length === 0 && !selectedDateRange?.from && !selectedDateRange?.to;
+  const isEmpty =
+    selectedStatus.length === 0 &&
+    !selectedDateRange?.from &&
+    !selectedDateRange?.to;
 
   const toggleStatus = (status: string) =>
     setSelectedStatus((previous) => toggleFilterValue(previous, status));

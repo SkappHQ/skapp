@@ -24,7 +24,7 @@ import {
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 
-import { config } from "../../../../middleware";
+import { config } from "../../../../proxy";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import {
@@ -328,11 +328,7 @@ export const extractUserFromToken = (token: string): User | null => {
         ? `${claims.employee.firstName} ${claims.employee.lastName || ""}`
         : "",
       roles: claims?.roles as (
-        | AdminTypes
-        | ManagerTypes
-        | EmployeeTypes
-        | SuperAdminType
-        | SenderTypes
+        AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes
       )[],
       accessToken: token,
       tokenDuration: claims?.tokenDuration,

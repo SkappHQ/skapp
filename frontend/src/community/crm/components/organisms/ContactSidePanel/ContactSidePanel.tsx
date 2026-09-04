@@ -8,6 +8,7 @@ import {
   Tabs
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -49,17 +50,19 @@ const ContactSidePanel: FC = () => {
     updateContact,
     closeCrmSidePanel,
     getContactById
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    selectedContactId: store.selectedContactId,
-    setSelectedContactId: store.setSelectedContactId,
-    setContactModalType: store.setContactModalType,
-    setIsContactModalOpen: store.setIsContactModalOpen,
-    updateContact: store.updateContact,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    getContactById: store.getContactById
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedContactId: store.selectedContactId,
+      setSelectedContactId: store.setSelectedContactId,
+      setContactModalType: store.setContactModalType,
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      updateContact: store.updateContact,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      getContactById: store.getContactById
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -101,9 +102,11 @@ const Dashboard: NextPage = () => {
   const queryMatches = useMediaQuery();
   const isBelow900 = queryMatches(MediaQueries.BELOW_900);
 
-  const { setQuickSetupModalType } = useCommonEnterpriseStore((state) => ({
-    setQuickSetupModalType: state.setQuickSetupModalType
-  }));
+  const { setQuickSetupModalType } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      setQuickSetupModalType: state.setQuickSetupModalType
+    }))
+  );
 
   const billingTranslateText = useTranslator("settingEnterprise", "billing");
 

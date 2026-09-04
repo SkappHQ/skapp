@@ -3,7 +3,6 @@ import React from "react";
 
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 

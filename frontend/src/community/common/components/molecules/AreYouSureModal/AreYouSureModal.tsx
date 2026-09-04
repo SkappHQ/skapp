@@ -1,5 +1,4 @@
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 
@@ -26,7 +25,7 @@ const AreYouSureModal = ({ onPrimaryBtnClick, onSecondaryBtnClick }: Props) => {
       secondaryBtn={{
         label: translateText(["leaveAnywayBtn"]),
         onClick: onSecondaryBtnClick,
-        endIcon: IconName.CLOSE_ICON,
+        endIcon: IconName.CLOSE_ICON
       }}
     />
   );

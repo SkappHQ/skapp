@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -19,11 +20,13 @@ const Contacts: NextPage = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStore((store) => ({
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      setContactModalType: store.setContactModalType,
-      selectedContactId: store.selectedContactId
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        setIsContactModalOpen: store.setIsContactModalOpen,
+        setContactModalType: store.setContactModalType,
+        selectedContactId: store.selectedContactId
+      }))
+    );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {

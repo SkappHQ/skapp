@@ -7,6 +7,7 @@ import {
   useTheme
 } from "@mui/material";
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useCommonStore } from "~community/common/stores/commonStore";
 
@@ -45,9 +46,11 @@ const ChipList = ({
     }
   }, []);
 
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   const [visibleChips, setVisibleChips] = useState<string[]>([]);
   const [hiddenChips, setHiddenChips] = useState<string[]>([]);

@@ -1,5 +1,6 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -17,10 +18,12 @@ const DeleteDealStageModalContent: FC = () => {
   const { getStageByName } = useStageNameMapper();
 
   const { selectedDealStageId, setIsDealStageModalOpen } =
-    useConfigurationStore((store) => ({
-      selectedDealStageId: store.selectedDealStageId,
-      setIsDealStageModalOpen: store.setIsDealStageModalOpen
-    }));
+    useConfigurationStore(
+      useShallow((store) => ({
+        selectedDealStageId: store.selectedDealStageId,
+        setIsDealStageModalOpen: store.setIsDealStageModalOpen
+      }))
+    );
 
   const selectedDealStage = useDealStageById(selectedDealStageId!);
 

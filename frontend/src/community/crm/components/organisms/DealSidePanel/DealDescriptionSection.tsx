@@ -62,12 +62,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
             >
               {translateText(["buttons", "discard"])}
             </ButtonV2>
-            <ButtonV2
-              onClick={save}
-              size="md"
-              type="button"
-              variant="primary"
-            >
+            <ButtonV2 onClick={save} size="md" type="button" variant="primary">
               {translateText(["buttons", "save"])}
             </ButtonV2>
           </div>

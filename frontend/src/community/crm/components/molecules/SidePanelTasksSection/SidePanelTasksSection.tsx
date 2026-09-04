@@ -1,5 +1,6 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -36,10 +37,12 @@ const SidePanelTasksSection: FC<Props> = ({
 }) => {
   const { guardCrmCreate } = useCrmLimitGuard();
 
-  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType
-  }));
+  const { setIsTaskModalOpen, setTaskModalType } = useCrmStore(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType
+    }))
+  );
 
   const translateText = useTranslator(
     "crmModule",

@@ -3,6 +3,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
@@ -104,11 +105,11 @@ const SystemPermissionForm = ({
   const roleLimitationText = useTranslator("peopleModule", "roleLimitation");
 
   const { setUserRoles, userRoles, resetEmployeeData } = usePeopleStore(
-    (state) => ({
+    useShallow((state) => ({
       setUserRoles: state.setUserRoles,
       userRoles: state.userRoles,
       resetEmployeeData: state.resetEmployeeData
-    })
+    }))
   );
 
   const [openModal, setOpenModal] = useState<boolean>(false);

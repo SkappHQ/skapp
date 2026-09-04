@@ -1,6 +1,7 @@
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Form from "~community/common/components/molecules/Form/Form";
@@ -36,19 +37,23 @@ const JobFamilyFormModal = ({ hasDataChanged, onSubmit }: Props) => {
     currentEditingJobFamily,
     setJobFamilyModalType,
     setCurrentEditingJobFamily
-  } = usePeopleStore((state) => ({
-    allJobFamilies: state.allJobFamilies,
-    jobFamilyModalType: state.jobFamilyModalType,
-    currentEditingJobFamily: state.currentEditingJobFamily,
-    setJobFamilyModalType: state.setJobFamilyModalType,
-    setCurrentEditingJobFamily: state.setCurrentEditingJobFamily
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      allJobFamilies: state.allJobFamilies,
+      jobFamilyModalType: state.jobFamilyModalType,
+      currentEditingJobFamily: state.currentEditingJobFamily,
+      setJobFamilyModalType: state.setJobFamilyModalType,
+      setCurrentEditingJobFamily: state.setCurrentEditingJobFamily
+    }))
+  );
 
   const { ongoingQuickSetup, stopAllOngoingQuickSetup } =
-    useCommonEnterpriseStore((state) => ({
-      ongoingQuickSetup: state.ongoingQuickSetup,
-      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-    }));
+    useCommonEnterpriseStore(
+      useShallow((state) => ({
+        ongoingQuickSetup: state.ongoingQuickSetup,
+        stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+      }))
+    );
 
   const initialValues: AddJobFamilyFormType = {
     jobFamilyId: currentEditingJobFamily?.jobFamilyId ?? 0,

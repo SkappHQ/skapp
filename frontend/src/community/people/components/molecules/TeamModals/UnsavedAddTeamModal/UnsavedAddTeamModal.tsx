@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import { usePeopleStore } from "~community/people/store/store";
@@ -10,14 +11,18 @@ interface Props {
 }
 
 const UnsavedAddTeamModal = ({ setTempTeamDetails }: Props) => {
-  const { setTeamModalType, setIsTeamModalOpen } = usePeopleStore((state) => ({
-    setTeamModalType: state.setTeamModalType,
-    setIsTeamModalOpen: state.setIsTeamModalOpen
-  }));
+  const { setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
+    useShallow((state) => ({
+      setTeamModalType: state.setTeamModalType,
+      setIsTeamModalOpen: state.setIsTeamModalOpen
+    }))
+  );
 
-  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const handleSecondaryBtnClick = () => {
     stopAllOngoingQuickSetup();

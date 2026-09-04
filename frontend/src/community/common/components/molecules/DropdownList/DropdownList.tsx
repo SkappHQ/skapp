@@ -41,13 +41,11 @@ interface Props {
   value?: string | number;
   onChange?: (
     event:
-      | SelectChangeEvent
-      | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      SelectChangeEvent | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   onInput?: (
     event:
-      | SelectChangeEvent
-      | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      SelectChangeEvent | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   onClose?: (event: SyntheticEvent) => void;
   error?: string;
@@ -133,8 +131,7 @@ const DropdownList: FC<Props> = ({
 
   const handleChange = (
     event:
-      | KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
-      | SelectChangeEvent
+      KeyboardEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent
   ): void => {
     onChange?.(event);
     onInput?.(event);

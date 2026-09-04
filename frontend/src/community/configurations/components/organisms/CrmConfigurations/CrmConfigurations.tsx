@@ -7,6 +7,7 @@ import {
   SaveIcon
 } from "@rootcodelabs/skapp-ui";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -38,11 +39,13 @@ const CrmConfigurations = () => {
     setIsDealStageModalOpen,
     setDealStageModalType,
     setSelectedDealStageId
-  } = useConfigurationStore((store) => ({
-    setIsDealStageModalOpen: store.setIsDealStageModalOpen,
-    setDealStageModalType: store.setDealStageModalType,
-    setSelectedDealStageId: store.setSelectedDealStageId
-  }));
+  } = useConfigurationStore(
+    useShallow((store) => ({
+      setIsDealStageModalOpen: store.setIsDealStageModalOpen,
+      setDealStageModalType: store.setDealStageModalType,
+      setSelectedDealStageId: store.setSelectedDealStageId
+    }))
+  );
 
   const { setToastMessage } = useToast();
 

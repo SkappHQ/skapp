@@ -181,13 +181,11 @@ export const isObjectEmpty = (obj: any): boolean => {
     if (typeof copyOfObject[key] === "object" && copyOfObject[key] !== null) {
       const result = isObjectEmpty(copyOfObject[key]);
       if (!result) return false;
-    } else if (
-      !(
-        (typeof copyOfObject[key] === "string" && copyOfObject[key] === "") ||
-        typeof copyOfObject[key] === "undefined" ||
-        (Array.isArray(copyOfObject[key]) && copyOfObject[key].length === 0)
-      )
-    ) {
+    } else if (!(
+      (typeof copyOfObject[key] === "string" && copyOfObject[key] === "") ||
+      typeof copyOfObject[key] === "undefined" ||
+      (Array.isArray(copyOfObject[key]) && copyOfObject[key].length === 0)
+    )) {
       return false;
     }
   }

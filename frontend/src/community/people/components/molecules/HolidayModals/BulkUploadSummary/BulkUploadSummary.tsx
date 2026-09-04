@@ -34,10 +34,7 @@ const BulkUploadSummary: FC<Props> = ({ data }) => {
 
   return (
     <div>
-      <p
-        id="status-summary-description"
-        className="my-2"
-      >
+      <p id="status-summary-description" className="my-2">
         {totalEntries &&
         data?.bulkStatusSummary?.failedCount <= 1 &&
         data?.bulkStatusSummary?.successCount <= 1

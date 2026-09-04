@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -29,9 +30,11 @@ const TaskRow: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { updateContactTaskCompletion } = useCrmStore((store) => ({
-    updateContactTaskCompletion: store.updateContactTaskCompletion
-  }));
+  const { updateContactTaskCompletion } = useCrmStore(
+    useShallow((store) => ({
+      updateContactTaskCompletion: store.updateContactTaskCompletion
+    }))
+  );
 
   const [isCompleted, setIsCompleted] = useState(task.isCompleted);
 

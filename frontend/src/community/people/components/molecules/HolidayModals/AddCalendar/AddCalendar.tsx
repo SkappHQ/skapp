@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import DownSideArrow from "~community/common/assets/Icons/DownSideArrow";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
@@ -13,14 +14,18 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 const AddCalendar: FC = () => {
   const translateText = useTranslator("peopleModule", "holidays");
 
-  const { setHolidayModalType, setIsBulkUpload } = usePeopleStore((state) => ({
-    setHolidayModalType: state.setHolidayModalType,
-    setIsBulkUpload: state.setIsBulkUpload
-  }));
+  const { setHolidayModalType, setIsBulkUpload } = usePeopleStore(
+    useShallow((state) => ({
+      setHolidayModalType: state.setHolidayModalType,
+      setIsBulkUpload: state.setIsBulkUpload
+    }))
+  );
 
-  const { ongoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup
-  }));
+  const { ongoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup
+    }))
+  );
 
   const [isButtonBlinking, setIsButtonBlinking] = useState<
     Record<string, boolean>

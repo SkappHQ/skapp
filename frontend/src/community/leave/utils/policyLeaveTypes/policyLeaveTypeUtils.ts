@@ -27,8 +27,7 @@ export const getPolicyLeaveTypeErrorToastKeys = (
   error: AxiosError
 ): PolicyLeaveTypeErrorToastKeys => {
   const errorData = error?.response?.data as
-    | PolicyLeaveTypeErrorData
-    | undefined;
+    PolicyLeaveTypeErrorData | undefined;
   const messageKey = errorData?.results?.[0]?.messageKey;
 
   switch (messageKey) {

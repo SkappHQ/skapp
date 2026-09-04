@@ -1,9 +1,15 @@
-import { APIProvider, AdvancedMarker, Map, MapMouseEvent } from "@vis.gl/react-google-maps";
+import {
+  APIProvider,
+  AdvancedMarker,
+  Map,
+  MapMouseEvent
+} from "@vis.gl/react-google-maps";
 import { ReactNode, useEffect } from "react";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+
 import RadiusCircle from "./RadiusCircle";
 
 interface Props {
@@ -65,11 +71,7 @@ const GeofenceMapView = ({
       <RadiusCircle center={center} radius={radius} />
     </Map>
   ) : (
-    <Map
-      {...sharedProps}
-      defaultCenter={defaultCenter}
-      defaultZoom={2}
-    />
+    <Map {...sharedProps} defaultCenter={defaultCenter} defaultZoom={2} />
   );
 
   return (

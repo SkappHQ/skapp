@@ -155,7 +155,7 @@ const ContactDetailsSection = forwardRef<FormMethods, props>((props, ref) => {
       containerStyles={{
         padding: "0",
         margin: "0 auto",
-        overflowY: "unset",
+        overflowY: "unset"
       }}
       dividerStyles={{
         mt: "0.5rem"

@@ -3,6 +3,7 @@ import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon";
 import { DateTime } from "luxon";
 import { FC, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import PickersDay from "~community/common/components/molecules/CalendarDateRangePickersDay/CalendarDateRangePickersDay";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -60,9 +61,11 @@ const CalendarDateRangePicker: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
-  const { setIsApplyLeaveModalBtnDisabled } = useLeaveStore((state) => ({
-    setIsApplyLeaveModalBtnDisabled: state.setIsApplyLeaveModalBtnDisabled
-  }));
+  const { setIsApplyLeaveModalBtnDisabled } = useLeaveStore(
+    useShallow((state) => ({
+      setIsApplyLeaveModalBtnDisabled: state.setIsApplyLeaveModalBtnDisabled
+    }))
+  );
 
   useEffect(() => {
     handleDateValidation({

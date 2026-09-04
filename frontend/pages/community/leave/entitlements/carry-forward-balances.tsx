@@ -3,6 +3,7 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/navigation";
 import { JSX, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
@@ -38,13 +39,15 @@ const CarryForwardBalances: NextPage = () => {
     leaveCarryForwardId,
     setIsLeaveCarryForwardModalOpen,
     setLeaveCarryForwardModalType
-  } = useLeaveStore((state) => ({
-    leaveCarryForwardSyncBtnStatus: state.leaveCarryForwardSyncBtnStatus,
-    carryForwardLeaveTypes: state.carryForwardLeaveTypes,
-    leaveCarryForwardId: state.leaveCarryForwardId,
-    setIsLeaveCarryForwardModalOpen: state.setIsLeaveCarryForwardModalOpen,
-    setLeaveCarryForwardModalType: state.setLeaveCarryForwardModalType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      leaveCarryForwardSyncBtnStatus: state.leaveCarryForwardSyncBtnStatus,
+      carryForwardLeaveTypes: state.carryForwardLeaveTypes,
+      leaveCarryForwardId: state.leaveCarryForwardId,
+      setIsLeaveCarryForwardModalOpen: state.setIsLeaveCarryForwardModalOpen,
+      setLeaveCarryForwardModalType: state.setLeaveCarryForwardModalType
+    }))
+  );
 
   const [checkedList] = useState<number[]>(leaveCarryForwardId);
 

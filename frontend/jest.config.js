@@ -11,9 +11,9 @@ const customJestConfig = {
     "^~public(.*)$": "<rootDir>/public$1",
     "^~styles(.*)$": "<rootDir>/styles$1",
     "^~i18n(.*)$": "<rootDir>/i18n$1",
-    "^~middleware(.*)$": "<rootDir>/middleware$1"
+    "^~proxy(.*)$": "<rootDir>/proxy$1"
   },
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: '<rootDir>/jest.environment.js',
   collectCoverage: true, // Enable coverage collection
   coverageDirectory: 'coverage', // Directory for storing coverage reports
   coverageReporters: ['html', 'lcov'], // Coverage formats

@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
 import MockTheme from "~community/common/mocks/MockTheme";
@@ -29,7 +29,7 @@ describe("EmojiChip", () => {
       </MockTheme>
     );
     const container = screen.getByText("Styled Container").parentElement;
-    expect(container).toHaveStyle("background-color: red");
+    expect(container).toHaveStyle("background-color: rgb(255, 0, 0)");
   });
 
   test("renders CircularProgress with correct rotation for MORNING leaveType", () => {

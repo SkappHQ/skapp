@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import SwitchRow from "~community/common/components/atoms/SwitchRow/SwitchRow";
@@ -38,12 +39,14 @@ const PeopleConfigurations: FC = () => {
     setIsWorkspaceResetTriggered,
     isWorkspaceDirty,
     isWorkspaceSubmitting
-  } = useEnterprisePeopleStore((store) => ({
-    setIsWorkspaceSaveTriggered: store.setIsPeopleWorkspaceSaveTriggered,
-    setIsWorkspaceResetTriggered: store.setIsPeopleWorkspaceResetTriggered,
-    isWorkspaceDirty: store.isPeopleWorkspaceDirty,
-    isWorkspaceSubmitting: store.isPeopleWorkspaceSubmitting
-  }));
+  } = useEnterprisePeopleStore(
+    useShallow((store) => ({
+      setIsWorkspaceSaveTriggered: store.setIsPeopleWorkspaceSaveTriggered,
+      setIsWorkspaceResetTriggered: store.setIsPeopleWorkspaceResetTriggered,
+      isWorkspaceDirty: store.isPeopleWorkspaceDirty,
+      isWorkspaceSubmitting: store.isPeopleWorkspaceSubmitting
+    }))
+  );
 
   const {
     data: birthdayNotificationConfig,
@@ -77,7 +80,8 @@ const PeopleConfigurations: FC = () => {
     initialValues: {
       isTurnedOn: birthdayNotificationConfig?.isTurnedOn ?? false,
       isTeamWide: birthdayNotificationConfig?.isTeamWide ?? false,
-      isOrganizationWide: birthdayNotificationConfig?.isOrganizationWide ?? false
+      isOrganizationWide:
+        birthdayNotificationConfig?.isOrganizationWide ?? false
     },
     onSubmit: async (values) => {
       await updateConfigAsync(values);

@@ -33,8 +33,10 @@ const DeleteConfirmModal: FC<Props> = ({ onReassign }) => {
 
   const deletingTeamId = Number(currentDeletingTeam?.teamId);
 
-  const { data: employeeTransferableTeams, isLoading: transferableTeamsLoading } =
-    useGetEmployeeTransferableTeams(deletingTeamId);
+  const {
+    data: employeeTransferableTeams,
+    isLoading: transferableTeamsLoading
+  } = useGetEmployeeTransferableTeams(deletingTeamId);
 
   const transferableMembersMap = useMemo<Map<number, TeamNamesType[]>>(() => {
     if (!employeeTransferableTeams) return new Map();

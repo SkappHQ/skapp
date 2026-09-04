@@ -14,6 +14,7 @@ import { formatISODateToMonthYear } from "~community/common/utils/dateTimeUtils"
 import { useGetEmployeeTimeline } from "~community/people/api/PeopleApi";
 import { getTimelineValues } from "~community/people/utils/peopleTimelineUtils";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
+import useTier from "~enterprise/common/hooks/useTier";
 import timelineMockData from "~enterprise/people/data/timelineMockData";
 import {
   EmployeeTimelineRecordsType,
@@ -21,7 +22,6 @@ import {
 } from "~enterprise/people/types/PeopleTypes";
 
 import styles from "./styles";
-import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number | undefined;

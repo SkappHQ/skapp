@@ -395,19 +395,19 @@ const SystemPermissionFormSection = ({
                 RoleModuleEnum.CRM,
                 RoleNameEnum.SALES_REPRESENTATIVE
               )) && (
-                <DropdownList
-                  inputName={"crmRole"}
-                  label={translateText(["crm"])}
-                  itemList={grantablePermission?.crm || []}
-                  value={permissions.crmRole}
-                  componentStyle={classes.dropdownListComponentStyles}
-                  checkSelected
-                  onChange={(event) =>
-                    handleRoleDropdown("crmRole", event.target.value as Role)
-                  }
-                  isDisabled={isDropdownDisabled}
-                />
-              )}
+              <DropdownList
+                inputName={"crmRole"}
+                label={translateText(["crm"])}
+                itemList={grantablePermission?.crm || []}
+                value={permissions.crmRole}
+                componentStyle={classes.dropdownListComponentStyles}
+                checkSelected
+                onChange={(event) =>
+                  handleRoleDropdown("crmRole", event.target.value as Role)
+                }
+                isDisabled={isDropdownDisabled}
+              />
+            )}
           </Stack>
 
           {isUpdate &&
