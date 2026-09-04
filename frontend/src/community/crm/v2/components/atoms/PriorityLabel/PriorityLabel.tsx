@@ -14,7 +14,7 @@ const PriorityLabel: FC<PriorityLabelProps> = ({
   priority,
   showLabel = false
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const translateText = useTranslator("crmModule", "common", "priorityOptions");
   const { key, icon, bgColor, textColor } = getPriorityConfig(priority);
 
   if (!showLabel) {
@@ -24,9 +24,7 @@ const PriorityLabel: FC<PriorityLabelProps> = ({
   return (
     <Label backgroundColor={bgColor} className="py-2 px-3">
       {icon}
-      <span className={`body3 ${textColor}`}>
-        {translateText(["priorityOptions", key])}
-      </span>
+      <span className={`body3 ${textColor}`}>{translateText([key])}</span>
     </Label>
   );
 };
