@@ -18,6 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -25,8 +26,8 @@ import java.util.List;
 @UtilityClass
 public class LeaveModuleUtil {
 
-	public static int getLeaveCycleEndYear(int cycleStartMonth, int cycleStartDay) {
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+	public static int getLeaveCycleEndYear(int cycleStartMonth, int cycleStartDay, ZoneId zoneId) {
+		LocalDate currentDate = DateTimeUtils.currentDateAt(zoneId);
 		int currentYear = currentDate.getYear();
 		int currentMonth = currentDate.getMonthValue();
 
@@ -133,7 +134,7 @@ public class LeaveModuleUtil {
 		float workDays = 0;
 		LocalDate currentDate = startDate;
 		while (!currentDate.isAfter(endDate)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs, organizationTimeZone)) {
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs)) {
 				HolidayDuration holidayDuration = LeaveModuleUtil.getHolidayAvailabilityOnGivenDate(currentDate,
 						holidayObjects);
 				if (holidayDuration == null) {

@@ -1,6 +1,7 @@
 package com.skapp.community.common.payload.response;
 
 import com.skapp.community.common.constant.MessageConstant;
+import com.skapp.community.common.util.DateTimeUtils;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class ErrorResponse {
 	private List<ValidationError> errors;
 
 	public ErrorResponse() {
-		this.timestamp = LocalDateTime.now();
+		this.timestamp = DateTimeUtils.getCurrentUtcDateTime();
 	}
 
 	public ErrorResponse(HttpStatus httpStatus, String message, MessageConstant messageKey) {

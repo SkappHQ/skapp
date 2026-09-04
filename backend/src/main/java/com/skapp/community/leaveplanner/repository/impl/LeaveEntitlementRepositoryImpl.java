@@ -9,6 +9,7 @@ import com.skapp.community.common.type.CriteriaBuilderSqlFunction;
 import com.skapp.community.common.type.CriteriaBuilderSqlLiteral;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
@@ -71,6 +72,8 @@ import static com.skapp.community.leaveplanner.model.LeaveType_.TYPE_ID;
 @Component
 @RequiredArgsConstructor
 public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepository {
+
+	private final TimeZoneService timeZoneService;
 
 	private final EntityManager entityManager;
 
@@ -891,7 +894,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		// int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear :
 		// leaveCycleEndYear - 1;
 
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentBusinessDate();
 		int cycleStartYear = currentDate.getYear();
 		int leaveCycleEndYear = cycleStartYear + 1;
 
@@ -925,7 +928,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		int endMonth = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.MONTH).intValue();
 		int endDate = leaveCycleConfig.get(LeaveModuleConstant.END).get(LeaveModuleConstant.DATE).intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate, timeZoneService.business());
 		int cycleStartYear = startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1;
 
 		LocalDate yearStartDate = DateTimeUtils.getUtcLocalDate(cycleStartYear, startMonth, startDate);

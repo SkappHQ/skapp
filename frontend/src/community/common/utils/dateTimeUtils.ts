@@ -4,6 +4,7 @@ import type { DateRange } from "react-day-picker";
 import {
   DATE_FORMAT,
   LONG_DATE_TIME_FORMAT,
+  MEDIUM_DATE_TIME_FORMAT,
   monthAbbreviations
 } from "~community/common/constants/timeConstants";
 import {
@@ -180,16 +181,11 @@ export const getFormattedMonth = (
   date: string,
   format: "short" | "long" = "short"
 ): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  return dateIOS.toLocaleString({ month: format });
+  return DateTime.fromISO(date).toLocaleString({ month: format });
 };
 
 export const getFormattedYear = (date: string): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  const year = dateIOS.toLocaleString({ year: "numeric" });
-  return year;
+  return DateTime.fromISO(date).toLocaleString({ year: "numeric" });
 };
 
 export const convertDateToUTC = (date: string) => {
@@ -202,6 +198,47 @@ export const convertUTCStringToLocalDateTime = (
   isoString: string
 ): DateTime => {
   return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
+};
+
+export const parseInstant = (isoInstant: string): DateTime =>
+  DateTime.fromISO(isoInstant, { zone: "utc" });
+
+export const instantInZone = (
+  isoInstant: string,
+  zone: string | undefined
+): DateTime => {
+  const parsed = parseInstant(isoInstant);
+  return zone ? parsed.setZone(zone) : parsed.toLocal();
+};
+
+export const nowInZone = (zone: string | undefined): DateTime =>
+  zone ? DateTime.now().setZone(zone) : DateTime.local();
+
+export const currentDateIn = (zone: string | undefined): string =>
+  nowInZone(zone).toFormat(DATE_FORMAT);
+
+export const millisUntilTodayAt = (
+  time: { hour: number; minute: number; second: number },
+  zone: string | undefined
+): number | undefined => {
+  const now = nowInZone(zone);
+  const target = now.set({ ...time, millisecond: 0 });
+  const remaining = target.diff(now).toMillis();
+
+  return remaining > 0 ? remaining : undefined;
+};
+
+export const formatInstant = (
+  isoInstant: string | null | undefined,
+  zone: string | undefined,
+  format: string = MEDIUM_DATE_TIME_FORMAT
+): string => {
+  if (!isoInstant) return "";
+
+  const parsed = parseInstant(isoInstant);
+  if (!parsed.isValid) return "";
+
+  return (zone ? parsed.setZone(zone) : parsed.toLocal()).toFormat(format);
 };
 
 export const parseTimestampToDate = (timestamp: string): Date => {
@@ -592,9 +629,10 @@ export const generateTimezoneList = (): DropdownListType[] => {
 export const fromDateToRelativeTime = (
   date: string,
   translateText: TranslatorFunctionType,
-  language: string
+  language: string,
+  zone: string | undefined
 ): string => {
-  const dateTime = DateTime.fromISO(date).setLocale(language);
+  const dateTime = instantInZone(date, zone).setLocale(language);
   const relativeCalendar = dateTime ? dateTime.toRelativeCalendar() : "";
   const str: string = `${relativeCalendar ? relativeCalendar.toString() : "Unknown date"} at ${dateTime.toFormat("h:mm a")}`;
   const strArray = str.split(" ");

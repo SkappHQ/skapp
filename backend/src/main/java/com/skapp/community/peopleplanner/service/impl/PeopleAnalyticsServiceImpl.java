@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -54,6 +55,8 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 
 	@NonNull
 	private final PeopleMapper peopleMapper;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	public ResponseEntityDto getDashBoardSummary(PeopleAnalyticsFilterDto peopleAnalyticsFilterDto) {
@@ -204,7 +207,7 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 			return emptyResponse;
 		}
 
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentBusinessDate();
 		LocalDate thirtyDaysBeforeCurrentDate = currentDate.minusDays(30);
 
 		Long numberOfTerminatedEmployeesInLastThirtyDays = employeeDao

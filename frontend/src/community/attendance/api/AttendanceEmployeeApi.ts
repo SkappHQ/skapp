@@ -19,6 +19,7 @@ import {
   convertToUtc
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { useBusinessZone } from "~community/common/hooks/useDisplayZone";
 import {
   ErrorResponse,
   SortKeyTypes,
@@ -26,18 +27,21 @@ import {
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  getLocalDate,
-  getStartAndEndOfYear
+  currentDateIn,
+  getStartAndEndOfYear,
+  nowInZone
 } from "~community/common/utils/dateTimeUtils";
 
 export const useGetTodaysTimeRequestAvailability = () => {
-  //const { setGeneralErrors } = useGeneralErrors();
-  const nextDate = new Date();
-  nextDate.setDate(nextDate.getDate() + 1);
+  const businessZone = useBusinessZone();
+  const today = currentDateIn(businessZone);
+  const tomorrow = nowInZone(businessZone)
+    .plus({ days: 1 })
+    .toFormat(DATE_FORMAT);
   return useQuery({
     queryKey: attendanceQueryKeys.getEmployeeRequests({
-      startDate: getLocalDate(new Date()),
-      endDate: getLocalDate(nextDate),
+      startDate: today,
+      endDate: tomorrow,
       page: 1,
       size: 5,
       status: [
@@ -49,20 +53,16 @@ export const useGetTodaysTimeRequestAvailability = () => {
       const url = employeeAttendanceEndpoints.EMPLOYEE_REQUESTS;
       return await authFetch.get(url, {
         params: {
-          startDate: getLocalDate(new Date()),
-          endDate: getLocalDate(nextDate),
+          startDate: today,
+          endDate: tomorrow,
           page: 1,
           size: 5,
           status: [
             TimeSheetRequestStates.PENDING,
             TimeSheetRequestStates.APPROVED
           ].toString(),
-          startTime: convertToMilliseconds(
-            convertToUtc(getLocalDate(new Date()))
-          ),
-          endTime: nextDate
-            ? convertToMilliseconds(convertToUtc(getLocalDate(nextDate)))
-            : null
+          startTime: convertToMilliseconds(convertToUtc(today)),
+          endTime: convertToMilliseconds(convertToUtc(tomorrow))
         }
       });
     },

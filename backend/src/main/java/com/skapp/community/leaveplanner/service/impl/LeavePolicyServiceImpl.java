@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
@@ -61,6 +62,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class LeavePolicyServiceImpl implements LeavePolicyService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final LeavePolicyDao leavePolicyDao;
 
@@ -150,7 +153,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 				LeaveRequestStatus.CANCELLED);
 		int revokedRequests = voidPolicyLeaveRequests(
 				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
-						LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()),
+						LeaveRequestStatus.APPROVED, timeZoneService.currentBusinessDate()),
 				LeaveRequestStatus.REVOKED);
 		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
@@ -341,7 +344,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private int revokeFutureApprovedLeaveRequests() {
 		List<LeaveRequest> futureApprovedRequests = leaveRequestDao
-			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate());
+			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, timeZoneService.currentBusinessDate());
 
 		return voidLeaveRequests(futureApprovedRequests, LeaveRequestStatus.REVOKED);
 	}

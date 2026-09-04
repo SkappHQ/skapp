@@ -13,12 +13,14 @@ import FilterIconButton from "~community/common/components/atoms/FilterIconButto
 import DateRangePicker from "~community/common/components/molecules/DateRangePicker/DateRangePicker";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { MenuTypes } from "~community/common/types/MoleculeTypes";
 import {
   convertDateToFormat,
-  formatDateWithOrdinalIndicator,
-  getDateForPeriod
+  formatDateTimeWithOrdinalIndicator,
+  getDateForPeriod,
+  instantInZone
 } from "~community/common/utils/dateTimeUtils";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useGetEmployeeLeaveHistory } from "~community/leave/api/LeaveAnalyticsApi";
@@ -62,6 +64,7 @@ const UserLeaveHistory: FC<Props> = ({
 
   const { isFreeTier, isAtLeastCoreTier } = useTier();
 
+  const displayZone = useDisplayZone();
   const translateText = useTranslator(
     "peopleModule",
     "individualLeaveAnalytics"
@@ -197,7 +200,9 @@ const UserLeaveHistory: FC<Props> = ({
           new Date(leaveData.endDate),
           false,
           leaveData.durationDays
-        )} ${translateText(["tableHeaders", "dateRequested"])} ${formatDateWithOrdinalIndicator(new Date(leaveData.createdDate))}`,
+        )} ${translateText(["tableHeaders", "dateRequested"])} ${formatDateTimeWithOrdinalIndicator(
+          instantInZone(leaveData.createdDate, displayZone)
+        )}`,
         leavePeriod: (
           <Box
             sx={{
@@ -327,7 +332,9 @@ const UserLeaveHistory: FC<Props> = ({
                 textAlign: "center"
               }}
             >
-              {formatDateWithOrdinalIndicator(new Date(leaveData.createdDate))}
+              {formatDateTimeWithOrdinalIndicator(
+                instantInZone(leaveData.createdDate, displayZone)
+              )}
             </Typography>
           </Box>
         ),

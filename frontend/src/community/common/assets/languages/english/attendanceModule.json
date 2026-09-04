@@ -299,7 +299,8 @@
     "clockOutAlertMessage": "You will be clocked out in 10 minutes. If you wish to continue working, please clock in again.",
     "ok": "Okay",
     "clockInErrorTitle": "Oops! Something went wrong",
-    "clockInErrorDescription": "Failed to record your attendance. Please try again."
+    "clockInErrorDescription": "Failed to record your attendance. Please try again.",
+    "timeZoneNotice": "Times shown in {{displayZone}}. Your work day follows {{businessZone}}."
   },
   "myTimesheet": {
     "pageHead": "My Timesheet | Skapp",

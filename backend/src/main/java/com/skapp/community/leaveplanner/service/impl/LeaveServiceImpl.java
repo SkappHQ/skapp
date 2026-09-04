@@ -10,6 +10,7 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -106,6 +107,8 @@ import static com.skapp.community.leaveplanner.constant.LeaveMessageConstant.LEA
 @RequiredArgsConstructor
 public class LeaveServiceImpl implements LeaveService {
 
+	private final TimeZoneService timeZoneService;
+
 	private final UserService userService;
 
 	private final LeaveMapper leaveMapper;
@@ -167,7 +170,7 @@ public class LeaveServiceImpl implements LeaveService {
 
 		LocalDate currentDate = overlapStart;
 		while (!currentDate.isAfter(overlapEnd)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs, organizationTimeZone)
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs)
 					&& CommonModuleUtils.checkIfDayIsNotAHoliday(leaveRequest, holidayObjects, holidays, currentDate)) {
 				count++;
 			}
@@ -612,7 +615,7 @@ public class LeaveServiceImpl implements LeaveService {
 		log.info("leaveRequestAvailability: execution started");
 
 		if (requestAvailabilityDto.getDate() == null) {
-			requestAvailabilityDto.setDate(DateTimeUtils.getCurrentUtcDate());
+			requestAvailabilityDto.setDate(timeZoneService.currentBusinessDate());
 		}
 
 		List<LeaveRequest> leaveRequests = leaveRequestDao

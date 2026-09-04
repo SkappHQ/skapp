@@ -35,3 +35,7 @@ export const holidayDurationSelector: Record<string, string> = {
   HALF_DAY_EVENING: "Half Day - Evening",
   HALF_DAY_MORNING: "Half Day - Morning"
 };
+
+export const PRE_MIDNIGHT_ALERT_TIME = { hour: 23, minute: 50, second: 0 };
+
+export const AUTO_CLOCK_OUT_TIME = { hour: 23, minute: 59, second: 58 };
