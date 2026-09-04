@@ -24,7 +24,7 @@ import {
   ingestBoardStageDeals,
   resolveColumnDeals
 } from "~community/crm/v2/utils/boardUtil";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
+import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 
 interface DealStageLaneV2Props {
   stageId: number;
@@ -167,7 +167,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
               totalValue > 0 ? "" : "invisible"
             }`}
           >
-            {formatCurrency(totalValue)}
+            {formatMonetaryValueWithDecimals(totalValue)}
           </p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">

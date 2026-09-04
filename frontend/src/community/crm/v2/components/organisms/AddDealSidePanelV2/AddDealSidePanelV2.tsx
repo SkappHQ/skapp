@@ -24,11 +24,14 @@ import {
   CrmContactEntity,
   CrmDealEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactFilterRequest,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
 
@@ -89,8 +92,13 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactFilters: CrmContactFilterRequest = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
   const { data: contactLookupData } = useGetContactLookup(
-    { searchKeyword: debouncedContactSearch, size: DEFAULT_LOOKUP_PAGE_SIZE },
+    contactFilters,
     isOpen
   );
   const contacts = useMemo(
@@ -115,7 +123,9 @@ const AddDealSidePanelV2: FC = () => {
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
       const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      store.setCompanies(
+        updateCompanyRecord(store.companies, fetchedCompanies)
+      );
     }
   }, [fetchedCompanies]);
 
