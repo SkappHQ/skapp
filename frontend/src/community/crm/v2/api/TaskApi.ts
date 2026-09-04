@@ -41,9 +41,11 @@ const fetchTasks = async (
 };
 
 export const useGetTasksInfinite = (
-  params: CrmTaskFilterRequest
+  params: CrmTaskFilterRequest,
+  enabled?: boolean
 ): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>, AxiosError> =>
   useInfiniteQuery({
+    enabled,
     queryKey: crmTaskQueryKeys.LIST(params),
     queryFn: ({ pageParam }) => fetchTasks({ ...params, page: pageParam }),
     initialPageParam: 0,
@@ -152,8 +154,8 @@ const createTask = async (payload: CrmTaskEntity): Promise<CrmTaskEntity> => {
 };
 
 export const useCreateTask = (
-  onSuccess: (task: CrmTaskEntity) => void,
-  onError: (error: AxiosError) => void
+  onSuccess: (createdTask: CrmTaskEntity) => void,
+  onError: () => void
 ): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskEntity> => {
   const queryClient = useQueryClient();
 
@@ -195,7 +197,8 @@ const updateTask = async ({
 };
 
 export const useUpdateTask = (
-  onSuccess?: (task: CrmTaskEntity) => void
+  onSuccess?: (updatedTask: CrmTaskEntity) => void,
+  onError?: () => void
 ): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskUpdateRequest> => {
   const queryClient = useQueryClient();
 
@@ -217,7 +220,8 @@ export const useUpdateTask = (
         });
       }
       onSuccess?.(updatedTask);
-    }
+    },
+    onError
   });
 };
 
@@ -227,7 +231,7 @@ const deleteTask = async (id: number): Promise<void> => {
 
 export const useDeleteTask = (
   onSuccess: () => void,
-  onError: (error: AxiosError) => void
+  onError: () => void
 ): UseMutationResult<void, AxiosError, number> => {
   const queryClient = useQueryClient();
 
@@ -237,7 +241,6 @@ export const useDeleteTask = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
-      queryClient.invalidateQueries({ queryKey: crmTaskQueryKeys.LISTS });
       onSuccess();
     },
     onError
