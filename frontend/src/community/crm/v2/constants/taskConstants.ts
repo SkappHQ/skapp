@@ -25,6 +25,18 @@ export const SALES_REP_RESTRICTED_TASK_TABS: CrmTaskTabEnum[] = [
   CrmTaskTabEnum.ALL_TASKS
 ];
 
+export const TASK_TYPE_ICON_SIZE = 20;
+
+export const TASK_TYPE_ICONS: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
+  email: EmailFilledIcon,
+  call: PhoneFilledIcon,
+  meeting: MeetingFilledIcon,
+  other: ChecklistVerificationFilledIcon
+};
+
 export const PRIORITY_OPTIONS = [
   {
     key: "high",

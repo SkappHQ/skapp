@@ -1,3 +1,6 @@
+import { ChecklistVerificationFilledIcon } from "@rootcodelabs/skapp-ui";
+import { ReactElement, createElement } from "react";
+
 import {
   convertUTCStringToLocalDateTime,
   formatDateTimeWithOrdinalIndicatorWithoutYear,
@@ -5,192 +8,204 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
+  PRIORITY_OPTIONS,
+  TASK_TYPE_ICONS,
+  TASK_TYPE_ICON_SIZE
+} from "~community/crm/v2/constants/taskConstants";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmCompanyRecord,
+  CrmContactRecord,
+  CrmDealRecord,
   CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  CrmTaskTypeOption,
-  GroupedTaskIds,
-  TaskDueDateInfo
-} from "~community/crm/v2/types/CrmTypes";
-import {
-  isDueToday,
-  isDueTomorrow,
-  isOverdue
-} from "~community/crm/v2/utils/taskValidations";
+import { appendId } from "~community/crm/v2/utils/commonUtil";
 
-export const toTaskIds = (tasks: CrmTaskEntity[]): number[] => {
-  const taskIds: number[] = [];
-  for (const task of tasks) {
-    if (task.id != null) {
-      taskIds.push(task.id);
-    }
-  }
-  return taskIds;
-};
-
-export const toTaskDealIds = (tasks: CrmTaskEntity[]): number[] => {
-  const dealIds: number[] = [];
-  for (const task of tasks) {
-    if (task.dealId != null) {
-      dealIds.push(task.dealId);
-    }
-  }
-  return dealIds;
-};
-
-export const updateTaskRecord = (
-  existingTasks: CrmTaskRecord,
-  newTasks: CrmTaskEntity[]
-): CrmTaskRecord => {
-  const updatedRecord: CrmTaskRecord = { ...existingTasks };
-  for (const task of newTasks) {
-    if (task.id == null) continue;
-    updatedRecord[task.id] = { ...updatedRecord[task.id], ...task };
-  }
-  return updatedRecord;
-};
-
-export const resolveTasks = (
-  taskIds: number[],
-  tasks: CrmTaskRecord
-): CrmTaskEntity[] =>
-  taskIds
-    .map((id) => tasks[id])
-    .filter((task): task is CrmTaskEntity => Boolean(task));
-
-export const getTaskTypeOptions = (
-  taskTypes: CrmTaskTypeRecord
-): CrmTaskTypeOption[] =>
-  Object.values(taskTypes).map((taskType) => ({
-    id: String(taskType.id),
-    value: String(taskType.id),
-    label: taskType.name.toLowerCase()
-  }));
-
-export const getChangedTaskFields = (
-  initialValues: CrmTaskEntity,
-  currentValues: CrmTaskEntity
-): CrmTaskEntity => {
-  const changedFields: CrmTaskEntity = {};
-
-  if (currentValues.name !== initialValues.name) {
-    changedFields.name = currentValues.name;
-  }
-
-  if (currentValues.typeId !== initialValues.typeId) {
-    changedFields.typeId = currentValues.typeId;
-  }
-
-  if (currentValues.priority !== initialValues.priority) {
-    changedFields.priority = currentValues.priority;
-  }
-
-  if (currentValues.dueAt !== initialValues.dueAt) {
-    changedFields.dueAt = currentValues.dueAt;
-  }
-
-  if (currentValues.ownerId !== initialValues.ownerId) {
-    changedFields.ownerId = currentValues.ownerId;
-  }
-
-  if (currentValues.contactId !== initialValues.contactId) {
-    changedFields.contactId = currentValues.contactId;
-  }
-
-  if (currentValues.dealId !== initialValues.dealId) {
-    changedFields.dealId = currentValues.dealId;
-  }
-
-  if (currentValues.notes !== initialValues.notes) {
-    changedFields.notes = currentValues.notes;
-  }
-
-  return changedFields;
-};
+export interface TaskDueDateInfo {
+  textKey: string;
+  dateValue?: string;
+  dayCount?: number;
+  colorClass: string;
+}
 
 export const getDueDateStatus = (
-  dueAt: string,
-  isCompleted: boolean
-): TaskDueDateInfo | null => {
-  if (!dueAt) return null;
+  dueAt?: string,
+  isCompleted?: boolean
+): TaskDueDateInfo | undefined => {
+  if (dueAt) {
+    const due = convertUTCStringToLocalDateTime(dueAt);
+    const today = getCurrentDateAtMidnight();
 
-  const due = convertUTCStringToLocalDateTime(dueAt);
-  const today = getCurrentDateAtMidnight();
+    if (!isCompleted && due < today) {
+      return {
+        textKey: "dueDateOverdue",
+        dayCount: getDayDifference(due, today),
+        colorClass: "text-semantic-red-text"
+      };
+    }
 
-  if (!isCompleted && due < today) {
+    if (!isCompleted && isDateTimeSimilar(due, today)) {
+      return { textKey: "dueDateToday", colorClass: "text-secondary-text" };
+    }
+
     return {
-      textKey: "dueDateOverdue",
-      dayCount: getDayDifference(due, today),
-      textColorClass: "text-semantic-red-text"
+      textKey: "dueDateDueOn",
+      dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(due),
+      colorClass: "text-secondary-text"
     };
   }
-
-  if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", textColorClass: "text-secondary-text" };
-  }
-
-  return {
-    textKey: "dueDateDueOn",
-    dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(due),
-    textColorClass: "text-secondary-text"
-  };
 };
 
-export const groupTaskIdsByDueDate = (
-  tasks: CrmTaskEntity[]
-): GroupedTaskIds => {
-  const overdue: number[] = [];
-  const dueToday: number[] = [];
-  const dueTomorrow: number[] = [];
-  const upcoming: number[] = [];
+export const getTaskTypeIcon = (
+  typeName = "",
+  size = TASK_TYPE_ICON_SIZE
+): ReactElement =>
+  createElement(
+    TASK_TYPE_ICONS[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon,
+    { width: size, height: size }
+  );
 
-  for (const task of tasks) {
-    if (task.id == null) continue;
+export const getPriorityConfig = (priority?: CrmPriorityEnum) => {
+  const option = PRIORITY_OPTIONS.find(({ value }) => value === priority);
 
-    const localDueDate = task.dueAt
-      ? convertUTCStringToLocalDateTime(task.dueAt).toISO()
-      : null;
+  if (option) {
+    return {
+      icon: createElement(option.IconComponent),
+      bgColor: option.backgroundColor,
+      textColor: option.textColor
+    };
+  }
+};
 
-    if (!localDueDate) {
-      upcoming.push(task.id);
-    } else if (isOverdue(localDueDate)) {
-      overdue.push(task.id);
-    } else if (isDueToday(localDueDate)) {
-      dueToday.push(task.id);
-    } else if (isDueTomorrow(localDueDate)) {
-      dueTomorrow.push(task.id);
-    } else {
-      upcoming.push(task.id);
+export const getTaskTypeName = (
+  taskTypes: CrmTaskTypeRecord,
+  typeId?: number
+) => {
+  if (typeId !== undefined) {
+    return taskTypes[typeId].name;
+  }
+};
+
+export const normalizeTasks = (items: CrmTaskEntity[]) => {
+  const tasks: CrmTaskRecord = {};
+  const taskIds: number[] = [];
+
+  items.forEach((task) => {
+    if (task.id !== undefined) {
+      tasks[task.id] = task;
+      taskIds.push(task.id);
+    }
+  });
+
+  return { tasks, taskIds };
+};
+
+export const parseDueDate = (dueAt?: string) => {
+  if (dueAt !== undefined) {
+    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
+  }
+};
+
+export const getTaskFormInitialValues = (
+  selectedContactId: number | null,
+  currentUserId?: string | number
+): CrmTaskEntity => {
+  const initialValues: CrmTaskEntity = {
+    name: "",
+    priority: CrmPriorityEnum.MEDIUM,
+    notes: ""
+  };
+
+  if (selectedContactId !== null) {
+    initialValues.contactId = selectedContactId;
+  }
+
+  if (currentUserId !== undefined) {
+    initialValues.ownerId = Number(currentUserId);
+  }
+
+  return initialValues;
+};
+
+export const getTrimmedTaskValues = (task: CrmTaskEntity): CrmTaskEntity => ({
+  ...task,
+  name: task.name?.trim(),
+  notes: task.notes?.trim()
+});
+
+export const linkTaskToRelatedEntities = (
+  task: CrmTaskEntity,
+  companies?: CrmCompanyRecord,
+  contacts?: CrmContactRecord,
+  deals?: CrmDealRecord
+) => {
+  const taskId = task.id;
+  const linked = { companies, contacts, deals };
+
+  if (taskId === undefined) {
+    return linked;
+  }
+
+  if (companies !== undefined && task.companyId !== undefined) {
+    const company = companies[task.companyId];
+
+    if (company !== undefined) {
+      linked.companies = {
+        ...companies,
+        [task.companyId]: {
+          ...company,
+          taskIds: appendId(company.taskIds, taskId)
+        }
+      };
     }
   }
 
-  return {
-    overdue,
-    dueToday,
-    dueTomorrow,
-    upcoming,
-    isOpenTasksEmpty:
-      overdue.length === 0 &&
-      dueToday.length === 0 &&
-      dueTomorrow.length === 0 &&
-      upcoming.length === 0
-  };
+  if (contacts !== undefined && task.contactId !== undefined) {
+    const contact = contacts[task.contactId];
+
+    if (contact !== undefined) {
+      linked.contacts = {
+        ...contacts,
+        [task.contactId]: {
+          ...contact,
+          taskIds: appendId(contact.taskIds, taskId)
+        }
+      };
+    }
+  }
+
+  if (deals !== undefined && task.dealId !== undefined) {
+    const deal = deals[task.dealId];
+
+    if (deal !== undefined) {
+      linked.deals = {
+        ...deals,
+        [task.dealId]: { ...deal, taskIds: appendId(deal.taskIds, taskId) }
+      };
+    }
+  }
+
+  return linked;
 };
 
-export const getTaskGroups = (
-  tasks: CrmTaskEntity[],
-  tab: CrmTaskTabEnum,
-  userId?: number
-): GroupedTaskIds => {
-  const openTasks = tasks.filter((task) => !task.isCompleted);
+export const updateTask = (
+  tasks: CrmTaskRecord,
+  taskId: number,
+  updatedFields: CrmTaskEntity
+): CrmTaskRecord => ({
+  ...tasks,
+  [taskId]: { ...tasks[taskId], ...updatedFields }
+});
 
-  return groupTaskIdsByDueDate(
-    tab === CrmTaskTabEnum.MY_TASKS
-      ? openTasks.filter((task) => task.ownerId === userId)
-      : openTasks
-  );
-};
+export interface CrmTaskCompletion {
+  taskId: number;
+  isCompleted: boolean;
+}
+
+export const applyTaskCompletion = (
+  tasks: CrmTaskRecord,
+  { taskId, isCompleted }: CrmTaskCompletion
+): CrmTaskRecord => updateTask(tasks, taskId, { isCompleted });
