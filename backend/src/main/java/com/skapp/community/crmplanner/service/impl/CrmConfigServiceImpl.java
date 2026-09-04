@@ -1,8 +1,10 @@
 package com.skapp.community.crmplanner.service.impl;
 
 import com.skapp.community.crmplanner.constant.DefaultCrmDealStageTemplate;
+import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
 import com.skapp.community.crmplanner.constant.DefaultCrmTaskTypeTemplate;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 
@@ -21,11 +23,14 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	@Override
 	@Transactional
 	public void setDefaultCrmConfig() {
 		setDefaultCrmDealStages();
 		setDefaultCrmTaskTypes();
+		setDefaultCrmIndustries();
 	}
 
 	private void setDefaultCrmDealStages() {
@@ -42,6 +47,14 @@ public class CrmConfigServiceImpl implements CrmConfigService {
 		crmTaskTypeDao.saveAll(DefaultCrmTaskTypeTemplate.getDefaultTaskTypes());
 
 		log.info("setDefaultCrmTaskTypes: execution ended");
+	}
+
+	private void setDefaultCrmIndustries() {
+		log.info("setDefaultCrmIndustries: execution started");
+
+		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
+
+		log.info("setDefaultCrmIndustries: execution ended");
 	}
 
 }
