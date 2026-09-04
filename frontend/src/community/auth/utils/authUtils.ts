@@ -328,11 +328,7 @@ export const extractUserFromToken = (token: string): User | null => {
         ? `${claims.employee.firstName} ${claims.employee.lastName || ""}`
         : "",
       roles: claims?.roles as (
-        | AdminTypes
-        | ManagerTypes
-        | EmployeeTypes
-        | SuperAdminType
-        | SenderTypes
+        AdminTypes | ManagerTypes | EmployeeTypes | SuperAdminType | SenderTypes
       )[],
       accessToken: token,
       tokenDuration: claims?.tokenDuration,

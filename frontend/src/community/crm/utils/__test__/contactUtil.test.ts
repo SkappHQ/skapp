@@ -107,10 +107,7 @@ describe("mapContactToMetricItems", () => {
 });
 
 describe("updateContactTaskCompletion", () => {
-  const makeTask = (
-    id: number,
-    isCompleted: boolean
-  ): TaskRowResponseType => ({
+  const makeTask = (id: number, isCompleted: boolean): TaskRowResponseType => ({
     id,
     name: `Task ${id}`,
     typeName: "Call",

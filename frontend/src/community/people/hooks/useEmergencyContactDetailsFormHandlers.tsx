@@ -11,8 +11,7 @@ import { L3EmergencyContactType } from "~community/people/types/PeopleTypes";
 import { employeeEmergencyContactDetailsValidation } from "~community/people/utils/peopleValidations";
 
 type EmergencyContactType =
-  | "primaryEmergencyContact"
-  | "secondaryEmergencyContact";
+  "primaryEmergencyContact" | "secondaryEmergencyContact";
 
 const useEmergencyContactDetailsFormHandlers = (
   contactType: EmergencyContactType

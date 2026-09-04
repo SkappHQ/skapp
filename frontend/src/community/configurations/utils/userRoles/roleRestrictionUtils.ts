@@ -20,7 +20,9 @@ export const getRestrictionChanges = (
   selected: RoleLevel[],
   initialSelected: RoleLevel[]
 ): RestrictionChanges => ({
-  addedRoles: selected.filter((roleLevel) => !initialSelected.includes(roleLevel)),
+  addedRoles: selected.filter(
+    (roleLevel) => !initialSelected.includes(roleLevel)
+  ),
   removedRoles: initialSelected.filter(
     (roleLevel) => !selected.includes(roleLevel)
   )

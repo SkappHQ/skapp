@@ -107,4 +107,3 @@ export interface GetManagerTeamsResponseType {
   totalItems: number;
   totalPages: number;
 }
-

@@ -1,6 +1,6 @@
+import { Box } from "@mui/material";
 import { InputField } from "@rootcodelabs/skapp-ui";
 import { useMap } from "@vis.gl/react-google-maps";
-import { Box } from "@mui/material";
 import { useCallback, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -50,32 +50,32 @@ const AddressSearch = ({
   };
 
   return (
-      <InputField
-        label=""
-        placeholder={searchPlaceholder}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        rightIcon={
-          <Box
-            component="button"
-            type="button"
-            onClick={handleSearch}
-            disabled={isSearching}
-            sx={{
-              background: "none",
-              border: "none",
-              cursor: isSearching ? "not-allowed" : "pointer",
-              p: 0,
-              display: "flex",
-              alignItems: "center"
-            }}
-          >
-            <Icon name={IconName.SEARCH_ICON} />
-          </Box>
-        }
-        state="default"
-      />
+    <InputField
+      label=""
+      placeholder={searchPlaceholder}
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+      onKeyDown={handleKeyDown}
+      rightIcon={
+        <Box
+          component="button"
+          type="button"
+          onClick={handleSearch}
+          disabled={isSearching}
+          sx={{
+            background: "none",
+            border: "none",
+            cursor: isSearching ? "not-allowed" : "pointer",
+            p: 0,
+            display: "flex",
+            alignItems: "center"
+          }}
+        >
+          <Icon name={IconName.SEARCH_ICON} />
+        </Box>
+      }
+      state="default"
+    />
   );
 };
 

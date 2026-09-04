@@ -5,14 +5,7 @@ import {
   SelectableList,
   SelectedFiltersDisplay
 } from "@rootcodelabs/skapp-ui";
-import {
-  JSX,
-  MouseEvent,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from "react";
+import { JSX, MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ClockInSummaryFilterTypes,

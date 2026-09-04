@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
@@ -19,7 +19,6 @@ export const useRedirectHandler = (options: SessionPropsOptions) => {
 
   useEffect(() => {
     const handleRedirect = async () => {
-
       try {
         if (process.env.NEXT_PUBLIC_MODE !== "enterprise") {
           const response = await authFetch.get(

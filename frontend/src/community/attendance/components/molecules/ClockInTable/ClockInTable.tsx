@@ -51,9 +51,7 @@ const ClockInTable: FC<Props> = ({
   const theme: Theme = useTheme();
   const translateTexts = useTranslator("attendanceModule");
 
-  const {
-    isPendingInvitationListOpen
-  } = usePeopleStore((state) => state);
+  const { isPendingInvitationListOpen } = usePeopleStore((state) => state);
 
   const { data: teamData } = useGetAllTeams();
   const teamFilter = teamData?.map((item) => ({

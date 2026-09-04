@@ -61,7 +61,10 @@ const BasicInfoStep: FC<Props> = ({ formData, onChange, errors, touched }) => {
               type="text"
               required
               value={formData.policyName}
-              placeholder={translateText(["basicInfo", "policyNamePlaceholder"])}
+              placeholder={translateText([
+                "basicInfo",
+                "policyNamePlaceholder"
+              ])}
               state={policyNameError ? "error" : "default"}
               errorMessage={policyNameError}
               onChange={(event: ChangeEvent<HTMLInputElement>) =>

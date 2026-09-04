@@ -1,6 +1,7 @@
 import { SelectChangeEvent } from "@mui/material";
 import { useMemo, useState } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
@@ -9,7 +10,6 @@ import {
 } from "~community/people/api/TeamApi";
 
 import RoundedSelect from "../RoundedSelect/RoundedSelect";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const TeamSelect = ({
   value,

@@ -190,9 +190,7 @@ const ContactModalForm = ({
             ? translateContactText(["validations", "emailExists"])
             : emailFieldError
         }
-        state={
-          isDuplicateEmail || emailFieldError ? "error" : "default"
-        }
+        state={isDuplicateEmail || emailFieldError ? "error" : "default"}
         label={translateContactText(["labels", "email"])}
         placeholder={translateContactText(["placeholders", "email"])}
         onChange={handleChange}

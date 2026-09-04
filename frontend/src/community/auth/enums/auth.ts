@@ -3,7 +3,7 @@ export enum AuthMethods {
   GOOGLE = "GOOGLE",
   MICROSOFT = "MICROSOFT",
   GUEST = "GUEST",
-  CODE = "CODE",
+  CODE = "CODE"
 }
 
 export enum SignInStatus {

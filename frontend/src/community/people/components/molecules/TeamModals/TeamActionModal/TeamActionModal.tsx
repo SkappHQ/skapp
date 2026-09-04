@@ -76,9 +76,7 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
       isOpen={isOpen}
       onClose={onClose}
       modalHeader={translateText(["teamActionModalTitle"])}
-      content={
-        <p>{translateText(["teamActionModalDes"])}</p>
-      }
+      content={<p>{translateText(["teamActionModalDes"])}</p>}
       buttons={{
         buttonLeft: {
           variant: "primary",
@@ -91,7 +89,12 @@ const TeamActionModal: React.FC<Props> = ({ isOpen, onClose, teamId }) => {
           variant: "error",
           children: translateText(["teamDeleteConfirmBtnText"]),
           onClick: handleDeleteTeam,
-          icon: <Icon name={IconName.DELETE_BUTTON_ICON} fill="var(--color-semantic-red-text)"/>,
+          icon: (
+            <Icon
+              name={IconName.DELETE_BUTTON_ICON}
+              fill="var(--color-semantic-red-text)"
+            />
+          ),
           iconPosition: "end"
         }
       }}

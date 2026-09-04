@@ -1025,19 +1025,19 @@ export const useMarkBirthdayNotificationsViewedToday = (
   });
 };
 
-export const useGetBirthdayNotificationConfig = (): UseQueryResult<
-  BirthdayNotificationConfigType
-> => {
-  return useQuery({
-    queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
-    queryFn: async () => {
-      const response = await authFetch.get<BirthdayNotificationConfigResponse>(
-        peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
-      );
-      return response.data.results[0];
-    }
-  });
-};
+export const useGetBirthdayNotificationConfig =
+  (): UseQueryResult<BirthdayNotificationConfigType> => {
+    return useQuery({
+      queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
+      queryFn: async () => {
+        const response =
+          await authFetch.get<BirthdayNotificationConfigResponse>(
+            peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
+          );
+        return response.data.results[0];
+      }
+    });
+  };
 
 const updateBirthdayNotificationConfig = (
   config: BirthdayNotificationConfigPatchType
