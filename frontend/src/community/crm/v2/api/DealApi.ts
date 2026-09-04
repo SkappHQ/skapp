@@ -18,8 +18,8 @@ import {
 import { CrmDealListViewConfig } from "~community/crm/v2/types/CrmListViewConfigTypes";
 import {
   CrmDealFilterRequest,
-  CrmDealListReorderRequest,
   CrmDealListResponse,
+  CrmDealReorderRequest,
   CrmDealStageReorderItem,
   CrmExistsResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -89,7 +89,7 @@ export const useGetDealsInfinite = (
   });
 
 const reorderDealInList = async (
-  payload: CrmDealListReorderRequest
+  payload: CrmDealReorderRequest
 ): Promise<void> => {
   await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
 };
@@ -97,7 +97,7 @@ const reorderDealInList = async (
 export const useReorderDealInList = (): UseMutationResult<
   void,
   AxiosError,
-  CrmDealListReorderRequest
+  CrmDealReorderRequest
 > => useMutation({ mutationFn: reorderDealInList });
 
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
