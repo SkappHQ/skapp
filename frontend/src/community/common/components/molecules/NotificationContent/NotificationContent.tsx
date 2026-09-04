@@ -1,5 +1,6 @@
 import { JSX } from "react";
 
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   NotificationDataTypes,
@@ -25,6 +26,7 @@ const NotificationContent = ({
   isEsignatureModuleDisabled
 }: Props): JSX.Element => {
   const translateText = useTranslator("notifications");
+  const displayZone = useDisplayZone();
 
   const isViewed =
     item.isViewed ||
@@ -64,7 +66,8 @@ const NotificationContent = ({
           {fromDateToRelativeTime(
             item.createdDate,
             translateText,
-            i18n.language
+            i18n.language,
+            displayZone
           )}
         </p>
       </div>

@@ -1,4 +1,3 @@
-import { DateTime } from "luxon";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { FC } from "react";
 
@@ -15,6 +14,10 @@ import {
   NotificationSummaryItem,
   NotificationSummaryType
 } from "~community/common/types/notificationTypes";
+import {
+  instantInZone,
+  nowInZone
+} from "~community/common/utils/dateTimeUtils";
 
 export const getNotificationCount = (
   summaryResults: NotificationSummaryItem[] | undefined,
@@ -59,10 +62,13 @@ const TIME_PERIOD_ORDER: TimePeriodEnums[] = [
   TimePeriodEnums.OLDER
 ];
 
-const getTimePeriod = (dateStr: string): TimePeriodEnums => {
-  const today = DateTime.now().startOf("day");
+const getTimePeriod = (
+  dateStr: string,
+  zone: string | undefined
+): TimePeriodEnums => {
+  const today = nowInZone(zone).startOf("day");
 
-  const notificationDate = DateTime.fromISO(dateStr).startOf("day");
+  const notificationDate = instantInZone(dateStr, zone).startOf("day");
 
   const diffDays = today.diff(notificationDate, "days").days;
 
@@ -74,12 +80,13 @@ const getTimePeriod = (dateStr: string): TimePeriodEnums => {
 };
 
 export const groupNotificationsByTimePeriod = (
-  items: NotificationDataTypes[]
+  items: NotificationDataTypes[],
+  zone: string | undefined
 ): { period: TimePeriodEnums; items: NotificationDataTypes[] }[] => {
   const groupMap = new Map<TimePeriodEnums, NotificationDataTypes[]>();
 
   for (const item of items) {
-    const period = getTimePeriod(item.createdDate);
+    const period = getTimePeriod(item.createdDate, zone);
     const existing = groupMap.get(period) ?? [];
     existing.push(item);
     groupMap.set(period, existing);
