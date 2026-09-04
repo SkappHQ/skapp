@@ -113,16 +113,25 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
 
-		Subquery<BigDecimal> pipelineValueSub = pipelineValueSubquery(cb, query, contact);
+		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
+		pipelineRevenueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, pipelineDeal),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
 
-		Subquery<Long> activeDealsCountSub = activeDealsCountSubquery(cb, query, contact);
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, activeDeal),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
 
 		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
 				company.get(CrmCompany_.id), owner.get(Employee_.employeeId),
 				cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub, openTaskSub,
-						overdueTaskSub, pipelineValueSub.cast(String.class), activeDealsCountSub)));
+						overdueTaskSub, pipelineRevenueSub.cast(String.class), activeDealsCountSub)));
 
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
@@ -178,12 +187,21 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
 					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
 
-		Subquery<BigDecimal> pipelineValueSub = pipelineValueSubquery(cb, query, contact);
+		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
+		pipelineRevenueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, pipelineDeal),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
 
-		Subquery<Long> activeDealsCountSub = activeDealsCountSubquery(cb, query, contact);
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, activeDeal),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
 
 		query.select(cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub,
-				openTaskSub, overdueTaskSub, pipelineValueSub.cast(String.class), activeDealsCountSub));
+				openTaskSub, overdueTaskSub, pipelineRevenueSub.cast(String.class), activeDealsCountSub));
 		query.where(cb.equal(contact.get(CrmContact_.id), contactId), cb.isFalse(contact.get(CrmContact_.isDeleted)));
 
 		return Optional.ofNullable(entityManager.createQuery(query).getSingleResultOrNull());
@@ -358,30 +376,6 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		CrmContact results = entityManager.createQuery(query).getSingleResultOrNull();
 		return results;
-	}
-
-	private Subquery<BigDecimal> pipelineValueSubquery(CriteriaBuilder cb, CriteriaQuery<?> query,
-			Root<CrmContact> contact) {
-		Subquery<BigDecimal> subquery = query.subquery(BigDecimal.class);
-		Root<CrmDeal> deal = subquery.from(CrmDeal.class);
-
-		subquery.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
-			.where(cb.equal(deal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, deal),
-					cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-
-		return subquery;
-	}
-
-	private Subquery<Long> activeDealsCountSubquery(CriteriaBuilder cb, CriteriaQuery<?> query,
-			Root<CrmContact> contact) {
-		Subquery<Long> subquery = query.subquery(Long.class);
-		Root<CrmDeal> deal = subquery.from(CrmDeal.class);
-
-		subquery.select(cb.count(deal.get(CrmDeal_.id)))
-			.where(cb.equal(deal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, deal),
-					cb.isFalse(deal.get(CrmDeal_.isDeleted)));
-
-		return subquery;
 	}
 
 	private Predicate notInTerminalStage(CriteriaBuilder cb, Root<CrmDeal> deal) {
