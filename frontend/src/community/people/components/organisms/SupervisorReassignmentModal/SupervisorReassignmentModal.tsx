@@ -2,6 +2,7 @@ import { ArrowRightIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
+import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -15,6 +16,7 @@ import {
 } from "~community/people/api/PeopleApi";
 import SupervisorReassignmentModalSection from "~community/people/components/molecules/SupervisorReassignmentModalSection/SupervisorReassignmentModalSection";
 import { usePeopleStore } from "~community/people/store/store";
+import { SystemPermissionTypes } from "~community/people/types/AddNewResourceTypes";
 import {
   EmployeeRemoveAction,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
@@ -51,11 +53,18 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchedEmployeeId, setSearchedEmployeeId] = useState<number | null>(
+    null
+  );
 
   const { data: supervisorRoles, isLoading: isSupervisorRolesLoading } =
     useGetSupervisedEmployeesAndTeams(employeeId, isOpen);
   const { data: searchedEmployees, isLoading: isEmployeeSearchLoading } =
-    useGetSearchedEmployees(searchTerm);
+    useGetSearchedEmployees(
+      searchTerm,
+      SystemPermissionTypes.EMPLOYEES,
+      searchedEmployeeId
+    );
 
   const isSearchLoading =
     isEmployeeSearchLoading || searchedEmployees === undefined;
@@ -65,6 +74,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     setTeamSupervisorAssignments({});
     setIsSubmitting(false);
     setSearchTerm("");
+    setSearchedEmployeeId(null);
   }, []);
 
   const handleClose = useCallback(() => {
@@ -180,6 +190,7 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       [supervisedEmployeeId]: { id: newSupervisorId, name: newSupervisorName }
     }));
     setSearchTerm("");
+    setSearchedEmployeeId(null);
   };
 
   const handleSelectTeamSupervisor = (
@@ -192,28 +203,39 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
       [teamId]: { id: newSupervisorId, name: newSupervisorName }
     }));
     setSearchTerm("");
+    setSearchedEmployeeId(null);
   };
 
   const getPrimarySupervisorItems = useCallback(
-    (supervisedEmployeeId: number) =>
-      employeeList
-        .filter(
-          (employee) => Number(employee.employeeId) !== supervisedEmployeeId
-        )
-        .map((employee) => ({
-          id: String(employee.employeeId),
-          content: concatStrings([employee.firstName, employee.lastName]).trim()
-        })),
-    [employeeList]
+    (supervisedEmployeeId: number): SearchableDropdownItem[] =>
+      searchedEmployeeId !== supervisedEmployeeId
+        ? []
+        : employeeList
+            .filter(
+              (employee) => Number(employee.employeeId) !== supervisedEmployeeId
+            )
+            .map((employee) => ({
+              id: String(employee.employeeId),
+              content: concatStrings([
+                employee.firstName,
+                employee.lastName
+              ]).trim()
+            })),
+    [employeeList, searchedEmployeeId]
   );
 
   const getTeamSupervisorItems = useCallback(
-    (teamId: number) =>
-      employeeList.map((employee) => ({
-        id: String(employee.employeeId),
-        content: concatStrings([employee.firstName, employee.lastName]).trim()
-      })),
-    [employeeList]
+    (): SearchableDropdownItem[] =>
+      searchedEmployeeId !== null
+        ? []
+        : employeeList.map((employee) => ({
+            id: String(employee.employeeId),
+            content: concatStrings([
+              employee.firstName,
+              employee.lastName
+            ]).trim()
+          })),
+    [employeeList, searchedEmployeeId]
   );
 
   const proceedButtonLabel =
@@ -261,7 +283,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={primarySupervisorAssignments}
               getItems={getPrimarySupervisorItems}
-              onSearch={setSearchTerm}
+              onSearch={(term, supervisedEmployeeId) => {
+                setSearchTerm(term);
+                setSearchedEmployeeId(supervisedEmployeeId);
+              }}
               onSelect={(supervisedEmployeeId, selectedId, selectedName) => {
                 handleSelectPrimarySupervisor(
                   Number(selectedId),
@@ -285,7 +310,10 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
               isLoading={isSearchLoading}
               assignments={teamSupervisorAssignments}
               getItems={getTeamSupervisorItems}
-              onSearch={setSearchTerm}
+              onSearch={(term) => {
+                setSearchTerm(term);
+                setSearchedEmployeeId(null);
+              }}
               onSelect={(teamId, selectedId, selectedName) => {
                 handleSelectTeamSupervisor(
                   Number(selectedId),

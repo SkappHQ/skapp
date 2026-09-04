@@ -1,3 +1,4 @@
+import { SystemPermissionTypes } from "~community/people/types/AddNewResourceTypes";
 import { EmployeeDataParamsTypes } from "~community/people/types/EmployeeTypes";
 
 export const peopleQueryKeys = {
@@ -16,9 +17,11 @@ export const peopleQueryKeys = {
   EMPLOYEE_COUNT: function () {
     return [...(this?.all || []), "employee-count"];
   },
-  EMPLOYEE_SEARCH: function (searchTerm: string, permission: string) {
-    return [...(this?.all || []), "employees-search", searchTerm, permission];
-  },
+  EMPLOYEE_SEARCH: (
+    searchTerm: string,
+    permission: SystemPermissionTypes,
+    selectedEmployeeId?: number | null
+  ) => ["employees-search", searchTerm, permission, selectedEmployeeId],
   EMPLOYEE_DATA_EXIST_KEYS: function (
     workEmail?: string,
     identificationNo?: string

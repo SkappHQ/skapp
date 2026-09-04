@@ -227,6 +227,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
 	PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND("api.error.people.transfer-supervisors.new-supervisor-not-found"),
 	PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN("api.error.people.transfer-supervisors.self-assign"),
+	PEOPLE_ERROR_TRANSFER_SUPERVISOR_ALREADY_ASSIGNED("api.error.people.transfer-supervisors.already-assigned"),
 	PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND(
 			"api.error.people.transfer-supervisors.primary-record-not-found"),
 	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
