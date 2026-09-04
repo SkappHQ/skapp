@@ -1,4 +1,8 @@
-import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
+import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import {
+  CrmDealStageEnum,
+  DefaultStageNameEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmStageEntity,
   CrmStageRecord
@@ -100,3 +104,11 @@ export const isStageNameTaken = (
       toStandardStageName(stage.name) === standardName
   );
 };
+
+export const getStageDisplayName = (
+  stageName: string,
+  translateText: TranslatorFunctionType
+): string =>
+  Object.values<string>(DefaultStageNameEnum).includes(stageName)
+    ? translateText([stageName])
+    : stageName;

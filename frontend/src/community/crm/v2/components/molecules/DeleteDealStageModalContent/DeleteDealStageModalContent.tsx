@@ -6,17 +6,21 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useDeleteDealStage } from "~community/crm/v2/api/DealApi";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   getSelectedStage,
+  getStageDisplayName,
   removeStage
 } from "~community/crm/v2/utils/stageUtil";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
+  const translateStageName = useTranslator(
+    "crmModule",
+    "deals",
+    "defaultStageNames"
+  );
   const { setToastMessage } = useToast();
-  const { getStageDisplayName } = useStageNameMapper();
 
   const { stages, setStages, selectedDealStageId, setIsDealStageModalOpen } =
     useCrmStoreV2(
@@ -87,9 +91,13 @@ const DeleteDealStageModalContent: FC = () => {
   return (
     <div className="flex flex-col">
       <div>
-        {translateText(["deleteDealStageModal", "description"], {
-          stageName: getStageDisplayName(selectedDealStage?.name)
-        })}
+        {selectedDealStage?.name !== undefined &&
+          translateText(["deleteDealStageModal", "description"], {
+            stageName: getStageDisplayName(
+              selectedDealStage.name,
+              translateStageName
+            )
+          })}
       </div>
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2

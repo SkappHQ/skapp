@@ -18,13 +18,13 @@ import {
 } from "~community/crm/v2/api/DealApi";
 import { DEAL_STAGE_COLORS } from "~community/crm/v2/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getChangedStageFields,
   getSelectedStage,
+  getStageDisplayName,
   updateStage
 } from "~community/crm/v2/utils/stageUtil";
 import { getStageValidationSchema } from "~community/crm/v2/utils/stageValidations";
@@ -40,7 +40,11 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
 }) => {
   const { setToastMessage } = useToast();
   const translateText = useTranslator("configurations", "crm");
-  const { getStageDisplayName } = useStageNameMapper();
+  const translateStageName = useTranslator(
+    "crmModule",
+    "deals",
+    "defaultStageNames"
+  );
 
   const { stages, setStages, setIsDealStageModalOpen, selectedDealStageId } =
     useCrmStoreV2(
@@ -57,8 +61,11 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const selectedDealStage = getSelectedStage(stages, selectedDealStageId);
 
   const initialValues: CrmStageEntity = {
-    name: isEdit ? (getStageDisplayName(selectedDealStage?.name) ?? "") : "",
-    description: isEdit ? (selectedDealStage?.description ?? "") : "",
+    name:
+      isEdit && selectedDealStage?.name !== undefined
+        ? getStageDisplayName(selectedDealStage.name, translateStageName)
+        : "",
+    description: isEdit ? selectedDealStage?.description : "",
     color: selectedDealStage?.color ?? CrmDealStageColorsEnum.SKY
   };
 

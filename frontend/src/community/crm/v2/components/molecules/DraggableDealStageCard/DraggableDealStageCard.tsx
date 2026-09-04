@@ -7,8 +7,8 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { getStageDisplayName } from "~community/crm/v2/utils/stageUtil";
 
 interface DraggableDealStageCardProps {
   stage: CrmStageEntity;
@@ -38,11 +38,18 @@ const DraggableDealStageCard = ({
     isDragging
   } = useSortable({ id: stageId, disabled: !isDraggable });
   const translateText = useTranslator("configurations", "crm");
+  const translateStageName = useTranslator(
+    "crmModule",
+    "deals",
+    "defaultStageNames"
+  );
 
   const stageColor = stage.color ?? CrmDealStageColorsEnum.SKY;
-  const { getStageDisplayName } = useStageNameMapper();
 
-  const stageName = getStageDisplayName(stage.name) ?? "";
+  const stageName =
+    stage.name !== undefined
+      ? getStageDisplayName(stage.name, translateStageName)
+      : "";
 
   const style = {
     transform: CSS.Transform.toString(transform),
