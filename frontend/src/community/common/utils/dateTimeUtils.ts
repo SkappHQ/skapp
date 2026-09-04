@@ -4,7 +4,6 @@ import type { DateRange } from "react-day-picker";
 import {
   DATE_FORMAT,
   LONG_DATE_TIME_FORMAT,
-  MEDIUM_DATE_FORMAT,
   MEDIUM_DATE_TIME_FORMAT,
   monthAbbreviations
 } from "~community/common/constants/timeConstants";
@@ -230,7 +229,7 @@ export const millisUntilTodayAt = (
 };
 
 export const formatInstant = (
-  isoInstant: string | undefined,
+  isoInstant: string | null | undefined,
   zone: string | undefined,
   format: string = MEDIUM_DATE_TIME_FORMAT
 ): string => {
@@ -240,16 +239,6 @@ export const formatInstant = (
   if (!parsed.isValid) return "";
 
   return (zone ? parsed.setZone(zone) : parsed.toLocal()).toFormat(format);
-};
-
-export const formatCalendarDate = (
-  isoDate: string | undefined,
-  format: string = MEDIUM_DATE_FORMAT
-): string => {
-  if (!isoDate) return "";
-
-  const parsed = DateTime.fromISO(isoDate);
-  return parsed.isValid ? parsed.toFormat(format) : "";
 };
 
 export const parseTimestampToDate = (timestamp: string): Date => {
@@ -640,9 +629,10 @@ export const generateTimezoneList = (): DropdownListType[] => {
 export const fromDateToRelativeTime = (
   date: string,
   translateText: TranslatorFunctionType,
-  language: string
+  language: string,
+  zone: string | undefined
 ): string => {
-  const dateTime = DateTime.fromISO(date).setLocale(language);
+  const dateTime = instantInZone(date, zone).setLocale(language);
   const relativeCalendar = dateTime ? dateTime.toRelativeCalendar() : "";
   const str: string = `${relativeCalendar ? relativeCalendar.toString() : "Unknown date"} at ${dateTime.toFormat("h:mm a")}`;
   const strArray = str.split(" ");
