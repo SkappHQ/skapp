@@ -332,6 +332,13 @@
             </exclusions>
         </dependency>
 
+        <!-- Apache POI - XLSX report exports -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.4.1</version>
+        </dependency>
+
         <!-- Apache PDFBox -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
