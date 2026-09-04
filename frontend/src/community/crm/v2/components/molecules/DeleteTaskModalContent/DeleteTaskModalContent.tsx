@@ -46,6 +46,10 @@ const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
   };
 
   const handleSuccess = () => {
+    handleCloseModal();
+    closeCrmSidePanel();
+    setSelectedTaskId(null);
+
     setTasks(removeTaskFromRecord(tasks, taskId));
     setTaskIds(removeTaskId(taskIds, taskId));
 
@@ -55,10 +59,6 @@ const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
       title: translateText(["toastMessages", "successTitle"]),
       description: translateText(["toastMessages", "successDescription"])
     });
-
-    handleCloseModal();
-    closeCrmSidePanel();
-    setSelectedTaskId(null);
   };
 
   const handleError = () => {

@@ -54,7 +54,12 @@ const AddTaskModalContent: FC = () => {
       lastName: currentUser.lastName ?? "",
       authPic: currentUser.authPic as string | null
     };
-  }, [currentUser]);
+  }, [
+    currentUser?.employeeId,
+    currentUser?.firstName,
+    currentUser?.lastName,
+    currentUser?.authPic
+  ]);
 
   useEffect(() => {
     if (!defaultOwner) return;

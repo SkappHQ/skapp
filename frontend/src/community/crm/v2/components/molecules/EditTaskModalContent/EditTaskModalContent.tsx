@@ -100,6 +100,7 @@ const EditTaskModalContent: FC<Props> = ({ taskId }) => {
     });
 
     if (Object.keys(changedFields).length === 0) {
+      setSubmitting(false);
       handleCloseModal();
       return;
     }

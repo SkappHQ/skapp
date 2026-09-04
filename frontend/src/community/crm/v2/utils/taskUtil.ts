@@ -61,9 +61,16 @@ export const removeTaskFromRecord = (
   tasks: CrmTaskRecord,
   id: number
 ): CrmTaskRecord => {
-  if (!(id in tasks)) return tasks;
-  const next = { ...tasks };
-  delete next[id];
+  const next: CrmTaskRecord = {};
+
+  for (const [taskId, task] of Object.entries(tasks)) {
+    if (Number(taskId) === id) continue;
+
+    next[Number(taskId)] = task.relatedTaskIds?.includes(id)
+      ? { ...task, relatedTaskIds: removeTaskId(task.relatedTaskIds, id) }
+      : task;
+  }
+
   return next;
 };
 
