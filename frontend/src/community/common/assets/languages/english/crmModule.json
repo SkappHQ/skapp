@@ -635,6 +635,58 @@
         "errorDescription": "Something went wrong. Please try again."
       }
     },
+    "taskModal": {
+      "labels": {
+        "type": "Type",
+        "task": "Task",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "type": "Select type",
+        "task": "Enter the task name",
+        "dueDate": "Select date",
+        "priority": "Select priority",
+        "contactName": "Select contact",
+        "deal": "Select deal",
+        "taskOwner": "Select task owner",
+        "notes": "Add message"
+      },
+      "taskTypes": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "other": "Other"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "type": "Task type",
+        "task": "Task name",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "removeOwner": "Remove task owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
+        "notes": "Notes",
+        "save": "Save task",
+        "cancel": "Cancel"
+      },
+      "emptyStates": {
+        "noOwners": "No task owners found",
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found"
+      }
+    },
     "addTaskModal": {
       "title": "Add task",
       "labels": {
