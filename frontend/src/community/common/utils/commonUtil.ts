@@ -627,7 +627,7 @@ export const updateUrlQueryParam = (
   key: string,
   value: string | null
 ): void => {
-  if (typeof globalThis.window === "undefined") {
+  if (globalThis.window === undefined) {
     return;
   }
 
