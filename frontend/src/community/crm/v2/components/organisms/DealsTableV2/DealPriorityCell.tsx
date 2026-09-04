@@ -2,9 +2,10 @@ import { FC, useState } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import PriorityLabel from "~community/crm/v2/components/atoms/PriorityLabel/PriorityLabel";
-import EditableCell from "~community/crm/v2/components/molecules/EditableCell/EditableCell";
 import PriorityDropdown from "~community/crm/v2/components/molecules/PriorityDropdown/PriorityDropdown";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+
+import EditableCell from "./EditableCell";
 
 interface Props {
   priority?: CrmPriorityEnum;

@@ -10,7 +10,6 @@ import {
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
-import EditableCell from "~community/crm/v2/components/molecules/EditableCell/EditableCell";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -18,6 +17,8 @@ import {
   mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
+
+import EditableCell from "./EditableCell";
 
 interface Props {
   contactId?: number;
@@ -77,9 +78,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   );
 
   const selectedContact =
-    contactId != null
-      ? { id: contactId, name: contactName, companyId }
-      : null;
+    contactId != null ? { id: contactId, name: contactName, companyId } : null;
 
   const handleChange = (contact: CrmContactEntity | null): void => {
     setIsEditing(false);
@@ -107,8 +106,16 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
         onChange={handleChange}
         onSearch={setSearchTerm}
         placeholder={translateText(["inlineEdit", "placeholders", "none"])}
-        searchPlaceholder={translateText(["inlineEdit", "placeholders", "contactSearch"])}
-        noResultsText={translateText(["inlineEdit", "placeholders", "noResults"])}
+        searchPlaceholder={translateText([
+          "inlineEdit",
+          "placeholders",
+          "contactSearch"
+        ])}
+        noResultsText={translateText([
+          "inlineEdit",
+          "placeholders",
+          "noResults"
+        ])}
       />
     </EditableCell>
   );

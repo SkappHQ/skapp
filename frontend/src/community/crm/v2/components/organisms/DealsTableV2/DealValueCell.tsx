@@ -3,9 +3,10 @@ import { ChangeEvent, FC, KeyboardEvent } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
-import EditableCell from "~community/crm/v2/components/molecules/EditableCell/EditableCell";
 import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
+
+import EditableCell from "./EditableCell";
 
 interface Props {
   amount?: string;
@@ -15,19 +16,12 @@ interface Props {
 const DealValueCell: FC<Props> = ({ amount, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
 
-  const {
-    isEditing,
-    value,
-    error,
-    startEditing,
-    changeValue,
-    save,
-    discard
-  } = useInlineEditForm({
-    value: amount ?? "",
-    validate: (nextValue) => validateDealAmount(nextValue, translateText),
-    onSave
-  });
+  const { isEditing, value, error, startEditing, changeValue, save, discard } =
+    useInlineEditForm({
+      value: amount ?? "",
+      validate: (nextValue) => validateDealAmount(nextValue, translateText),
+      onSave
+    });
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) =>
     changeValue(event.target.value);

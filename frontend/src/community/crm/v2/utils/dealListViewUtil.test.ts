@@ -1,3 +1,5 @@
+import { SortConfig } from "@rootcodelabs/skapp-ui";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import {
@@ -98,7 +100,12 @@ describe("fromListTableSortConfig", () => {
   it("normalises the direction reported by the table", () => {
     expect(
       fromListTableSortConfig(
-        [{ columnId: CrmDealColumnFieldEnum.STAGE, direction: "desc" }],
+        [
+          {
+            columnId: CrmDealColumnFieldEnum.STAGE,
+            direction: "desc" as SortConfig["direction"]
+          }
+        ],
         null
       )
     ).toEqual({

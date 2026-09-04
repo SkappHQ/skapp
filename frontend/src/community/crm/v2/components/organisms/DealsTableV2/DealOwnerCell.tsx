@@ -3,10 +3,11 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
-import EditableCell from "~community/crm/v2/components/molecules/EditableCell/EditableCell";
 import OwnerPopupSearch from "~community/crm/v2/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
+
+import EditableCell from "./EditableCell";
 
 interface Props {
   dealId?: number;
@@ -19,7 +20,7 @@ const DealOwnerCell: FC<Props> = ({ dealId, ownerId, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   const owners = useCrmStoreV2(useShallow((store) => store.owners));
-  const owner = ownerId != null ? owners[ownerId] ?? null : null;
+  const owner = ownerId != null ? (owners[ownerId] ?? null) : null;
 
   const handleChange = (nextOwner: CrmOwnerEntity | null): void => {
     setIsEditing(false);
@@ -50,8 +51,16 @@ const DealOwnerCell: FC<Props> = ({ dealId, ownerId, onSave }) => {
         selectedUser={owner}
         onChange={handleChange}
         placeholder={translateText(["inlineEdit", "placeholders", "none"])}
-        searchPlaceholder={translateText(["inlineEdit", "placeholders", "ownerSearch"])}
-        noResultsText={translateText(["inlineEdit", "placeholders", "noResults"])}
+        searchPlaceholder={translateText([
+          "inlineEdit",
+          "placeholders",
+          "ownerSearch"
+        ])}
+        noResultsText={translateText([
+          "inlineEdit",
+          "placeholders",
+          "noResults"
+        ])}
       />
     </EditableCell>
   );

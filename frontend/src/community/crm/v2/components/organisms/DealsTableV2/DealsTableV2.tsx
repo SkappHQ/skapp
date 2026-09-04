@@ -13,20 +13,21 @@ import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useEditDeal } from "~community/crm/v2/api/DealApi";
 import { useContainerWidth } from "~community/crm/components/organisms/DealsTable/utils/dealsTableUtils";
+import { useEditDeal } from "~community/crm/v2/api/DealApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmDealColumnFieldEnum,
   CrmDealListViewConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
-import DealContactCell from "~community/crm/v2/components/molecules/DealContactCell/DealContactCell";
-import DealOwnerCell from "~community/crm/v2/components/molecules/DealOwnerCell/DealOwnerCell";
-import DealPriorityCell from "~community/crm/v2/components/molecules/DealPriorityCell/DealPriorityCell";
-import DealStageCell from "~community/crm/v2/components/molecules/DealStageCell/DealStageCell";
-import DealValueCell from "~community/crm/v2/components/molecules/DealValueCell/DealValueCell";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
+
+import DealContactCell from "./DealContactCell";
+import DealOwnerCell from "./DealOwnerCell";
+import DealPriorityCell from "./DealPriorityCell";
+import DealStageCell from "./DealStageCell";
+import DealValueCell from "./DealValueCell";
 
 interface DealRow extends BaseRowData {
   id: string;
@@ -95,7 +96,11 @@ interface Props {
   onColumnResize: (columnId: string, width: number) => void;
   onSort: (sortConfig: SortConfig[]) => void;
   enableRowReorder: boolean;
-  onRowReorder: (movingId: string, previousId?: string, nextId?: string) => void;
+  onRowReorder: (
+    movingId: string,
+    previousId?: string,
+    nextId?: string
+  ) => void;
 }
 
 const DealsTableV2: FC<Props> = ({
@@ -150,7 +155,6 @@ const DealsTableV2: FC<Props> = ({
     },
     [editDeal]
   );
-
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
