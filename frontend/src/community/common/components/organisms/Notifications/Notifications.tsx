@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { JSX, useMemo } from "react";
 
 import { useMarkNotificationAsRead } from "~community/common/api/notificationsApi";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -32,6 +33,7 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
   const { notifyData, setNotifyData } = useCommonStore((state) => state);
   const router = useRouter();
   const translateText = useTranslator("notifications");
+  const displayZone = useDisplayZone();
   const { mutate } = useMarkNotificationAsRead();
 
   const {
@@ -43,8 +45,11 @@ const Notifications = ({ data, isLoading }: Props): JSX.Element => {
   } = useSessionData();
 
   const groupedNotifications = useMemo(
-    () => (data?.items ? groupNotificationsByTimePeriod(data.items) : []),
-    [data?.items]
+    () =>
+      data?.items
+        ? groupNotificationsByTimePeriod(data.items, displayZone)
+        : [],
+    [data?.items, displayZone]
   );
 
   return (
