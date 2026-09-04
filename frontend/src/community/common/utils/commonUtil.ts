@@ -611,10 +611,44 @@ export const isAndroidDevice = (): boolean => {
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
-  const [basePath, query] = path.split("?");
-  const params = new URLSearchParams(query);
+  const [basePath] = path.split("?");
+  const params = new URLSearchParams();
   params.set("tab", tabId);
-  globalThis.history.replaceState(null, "", `${basePath}?${params.toString()}`);
+  const newUrl = `${basePath}?${params.toString()}`;
+
+  globalThis.history.replaceState(
+    { ...globalThis.history.state, as: newUrl },
+    "",
+    newUrl
+  );
+};
+
+export const updateUrlQueryParam = (
+  key: string,
+  value: string | null
+): void => {
+  if (globalThis.window === undefined) {
+    return;
+  }
+
+  const params = new URLSearchParams(globalThis.location.search);
+
+  if (value === null) {
+    params.delete(key);
+  } else {
+    params.set(key, value);
+  }
+
+  const queryString = params.toString();
+  const newUrl = queryString
+    ? `${globalThis.location.pathname}?${queryString}`
+    : globalThis.location.pathname;
+
+  globalThis.history.replaceState(
+    { ...globalThis.history.state, as: newUrl },
+    "",
+    newUrl
+  );
 };
 
 export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {

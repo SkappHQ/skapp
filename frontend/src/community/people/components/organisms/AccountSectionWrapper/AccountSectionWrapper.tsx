@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
 import { TeamNamesType } from "~community/people/types/TeamTypes";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
 import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
@@ -40,6 +41,8 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
     setCurrentStep(EditPeopleFormTypes.personal);
     setNextStep(EditPeopleFormTypes.personal);
   }, []);
+
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {
