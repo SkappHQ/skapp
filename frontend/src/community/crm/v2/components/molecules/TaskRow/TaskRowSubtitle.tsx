@@ -1,7 +1,10 @@
 import { FC } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { CrmContactEntity, CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmContactEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { getDueDateStatus } from "~community/crm/v2/utils/taskUtil";
 

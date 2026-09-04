@@ -5,8 +5,10 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
-import { appendId } from "~community/crm/v2/utils/commonUtil";
+import {
+  CrmPriorityEnum,
+  CrmTaskTabEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmCompanyRecord,
   CrmContactRecord,
@@ -20,6 +22,7 @@ import {
   GroupedTasks,
   TaskDueDateInfo
 } from "~community/crm/v2/types/CrmTypes";
+import { appendId } from "~community/crm/v2/utils/commonUtil";
 import {
   isDueToday,
   isDueTomorrow,

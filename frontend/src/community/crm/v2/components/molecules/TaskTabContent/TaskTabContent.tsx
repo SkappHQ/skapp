@@ -53,21 +53,16 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const {
-    tasks,
-    setTasks,
-    setTaskIds,
-    setSelectedTaskId,
-    openCrmSidePanel
-  } = useCrmStoreV2(
-    useShallow((store) => ({
-      tasks: store.tasks,
-      setTasks: store.setTasks,
-      setTaskIds: store.setTaskIds,
-      setSelectedTaskId: store.setSelectedTaskId,
-      openCrmSidePanel: store.openCrmSidePanel
-    }))
-  );
+  const { tasks, setTasks, setTaskIds, setSelectedTaskId, openCrmSidePanel } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        tasks: store.tasks,
+        setTasks: store.setTasks,
+        setTaskIds: store.setTaskIds,
+        setSelectedTaskId: store.setSelectedTaskId,
+        openCrmSidePanel: store.openCrmSidePanel
+      }))
+    );
 
   const { mutate: updateCompletion } = useUpdateTask();
 
@@ -116,10 +111,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     [isCompletedTab, completedTasks, openTaskData]
   );
 
-  const visibleTaskIds = useMemo(
-    () => toTaskIds(fetchedTasks),
-    [fetchedTasks]
-  );
+  const visibleTaskIds = useMemo(() => toTaskIds(fetchedTasks), [fetchedTasks]);
 
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
@@ -230,7 +222,9 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     </div>
   );
 
-  const isLoading = isCompletedTab ? isCompletedTasksLoading : isOpenTasksLoading;
+  const isLoading = isCompletedTab
+    ? isCompletedTasksLoading
+    : isOpenTasksLoading;
   const isError = isCompletedTab ? isCompletedTasksError : isOpenTasksError;
 
   const renderContent = () => {
