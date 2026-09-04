@@ -54,6 +54,26 @@ export const updateTaskRecord = (
   return updatedRecord;
 };
 
+export const removeTaskId = (taskIds: number[], id: number): number[] =>
+  taskIds.filter((taskId) => taskId !== id);
+
+export const removeTaskFromRecord = (
+  tasks: CrmTaskRecord,
+  id: number
+): CrmTaskRecord => {
+  const next: CrmTaskRecord = {};
+
+  for (const [taskId, task] of Object.entries(tasks)) {
+    if (Number(taskId) === id) continue;
+
+    next[Number(taskId)] = task.relatedTaskIds?.includes(id)
+      ? { ...task, relatedTaskIds: removeTaskId(task.relatedTaskIds, id) }
+      : task;
+  }
+
+  return next;
+};
+
 export const resolveTasks = (
   taskIds: number[],
   tasks: CrmTaskRecord

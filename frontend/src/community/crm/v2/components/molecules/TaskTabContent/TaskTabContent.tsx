@@ -112,6 +112,11 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setTaskIds(toTaskIds(fetchedTasks));
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
+  const completedTaskIds = useMemo(
+    () => taskIds.filter((id) => tasks[id]?.isCompleted === true),
+    [taskIds, tasks]
+  );
+
   const missingDealIds = useMemo(
     () => getMissingDealIds(toTaskDealIds(fetchedTasks), deals),
     [fetchedTasks, deals]
@@ -182,7 +187,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const renderCompletedTasksContent = () => (
     <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
-      <TaskGroup taskIds={taskIds} isCheckTaskVisible={false} />
+      <TaskGroup taskIds={completedTaskIds} isCheckTaskVisible={false} />
       <div ref={loadingRef} />
     </div>
   );
