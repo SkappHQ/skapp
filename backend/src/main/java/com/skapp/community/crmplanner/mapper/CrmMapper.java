@@ -9,7 +9,6 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
@@ -62,14 +61,11 @@ public interface CrmMapper {
 
 	CrmContactLookupResponseDto crmContactToCrmContactLookupResponseDto(CrmContact contact);
 
-	@Mapping(target = "industryId", ignore = true)
 	CrmCompany crmCompanyCreateDtoToCrmCompany(CrmCompanyCreateDto crmCompanyCreateDto);
 
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);
 
 	List<CrmCompanyResponseDto> crmCompaniesToCrmCompanyResponseDtos(List<CrmCompany> crmCompanies);
-
-	CrmCompanyResponseDtoV2 crmCompanyToCrmCompanyResponseDtoV2(CrmCompany crmCompany);
 
 	@Mapping(target = "email", source = "user.email")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);

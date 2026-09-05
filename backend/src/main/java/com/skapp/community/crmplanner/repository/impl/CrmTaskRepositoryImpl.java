@@ -15,11 +15,6 @@ import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
-import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
@@ -341,37 +336,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
 
 		return cb.construct(CrmTaskResponseDtoV2.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
-				task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted), task.get(CrmTask_.dueAt),
-				task.get(Auditable_.lastModifiedDate), task.get(CrmTask_.notes),
-				cb.construct(CrmTaskTypeResponseDto.class, type.get(CrmTaskType_.id), type.get(CrmTaskType_.name),
-						type.get(CrmTaskType_.orderIndex)),
-				buildOwnerSelection(cb, owner),
-				cb.construct(CrmCompanyResponseDto.class, company.get(CrmCompany_.id), company.get(CrmCompany_.name),
-						company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
-						company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber)),
-				buildContactSelection(cb, contact, contactCompany, contactOwner),
-				cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
-						deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
-						deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), dealStage.get(CrmDealStage_.id),
-						dealOwner.get(Employee_.employeeId), dealCompany.get(CrmCompany_.id),
-						dealContact.get(CrmContact_.id)));
-	}
-
-	private Selection<CrmContactResponseDtoV2> buildContactSelection(CriteriaBuilder cb, Join<?, CrmContact> contact,
-			Join<CrmContact, CrmCompany> contactCompany, Join<CrmContact, Employee> contactOwner) {
-		return cb.construct(CrmContactResponseDtoV2.class, contact.get(CrmContact_.id), contact.get(CrmContact_.name),
-				contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
-				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
-				cb.construct(CrmCompanyResponseDto.class, contactCompany.get(CrmCompany_.id),
-						contactCompany.get(CrmCompany_.name), contactCompany.get(CrmCompany_.industry),
-						contactCompany.get(CrmCompany_.website), contactCompany.get(CrmCompany_.address),
-						contactCompany.get(CrmCompany_.contactNumber)),
-				buildOwnerSelection(cb, contactOwner));
-	}
-
-	private Selection<CrmOwnerResponseDto> buildOwnerSelection(CriteriaBuilder cb, Join<?, Employee> owner) {
-		return cb.construct(CrmOwnerResponseDto.class, owner.get(Employee_.employeeId), owner.get(Employee_.firstName),
-				owner.get(Employee_.lastName), owner.get(Employee_.authPic));
+				type.get(CrmTaskType_.id), task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted),
+				task.get(CrmTask_.dueAt), task.get(Auditable_.lastModifiedDate), task.get(CrmTask_.notes),
+				owner.get(Employee_.employeeId), contact.get(CrmContact_.id), company.get(CrmCompany_.id),
+				deal.get(CrmDeal_.id));
 	}
 
 	private List<Predicate> buildTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root, CrmTaskFilterParams params) {
