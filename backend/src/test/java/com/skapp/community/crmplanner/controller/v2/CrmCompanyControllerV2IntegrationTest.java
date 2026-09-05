@@ -9,7 +9,9 @@ import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
@@ -17,7 +19,6 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
-import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.support.SecurityTestUtils;
@@ -62,6 +63,8 @@ class CrmCompanyControllerV2IntegrationTest {
 
 	private final CrmCompanyDao crmCompanyDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	private final CrmContactDao crmContactDao;
 
 	private final CrmDealDao crmDealDao;
@@ -76,9 +79,12 @@ class CrmCompanyControllerV2IntegrationTest {
 
 	private String authToken;
 
+	private CrmIndustry industry;
+
 	@BeforeEach
 	void setup() {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
+		industry = savedIndustry("TECHNOLOGY_INFORMATION_AND_MEDIA");
 	}
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request, String token) throws Exception {
@@ -92,10 +98,16 @@ class CrmCompanyControllerV2IntegrationTest {
 			.accept(MediaType.APPLICATION_JSON), authToken);
 	}
 
+	private CrmIndustry savedIndustry(String name) {
+		CrmIndustry newIndustry = new CrmIndustry();
+		newIndustry.setName(name);
+		return crmIndustryDao.save(newIndustry);
+	}
+
 	private CrmCompany savedCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setIndustryId(industry.getId());
 		company.setWebsite("https://metrics-v2.com");
 		company.setAddress("123 Metrics St");
 		company.setContactNumber("94771234567");
@@ -168,8 +180,7 @@ class CrmCompanyControllerV2IntegrationTest {
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
 			.andExpect(jsonPath("['results'][0]['items'][0]['id']").value(company.getId()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("MetricsCoV2Unique"))
-			.andExpect(jsonPath("['results'][0]['items'][0]['industry']")
-				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath("['results'][0]['items'][0]['industryId']").value(industry.getId()))
 			.andExpect(jsonPath("['results'][0]['items'][0]['website']").value("https://metrics-v2.com"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['address']").value("123 Metrics St"))
 			.andExpect(jsonPath("['results'][0]['items'][0]['contactNumber']").value("94771234567"))
