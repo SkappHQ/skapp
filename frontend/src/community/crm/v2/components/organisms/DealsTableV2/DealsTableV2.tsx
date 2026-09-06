@@ -13,7 +13,10 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditDeal } from "~community/crm/v2/api/DealApi";
-import { DEAL_FIELD_META } from "~community/crm/v2/constants/dealListViewConstants";
+import {
+  DEAL_COLUMN_MIN_WIDTH,
+  DEAL_FIELD_META
+} from "~community/crm/v2/constants/dealListViewConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -120,7 +123,7 @@ const DealsTableV2: FC<Props> = ({
           title: translateText([meta.titleKey]),
           field: meta.rowKey,
           width: fieldConfig.width,
-          minWidth: meta.minWidth,
+          minWidth: DEAL_COLUMN_MIN_WIDTH,
           resizable: fieldConfig.isResizable,
           draggable: fieldConfig.isDraggable,
           sortable: fieldConfig.isSortable,

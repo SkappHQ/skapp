@@ -3,43 +3,38 @@ import {
   DealRow
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
+export const DEAL_COLUMN_MIN_WIDTH = 100;
+
 export const DEAL_FIELD_META: Record<
   CrmDealColumnFieldEnum,
-  { rowKey: keyof DealRow; titleKey: string; minWidth: number }
+  { rowKey: keyof DealRow; titleKey: string }
 > = {
   [CrmDealColumnFieldEnum.DEAL_NAME]: {
     rowKey: "dealName",
-    titleKey: "dealColumn",
-    minWidth: 400
+    titleKey: "dealColumn"
   },
   [CrmDealColumnFieldEnum.VALUE]: {
     rowKey: "value",
-    titleKey: "valueColumn",
-    minWidth: 140
+    titleKey: "valueColumn"
   },
   [CrmDealColumnFieldEnum.STAGE]: {
     rowKey: "stage",
-    titleKey: "stageColumn",
-    minWidth: 140
+    titleKey: "stageColumn"
   },
   [CrmDealColumnFieldEnum.COMPANY_NAME]: {
     rowKey: "companyName",
-    titleKey: "companyNameColumn",
-    minWidth: 140
+    titleKey: "companyNameColumn"
   },
   [CrmDealColumnFieldEnum.CONTACT_NAME]: {
     rowKey: "contactName",
-    titleKey: "contactNameColumn",
-    minWidth: 140
+    titleKey: "contactNameColumn"
   },
   [CrmDealColumnFieldEnum.PRIORITY]: {
     rowKey: "priority",
-    titleKey: "priorityColumn",
-    minWidth: 140
+    titleKey: "priorityColumn"
   },
   [CrmDealColumnFieldEnum.DEAL_OWNER]: {
     rowKey: "dealOwner",
-    titleKey: "dealOwnerColumn",
-    minWidth: 140
+    titleKey: "dealOwnerColumn"
   }
 };
