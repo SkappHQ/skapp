@@ -5,7 +5,7 @@ import {
   ProjectTableSkeletonLoader,
   SortConfig
 } from "@rootcodelabs/skapp-ui";
-import { FC, useCallback, useMemo, useRef } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
@@ -106,8 +106,6 @@ const DealsTableV2: FC<Props> = ({
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
   });
-
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const companies = useCrmStoreV2(useShallow((store) => store.companies));
 
@@ -247,7 +245,7 @@ const DealsTableV2: FC<Props> = ({
   }
 
   return (
-    <div ref={containerRef} className="rounded-lg h-full overflow-auto">
+    <div className="rounded-lg h-full overflow-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
