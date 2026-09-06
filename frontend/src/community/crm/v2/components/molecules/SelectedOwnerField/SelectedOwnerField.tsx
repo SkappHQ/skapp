@@ -2,8 +2,8 @@ import { AvatarChip, CloseIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOwnerName } from "~community/crm/v2/utils/commonUtil";
 
 interface SelectedOwnerFieldProps {
   label: string;
@@ -36,7 +36,7 @@ const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
       </span>
       <div className="flex h-[3.125rem] items-center rounded-lg bg-tertiary-background px-3">
         <AvatarChip
-          label={getOwnerName(owner)}
+          label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
           avatarProps={{
             id: owner.employeeId.toString(),
             firstName: owner.firstName,
