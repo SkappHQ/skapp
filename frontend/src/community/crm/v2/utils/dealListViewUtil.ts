@@ -95,7 +95,9 @@ export const applyColumnWidth = (
   fields: CrmDealFieldConfig[],
   columnId: string,
   width: number
-): CrmDealFieldConfig[] =>
-  fields.map((field) =>
+): CrmDealFieldConfig[] | null => {
+  if (!fields.some((field) => field.field === columnId)) return null;
+  return fields.map((field) =>
     field.field === columnId ? { ...field, width } : field
   );
+};

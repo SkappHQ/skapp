@@ -162,11 +162,11 @@ describe("applyColumnVisibility", () => {
 describe("applyColumnWidth", () => {
   it("updates only the matching column", () => {
     const next = applyColumnWidth(fields, CrmDealColumnFieldEnum.VALUE, 250);
-    expect(next[1].width).toBe(250);
-    expect(next[0].width).toBe(100);
+    expect(next?.[1].width).toBe(250);
+    expect(next?.[0].width).toBe(100);
   });
 
-  it("leaves the fields untouched when the column is unknown", () => {
-    expect(applyColumnWidth(fields, "UNKNOWN", 250)).toEqual(fields);
+  it("returns null when the column id matches no stored field", () => {
+    expect(applyColumnWidth(fields, "UNKNOWN", 250)).toBeNull();
   });
 });

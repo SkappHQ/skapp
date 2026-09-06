@@ -1,25 +1,24 @@
 import {
-  BaseRowData,
   Column,
   GroupData,
   ListTable,
   ProjectTableSkeletonLoader,
   SortConfig
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useCallback, useMemo } from "react";
+import { FC, useCallback, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useContainerWidth } from "~community/crm/components/organisms/DealsTable/utils/dealsTableUtils";
 import { useEditDeal } from "~community/crm/v2/api/DealApi";
+import { DEAL_FIELD_META } from "~community/crm/v2/constants/dealListViewConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmDealColumnFieldEnum,
-  CrmDealListViewConfig
+  CrmDealListViewConfig,
+  DealRow
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 
@@ -28,58 +27,6 @@ import DealOwnerCell from "./DealOwnerCell";
 import DealPriorityCell from "./DealPriorityCell";
 import DealStageCell from "./DealStageCell";
 import DealValueCell from "./DealValueCell";
-
-interface DealRow extends BaseRowData {
-  id: string;
-  dealName: ReactNode;
-  value: ReactNode;
-  stage: ReactNode;
-  companyName: ReactNode;
-  contactName: ReactNode;
-  priority: ReactNode;
-  dealOwner: ReactNode;
-}
-
-const FIELD_META: Record<
-  CrmDealColumnFieldEnum,
-  { rowKey: keyof DealRow; titleKey: string; minWidth: number }
-> = {
-  [CrmDealColumnFieldEnum.DEAL_NAME]: {
-    rowKey: "dealName",
-    titleKey: "dealColumn",
-    minWidth: 400
-  },
-  [CrmDealColumnFieldEnum.VALUE]: {
-    rowKey: "value",
-    titleKey: "valueColumn",
-    minWidth: 140
-  },
-  [CrmDealColumnFieldEnum.STAGE]: {
-    rowKey: "stage",
-    titleKey: "stageColumn",
-    minWidth: 140
-  },
-  [CrmDealColumnFieldEnum.COMPANY_NAME]: {
-    rowKey: "companyName",
-    titleKey: "companyNameColumn",
-    minWidth: 140
-  },
-  [CrmDealColumnFieldEnum.CONTACT_NAME]: {
-    rowKey: "contactName",
-    titleKey: "contactNameColumn",
-    minWidth: 140
-  },
-  [CrmDealColumnFieldEnum.PRIORITY]: {
-    rowKey: "priority",
-    titleKey: "priorityColumn",
-    minWidth: 140
-  },
-  [CrmDealColumnFieldEnum.DEAL_OWNER]: {
-    rowKey: "dealOwner",
-    titleKey: "dealOwnerColumn",
-    minWidth: 140
-  }
-};
 
 interface Props {
   searchKeyword: string;
@@ -160,16 +107,16 @@ const DealsTableV2: FC<Props> = ({
     searchKeyword: `'${searchKeyword}'`
   });
 
-  const [containerRef] = useContainerWidth();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const companies = useCrmStoreV2(useShallow((store) => store.companies));
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];
     return fields
-      .filter((fieldConfig) => FIELD_META[fieldConfig.field] != null)
+      .filter((fieldConfig) => DEAL_FIELD_META[fieldConfig.field] != null)
       .map((fieldConfig): Column<DealRow> => {
-        const meta = FIELD_META[fieldConfig.field];
+        const meta = DEAL_FIELD_META[fieldConfig.field];
         return {
           id: fieldConfig.field,
           title: translateText([meta.titleKey]),

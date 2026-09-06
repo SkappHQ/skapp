@@ -66,10 +66,9 @@ const useDealListViewConfig = (enabled: boolean) => {
 
   const handleColumnResize = (columnId: string, width: number) => {
     if (!config) return;
-    const next = {
-      ...config,
-      fields: applyColumnWidth(config.fields, columnId, width)
-    };
+    const nextFields = applyColumnWidth(config.fields, columnId, width);
+    if (!nextFields) return;
+    const next = { ...config, fields: nextFields };
     setConfig(next);
     persistDebounced(next);
   };

@@ -1,3 +1,6 @@
+import { BaseRowData } from "@rootcodelabs/skapp-ui";
+import { ReactNode } from "react";
+
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
 
 export enum CrmDealColumnFieldEnum {
@@ -34,4 +37,15 @@ export interface CrmDealListViewConfig {
 export interface ColumnState {
   id: string;
   visible: boolean;
+}
+
+export interface DealRow extends BaseRowData {
+  id: string;
+  dealName: ReactNode;
+  value: ReactNode;
+  stage: ReactNode;
+  companyName: ReactNode;
+  contactName: ReactNode;
+  priority: ReactNode;
+  dealOwner: ReactNode;
 }
