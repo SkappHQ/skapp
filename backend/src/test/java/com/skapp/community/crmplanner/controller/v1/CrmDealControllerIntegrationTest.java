@@ -1027,7 +1027,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(400))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']").value(nullValue()));
 	}
@@ -1035,28 +1035,28 @@ class CrmDealControllerIntegrationTest {
 	@Test
 	@DisplayName("Update then get list-view config - Round-trips the saved config")
 	void updateThenGetListViewConfig_RoundTripsSavedConfig() throws Exception {
-		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":{\"field\":\"VALUE\",\"direction\":\"ASC\"}}";
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":{\"field\":\"AMOUNT\",\"direction\":\"ASC\"}}";
 
 		performPutListViewConfigRequest(config).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"));
 
 		performGetListViewConfigRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("VALUE"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(200))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("VALUE"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("AMOUNT"));
 	}
 
 	@Test
 	@DisplayName("Update list-view config for one user - Does not affect another user's config")
 	void updateListViewConfig_DoesNotAffectAnotherUser() throws Exception {
 		// user1 (admin) saves a custom config
-		String config = "{\"fields\":[{\"field\":\"VALUE\",\"width\":200}],\"sort\":null}";
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":null}";
 		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
 
 		// user2 is a CRM sales representative who has never saved a config
@@ -1069,7 +1069,20 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("DEAL_NAME"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"));
+	}
+
+	@Test
+	@DisplayName("Update list-view config - Accepts the legacy field names")
+	void updateListViewConfig_LegacyFieldNames_AreAccepted() throws Exception {
+		String config = "{\"fields\":[{\"field\":\"DEAL_NAME\",\"width\":400},{\"field\":\"VALUE\",\"width\":200}],\"sort\":null}";
+
+		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
+
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][1]['field']").value("AMOUNT"));
 	}
 
 	@Test

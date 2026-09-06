@@ -166,15 +166,15 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 				return deal.get(Auditable_.createdDate);
 			case PRIORITY:
 				return buildPrioritySeverityExpression(cb, deal);
-			case COMPANY_NAME:
+			case COMPANY:
 				return company.get(CrmCompany_.name);
-			case CONTACT_NAME:
+			case CONTACT:
 				return contact.get(CrmContact_.name);
 			case OWNER:
 				return owner.get(Employee_.firstName);
 			case STAGE_TYPE:
 				return stage.get(CrmDealStage_.stageType);
-			case STAGE_ORDER:
+			case STAGE:
 			default:
 				return stage.get(CrmDealStage_.orderIndex);
 		}
