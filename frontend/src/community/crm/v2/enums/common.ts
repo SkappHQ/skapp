@@ -72,22 +72,11 @@ export enum CrmDealSortEnum {
   NAME = "NAME",
   CLOSING_AT = "CLOSING_AT",
   AMOUNT = "AMOUNT",
-  STAGE_TYPE = "STAGE_TYPE",
-  STAGE_ORDER = "STAGE_ORDER",
-  COMPANY_NAME = "COMPANY_NAME",
-  CONTACT_NAME = "CONTACT_NAME",
+  STAGE = "STAGE",
+  COMPANY = "COMPANY",
+  CONTACT = "CONTACT",
   PRIORITY = "PRIORITY",
   OWNER = "OWNER"
-}
-
-export enum CrmDealColumnFieldEnum {
-  DEAL_NAME = "DEAL_NAME",
-  VALUE = "VALUE",
-  STAGE = "STAGE",
-  COMPANY_NAME = "COMPANY_NAME",
-  CONTACT_NAME = "CONTACT_NAME",
-  PRIORITY = "PRIORITY",
-  DEAL_OWNER = "DEAL_OWNER"
 }
 
 export enum CrmDealStageColorsEnum {

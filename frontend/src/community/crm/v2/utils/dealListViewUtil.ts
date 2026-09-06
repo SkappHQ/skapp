@@ -1,10 +1,7 @@
 import { SortConfig } from "@rootcodelabs/skapp-ui";
 
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import {
-  CrmDealColumnFieldEnum,
-  CrmDealSortEnum
-} from "~community/crm/v2/enums/common";
+import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import {
   ColumnState,
   CrmDealFieldConfig,
@@ -16,25 +13,10 @@ const toSortOrder = (direction: string): SortOrderTypes =>
     ? SortOrderTypes.DESC
     : SortOrderTypes.ASC;
 
-export const FIELD_TO_SORT_KEY: Record<
-  CrmDealColumnFieldEnum,
-  CrmDealSortEnum
-> = {
-  [CrmDealColumnFieldEnum.DEAL_NAME]: CrmDealSortEnum.NAME,
-  [CrmDealColumnFieldEnum.VALUE]: CrmDealSortEnum.AMOUNT,
-  [CrmDealColumnFieldEnum.STAGE]: CrmDealSortEnum.STAGE_ORDER,
-  [CrmDealColumnFieldEnum.COMPANY_NAME]: CrmDealSortEnum.COMPANY_NAME,
-  [CrmDealColumnFieldEnum.CONTACT_NAME]: CrmDealSortEnum.CONTACT_NAME,
-  [CrmDealColumnFieldEnum.PRIORITY]: CrmDealSortEnum.PRIORITY,
-  [CrmDealColumnFieldEnum.DEAL_OWNER]: CrmDealSortEnum.OWNER
-};
-
 export const mapConfigSortToQuery = (
   sort: CrmDealSortConfig | null | undefined
 ): { sortKey?: CrmDealSortEnum; sortOrder?: SortOrderTypes } =>
-  sort
-    ? { sortKey: FIELD_TO_SORT_KEY[sort.field], sortOrder: sort.direction }
-    : {};
+  sort ? { sortKey: sort.field, sortOrder: sort.direction } : {};
 
 export const toListTableSortConfig = (
   sort: CrmDealSortConfig | null | undefined
@@ -53,7 +35,7 @@ export const fromListTableSortConfig = (
         config.direction !== current?.direction
     ) ?? sortConfig[sortConfig.length - 1];
   return {
-    field: changed.columnId as CrmDealColumnFieldEnum,
+    field: changed.columnId as CrmDealSortEnum,
     direction: toSortOrder(changed.direction)
   };
 };
@@ -62,11 +44,11 @@ export const reorderConfigFields = (
   fields: CrmDealFieldConfig[],
   columns: ReadonlyArray<ColumnState>
 ): CrmDealFieldConfig[] | null => {
-  const byField = new Map<CrmDealColumnFieldEnum, CrmDealFieldConfig>(
+  const byField = new Map<CrmDealSortEnum, CrmDealFieldConfig>(
     fields.map((field) => [field.field, field])
   );
   const reordered = columns
-    .map((column) => byField.get(column.id as CrmDealColumnFieldEnum))
+    .map((column) => byField.get(column.id as CrmDealSortEnum))
     .filter((field): field is CrmDealFieldConfig => Boolean(field));
   if (!reordered.length) return null;
 

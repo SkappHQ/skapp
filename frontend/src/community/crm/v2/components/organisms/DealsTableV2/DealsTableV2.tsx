@@ -114,11 +114,11 @@ const DealsTableV2: FC<Props> = ({
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];
-    return fields
-      .filter((fieldConfig) => DEAL_FIELD_META[fieldConfig.field] != null)
-      .map((fieldConfig): Column<DealRow> => {
-        const meta = DEAL_FIELD_META[fieldConfig.field];
-        return {
+    return fields.flatMap((fieldConfig): Column<DealRow>[] => {
+      const meta = DEAL_FIELD_META[fieldConfig.field];
+      if (!meta) return [];
+      return [
+        {
           id: fieldConfig.field,
           title: translateText([meta.titleKey]),
           field: meta.rowKey,
@@ -128,8 +128,9 @@ const DealsTableV2: FC<Props> = ({
           draggable: fieldConfig.isDraggable,
           sortable: fieldConfig.isSortable,
           visible: fieldConfig.isHideable ? fieldConfig.isVisible : true
-        };
-      });
+        }
+      ];
+    });
   }, [columnConfig, translateText]);
 
   const rowDragColumnId = useMemo(

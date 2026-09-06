@@ -1,37 +1,36 @@
-import { CrmDealColumnFieldEnum } from "~community/crm/v2/enums/common";
+import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import { DealRow } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
 export const DEAL_COLUMN_MIN_WIDTH = 100;
 
-export const DEAL_FIELD_META: Record<
-  CrmDealColumnFieldEnum,
-  { rowKey: keyof DealRow; titleKey: string }
+export const DEAL_FIELD_META: Partial<
+  Record<CrmDealSortEnum, { rowKey: keyof DealRow; titleKey: string }>
 > = {
-  [CrmDealColumnFieldEnum.DEAL_NAME]: {
+  [CrmDealSortEnum.NAME]: {
     rowKey: "dealName",
     titleKey: "dealColumn"
   },
-  [CrmDealColumnFieldEnum.VALUE]: {
+  [CrmDealSortEnum.AMOUNT]: {
     rowKey: "value",
     titleKey: "valueColumn"
   },
-  [CrmDealColumnFieldEnum.STAGE]: {
+  [CrmDealSortEnum.STAGE]: {
     rowKey: "stage",
     titleKey: "stageColumn"
   },
-  [CrmDealColumnFieldEnum.COMPANY_NAME]: {
+  [CrmDealSortEnum.COMPANY]: {
     rowKey: "companyName",
     titleKey: "companyNameColumn"
   },
-  [CrmDealColumnFieldEnum.CONTACT_NAME]: {
+  [CrmDealSortEnum.CONTACT]: {
     rowKey: "contactName",
     titleKey: "contactNameColumn"
   },
-  [CrmDealColumnFieldEnum.PRIORITY]: {
+  [CrmDealSortEnum.PRIORITY]: {
     rowKey: "priority",
     titleKey: "priorityColumn"
   },
-  [CrmDealColumnFieldEnum.DEAL_OWNER]: {
+  [CrmDealSortEnum.OWNER]: {
     rowKey: "dealOwner",
     titleKey: "dealOwnerColumn"
   }

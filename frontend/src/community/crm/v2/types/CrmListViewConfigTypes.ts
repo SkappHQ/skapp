@@ -2,10 +2,10 @@ import { BaseRowData } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
 
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealColumnFieldEnum } from "~community/crm/v2/enums/common";
+import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 
 export interface CrmDealFieldConfig {
-  field: CrmDealColumnFieldEnum;
+  field: CrmDealSortEnum;
   width: number;
   isVisible: boolean;
   isHideable: boolean;
@@ -16,7 +16,7 @@ export interface CrmDealFieldConfig {
 }
 
 export interface CrmDealSortConfig {
-  field: CrmDealColumnFieldEnum;
+  field: CrmDealSortEnum;
   direction: SortOrderTypes;
 }
 
