@@ -28,7 +28,6 @@ import SelectableSearchField from "~community/crm/v2/components/molecules/Select
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
-import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -40,14 +39,16 @@ import {
 import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
 import {
   getContactDisplayName,
-  getContactNameById,
   updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
 import {
   getDealNameById,
   updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
-import { parseDueDate } from "~community/crm/v2/utils/taskUtil";
+import {
+  getTaskTypeOptions,
+  parseDueDate
+} from "~community/crm/v2/utils/taskUtil";
 
 interface TaskModalFormProps {
   formik: FormikProps<CrmTaskEntity>;
@@ -79,6 +80,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     owners,
     contacts,
     deals,
+    taskTypes,
     selectedCompanyId,
     isCrmSidePanelOpen,
     crmSidePanelType,
@@ -88,6 +90,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   } = useCrmStoreV2(
     useShallow((store) => ({
       owners: store.owners,
+      taskTypes: store.taskTypes,
       contacts: store.contacts,
       deals: store.deals,
       selectedCompanyId: store.selectedCompanyId,
@@ -100,7 +103,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   );
 
   const priorityDropdownOptions = useGetPriorityOptions();
-  const taskTypeOptions = useGetTaskTypeOptions(translateText);
+  const taskTypeOptions = getTaskTypeOptions(taskTypes);
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
@@ -182,7 +185,10 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   }, [dealLookupData]);
 
   const selectedOwner = getOwnerById(owners, values.ownerId);
-  const selectedContactName = getContactNameById(contacts, values.contactId);
+  const selectedContactName =
+    values.contactId !== undefined
+      ? getContactDisplayName(contacts[values.contactId])
+      : undefined;
   const selectedDealName = getDealNameById(deals, values.dealId);
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(() => {
