@@ -56,7 +56,7 @@ describe("linkTaskToRelatedEntities", () => {
     expect(linked.contacts).toBeUndefined();
   });
 
-  it("starts the array when the entity has not loaded its tasks yet", () => {
+  it("leaves the entity alone when it has not loaded its tasks yet", () => {
     const unloadedCompanies: CrmCompanyRecord = { 1: { id: 1, name: "Acme" } };
     const task: CrmTaskEntity = { id: 99, companyId: 1 };
 
@@ -67,7 +67,7 @@ describe("linkTaskToRelatedEntities", () => {
       deals
     );
 
-    expect(linked.companies?.[1].taskIds).toEqual([99]);
+    expect(linked.companies?.[1].taskIds).toBeUndefined();
   });
 
   it("does not append the same task id twice", () => {
