@@ -35,7 +35,7 @@ const DealsSection: FC = () => {
     useGetDealsInfinite(
       {
         size: DEAL_PAGE_SIZE,
-        sortKey: CrmDealSortEnum.STAGE,
+        sortKey: CrmDealSortEnum.STAGE_ORDER,
         sortOrder: SortOrderTypes.ASC,
         searchKeyword: debouncedSearch
       },
