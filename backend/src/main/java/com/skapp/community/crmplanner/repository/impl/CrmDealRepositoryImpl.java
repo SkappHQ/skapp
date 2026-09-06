@@ -172,8 +172,6 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 				return contact.get(CrmContact_.name);
 			case OWNER:
 				return owner.get(Employee_.firstName);
-			case STAGE_TYPE:
-				return stage.get(CrmDealStage_.stageType);
 			case STAGE:
 			default:
 				return stage.get(CrmDealStage_.orderIndex);
