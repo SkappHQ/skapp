@@ -9,7 +9,7 @@ import { FC } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
-import PriorityLabel from "~community/crm/v2/components/atoms/PriorityLabel/PriorityLabel";
+import PriorityLabel from "~community/crm/v2/components/molecules/PriorityLabel/PriorityLabel";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { formatCurrency } from "~community/crm/v2/utils/commonUtil";

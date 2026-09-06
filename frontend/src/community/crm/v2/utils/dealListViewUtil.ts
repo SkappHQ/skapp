@@ -18,12 +18,12 @@ export const fromListTableSortConfig = (
   current: CrmDealSortConfig | null
 ): CrmDealSortConfig | null => {
   if (!sortConfig.length) return null;
-  const changed =
-    sortConfig.find(
-      (config) =>
-        config.columnId !== current?.field ||
-        config.direction !== current?.direction
-    ) ?? sortConfig[sortConfig.length - 1];
+  const changed = sortConfig.find(
+    (config) =>
+      config.columnId !== current?.field ||
+      toSortOrder(config.direction) !== current?.direction
+  );
+  if (!changed) return current;
   return {
     field: changed.columnId as CrmDealSortEnum,
     direction: toSortOrder(changed.direction)
