@@ -12,10 +12,7 @@ import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import {
-  getMissingCompanyIds,
-  mergeCompanies
-} from "~community/crm/v2/utils/companyUtil";
+import { getMissingCompanyIds } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 import EditableCell from "./EditableCell";
@@ -31,10 +28,11 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { contactRecord, companies } = useCrmStoreV2(
+  const { contactRecord, companies, addCompanies } = useCrmStoreV2(
     useShallow((store) => ({
       contactRecord: store.contacts,
-      companies: store.companies
+      companies: store.companies,
+      addCompanies: store.addCompanies
     }))
   );
 
@@ -68,10 +66,9 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      addCompanies(fetchedCompanies);
     }
-  }, [fetchedCompanies]);
+  }, [fetchedCompanies, addCompanies]);
 
   const contactName = getContactDisplayName(
     contactId != null ? contactRecord[contactId] : undefined

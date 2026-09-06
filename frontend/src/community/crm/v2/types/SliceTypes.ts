@@ -1,7 +1,9 @@
 import {
   CrmBoardRecord,
+  CrmCompanyEntity,
   CrmCompanyRecord,
   CrmContactRecord,
+  CrmDealEntity,
   CrmDealRecord,
   CrmOwnerRecord,
   CrmStageRecord,
@@ -24,8 +26,10 @@ export interface CrmDataSliceTypes {
   taskTypes: CrmTaskTypeRecord;
 
   setCompanies: (companies: CrmCompanyRecord) => void;
+  addCompanies: (companies: CrmCompanyEntity[]) => void;
   setContacts: (contacts: CrmContactRecord) => void;
   setDeals: (deals: CrmDealRecord) => void;
+  addDeals: (deals: CrmDealEntity[]) => void;
   setBoardColumn: (board: CrmBoardRecord) => void;
   setTasks: (tasks: CrmTaskRecord) => void;
   setOwners: (owners: CrmOwnerRecord) => void;

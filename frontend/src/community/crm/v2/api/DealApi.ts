@@ -94,11 +94,20 @@ const reorderDealInList = async (
   await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
 };
 
-export const useReorderDealInList = (): UseMutationResult<
-  void,
-  AxiosError,
-  CrmDealReorderRequest
-> => useMutation({ mutationFn: reorderDealInList });
+export const useReorderDealInList = (
+  onError?: (error: AxiosError) => void
+): UseMutationResult<void, AxiosError, CrmDealReorderRequest> => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reorderDealInList,
+    onError: (error) => {
+      queryClient.invalidateQueries({
+        queryKey: crmDealQueryKeys.GET_DEALS_ROOT
+      });
+      onError?.(error);
+    }
+  });
+};
 
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
   const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));

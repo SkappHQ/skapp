@@ -1,5 +1,4 @@
 import { SortConfig } from "@rootcodelabs/skapp-ui";
-import { useQueryClient } from "@tanstack/react-query";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -16,20 +15,15 @@ import {
   useGetDealsInfinite,
   useReorderDealInList
 } from "~community/crm/v2/api/DealApi";
-import { crmDealQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
 import { DealViewEnum } from "~community/crm/v2/enums/common";
 import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
-import {
-  getMissingCompanyIds,
-  mergeCompanies
-} from "~community/crm/v2/utils/companyUtil";
+import { getMissingCompanyIds } from "~community/crm/v2/utils/companyUtil";
 import { fromListTableSortConfig } from "~community/crm/v2/utils/dealListViewUtil";
 import {
-  mergeDeals,
   reorderDealIds,
   resolveDeals,
   toDealIds
@@ -42,7 +36,6 @@ const DealsSectionV2: FC = () => {
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
-  const queryClient = useQueryClient();
   const { mutate: reorderDeal } = useReorderDealInList();
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { setToastMessage } = useToast();
@@ -51,6 +44,9 @@ const DealsSectionV2: FC = () => {
     companies,
     dealIds,
     dealRecord,
+    addCompanies,
+    addDeals,
+    setDealIds,
     setSelectedDealId,
     openCrmSidePanel
   } = useCrmStoreV2(
@@ -58,6 +54,9 @@ const DealsSectionV2: FC = () => {
       companies: store.companies,
       dealIds: store.dealIds,
       dealRecord: store.deals,
+      addCompanies: store.addCompanies,
+      addDeals: store.addDeals,
+      setDealIds: store.setDealIds,
       setSelectedDealId: store.setSelectedDealId,
       openCrmSidePanel: store.openCrmSidePanel
     }))
@@ -121,17 +120,14 @@ const DealsSectionV2: FC = () => {
       const previousDealId = previousId != null ? Number(previousId) : null;
       const nextDealId = nextId != null ? Number(nextId) : null;
 
-      const store = useCrmStoreV2.getState();
-      const previousDealIds = store.dealIds;
-      store.setDealIds(
-        reorderDealIds(store.dealIds, dealId, previousDealId, nextDealId)
-      );
+      const previousDealIds = dealIds;
+      setDealIds(reorderDealIds(dealIds, dealId, previousDealId, nextDealId));
 
       reorderDeal(
         { dealId, previousDealId, nextDealId },
         {
           onError: () => {
-            useCrmStoreV2.getState().setDealIds(previousDealIds);
+            setDealIds(previousDealIds);
             setToastMessage({
               open: true,
               toastType: ToastType.ERROR,
@@ -146,14 +142,11 @@ const DealsSectionV2: FC = () => {
                 "editErrorDescription"
               ])
             });
-            queryClient.invalidateQueries({
-              queryKey: crmDealQueryKeys.GET_DEALS_ROOT
-            });
           }
         }
       );
     },
-    [reorderDeal, setToastMessage, translateText, queryClient]
+    [reorderDeal, setToastMessage, translateText, dealIds, setDealIds]
   );
 
   const hasNextPage = Boolean(hasNextPageRaw);
@@ -164,11 +157,10 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (!data || activeView !== DealViewEnum.LIST) return;
-    const store = useCrmStoreV2.getState();
     const items = data.pages.flatMap((page) => page.items);
-    store.setDeals(mergeDeals(store.deals, items));
-    store.setDealIds(toDealIds(items));
-  }, [data, activeView]);
+    addDeals(items);
+    setDealIds(toDealIds(items));
+  }, [data, activeView, addDeals, setDealIds]);
 
   const companyIds = useMemo(
     () =>
@@ -190,10 +182,9 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      addCompanies(fetchedCompanies);
     }
-  }, [fetchedCompanies]);
+  }, [fetchedCompanies, addCompanies]);
 
   const loadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {

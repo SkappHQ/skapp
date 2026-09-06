@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   useGetDealListViewConfig,
@@ -31,14 +31,6 @@ export const useDealListViewConfig = (
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
   const [config, setConfig] = useState<CrmDealListViewConfig | null>(null);
-  const persistTimer = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(
-    () => () => {
-      if (persistTimer.current) clearTimeout(persistTimer.current);
-    },
-    []
-  );
 
   useEffect(() => {
     if (fetchedConfig) setConfig(fetchedConfig);
@@ -47,11 +39,6 @@ export const useDealListViewConfig = (
   const applyConfig = (next: CrmDealListViewConfig) => {
     setConfig(next);
     persistConfig(next);
-  };
-
-  const persistDebounced = (next: CrmDealListViewConfig) => {
-    if (persistTimer.current) clearTimeout(persistTimer.current);
-    persistTimer.current = setTimeout(() => persistConfig(next), 500);
   };
 
   const handleColumnReorder = (columns: ReadonlyArray<ColumnState>) => {
@@ -79,9 +66,7 @@ export const useDealListViewConfig = (
     if (!config) return;
     const nextFields = applyColumnWidth(config.fields, columnId, width);
     if (!nextFields) return;
-    const next = { ...config, fields: nextFields };
-    setConfig(next);
-    persistDebounced(next);
+    applyConfig({ ...config, fields: nextFields });
   };
 
   return {

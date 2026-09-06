@@ -71,7 +71,7 @@ export const reorderDealIds = (
   dealIds: number[],
   movingId: number,
   previousId: number | null,
-  nextId: number | null = null
+  nextId: number | null
 ): number[] => {
   const without = dealIds.filter((id) => id !== movingId);
 
