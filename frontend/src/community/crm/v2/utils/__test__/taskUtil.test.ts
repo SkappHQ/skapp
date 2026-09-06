@@ -78,6 +78,15 @@ describe("linkTaskToRelatedEntities", () => {
     expect(linked.companies?.[1].taskIds).toEqual([10, 11]);
   });
 
+  it("hands back the same record when the id was already there", () => {
+    const task: CrmTaskEntity = { id: 10, companyId: 1 };
+
+    const linked = linkTaskToRelatedEntities(task, companies);
+
+    expect(linked.companies).toBe(companies);
+    expect(linked.companies?.[1]).toBe(companies[1]);
+  });
+
   it("leaves records untouched when the linked entity is not in the store", () => {
     const task: CrmTaskEntity = { id: 99, companyId: 42, contactId: 42 };
 
