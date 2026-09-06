@@ -9,58 +9,62 @@ import {
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
 const toSortOrder = (direction: string): SortOrderTypes =>
-  direction?.toUpperCase() === SortOrderTypes.DESC
+  direction.toUpperCase() === SortOrderTypes.DESC
     ? SortOrderTypes.DESC
     : SortOrderTypes.ASC;
 
-export const fromListTableSortConfig = (
-  sortConfig: SortConfig[],
+export const resolveSortChange = (
+  reported: SortConfig[],
   current: CrmDealSortConfig | null
 ): CrmDealSortConfig | null => {
-  if (!sortConfig.length) return null;
-  const changed = sortConfig.find(
-    (config) =>
-      config.columnId !== current?.field ||
-      toSortOrder(config.direction) !== current?.direction
+  if (!reported.length) return null;
+
+  const changed = reported.find(
+    (column) =>
+      column.columnId !== current?.field ||
+      toSortOrder(column.direction) !== current?.direction
   );
   if (!changed) return current;
+
   return {
     field: changed.columnId as CrmDealSortEnum,
     direction: toSortOrder(changed.direction)
   };
 };
 
-export const reorderConfigFields = (
+export const applyColumnOrder = (
   fields: CrmDealFieldConfig[],
   columns: ReadonlyArray<ColumnState>
 ): CrmDealFieldConfig[] | null => {
-  const byField = new Map<CrmDealSortEnum, CrmDealFieldConfig>(
+  const fieldById = new Map<CrmDealSortEnum, CrmDealFieldConfig>(
     fields.map((field) => [field.field, field])
   );
-  const reordered = columns
-    .map((column) => byField.get(column.id as CrmDealSortEnum))
-    .filter((field): field is CrmDealFieldConfig => Boolean(field));
-  if (!reordered.length) return null;
 
-  const reportedFields = new Set(reordered.map((field) => field.field));
-  const nextFields = [...reordered];
-  fields.forEach((field, index) => {
-    if (!reportedFields.has(field.field)) nextFields.splice(index, 0, field);
-  });
-  return nextFields;
+  const orderedFields = columns
+    .map((column) => fieldById.get(column.id as CrmDealSortEnum))
+    .filter((field): field is CrmDealFieldConfig => Boolean(field));
+  if (!orderedFields.length) return null;
+
+  const orderedQueue = [...orderedFields];
+  const isOrdered = new Set(orderedFields.map((field) => field.field));
+
+  return fields.map((field) =>
+    isOrdered.has(field.field) ? orderedQueue.shift()! : field
+  );
 };
 
 export const applyColumnVisibility = (
   fields: CrmDealFieldConfig[],
   columns: ReadonlyArray<ColumnState>
 ): CrmDealFieldConfig[] => {
-  const visibilityById = new Map(
+  const isVisibleById = new Map(
     columns.map((column) => [column.id, column.visible])
   );
+
   return fields.map((field) => ({
     ...field,
     isVisible: field.isHideable
-      ? (visibilityById.get(field.field) ?? field.isVisible)
+      ? (isVisibleById.get(field.field) ?? field.isVisible)
       : true
   }));
 };
@@ -71,6 +75,7 @@ export const applyColumnWidth = (
   width: number
 ): CrmDealFieldConfig[] | null => {
   if (!fields.some((field) => field.field === columnId)) return null;
+
   return fields.map((field) =>
     field.field === columnId ? { ...field, width } : field
   );

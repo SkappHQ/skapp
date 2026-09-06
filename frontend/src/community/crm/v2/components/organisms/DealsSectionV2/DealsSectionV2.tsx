@@ -25,7 +25,7 @@ import {
   getMissingCompanyIds,
   mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
-import { fromListTableSortConfig } from "~community/crm/v2/utils/dealListViewUtil";
+import { resolveSortChange } from "~community/crm/v2/utils/dealListViewUtil";
 import {
   mergeDeals,
   reorderDealIds,
@@ -103,7 +103,7 @@ const DealsSectionV2: FC = () => {
   const handleSort = useCallback(
     (nextSortConfig: SortConfig[]): void => {
       handleSortChange(
-        fromListTableSortConfig(nextSortConfig, columnConfig?.sort ?? null)
+        resolveSortChange(nextSortConfig, columnConfig?.sort ?? null)
       );
     },
     [handleSortChange, columnConfig?.sort]

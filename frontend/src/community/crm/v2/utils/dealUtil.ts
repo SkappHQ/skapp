@@ -73,29 +73,19 @@ export const reorderDealIds = (
   previousId: number | null,
   nextId: number | null
 ): number[] => {
-  const without = dealIds.filter((id) => id !== movingId);
+  const rest = dealIds.filter((id) => id !== movingId);
 
-  if (previousId != null) {
-    const previousIndex = without.indexOf(previousId);
-    if (previousIndex !== -1) {
-      return [
-        ...without.slice(0, previousIndex + 1),
-        movingId,
-        ...without.slice(previousIndex + 1)
-      ];
-    }
+  const afterPrevious = previousId == null ? -1 : rest.indexOf(previousId);
+  const beforeNext = nextId == null ? -1 : rest.indexOf(nextId);
+
+  let insertAt: number;
+  if (afterPrevious !== -1) {
+    insertAt = afterPrevious + 1;
+  } else if (beforeNext !== -1) {
+    insertAt = beforeNext;
+  } else {
+    insertAt = previousId == null ? 0 : rest.length;
   }
 
-  if (nextId != null) {
-    const nextIndex = without.indexOf(nextId);
-    if (nextIndex !== -1) {
-      return [
-        ...without.slice(0, nextIndex),
-        movingId,
-        ...without.slice(nextIndex)
-      ];
-    }
-  }
-
-  return previousId == null ? [movingId, ...without] : [...without, movingId];
+  return [...rest.slice(0, insertAt), movingId, ...rest.slice(insertAt)];
 };

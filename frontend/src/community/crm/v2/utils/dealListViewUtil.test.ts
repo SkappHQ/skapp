@@ -5,10 +5,10 @@ import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
 import { CrmDealFieldConfig } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
 import {
+  applyColumnOrder,
   applyColumnVisibility,
   applyColumnWidth,
-  fromListTableSortConfig,
-  reorderConfigFields
+  resolveSortChange
 } from "./dealListViewUtil";
 
 const field = (
@@ -32,9 +32,9 @@ const fields = [
   field(CrmDealSortEnum.STAGE)
 ];
 
-describe("fromListTableSortConfig", () => {
+describe("resolveSortChange", () => {
   it("clears the sort when the table reports none", () => {
-    expect(fromListTableSortConfig([], null)).toBeNull();
+    expect(resolveSortChange([], null)).toBeNull();
   });
 
   it("picks the entry that differs from the current sort", () => {
@@ -43,7 +43,7 @@ describe("fromListTableSortConfig", () => {
       direction: SortOrderTypes.ASC
     };
     expect(
-      fromListTableSortConfig(
+      resolveSortChange(
         [
           { columnId: CrmDealSortEnum.AMOUNT, direction: "ASC" },
           { columnId: CrmDealSortEnum.STAGE, direction: "DESC" }
@@ -58,7 +58,7 @@ describe("fromListTableSortConfig", () => {
 
   it("normalises the direction reported by the table", () => {
     expect(
-      fromListTableSortConfig(
+      resolveSortChange(
         [
           {
             columnId: CrmDealSortEnum.STAGE,
@@ -74,9 +74,9 @@ describe("fromListTableSortConfig", () => {
   });
 });
 
-describe("reorderConfigFields", () => {
+describe("applyColumnOrder", () => {
   it("reorders the stored fields to match the column order", () => {
-    const next = reorderConfigFields(fields, [
+    const next = applyColumnOrder(fields, [
       { id: CrmDealSortEnum.STAGE, visible: true },
       { id: CrmDealSortEnum.NAME, visible: true },
       { id: CrmDealSortEnum.AMOUNT, visible: true }
@@ -89,7 +89,7 @@ describe("reorderConfigFields", () => {
   });
 
   it("keeps fields the table did not report at their original index", () => {
-    const next = reorderConfigFields(fields, [
+    const next = applyColumnOrder(fields, [
       { id: CrmDealSortEnum.STAGE, visible: true },
       { id: CrmDealSortEnum.AMOUNT, visible: true }
     ]);
@@ -102,7 +102,7 @@ describe("reorderConfigFields", () => {
 
   it("returns null when no reported column matches a stored field", () => {
     expect(
-      reorderConfigFields(fields, [{ id: "UNKNOWN", visible: true }])
+      applyColumnOrder(fields, [{ id: "UNKNOWN", visible: true }])
     ).toBeNull();
   });
 });

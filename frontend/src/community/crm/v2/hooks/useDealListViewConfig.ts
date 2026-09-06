@@ -10,9 +10,9 @@ import {
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 import {
+  applyColumnOrder,
   applyColumnVisibility,
-  applyColumnWidth,
-  reorderConfigFields
+  applyColumnWidth
 } from "~community/crm/v2/utils/dealListViewUtil";
 
 interface UseDealListViewConfigReturn {
@@ -43,7 +43,7 @@ export const useDealListViewConfig = (
 
   const handleColumnReorder = (columns: ReadonlyArray<ColumnState>) => {
     if (!config) return;
-    const nextFields = reorderConfigFields(config.fields, columns);
+    const nextFields = applyColumnOrder(config.fields, columns);
     if (nextFields) applyConfig({ ...config, fields: nextFields });
   };
 
