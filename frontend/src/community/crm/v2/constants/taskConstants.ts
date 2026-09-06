@@ -17,25 +17,13 @@ import {
 export const TASK_PAGE_SIZE = 12;
 
 export const TASK_SKELETON_CONFIG = {
-  COMPLETED: { rowCount: 20, groupCount: 1 },
+  COMPLETED: { rowCount: TASK_PAGE_SIZE, groupCount: 1 },
   OPEN: { rowCount: 4, groupCount: 4 }
 };
 
 export const SALES_REP_RESTRICTED_TASK_TABS: CrmTaskTabEnum[] = [
   CrmTaskTabEnum.ALL_TASKS
 ];
-
-export const TASK_TYPE_ICON_SIZE = 20;
-
-export const TASK_TYPE_ICONS: Record<
-  string,
-  ComponentType<SVGProps<SVGSVGElement>>
-> = {
-  email: EmailFilledIcon,
-  call: PhoneFilledIcon,
-  meeting: MeetingFilledIcon,
-  other: ChecklistVerificationFilledIcon
-};
 
 export const PRIORITY_OPTIONS = [
   {
