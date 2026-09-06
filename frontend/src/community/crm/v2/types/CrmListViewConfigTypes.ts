@@ -2,16 +2,7 @@ import { BaseRowData } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
 
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-
-export enum CrmDealColumnFieldEnum {
-  DEAL_NAME = "DEAL_NAME",
-  VALUE = "VALUE",
-  STAGE = "STAGE",
-  COMPANY_NAME = "COMPANY_NAME",
-  CONTACT_NAME = "CONTACT_NAME",
-  PRIORITY = "PRIORITY",
-  DEAL_OWNER = "DEAL_OWNER"
-}
+import { CrmDealColumnFieldEnum } from "~community/crm/v2/enums/common";
 
 export interface CrmDealFieldConfig {
   field: CrmDealColumnFieldEnum;

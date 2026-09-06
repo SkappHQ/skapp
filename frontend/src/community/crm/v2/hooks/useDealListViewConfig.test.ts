@@ -5,8 +5,8 @@ import {
   useGetDealListViewConfig,
   useUpdateDealListViewConfig
 } from "~community/crm/v2/api/DealApi";
+import { CrmDealColumnFieldEnum } from "~community/crm/v2/enums/common";
 import {
-  CrmDealColumnFieldEnum,
   CrmDealFieldConfig,
   CrmDealListViewConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";

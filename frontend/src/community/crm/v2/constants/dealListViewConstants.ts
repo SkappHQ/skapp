@@ -1,7 +1,5 @@
-import {
-  CrmDealColumnFieldEnum,
-  DealRow
-} from "~community/crm/v2/types/CrmListViewConfigTypes";
+import { CrmDealColumnFieldEnum } from "~community/crm/v2/enums/common";
+import { DealRow } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
 export const DEAL_COLUMN_MIN_WIDTH = 100;
 

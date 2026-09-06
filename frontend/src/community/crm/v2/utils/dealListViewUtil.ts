@@ -1,10 +1,12 @@
 import { SortConfig } from "@rootcodelabs/skapp-ui";
 
 import { SortOrderTypes } from "~community/common/types/CommonTypes";
-import { CrmDealSortEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmDealColumnFieldEnum,
+  CrmDealSortEnum
+} from "~community/crm/v2/enums/common";
 import {
   ColumnState,
-  CrmDealColumnFieldEnum,
   CrmDealFieldConfig,
   CrmDealSortConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
