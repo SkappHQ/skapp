@@ -1,3 +1,4 @@
+import { convertUTCStringToLocalDateTime } from "~community/common/utils/dateTimeUtils";
 import {
   CrmCompanyRecord,
   CrmContactRecord,
@@ -60,6 +61,12 @@ export const linkTaskToRelatedEntities = (
   }
 
   return linked;
+};
+
+export const parseDueDate = (dueAt?: string): Date | undefined => {
+  if (dueAt !== undefined) {
+    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
+  }
 };
 
 export const updateTask = (
