@@ -20,7 +20,7 @@ import { crmDealQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
 import { DealViewEnum } from "~community/crm/v2/enums/common";
-import useDealListViewConfig from "~community/crm/v2/hooks/useDealListViewConfig";
+import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {

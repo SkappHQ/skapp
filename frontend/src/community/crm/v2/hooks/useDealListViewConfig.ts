@@ -15,7 +15,18 @@ import {
   reorderConfigFields
 } from "~community/crm/v2/utils/dealListViewUtil";
 
-const useDealListViewConfig = (enabled: boolean) => {
+interface UseDealListViewConfigReturn {
+  config: CrmDealListViewConfig | null;
+  isConfigLoading: boolean;
+  handleColumnReorder: (columns: ReadonlyArray<ColumnState>) => void;
+  handleColumnVisibilityChange: (columns: ReadonlyArray<ColumnState>) => void;
+  handleSortChange: (sort: CrmDealSortConfig | null) => void;
+  handleColumnResize: (columnId: string, width: number) => void;
+}
+
+export const useDealListViewConfig = (
+  enabled: boolean
+): UseDealListViewConfigReturn => {
   const { data: fetchedConfig, isLoading } = useGetDealListViewConfig(enabled);
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
@@ -82,5 +93,3 @@ const useDealListViewConfig = (enabled: boolean) => {
     handleColumnResize
   };
 };
-
-export default useDealListViewConfig;

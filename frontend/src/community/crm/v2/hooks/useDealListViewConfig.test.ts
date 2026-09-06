@@ -11,7 +11,7 @@ import {
   CrmDealListViewConfig
 } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
-import useDealListViewConfig from "./useDealListViewConfig";
+import { useDealListViewConfig } from "./useDealListViewConfig";
 
 const mockPersistConfig = jest.fn();
 
