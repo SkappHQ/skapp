@@ -8,12 +8,18 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { appendId } from "~community/crm/v2/utils/commonUtil";
 
+export interface CrmTaskLinks {
+  companies?: CrmCompanyRecord;
+  contacts?: CrmContactRecord;
+  deals?: CrmDealRecord;
+}
+
 export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
   companies?: CrmCompanyRecord,
   contacts?: CrmContactRecord,
   deals?: CrmDealRecord
-) => {
+): CrmTaskLinks => {
   const taskId = task.id;
   const linked = { companies, contacts, deals };
 
@@ -25,13 +31,14 @@ export const linkTaskToRelatedEntities = (
     const company = companies[task.companyId];
 
     if (company?.taskIds !== undefined) {
-      linked.companies = {
-        ...companies,
-        [task.companyId]: {
-          ...company,
-          taskIds: appendId(company.taskIds, taskId)
-        }
-      };
+      const taskIds = appendId(company.taskIds, taskId);
+
+      if (taskIds !== company.taskIds) {
+        linked.companies = {
+          ...companies,
+          [task.companyId]: { ...company, taskIds }
+        };
+      }
     }
   }
 
@@ -39,13 +46,14 @@ export const linkTaskToRelatedEntities = (
     const contact = contacts[task.contactId];
 
     if (contact?.taskIds !== undefined) {
-      linked.contacts = {
-        ...contacts,
-        [task.contactId]: {
-          ...contact,
-          taskIds: appendId(contact.taskIds, taskId)
-        }
-      };
+      const taskIds = appendId(contact.taskIds, taskId);
+
+      if (taskIds !== contact.taskIds) {
+        linked.contacts = {
+          ...contacts,
+          [task.contactId]: { ...contact, taskIds }
+        };
+      }
     }
   }
 
@@ -53,10 +61,11 @@ export const linkTaskToRelatedEntities = (
     const deal = deals[task.dealId];
 
     if (deal?.taskIds !== undefined) {
-      linked.deals = {
-        ...deals,
-        [task.dealId]: { ...deal, taskIds: appendId(deal.taskIds, taskId) }
-      };
+      const taskIds = appendId(deal.taskIds, taskId);
+
+      if (taskIds !== deal.taskIds) {
+        linked.deals = { ...deals, [task.dealId]: { ...deal, taskIds } };
+      }
     }
   }
 
