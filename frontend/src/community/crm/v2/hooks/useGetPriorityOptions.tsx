@@ -1,5 +1,7 @@
+import { Label } from "@rootcodelabs/skapp-ui";
+import { createElement } from "react";
+
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import PriorityLabel from "~community/crm/v2/components/molecules/PriorityLabel/PriorityLabel";
 import { PRIORITY_OPTIONS } from "~community/crm/v2/constants/taskConstants";
 import { CrmPriorityOption } from "~community/crm/v2/types/CrmTypes";
 
@@ -10,10 +12,12 @@ export const useGetPriorityOptions = (): CrmPriorityOption[] => {
     id: option.key,
     value: option.value,
     label: (
-      <PriorityLabel
-        priority={option.value}
-        label={translateText([option.key])}
-      />
+      <Label backgroundColor={option.backgroundColor} className="py-2 px-3">
+        {createElement(option.IconComponent)}
+        <span className={`body3 ${option.textColor}`}>
+          {translateText([option.key])}
+        </span>
+      </Label>
     )
   }));
 };
