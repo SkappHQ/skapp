@@ -13,16 +13,6 @@ const toSortOrder = (direction: string): SortOrderTypes =>
     ? SortOrderTypes.DESC
     : SortOrderTypes.ASC;
 
-export const mapConfigSortToQuery = (
-  sort: CrmDealSortConfig | null | undefined
-): { sortKey?: CrmDealSortEnum; sortOrder?: SortOrderTypes } =>
-  sort ? { sortKey: sort.field, sortOrder: sort.direction } : {};
-
-export const toListTableSortConfig = (
-  sort: CrmDealSortConfig | null | undefined
-): SortConfig[] =>
-  sort ? [{ columnId: sort.field, direction: sort.direction }] : [];
-
 export const fromListTableSortConfig = (
   sortConfig: SortConfig[],
   current: CrmDealSortConfig | null

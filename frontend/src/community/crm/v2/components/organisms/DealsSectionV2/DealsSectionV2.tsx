@@ -27,11 +27,7 @@ import {
   getMissingCompanyIds,
   mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
-import {
-  fromListTableSortConfig,
-  mapConfigSortToQuery,
-  toListTableSortConfig
-} from "~community/crm/v2/utils/dealListViewUtil";
+import { fromListTableSortConfig } from "~community/crm/v2/utils/dealListViewUtil";
 import {
   mergeDeals,
   reorderDealIds,
@@ -76,8 +72,6 @@ const DealsSectionV2: FC = () => {
     handleColumnResize
   } = useDealListViewConfig(activeView === DealViewEnum.LIST);
 
-  const { sortKey, sortOrder } = mapConfigSortToQuery(columnConfig?.sort);
-
   const {
     data,
     isLoading,
@@ -87,15 +81,23 @@ const DealsSectionV2: FC = () => {
   } = useGetDealsInfinite(
     {
       size: DEAL_PAGE_SIZE,
-      sortKey,
-      sortOrder,
+      sortKey: columnConfig?.sort?.field,
+      sortOrder: columnConfig?.sort?.direction,
       searchKeyword: debouncedSearch
     },
     activeView === DealViewEnum.LIST && !!columnConfig
   );
 
   const sortConfig = useMemo(
-    () => toListTableSortConfig(columnConfig?.sort),
+    () =>
+      columnConfig?.sort
+        ? [
+            {
+              columnId: columnConfig.sort.field,
+              direction: columnConfig.sort.direction
+            }
+          ]
+        : [],
     [columnConfig?.sort]
   );
 

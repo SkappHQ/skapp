@@ -8,9 +8,7 @@ import {
   applyColumnVisibility,
   applyColumnWidth,
   fromListTableSortConfig,
-  mapConfigSortToQuery,
-  reorderConfigFields,
-  toListTableSortConfig
+  reorderConfigFields
 } from "./dealListViewUtil";
 
 const field = (
@@ -33,42 +31,6 @@ const fields = [
   field(CrmDealSortEnum.AMOUNT),
   field(CrmDealSortEnum.STAGE)
 ];
-
-describe("mapConfigSortToQuery", () => {
-  it("returns no query params when there is no sort", () => {
-    expect(mapConfigSortToQuery(null)).toEqual({});
-    expect(mapConfigSortToQuery(undefined)).toEqual({});
-  });
-
-  it("maps a column field to its backend sort key", () => {
-    expect(
-      mapConfigSortToQuery({
-        field: CrmDealSortEnum.AMOUNT,
-        direction: SortOrderTypes.DESC
-      })
-    ).toEqual({
-      sortKey: CrmDealSortEnum.AMOUNT,
-      sortOrder: SortOrderTypes.DESC
-    });
-  });
-});
-
-describe("toListTableSortConfig", () => {
-  it("returns an empty list when nothing is sorted", () => {
-    expect(toListTableSortConfig(null)).toEqual([]);
-  });
-
-  it("returns a single entry for the active sort", () => {
-    expect(
-      toListTableSortConfig({
-        field: CrmDealSortEnum.STAGE,
-        direction: SortOrderTypes.ASC
-      })
-    ).toEqual([
-      { columnId: CrmDealSortEnum.STAGE, direction: SortOrderTypes.ASC }
-    ]);
-  });
-});
 
 describe("fromListTableSortConfig", () => {
   it("clears the sort when the table reports none", () => {
