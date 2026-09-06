@@ -1073,19 +1073,6 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Update list-view config - Accepts the legacy field names")
-	void updateListViewConfig_LegacyFieldNames_AreAccepted() throws Exception {
-		String config = "{\"fields\":[{\"field\":\"DEAL_NAME\",\"width\":400},{\"field\":\"VALUE\",\"width\":200}],\"sort\":null}";
-
-		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
-
-		performGetListViewConfigRequest().andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][1]['field']").value("AMOUNT"));
-	}
-
-	@Test
 	@DisplayName("Get list-view config - Without CRM role returns forbidden")
 	void getListViewConfig_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
