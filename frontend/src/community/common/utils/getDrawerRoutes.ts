@@ -11,6 +11,7 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 type Role =
   | AdminTypes
@@ -233,6 +234,12 @@ const getDrawerRoutes = ({
           hasSubTree: false,
           featureBadge: (route as RouteWithBadge)?.badge
         };
+      }
+
+      if (route?.name === "Report") {
+        if (!isCoreOrProTier(tiers)) {
+          return null;
+        }
       }
 
       if (route?.name === "Invoices") {

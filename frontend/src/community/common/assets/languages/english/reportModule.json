@@ -1,0 +1,11 @@
+{
+  "reports": {
+    "pageHead": "Reports | Skapp",
+    "title": "Reports",
+    "searchPlaceholder": "Search By Report Name",
+    "clearSearchAriaLabel": "Clear search",
+    "headcountSummary": "Headcount summary",
+    "noResultsTitle": "No reports found",
+    "noResultsDescription": "Try adjusting your search to find the report you're looking for."
+  }
+}

@@ -64,19 +64,22 @@ const superAdminRoutes = {
     ROUTES.CRM.BASE,
     ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
     ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
-    ROUTES.PEOPLE.SYNC_CHANGES
+    ROUTES.PEOPLE.SYNC_CHANGES,
+    ROUTES.REPORT.BASE
   ]
 };
 
 const adminRoutes = {
   [AdminTypes.PEOPLE_ADMIN]: [
     ROUTES.PEOPLE.BASE,
-    ROUTES.CONFIGURATIONS.BASE
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.REPORT.BASE
   ],
-  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
+  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.REPORT.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
-    ROUTES.CONFIGURATIONS.BASE
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.REPORT.BASE
   ],
   [AdminTypes.ESIGN_ADMIN]: [
     ROUTES.SIGN.CONTACTS,
@@ -89,21 +92,28 @@ const adminRoutes = {
     ROUTES.SIGN.SIGN,
     ROUTES.SIGN.INFO,
     ROUTES.SIGN.COMPLETE,
-    ROUTES.CONFIGURATIONS.BASE
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.REPORT.BASE
   ],
   [AdminTypes.INVOICE_ADMIN]: [
     ROUTES.INVOICE.BASE,
     ROUTES.INVOICE.ALL_INVOICES,
     ROUTES.INVOICE.CUSTOMERS.BASE,
     ROUTES.CONFIGURATIONS.BASE,
-    ROUTES.INVOICE.CREATE.BASE
+    ROUTES.INVOICE.CREATE.BASE,
+    ROUTES.REPORT.BASE
   ],
   [AdminTypes.PM_ADMIN]: [
     ROUTES.PROJECTS.BASE,
     ROUTES.PROJECTS.GUESTS,
-    ROUTES.PROJECTS.GUEST_REQUESTS
+    ROUTES.PROJECTS.GUEST_REQUESTS,
+    ROUTES.REPORT.BASE
   ],
-  [AdminTypes.CRM_ADMIN]: [ROUTES.CRM.BASE, ROUTES.CONFIGURATIONS.BASE]
+  [AdminTypes.CRM_ADMIN]: [
+    ROUTES.CRM.BASE,
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.REPORT.BASE
+  ]
 };
 
 const managerRoutes = {
@@ -310,6 +320,15 @@ export function middleware(request: NextRequest) {
     }
 
     if (
+      request.nextUrl.pathname.startsWith(ROUTES.REPORT.BASE) &&
+      !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+    ) {
+      return NextResponse.redirect(
+        new URL(ROUTES.AUTH.UNAUTHORIZED, request.url)
+      );
+    }
+
+    if (
       request.nextUrl.pathname.startsWith(ROUTES.CRM.BASE) &&
       !roles.includes(RepresentativeTypes.CRM_SALES_REPRESENTATIVE)
     ) {
@@ -417,6 +436,9 @@ export const config = {
     "/invoice",
     "/invoice/:path*",
     "/invoice/create/:path*",
+    // Report module routes
+    "/report",
+    "/report/:path*",
     // CRM module routes
     "/crm",
     "/crm/:path*"
