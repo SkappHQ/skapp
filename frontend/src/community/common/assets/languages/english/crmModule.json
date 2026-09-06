@@ -498,8 +498,6 @@
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
       "switchDealViewAriaLabel": "Switch deal view",
-      "configErrorTitle": "Table layout unavailable",
-      "configErrorDescription": "We couldn't load your table layout. Please refresh the page to try again.",
       "inlineEdit": {
         "placeholders": {
           "none": "None",

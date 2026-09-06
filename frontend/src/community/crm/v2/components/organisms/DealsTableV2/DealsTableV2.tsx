@@ -237,17 +237,6 @@ const DealsTableV2: FC<Props> = ({
     );
   }
 
-  if (columnHeaders.length === 0) {
-    return (
-      <div className="h-full rounded-lg flex flex-col items-center justify-center gap-2 text-center">
-        <p className="subtitle2">{translateText(["configErrorTitle"])}</p>
-        <p className="body2 text-secondary-icon">
-          {translateText(["configErrorDescription"])}
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-lg h-full overflow-auto">
       <ListTable<DealRow>

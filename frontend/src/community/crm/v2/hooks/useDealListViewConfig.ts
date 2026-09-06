@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetDealListViewConfig,
   useUpdateDealListViewConfig
@@ -27,7 +30,14 @@ interface UseDealListViewConfigReturn {
 export const useDealListViewConfig = (
   enabled: boolean
 ): UseDealListViewConfigReturn => {
-  const { data: fetchedConfig, isLoading } = useGetDealListViewConfig(enabled);
+  const translateText = useTranslator("crmModule", "common", "initData");
+  const { setToastMessage } = useToast();
+
+  const {
+    data: fetchedConfig,
+    isLoading,
+    isError
+  } = useGetDealListViewConfig(enabled);
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
   const [config, setConfig] = useState<CrmDealListViewConfig | null>(null);
@@ -35,6 +45,16 @@ export const useDealListViewConfig = (
   useEffect(() => {
     if (fetchedConfig) setConfig(fetchedConfig);
   }, [fetchedConfig]);
+
+  useEffect(() => {
+    if (!isError) return;
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errorTitle"]),
+      description: translateText(["errorDescription"])
+    });
+  }, [isError]);
 
   const applyConfig = (next: CrmDealListViewConfig) => {
     setConfig(next);
