@@ -21,9 +21,13 @@ import { DealViewEnum } from "~community/crm/v2/enums/common";
 import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
-import { getMissingCompanyIds } from "~community/crm/v2/utils/companyUtil";
+import {
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
 import { fromListTableSortConfig } from "~community/crm/v2/utils/dealListViewUtil";
 import {
+  mergeDeals,
   reorderDealIds,
   resolveDeals,
   toDealIds
@@ -44,8 +48,6 @@ const DealsSectionV2: FC = () => {
     companies,
     dealIds,
     dealRecord,
-    addCompanies,
-    addDeals,
     setDealIds,
     setSelectedDealId,
     openCrmSidePanel
@@ -54,8 +56,6 @@ const DealsSectionV2: FC = () => {
       companies: store.companies,
       dealIds: store.dealIds,
       dealRecord: store.deals,
-      addCompanies: store.addCompanies,
-      addDeals: store.addDeals,
       setDealIds: store.setDealIds,
       setSelectedDealId: store.setSelectedDealId,
       openCrmSidePanel: store.openCrmSidePanel
@@ -157,10 +157,11 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (!data || activeView !== DealViewEnum.LIST) return;
+    const store = useCrmStoreV2.getState();
     const items = data.pages.flatMap((page) => page.items);
-    addDeals(items);
-    setDealIds(toDealIds(items));
-  }, [data, activeView, addDeals, setDealIds]);
+    store.setDeals(mergeDeals(store.deals, items));
+    store.setDealIds(toDealIds(items));
+  }, [data, activeView]);
 
   const companyIds = useMemo(
     () =>
@@ -182,9 +183,10 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      addCompanies(fetchedCompanies);
+      const store = useCrmStoreV2.getState();
+      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
     }
-  }, [fetchedCompanies, addCompanies]);
+  }, [fetchedCompanies]);
 
   const loadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {

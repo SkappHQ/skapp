@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -12,7 +12,10 @@ import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getMissingCompanyIds } from "~community/crm/v2/utils/companyUtil";
+import {
+  getMissingCompanyIds,
+  mergeCompanies
+} from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 import EditableCell from "./EditableCell";
@@ -28,11 +31,10 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { contactRecord, companies, addCompanies } = useCrmStoreV2(
+  const { contactRecord, companies } = useCrmStoreV2(
     useShallow((store) => ({
       contactRecord: store.contacts,
-      companies: store.companies,
-      addCompanies: store.addCompanies
+      companies: store.companies
     }))
   );
 
@@ -64,11 +66,10 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     missingCompanyIds,
     missingCompanyIds.length > 0
   );
-  useEffect(() => {
-    if (fetchedCompanies && fetchedCompanies.length > 0) {
-      addCompanies(fetchedCompanies);
-    }
-  }, [fetchedCompanies, addCompanies]);
+  const companyRecord = useMemo(
+    () => mergeCompanies(companies, fetchedCompanies ?? []),
+    [companies, fetchedCompanies]
+  );
 
   const contactName = getContactDisplayName(
     contactId != null ? contactRecord[contactId] : undefined
@@ -98,7 +99,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     >
       <ContactPopupSearch
         contacts={contacts}
-        companies={companies}
+        companies={companyRecord}
         selectedContact={selectedContact}
         onChange={handleChange}
         onSearch={setSearchTerm}
