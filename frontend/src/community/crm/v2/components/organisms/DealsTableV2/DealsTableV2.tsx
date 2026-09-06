@@ -16,7 +16,7 @@ import { useEditDeal } from "~community/crm/v2/api/DealApi";
 import {
   DEAL_COLUMN_MIN_WIDTH,
   DEAL_FIELD_META
-} from "~community/crm/v2/constants/dealListViewConstants";
+} from "~community/crm/v2/constants/dealConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
