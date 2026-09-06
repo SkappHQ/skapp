@@ -218,6 +218,7 @@ const CompanySidePanel: FC = () => {
         return (
           <SidePanelDealSection
             deals={selectedCompany?.deals ?? []}
+            companyId={selectedCompanyId}
             hasNextPage={hasNextDealsPage}
             isFetchingNextPage={isFetchingNextDealsPage}
             onFetchNextPage={fetchNextDealsPage}

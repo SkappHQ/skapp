@@ -21,7 +21,7 @@ const styles = (theme: Theme) => ({
     color: `${theme.palette.error.contrastText} !important`,
     background: "transparent !important"
   }),
-  stackContainerStyle: {
+  stackContainerStyle: (isInteractive: boolean) => ({
     width: "max-content",
     height: "4rem",
     background: theme.palette.common.white,
@@ -32,17 +32,18 @@ const styles = (theme: Theme) => ({
     [theme.breakpoints.down("xl")]: {
       width: "max-content"
     },
-    cursor: "pointer",
-    "&:hover": {
-      background: theme.palette.grey[100],
-      "& > :first-child": {
-        background: theme.palette.grey[100]
-      }
-    },
+    cursor: isInteractive ? "pointer" : "default",
+    ...(isInteractive
+      ? {
+          "&:hover": {
+            background: theme.palette.grey[100]
+          }
+        }
+      : {}),
     "&:focus": {
       zIndex: ZIndexEnums.DEFAULT
     }
-  },
+  }),
   boxContainerStyle: (isDrawerToggled: boolean) => ({
     display: "flex",
     flexDirection: "row",
@@ -63,7 +64,7 @@ const styles = (theme: Theme) => ({
     ...(isDrawerToggled && {
       [theme.breakpoints.up("xl")]: { flex: 1.5 }
     }),
-    background: theme.palette.common.white,
+    background: "inherit",
     borderRight: "0.063rem solid",
     borderColor: theme.palette.grey[200]
   }),

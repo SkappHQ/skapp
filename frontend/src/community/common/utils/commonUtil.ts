@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { HOURS_PER_DAY } from "~community/common/constants/timeConstants";
+import { EmptyStateTypeEnum } from "~community/common/enums/ComponentEnums";
 import {
   alphaNumericNamePatternWithSpecialCharacters,
   containsUnicode,
@@ -12,6 +13,7 @@ import {
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {
   DropdownListType,
+  EmployeeAvatarData,
   FileUploadType
 } from "~community/common/types/CommonTypes";
 import {
@@ -622,5 +624,13 @@ export const getPhoneNumberMaxLength = (countryCodeValue: string): number => {
 export const concatStrings = (args: string[], separator: string = " ") =>
   args.join(separator);
 
+export const getEmployeeAvatarName = (employee: EmployeeAvatarData): string =>
+  concatStrings([employee.firstName, employee.lastName]).trim();
+
 export const formatDays = (value: number): string =>
   Number.isInteger(value) ? String(value) : value.toFixed(1);
+
+export const getEmptyStateType = (searchTerm: string): EmptyStateTypeEnum =>
+  searchTerm.trim() === ""
+    ? EmptyStateTypeEnum.NO_DATA
+    : EmptyStateTypeEnum.NO_SEARCH_RESULTS;

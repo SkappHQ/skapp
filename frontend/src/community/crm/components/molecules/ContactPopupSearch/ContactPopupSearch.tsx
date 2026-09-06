@@ -20,7 +20,7 @@ interface Props {
   contacts: CrmContactLookup[];
   selectedContact: CrmDealContactType | null;
   onChange: (contact: CrmContactLookup | null) => void;
-  onSearch: (term: string) => void;
+  onSearch: (searchTerm: string) => void;
   placeholder: string;
   searchPlaceholder: string;
   noResultsText: string;
@@ -39,9 +39,7 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
-  const getContactId = (contact: CrmContactLookup) => contact.id;
-
-  const options: DropdownOption[] = useMemo(
+  const dropdownOptions: DropdownOption[] = useMemo(
     () => buildContactOptions(contacts),
     [contacts]
   );
@@ -60,7 +58,7 @@ const ContactPopupSearch: FC<Props> = ({
       return;
     }
     const { id } = val as DropdownOption;
-    onChange(findById(contacts, Number(id), getContactId));
+    onChange(findById(contacts, Number(id), (contact) => contact.id));
   };
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
@@ -76,7 +74,7 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = findById(contacts, Number(option.id), getContactId);
+    const contact = findById(contacts, Number(option.id), (contact) => contact.id);
 
     return contact ? (
       <ContactOptionItem
@@ -90,7 +88,7 @@ const ContactPopupSearch: FC<Props> = ({
 
   return (
     <DropdownWithSearchablePopup
-      options={options}
+      options={dropdownOptions}
       value={selectedValue}
       onChange={handleChange}
       onSearch={onSearch}
@@ -108,7 +106,7 @@ const ContactPopupSearch: FC<Props> = ({
         handleRenderOption(option as DropdownOption, onSelect)
       }
       renderNoResults={() => (
-        <div className="px-4 py-2 text-sm text-tertiary-text">
+        <div className="px-4 py-2 body2 text-tertiary-text">
           {noResultsText}
         </div>
       )}

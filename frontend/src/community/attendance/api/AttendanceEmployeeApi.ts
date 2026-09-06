@@ -20,6 +20,7 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
+  ErrorResponse,
   SortKeyTypes,
   SortOrderTypes
 } from "~community/common/types/CommonTypes";
@@ -240,7 +241,7 @@ export const useCancelTimeRequest = (
 
 export const useAddManualTimeEntry = (
   onSuccess: () => void,
-  onEnhancedError: (error: any) => void
+  onEnhancedError: (error: ErrorResponse) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -248,7 +249,7 @@ export const useAddManualTimeEntry = (
       const url = employeeAttendanceEndpoints.ADD_MANUAL_ENTRY;
       return await authFetch.post(url, data);
     },
-    onError(error) {
+    onError(error: ErrorResponse) {
       onEnhancedError(error);
     },
     onSuccess() {
@@ -327,11 +328,11 @@ export const useGetPeriodAvailability = (
 export const useGetDailyLogsByEmployeeId = (
   startDate: string,
   endDate: string,
-  employeeId: number,
+  employeeId?: number,
   isEnabled: boolean = true
 ) => {
   return useQuery({
-    enabled: isEnabled,
+    enabled: isEnabled && !!employeeId,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
       startDate,
       endDate,
@@ -340,7 +341,7 @@ export const useGetDailyLogsByEmployeeId = (
     queryFn: async () => {
       const url =
         employeeAttendanceEndpoints.GET_EMPLOYEE_DAILY_LOG_BY_EMPLOYEE_ID(
-          employeeId
+          employeeId as number
         );
 
       return await authFetch.get(url, {

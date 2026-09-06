@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { getNewAccessToken, signOut } from "~community/auth/utils/authUtils";
 import {
@@ -9,6 +10,7 @@ import {
   COMMON_ERROR_USER_VERSION_MISMATCH
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
@@ -17,6 +19,14 @@ import { useToast } from "./ToastProvider";
 const TanStackProvider = ({ children }: { children: ReactNode }) => {
   const { user, checkAuth } = useAuth();
   const { setToastMessage } = useToast();
+
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
 
   const [queryClient] = useState(() => {
     return new QueryClient({
@@ -34,7 +44,11 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleTokenRefresh = async () => {
-      await getNewAccessToken();
+      await getNewAccessToken({
+        accessToken,
+        setAccessToken,
+        clearAccessToken
+      });
       await checkAuth();
       queryClient.invalidateQueries();
     };
@@ -69,7 +83,7 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
           error?.response?.data?.results?.[0]?.messageKey ===
             COMMON_ERROR_INVALID_TOKEN
         ) {
-          await signOut();
+          await signOut({ accessToken, setAccessToken, clearAccessToken });
         }
 
         if (error?.response?.status === 401) {
@@ -82,7 +96,15 @@ const TanStackProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authFetch.interceptors.response.eject(interceptor);
     };
-  }, [user, checkAuth, queryClient, setToastMessage]);
+  }, [
+    user,
+    checkAuth,
+    queryClient,
+    setToastMessage,
+    accessToken,
+    setAccessToken,
+    clearAccessToken
+  ]);
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

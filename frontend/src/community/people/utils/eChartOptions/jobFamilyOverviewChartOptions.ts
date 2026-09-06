@@ -36,13 +36,25 @@ export const useJobFamilyOverviewChartOptions = (
       right: "1%"
     },
     legend: {
+      type: "scroll",
       show: !(isLaptopScreen && !isTabScreen),
       orient: "vertical",
       right: 30,
-      top: "center",
+      top: "middle",
+      height: "90%",
       icon: "circle",
       itemWidth: 10,
       itemHeight: 10,
+      itemGap: 24,
+      pageButtonPosition: "end",
+      pageIconSize: 10,
+      pageIconColor: theme.palette.text.primary,
+      pageIconInactiveColor: theme.palette.grey[300],
+      pageTextStyle: {
+        color: theme.palette.text.primary,
+        fontSize: 14,
+        fontFamily: theme.typography.fontFamily
+      },
       textStyle: {
         color: theme.palette.text.primary,
         fontSize: 12,

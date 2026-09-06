@@ -46,6 +46,8 @@ import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.ClockInType;
 import com.skapp.community.timeplanner.type.RecordType;
+import com.skapp.community.timeplanner.type.TimeBlocks;
+import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TrendPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -413,7 +415,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			if (leaveRequest.getLeaveState() == LeaveState.FULLDAY)
 				return false;
 			if (leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING) {
-				TimeBlockDto timeBlockDto = processTimeBlocks(timeConfig.getTimeBlocks());
+				TimeBlockDto timeBlockDto = processTimeBlocks(timeConfig.getTimeBlocks(), timeConfig.getTotalHours());
 				LocalTime adjustedLateThreshold = lateThreshold
 					.plusHours((long) Double.parseDouble(timeBlockDto.getMorningHours()));
 				return recordStartTime.isAfter(adjustedLateThreshold);
@@ -540,32 +542,46 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		}
 	}
 
-	private TimeBlockDto processTimeBlocks(JsonNode timeBlocks) {
+	private TimeBlockDto processTimeBlocks(JsonNode timeBlocks, Float totalHours) {
+		if (timeBlocks == null || !timeBlocks.isArray() || timeBlocks.isEmpty()) {
+			return buildDefaultTimeBlocks(totalHours);
+		}
+
 		TimeBlockDto timeBlockDto = new TimeBlockDto();
+		for (JsonNode block : timeBlocks) {
+			if (!block.hasNonNull(TimeConfigFieldName.TIME_BLOCK.getFieldName())
+					|| !block.hasNonNull(TimeConfigFieldName.HOURS.getFieldName())) {
+				return buildDefaultTimeBlocks(totalHours);
+			}
 
-		if (timeBlocks.isArray() && !timeBlocks.isEmpty()) {
-			for (JsonNode block : timeBlocks) {
-				if (!block.has("timeBlock") || !block.has("hours")) {
-					throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
-				}
+			String timeBlock = block.get(TimeConfigFieldName.TIME_BLOCK.getFieldName()).asString();
+			String hours = block.get(TimeConfigFieldName.HOURS.getFieldName()).asString();
 
-				String timeBlock = block.get("timeBlock").asString();
-				String hours = block.get("hours").asString();
-
-				if ("MORNING_HOURS".equals(timeBlock)) {
-					timeBlockDto.setMorningTimeBlock(timeBlock);
-					timeBlockDto.setMorningHours(hours);
-				}
-				else if ("EVENING_HOURS".equals(timeBlock)) {
-					timeBlockDto.setEveningTimeBlock(timeBlock);
-					timeBlockDto.setEveningHours(hours);
-				}
+			if (TimeBlocks.MORNING_HOURS.name().equals(timeBlock)) {
+				timeBlockDto.setMorningTimeBlock(timeBlock);
+				timeBlockDto.setMorningHours(hours);
+			}
+			else if (TimeBlocks.EVENING_HOURS.name().equals(timeBlock)) {
+				timeBlockDto.setEveningTimeBlock(timeBlock);
+				timeBlockDto.setEveningHours(hours);
 			}
 		}
-		else {
-			throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
+
+		if (timeBlockDto.getMorningHours() == null) {
+			return buildDefaultTimeBlocks(totalHours);
 		}
 
+		return timeBlockDto;
+	}
+
+	private TimeBlockDto buildDefaultTimeBlocks(Float totalHours) {
+		float halfDayHours = (totalHours != null ? totalHours : 0f) / 2;
+
+		TimeBlockDto timeBlockDto = new TimeBlockDto();
+		timeBlockDto.setMorningTimeBlock(TimeBlocks.MORNING_HOURS.name());
+		timeBlockDto.setMorningHours(String.valueOf(halfDayHours));
+		timeBlockDto.setEveningTimeBlock(TimeBlocks.EVENING_HOURS.name());
+		timeBlockDto.setEveningHours(String.valueOf(halfDayHours));
 		return timeBlockDto;
 	}
 

@@ -1,26 +1,29 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const useAutoFocusMenuListener = (
   anchorEl: HTMLElement | null,
   menuId: string,
   handleClose: () => void
 ) => {
-  let prevFocusedElement: HTMLElement | null;
+  const prevFocusedElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    if (!anchorEl) {
+      prevFocusedElement.current = null;
+      return;
+    }
+
     const customMenu: HTMLElement | null = document.getElementById(menuId);
 
-    if (anchorEl && customMenu) {
-      prevFocusedElement = document.activeElement as HTMLElement;
+    if (customMenu && !prevFocusedElement.current) {
+      prevFocusedElement.current = document.activeElement as HTMLElement;
       customMenu.focus();
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         handleClose();
-        if (prevFocusedElement) {
-          prevFocusedElement.focus();
-        }
+        prevFocusedElement.current?.focus();
       }
     };
 
@@ -29,7 +32,7 @@ const useAutoFocusMenuListener = (
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [anchorEl]);
+  }, [anchorEl, menuId, handleClose]);
 };
 
 export default useAutoFocusMenuListener;

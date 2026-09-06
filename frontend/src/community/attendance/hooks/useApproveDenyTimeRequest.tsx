@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { TIME_ERROR_TIME_REQUEST_CANNOT_EDIT } from "~community/common/constants/errorMessageKeys";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 
@@ -12,11 +14,11 @@ const useApproveDenyTimeRequest = () => {
   const [currentRequester, setCurrentRequester] = useState<string>();
   const [currentRequesAction, setCurrentRequestAction] = useState<string>();
 
-  const onSuccess = () => {
+  const handleSuccess = () => {
     if (currentRequesAction === TimeSheetRequestStates.APPROVED) {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateTexts(["approveSuccessTitle"]),
         description: translateTexts(["approveSuccessDes"], {
           name: currentRequester
@@ -26,7 +28,7 @@ const useApproveDenyTimeRequest = () => {
     } else {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateTexts(["declineSuccessTitle"]),
         description: translateTexts(["declineSuccessDes"], {
           name: currentRequester
@@ -36,32 +38,40 @@ const useApproveDenyTimeRequest = () => {
     }
   };
 
-  const onError = () => {
+  const handleError = (messageKey: string) => {
+    const isStaleRequest = messageKey === TIME_ERROR_TIME_REQUEST_CANNOT_EDIT;
+
+    if (isStaleRequest) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateTexts(["staleRequestConflictTitle"]),
+        description: translateTexts(["staleRequestConflictDes"])
+      });
+      return;
+    }
+
     if (currentRequesAction === TimeSheetRequestStates.APPROVED) {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateTexts(["approveFailTitle"]),
-        description: translateTexts(["approveFailDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["approveFailDes"]),
         isIcon: true
       });
     } else {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateTexts(["declineFailTitle"]),
-        description: translateTexts(["declineFailDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["declineFailDes"]),
         isIcon: true
       });
     }
   };
 
   const { mutate: approveDenyRequest, isPending: isApproveDenyLoading } =
-    useApproveDenyTimeRequestAPI(onSuccess, onError);
+    useApproveDenyTimeRequestAPI(handleSuccess, handleError);
 
   const approveTimesheetRequest = (timeRequestId: number, name: string) => {
     setCurrentRequester(name);

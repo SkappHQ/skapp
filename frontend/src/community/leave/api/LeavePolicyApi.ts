@@ -13,12 +13,15 @@ import { leavePolicyEndPoints } from "~community/leave/api/utils/ApiEndpoints";
 import { leavePolicyQueryKeys } from "~community/leave/api/utils/QueryKeys";
 import {
   AddLeavePolicyPayload,
+  CheckLeavePolicyNameAvailabilityParams,
   GetLeavePoliciesInfiniteArgs,
   GetLeavePoliciesParams,
   LeavePoliciesResponse,
   LeavePolicyConfigResponse,
   LeavePolicyConfigResult,
   LeavePolicyMutationResponse,
+  LeavePolicyNameAvailabilityResponse,
+  LeavePolicyNameAvailabilityResult,
   UpdateLeavePolicyVariables
 } from "~community/leave/types/LeavePolicyTypes";
 
@@ -64,6 +67,29 @@ export const useGetLeavePoliciesInfinite = ({
     refetchOnWindowFocus: false
   });
 };
+
+const checkLeavePolicyNameAvailability = async (
+  params: CheckLeavePolicyNameAvailabilityParams
+): Promise<LeavePolicyNameAvailabilityResult> => {
+  const response = await authFetch.get<LeavePolicyNameAvailabilityResponse>(
+    leavePolicyEndPoints.CHECK_LEAVE_POLICY_NAME_AVAILABILITY,
+    { params }
+  );
+  return response.data.results[0];
+};
+
+export const useCheckLeavePolicyNameAvailability = (): UseMutationResult<
+  LeavePolicyNameAvailabilityResult,
+  AxiosError,
+  CheckLeavePolicyNameAvailabilityParams
+> =>
+  useMutation<
+    LeavePolicyNameAvailabilityResult,
+    AxiosError,
+    CheckLeavePolicyNameAvailabilityParams
+  >({
+    mutationFn: checkLeavePolicyNameAvailability
+  });
 
 const addLeavePolicy = (
   leavePolicy: AddLeavePolicyPayload

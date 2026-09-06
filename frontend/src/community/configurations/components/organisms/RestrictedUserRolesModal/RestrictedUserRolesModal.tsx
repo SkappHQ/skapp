@@ -1,8 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Checkbox, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 
-import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { Modules, RoleLevel } from "~community/common/enums/CommonEnums";
@@ -16,6 +15,7 @@ import {
   UserRoleRestrictionsUpdateType
 } from "~community/configurations/types/UserRolesTypes";
 import {
+  getRestrictionChanges,
   hasSelectionChanged,
   toggleRoleLevel
 } from "~community/configurations/utils/userRoles/roleRestrictionUtils";
@@ -32,13 +32,6 @@ const ROLE_LEVEL_LABEL_KEYS: Record<RoleLevel, string> = {
   [RoleLevel.NONE]: "noneRoleLabel",
   [RoleLevel.SALES_REPRESENTATIVE]: "salesRepresentativeRoleLabel"
 };
-
-/** Role levels the backend reports through the deprecated isManager flag, and will be removed in the future */
-const SECONDARY_ROLE_LEVELS = new Set<RoleLevel>([
-  RoleLevel.MANAGER,
-  RoleLevel.SENDER,
-  RoleLevel.SALES_MANAGER
-]);
 
 interface Props {
   initialData: UserRoleRestrictionsType;
@@ -88,16 +81,16 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
     resetForm();
   };
 
-  // This endpoint still accepts only the isAdmin/isManager pair, where
-  // isManager stands for whichever manager level role the module has. Replaced
-  // by an add/remove delta payload in the next phase.
   const handleSubmit = () => {
+    const { addedRoles, removedRoles } = getRestrictionChanges(
+      values.selected,
+      initialData.restrictions
+    );
+
     const payload: UserRoleRestrictionsUpdateType = {
       module: moduleType,
-      isAdmin: values.selected.includes(RoleLevel.ADMIN),
-      isManager: values.selected.some((roleLevel) =>
-        SECONDARY_ROLE_LEVELS.has(roleLevel)
-      )
+      addedRoles,
+      removedRoles
     };
 
     updateUserRoleRestrictions(payload);
@@ -146,7 +139,6 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
               <Checkbox
                 key={roleLevel}
                 label={translateText([ROLE_LEVEL_LABEL_KEYS[roleLevel]])}
-                name={roleLevel}
                 checked={values.selected.includes(roleLevel)}
                 onChange={() => onRoleLevelChange(roleLevel)}
               />

@@ -8,7 +8,9 @@ import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.service.CrmContactService;
@@ -84,6 +86,24 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 
 		log.info("editContact: execution ended");
 		return new ResponseEntityDto(false, crmMapperV2.crmContactToCrmContactResponseDtoV2(savedContact));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactsLookup(CrmContactFilterDto filterDto) {
+		log.info("getContactsLookup: execution started");
+
+		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
+		Page<CrmContactLookupResponseDtoV2> contactPage = crmContactDao.findContactsForLookupV2(filterDto, pageable);
+
+		PageDto pageDto = new PageDto();
+		pageDto.setItems(contactPage.getContent());
+		pageDto.setCurrentPage(contactPage.getNumber());
+		pageDto.setTotalItems(contactPage.getTotalElements());
+		pageDto.setTotalPages(contactPage.getTotalPages());
+
+		log.info("getContactsLookup: execution ended");
+		return new ResponseEntityDto(false, pageDto);
 	}
 
 }

@@ -299,6 +299,7 @@ const Drawer = (): JSX.Element => {
                     }}
                     aria-expanded={isExpanded}
                     aria-controls={`sub-list-${routeId}`}
+                    aria-label={(!isDrawerExpanded && route?.name) || undefined}
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
@@ -338,7 +339,10 @@ const Drawer = (): JSX.Element => {
                         </Box>
                       )}
                     </ListItemIcon>
-                    <Box sx={classes.listItemContent(isDrawerExpanded)}>
+                    <Box
+                      aria-label={route?.name}
+                      sx={classes.listItemContent(isDrawerExpanded)}
+                    >
                       <ListItemText
                         primary={route?.name}
                         sx={classes.listItemText(

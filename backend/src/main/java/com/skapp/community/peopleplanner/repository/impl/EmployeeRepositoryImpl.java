@@ -1674,6 +1674,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		root.fetch(Employee_.personalInfo);
 		root.fetch(Employee_.user);
 		root.fetch(Employee_.employeeRole, JoinType.LEFT);
+		root.fetch(Employee_.jobFamily, JoinType.LEFT);
+		root.fetch(Employee_.jobTitle, JoinType.LEFT);
 
 		Join<Employee, EmployeePersonalInfo> personalInfoJoin = root.join(Employee_.personalInfo);
 		Join<Employee, User> userJoin = root.join(Employee_.user);

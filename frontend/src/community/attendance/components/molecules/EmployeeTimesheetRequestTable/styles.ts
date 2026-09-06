@@ -7,21 +7,21 @@ const styles = (theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 0.7,
     maxWidth: "auto"
   },
   textDateStyles: {
     letterSpacing: "0.03em",
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis"
   },
   outerBoxWrapper: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto"
   },
@@ -29,7 +29,7 @@ const styles = (theme: Theme) => ({
     display: "inline-flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     gap: "0.5rem",
     [theme.breakpoints.down("md")]: {
       flexDirection: "column"
@@ -39,7 +39,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.text.secondary,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis",
     textDecoration:
@@ -52,7 +52,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.error.contrastText,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis"
   },
@@ -60,7 +60,7 @@ const styles = (theme: Theme) => ({
     letterSpacing: "0.03em",
     color: theme.palette.text.secondary,
     whiteSpace: "nowrap",
-    textAlign: "center",
+    textAlign: "left",
     overflow: "hidden",
     textOverflow: "ellipsis",
     textDecoration:
@@ -73,7 +73,7 @@ const styles = (theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto"
   },
@@ -81,11 +81,11 @@ const styles = (theme: Theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     flex: 1,
     maxWidth: "auto",
     [theme.breakpoints.down("lg")]: {
-      justifyContent: "center"
+      justifyContent: "flex-start"
     },
     position: "relative"
   },

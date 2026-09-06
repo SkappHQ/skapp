@@ -163,7 +163,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   const tableHeaders: GridHeader[] = columns.map((col) => ({
     id: col.field,
     label: col.headerName,
-    align: "center"
+    align: "left"
   }));
 
   const transformToTableRows = (): GridRow[] => {
@@ -177,7 +177,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
           isResponsiveLayout={true}
           chipStyles={{
             width: "fit-content",
-            maxWidth: "15.625rem",
+            maxWidth: "100%",
             backgroundColor: "var(--color-tertiary-background)"
           }}
         />

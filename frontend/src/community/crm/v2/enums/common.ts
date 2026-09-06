@@ -4,6 +4,17 @@ export enum CrmPriorityEnum {
   HIGH = "HIGH"
 }
 
+export enum CrmSidePanelTabEnum {
+  TASKS = "TASKS",
+  DEALS = "DEALS",
+  CONTACTS = "CONTACTS"
+}
+
+export enum CrmKanbanDragType {
+  STAGE = "stage",
+  DEAL = "deal"
+}
+
 export enum CrmTaskTabEnum {
   MY_TASKS = "my tasks",
   ALL_TASKS = "all tasks",
@@ -49,6 +60,11 @@ export enum CrmMetricLabelThemeEnum {
 export enum CrmTaskStatusEnum {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"
+}
+
+export enum CrmTaskSortEnum {
+  DUE_AT = "DUE_AT",
+  LAST_MODIFIED_DATE = "LAST_MODIFIED_DATE"
 }
 
 export enum CrmDealSortEnum {

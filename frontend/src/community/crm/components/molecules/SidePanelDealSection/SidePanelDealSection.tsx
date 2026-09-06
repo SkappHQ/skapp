@@ -26,6 +26,7 @@ import DealAccordionItemSkeleton from "./DealAccordionItemSkeleton";
 interface Props {
   deals: DetailPanelDealResponseType[];
   defaultContact?: CrmContactLookup;
+  companyId?: number | null;
   showAddDealAction?: boolean;
   emptyDescription?: string;
   hasNextPage?: boolean;
@@ -36,6 +37,7 @@ interface Props {
 const SidePanelDealSection: FC<Props> = ({
   deals,
   defaultContact,
+  companyId,
   showAddDealAction = true,
   emptyDescription,
   hasNextPage = false,
@@ -77,6 +79,7 @@ const SidePanelDealSection: FC<Props> = ({
         <SidePanelAddDeal
           onClose={handleCloseAddDeal}
           defaultContact={defaultContact}
+          companyId={companyId}
         />
       );
     }
@@ -120,6 +123,7 @@ const SidePanelDealSection: FC<Props> = ({
         <SidePanelAddDeal
           onClose={handleCloseAddDeal}
           defaultContact={defaultContact}
+          companyId={companyId}
         />
       );
     }

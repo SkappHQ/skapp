@@ -30,6 +30,7 @@ import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
+import com.skapp.community.peopleplanner.model.EmployeeRole;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeTimeRequestFilterDto;
@@ -115,13 +116,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -165,27 +166,27 @@ public class TimeServiceImpl implements TimeService {
 
 	private final HolidayDao holidayDao;
 
-	private final EmployeeDao employeeDao;
+	protected final EmployeeDao employeeDao;
 
 	private final PeopleMapper peopleMapper;
 
 	private final LeaveMapper leaveMapper;
 
-	private final TimeRequestDao timeRequestDao;
+	protected final TimeRequestDao timeRequestDao;
 
 	private final TeamDao teamDao;
 
-	private final TimeMapper timeMapper;
+	protected final TimeMapper timeMapper;
 
 	private final CommonMapper commonMapper;
 
-	private final TimeEmailService timeEmailService;
+	protected final TimeEmailService timeEmailService;
 
 	private final PageTransformer pageTransformer;
 
-	private final EmployeeManagerDao employeeManagerDao;
+	protected final EmployeeManagerDao employeeManagerDao;
 
-	private final AttendanceNotificationService attendanceNotificationService;
+	protected final AttendanceNotificationService attendanceNotificationService;
 
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
 
@@ -193,8 +194,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final OrganizationService organizationService;
 
-	public static JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
-		ObjectMapper mapper = new ObjectMapper();
+	private JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ArrayNode timeBlocksNode = mapper.createArrayNode();
 
 		for (Map.Entry<String, Float> entry : hoursMap.entrySet()) {
@@ -256,15 +256,13 @@ public class TimeServiceImpl implements TimeService {
 
 			if (activeTimeSlot.isEmpty()) {
 				if (timeRecord.get().getClockOutTime() != null) {
-					LocalDateTime clockOutTimeUtc = DateTimeUtils
-						.epochMillisToUtcLocalDateTime(timeRecord.get().getClockOutTime(), null);
+					Instant clockOutTimeUtc = DateTimeUtils.epochMillisToInstant(timeRecord.get().getClockOutTime());
 					activeTimeSlotResponseDto.setStarTime(clockOutTimeUtc);
 					activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.END);
 				}
 			}
 			else {
-				LocalDateTime slotStartTimeUtc = DateTimeUtils
-					.epochMillisToUtcLocalDateTime(activeTimeSlot.get().getStartTime(), null);
+				Instant slotStartTimeUtc = DateTimeUtils.epochMillisToInstant(activeTimeSlot.get().getStartTime());
 				activeTimeSlotResponseDto.setStarTime(slotStartTimeUtc);
 				activeTimeSlotResponseDto.setPeriodType(activeTimeSlot.get().getSlotType() == SlotType.WORK
 						? TimeRecordActionTypes.RESUME : TimeRecordActionTypes.PAUSE);
@@ -559,6 +557,7 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("editClockInClockOut: execution started");
 
+		validateManualEntryRestriction(currentUser);
 		validateRequestParameters(timeRequestDto);
 
 		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
@@ -602,6 +601,8 @@ public class TimeServiceImpl implements TimeService {
 	public ResponseEntityDto addManualEntryRequest(ManualEntryRequestDto timeRequestDto) {
 		User currentUser = userService.getCurrentUser();
 		log.info("addManualEntryRequest: execution started");
+
+		validateManualEntryRestriction(currentUser);
 
 		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
@@ -1201,8 +1202,8 @@ public class TimeServiceImpl implements TimeService {
 			float morningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_MORNING);
 			float eveningHours = hoursMap.get(CommonConstants.DEFAULT_TIME_CONFIG_VALUE_EVENING);
 
-			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findLeaveRequestsForTodayByUser(currentDate,
-					currentUser.getEmployee().getEmployeeId());
+			List<LeaveRequest> leaveRequestsList = leaveRequestDao.findPendingAndApprovedLeaveRequestsForTodayByUser(
+					currentDate, currentUser.getEmployee().getEmployeeId());
 
 			ResponseEntityDto activeTimeSlotResponseDto1 = getAllActiveSlotsNoLeaveDay(currentDayConfig, morningHours,
 					eveningHours, leaveRequestsList);
@@ -1267,6 +1268,7 @@ public class TimeServiceImpl implements TimeService {
 				if (isEveningLeave || isMorningLeave || isFullDayLeave) {
 					ActiveTimeSlotResponseDto activeTimeSlotResponseDto = new ActiveTimeSlotResponseDto();
 					activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.LEAVE_DAY);
+					activeTimeSlotResponseDto.setIsLeavePending(leaveRequest.getStatus() == LeaveRequestStatus.PENDING);
 					return new ResponseEntityDto(false, activeTimeSlotResponseDto);
 				}
 			}
@@ -1304,7 +1306,7 @@ public class TimeServiceImpl implements TimeService {
 	private TimeConfig createTimeConfig(TimeConfigDto.DayCapacity timeConfig) {
 		TimeConfig newTimeConfig = new TimeConfig();
 		newTimeConfig.setDay(timeConfig.day());
-		newTimeConfig.setTimeBlocks(mapper.valueToTree(timeConfig.timeBlocks()));
+		newTimeConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		newTimeConfig.setTotalHours(timeConfig.totalHours());
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
@@ -1314,15 +1316,25 @@ public class TimeServiceImpl implements TimeService {
 		return newTimeConfig;
 	}
 
-	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
-		currentConfig.setTotalHours(timeConfig.totalHours());
+	private JsonNode resolveTimeBlocks(TimeConfigDto.DayCapacity timeConfig) {
+		if (timeConfig.timeBlocks() != null && !timeConfig.timeBlocks().isEmpty()) {
+			return mapper.valueToTree(timeConfig.timeBlocks());
+		}
+
+		if (timeConfig.totalHours() == null) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_INVALID_TIME_BLOCKS);
+		}
 
 		Map<String, Float> hoursMap = new HashMap<>();
 		hoursMap.put(TimeBlocks.MORNING_HOURS.name(), timeConfig.totalHours() / 2);
 		hoursMap.put(TimeBlocks.EVENING_HOURS.name(), timeConfig.totalHours() / 2);
+		return createTimeConfigJsonNode(hoursMap);
+	}
 
-		currentConfig.setTimeBlocks((timeConfig.timeBlocks() != null) ? (mapper.valueToTree(timeConfig.timeBlocks()))
-				: (createTimeConfigJsonNode(hoursMap)));
+	private void updateTimeConfig(TimeConfig currentConfig, TimeConfigDto.DayCapacity timeConfig) {
+		currentConfig.setTotalHours(timeConfig.totalHours());
+
+		currentConfig.setTimeBlocks(resolveTimeBlocks(timeConfig));
 		int hours = timeConfig.time().getHour();
 		int minute = timeConfig.time().getMinute();
 		currentConfig.setStartHour(hours);
@@ -1707,7 +1719,7 @@ public class TimeServiceImpl implements TimeService {
 		return Float.parseFloat(String.valueOf(timeConfigs.getTotalHours()));
 	}
 
-	private TimeRecord findTimeRecordForTheRequest(TimeRequestDto timeRequestDto) {
+	protected TimeRecord findTimeRecordForTheRequest(TimeRequestDto timeRequestDto) {
 		TimeRecord timeRecordTotReturn = null;
 		if (timeRequestDto.getRecordId() != null) {
 			Optional<TimeRecord> optionalTimeRecord = timeRecordDao.findById(timeRequestDto.getRecordId());
@@ -1750,7 +1762,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 	}
 
-	private TimeRequest timeRequestBuilder(TimeRequestDto timeRequestDto, Employee employee, TimeRecord timeRecord) {
+	protected TimeRequest timeRequestBuilder(TimeRequestDto timeRequestDto, Employee employee, TimeRecord timeRecord) {
 		TimeRequest timeRequest = timeMapper.timeRequestDtoToTimeRequest(timeRequestDto, RequestStatus.PENDING,
 				employee, timeRecord, timeRecord == null ? null : timeRecord.getClockInTime(),
 				timeRecord == null ? null : timeRecord.getClockOutTime(),
@@ -1875,7 +1887,7 @@ public class TimeServiceImpl implements TimeService {
 				: 0;
 	}
 
-	private void validateTimeRequestToSave(TimeRequest timeRequestToSave) {
+	protected void validateTimeRequestToSave(TimeRequest timeRequestToSave) {
 
 		EmployeeTimeRequestFilterDto filterDto = new EmployeeTimeRequestFilterDto();
 		filterDto.setRecordId(
@@ -2037,7 +2049,7 @@ public class TimeServiceImpl implements TimeService {
 		timeRecordDao.save(timeRecord);
 	}
 
-	private void validateRequestParameters(TimeRequestDto timeRequestDto) throws ModuleException {
+	protected void validateRequestParameters(TimeRequestDto timeRequestDto) throws ModuleException {
 		if (timeRequestDto.getEndTime().isBefore(timeRequestDto.getStartTime())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_END_TIME_BEFORE_START_TIME);
 		}
@@ -2179,6 +2191,25 @@ public class TimeServiceImpl implements TimeService {
 
 	protected boolean isGeoFencingEnabled() {
 		return false;
+	}
+
+	protected boolean isManualEntryRestrictionEnabled() {
+		return false;
+	}
+
+	private void validateManualEntryRestriction(User currentUser) {
+		if (!isManualEntryRestrictionEnabled()) {
+			return;
+		}
+
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+
+		if (!isAuthorized) {
+			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED);
+		}
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

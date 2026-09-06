@@ -5,6 +5,9 @@ import type {
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
@@ -36,6 +39,9 @@ interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const { setToastMessage } = useToast();
+
   const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
     boardStageDeals: store.boardStageDeals,
     setBoardStageDeals: store.setBoardStageDeals
@@ -53,6 +59,12 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     if (dragStartSnapshotRef.current) {
       setBoardStageDeals(dragStartSnapshotRef.current);
     }
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "editErrorTitle"]),
+      description: translateText(["toastMessages", "editErrorDescription"])
+    });
   };
 
   const { mutate: reorderDealWithinStage } =

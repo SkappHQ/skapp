@@ -1,6 +1,7 @@
 import {
   CircularProgress,
   MenuItem,
+  MenuListProps,
   Paper,
   Select,
   Stack,
@@ -9,7 +10,15 @@ import {
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Theme, useTheme } from "@mui/material/styles";
 import { Box, SxProps } from "@mui/system";
-import { FC, JSX, KeyboardEvent, SyntheticEvent } from "react";
+import {
+  FC,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  JSX,
+  KeyboardEvent,
+  SyntheticEvent,
+  useId
+} from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
@@ -67,6 +76,8 @@ interface Props {
   noOptionsText?: string;
 }
 
+const getMenuContainer = () => document.querySelector<HTMLElement>("main");
+
 const DropdownList: FC<Props> = ({
   componentStyle,
   label,
@@ -103,6 +114,22 @@ const DropdownList: FC<Props> = ({
 }: Props) => {
   const theme: Theme = useTheme();
   const classes = styles(theme);
+
+  const errorId = `${useId()}-error`;
+
+  const menuListProps: Partial<MenuListProps> = {
+    "aria-label": ariaLabel || label
+  };
+
+  const selectInputProps: InputHTMLAttributes<HTMLInputElement> = {
+    "aria-label": ariaLabel || label,
+    "aria-describedby": errorId
+  };
+
+  const selectDisplayProps: HTMLAttributes<HTMLDivElement> = {
+    "aria-invalid": !!error,
+    "aria-required": required
+  };
 
   const handleChange = (
     event:
@@ -152,7 +179,7 @@ const DropdownList: FC<Props> = ({
         {itemList?.length > 0 ? (
           <Select
             id={id}
-            value={value?.toString() ?? ""}
+            value={value?.toString()}
             readOnly={readOnly}
             label={placeholder}
             onChange={handleChange}
@@ -172,52 +199,47 @@ const DropdownList: FC<Props> = ({
             disabled={isDisabled}
             multiple={isMultiValue}
             MenuProps={{
+              container: getMenuContainer,
               style: {
                 maxHeight: 300,
                 zIndex: ZIndexEnums.NEWMODAL,
                 ...(enableTextWrapping ? { width: "max-content" } : {})
-              }
+              },
+              MenuListProps: menuListProps
             }}
             sx={{
               ...classes.selectStyle(theme, isDisabled, readOnly as boolean),
               ...selectStyles
             }}
             fullWidth
-            inputProps={{
-              "aria-label": ariaLabel || label,
-              "aria-required": required
-            }}
+            inputProps={selectInputProps}
+            SelectDisplayProps={selectDisplayProps}
             displayEmpty={!!placeholder?.length}
-            renderValue={
-              value !== ""
-                ? () => (
-                    <Stack direction={"row"}>
-                      {emojiWithText &&
-                        getEmoji(
-                          itemList?.find((item) => item?.value === value)
-                            ?.emoji as string
-                        )}
-                      <Typography
-                        sx={{
-                          paddingLeft: emojiWithText ? "0.25rem" : "0",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          color: readOnly ? "text.secondary" : "common.black"
-                        }}
-                      >
-                        {itemList?.find((item) => item?.value === value)?.label}
-                      </Typography>
-                    </Stack>
-                  )
-                : () => (
-                    <Typography
-                      aria-hidden={true}
-                      sx={classes.placeholderStyle}
-                    >
-                      {placeholder}
-                    </Typography>
-                  )
+            renderValue={(selected) =>
+              !selected ? (
+                <Typography aria-hidden={true} sx={classes.placeholderStyle}>
+                  {placeholder}
+                </Typography>
+              ) : (
+                <Stack direction={"row"}>
+                  {emojiWithText &&
+                    getEmoji(
+                      itemList?.find((item) => item?.value === value)
+                        ?.emoji as string
+                    )}
+                  <Typography
+                    sx={{
+                      paddingLeft: emojiWithText ? "0.25rem" : "0",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      color: readOnly ? "text.secondary" : "common.black"
+                    }}
+                  >
+                    {itemList?.find((item) => item?.value === value)?.label}
+                  </Typography>
+                </Stack>
+              )
             }
           >
             {itemList?.map(({ label, value: menuItemValue, emoji }, index) => (
@@ -292,6 +314,13 @@ const DropdownList: FC<Props> = ({
             name={inputName}
             disabled={isDisabled}
             multiple={isMultiValue}
+            MenuProps={{
+              container: getMenuContainer,
+              MenuListProps: {
+                ...menuListProps,
+                "aria-busy": showSpinnerWhenNoData
+              }
+            }}
             sx={{
               flex: 1,
               "&& .MuiInputBase-input": {
@@ -300,10 +329,8 @@ const DropdownList: FC<Props> = ({
               }
             }}
             fullWidth
-            inputProps={{
-              "aria-label": ariaLabel || label,
-              "aria-required": required
-            }}
+            inputProps={selectInputProps}
+            SelectDisplayProps={selectDisplayProps}
           >
             {showSpinnerWhenNoData ? (
               <Box display={"flex"} justifyContent={"center"}>
@@ -320,8 +347,8 @@ const DropdownList: FC<Props> = ({
 
       {!!error && (
         <Typography
-          role="alert"
-          aria-live="assertive"
+          id={errorId}
+          role="status"
           variant="body2"
           sx={classes.errorTextStyle}
         >
