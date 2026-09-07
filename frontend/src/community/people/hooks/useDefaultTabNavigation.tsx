@@ -1,26 +1,28 @@
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { usePeopleStore } from "../store/store";
 import { EditPeopleFormTypes } from "../types/PeopleEditTypes";
 
 const useDefaultTabNavigation = () => {
-  const router = useRouter();
-  const { tab } = router.query;
-
-  const { nextStep, setNextStep } = usePeopleStore((state) => state);
+  const { setNextStep } = usePeopleStore((state) => state);
 
   useEffect(() => {
-    if (
-      tab === EditPeopleFormTypes.leave.toLowerCase() &&
-      nextStep !== EditPeopleFormTypes.leave
-    ) {
-      setNextStep(EditPeopleFormTypes.leave);
-    } else if (
-      tab === EditPeopleFormTypes.timesheet.toLowerCase() &&
-      nextStep !== EditPeopleFormTypes.timesheet
-    ) {
-      setNextStep(EditPeopleFormTypes.timesheet);
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const tab = new URLSearchParams(window.location.search).get("tab");
+
+    if (!tab) {
+      return;
+    }
+
+    const matchedStep = Object.values(EditPeopleFormTypes).find(
+      (step) => step.toLowerCase() === tab.toLowerCase()
+    );
+
+    if (matchedStep) {
+      setNextStep(matchedStep);
     }
   }, []);
 };

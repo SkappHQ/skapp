@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -10,7 +14,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -18,13 +22,28 @@
       }
     ],
     "paths": {
-      "~community/*": ["./src/community/*"],
-      "~enterprise/*": ["./src/enterprise/*", "./src/fallback/*"],
-      "~styles/*": ["./styles/*"],
-      "~public/*": ["./public/*"],
-      "~i18n": ["./i18n"],
-      "~middleware": ["./middleware"],
-      "~firebase": ["./firebase"]
+      "~community/*": [
+        "./src/community/*"
+      ],
+      "~enterprise/*": [
+        "./src/enterprise/*",
+        "./src/fallback/*"
+      ],
+      "~styles/*": [
+        "./styles/*"
+      ],
+      "~public/*": [
+        "./public/*"
+      ],
+      "~i18n": [
+        "./i18n"
+      ],
+      "~proxy": [
+        "./proxy"
+      ],
+      "~firebase": [
+        "./firebase"
+      ]
     },
     "target": "es6",
     "forceConsistentCasingInFileNames": true,
@@ -36,7 +55,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".storybook/**/*",
     "frontend/pages/api/health.js"
   ],
   "exclude": [

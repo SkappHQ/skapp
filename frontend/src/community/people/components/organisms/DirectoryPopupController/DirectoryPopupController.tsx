@@ -1,5 +1,6 @@
 import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -15,8 +16,8 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
-import ConnectGoogleWorkspaceModal from "~enterprise/people/components/organisms/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
 import UploadTypeSelectModal from "~enterprise/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
+import ConnectGoogleWorkspaceModal from "~enterprise/people/components/organisms/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
 
 const DirectoryPopupController = () => {
   const translatedTexts = useTranslator("peopleModule", "peoples");
@@ -37,11 +38,13 @@ const DirectoryPopupController = () => {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [bulkUploadData, setBulkUploadData] = useState<BulkUploadResponse>();
 
