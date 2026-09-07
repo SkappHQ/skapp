@@ -277,6 +277,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	@Override
 	public void validateCreateEmployeeRequestPersonalDetails(EmployeePersonalDetailsDto employeePersonalDetailsDto,
 			User user) {
+		LocalDate businessDate = timeZoneService.currentBusinessDate();
 		if (employeePersonalDetailsDto != null) {
 			if (employeePersonalDetailsDto.getGeneral() != null) {
 				if (employeePersonalDetailsDto.getGeneral().getMiddleName() != null
@@ -290,9 +291,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 				}
 
 				if (employeePersonalDetailsDto.getGeneral().getDateOfBirth() != null
-						&& employeePersonalDetailsDto.getGeneral()
-							.getDateOfBirth()
-							.isAfter(timeZoneService.currentBusinessDate())) {
+						&& employeePersonalDetailsDto.getGeneral().getDateOfBirth().isAfter(businessDate)) {
 					throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_DOB_FUTURE_DATE);
 				}
 			}
@@ -350,8 +349,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 					if (familyDto.getParentName() != null && !familyDto.getParentName().isEmpty()) {
 						Validations.validateFamilyParentName(familyDto.getParentName());
 					}
-					if (familyDto.getDateOfBirth() != null
-							&& familyDto.getDateOfBirth().isAfter(timeZoneService.currentBusinessDate())) {
+					if (familyDto.getDateOfBirth() != null && familyDto.getDateOfBirth().isAfter(businessDate)) {
 						throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE);
 					}
 				});

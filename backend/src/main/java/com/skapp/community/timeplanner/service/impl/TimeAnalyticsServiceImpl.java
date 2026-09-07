@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
+import java.time.ZoneId;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
@@ -311,13 +312,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord));
 
 		if (timeRecord != null) {
+			ZoneId businessZone = timeZoneService.business();
 			responseDto.setTimeRecordId(timeRecord.getTimeRecordId());
 			responseDto.setClockInTime(timeRecord.getClockInTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime(), timeZoneService.display())
-					: null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime(), businessZone) : null);
 			responseDto.setClockOutTime(timeRecord.getClockOutTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime(), timeZoneService.display())
-					: null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime(), businessZone) : null);
 			responseDto.setWorkedHours(formatWorkedHours(timeRecord.getWorkedHours()));
 		}
 
