@@ -73,14 +73,26 @@ const DealsTableV2: FC<Props> = ({
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { setToastMessage } = useToast();
 
+  const {
+    companies,
+    deals: dealRecord,
+    board,
+    setDeals,
+    setBoardColumn
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      companies: store.companies,
+      deals: store.deals,
+      board: store.board,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn
+    }))
+  );
+
   const handleEditSuccess = (updatedDeal: CrmDealEntity): void => {
-    const store = useCrmStoreV2.getState();
-    const next = ingestEditedDeal(
-      { deals: store.deals, board: store.board },
-      updatedDeal
-    );
-    store.setDeals(next.deals);
-    store.setBoardColumn(next.board);
+    const next = ingestEditedDeal({ deals: dealRecord, board }, updatedDeal);
+    setDeals(next.deals);
+    setBoardColumn(next.board);
   };
 
   const handleEditError = (): void => {
@@ -109,8 +121,6 @@ const DealsTableV2: FC<Props> = ({
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
   });
-
-  const companies = useCrmStoreV2(useShallow((store) => store.companies));
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];
