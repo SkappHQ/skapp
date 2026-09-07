@@ -2,7 +2,7 @@ import {
   CrmCompanyFilterRequest,
   CrmDealFilterRequest,
   CrmDealsByStagesRequest,
-  CrmRelatedTasksFilterRequest,
+  CrmRelatedTasksFilter,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
 
@@ -15,8 +15,9 @@ export const crmTaskQueryKeys = {
     filter
   ],
   TASK_BY_ID: (id: number) => ["crm-task-by-id-v2", id],
-  RELATED_TASKS: (filter: CrmRelatedTasksFilterRequest) => [
+  RELATED_TASKS: (id: number, filter: CrmRelatedTasksFilter) => [
     "crm-related-tasks-v2",
+    id,
     filter
   ]
 };
