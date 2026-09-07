@@ -33,12 +33,23 @@ export const useDealListViewConfig = (
   const translateText = useTranslator("crmModule", "common", "initData");
   const { setToastMessage } = useToast();
 
+  const showConfigError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errorTitle"]),
+      description: translateText(["errorDescription"])
+    });
+  };
+
   const {
     data: fetchedConfig,
     isLoading,
     isError
   } = useGetDealListViewConfig(enabled);
-  const { mutate: persistConfig } = useUpdateDealListViewConfig();
+
+  const { mutate: persistConfig } =
+    useUpdateDealListViewConfig(showConfigError);
 
   const [columnConfig, setColumnConfig] =
     useState<CrmDealListViewConfig | null>(null);
@@ -48,13 +59,7 @@ export const useDealListViewConfig = (
   }, [fetchedConfig]);
 
   useEffect(() => {
-    if (!isError) return;
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["errorTitle"]),
-      description: translateText(["errorDescription"])
-    });
+    if (isError) showConfigError();
   }, [isError]);
 
   const applyConfig = (next: CrmDealListViewConfig) => {

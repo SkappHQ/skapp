@@ -94,18 +94,17 @@ const reorderDealInList = async (
   await authFetch.patch(crmDealEndpoints.REORDER_DEAL, payload);
 };
 
-export const useReorderDealInList = (): UseMutationResult<
-  void,
-  AxiosError,
-  CrmDealReorderRequest
-> => {
+export const useReorderDealInList = (
+  onError: (error: AxiosError) => void
+): UseMutationResult<void, AxiosError, CrmDealReorderRequest> => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: reorderDealInList,
-    onError: () => {
+    onError: (error) => {
       queryClient.invalidateQueries({
         queryKey: crmDealQueryKeys.GET_DEALS_ROOT
       });
+      onError(error);
     }
   });
 };
@@ -215,7 +214,9 @@ const updateDealListViewConfig = async (
   return response?.data?.results?.[0];
 };
 
-export const useUpdateDealListViewConfig = (): UseMutationResult<
+export const useUpdateDealListViewConfig = (
+  onError: (error: AxiosError) => void
+): UseMutationResult<
   CrmDealListViewConfig,
   AxiosError,
   CrmDealListViewConfig
@@ -227,7 +228,8 @@ export const useUpdateDealListViewConfig = (): UseMutationResult<
       queryClient.invalidateQueries({
         queryKey: crmDealQueryKeys.LIST_VIEW_CONFIG
       });
-    }
+    },
+    onError
   });
 };
 

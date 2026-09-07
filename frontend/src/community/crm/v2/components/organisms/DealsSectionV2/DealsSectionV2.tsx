@@ -40,7 +40,20 @@ const DealsSectionV2: FC = () => {
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
   const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { mutate: reorderDeal } = useReorderDealInList();
+  const handleReorderError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      description: translateText([
+        "inlineEdit",
+        "toastMessages",
+        "editErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: reorderDeal } = useReorderDealInList(handleReorderError);
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
   const { setToastMessage } = useToast();
 
@@ -129,25 +142,7 @@ const DealsSectionV2: FC = () => {
 
       reorderDeal(
         { dealId, previousDealId, nextDealId },
-        {
-          onError: () => {
-            setDealIds(previousDealIds);
-            setToastMessage({
-              open: true,
-              toastType: ToastType.ERROR,
-              title: translateText([
-                "inlineEdit",
-                "toastMessages",
-                "editErrorTitle"
-              ]),
-              description: translateText([
-                "inlineEdit",
-                "toastMessages",
-                "editErrorDescription"
-              ])
-            });
-          }
-        }
+        { onError: () => setDealIds(previousDealIds) }
       );
     },
     [reorderDeal, translateText, dealIds]
