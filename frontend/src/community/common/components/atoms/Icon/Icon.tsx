@@ -1,4 +1,4 @@
-import { HandshakeIcon } from "@rootcodelabs/skapp-ui";
+import { HandshakeIcon, ReportIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -115,7 +115,6 @@ import ProjectsIcon from "~community/common/assets/Icons/ProjectsIcon";
 import RadioSelectedIcon from "~community/common/assets/Icons/RadioSelectedIcon";
 import ReactivateUserIcon from "~community/common/assets/Icons/ReactivateUserIcon";
 import RemoveCircleIcon from "~community/common/assets/Icons/RemoveCircleIcon";
-import ReportIcon from "~community/common/assets/Icons/ReportIcon";
 import RequestCancelCrossIcon from "~community/common/assets/Icons/RequestCancelCrossIcon";
 import RestoreIcon from "~community/common/assets/Icons/RestoreIcon";
 import RestrictionsIcon from "~community/common/assets/Icons/RestrictionsIcon";
