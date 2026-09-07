@@ -1,5 +1,6 @@
 import { Grid2 as Grid } from "@mui/material";
 import { FC, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetIndividualUtilization } from "~community/attendance/api/AttendanceAdminApi";
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
@@ -46,9 +47,11 @@ const IndividualEmployeeTimeReportSection: FC<Props> = ({ selectedUser }) => {
     canDirectlyAddOrEditEntry
   );
 
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   const [month, setMonth] = useState(isAtLeastCoreTier ? getCurrentMonth() : 1);
 

@@ -532,6 +532,11 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 					.as(Integer.class), criteriaBuilder.literal(minPeoplePrivilege)));
 		}
 
+		if (permissionFilterDto != null && permissionFilterDto.getSelectedEmployeeId() != null) {
+			predicates.add(notExistingSupervisorPredicate(permissionFilterDto.getSelectedEmployeeId(), criteriaBuilder,
+					criteriaQuery, root));
+		}
+
 		Predicate[] predArray = new Predicate[predicates.size()];
 		predicates.toArray(predArray);
 		criteriaQuery.where(predArray);
@@ -1512,6 +1517,23 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		if (roleRoot != null && rolePredicates != null) {
 			rolePredicates.add(roleRoot.get(EmployeeRole_.ESIGN_ROLE).in(employeeFilterDto.getPermissions()));
 		}
+	}
+
+	private Predicate notExistingSupervisorPredicate(Long selectedEmployeeId, CriteriaBuilder criteriaBuilder,
+			CriteriaQuery<Employee> criteriaQuery, Root<Employee> root) {
+
+		Subquery<Long> existingSupervisors = criteriaQuery.subquery(Long.class);
+		Root<EmployeeManager> employeeManagerRoot = existingSupervisors.from(EmployeeManager.class);
+
+		existingSupervisors.select(criteriaBuilder.literal(1L));
+		existingSupervisors.where(
+				criteriaBuilder.equal(employeeManagerRoot.get(EmployeeManager_.employee).get(Employee_.employeeId),
+						selectedEmployeeId),
+				criteriaBuilder.equal(employeeManagerRoot.get(EmployeeManager_.manager), root),
+				employeeManagerRoot.get(EmployeeManager_.managerType).in(ManagerType.PRIMARY, ManagerType.SECONDARY));
+
+		return criteriaBuilder.and(criteriaBuilder.not(criteriaBuilder.exists(existingSupervisors)),
+				criteriaBuilder.notEqual(root.get(Employee_.employeeId), selectedEmployeeId));
 	}
 
 	private Predicate findByEmailName(String keyword, CriteriaBuilder criteriaBuilder, Root<Employee> employee,

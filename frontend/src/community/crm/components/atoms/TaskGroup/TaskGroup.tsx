@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmTaskDetailType } from "~community/crm/types/CommonTypes";
@@ -17,10 +18,12 @@ const TaskGroup: FC<TaskGroupProps> = ({
   tasks,
   isCheckTaskVisible = true
 }) => {
-  const { setSelectedTaskId, openCrmSidePanel } = useCrmStore((store) => ({
-    setSelectedTaskId: store.setSelectedTaskId,
-    openCrmSidePanel: store.openCrmSidePanel
-  }));
+  const { setSelectedTaskId, openCrmSidePanel } = useCrmStore(
+    useShallow((store) => ({
+      setSelectedTaskId: store.setSelectedTaskId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   return (
     <div className="flex flex-col">
