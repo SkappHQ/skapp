@@ -22,6 +22,7 @@ import com.skapp.community.timeplanner.payload.request.AverageHoursWorkedTrendFi
 import com.skapp.community.timeplanner.payload.request.ClockInClockOutTrendFilterDto;
 import com.skapp.community.timeplanner.payload.request.ClockInSummaryFilterDto;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
+import com.skapp.community.timeplanner.service.AttendanceStatusResolver;
 import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.service.TimeService;
@@ -95,6 +96,9 @@ class TimeAnalyticsServiceImplUnitTest {
 
 	@Mock
 	private OrganizationService organizationService;
+
+	@Mock
+	private AttendanceStatusResolver attendanceStatusResolver;
 
 	@Mock
 	private MessageUtil messageUtil;
