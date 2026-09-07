@@ -17,7 +17,6 @@ import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
@@ -232,8 +231,6 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeSkillService employeeSkillService;
 
 	private final SpecialNotificationService specialNotificationService;
-
-	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional

@@ -238,6 +238,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	public String getOrganizationTimeZone() {
 		return organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
+			.filter(timeZone -> !StringUtils.isNullOrBlank(timeZone))
 			.orElse("UTC");
 	}
 

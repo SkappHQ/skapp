@@ -185,9 +185,10 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 	private EmployeeHireResponseDto getEmployeeHireResponseDto(List<Long> teamIds) {
 		EmployeeHireResponseDto employeeHireResponseDto = new EmployeeHireResponseDto();
 
-		Long newHires = employeeDao.countByIsActiveAndTeamsAndCreatedAt(true, teamIds, DateTimeUtils.getCurrentYear());
+		Long newHires = employeeDao.countByIsActiveAndTeamsAndCreatedAt(true, teamIds,
+				timeZoneService.currentBusinessYear());
 		Long existsThisYear = employeeDao.countByIsActiveAndTeamsAndCreatedAt(false, teamIds,
-				DateTimeUtils.getCurrentYear());
+				timeZoneService.currentBusinessYear());
 
 		employeeHireResponseDto.setNewHires(newHires);
 		employeeHireResponseDto.setExistsThisYear(existsThisYear);

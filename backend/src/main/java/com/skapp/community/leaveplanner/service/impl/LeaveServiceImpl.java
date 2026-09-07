@@ -8,7 +8,6 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.NotificationType;
@@ -147,12 +146,10 @@ public class LeaveServiceImpl implements LeaveService {
 
 	private final NotificationDao notificationDao;
 
-	private final OrganizationService organizationService;
-
 	public static int getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(LocalDate leaveRequestStartDate,
 			LocalDate leaveRequestEndDate, LocalDate entitlementValidFrom, LocalDate entitlementValidTo,
 			List<TimeConfig> timeConfigs, List<LocalDate> holidays, List<Holiday> holidayObjects,
-			LeaveRequest leaveRequest, String organizationTimeZone) {
+			LeaveRequest leaveRequest) {
 
 		LocalDate startDate = leaveRequestStartDate.isAfter(leaveRequestEndDate) ? leaveRequestEndDate
 				: leaveRequestStartDate;
@@ -843,7 +840,7 @@ public class LeaveServiceImpl implements LeaveService {
 		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
 
 		float weekDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(leaveRequest.getStartDate(),
-				leaveRequest.getEndDate(), timeConfigs, holidayObjects, organizationService.getOrganizationTimeZone());
+				leaveRequest.getEndDate(), timeConfigs, holidayObjects);
 
 		if (weekDays <= 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE);
@@ -1055,15 +1052,12 @@ public class LeaveServiceImpl implements LeaveService {
 		LocalDate selectedEndDate = leaveRequest.getEndDate();
 		LocalDate currentDate = selectedStartDate;
 
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
-
 		for (LeaveEntitlement selectedEntitlement : leaveEntitlements) {
 			LocalDate validFrom = selectedEntitlement.getValidFrom();
 			LocalDate validTo = selectedEntitlement.getValidTo();
 
 			int numberOfWorkingDays = getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(currentDate,
-					selectedEndDate, validFrom, validTo, timeConfigs, holidays, holidayObjects, leaveRequest,
-					organizationTimeZone);
+					selectedEndDate, validFrom, validTo, timeConfigs, holidays, holidayObjects, leaveRequest);
 
 			if (numberOfWorkingDays > 0) {
 				float numberOfDaysToDeduct = leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)
@@ -1167,7 +1161,7 @@ public class LeaveServiceImpl implements LeaveService {
 			List<Holiday> holidayObjects, LeaveRequest leaveRequest) {
 		return getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(startCal, selectedEndDate,
 				leaveEntitlement.getValidFrom(), leaveEntitlement.getValidTo(), timeConfigs, holidayDates,
-				holidayObjects, leaveRequest, organizationService.getOrganizationTimeZone());
+				holidayObjects, leaveRequest);
 	}
 
 	private float calculateDaysToUtilize(float leaveDays, float entitlementRemainingDays, int workingDays,

@@ -47,7 +47,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -140,7 +139,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
 							cb.lessThan(task.get(CrmTask_.dueAt),
-									cb.literal(timeZoneService.currentBusinessDate().atStartOfDay()))),
+									cb.literal(timeZoneService.currentBusinessDayStartUtc()))),
 							1L)
 					.otherwise(0L))));
 
@@ -222,8 +221,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		Expression<Long> overdueCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isNotNull(task.get(CrmTask_.dueAt)),
-					cb.lessThan(task.get(CrmTask_.dueAt),
-							cb.literal(timeZoneService.currentBusinessDate().atStartOfDay()))),
+					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(timeZoneService.currentBusinessDayStartUtc()))),
 					1L)
 			.otherwise(0L)), 0L);
 

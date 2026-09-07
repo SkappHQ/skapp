@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.WorkLocationDao;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -93,8 +92,6 @@ public class HolidayServiceImpl implements HolidayService {
 	private final PeopleEmailService peopleEmailService;
 
 	private final PeopleNotificationService peopleNotificationService;
-
-	private final OrganizationService organizationService;
 
 	private final WorkLocationDao workLocationDao;
 

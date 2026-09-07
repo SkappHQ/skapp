@@ -959,7 +959,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 		predicates.add(criteriaBuilder.notEqual(employee.get(User_.isActive), false));
 		predicates.add(criteriaBuilder.equal(employeeTeam.get(EmployeeTeam_.team).get(Team_.teamId), teamId));
 		LeaveEntitlementsFilterDto leaveEntitlementsFilterDto = new LeaveEntitlementsFilterDto();
-		leaveEntitlementsFilterDto.setYear(DateTimeUtils.getCurrentYear());
+		leaveEntitlementsFilterDto.setYear(timeZoneService.currentBusinessYear());
 		leaveEntitlementsFilterDto.setIsFollowingYear(false);
 		setYearRangeFiltration(leaveEntitlementsFilterDto, criteriaBuilder, root, predicates);
 		return predicates;

@@ -7,7 +7,6 @@ import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.Role;
@@ -192,8 +191,6 @@ public class TimeServiceImpl implements TimeService {
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
 
 	private final LeaveEntitlementDao leaveEntitlementDao;
-
-	private final OrganizationService organizationService;
 
 	private final TimeZoneService timeZoneService;
 
@@ -1644,7 +1641,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private IndividualWorkHoursResponseDto getEmployeeWorkHourGraphResponseDto(
 			IndividualWorkHourFilterDto individualWorkHourFilterDto) {
-		int year = DateTimeUtils.getCurrentYear();
+		int year = timeZoneService.currentBusinessYear();
 		int month = individualWorkHourFilterDto.getMonth();
 
 		YearMonth yearMonth = YearMonth.of(year, month);
@@ -1674,16 +1671,16 @@ public class TimeServiceImpl implements TimeService {
 			List<LocalDate> holidays) {
 		float standardWorkHoursPerDay = getHoursPerDay();
 
-		LocalDate yesterday = timeZoneService.currentBusinessDate().minusDays(1);
+		LocalDate businessDate = timeZoneService.currentBusinessDate();
 
-		LocalDate oneDayBeforeOneMonthPriorDate = timeZoneService.currentBusinessDate().minusMonths(1).minusDays(1);
+		LocalDate yesterday = businessDate.minusDays(1);
 
-		LocalDate sixtyDaysBeforeYesterday = timeZoneService.currentBusinessDate().minusMonths(2).minusDays(1);
+		LocalDate oneDayBeforeOneMonthPriorDate = businessDate.minusMonths(1).minusDays(1);
 
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
+		LocalDate sixtyDaysBeforeYesterday = businessDate.minusMonths(2).minusDays(1);
 
-		int noOfWorkingDaysForLast30daysFromYesterday = CommonModuleUtils.getWorkingDaysBetweenTwoDates(
-				oneDayBeforeOneMonthPriorDate, yesterday, timeConfigs, holidays, organizationTimeZone);
+		int noOfWorkingDaysForLast30daysFromYesterday = CommonModuleUtils
+			.getWorkingDaysBetweenTwoDates(oneDayBeforeOneMonthPriorDate, yesterday, timeConfigs, holidays);
 		double totalWorkedHoursForLast30DaysFromYesterday = getWorkedHoursForDateRange(oneDayBeforeOneMonthPriorDate,
 				yesterday, employeeId);
 		double totalStandardWorkedHoursForLast30DaysFromYesterday = standardWorkHoursPerDay
@@ -1692,7 +1689,7 @@ public class TimeServiceImpl implements TimeService {
 				/ totalStandardWorkedHoursForLast30DaysFromYesterday) * 100;
 
 		int numberOfWorkingDaysFromPreMonthStartToOneMonthBeforeDate = CommonModuleUtils.getWorkingDaysBetweenTwoDates(
-				sixtyDaysBeforeYesterday, oneDayBeforeOneMonthPriorDate, timeConfigs, holidays, organizationTimeZone);
+				sixtyDaysBeforeYesterday, oneDayBeforeOneMonthPriorDate, timeConfigs, holidays);
 		double totalWorkedHoursPriorToLastThirtyDays = getWorkedHoursForDateRange(sixtyDaysBeforeYesterday,
 				oneDayBeforeOneMonthPriorDate, employeeId);
 		double totalStandardWorkedHoursUptoLastThirtyDays = standardWorkHoursPerDay

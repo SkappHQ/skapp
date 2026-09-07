@@ -17,13 +17,20 @@ export const createEmptyDailyLog = (date: string): DailyLogType => ({
   holiday: null
 });
 
-export const convertTo24HourByDateString = (date: string) => {
-  const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });
+export const convertTo24HourByDateString = (date: string, zone?: string) => {
+  const dateTime = DateTime.fromISO(date, {
+    zone: zone ?? getCurrentTimeZone()
+  });
   return dateTime.toFormat("HH:mm");
 };
 
-export const convertUnixTimestampToISO = (unixTimestamp: number) => {
-  const dateTime = DateTime.fromMillis(unixTimestamp);
+export const convertUnixTimestampToISO = (
+  unixTimestamp: number,
+  zone?: string
+) => {
+  const dateTime = zone
+    ? DateTime.fromMillis(unixTimestamp, { zone })
+    : DateTime.fromMillis(unixTimestamp);
   return dateTime.toISO({ includeOffset: false });
 };
 
@@ -100,9 +107,9 @@ export const convertToDateTime = (date: string, time: string) => {
   return formattedDateTime;
 };
 
-export const convertToTimeZoneISO = (isoTime: string) => {
+export const convertToTimeZoneISO = (isoTime: string, zone?: string) => {
   const dateTime = DateTime.fromISO(isoTime, { zone: "utc" });
-  const localDateTime = dateTime.setZone(getCurrentTimeZone());
+  const localDateTime = dateTime.setZone(zone ?? getCurrentTimeZone());
   return localDateTime.toISO();
 };
 
