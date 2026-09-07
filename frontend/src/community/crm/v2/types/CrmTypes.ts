@@ -191,11 +191,11 @@ export interface TaskDueDateInfo {
   textColorClass: string;
 }
 
-export interface GroupedTaskIds {
-  overdue: number[];
-  dueToday: number[];
-  dueTomorrow: number[];
-  upcoming: number[];
+export interface GroupedTasks {
+  overdue: CrmTaskEntity[];
+  dueToday: CrmTaskEntity[];
+  dueTomorrow: CrmTaskEntity[];
+  upcoming: CrmTaskEntity[];
   isOpenTasksEmpty: boolean;
 }
 
