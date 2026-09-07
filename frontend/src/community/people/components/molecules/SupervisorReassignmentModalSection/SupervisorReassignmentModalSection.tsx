@@ -7,11 +7,11 @@ import SearchableDropdown, {
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   AllEmployeeDataType,
   EmployeeDataTeamType
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
 
 const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
   employee
@@ -135,8 +135,7 @@ const SupervisorReassignmentModalSection: FC<
                     variant="sm"
                     positionStrategy="fixed"
                     onClose={() => handleDropdownClose(id)}
-                    emptyMessage={translateText(["noEmployeesFound"])
-                    }
+                    emptyMessage={translateText(["noEmployeesFound"])}
                   />
                 ) : (
                   <InputField

@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -22,28 +18,13 @@
       }
     ],
     "paths": {
-      "~community/*": [
-        "./src/community/*"
-      ],
-      "~enterprise/*": [
-        "./src/enterprise/*",
-        "./src/fallback/*"
-      ],
-      "~styles/*": [
-        "./styles/*"
-      ],
-      "~public/*": [
-        "./public/*"
-      ],
-      "~i18n": [
-        "./i18n"
-      ],
-      "~proxy": [
-        "./proxy"
-      ],
-      "~firebase": [
-        "./firebase"
-      ]
+      "~community/*": ["./src/community/*"],
+      "~enterprise/*": ["./src/enterprise/*", "./src/fallback/*"],
+      "~styles/*": ["./styles/*"],
+      "~public/*": ["./public/*"],
+      "~i18n": ["./i18n"],
+      "~proxy": ["./proxy"],
+      "~firebase": ["./firebase"]
     },
     "target": "es6",
     "forceConsistentCasingInFileNames": true,
