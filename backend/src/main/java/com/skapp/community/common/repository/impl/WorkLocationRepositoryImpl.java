@@ -72,8 +72,8 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
 		String searchKeyword = workLocationFilterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String likePattern = "%" + escapedLowerKeyword(searchKeyword) + "%";
-			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), likePattern, '\\'));
+			String escaped = StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
+			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), "%" + escaped + "%", '\\'));
 		}
 
 		return predicates;
@@ -84,11 +84,12 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
 			String normalizedKeyword = searchKeyword.toLowerCase();
+			String escaped = StringUtils.escapeLikePattern(normalizedKeyword);
 			Expression<String> lowerName = cb.lower(workLocation.get(WorkLocation_.name));
 
 			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
 				.when(cb.equal(lowerName, normalizedKeyword), 0)
-				.when(cb.like(lowerName, escapedLowerKeyword(searchKeyword) + "%", '\\'), 1)
+				.when(cb.like(lowerName, escaped + "%", '\\'), 1)
 				.otherwise(2);
 
 			orders.add(cb.asc(relevanceRank));
@@ -97,10 +98,6 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		orders.add(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
 
 		return orders;
-	}
-
-	private String escapedLowerKeyword(String searchKeyword) {
-		return StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
 	}
 
 	private Long getTotalCount(CriteriaBuilder cb, WorkLocationFilterDto workLocationFilterDto) {
