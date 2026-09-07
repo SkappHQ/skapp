@@ -366,7 +366,10 @@ describe("mapCreatedDealToSlice", () => {
   });
 
   it("should read stageId from the nested stage", () => {
-    const result = mapCreatedDealToSlice({ ...response, stage: mkStageType(3) });
+    const result = mapCreatedDealToSlice({
+      ...response,
+      stage: mkStageType(3)
+    });
 
     expect(result.stageId).toBe(3);
   });

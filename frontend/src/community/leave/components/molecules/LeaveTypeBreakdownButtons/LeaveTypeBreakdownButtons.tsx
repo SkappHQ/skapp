@@ -2,6 +2,7 @@ import { Box, Stack, SxProps } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Chip } from "@rootcodelabs/skapp-ui";
 import { JSX, MouseEvent, useCallback, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
@@ -33,9 +34,11 @@ const LeaveTypeBreakdownButtons = ({
   isGraph = false
 }: Props): JSX.Element => {
   const theme: Theme = useTheme();
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
   const isTabScreen = useMediaQuery()(MediaQueries.BELOW_1024);
   const isMiniTabScreen = useMediaQuery()(MediaQueries.BELOW_900);
   const maxLeaveTypeToShow = isMiniTabScreen

@@ -17,7 +17,7 @@ public class CrmDealFilterDto {
 
 	private Sort.Direction sortOrder = Sort.Direction.ASC;
 
-	private CrmDealSort sortKey = CrmDealSort.STAGE_ORDER;
+	private CrmDealSort sortKey;
 
 	private String searchKeyword;
 
