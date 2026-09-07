@@ -19,10 +19,12 @@ import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageRespon
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmIndustryResponseDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.service.CrmDealService;
 import com.skapp.community.crmplanner.service.v2.CrmDealServiceV2;
@@ -54,6 +56,8 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	private final CrmMapper crmMapper;
 
 	private final CrmMapperV2 crmMapperV2;
@@ -76,11 +80,15 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
+		List<CrmIndustryResponseDto> industries = crmMapper
+			.crmIndustriesToCrmIndustryResponseDtos(crmIndustryDao.findAllByOrderByNameAsc());
+
 		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setOwners(owners);
 		responseDto.setTaskTypes(taskTypes);
+		responseDto.setIndustries(industries);
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);

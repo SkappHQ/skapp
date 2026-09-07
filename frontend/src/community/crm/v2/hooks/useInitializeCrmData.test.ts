@@ -43,6 +43,10 @@ const initData: CrmBoardInitDataResponse = {
   taskTypes: [
     { id: 5, name: "CALL", orderIndex: 1 },
     { id: 4, name: "EMAIL", orderIndex: 0 }
+  ],
+  industries: [
+    { id: 2, name: "Retail" },
+    { id: 1, name: "Education" }
   ]
 };
 
@@ -134,6 +138,10 @@ describe("useInitializeCrmData", () => {
     expect(state.taskTypes).toEqual({
       4: { id: 4, name: "EMAIL", orderIndex: 0 },
       5: { id: 5, name: "CALL", orderIndex: 1 }
+    });
+    expect(state.industries).toEqual({
+      1: { id: 1, name: "Education" },
+      2: { id: 2, name: "Retail" }
     });
     expect(state.isCrmDataInitialized).toBe(true);
     expect(mockSetToastMessage).not.toHaveBeenCalled();

@@ -5,9 +5,11 @@ import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
@@ -52,6 +54,8 @@ class CrmBoardControllerV2IntegrationTest {
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
 
+	private final CrmIndustryDao crmIndustryDao;
+
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
@@ -83,6 +87,10 @@ class CrmBoardControllerV2IntegrationTest {
 		taskType.setName("Call");
 		taskType.setOrderIndex(1);
 		crmTaskTypeDao.save(taskType);
+
+		CrmIndustry industry = new CrmIndustry();
+		industry.setName("RETAIL");
+		crmIndustryDao.save(industry);
 	}
 
 	@Test
@@ -110,7 +118,8 @@ class CrmBoardControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isArray())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isNotEmpty())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isNotEmpty());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']").isNotEmpty());
 	}
 
 	@Test
