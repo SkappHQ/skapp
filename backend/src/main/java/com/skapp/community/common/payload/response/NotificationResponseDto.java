@@ -4,7 +4,7 @@ import com.skapp.community.common.type.NotificationType;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Setter
 @Getter
@@ -12,7 +12,7 @@ public class NotificationResponseDto {
 
 	private Long id;
 
-	private LocalDateTime createdDate;
+	private Instant createdDate;
 
 	private String body;
 

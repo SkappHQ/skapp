@@ -5,7 +5,7 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsRes
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -16,7 +16,7 @@ public class LeaveRequestByIdResponseDto extends LeaveRequestResponseDto {
 
 	private String reviewerComment;
 
-	private LocalDateTime reviewedDate;
+	private Instant reviewedDate;
 
 	private EmployeeBasicDetailsResponseDto employee;
 
@@ -24,7 +24,7 @@ public class LeaveRequestByIdResponseDto extends LeaveRequestResponseDto {
 
 	private Boolean isViewed;
 
-	private LocalDateTime createdDate;
+	private Instant createdDate;
 
 	private List<LeaveRequestAttachmentDto> attachments;
 

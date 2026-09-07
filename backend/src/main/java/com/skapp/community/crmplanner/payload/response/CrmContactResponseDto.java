@@ -3,7 +3,7 @@ package com.skapp.community.crmplanner.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -17,9 +17,9 @@ public class CrmContactResponseDto {
 
 	private String contactNumber;
 
-	private LocalDateTime lastContactAt;
+	private Instant lastContactAt;
 
-	private LocalDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 
 	private CrmCompanyLookupResponseDto company;
 

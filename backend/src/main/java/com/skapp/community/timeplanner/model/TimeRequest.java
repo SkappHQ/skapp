@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -72,6 +72,6 @@ public class TimeRequest extends Auditable<String> {
 	private Employee reviewerId;
 
 	@Column(name = "reviewed_at")
-	private LocalDateTime reviewedAt;
+	private Instant reviewedAt;
 
 }

@@ -5,7 +5,7 @@ import com.skapp.community.crmplanner.type.CrmDealPriority;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class CrmDealCreateRequestDto {
 
 	private CrmDealPriority priority;
 
-	private LocalDateTime closingAt;
+	private Instant closingAt;
 
 	private String amount;
 

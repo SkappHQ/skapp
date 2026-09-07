@@ -139,7 +139,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 				cb.sum(cb.<Long>selectCase()
 					.when(cb.and(cb.isNotNull(task.get(CrmTask_.dueAt)),
 							cb.lessThan(task.get(CrmTask_.dueAt),
-									cb.literal(timeZoneService.currentBusinessDayStartUtc()))),
+									cb.literal(timeZoneService.currentBusinessDayStart()))),
 							1L)
 					.otherwise(0L))));
 
@@ -221,8 +221,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		Expression<Long> overdueCount = cb.coalesce(cb.sum(cb.<Long>selectCase()
 			.when(cb.and(cb.isFalse(task.get(CrmTask_.isCompleted)), cb.isNotNull(task.get(CrmTask_.dueAt)),
-					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(timeZoneService.currentBusinessDayStartUtc()))),
-					1L)
+					cb.lessThan(task.get(CrmTask_.dueAt), cb.literal(timeZoneService.currentBusinessDayStart()))), 1L)
 			.otherwise(0L)), 0L);
 
 		query.select(cb.construct(CrmContactTaskMetrics.class, openCount, overdueCount));

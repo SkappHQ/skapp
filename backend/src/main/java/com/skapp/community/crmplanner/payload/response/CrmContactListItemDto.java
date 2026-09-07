@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ public class CrmContactListItemDto {
 
 	private String contactNumber;
 
-	private LocalDateTime lastContactAt;
+	private Instant lastContactAt;
 
 	private CrmCompanyLookupResponseDto company;
 

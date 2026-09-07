@@ -35,6 +35,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -134,7 +136,7 @@ class CrmCompanyControllerV2IntegrationTest {
 		crmDealDao.save(deal);
 	}
 
-	private void savedTask(CrmCompany company, LocalDateTime dueAt) {
+	private void savedTask(CrmCompany company, Instant dueAt) {
 		CrmTaskType taskType = new CrmTaskType();
 		taskType.setName("V2 Task Type");
 		taskType.setOrderIndex(1);
@@ -189,8 +191,8 @@ class CrmCompanyControllerV2IntegrationTest {
 	void getCompanyMetrics_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = savedCompany("TaskMetricsCoV2Unique");
 
-		savedTask(company, LocalDateTime.now().plusDays(5));
-		savedTask(company, LocalDateTime.now().minusDays(1));
+		savedTask(company, Instant.now().plus(5, ChronoUnit.DAYS));
+		savedTask(company, Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetMetricsRequest("TaskMetricsCoV2Unique").andDo(print())
 			.andExpect(status().isOk())

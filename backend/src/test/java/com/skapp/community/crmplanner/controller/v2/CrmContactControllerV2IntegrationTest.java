@@ -39,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -171,7 +173,7 @@ class CrmContactControllerV2IntegrationTest {
 		crmDealDao.save(deal);
 	}
 
-	private void savedTask(CrmContact contact, LocalDateTime dueAt) {
+	private void savedTask(CrmContact contact, Instant dueAt) {
 		CrmTaskType taskType = new CrmTaskType();
 		taskType.setName("V2 Task Type");
 		taskType.setOrderIndex(1);
@@ -315,8 +317,8 @@ class CrmContactControllerV2IntegrationTest {
 		savedDeal(contact, wonStage, "600", "a2");
 		savedDeal(contact, lostStage, "999", "a3");
 
-		savedTask(contact, LocalDateTime.now().plusDays(3));
-		savedTask(contact, LocalDateTime.now().minusDays(2));
+		savedTask(contact, Instant.now().plus(3, ChronoUnit.DAYS));
+		savedTask(contact, Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performGetMetricsRequest("AggMetricsContactV2Unique").andDo(print())
 			.andExpect(status().isOk())
