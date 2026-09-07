@@ -93,11 +93,18 @@ const EditTaskModalContent: FC<Props> = ({ taskId }) => {
   );
 
   const submitEditTask = (values: CrmTaskEntity) => {
-    const changedFields = getChangedTaskFields(initialValues, {
-      ...values,
+    const payload: CrmTaskEntity = {
       name: values.name?.trim(),
+      typeId: values.typeId,
+      priority: values.priority,
+      dueAt: values.dueAt,
+      ownerId: values.ownerId,
+      contactId: values.contactId,
+      dealId: values.dealId,
       notes: values.notes?.trim()
-    });
+    };
+
+    const changedFields = getChangedTaskFields(initialValues, payload);
 
     if (Object.keys(changedFields).length === 0) {
       setSubmitting(false);

@@ -129,11 +129,18 @@ const AddTaskModalContent: FC = () => {
   );
 
   const createTask = (values: CrmTaskEntity) => {
-    createNewTask({
-      ...values,
+    const payload: CrmTaskEntity = {
       name: values.name?.trim(),
+      typeId: values.typeId,
+      priority: values.priority,
+      dueAt: values.dueAt,
+      ownerId: values.ownerId,
+      contactId: values.contactId,
+      dealId: values.dealId,
       notes: values.notes?.trim()
-    });
+    };
+
+    createNewTask(payload);
   };
 
   return (
