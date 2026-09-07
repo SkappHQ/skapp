@@ -10,6 +10,7 @@ import {
 import { rejects } from "assert";
 import { AxiosError, AxiosResponse } from "axios";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -42,7 +43,10 @@ import {
 } from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
-import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  EmployeeType,
+  SystemPermissionTypes
+} from "~community/people/types/AddNewResourceTypes";
 import {
   BirthdayNotificationPayloadType,
   BirthdayNotificationTodayResponse,
@@ -270,19 +274,28 @@ export const useAddUserBulkEntitlementsWithoutCSV = (
 
 export const useGetSearchedEmployees = (
   searchTerm: string,
-  permission = "EMPLOYEES"
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
+  selectedEmployeeId?: number | null
 ) => {
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
-    permission
+    permission,
+    selectedEmployeeId
   );
 
   const queryFn = async () => {
-    const sanitizedSearchTerm = removeSpecialCharacters(searchTerm, "_");
+    const sanitizedSearchTerm = removeSpecialCharacters(
+      debouncedSearchTerm,
+      "_"
+    );
     const endpoint = peoplesEndpoints.SEARCH_EMPLOYEE;
     const response = await authFetch.get(endpoint, {
-      params: { keyword: sanitizedSearchTerm, permission: permission }
+      params: {
+        keyword: sanitizedSearchTerm,
+        permission: permission,
+        ...(selectedEmployeeId != null && { selectedEmployeeId })
+      }
     });
     const processedData = searchEmployeeDataPreProcessor(
       response?.data?.results
@@ -294,7 +307,8 @@ export const useGetSearchedEmployees = (
     queryKey,
     queryFn,
     refetchOnWindowFocus: false,
-    enabled: debouncedSearchTerm.length > 0
+    enabled:
+      debouncedSearchTerm.length > 0 && debouncedSearchTerm === searchTerm
   });
 };
 
