@@ -456,9 +456,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 
 		User currentUser = userService.getCurrentUser();
-		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
-				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+		boolean isLeaveAdmin = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser);
 		AdminOnLeaveDto adminOnLeaveDto = employeeDao.findAllEmployeesOnLeave(employeesOnLeaveFilterDto,
 				currentUser.getUserId(), isLeaveAdmin);
 		log.info("getEmployeesOnLeave: Successfully returned all employees on leave");
