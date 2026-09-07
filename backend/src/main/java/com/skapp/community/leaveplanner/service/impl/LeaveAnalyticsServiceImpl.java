@@ -927,7 +927,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		List<LocalDate> holidayDates = holidayDao.findAllByIsActiveTrue().stream().map(Holiday::getDate).toList();
 
-		Long employeeCounts = employeeDao.findAllActiveEmployeesCount();
+		Long employeeCounts = employeeDao.countActiveEmployeesExcludingGuests();
 
 		/*
 		 * absence rate annually x = employee leave request (start of the year to 2 months
@@ -1032,8 +1032,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		List<Team> teams = teamDao.findByTeamIdIn(teamIds);
 		LeaveModuleUtil.validateTeamsForLeaveAnalytics(teamIds, currentUser, teams);
 
-		List<Employee> allEmployees = teamIds.contains(-1L) ? employeeDao.findAll()
-				: employeeTeamDao.getEmployeesByTeamIds(teamIds, currentUser.getUserId(), isLeaveAdmin);
+		List<Employee> allEmployees = employeeTeamDao.getEmployeesByTeamIds(teamIds, currentUser.getUserId(),
+				isLeaveAdmin);
 
 		String organizationTimeZone = organizationService.getOrganizationTimeZone();
 
