@@ -81,6 +81,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -300,7 +301,7 @@ public class LeaveServiceImpl implements LeaveService {
 			}
 		}
 
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 		LeaveRequest saveResponse = leaveRequestDao.save(leaveRequest);
 
 		if (isInvokedByManager) {
@@ -709,8 +710,8 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 	}
 
-	private boolean isLeaveRequestNudgeAllowed(LocalDateTime lastNudgeNotificationDate) {
-		LocalDateTime now = DateTimeUtils.getCurrentUtcDateTime();
+	private boolean isLeaveRequestNudgeAllowed(Instant lastNudgeNotificationDate) {
+		Instant now = Instant.now();
 		Duration duration = Duration.between(lastNudgeNotificationDate, now);
 		long hours = duration.toHours();
 		return hours >= LeaveModuleConstant.HOURS_PER_DAY;
