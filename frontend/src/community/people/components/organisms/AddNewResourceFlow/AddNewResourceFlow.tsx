@@ -2,6 +2,7 @@ import { Box, Modal } from "@mui/material";
 import { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
@@ -130,23 +131,26 @@ const AddNewResourceFlow = () => {
     employeeVisaDetails,
     userRoles,
     resetEmployeeData
-  } = usePeopleStore((state) => ({
-    employeeGeneralDetails: state.employeeGeneralDetails,
-    employeeContactDetails: state.employeeContactDetails,
-    employeeFamilyDetails: state.employeeFamilyDetails,
-    employeeEducationalDetails: state.employeeEducationalDetails,
-    employeeSocialMediaDetails: state.employeeSocialMediaDetails,
-    employeeHealthAndOtherDetails: state.employeeHealthAndOtherDetails,
-    employeeEmergencyContactDetails: state.employeeEmergencyContactDetails,
-    employeeEmploymentDetails: state.employeeEmploymentDetails,
-    employeeCareerDetails: state.employeeCareerDetails,
-    employeeIdentificationAndDiversityDetails:
-      state.employeeIdentificationAndDiversityDetails,
-    employeePreviousEmploymentDetails: state.employeePreviousEmploymentDetails,
-    employeeVisaDetails: state.employeeVisaDetails,
-    userRoles: state.userRoles,
-    resetEmployeeData: state.resetEmployeeData
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      employeeGeneralDetails: state.employeeGeneralDetails,
+      employeeContactDetails: state.employeeContactDetails,
+      employeeFamilyDetails: state.employeeFamilyDetails,
+      employeeEducationalDetails: state.employeeEducationalDetails,
+      employeeSocialMediaDetails: state.employeeSocialMediaDetails,
+      employeeHealthAndOtherDetails: state.employeeHealthAndOtherDetails,
+      employeeEmergencyContactDetails: state.employeeEmergencyContactDetails,
+      employeeEmploymentDetails: state.employeeEmploymentDetails,
+      employeeCareerDetails: state.employeeCareerDetails,
+      employeeIdentificationAndDiversityDetails:
+        state.employeeIdentificationAndDiversityDetails,
+      employeePreviousEmploymentDetails:
+        state.employeePreviousEmploymentDetails,
+      employeeVisaDetails: state.employeeVisaDetails,
+      userRoles: state.userRoles,
+      resetEmployeeData: state.resetEmployeeData
+    }))
+  );
 
   const initialDiscardChangeModalState = {
     isModalOpen: false,

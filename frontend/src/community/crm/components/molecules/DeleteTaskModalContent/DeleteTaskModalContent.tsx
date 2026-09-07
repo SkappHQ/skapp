@@ -1,5 +1,6 @@
 import { ButtonV2, CloseIcon, DeleteButtonIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -15,12 +16,14 @@ const DeleteTaskModalContent: FC = () => {
     setSelectedTaskId,
     setIsTaskModalOpen,
     closeCrmSidePanel
-  } = useCrmStore((store) => ({
-    selectedTaskId: store.selectedTaskId,
-    setSelectedTaskId: store.setSelectedTaskId,
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    closeCrmSidePanel: store.closeCrmSidePanel
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId,
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      closeCrmSidePanel: store.closeCrmSidePanel
+    }))
+  );
 
   const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
 

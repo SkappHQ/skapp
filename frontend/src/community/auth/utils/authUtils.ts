@@ -25,7 +25,7 @@ import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoin
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isAuthHost } from "~enterprise/common/utils/tenantUtil";
 
-import { config } from "../../../../middleware";
+import { config } from "../../../../proxy";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import {
