@@ -997,7 +997,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public ResponseEntityDto getOrganizationalAbsenceRate(List<Long> teamIds) {
 		if (teamIds == null || teamIds.isEmpty()) {
 			OrganizationalAbsenceRateAnalyticsDto absenceRateAnalyticsDto = new OrganizationalAbsenceRateAnalyticsDto();
@@ -1009,11 +1009,9 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		User currentUser = userService.getCurrentUser();
-		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isLeaveAdmin = employeeRole.getLeaveRole() != null
-				&& employeeRole.getLeaveRole().equals(Role.LEAVE_ADMIN);
+		boolean isLeaveAdmin = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser);
 
-		if (teamIds.contains(-1L) && !LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser)) {
+		if (teamIds.contains(-1L) && !isLeaveAdmin) {
 			teamIds = teamDao.findLeadingTeamIdsByManagerId(currentUser.getEmployee().getEmployeeId());
 			if (teamIds.isEmpty()) {
 				OrganizationalAbsenceRateAnalyticsDto absenceRateAnalyticsDto = new OrganizationalAbsenceRateAnalyticsDto();
@@ -1050,12 +1048,16 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 		OrganizationalAbsenceRateAnalyticsDto absenceRateAnalyticsDtos = new OrganizationalAbsenceRateAnalyticsDto();
 		absenceRateAnalyticsDtos.setType(OrganizationalLeaveAnalyticsKPIAbsenceType.CURRENT_ABSENCE_RATE);
-		absenceRateAnalyticsDtos
-			.setCurrentAbsenceRate((absenceRateForCurrentDate / numOfWorkingDaysSinceTwoMonthsBackToCurrent) * 100);
+		absenceRateAnalyticsDtos.setCurrentAbsenceRate(
+				calculateAbsenceRate(absenceRateForCurrentDate, numOfWorkingDaysSinceTwoMonthsBackToCurrent));
 		absenceRateAnalyticsDtos.setMonthBeforeAbsenceRate(
-				(absenceRateForTwoMonthsBack / numOfWorkingDaysSinceTwoMonthsBackToOneMonth) * 100);
+				calculateAbsenceRate(absenceRateForTwoMonthsBack, numOfWorkingDaysSinceTwoMonthsBackToOneMonth));
 
 		return new ResponseEntityDto(false, absenceRateAnalyticsDtos);
+	}
+
+	private float calculateAbsenceRate(float leaveDays, int workingDays) {
+		return workingDays == 0 ? 0.0f : (leaveDays / workingDays) * 100;
 	}
 
 	private float getAbsenceRateForCurrentDate(LocalDate firstDateOfYear, LocalDate comparisonEndDate,
