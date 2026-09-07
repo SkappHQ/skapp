@@ -48,6 +48,8 @@ const DealsSectionV2: FC = () => {
     companies,
     dealIds,
     dealRecord,
+    setCompanies,
+    setDeals,
     setDealIds,
     setSelectedDealId,
     openCrmSidePanel
@@ -56,6 +58,8 @@ const DealsSectionV2: FC = () => {
       companies: store.companies,
       dealIds: store.dealIds,
       dealRecord: store.deals,
+      setCompanies: store.setCompanies,
+      setDeals: store.setDeals,
       setDealIds: store.setDealIds,
       setSelectedDealId: store.setSelectedDealId,
       openCrmSidePanel: store.openCrmSidePanel
@@ -157,10 +161,9 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (!data || activeView !== DealViewEnum.LIST) return;
-    const store = useCrmStoreV2.getState();
     const items = data.pages.flatMap((page) => page.items);
-    store.setDeals(mergeDeals(store.deals, items));
-    store.setDealIds(toDealIds(items));
+    setDeals(mergeDeals(dealRecord, items));
+    setDealIds(toDealIds(items));
   }, [data, activeView]);
 
   const companyIds = useMemo(
@@ -183,8 +186,7 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      setCompanies(mergeCompanies(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 
