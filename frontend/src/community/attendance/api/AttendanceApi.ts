@@ -283,6 +283,7 @@ export const useGetEmployeeLeaveStatus = (
   const currentHour = currentDate.hour;
 
   const query = useQuery({
+    enabled: !!businessZone,
     queryKey: [getAttendanceQueryKeys.employeeLeaveStatus(), formattedDate],
     queryFn: async () => {
       return await authFetch.get(

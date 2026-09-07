@@ -20,7 +20,10 @@ import {
   convertToUtc
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-import { useBusinessZone } from "~community/common/hooks/useDisplayZone";
+import {
+  useBusinessZone,
+  useDisplayZone
+} from "~community/common/hooks/useDisplayZone";
 import {
   ErrorResponse,
   SortKeyTypes,
@@ -28,18 +31,17 @@ import {
 } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
-  currentDateIn,
   getStartAndEndOfYear,
   nowInZone
 } from "~community/common/utils/dateTimeUtils";
 
 export const useGetTodaysTimeRequestAvailability = () => {
   const businessZone = useBusinessZone();
-  const today = currentDateIn(businessZone);
-  const tomorrow = nowInZone(businessZone)
-    .plus({ days: 1 })
-    .toFormat(DATE_FORMAT);
+  const startOfToday = nowInZone(businessZone).startOf("day");
+  const today = startOfToday.toFormat(DATE_FORMAT);
+  const tomorrow = startOfToday.plus({ days: 1 }).toFormat(DATE_FORMAT);
   return useQuery({
+    enabled: !!businessZone,
     queryKey: attendanceQueryKeys.getEmployeeRequests({
       startDate: today,
       endDate: tomorrow,
@@ -62,8 +64,8 @@ export const useGetTodaysTimeRequestAvailability = () => {
             TimeSheetRequestStates.PENDING,
             TimeSheetRequestStates.APPROVED
           ].toString(),
-          startTime: convertToMilliseconds(convertToUtc(today)),
-          endTime: convertToMilliseconds(convertToUtc(tomorrow))
+          startTime: startOfToday.toMillis(),
+          endTime: startOfToday.plus({ days: 1 }).toMillis()
         }
       });
     },
@@ -114,6 +116,7 @@ export const useGetDailyLogs = (
   endDate: string,
   isEnable: boolean = true
 ) => {
+  const displayZone = useDisplayZone();
   //const { setGeneralErrors } = useGeneralErrors();
   return useQuery({
     queryKey: attendanceQueryKeys.getEmployeeDailyLog(startDate, endDate),
@@ -132,7 +135,7 @@ export const useGetDailyLogs = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items);
+      return dailyLogPreProcessor(data?.data?.results?.[0]?.items, displayZone);
     },
     //onError: setGeneralErrors,
     enabled: isEnable
@@ -165,6 +168,7 @@ export const useGetEmployeeWorkSummary = (
 };
 
 export const useGetTimeSheetRequests = () => {
+  const displayZone = useDisplayZone();
   //const { setGeneralErrors } = useGeneralErrors();
   const employeeTimesheetRequestParams = useAttendanceStore(
     (state) => state.employeeTimesheetRequestParams
@@ -201,7 +205,7 @@ export const useGetTimeSheetRequests = () => {
       });
     },
     select(data) {
-      return timeRequestPreProcessor(data?.data.results?.[0]);
+      return timeRequestPreProcessor(data?.data.results?.[0], displayZone);
     }
     //onError: setGeneralErrors
   });
@@ -334,6 +338,7 @@ export const useGetDailyLogsByEmployeeId = (
   employeeId?: number,
   isEnabled: boolean = true
 ) => {
+  const displayZone = useDisplayZone();
   return useQuery({
     enabled: isEnabled && !!employeeId,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
@@ -361,7 +366,7 @@ export const useGetDailyLogsByEmployeeId = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items);
+      return dailyLogPreProcessor(data?.data?.results?.[0]?.items, displayZone);
     }
   });
 };

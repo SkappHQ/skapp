@@ -1,3 +1,4 @@
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { rejects } from "assert";
 
@@ -90,6 +91,7 @@ export const useGetManagerTimeRecords = (isExport: boolean = false) => {
 };
 
 export const useGetManagerTimeSheetRequests = () => {
+  const displayZone = useDisplayZone();
   const timesheetRequestParams = useAttendanceStore(
     (state) => state.timesheetRequestParams
   );
@@ -119,7 +121,7 @@ export const useGetManagerTimeSheetRequests = () => {
       });
     },
     select(response) {
-      return timeRequestPreProcessor(response?.data?.results?.[0]);
+      return timeRequestPreProcessor(response?.data?.results?.[0], displayZone);
     }
   });
 };
