@@ -1,3 +1,5 @@
+"use client";
+
 import PeopleAccount from "~community/people/components/template/PeopleAccount/PeopleAccount";
 
 const Account = () => {

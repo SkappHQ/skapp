@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import React, {
   ReactNode,
   createContext,
@@ -12,6 +11,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { internalApiEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import { HttpMethods } from "~community/common/constants/stringConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import {
   EnterpriseSignInParams,

@@ -1,10 +1,11 @@
+"use client";
+
 // TODO: Can move this page and time sheet analytics page to a single page and handle logic from one component. need to be refactored later
 import { Box, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -26,6 +27,7 @@ import AvatarGroup from "~community/common/components/molecules/AvatarGroup/Avat
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { AnalyticsTypes } from "~community/common/types/CommonTypes";

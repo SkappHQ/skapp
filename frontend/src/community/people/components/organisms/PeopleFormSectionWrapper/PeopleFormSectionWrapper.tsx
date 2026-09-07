@@ -1,7 +1,8 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import { Container, type SxProps } from "@mui/system";
-import Head from "next/head";
 import { JSX } from "react";
+
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 
 interface Props {
   title?: string;
@@ -23,9 +24,7 @@ const PeopleFormSectionWrapper = ({
 }: Props): JSX.Element => {
   return (
     <>
-      <Head>
-        <title>{headerTitle}</title>
-      </Head>
+      <PageTitle title={headerTitle} />
       <Container
         disableGutters
         maxWidth={false}

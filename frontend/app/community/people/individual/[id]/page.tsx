@@ -1,3 +1,5 @@
+"use client";
+
 import PeopleIndividual from "~community/people/components/template/PeopleIndividual/PeopleIndividual";
 
 const Individual = () => {

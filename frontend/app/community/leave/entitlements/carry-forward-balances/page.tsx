@@ -1,3 +1,5 @@
+"use client";
+
 import { Box } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";

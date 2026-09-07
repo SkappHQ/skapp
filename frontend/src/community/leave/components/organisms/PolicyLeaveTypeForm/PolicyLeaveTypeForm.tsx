@@ -5,7 +5,6 @@ import {
   InputField
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useRouter } from "next/router";
 import { ChangeEvent, FC, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -14,6 +13,7 @@ import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import ColorPalette from "~community/common/components/molecules/ColorPalette/ColorPalette";
 import EmojiPicker from "~community/common/components/molecules/EmojiPicker/EmojiPicker";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { specialCharacters } from "~community/common/regex/regexPatterns";
 import { getBlinkClass, getEmoji } from "~community/common/utils/commonUtil";

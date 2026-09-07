@@ -1,6 +1,5 @@
 import { Stack, type Theme, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import Head from "next/head";
 import {
   Dispatch,
   JSX,
@@ -11,6 +10,7 @@ import {
 } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import { personalDetailsSectionTestId } from "~community/common/constants/testIds";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -168,9 +168,7 @@ const PersonalDetailsForm = ({
 
   return (
     <>
-      <Head>
-        <title>{translateText(["head"])}</title>
-      </Head>
+      <PageTitle title={translateText(["head"])} />
       <GeneralDetailsSection
         ref={generalDetailsRef as any}
         isAdmin={isUpdate}

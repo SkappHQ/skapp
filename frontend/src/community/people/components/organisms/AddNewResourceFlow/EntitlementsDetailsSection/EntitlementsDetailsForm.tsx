@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
-import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { leaveBulkUploadResponse } from "~community/leave/types/LeaveTypes";

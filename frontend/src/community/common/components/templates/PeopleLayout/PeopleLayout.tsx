@@ -1,10 +1,10 @@
 import { Box, Divider, Stack, Typography } from "@mui/material";
 import { Container, type SxProps } from "@mui/system";
-import Head from "next/head";
-import { useRouter } from "next/router";
 import { JSX, memo } from "react";
 
 import BackIcon from "~community/common/assets/Icons/BackIcon";
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
+import useRouter from "~community/common/hooks/useCompatRouter";
 
 interface Props {
   title?: string;
@@ -53,9 +53,7 @@ const PeopleLayout = ({
 
   return (
     <>
-      <Head>
-        <title>{headerTitle}</title>
-      </Head>
+      <PageTitle title={headerTitle} />
       <Container
         disableGutters
         maxWidth={false}

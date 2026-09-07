@@ -1,9 +1,10 @@
+"use client";
+
 import { Box, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
@@ -15,6 +16,7 @@ import SignInForm from "~community/common/components/organisms/Forms/SignInForm/
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
 import ROUTES from "~community/common/constants/routes";
 import { AppVersionNotificationType } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useWebSocket } from "~community/common/providers/WebSocketProvider";
@@ -27,7 +29,7 @@ import { useRedirectHandler } from "~community/common/utils/hooks/useRedirectHan
 import { signInValidation } from "~community/common/utils/validation";
 import i18n from "~i18n";
 
-import { version } from "../../package.json";
+import { version } from "../../../package.json";
 
 interface SignInValues {
   email: string;

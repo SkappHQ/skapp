@@ -1,5 +1,4 @@
 import { useTheme } from "@mui/material";
-import { type NextRouter, useRouter } from "next/router";
 import { JSX, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
@@ -17,6 +16,9 @@ import {
   ToastType,
   TooltipPlacement
 } from "~community/common/enums/ComponentEnums";
+import useRouter, {
+  type CompatRouter
+} from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -27,7 +29,7 @@ const ClockWidget = (): JSX.Element => {
   const theme = useTheme();
   const translateAria = useTranslator("attendanceAria", "timeWidget");
 
-  const router: NextRouter = useRouter();
+  const router: CompatRouter = useRouter();
   const {
     attendanceParams,
     attendanceLeaveStatus,

@@ -2,7 +2,6 @@ import { TrendingUp } from "@mui/icons-material";
 import { Box, Chip, Stack, Theme, Typography, useTheme } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import { JSX, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -10,6 +9,7 @@ import AnalyticCard from "~community/common/components/molecules/AnalyticCard/An
 import TeamSelector from "~community/common/components/molecules/TeamSelector/TeamSelector";
 import ROUTES from "~community/common/constants/routes";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import {

@@ -1,3 +1,5 @@
+"use client";
+
 import { Divider, Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";

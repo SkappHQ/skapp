@@ -6,11 +6,11 @@ import {
   Typography,
   useTheme
 } from "@mui/material";
-import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { JSX, ReactNode, useEffect, useMemo } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
@@ -97,9 +97,7 @@ const FullPageContainerLayout = ({
 
   return (
     <>
-      <Head>
-        <title>{pageHead}</title>
-      </Head>
+      <PageTitle title={pageHead} />
       <Stack
         component="div"
         sx={mergeSx([classes.wrapper, customStyles?.wrapper])}

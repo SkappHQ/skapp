@@ -8,8 +8,6 @@ import {
 } from "@mui/material";
 import { type SxProps } from "@mui/system";
 import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
-import Head from "next/head";
-import { useRouter } from "next/router";
 import { ComponentProps, JSX, memo, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -18,11 +16,13 @@ import { signOut } from "~community/auth/utils/authUtils";
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import VersionUpgradeBanner from "~community/common/components/molecules/VersionUpgradeBanner/VersionUpgradeBanner";
 import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { contentLayoutTestId } from "~community/common/constants/testIds";
 import { Modules } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import {
   MediaQueries,
   useMediaQuery
@@ -257,9 +257,7 @@ const ContentLayout = ({
 
   return (
     <>
-      <Head>
-        <title>{pageHead}</title>
-      </Head>
+      <PageTitle title={pageHead} />
       <Stack sx={mergeSx([classes.container, containerStyles])}>
         {showInfoBanner &&
           !isDailyNotifyDisplayed &&

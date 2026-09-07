@@ -1,7 +1,6 @@
 import { Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
-import { useRouter } from "next/router";
 import { Dispatch, JSX, SetStateAction, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -12,6 +11,7 @@ import Modal from "~community/common/components/organisms/Modal/Modal";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { appModes } from "~community/common/constants/configs";
 import { systemPermissionFormTestId } from "~community/common/constants/testIds";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";

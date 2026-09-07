@@ -2,7 +2,6 @@ import { debounce } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import {
   ChangeEvent,
   JSX,
@@ -23,6 +22,7 @@ import ROUTES from "~community/common/constants/routes";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
 import { ALL_LOCATIONS_ID } from "~community/common/constants/workLocationConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { theme } from "~community/common/theme/theme";

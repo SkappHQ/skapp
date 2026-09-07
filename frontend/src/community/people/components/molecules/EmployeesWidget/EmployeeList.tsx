@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useRouter } from "next/router";
 import { FC, useEffect, useRef } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -8,6 +7,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import NoDataScreen from "~community/common/components/molecules/NoDataScreen/NoDataScreen";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";

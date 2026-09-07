@@ -1,12 +1,14 @@
+"use client";
+
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   AdminTypes,

@@ -1,3 +1,5 @@
+"use client";
+
 import { NextPage } from "next";
 
 import ROUTES from "~community/common/constants/routes";

@@ -1,9 +1,11 @@
+"use client";
+
 import { type NextPage } from "next";
-import { useRouter } from "next/router";
 
 import ClockInData from "~community/common/components/organisms/ClockInData/ClockInData";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const ClockInSummary: NextPage = () => {

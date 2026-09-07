@@ -1,6 +1,5 @@
 import { type SxProps } from "@mui/material";
 import { type PopperProps } from "@rootcodelabs/skapp-ui";
-import { AppProps } from "next/app";
 import { JSX } from "react";
 import { type FileRejection } from "react-dropzone";
 import { StoreApi } from "zustand";
@@ -12,22 +11,10 @@ import { HolidayDurationType } from "~community/people/types/HolidayTypes";
 
 import { daysTypes } from "../constants/stringConstants";
 
-type ResourcesType = Record<
-  string,
-  {
-    translation: Record<string, string>;
-  }
->;
-
 export type TranslatorFunctionType = (
   suffixes: string[],
   interpolationValues?: Record<string, string>
 ) => string;
-
-export interface MyAppPropsType extends AppProps {
-  initialI18nStore: ResourcesType;
-  initialLanguage: string;
-}
 
 export type StyleProps = Record<string, SxProps>;
 

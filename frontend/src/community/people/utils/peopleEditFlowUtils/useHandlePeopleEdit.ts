@@ -1,8 +1,7 @@
-import { useRouter } from "next/router";
-
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

@@ -1,6 +1,5 @@
-import { useRouter } from "next/router";
-
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
+import useRouter from "~community/common/hooks/useCompatRouter";
 
 import IndividualSectionWrapper from "../../organisms/IndividualSectionWrapper/IndividualSectionWrapper";
 

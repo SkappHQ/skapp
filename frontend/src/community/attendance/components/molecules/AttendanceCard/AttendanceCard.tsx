@@ -1,5 +1,4 @@
 import { Box, Stack, Typography, useTheme } from "@mui/material";
-import { useRouter } from "next/router";
 import { FC } from "react";
 
 import {
@@ -10,6 +9,7 @@ import {
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { IconName } from "~community/common/types/IconTypes";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 

@@ -1,5 +1,6 @@
-import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
+
+import useRouter from "~community/common/hooks/useCompatRouter";
 
 const useRouteLoading = (): boolean => {
   const router = useRouter();

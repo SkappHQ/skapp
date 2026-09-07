@@ -1,3 +1,5 @@
+"use client";
+
 import { type NextPage } from "next";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";

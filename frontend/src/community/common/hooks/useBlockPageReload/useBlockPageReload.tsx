@@ -1,5 +1,6 @@
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+
+import useRouter from "~community/common/hooks/useCompatRouter";
 
 const useBlockPageReload = (): boolean => {
   const router = useRouter();

@@ -8,11 +8,11 @@ import {
   Table,
   TableColumn
 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { ChangeEvent, useMemo, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";

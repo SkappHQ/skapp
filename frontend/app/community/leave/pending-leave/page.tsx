@@ -1,11 +1,13 @@
+"use client";
+
 import { Box } from "@mui/material";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";

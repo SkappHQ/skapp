@@ -1,11 +1,13 @@
+"use client";
+
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeaveTypeActivationToggleButton from "~community/leave/components/molecules/LeaveTypeActivationToggleButton/LeaveTypeActivationToggleButton";
 import PolicyLeaveTypeActivationToggleButton from "~community/leave/components/molecules/PolicyLeaveTypeActivationToggleButton/PolicyLeaveTypeActivationToggleButton";

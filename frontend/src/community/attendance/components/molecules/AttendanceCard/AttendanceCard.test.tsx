@@ -7,7 +7,7 @@ import MockTheme from "~community/common/mocks/MockTheme";
 import AttendanceCard from "./AttendanceCard";
 
 // Mock useRouter
-jest.mock("next/router", () => ({
+jest.mock("~community/common/hooks/useCompatRouter", () => ({
   useRouter: () => ({
     replace: jest.fn()
   })

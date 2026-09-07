@@ -2,7 +2,6 @@ import { Grid2 as Grid, SelectChangeEvent, type Theme } from "@mui/material";
 import { useTheme } from "@mui/system";
 import { type FormikErrors, useFormik } from "formik";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import {
   ChangeEvent,
   SyntheticEvent,
@@ -25,6 +24,7 @@ import MultiSelectChipInput from "~community/common/components/molecules/MultiSe
 import MultivalueDropdownList from "~community/common/components/molecules/MultiValueDropdownList/MultivalueDropdownList";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { LONG_DATE_TIME_FORMAT } from "~community/common/constants/timeConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";

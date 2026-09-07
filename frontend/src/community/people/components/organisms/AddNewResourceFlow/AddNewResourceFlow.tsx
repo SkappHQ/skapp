@@ -1,6 +1,5 @@
 import { Box, Modal } from "@mui/material";
 import { AxiosError } from "axios";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,6 +8,7 @@ import StepperComponent from "~community/common/components/molecules/Stepper/Ste
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import {
   MediaQueries,
   useMediaQuery

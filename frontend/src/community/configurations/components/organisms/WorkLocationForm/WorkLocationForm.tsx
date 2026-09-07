@@ -1,13 +1,13 @@
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";

@@ -1,11 +1,11 @@
 import { Tooltip } from "@mui/material";
 import { Toggle } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { FC, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";

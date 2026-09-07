@@ -1,8 +1,8 @@
 import { Stack, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 
 import { AppVersionNotificationType } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useVersionUpgradeStore } from "~community/common/stores/versionUpgradeStore";
 import { theme } from "~community/common/theme/theme";

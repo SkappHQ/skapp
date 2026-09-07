@@ -1,6 +1,7 @@
+"use client";
+
 import { Stack } from "@mui/material";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import ManagerTimesheet from "~community/attendance/components/organisms/ManagerTimesheet/ManagerTImesheet";
@@ -11,6 +12,7 @@ import PeopleAndTeamAutocompleteSearch, {
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import NotificationReadProvider from "~community/common/providers/NotificationReadProvider";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";

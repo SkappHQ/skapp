@@ -7,12 +7,12 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { FormikProps, useFormik } from "formik";
-import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
 
 import StepperComponent from "~community/common/components/molecules/Stepper/Stepper";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

@@ -1,7 +1,7 @@
-import { useRouter } from "next/router";
 import { useCallback } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import useRouter from "~community/common/hooks/useCompatRouter";
 
 import ROUTES from "../constants/routes";
 import { OrgSetupStatusType } from "../types/OrganizationCreateTypes";

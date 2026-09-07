@@ -1,4 +1,5 @@
-import { useRouter } from "next/router";
+"use client";
+
 import { useCallback, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,6 +10,7 @@ import FullScreenLoader from "~community/common/components/molecules/FullScreenL
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";

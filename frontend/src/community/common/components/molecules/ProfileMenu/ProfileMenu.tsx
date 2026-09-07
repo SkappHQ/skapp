@@ -1,7 +1,6 @@
 import { Typography } from "@mui/material";
 import { Box, Stack } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { JSX } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,6 +8,7 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { theme } from "~community/common/theme/theme";

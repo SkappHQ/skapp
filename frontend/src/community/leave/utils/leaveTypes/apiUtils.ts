@@ -1,8 +1,8 @@
-import { NextRouter } from "next/router";
 import * as React from "react";
 
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { CompatRouter } from "~community/common/hooks/useCompatRouter";
 import { ToastProps } from "~community/common/types/ToastTypes";
 import { LeaveTypeToastEnums } from "~community/leave/enums/LeaveTypeEnums";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
@@ -24,7 +24,7 @@ export const handleLeaveTypeApiResponse =
     setToastMessage: (value: React.SetStateAction<ToastProps>) => void;
     translateText: (key: string[]) => string;
     setFormDirty?: (value: boolean) => void;
-    redirect?: NextRouter["replace"];
+    redirect?: CompatRouter["replace"];
     stopAllOngoingQuickSetup?: () => void;
     setQuickSetupModalType?: (value: QuickSetupModalTypeEnums) => void;
     isOngoingSetupLeave?: boolean;

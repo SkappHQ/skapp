@@ -1,12 +1,12 @@
 import { Box, Stack } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import ROUTES from "~community/common/constants/routes";
 import { peopleDirectoryTestId } from "~community/common/constants/testIds";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";

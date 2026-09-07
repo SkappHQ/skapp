@@ -1,3 +1,5 @@
+"use client";
+
 import PeopleDirectoryEdit from "~community/people/components/template/PeopleDirectoryEdit/PeopleDirectoryEdit";
 
 const Edit = () => {

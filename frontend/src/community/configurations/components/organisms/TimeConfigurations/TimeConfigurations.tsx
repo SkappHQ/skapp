@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
 import { JSX, useCallback, useEffect, useState } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -23,6 +22,7 @@ import {
   daysOfWeek
 } from "~community/common/constants/timeConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DropdownListType } from "~community/common/types/CommonTypes";

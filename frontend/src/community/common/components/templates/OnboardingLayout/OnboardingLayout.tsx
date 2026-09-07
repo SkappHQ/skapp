@@ -1,9 +1,9 @@
 import { Box, SxProps, Theme, Typography } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import Head from "next/head";
 import Image from "next/image";
 import React, { CSSProperties } from "react";
 
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import { buttonTestId } from "~community/common/constants/testIds";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -45,9 +45,7 @@ const OnboardingLayout: React.FC<LayoutProps> = ({
 
   return (
     <Box sx={classes.container}>
-      <Head>
-        <title>{pageHead}</title>
-      </Head>
+      <PageTitle title={pageHead} />
       <Image
         src={logo}
         height={77}

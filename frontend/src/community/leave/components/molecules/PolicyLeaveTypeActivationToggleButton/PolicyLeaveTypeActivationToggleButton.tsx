@@ -5,11 +5,11 @@ import {
   Toggle
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { useRouter } from "next/router";
 import { FC, useState } from "react";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

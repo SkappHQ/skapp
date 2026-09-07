@@ -1,11 +1,13 @@
+"use client";
+
 import { Box } from "@mui/material";
-import Head from "next/head";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -44,9 +46,7 @@ const Pending = () => {
   }, []);
   return (
     <>
-      <Head>
-        <title>{translateText(["title"])}</title>
-      </Head>
+      <PageTitle title={translateText(["title"])} />
       <ContentLayout
         breadcrumbs={[
           {

@@ -1,8 +1,8 @@
-import { NextRouter } from "next/router";
 import { Dispatch, SetStateAction } from "react";
 
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { CompatRouter } from "~community/common/hooks/useCompatRouter";
 import { ToastProps } from "~community/common/types/ToastTypes";
 import { isObjectEmpty } from "~community/common/utils/commonUtil";
 import { DiscardTypeEnums } from "~community/people/enums/DirectoryEnums";
@@ -12,7 +12,7 @@ interface HandleGoBackProps {
   activeStep: number;
   isDiscardChangesModal: DiscardChangeModalType;
   setIsDiscardChangesModal: Dispatch<SetStateAction<DiscardChangeModalType>>;
-  router: NextRouter;
+  router: CompatRouter;
   getEmployeeObject: () => Object;
 }
 
@@ -74,7 +74,7 @@ export const handleError = ({
 interface HandleAddNewResourceSuccess {
   setToastMessage: Dispatch<SetStateAction<ToastProps>>;
   resetEmployeeData: () => void;
-  router: NextRouter;
+  router: CompatRouter;
   translateText: (key: string[]) => string;
 }
 

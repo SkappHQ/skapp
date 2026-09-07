@@ -1,6 +1,5 @@
 import { Box, Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { useRouter } from "next/router";
 import { JSX, useEffect } from "react";
 import { type MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
@@ -16,6 +15,7 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import BasicChipGroup from "~community/common/components/molecules/BasicChipGroup/BasicChipGroup";
 import KebabMenu from "~community/common/components/molecules/KebabMenu/KebabMenu";
 import { appModes } from "~community/common/constants/configs";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";

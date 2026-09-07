@@ -1,5 +1,6 @@
+"use client";
+
 import { Modal, Stack } from "@mui/material";
-import { useRouter } from "next/router";
 import { type NextPage } from "next/types";
 import { useCallback, useEffect, useState } from "react";
 
@@ -9,6 +10,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { accountPageTestId } from "~community/common/constants/testIds";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useGetProfileDetails from "~community/common/hooks/useGetProfileDetails";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";

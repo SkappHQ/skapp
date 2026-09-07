@@ -2,7 +2,6 @@ import { Grid2 as Grid } from "@mui/material";
 import { Theme, useTheme } from "@mui/system";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import {
   forwardRef,
   useEffect,
@@ -23,6 +22,7 @@ import {
   LONG_DATE_TIME_FORMAT,
   REVERSE_DATE_FORMAT
 } from "~community/common/constants/timeConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { timeZonesList } from "~community/common/utils/data/timeZones";

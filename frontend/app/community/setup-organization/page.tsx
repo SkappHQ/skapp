@@ -1,7 +1,8 @@
+"use client";
+
 import { Box, Theme, useTheme } from "@mui/material";
 import { useFormik } from "formik";
 import { NextPage } from "next";
-import { NextRouter, useRouter } from "next/router";
 import { ChangeEvent, useCallback, useState } from "react";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
@@ -11,6 +12,8 @@ import SetupOrganizationForm from "~community/common/components/organisms/Forms/
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
 import ROUTES from "~community/common/constants/routes";
 import { FileTypes } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
+import { CompatRouter } from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { themeSelector } from "~community/common/theme/themeSelector";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
@@ -22,7 +25,7 @@ import { organizationSetupValidation } from "~community/common/utils/validation"
 import useGetCountryList from "~community/people/hooks/useGetCountryList";
 
 const SetupOrganization: NextPage = () => {
-  const router: NextRouter = useRouter();
+  const router: CompatRouter = useRouter();
 
   const theme: Theme = useTheme();
 

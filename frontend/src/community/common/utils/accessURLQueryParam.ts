@@ -1,8 +1,9 @@
 import { rejects } from "assert";
-import { type NextRouter } from "next/router";
+
+import { type CompatRouter } from "~community/common/hooks/useCompatRouter";
 
 export const setQueryParam = (
-  router: NextRouter,
+  router: CompatRouter,
   params?: Record<string, string>
 ) => {
   const query = { ...params };

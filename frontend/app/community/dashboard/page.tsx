@@ -1,7 +1,8 @@
+"use client";
+
 import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
 import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -14,6 +15,7 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { OBOARDING_LOGOCOLORLOADER_DURATION } from "~community/common/constants/commonConstants";
 import { CANCEL, SUCCESS } from "~community/common/constants/stringConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import {
   MediaQueries,
   useMediaQuery

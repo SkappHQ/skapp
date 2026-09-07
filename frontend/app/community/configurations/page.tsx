@@ -1,12 +1,14 @@
+"use client";
+
 import { Box, Divider } from "@mui/material";
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
-import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";

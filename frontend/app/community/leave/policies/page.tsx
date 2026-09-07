@@ -1,10 +1,12 @@
+"use client";
+
 import { NextPage } from "next";
-import Head from "next/head";
-import { useRouter } from "next/router";
 import { useState } from "react";
 
+import PageTitle from "~community/common/components/atoms/PageTitle/PageTitle";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import BulkAssignPolicyModal from "~community/leave/components/molecules/BulkAssignPolicyModals/BulkAssignPolicyModal";
@@ -45,9 +47,7 @@ const LeavePolicies: NextPage = () => {
   if (editingPolicy) {
     return (
       <>
-        <Head>
-          <title>{translateText(["editPolicy", "pageHead"])}</title>
-        </Head>
+        <PageTitle title={translateText(["editPolicy", "pageHead"])} />
         <div className="h-full p-4 sm:px-12 sm:py-6">
           <EditLeavePolicyView
             policy={editingPolicy}

@@ -1,9 +1,9 @@
-import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import Modal from "~community/common/components/organisms/Modal/Modal";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 

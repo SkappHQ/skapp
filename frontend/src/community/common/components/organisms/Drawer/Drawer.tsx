@@ -13,7 +13,6 @@ import {
   useTheme
 } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -28,6 +27,7 @@ import { appModes } from "~community/common/constants/configs";
 import ROUTES from "~community/common/constants/routes";
 import { appDrawerTestId } from "~community/common/constants/testIds";
 import { FileTypes } from "~community/common/enums/CommonEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,

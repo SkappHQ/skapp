@@ -1,11 +1,11 @@
 import { ArrowRightIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { OptionType } from "~community/common/types/CommonTypes";

@@ -3,7 +3,6 @@ import Grid from "@mui/material/Grid2";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -20,6 +19,7 @@ import InputField from "~community/common/components/molecules/InputField/InputF
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { MONTH_DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { ButtonTypes } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { specialCharacters } from "~community/common/regex/regexPatterns";

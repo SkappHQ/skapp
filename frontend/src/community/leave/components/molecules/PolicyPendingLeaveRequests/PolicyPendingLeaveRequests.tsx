@@ -1,7 +1,6 @@
 import { Box, Stack } from "@mui/material";
 import { Theme, useTheme } from "@mui/material/styles";
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
@@ -11,6 +10,7 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import Table from "~community/common/components/molecules/Table/Table";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

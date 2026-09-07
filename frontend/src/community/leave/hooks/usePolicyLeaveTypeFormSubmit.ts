@@ -1,9 +1,9 @@
 import { AxiosError } from "axios";
-import { useRouter } from "next/router";
 import { useShallow } from "zustand/react/shallow";
 
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {

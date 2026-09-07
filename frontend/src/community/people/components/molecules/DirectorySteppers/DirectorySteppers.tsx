@@ -1,8 +1,8 @@
-import { useRouter } from "next/router";
 import { RefObject, useEffect, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import BoxStepper from "~community/common/components/molecules/BoxStepper/BoxStepper";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {

@@ -1,7 +1,8 @@
+"use client";
+
 import { Box } from "@mui/material";
 import { useFormik } from "formik";
 import { NextPage } from "next";
-import { NextRouter, useRouter } from "next/router";
 import { ChangeEvent, useCallback, useEffect, useState } from "react";
 
 import { AuthMethods, SignInStatus } from "~community/auth/enums/auth";
@@ -11,6 +12,8 @@ import SetupSuperAdminForm from "~community/common/components/organisms/Forms/Si
 import OnboardingLayout from "~community/common/components/templates/OnboardingLayout/OnboardingLayout";
 import ROUTES from "~community/common/constants/routes";
 import { MAX_PASSWORD_STRENGTH } from "~community/common/constants/stringConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
+import { CompatRouter } from "~community/common/hooks/useCompatRouter";
 import useOrgSetupRedirect from "~community/common/hooks/useOrgSetupRedirect";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -20,7 +23,7 @@ import { signUpValidation } from "~community/common/utils/validation";
 const SignUp: NextPage = () => {
   const translateText = useTranslator("onboarding", "organizationCreate");
   const translateToastText = useTranslator("onboarding", "resetPassword");
-  const router: NextRouter = useRouter();
+  const router: CompatRouter = useRouter();
   const { navigateByStatus } = useOrgSetupRedirect();
   const { setToastMessage } = useToast();
   const { signUp } = useAuth();

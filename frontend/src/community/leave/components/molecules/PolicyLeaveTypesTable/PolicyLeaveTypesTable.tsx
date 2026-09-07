@@ -1,5 +1,4 @@
 import { EditIcon, IconButton } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { FC, useCallback, useMemo, useState } from "react";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
@@ -9,6 +8,7 @@ import type {
 } from "~community/common/components/organisms/TableView/types";
 import ROUTES from "~community/common/constants/routes";
 import { TableNames } from "~community/common/enums/Table";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetPolicyLeaveTypes } from "~community/leave/api/PolicyLeaveTypeApi";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";

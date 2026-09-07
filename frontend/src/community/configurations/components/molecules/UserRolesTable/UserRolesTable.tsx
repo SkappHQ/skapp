@@ -1,5 +1,4 @@
 import { Box, useTheme } from "@mui/material";
-import { useRouter } from "next/router";
 import { JSX, useMemo } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -8,6 +7,7 @@ import Table from "~community/common/components/molecules/Table/Table";
 import ROUTES from "~community/common/constants/routes";
 import { Modules } from "~community/common/enums/CommonEnums";
 import { TableNames } from "~community/common/enums/Table";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { EmployeeTypes } from "~community/common/types/AuthTypes";
 import { useGetAllUserRoles } from "~community/configurations/api/userRolesApi";

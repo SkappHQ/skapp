@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,6 +8,7 @@ import CommonModalController from "~community/common/components/organisms/Common
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import useSessionData from "~community/common/hooks/useSessionData";
 import BirthdayModalController from "~community/people/components/organisms/BirthdayModalController/BirthdayModalController";
 import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";

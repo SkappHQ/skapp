@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -6,6 +5,7 @@ import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndp
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import authFetch from "~community/common/utils/axiosInterceptor";
 
 interface SessionPropsOptions {

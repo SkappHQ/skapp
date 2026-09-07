@@ -8,7 +8,7 @@ import { EditAllInformationFormStatus } from "~community/people/types/EditEmploy
 import DiscardChangeApprovalModal from "./DiscardChangeApprovalModal";
 
 // Mock hooks and functions
-jest.mock("next/router", () => ({
+jest.mock("~community/common/hooks/useCompatRouter", () => ({
   useRouter: jest.fn(() => ({
     back: jest.fn()
   }))
@@ -27,9 +27,11 @@ describe("DiscardChangeApprovalModal", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(require("next/router").useRouter).mockReturnValue({
-      back: mockRouterBack
-    });
+    jest
+      .mocked(require("~community/common/hooks/useCompatRouter").useRouter)
+      .mockReturnValue({
+        back: mockRouterBack
+      });
   });
 
   const renderComponent = (props = {}) => {

@@ -1,11 +1,11 @@
 import { Stack, type Theme, useTheme } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
-import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
 import { employmentDetailsFormTestId } from "~community/common/constants/testIds";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";

@@ -1,11 +1,13 @@
+"use client";
+
 import { SelectChangeEvent, Stack, Typography } from "@mui/material";
 import { type NextPage } from "next";
-import router from "next/router";
 import { MouseEvent, useState } from "react";
 
 import DropdownList from "~community/common/components/molecules/DropdownList/DropdownList";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import CustomAllocationsReportTable from "~community/leave/components/molecules/CustomAllocationsReportTable/CustomAllocationsReportTable";
 import LeaveEntitlementsReportsTable from "~community/leave/components/molecules/LeaveEntitlementsReportsTable/LeaveEntitlementsReportsTable";
@@ -16,6 +18,7 @@ import { useGetAllManagerTeams } from "~community/people/api/TeamApi";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
 
 const LeaveReportPage: NextPage = () => {
+  const router = useRouter();
   const translateText = useTranslator("leaveModule", "leaveReports");
   const translateLeave = useTranslator("leaveModule");
   const translatePeople = useTranslator("peopleModule", "teams");

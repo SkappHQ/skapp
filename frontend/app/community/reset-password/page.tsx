@@ -1,3 +1,5 @@
+"use client";
+
 import { Box } from "@mui/material";
 import { FormikHelpers, useFormik } from "formik";
 import { NextPage } from "next";

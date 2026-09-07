@@ -1,3 +1,5 @@
+"use client";
+
 import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { type NextPage } from "next";

@@ -1,3 +1,5 @@
+"use client";
+
 import { NextPage } from "next";
 import { ChangeEvent, useState } from "react";
 

@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { FC, useMemo, useState } from "react";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
@@ -7,6 +6,7 @@ import PeopleAndTeamAutocompleteSearch, {
   SearchOptionCategory
 } from "~community/common/components/molecules/AutocompleteSearch/PeopleAndTeamAutocompleteSearch";
 import ROUTES from "~community/common/constants/routes";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { matchesLeadingWhitespace } from "~community/common/regex/regexPatterns";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";

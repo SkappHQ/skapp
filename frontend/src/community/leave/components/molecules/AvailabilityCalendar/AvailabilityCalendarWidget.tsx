@@ -3,12 +3,12 @@ import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { DateTime } from "luxon";
-import { useRouter } from "next/router";
 import { JSX, useState } from "react";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import ROUTES from "~community/common/constants/routes";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import useRouter from "~community/common/hooks/useCompatRouter";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
