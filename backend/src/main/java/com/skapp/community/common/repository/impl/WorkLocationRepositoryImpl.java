@@ -21,10 +21,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
 public class WorkLocationRepositoryImpl implements WorkLocationRepository {
+
+	private static final int EXACT_MATCH_RANK = 0;
+
+	private static final int PREFIX_MATCH_RANK = 1;
+
+	private static final int PARTIAL_MATCH_RANK = 2;
 
 	private final EntityManager entityManager;
 
@@ -35,10 +42,14 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		CriteriaQuery<WorkLocation> query = cb.createQuery(WorkLocation.class);
 		Root<WorkLocation> workLocation = query.from(WorkLocation.class);
 
-		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
+		String rawSearchKeyword = workLocationFilterDto.getSearchKeyword();
+		String searchKeyword = rawSearchKeyword == null || rawSearchKeyword.isBlank() ? null
+				: rawSearchKeyword.trim().toLowerCase(Locale.ROOT);
+
+		List<Predicate> predicates = buildPredicates(cb, workLocation, searchKeyword);
 		query.where(predicates.toArray(new Predicate[0]));
 
-		query.orderBy(buildOrderBy(cb, workLocation, workLocationFilterDto.getSearchKeyword()));
+		query.orderBy(buildOrderBy(cb, workLocation, searchKeyword));
 
 		TypedQuery<WorkLocation> typedQuery = entityManager.createQuery(query);
 		if (pageable.isPaged()) {
@@ -47,7 +58,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		}
 		List<WorkLocation> results = typedQuery.getResultList();
 
-		Long total = getTotalCount(cb, workLocationFilterDto);
+		Long total = getTotalCount(cb, searchKeyword);
 		return new PageImpl<>(results, pageable, total);
 	}
 
@@ -64,33 +75,37 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		return entityManager.createQuery(query).getResultList();
 	}
 
-	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<WorkLocation> workLocation,
-			WorkLocationFilterDto workLocationFilterDto) {
+	private List<Predicate> buildPredicates(CriteriaBuilder cb, Root<WorkLocation> workLocation, String searchKeyword) {
 		List<Predicate> predicates = new ArrayList<>();
 
 		predicates.add(cb.isFalse(workLocation.get(WorkLocation_.isDeleted)));
 
-		String searchKeyword = workLocationFilterDto.getSearchKeyword();
-		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
+		if (searchKeyword != null) {
+			String escaped = StringUtils.escapeLikePattern(searchKeyword);
 			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), "%" + escaped + "%", '\\'));
 		}
 
 		return predicates;
 	}
 
+	/**
+	 * Orders matches by relevance when a search keyword is supplied: an exact name match
+	 * first, then names starting with the keyword, then names merely containing it. Names
+	 * are ordered alphabetically within each rank, and alphabetically throughout when no
+	 * keyword is supplied.
+	 * @param searchKeyword the trimmed, lower-cased keyword, or null when absent
+	 */
 	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<WorkLocation> workLocation, String searchKeyword) {
 		List<Order> orders = new ArrayList<>();
 
-		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String normalizedKeyword = searchKeyword.toLowerCase();
-			String escaped = StringUtils.escapeLikePattern(normalizedKeyword);
+		if (searchKeyword != null) {
+			String escaped = StringUtils.escapeLikePattern(searchKeyword);
 			Expression<String> lowerName = cb.lower(workLocation.get(WorkLocation_.name));
 
 			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
-				.when(cb.equal(lowerName, normalizedKeyword), 0)
-				.when(cb.like(lowerName, escaped + "%", '\\'), 1)
-				.otherwise(2);
+				.when(cb.equal(lowerName, searchKeyword), EXACT_MATCH_RANK)
+				.when(cb.like(lowerName, escaped + "%", '\\'), PREFIX_MATCH_RANK)
+				.otherwise(PARTIAL_MATCH_RANK);
 
 			orders.add(cb.asc(relevanceRank));
 		}
@@ -100,12 +115,12 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		return orders;
 	}
 
-	private Long getTotalCount(CriteriaBuilder cb, WorkLocationFilterDto workLocationFilterDto) {
+	private Long getTotalCount(CriteriaBuilder cb, String searchKeyword) {
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<WorkLocation> countRoot = countQuery.from(WorkLocation.class);
 		countQuery.select(cb.count(countRoot));
 
-		List<Predicate> predicates = buildPredicates(cb, countRoot, workLocationFilterDto);
+		List<Predicate> predicates = buildPredicates(cb, countRoot, searchKeyword);
 		countQuery.where(predicates.toArray(new Predicate[0]));
 
 		return entityManager.createQuery(countQuery).getSingleResult();
