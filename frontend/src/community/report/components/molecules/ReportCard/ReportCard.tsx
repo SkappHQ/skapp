@@ -1,4 +1,7 @@
-import { FC, ReactNode } from "react";
+import { Card } from "@rootcodelabs/skapp-ui";
+import { FC, KeyboardEvent, ReactNode } from "react";
+
+import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 
 export interface ReportCardProps {
   icon: ReactNode;
@@ -15,18 +18,26 @@ const ReportCard: FC<ReportCardProps> = ({
   className = "",
   onClick
 }) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
+    if (shouldActivateButton(event.key)) {
+      event.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <Card
+      role="button"
       aria-label={ariaLabel ?? label}
-      className={`flex h-21 w-97 items-center gap-8 rounded-lg border border-secondary-accent bg-white px-4 py-2.5 text-left hover:bg-tertiary-background ${className}`}
+      className={`flex h-21 w-97 items-center gap-8 hover:bg-tertiary-background ${className}`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
     >
       <span className="flex shrink-0 items-center justify-center text-secondary-icon">
         {icon}
       </span>
       <span className="body1 text-black">{label}</span>
-    </button>
+    </Card>
   );
 };
 

@@ -73,7 +73,6 @@ import GemIcon from "~community/common/assets/Icons/GemIcon";
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import GoogleIcon from "~community/common/assets/Icons/GoogleIcon";
 import DefaultHandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
-import HeadcountIcon from "~community/common/assets/Icons/HeadcountIcon";
 import HelpDeskModuleIcon from "~community/common/assets/Icons/HelpDeskModuleIcon";
 import HourGlassEmptyIcon from "~community/common/assets/Icons/HourGlassEmptyIcon";
 import IdentityVerifiedIcon from "~community/common/assets/Icons/IdentityVerifiedIcon";
@@ -328,7 +327,6 @@ export const IconMapping: Partial<
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
   [IconName.REPORT_ICON]: ReportIcon,
-  [IconName.HEADCOUNT_ICON]: HeadcountIcon,
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,

@@ -1,15 +1,16 @@
-import { IconName } from "~community/common/types/IconTypes";
+import { UsersIcon } from "@rootcodelabs/skapp-ui";
+import { ReactNode, SVGProps } from "react";
 
 export interface ReportListItemType {
   id: string;
-  iconName: IconName;
+  Icon: (props: SVGProps<SVGSVGElement>) => ReactNode;
   labelKey: string;
 }
 
 export const REPORT_LIST: ReportListItemType[] = [
   {
     id: "headcount-summary",
-    iconName: IconName.HEADCOUNT_ICON,
+    Icon: UsersIcon,
     labelKey: "headcountSummary"
   }
 ];

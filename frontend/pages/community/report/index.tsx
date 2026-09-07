@@ -2,7 +2,6 @@ import { EmptyDataView, InputField, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { NextPage } from "next";
 import { ChangeEvent, useState } from "react";
 
-import Icon from "~community/common/components/atoms/Icon/Icon";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import ReportCard from "~community/report/components/molecules/ReportCard/ReportCard";
@@ -45,12 +44,8 @@ const Reports: NextPage = () => {
 
         {filteredReports.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-4">
-            {filteredReports.map((report) => (
-              <ReportCard
-                key={report.id}
-                icon={<Icon name={report.iconName} />}
-                label={report.label}
-              />
+            {filteredReports.map(({ id, Icon, label }) => (
+              <ReportCard key={id} icon={<Icon />} label={label} />
             ))}
           </div>
         ) : (
