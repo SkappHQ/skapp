@@ -67,7 +67,7 @@ const DealsSectionV2: FC = () => {
   );
 
   const {
-    config: columnConfig,
+    columnConfig,
     isConfigLoading,
     handleColumnReorder,
     handleColumnVisibilityChange,
@@ -150,7 +150,7 @@ const DealsSectionV2: FC = () => {
         }
       );
     },
-    [reorderDeal, setToastMessage, translateText, dealIds, setDealIds]
+    [reorderDeal, translateText, dealIds]
   );
 
   const hasNextPage = Boolean(hasNextPageRaw);

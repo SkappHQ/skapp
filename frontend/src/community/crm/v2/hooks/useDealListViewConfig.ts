@@ -19,7 +19,7 @@ import {
 } from "~community/crm/v2/utils/dealListViewUtil";
 
 interface UseDealListViewConfigReturn {
-  config: CrmDealListViewConfig | null;
+  columnConfig: CrmDealListViewConfig | null;
   isConfigLoading: boolean;
   handleColumnReorder: (columns: ReadonlyArray<ColumnState>) => void;
   handleColumnVisibilityChange: (columns: ReadonlyArray<ColumnState>) => void;
@@ -40,10 +40,11 @@ export const useDealListViewConfig = (
   } = useGetDealListViewConfig(enabled);
   const { mutate: persistConfig } = useUpdateDealListViewConfig();
 
-  const [config, setConfig] = useState<CrmDealListViewConfig | null>(null);
+  const [columnConfig, setColumnConfig] =
+    useState<CrmDealListViewConfig | null>(null);
 
   useEffect(() => {
-    if (fetchedConfig) setConfig(fetchedConfig);
+    if (fetchedConfig) setColumnConfig(fetchedConfig);
   }, [fetchedConfig]);
 
   useEffect(() => {
@@ -57,40 +58,40 @@ export const useDealListViewConfig = (
   }, [isError]);
 
   const applyConfig = (next: CrmDealListViewConfig) => {
-    setConfig(next);
+    setColumnConfig(next);
     persistConfig(next);
   };
 
   const handleColumnReorder = (columns: ReadonlyArray<ColumnState>) => {
-    if (!config) return;
-    const nextFields = applyColumnOrder(config.fields, columns);
-    if (nextFields) applyConfig({ ...config, fields: nextFields });
+    if (!columnConfig) return;
+    const nextFields = applyColumnOrder(columnConfig.fields, columns);
+    if (nextFields) applyConfig({ ...columnConfig, fields: nextFields });
   };
 
   const handleColumnVisibilityChange = (
     columns: ReadonlyArray<ColumnState>
   ) => {
-    if (!config) return;
+    if (!columnConfig) return;
     applyConfig({
-      ...config,
-      fields: applyColumnVisibility(config.fields, columns)
+      ...columnConfig,
+      fields: applyColumnVisibility(columnConfig.fields, columns)
     });
   };
 
   const handleSortChange = (sort: CrmDealSortConfig | null) => {
-    if (!config) return;
-    applyConfig({ ...config, sort });
+    if (!columnConfig) return;
+    applyConfig({ ...columnConfig, sort });
   };
 
   const handleColumnResize = (columnId: string, width: number) => {
-    if (!config) return;
-    const nextFields = applyColumnWidth(config.fields, columnId, width);
+    if (!columnConfig) return;
+    const nextFields = applyColumnWidth(columnConfig.fields, columnId, width);
     if (!nextFields) return;
-    applyConfig({ ...config, fields: nextFields });
+    applyConfig({ ...columnConfig, fields: nextFields });
   };
 
   return {
-    config,
+    columnConfig,
     isConfigLoading: isLoading,
     handleColumnReorder,
     handleColumnVisibilityChange,
