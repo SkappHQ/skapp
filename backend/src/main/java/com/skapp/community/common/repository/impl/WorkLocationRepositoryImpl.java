@@ -88,13 +88,6 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		return predicates;
 	}
 
-	/**
-	 * Orders matches by relevance when a search keyword is supplied: an exact name match
-	 * first, then names starting with the keyword, then names merely containing it. Names
-	 * are ordered alphabetically within each rank, and alphabetically throughout when no
-	 * keyword is supplied.
-	 * @param searchKeyword the trimmed, lower-cased keyword, or null when absent
-	 */
 	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<WorkLocation> workLocation, String searchKeyword) {
 		List<Order> orders = new ArrayList<>();
 
