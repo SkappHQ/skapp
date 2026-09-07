@@ -22,6 +22,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -39,6 +40,7 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
 import com.skapp.support.SecurityTestUtils;
 
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.constant.DefaultCrmIndustryTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,6 +114,8 @@ class CrmCompanyControllerIntegrationTest {
 	private final CrmDealDao crmDealDao;
 
 	private final CrmDealStageDao crmDealStageDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private final CrmContactDao crmContactDao;
 
@@ -195,6 +199,51 @@ class CrmCompanyControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Acme Corp"));
+	}
+
+	@Test
+	@DisplayName("Create company with a seeded industry - Persists the resolved industry id")
+	void createCompany_SeededIndustry_PersistsResolvedIndustryId() throws Exception {
+		Long expectedIndustryId = seedIndustries(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompany savedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(savedCompany.getIndustry()).isEqualTo(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		assertThat(savedCompany.getIndustryId()).isEqualTo(expectedIndustryId);
+	}
+
+	@Test
+	@DisplayName("Edit company industry with a seeded industry - Persists the resolved industry id")
+	void editCompany_SeededIndustry_PersistsResolvedIndustryId() throws Exception {
+		Long expectedIndustryId = seedIndustries(CrmIndustry.FINANCIAL_SERVICES);
+
+		ResultActions createResult = performPostRequest(createValidPayload()).andExpect(status().isCreated());
+		Long companyId = objectMapper.readTree(createResult.andReturn().getResponse().getContentAsString())
+			.path("results")
+			.get(0)
+			.path("id")
+			.asLong();
+
+		CrmCompanyEditDto editDto = createValidEditPayload();
+		editDto.setIndustry(CrmIndustry.FINANCIAL_SERVICES);
+		performPatchRequest(companyId, editDto).andExpect(status().isOk());
+
+		CrmCompany updatedCompany = crmCompanyDao.findById(companyId).orElseThrow();
+		assertThat(updatedCompany.getIndustry()).isEqualTo(CrmIndustry.FINANCIAL_SERVICES);
+		assertThat(updatedCompany.getIndustryId()).isEqualTo(expectedIndustryId);
+	}
+
+	private Long seedIndustries(CrmIndustry industry) {
+		crmIndustryDao.saveAll(DefaultCrmIndustryTemplate.getDefaultIndustries());
+		return crmIndustryDao.findByName(industry.name())
+			.orElseThrow(() -> new AssertionError("crm_industry has no row named " + industry.name()))
+			.getId();
 	}
 
 	@Test
