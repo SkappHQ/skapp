@@ -3,6 +3,7 @@ const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
+  agentRules: false,
   reactStrictMode: false,
   assetPrefix: isEnterpriseMode ? "/auth" : undefined,
   async rewrites() {
@@ -463,9 +464,6 @@ const nextConfig = {
         destination: "/community/crm/tasks"
       }
     ];
-  },
-  eslint: {
-    ignoreDuringBuilds: true
   },
   typescript: {
     ignoreBuildErrors: true

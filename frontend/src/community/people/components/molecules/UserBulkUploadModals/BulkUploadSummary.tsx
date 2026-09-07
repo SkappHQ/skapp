@@ -46,10 +46,7 @@ const BulkUploadSummary: FC<Props> = ({ setPopupType, data, flow }) => {
 
   return (
     <div>
-      <p
-        id="bulk-upload-summary-description"
-        className="text-sm my-2"
-      >
+      <p id="bulk-upload-summary-description" className="text-sm my-2">
         {totalEntries === 1 && data?.bulkStatusSummary?.failedCount === 1
           ? translateText(["oneEntryOneFailSummary"])
           : totalEntries === data?.bulkStatusSummary?.failedCount

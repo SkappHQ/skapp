@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React, { ReactNode } from "react";
 

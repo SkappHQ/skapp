@@ -1,3 +1,5 @@
+import { useShallow } from "zustand/react/shallow";
+
 import AreYouSureModal from "~community/common/components/molecules/AreYouSureModal/AreYouSureModal";
 import { JobFamilyActionModalEnums } from "~community/people/enums/JobFamilyEnums";
 import { usePeopleStore } from "~community/people/store/store";
@@ -5,15 +7,19 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 
 const UnsavedChangesModal = () => {
   const { jobFamilyModalType, setJobFamilyModalType, currentEditingJobFamily } =
-    usePeopleStore((state) => ({
-      jobFamilyModalType: state.jobFamilyModalType,
-      setJobFamilyModalType: state.setJobFamilyModalType,
-      currentEditingJobFamily: state.currentEditingJobFamily
-    }));
+    usePeopleStore(
+      useShallow((state) => ({
+        jobFamilyModalType: state.jobFamilyModalType,
+        setJobFamilyModalType: state.setJobFamilyModalType,
+        currentEditingJobFamily: state.currentEditingJobFamily
+      }))
+    );
 
-  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  const { stopAllOngoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const handleCancelBtnClick = () => {
     let newModalType;
