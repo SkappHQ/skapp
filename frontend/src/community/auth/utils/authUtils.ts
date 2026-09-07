@@ -23,6 +23,7 @@ import {
 } from "~enterprise/auth/utils/authUtils";
 import { authenticationEndpoints } from "~enterprise/common/api/utils/ApiEndpoints";
 import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
+import { isAuthHost } from "~enterprise/common/utils/tenantUtil";
 
 import { config } from "../../../../middleware";
 import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
@@ -460,6 +461,27 @@ export const checkUserAuthentication = async (
   return userData;
 };
 
+const buildSignInUrl = (path: string, callback: string): string => {
+  const params = new URLSearchParams({ callback });
+
+  return `${path}?${params.toString()}`;
+};
+
+const resolveSignInUrl = (): string => {
+  const callback = new URLSearchParams(window.location.search).get("callback");
+
+  if (isAuthHost()) {
+    return callback
+      ? buildSignInUrl(ROUTES.AUTH.OAUTH_SIGNIN, callback)
+      : ROUTES.AUTH.OAUTH_SIGNIN;
+  }
+
+  return buildSignInUrl(
+    ROUTES.AUTH.SIGNIN,
+    callback || window.location.pathname
+  );
+};
+
 export const signOut = async (
   authTokenStore: AuthTokenSliceType,
   redirect: boolean = true
@@ -476,13 +498,7 @@ export const signOut = async (
     if (redirect === false || !hadActiveSession) return;
 
     if (typeof window !== "undefined") {
-      const urlParams = new URLSearchParams(window.location.search);
-      const existingCallback = urlParams.get("callback");
-
-      const callbackPath = existingCallback || window.location.pathname;
-      window.location.href = `${ROUTES.AUTH.SIGNIN}?callback=${encodeURIComponent(
-        callbackPath
-      )}`;
+      window.location.href = resolveSignInUrl();
     }
   } finally {
     isSigningOut = false;
