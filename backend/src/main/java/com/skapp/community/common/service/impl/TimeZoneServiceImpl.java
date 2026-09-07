@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +49,20 @@ public class TimeZoneServiceImpl implements TimeZoneService {
 	@Override
 	public LocalDate currentBusinessDate() {
 		return DateTimeUtils.currentDateAt(business());
+	}
+
+	@Override
+	public int currentBusinessYear() {
+		return DateTimeUtils.currentDateAt(business()).getYear();
+	}
+
+	@Override
+	public LocalDateTime currentBusinessDayStartUtc() {
+		ZoneId businessZone = business();
+		return DateTimeUtils.currentDateAt(businessZone)
+			.atStartOfDay(businessZone)
+			.withZoneSameInstant(ZoneOffset.UTC)
+			.toLocalDateTime();
 	}
 
 }
