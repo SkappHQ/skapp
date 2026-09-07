@@ -4,10 +4,13 @@ import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.payload.request.WorkLocationFilterDto;
 import com.skapp.community.common.repository.WorkLocationRepository;
+import com.skapp.community.common.util.StringUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		List<Predicate> predicates = buildPredicates(cb, workLocation, workLocationFilterDto);
 		query.where(predicates.toArray(new Predicate[0]));
 
-		query.orderBy(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
+		query.orderBy(buildOrderBy(cb, workLocation, workLocationFilterDto.getSearchKeyword()));
 
 		TypedQuery<WorkLocation> typedQuery = entityManager.createQuery(query);
 		if (pageable.isPaged()) {
@@ -69,11 +72,35 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
 		String searchKeyword = workLocationFilterDto.getSearchKeyword();
 		if (searchKeyword != null && !searchKeyword.isBlank()) {
-			String likePattern = "%" + searchKeyword.toLowerCase() + "%";
-			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), likePattern));
+			String likePattern = "%" + escapedLowerKeyword(searchKeyword) + "%";
+			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), likePattern, '\\'));
 		}
 
 		return predicates;
+	}
+
+	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<WorkLocation> workLocation, String searchKeyword) {
+		List<Order> orders = new ArrayList<>();
+
+		if (searchKeyword != null && !searchKeyword.isBlank()) {
+			String normalizedKeyword = searchKeyword.toLowerCase();
+			Expression<String> lowerName = cb.lower(workLocation.get(WorkLocation_.name));
+
+			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
+				.when(cb.equal(lowerName, normalizedKeyword), 0)
+				.when(cb.like(lowerName, escapedLowerKeyword(searchKeyword) + "%", '\\'), 1)
+				.otherwise(2);
+
+			orders.add(cb.asc(relevanceRank));
+		}
+
+		orders.add(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
+
+		return orders;
+	}
+
+	private String escapedLowerKeyword(String searchKeyword) {
+		return StringUtils.escapeLikePattern(searchKeyword.toLowerCase());
 	}
 
 	private Long getTotalCount(CriteriaBuilder cb, WorkLocationFilterDto workLocationFilterDto) {
