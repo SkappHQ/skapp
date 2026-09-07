@@ -57,6 +57,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.Instant;
 
 @Slf4j
 @Service
@@ -315,7 +316,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		policyLeaveRequests.forEach(policyLeaveRequest -> {
 			policyLeaveRequest.setStatus(status);
-			policyLeaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+			policyLeaveRequest.setReviewedDate(Instant.now());
 		});
 		policyLeaveRequestDao.saveAll(policyLeaveRequests);
 
@@ -356,7 +357,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		leaveRequests.forEach(leaveRequest -> {
 			leaveRequest.setStatus(status);
-			leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+			leaveRequest.setReviewedDate(Instant.now());
 		});
 		leaveRequestDao.saveAll(leaveRequests);
 

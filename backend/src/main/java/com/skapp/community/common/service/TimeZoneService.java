@@ -1,7 +1,7 @@
 package com.skapp.community.common.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
 
 public interface TimeZoneService {
@@ -12,6 +12,6 @@ public interface TimeZoneService {
 
 	int currentBusinessYear();
 
-	LocalDateTime currentBusinessDayStartUtc();
+	Instant currentBusinessDayStart();
 
 }

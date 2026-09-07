@@ -81,6 +81,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -343,7 +344,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 		leaveRequest.setStatus(targetStatus);
 		leaveRequest.setReviewer(currentEmployee);
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 
 		PolicyLeaveRequest reviewedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 		notifyReviewedLeaveRequest(reviewedLeaveRequest);
@@ -442,8 +443,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				NotificationType.LEAVE_REQUEST_NUDGE);
 	}
 
-	private boolean isNudgeAllowed(LocalDateTime lastNudgedDateTime) {
-		Duration sinceLastNudge = Duration.between(lastNudgedDateTime, DateTimeUtils.getCurrentUtcDateTime());
+	private boolean isNudgeAllowed(Instant lastNudgedDateTime) {
+		Duration sinceLastNudge = Duration.between(lastNudgedDateTime, Instant.now());
 		return sinceLastNudge.toHours() >= LeaveModuleConstant.HOURS_PER_DAY;
 	}
 
@@ -938,7 +939,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private void autoApprove(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers) {
 		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
 		leaveRequest.setIsAutoApproved(Boolean.TRUE);
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 		if (!employeeManagers.isEmpty()) {
 			leaveRequest.setReviewer(employeeManagers.getFirst().getManager());
 		}
