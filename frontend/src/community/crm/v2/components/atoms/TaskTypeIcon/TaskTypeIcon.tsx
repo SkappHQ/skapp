@@ -10,7 +10,8 @@ interface Props {
 
 const TaskTypeIcon: FC<Props> = ({ typeName, size = 20 }) => {
   const Icon =
-    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ?? ChecklistVerificationFilledIcon;
+    TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
+    ChecklistVerificationFilledIcon;
 
   return <Icon width={size} height={size} />;
 };

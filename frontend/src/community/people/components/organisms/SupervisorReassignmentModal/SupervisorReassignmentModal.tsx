@@ -9,6 +9,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { OptionType } from "~community/common/types/CommonTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   useGetSearchedEmployees,
   useGetSupervisedEmployeesAndTeams,
@@ -21,7 +22,6 @@ import {
   EmployeeRemoveAction,
   ReassignSupervisorsAndTerminateOrDeleteEmployeePayload
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
 
 interface SupervisorReassignmentModalProps {
   isOpen: boolean;

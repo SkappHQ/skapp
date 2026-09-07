@@ -74,7 +74,11 @@ const ContactPopupSearch: FC<Props> = ({
     option: DropdownOption,
     onSelect: (value: DropdownValue) => void
   ) => {
-    const contact = findById(contacts, Number(option.id), (contact) => contact.id);
+    const contact = findById(
+      contacts,
+      Number(option.id),
+      (contact) => contact.id
+    );
 
     return contact ? (
       <ContactOptionItem
