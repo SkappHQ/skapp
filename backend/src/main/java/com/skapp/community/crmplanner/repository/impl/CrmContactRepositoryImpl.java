@@ -42,7 +42,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -114,7 +113,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)), cb.lessThan(overdueTask.get(CrmTask_.dueAt),
-							cb.literal(timeZoneService.currentBusinessDate().atStartOfDay())));
+							cb.literal(timeZoneService.currentBusinessDayStartUtc())));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
@@ -188,7 +187,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 					cb.equal(overdueDealContact.get(CrmContact_.id), contactId)),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
 					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)), cb.lessThan(overdueTask.get(CrmTask_.dueAt),
-							cb.literal(timeZoneService.currentBusinessDate().atStartOfDay())));
+							cb.literal(timeZoneService.currentBusinessDayStartUtc())));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);

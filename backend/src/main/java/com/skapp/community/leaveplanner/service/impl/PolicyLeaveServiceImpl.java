@@ -9,7 +9,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.NotificationService;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.EmailBodyTemplates;
@@ -106,8 +105,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private final UserService userService;
 
 	private final PeopleService peopleService;
-
-	private final OrganizationService organizationService;
 
 	private final LeavePolicyService leavePolicyService;
 
@@ -703,8 +700,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private float calculateRequestedDays(LocalDate startDate, LocalDate endDate, LeaveState leaveState,
 			List<Holiday> holidays) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays,
-				organizationService.getOrganizationTimeZone());
+		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays);
 		if (workingDays == 1f && isHalfDay(leaveState)) {
 			return LeaveModuleConstant.HALF_DAY;
 		}

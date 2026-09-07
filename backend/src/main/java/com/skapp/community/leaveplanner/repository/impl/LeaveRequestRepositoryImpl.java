@@ -109,13 +109,13 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public static float getLeaveCount(List<LeaveRequest> leaveRequests, List<LocalDate> holidays,
-			List<TimeConfig> timeConfigs, String organizationTimeZone) {
+			List<TimeConfig> timeConfigs) {
 		float leaveCount = 0;
 		for (LeaveRequest leaveRequest : leaveRequests) {
 			if (leaveRequest.getLeaveState().equals(LeaveState.FULLDAY)
 					&& leaveRequest.getEndDate().isAfter(leaveRequest.getStartDate())) {
 				leaveCount = leaveCount + getAllDaysBetween(leaveRequest.getStartDate(), leaveRequest.getEndDate(),
-						holidays, timeConfigs, organizationTimeZone);
+						holidays, timeConfigs);
 			}
 			else if (!holidays.contains(leaveRequest.getStartDate())
 					&& !CommonModuleUtils.checkIfDayIsWorkingDay(leaveRequest.getStartDate(), timeConfigs)) {
@@ -127,7 +127,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public static Integer getAllDaysBetween(LocalDate startDate, LocalDate endDate, List<LocalDate> holidays,
-			List<TimeConfig> timeConfigs, String organizationTimeZone) {
+			List<TimeConfig> timeConfigs) {
 		int daysBetween = 0;
 
 		while (!holidays.contains(startDate) && !CommonModuleUtils.checkIfDayIsWorkingDay(startDate, timeConfigs)
@@ -266,8 +266,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	@Override
 	public Float findAllEmployeeRequestsByWithinThirtyDays(LocalDate startDate, LocalDate endDate,
-			List<TimeConfig> timeConfigs, List<LocalDate> holidayDates, List<Long> teamIds,
-			String organizationTimeZone) {
+			List<TimeConfig> timeConfigs, List<LocalDate> holidayDates, List<Long> teamIds) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
@@ -297,7 +296,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
 
-		return getLeaveCount(query.getResultList(), holidayDates, timeConfigs, organizationTimeZone);
+		return getLeaveCount(query.getResultList(), holidayDates, timeConfigs);
 	}
 
 	private List<Predicate> createPredicatesForLeaverRequest(CriteriaBuilder cb, Root<LeaveRequest> leaveRequest,
