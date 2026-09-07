@@ -125,7 +125,7 @@ public class LeaveModuleUtil {
 	}
 
 	public static float getWorkingDaysBetweenTwoDates(LocalDate startDate, LocalDate endDate,
-			List<TimeConfig> timeConfigs, List<Holiday> holidayObjects, String organizationTimeZone) {
+			List<TimeConfig> timeConfigs, List<Holiday> holidayObjects) {
 		if (startDate.isAfter(endDate)) {
 			LocalDate temp = startDate;
 			startDate = endDate;

@@ -478,15 +478,12 @@ public class DateTimeUtils {
 	 * @return true if the date is in the current year or next year, otherwise false.
 	 * @throws ModuleException If the date is null.
 	 */
-	public static boolean isCurrentYearOrNext(LocalDate date, ZoneId zoneId) {
+	public static boolean isCurrentYearOrNext(LocalDate date) {
 		if (date == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_CANNOT_BE_NULL);
 		}
-		if (zoneId == null) {
-			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
-		}
 		int year = date.getYear();
-		int currentYear = Year.now(zoneId).getValue();
+		int currentYear = Year.now().getValue();
 		return (year == currentYear || year == currentYear + 1);
 	}
 

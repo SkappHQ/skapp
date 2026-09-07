@@ -634,7 +634,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 
-		LocalDate leaveCycleStartDate = DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(),
+		LocalDate leaveCycleStartDate = DateTimeUtils.getUtcLocalDate(timeZoneService.currentBusinessYear(),
 				leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
 		LocalDate leaveCycleEndDate = DateTimeUtils.calculateEndDateAfterYears(leaveCycleStartDate, 1);
 
@@ -739,7 +739,7 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 	public ResponseEntityDto getCarryForwardEntitlements(
 			CarryForwardLeaveTypesFilterDto carryForwardLeaveTypesFilterDto) {
 
-		int cycleEndYear = carryForwardLeaveTypesFilterDto.getYear() == 0 ? DateTimeUtils.getCurrentYear()
+		int cycleEndYear = carryForwardLeaveTypesFilterDto.getYear() == 0 ? timeZoneService.currentBusinessYear()
 				: carryForwardLeaveTypesFilterDto.getYear();
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		LocalDate leaveCycleStartDate = DateTimeUtils.getUtcLocalDate(cycleEndYear, leaveCycleDetail.getStartMonth(),

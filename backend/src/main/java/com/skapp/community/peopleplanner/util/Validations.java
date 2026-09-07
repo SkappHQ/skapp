@@ -18,7 +18,6 @@ import com.skapp.community.peopleplanner.payload.request.ProbationPeriodDto;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Pattern;
@@ -60,8 +59,8 @@ public class Validations {
 		return validIDs.contains(timeZone);
 	}
 
-	public static void validateVisaDates(List<EmploymentVisaDto> employeeVisas, ZoneId zoneId) {
-		LocalDate currentDate = DateTimeUtils.currentDateAt(zoneId);
+	public static void validateVisaDates(List<EmploymentVisaDto> employeeVisas) {
+		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
 		for (EmploymentVisaDto visa : employeeVisas) {
 			if (visa.getIssuedDate() != null && visa.getIssuedDate().isAfter(currentDate)) {
 				throw new ModuleException(CommonMessageConstant.COMMON_ERROR_VALIDATION_VISA_ISSUED_DATE);
@@ -72,7 +71,7 @@ public class Validations {
 		}
 	}
 
-	public static void validateEmployeeDetails(EmployeeDetailsDto employeeDetailsDto, ZoneId zoneId) {
+	public static void validateEmployeeDetails(EmployeeDetailsDto employeeDetailsDto) {
 		if (employeeDetailsDto.getWorkEmail() == null || employeeDetailsDto.getWorkEmail().isEmpty())
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_EMAIL);
 		else
@@ -107,18 +106,18 @@ public class Validations {
 			validateEmployeeIdentificationNo(employeeDetailsDto.getIdentificationNo());
 
 		if (employeeDetailsDto.getJoinDate() != null)
-			validateJoinedDate(employeeDetailsDto.getJoinDate(), zoneId);
+			validateJoinedDate(employeeDetailsDto.getJoinDate());
 
 		if (employeeDetailsDto.getJoinDate() != null && employeeDetailsDto.getEmployeePeriod() != null)
 			validateStartAndJoinedDates(employeeDetailsDto.getJoinDate(),
 					employeeDetailsDto.getEmployeePeriod().getStartDate());
 
 		if (employeeDetailsDto.getEmployeePeriod() != null)
-			validateEmployeePeriod(employeeDetailsDto.getEmployeePeriod(), zoneId);
+			validateEmployeePeriod(employeeDetailsDto.getEmployeePeriod());
 
 		if (employeeDetailsDto.getEmployeePersonalInfo() != null
 				&& employeeDetailsDto.getEmployeePersonalInfo().getBirthDate() != null)
-			validateBirthDate(employeeDetailsDto.getEmployeePersonalInfo().getBirthDate(), zoneId);
+			validateBirthDate(employeeDetailsDto.getEmployeePersonalInfo().getBirthDate());
 
 		if (employeeDetailsDto.getEmployeePersonalInfo() != null
 				&& employeeDetailsDto.getEmployeePersonalInfo().getNin().isEmpty())
@@ -128,10 +127,10 @@ public class Validations {
 			validateEducationDetails(employeeDetailsDto.getEmployeeEducations());
 
 		if (employeeDetailsDto.getEmployeeFamilies() != null && !employeeDetailsDto.getEmployeeFamilies().isEmpty())
-			validateFamilyDetails(employeeDetailsDto.getEmployeeFamilies(), zoneId);
+			validateFamilyDetails(employeeDetailsDto.getEmployeeFamilies());
 
 		if (employeeDetailsDto.getEmployeeVisas() != null && !employeeDetailsDto.getEmployeeVisas().isEmpty()) {
-			validateVisaDates(employeeDetailsDto.getEmployeeVisas(), zoneId);
+			validateVisaDates(employeeDetailsDto.getEmployeeVisas());
 		}
 
 		if (employeeDetailsDto.getTimeZone() != null && !employeeDetailsDto.getTimeZone().isEmpty()
@@ -321,13 +320,13 @@ public class Validations {
 					List.of(String.valueOf(PeopleConstants.MAX_NIN_LENGTH)));
 	}
 
-	public static void validateJoinedDate(LocalDate joinDate, ZoneId zoneId) {
-		if (joinDate.isAfter(DateTimeUtils.currentDateAt(zoneId)))
+	public static void validateJoinedDate(LocalDate joinDate) {
+		if (joinDate.isAfter(LocalDate.now()))
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_JOIN_DATE);
 	}
 
-	public static void validateEmployeePeriod(ProbationPeriodDto employeePeriod, ZoneId zoneId) {
-		if (employeePeriod.getStartDate().isAfter(DateTimeUtils.currentDateAt(zoneId)))
+	public static void validateEmployeePeriod(ProbationPeriodDto employeePeriod) {
+		if (employeePeriod.getStartDate().isAfter(LocalDate.now()))
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_START_DATE);
 
 		if (employeePeriod.getEndDate().isBefore(employeePeriod.getStartDate()))
@@ -339,8 +338,8 @@ public class Validations {
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_START_DATE_JOIN_DATE);
 	}
 
-	public static void validateBirthDate(LocalDate birthDate, ZoneId zoneId) {
-		if (!birthDate.isBefore(DateTimeUtils.currentDateAt(zoneId)))
+	public static void validateBirthDate(LocalDate birthDate) {
+		if (!birthDate.isBefore(LocalDate.now()))
 			throw new ValidationException(CommonMessageConstant.COMMON_ERROR_VALIDATION_BIRTH_DATE);
 	}
 
@@ -361,7 +360,7 @@ public class Validations {
 		}
 	}
 
-	public static void validateFamilyDetails(List<EmployeeFamilyDto> employeeFamily, ZoneId zoneId) {
+	public static void validateFamilyDetails(List<EmployeeFamilyDto> employeeFamily) {
 		for (EmployeeFamilyDto family : employeeFamily) {
 			if (!family.getFirstName().isEmpty())
 				validateName(family.getFirstName());
@@ -373,7 +372,7 @@ public class Validations {
 				validateName(family.getParentName());
 
 			if (family.getBirthDate() != null)
-				validateBirthDate(family.getBirthDate(), zoneId);
+				validateBirthDate(family.getBirthDate());
 		}
 	}
 

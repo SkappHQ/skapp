@@ -453,7 +453,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private Map<String, Double> calculateDailyAverageHoursForTeam(Map<LocalDate, Double> dailyWorkedHours,
 			Month selectedMonth, List<Long> teamIds) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
-		LocalDate startOfMonth = LocalDate.of(Year.now(timeZoneService.business()).getValue(), selectedMonth, 1);
+		LocalDate startOfMonth = LocalDate.of(timeZoneService.currentBusinessYear(), selectedMonth, 1);
 		LocalDate endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.lengthOfMonth());
 
 		for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
@@ -471,7 +471,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private Map<String, Double> calculateDailyAverageHoursForEmployee(Map<LocalDate, Double> dailyWorkedHours,
 			Month selectedMonth) {
 		Map<String, Double> dailyAverageHours = new LinkedHashMap<>();
-		int year = Year.now(timeZoneService.business()).getValue();
+		int year = timeZoneService.currentBusinessYear();
 		int daysInMonth = selectedMonth.length(Year.isLeap(year));
 		for (int day = 1; day <= daysInMonth; day++) {
 			LocalDate date = LocalDate.of(year, selectedMonth, day);
@@ -483,7 +483,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private Map<String, Long> calculateWeeklyLateArrivalCount(List<TimeRecord> lateArrivals) {
 		Map<String, Long> weeklyCount = new LinkedHashMap<>();
-		int currentYear = Year.now(timeZoneService.business()).getValue();
+		int currentYear = timeZoneService.currentBusinessYear();
 		LocalDate currentWeekStart = LocalDate.of(currentYear, Month.JANUARY, 1);
 
 		while (currentWeekStart.getYear() == currentYear) {
@@ -501,7 +501,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private Map<String, Long> calculateMonthlyLateArrivalCount(List<TimeRecord> lateArrivals) {
 		Map<String, Long> monthlyCount = new LinkedHashMap<>();
-		int currentYear = Year.now(timeZoneService.business()).getValue();
+		int currentYear = timeZoneService.currentBusinessYear();
 		LocalDate startOfMonth = LocalDate.of(currentYear, Month.JANUARY, 1);
 
 		while (startOfMonth.getYear() == currentYear) {
