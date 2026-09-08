@@ -62,19 +62,18 @@ export const resolveDeals = (
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
 
-export const getDealNameById = (deals: CrmDealRecord, dealId?: number) => {
-  if (dealId !== undefined) {
-    return deals[dealId].name;
-  }
-};
+export interface CrmDealLinks {
+  companies?: CrmCompanyRecord;
+  contacts?: CrmContactRecord;
+}
 
 export const linkDealToRelatedEntities = (
   deal: CrmDealEntity,
   companies?: CrmCompanyRecord,
   contacts?: CrmContactRecord
-) => {
+): CrmDealLinks => {
   const dealId = deal.id;
-  const linked = { companies, contacts };
+  const linked: CrmDealLinks = { companies, contacts };
 
   if (dealId === undefined) {
     return linked;
@@ -83,7 +82,7 @@ export const linkDealToRelatedEntities = (
   if (companies !== undefined && deal.companyId !== undefined) {
     const company = companies[deal.companyId];
 
-    if (company !== undefined) {
+    if (company?.dealIds !== undefined) {
       linked.companies = {
         ...companies,
         [deal.companyId]: {
@@ -97,7 +96,7 @@ export const linkDealToRelatedEntities = (
   if (contacts !== undefined && deal.contactId !== undefined) {
     const contact = contacts[deal.contactId];
 
-    if (contact !== undefined) {
+    if (contact?.dealIds !== undefined) {
       linked.contacts = {
         ...contacts,
         [deal.contactId]: {
@@ -111,7 +110,7 @@ export const linkDealToRelatedEntities = (
   return linked;
 };
 
-export const getInitialStageId = (stages: CrmStageRecord) =>
+export const getInitialStageId = (stages: CrmStageRecord): number | undefined =>
   Object.values(stages).find(
     (stage) => stage.stageType === CrmDealStageEnum.INITIAL
   )?.id;

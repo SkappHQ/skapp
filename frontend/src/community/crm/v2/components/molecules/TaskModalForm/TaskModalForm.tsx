@@ -41,10 +41,7 @@ import {
   getContactDisplayName,
   updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
-import {
-  getDealNameById,
-  updateDealRecord
-} from "~community/crm/v2/utils/dealUtil";
+import { updateDealRecord } from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskTypeOptions,
   parseDueDate
@@ -189,7 +186,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     values.contactId !== undefined
       ? getContactDisplayName(contacts[values.contactId])
       : undefined;
-  const selectedDealName = getDealNameById(deals, values.dealId);
+  const selectedDealName =
+    values.dealId === undefined ? undefined : deals[values.dealId]?.name;
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(() => {
     if (ownerLookupData) {

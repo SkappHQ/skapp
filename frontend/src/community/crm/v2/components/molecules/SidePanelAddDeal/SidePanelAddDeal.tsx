@@ -1,4 +1,5 @@
 import { SubTaskInput } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -12,7 +13,10 @@ import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
 import { useCreateDeal } from "~community/crm/v2/api/DealApi";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
-import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmErrorMessageKeyEnum,
+  CrmPriorityEnum
+} from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmContactEntity,
@@ -38,6 +42,23 @@ interface InlineDealFormValues {
   name: string;
   contactId: string;
 }
+
+interface CrmErrorPayload {
+  results?: { messageKey?: string }[];
+}
+
+const hasErrorResults = (data: unknown): data is CrmErrorPayload =>
+  typeof data === "object" && data !== null && "results" in data;
+
+const getErrorMessageKey = (error: AxiosError): string | undefined => {
+  const data = error.response?.data;
+
+  if (!hasErrorResults(data)) {
+    return undefined;
+  }
+
+  return data.results?.[0]?.messageKey;
+};
 
 const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
   onClose,
@@ -90,7 +111,15 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     onClose();
   };
 
-  const handleCreateDealError = () => {
+  const handleCreateDealError = (error: AxiosError) => {
+    if (getErrorMessageKey(error) === CrmErrorMessageKeyEnum.DEAL_EXISTS) {
+      formik.setFieldError(
+        "name",
+        translateText(["inlineAddDeal", "validations", "dealNameExists"])
+      );
+      return;
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -110,7 +139,12 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const isFormDisabled = isPending || isUserLoading || isCheckingCrmLimit;
+  const isFormDisabled =
+    isPending ||
+    isUserLoading ||
+    isCheckingCrmLimit ||
+    initialStageId === undefined ||
+    currentUser?.employeeId == null;
 
   const handleSubmit = (values: InlineDealFormValues) => {
     guardCrmCreate(CrmLimitResource.DEALS, () => {
@@ -155,11 +189,13 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
         prefixNode={
           <div className="w-60 shrink-0">
             <AddDealContactSearch
+              id="add-deal-contact-search"
               contacts={contactLookupData?.items ?? []}
               selectedContact={selectedContact}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               isInvalid={Boolean(formik.errors.contactId)}
+              errorMessage={formik.errors.contactId}
               placeholder={translateText([
                 "inlineAddDeal",
                 "contactPlaceholder"
