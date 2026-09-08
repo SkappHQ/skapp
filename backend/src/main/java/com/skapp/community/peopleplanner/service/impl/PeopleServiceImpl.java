@@ -1652,7 +1652,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private LocalDate resolveBirthdayNotificationDate() {
-		return timeZoneService.currentBusinessDate();
+		return timeZoneService.currentOrganizationDate();
 	}
 
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
@@ -2954,7 +2954,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);
 		employee.setAccountStatus(status);
-		employee.setTerminationDate(timeZoneService.currentBusinessDate());
+		employee.setTerminationDate(timeZoneService.currentOrganizationDate());
 
 		user.setIsActive(false);
 

@@ -4,39 +4,38 @@ import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.DateTimeUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
 public class TimeZoneServiceImpl implements TimeZoneService {
 
-	@Lazy
-	private final OrganizationService organizationService;
+	private final ObjectProvider<OrganizationService> organizationServiceProvider;
 
 	@Override
-	public ZoneId business() {
-		return organizationService.getOrganizationZoneId();
+	public ZoneId organizationTimezone() {
+		return organizationServiceProvider.getObject().getOrganizationZoneId();
 	}
 
 	@Override
-	public LocalDate currentBusinessDate() {
-		return DateTimeUtils.currentDateAt(business());
+	public LocalDate currentOrganizationDate() {
+		return DateTimeUtils.currentDateAt(organizationTimezone());
 	}
 
 	@Override
-	public int currentBusinessYear() {
-		return DateTimeUtils.currentDateAt(business()).getYear();
+	public int currentOrganizationYear() {
+		return DateTimeUtils.currentDateAt(organizationTimezone()).getYear();
 	}
 
 	@Override
-	public Instant currentBusinessDayStart() {
-		ZoneId businessZone = business();
-		return DateTimeUtils.currentDateAt(businessZone).atStartOfDay(businessZone).toInstant();
+	public Instant currentOrganizationDayStart() {
+		ZoneId organizationZone = organizationTimezone();
+		return DateTimeUtils.currentDateAt(organizationZone).atStartOfDay(organizationZone).toInstant();
 	}
 
 }

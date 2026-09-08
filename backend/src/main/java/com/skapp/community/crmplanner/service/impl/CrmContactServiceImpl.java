@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
@@ -81,6 +82,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmCompanyService crmCompanyService;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -292,7 +295,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.stream()
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
-		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
+		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao
+			.findOpenTaskSummaryByContactIds(contactIds, timeZoneService.currentOrganizationDayStart())
 			.stream()
 			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
@@ -316,7 +320,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactMetricsById(Long id) {
 		log.info("getContactMetricsById: execution started");
 
-		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id)
+		CrmContactMetrics metrics = crmContactDao
+			.getContactMetricsById(id, timeZoneService.currentOrganizationDayStart())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
 		log.info("getContactMetricsById: execution ended");
@@ -386,7 +391,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
 		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
-		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id);
+		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id,
+				timeZoneService.currentOrganizationDayStart());
 		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
 		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
 

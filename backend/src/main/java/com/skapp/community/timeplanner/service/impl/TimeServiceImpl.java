@@ -192,7 +192,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private final LeaveEntitlementDao leaveEntitlementDao;
 
-	private final TimeZoneService timeZoneService;
+	protected final TimeZoneService timeZoneService;
 
 	private JsonNode createTimeConfigJsonNode(Map<String, Float> hoursMap) {
 		ArrayNode timeBlocksNode = mapper.createArrayNode();
@@ -247,7 +247,7 @@ public class TimeServiceImpl implements TimeService {
 			return leaveOrHolidayOrNonWorkingDayResponse;
 		}
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(), currentDate);
 
 		if (timeRecord.isPresent()) {
@@ -494,7 +494,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 
 		return new ResponseEntityDto(false,
-				incompleteTimeRecords.isPresent() && !lastClockInDate.equals(timeZoneService.currentBusinessDate())
+				incompleteTimeRecords.isPresent() && !lastClockInDate.equals(timeZoneService.currentOrganizationDate())
 						? timeMapper.timeRecordToTimeRecordResponseDto(incompleteTimeRecords.get()) : null);
 	}
 
@@ -520,10 +520,10 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("addTimeRecord: execution started");
 
-		long timeToRecordInMillis = DateTimeUtils.localDateTimeToEpochMillis(addTimeRecordDto.getTime());
-		ZoneId businessZone = timeZoneService.business();
-		LocalDate timeRecordDate = DateTimeUtils.toDateAt(timeToRecordInMillis, businessZone);
-		if (timeRecordDate.isAfter(DateTimeUtils.currentDateAt(businessZone))) {
+		long timeToRecordInMillis = addTimeRecordDto.getTime().toEpochMilli();
+		ZoneId organizationZone = timeZoneService.organizationTimezone();
+		LocalDate timeRecordDate = DateTimeUtils.toDateAt(timeToRecordInMillis, organizationZone);
+		if (timeRecordDate.isAfter(DateTimeUtils.currentDateAt(organizationZone))) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_RECORD_FOR_FUTURE);
 		}
 
@@ -566,7 +566,8 @@ public class TimeServiceImpl implements TimeService {
 
 			EmployeeTimeRequestFilterDto filterDto = new EmployeeTimeRequestFilterDto();
 			filterDto.setRecordId(timeRecord.getTimeRecordId());
-			filterDto.setDate(DateTimeUtils.toLocalDate(timeRequestDto.getStartTime()));
+			filterDto
+				.setDate(DateTimeUtils.toDateAt(timeRequestDto.getStartTime(), timeZoneService.organizationTimezone()));
 			filterDto.setStatus(List.of(RequestStatus.PENDING));
 			List<TimeRequest> timeRequestsOnDate = timeRequestDao.findTimeRequestsByOptionalFilters(filterDto);
 			if (!timeRequestsOnDate.isEmpty()) {
@@ -694,7 +695,7 @@ public class TimeServiceImpl implements TimeService {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_END_TIME_DIFFERENT_DATES);
 		}
 
-		Long dateInEpochMillis = DateTimeUtils.localDateTimeToEpochMillis(requestDto.getClockOutTime());
+		Long dateInEpochMillis = requestDto.getClockOutTime().toEpochMilli();
 
 		List<TimeSlot> timeSlots = timeSlotDao.findTimeSlotByTimeRecord(timeRecord.get());
 		TimeSlot slotToUpdate = timeSlots.getLast();
@@ -1174,7 +1175,7 @@ public class TimeServiceImpl implements TimeService {
 		User currentUser = userService.getCurrentUser();
 		log.info("checkLeaveOrHolidayOrNonWorkingDay: execution started");
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 
 		List<TimeConfig> workingDays = timeConfigDao.findAll();
 		boolean isWorkingDay = CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, workingDays);
@@ -1258,10 +1259,11 @@ public class TimeServiceImpl implements TimeService {
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_LEAVE_DAYS);
 		if (!attendanceConfigForLeaveRequests && !leaveRequestsList.isEmpty()) {
 			for (LeaveRequest leaveRequest : leaveRequestsList) {
-				boolean isEveningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_EVENING && TimeUtil
-					.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours, timeZoneService.business());
-				boolean isMorningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING
-						&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.business());
+				boolean isEveningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_EVENING
+						&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours,
+								timeZoneService.organizationTimezone());
+				boolean isMorningLeave = leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING && TimeUtil
+					.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.organizationTimezone());
 				boolean isFullDayLeave = leaveRequest.getLeaveState() == LeaveState.FULLDAY;
 
 				if (isEveningLeave || isMorningLeave || isFullDayLeave) {
@@ -1286,10 +1288,11 @@ public class TimeServiceImpl implements TimeService {
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_COMPANY_HOLIDAYS);
 		if (!attendanceConfigForHolidays && !holidayList.isEmpty()) {
 			for (Holiday holiday : holidayList) {
-				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_EVENING && TimeUtil
-					.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours, timeZoneService.business());
-				boolean isMorningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING
-						&& TimeUtil.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.business());
+				boolean isEveningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_EVENING
+						&& TimeUtil.isCurrentTimeInEvening(currentDayConfig, morningHours, eveningHours,
+								timeZoneService.organizationTimezone());
+				boolean isMorningHoliday = holiday.getHolidayDuration() == HolidayDuration.HALF_DAY_MORNING && TimeUtil
+					.isCurrentTimeInMorning(currentDayConfig, morningHours, timeZoneService.organizationTimezone());
 				boolean isFullDayHoliday = holiday.getHolidayDuration() == HolidayDuration.FULL_DAY;
 
 				if (isEveningHoliday || isMorningHoliday || isFullDayHoliday) {
@@ -1641,7 +1644,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private IndividualWorkHoursResponseDto getEmployeeWorkHourGraphResponseDto(
 			IndividualWorkHourFilterDto individualWorkHourFilterDto) {
-		int year = timeZoneService.currentBusinessYear();
+		int year = timeZoneService.currentOrganizationYear();
 		int month = individualWorkHourFilterDto.getMonth();
 
 		YearMonth yearMonth = YearMonth.of(year, month);
@@ -1671,7 +1674,7 @@ public class TimeServiceImpl implements TimeService {
 			List<LocalDate> holidays) {
 		float standardWorkHoursPerDay = getHoursPerDay();
 
-		LocalDate businessDate = timeZoneService.currentBusinessDate();
+		LocalDate businessDate = timeZoneService.currentOrganizationDate();
 
 		LocalDate yesterday = businessDate.minusDays(1);
 
@@ -1706,7 +1709,7 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	public float getHoursPerDay() {
-		LocalDate localDate = timeZoneService.currentBusinessDate();
+		LocalDate localDate = timeZoneService.currentOrganizationDate();
 
 		DayOfWeek dayOfWeek = localDate.getDayOfWeek();
 		TimeConfig timeConfigs = timeConfigDao.findByDay(dayOfWeek);
@@ -1731,7 +1734,7 @@ public class TimeServiceImpl implements TimeService {
 		}
 		else {
 
-			if (timeRequestDto.getStartTime().isAfter(DateTimeUtils.getCurrentUtcDateTime())) {
+			if (timeRequestDto.getStartTime().isAfter(Instant.now())) {
 				throw new ModuleException(TimeMessageConstant.TIME_ERROR_CANNOT_ADD_REQUEST_FOR_FUTURE);
 			}
 
@@ -1748,7 +1751,8 @@ public class TimeServiceImpl implements TimeService {
 					new String[] { timeRequestDto.getRecordId().toString() });
 		}
 
-		LocalDate requestStartDate = timeRequestDto.getStartTime().toLocalDate();
+		LocalDate requestStartDate = DateTimeUtils.toDateAt(timeRequestDto.getStartTime(),
+				timeZoneService.organizationTimezone());
 		LocalDate recordDate = timeRecord.getDate();
 
 		if (!requestStartDate.equals(recordDate)) {
@@ -1764,9 +1768,8 @@ public class TimeServiceImpl implements TimeService {
 	protected TimeRequest timeRequestBuilder(TimeRequestDto timeRequestDto, Employee employee, TimeRecord timeRecord) {
 		TimeRequest timeRequest = timeMapper.timeRequestDtoToTimeRequest(timeRequestDto, RequestStatus.PENDING,
 				employee, timeRecord, timeRecord == null ? null : timeRecord.getClockInTime(),
-				timeRecord == null ? null : timeRecord.getClockOutTime(),
-				DateTimeUtils.localDateTimeToEpochMillis(timeRequestDto.getStartTime()),
-				DateTimeUtils.localDateTimeToEpochMillis(timeRequestDto.getEndTime()));
+				timeRecord == null ? null : timeRecord.getClockOutTime(), timeRequestDto.getStartTime().toEpochMilli(),
+				timeRequestDto.getEndTime().toEpochMilli());
 
 		EnumMap<SlotType, Float> totalHours = new EnumMap<>(SlotType.class);
 		modifySlotsStartEndTimeToCalculateWorkBreakHours(timeRecord, timeRequest, totalHours);
@@ -1948,9 +1951,9 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private boolean validateDateTime(TimeRecord timeRecord, UpdateIncompleteTimeRecordsRequestDto requestDto) {
-		LocalDateTime endDate = requestDto.getClockOutTime();
-		LocalDate startDate = timeRecord.getDate();
-		return startDate.isEqual(ChronoLocalDate.from(endDate));
+		LocalDate clockOutDate = DateTimeUtils.toDateAt(requestDto.getClockOutTime(),
+				timeZoneService.organizationTimezone());
+		return timeRecord.getDate().isEqual(clockOutDate);
 	}
 
 	private void updateWorkHours(TimeRecord timeRecord, TimeSlot slot, SlotType slotType) {
@@ -1978,7 +1981,7 @@ public class TimeServiceImpl implements TimeService {
 
 	private void recordClockInAndClockOut(User currentUser, long timeInMillis, TimeRecordActionTypes actionType) {
 		log.info("recordClockInAndClockOut: execution started");
-		LocalDate businessDate = DateTimeUtils.toDateAt(timeInMillis, timeZoneService.business());
+		LocalDate businessDate = DateTimeUtils.toDateAt(timeInMillis, timeZoneService.organizationTimezone());
 		Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(), businessDate);
 
 		if (actionType == TimeRecordActionTypes.START) {

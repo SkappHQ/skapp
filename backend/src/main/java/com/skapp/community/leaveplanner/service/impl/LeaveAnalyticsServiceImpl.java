@@ -246,7 +246,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 
 	private ResponseEntityDto getLeaveTrendsByDay(LeaveTrendFilterDto leaveTrendFilterDto, long allEmployeeCount,
 			List<Integer> workingDaysIndex, List<LocalDate> holidayDates) {
-		LocalDate trendByDayEndDate = timeZoneService.currentBusinessDate();
+		LocalDate trendByDayEndDate = timeZoneService.currentOrganizationDate();
 		LocalDate monthBefore = LeaveModuleUtil.getDateFromTheGivenBusinessDayCount(trendByDayEndDate, 30,
 				workingDaysIndex, holidayDates);
 
@@ -324,7 +324,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	private int getWeekDayCount(int month) {
-		int year = timeZoneService.currentBusinessYear();
+		int year = timeZoneService.currentOrganizationYear();
 		LocalDate startDate = LocalDate.of(year, month, 1);
 		LocalDate endDate = startDate.withDayOfMonth(startDate.getMonth().length(startDate.isLeapYear()));
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
@@ -380,7 +380,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth(),
-				leaveCycleDetail.getStartDate(), timeZoneService.business());
+				leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 		LocalDate startDate = LocalDate.of(leaveCycleDetail.getStartMonth() == 1 && leaveCycleDetail.getStartDate() == 1
 				? cycleEndYear : cycleEndYear - 1, leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
 		LocalDate endDate = LocalDate.of(cycleEndYear, leaveCycleDetail.getEndMonth(), leaveCycleDetail.getEndDate());
@@ -465,7 +465,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth() - 1,
-				leaveCycleDetail.getStartDate(), timeZoneService.business());
+				leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 		return LocalDate.of(leaveCycleDetail.getStartMonth() == 1 && leaveCycleDetail.getStartDate() == 1 ? cycleEndYear
 				: cycleEndYear - 1, leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
 	}
@@ -476,7 +476,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		}
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth() - 1,
-				leaveCycleDetail.getStartDate(), timeZoneService.business());
+				leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 		return LocalDate.of(cycleEndYear, leaveCycleDetail.getEndMonth(), leaveCycleDetail.getEndDate());
 	}
 
@@ -563,7 +563,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		User currentUser = userService.getCurrentUser();
 		log.info("getLeaveUtilization: execution started by user: {}", currentUser.getUserId());
 
-		Year leaveCycleYear = Year.of(timeZoneService.currentBusinessYear());
+		Year leaveCycleYear = Year.of(timeZoneService.currentOrganizationYear());
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		if (leaveCycleDetail == null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_CYCLE_NOT_FOUND);
@@ -900,11 +900,11 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	@Override
 	public ResponseEntityDto getOrganizationalLeaveAnalytics() {
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth() - 1,
-				leaveCycleDetail.getStartDate(), timeZoneService.business());
+				leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 		LocalDate firstDateOfYear = LocalDate
 			.of(leaveCycleDetail.getStartMonth() == 1 && leaveCycleDetail.getStartDate() == 1 ? cycleEndYear
 					: cycleEndYear - 1, leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
@@ -1000,7 +1000,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			return new ResponseEntityDto(false, absenceRateAnalyticsDto);
 		}
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		User currentUser = userService.getCurrentUser();
 		boolean isLeaveAdmin = LeaveModuleUtil.isUserSuperAdminOrLeaveAdmin(currentUser);
 
@@ -1084,7 +1084,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		float y = (x / monthCount) * 100;
 
 		log.info("employeeLeaveRequests: execution end by user: {}", noOfDaysOfEmployeeLeaveRequests);
-		int currentMonth = DateTimeUtils.getMonthValue(timeZoneService.currentBusinessDate());
+		int currentMonth = DateTimeUtils.getMonthValue(timeZoneService.currentOrganizationDate());
 
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		// if the current month is January or February, the absence rate will be 0 since
@@ -1112,7 +1112,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 				lastMonthLastDay, timeConfigs, holidayDates);
 
 		float absenceRateOfLastMonth = (lastMonthLeaveCount / (numOfWorkingDaysLastMonth * employeeCounts)) * 100;
-		int currentMonth = DateTimeUtils.getMonthValue(timeZoneService.currentBusinessDate());
+		int currentMonth = DateTimeUtils.getMonthValue(timeZoneService.currentOrganizationDate());
 
 		// if the current month is January, the absence rate will be 0 since neglecting
 		// data for the previous year
@@ -1293,10 +1293,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
 		List<Integer> workingDays = CommonModuleUtils.getWorkingDaysIndex(timeConfigs);
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth() - 1,
-				leaveCycleDetail.getStartDate(), timeZoneService.business());
+				leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 		LocalDate cycleStartDate = LocalDate
 			.of(leaveCycleDetail.getStartMonth() == 1 && leaveCycleDetail.getStartDate() == 1 ? cycleEndYear
 					: cycleEndYear - 1, leaveCycleDetail.getStartMonth(), leaveCycleDetail.getStartDate());
@@ -1323,10 +1323,10 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 				lastDateUptPreviousMonth) / lastDateUptPreviousMonth.getMonthValue();
 
 		LinkedHashMap<LeaveType, Long> allocatedEmployeeCountForLeaveType = leaveEntitlementDao
-			.findLeaveTypeAndEmployeeCountForTeam(id);
+			.findLeaveTypeAndEmployeeCountForTeam(id, timeZoneService.organizationTimezone());
 
 		Map<Long, Double> allocatedLeaveDaysCountForLeaveType = leaveEntitlementDao
-			.findLeaveTypeIdAllocatedLeaveDaysForTeam(id);
+			.findLeaveTypeIdAllocatedLeaveDaysForTeam(id, timeZoneService.organizationTimezone());
 
 		List<AverageLeaveConsumptionDto> averageLeaveConsumptionDtos = getAverageLeaveConsumptionDtos(
 				allocatedEmployeeCountForLeaveType, allocatedLeaveDaysCountForLeaveType, leaveCountByType);
@@ -1443,7 +1443,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 		Long id = currentUser.getUserId();
 
 		List<Team> managerLeadingTeams = teamDao.findLeadingTeamsByManagerId(id);
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 
 		List<String> workingDays = timeConfigDao.findAll()
 			.stream()
@@ -1559,7 +1559,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			LeaveEntitlementsFilterDto leaveEntitlementsFilterDto) {
 
 		List<LeaveEntitlement> leaveEntitlements = leaveEntitlementDao.findAllByEmployeeId(employeeId,
-				leaveEntitlementsFilterDto);
+				leaveEntitlementsFilterDto, timeZoneService.organizationTimezone());
 
 		LinkedHashMap<Long, LeaveEntitlementResponseDto> responseDtoList = new LinkedHashMap<>();
 		leaveEntitlements.forEach(leaveEntitlement -> processLeaveEntitlements(responseDtoList, leaveEntitlement));
@@ -1607,7 +1607,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	private LocalDate getEntitlementValidFromDate(LocalDate date) {
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
-				leaveCycleDetailsDto.getStartDate(), timeZoneService.business());
+				leaveCycleDetailsDto.getStartDate(), timeZoneService.organizationTimezone());
 		int leaveCycleStartYear = leaveCycleDetailsDto.getStartMonth() == 1 && leaveCycleDetailsDto.getStartDate() == 1
 				? cycleEndYear : cycleEndYear - 1;
 		return date == null ? DateTimeUtils.getUtcLocalDate(leaveCycleStartYear,
@@ -1617,7 +1617,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	private LocalDate getEntitlementValidToDate(LocalDate date) {
 		LeaveCycleDetailsDto leaveCycleDetailsDto = new LeaveCycleDetailsDto();
 		int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetailsDto.getStartMonth() - 1,
-				leaveCycleDetailsDto.getStartDate(), timeZoneService.business());
+				leaveCycleDetailsDto.getStartDate(), timeZoneService.organizationTimezone());
 		return date == null ? DateTimeUtils.getUtcLocalDate(cycleEndYear, leaveCycleDetailsDto.getEndMonth() - 1,
 				leaveCycleDetailsDto.getEndDate()) : date;
 	}
@@ -1712,7 +1712,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_REPORT_YEAR_NOT_VALID);
 		}
 
-		int currentYear = timeZoneService.currentBusinessYear();
+		int currentYear = timeZoneService.currentOrganizationYear();
 		int previousYear = currentYear - 1;
 		int nextYear = currentYear + 1;
 
@@ -1813,7 +1813,7 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			LeaveCycleDetailsDto leaveCycleDetail = leaveCycleService.getLeaveCycleConfigs();
 
 			int cycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(leaveCycleDetail.getStartMonth() - 1,
-					leaveCycleDetail.getStartDate(), timeZoneService.business());
+					leaveCycleDetail.getStartDate(), timeZoneService.organizationTimezone());
 
 			dateRange[0] = LocalDate.of(leaveCycleDetail.getStartMonth() == 1 && leaveCycleDetail.getStartDate() == 1
 					? cycleEndYear : cycleEndYear - 1, leaveCycleDetail.getStartMonth(),

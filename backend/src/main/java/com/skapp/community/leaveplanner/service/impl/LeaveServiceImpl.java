@@ -613,7 +613,7 @@ public class LeaveServiceImpl implements LeaveService {
 		log.info("leaveRequestAvailability: execution started");
 
 		if (requestAvailabilityDto.getDate() == null) {
-			requestAvailabilityDto.setDate(timeZoneService.currentBusinessDate());
+			requestAvailabilityDto.setDate(timeZoneService.currentOrganizationDate());
 		}
 
 		List<LeaveRequest> leaveRequests = leaveRequestDao
@@ -826,7 +826,7 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlementsFilterDto.setLeaveTypeId(leaveRequest.getLeaveType().getTypeId());
 
 		List<LeaveEntitlement> leaveEntitlements = leaveEntitlementDao.findAllByEmployeeId(employeeId,
-				leaveEntitlementsFilterDto);
+				leaveEntitlementsFilterDto, timeZoneService.organizationTimezone());
 
 		if (leaveEntitlements == null || leaveEntitlements.isEmpty() || leaveEntitlements.getFirst() == null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_FOUND);
