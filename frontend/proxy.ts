@@ -208,13 +208,6 @@ type UserRole =
   | SenderTypes
   | RepresentativeTypes;
 
-interface TokenClaims {
-  roles?: UserRole[];
-  tier?: TierEnum;
-  tiers?: TierEnum[];
-  tenantStatus?: TenantStatusEnums;
-}
-
 // Merging all routes into one allowedRoutes object
 const allowedRoutes: Record<UserRole, string[]> = {
   ...superAdminRoutes,
@@ -235,7 +228,7 @@ const isPrefetchRequest = (request: NextRequest): boolean =>
 interface RouteAccessContext {
   request: NextRequest;
   currentPath: string;
-  claims: TokenClaims;
+  claims: Record<string, any>;
   roles: UserRole[];
   isPasswordChangedForTheFirstTime: string | undefined;
 }
@@ -293,10 +286,7 @@ const resolveRemovePeopleAccess: AccessGuard = ({
 
   if (!roles.includes(ROLE_SUPER_ADMIN)) return null;
 
-  if (
-    claims?.tenantStatus &&
-    REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.has(claims.tenantStatus)
-  ) {
+  if (REMOVE_PEOPLE_ALLOWED_TENANT_STATUSES.has(claims?.tenantStatus)) {
     return NextResponse.next();
   }
 
@@ -368,7 +358,7 @@ const resolveSignAccess: AccessGuard = ({ request, currentPath, roles }) =>
     ? redirectToUnauthorized(request)
     : null;
 
-const getClaimTiers = (claims: TokenClaims): TierEnum[] =>
+const getClaimTiers = (claims: Record<string, any>): TierEnum[] =>
   claims?.tier ? [claims.tier] : (claims?.tiers ?? []);
 
 const resolveIntegrationsAccess: AccessGuard = ({
