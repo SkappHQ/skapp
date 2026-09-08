@@ -10,7 +10,7 @@ import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmBoardInitDataResponse,
   CrmDealMoveBetweenStagesRequest,
-  CrmDealReorderWithinStageRequest,
+  CrmDealReorderRequest,
   CrmDealsByStagesRequest,
   CrmDealsByStagesResponse
 } from "~community/crm/v2/types/CrmTypes";
@@ -68,14 +68,14 @@ export const useFetchMoreStageDeals = (
   });
 
 const reorderDealWithinStage = async (
-  payload: CrmDealReorderWithinStageRequest
+  payload: CrmDealReorderRequest
 ): Promise<void> => {
   await authFetch.patch(crmBoardEndpoints.REORDER_DEAL_WITHIN_STAGE, payload);
 };
 
 export const useReorderDealWithinStage = (
   onError: (error: AxiosError) => void
-): UseMutationResult<void, AxiosError, CrmDealReorderWithinStageRequest> =>
+): UseMutationResult<void, AxiosError, CrmDealReorderRequest> =>
   useMutation({
     mutationFn: reorderDealWithinStage,
     onError

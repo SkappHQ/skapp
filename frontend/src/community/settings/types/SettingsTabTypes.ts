@@ -1,6 +1,10 @@
 import { ReactNode } from "react";
 
-import { AdminTypes, EmployeeTypes, ManagerTypes } from "~community/common/types/AuthTypes";
+import {
+  AdminTypes,
+  EmployeeTypes,
+  ManagerTypes
+} from "~community/common/types/AuthTypes";
 
 export interface SettingsTab {
   id: string;

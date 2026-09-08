@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 
 import { ClockInOutGraphTypes } from "~community/attendance/enums/dashboardEnums";

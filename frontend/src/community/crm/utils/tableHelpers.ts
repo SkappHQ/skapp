@@ -5,11 +5,7 @@ export const formatPhoneNumber = (value: NumericValue) => {
   return `+${value}`;
 };
 
-export const formatTasks = (
-  value: NumericValue
-) => {
+export const formatTasks = (value: NumericValue) => {
   if (value == null || value === 0) return "-";
-  return (
-    `${value}`
-  );
+  return `${value}`;
 };

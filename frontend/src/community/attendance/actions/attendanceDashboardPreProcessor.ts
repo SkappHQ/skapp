@@ -6,9 +6,7 @@ import {
 
 export const graphDataPreprocessor = (
   graphData:
-    | ClockInOutGraphDataType
-    | LateArrivalsGraphDataType
-    | WorkHoursGraphDataType
+    ClockInOutGraphDataType | LateArrivalsGraphDataType | WorkHoursGraphDataType
 ) => {
   if (graphData) {
     const labels: string[] = Object.keys(graphData);

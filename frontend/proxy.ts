@@ -458,7 +458,7 @@ function resolveRouteAccess(
   return redirectTo(request, ROUTES.AUTH.SIGNIN);
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (isUnguardedPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
