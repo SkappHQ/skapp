@@ -65,8 +65,6 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
     contactIds,
     companies,
     owners,
-    setContacts,
-    setContactIds,
     setSelectedContactId,
     openCrmSidePanel,
     isCrmDataInitialized
@@ -76,8 +74,6 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
       contactIds: store.contactIds,
       companies: store.companies,
       owners: store.owners,
-      setContacts: store.setContacts,
-      setContactIds: store.setContactIds,
       setSelectedContactId: store.setSelectedContactId,
       openCrmSidePanel: store.openCrmSidePanel,
       isCrmDataInitialized: store.isCrmDataInitialized
@@ -106,15 +102,16 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   const { data: companyLookupData } = useGetCompanyLookup(companyLookupFilters);
 
   const fetchedContacts = useMemo(
-    () => data?.pages.flatMap((page) => page.items),
+    () => data?.pages.flatMap((page) => page?.items ?? []),
     [data]
   );
 
   useEffect(() => {
     if (!fetchedContacts) return;
 
-    setContacts(updateContactRecord(contacts, fetchedContacts));
-    setContactIds(toContactIds(fetchedContacts));
+    const store = useCrmStoreV2.getState();
+    store.setContacts(updateContactRecord(store.contacts, fetchedContacts));
+    store.setContactIds(toContactIds(fetchedContacts));
   }, [fetchedContacts]);
 
   const missingCompanyIds = useMemo(
