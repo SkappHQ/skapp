@@ -370,8 +370,10 @@ const resolveSignAccess: AccessGuard = ({ request, currentPath, roles }) =>
     ? redirectToUnauthorized(request)
     : null;
 
-const getClaimTiers = (claims: Record<string, any>): TierEnum[] =>
-  claims?.tier ? [claims.tier] : (claims?.tiers ?? []);
+const getClaimTiers = (claims: {
+  tier?: TierEnum;
+  tiers?: TierEnum[];
+}): TierEnum[] => (claims?.tier ? [claims.tier] : (claims?.tiers ?? []));
 
 const resolveIntegrationsAccess: AccessGuard = ({
   request,
