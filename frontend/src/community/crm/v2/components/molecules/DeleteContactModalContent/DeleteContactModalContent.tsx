@@ -9,7 +9,8 @@ import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDel
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   getSelectedContact,
-  removeContact
+  removeContact,
+  unlinkContactFromCompany
 } from "~community/crm/v2/utils/contactUtil";
 
 const DeleteContactModalContent: FC = () => {
@@ -23,20 +24,14 @@ const DeleteContactModalContent: FC = () => {
 
   const {
     contacts,
-    contactIds,
     selectedContactId,
-    setContacts,
-    setContactIds,
     setSelectedContactId,
     closeCrmSidePanel,
     setIsContactModalOpen
   } = useCrmStoreV2(
     useShallow((store) => ({
       contacts: store.contacts,
-      contactIds: store.contactIds,
       selectedContactId: store.selectedContactId,
-      setContacts: store.setContacts,
-      setContactIds: store.setContactIds,
       setSelectedContactId: store.setSelectedContactId,
       closeCrmSidePanel: store.closeCrmSidePanel,
       setIsContactModalOpen: store.setIsContactModalOpen
@@ -51,10 +46,22 @@ const DeleteContactModalContent: FC = () => {
 
   const handleSuccess = () => {
     if (selectedContactId !== null) {
-      const remaining = removeContact(contacts, contactIds, selectedContactId);
+      const store = useCrmStoreV2.getState();
+      const remaining = removeContact(
+        store.contacts,
+        store.contactIds,
+        selectedContactId
+      );
 
-      setContacts(remaining.contacts);
-      setContactIds(remaining.contactIds);
+      store.setContacts(remaining.contacts);
+      store.setContactIds(remaining.contactIds);
+      store.setCompanies(
+        unlinkContactFromCompany(
+          store.companies,
+          selectedContact?.companyId,
+          selectedContactId
+        )
+      );
     }
 
     setToastMessage({
@@ -78,7 +85,6 @@ const DeleteContactModalContent: FC = () => {
       title: translateText(["toastMessages", "errorTitle"]),
       description: translateText(["toastMessages", "errorDescription"])
     });
-    handleCloseModal();
   };
 
   const { mutate: deleteSelectedContact, isPending } = useDeleteContact(
@@ -91,6 +97,10 @@ const DeleteContactModalContent: FC = () => {
       deleteSelectedContact(selectedContactId);
     }
   };
+
+  if (selectedContact === undefined) {
+    return null;
+  }
 
   return (
     <CrmDeleteModalContent
