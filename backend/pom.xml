@@ -17,6 +17,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <poi.version>5.4.1</poi.version>
     </properties>
 
     <dependencyManagement>
@@ -332,10 +333,11 @@
             </exclusions>
         </dependency>
 
+        <!-- Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.4.1</version>
+            <version>${poi.version}</version>
         </dependency>
 
         <!-- Apache PDFBox -->
