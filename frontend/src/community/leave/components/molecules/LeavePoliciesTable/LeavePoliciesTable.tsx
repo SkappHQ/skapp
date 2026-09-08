@@ -25,7 +25,6 @@ import {
   useGetLeavePoliciesInfinite
 } from "~community/leave/api/LeavePolicyApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
-import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
 import LeavePolicyFilterBody from "~community/leave/components/molecules/LeavePolicyFilterBody/LeavePolicyFilterBody";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
@@ -43,11 +42,13 @@ import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy
 
 interface Props {
   onCreatePolicy: () => void;
+  onEditPolicy: (policy: LeavePolicyType) => void;
   onEmptyStateChange?: (isEmpty: boolean) => void;
 }
 
 const LeavePoliciesTable: FC<Props> = ({
   onCreatePolicy,
+  onEditPolicy,
   onEmptyStateChange
 }) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
@@ -57,9 +58,6 @@ const LeavePoliciesTable: FC<Props> = ({
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
-  const [editingPolicy, setEditingPolicy] = useState<LeavePolicyType | null>(
-    null
-  );
   const [deactivatingPolicy, setDeactivatingPolicy] =
     useState<LeavePolicyType | null>(null);
   const [activatingPolicyName, setActivatingPolicyName] = useState<string>("");
@@ -192,39 +190,40 @@ const LeavePoliciesTable: FC<Props> = ({
           ...(canManagePolicies
             ? {
                 actions: (
-                  <KebabMenu
-                    id={`leave-policy-kebab-menu-${policy.id}`}
-                    isOpen={openKebabMenuId === policy.id}
-                    onToggle={(isOpen: boolean) =>
-                      setOpenKebabMenuId(isOpen ? policy.id : null)
-                    }
-                    className={{
-                      kebabMenu: {
-                        menuItem: {
-                          container: "justify-start",
-                          label: "text-left"
-                        }
+                  <div
+                    className="flex justify-end"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <KebabMenu
+                      id={`leave-policy-kebab-menu-${policy.id}`}
+                      isOpen={openKebabMenuId === policy.id}
+                      onToggle={(isOpen: boolean) =>
+                        setOpenKebabMenuId(isOpen ? policy.id : null)
                       }
-                    }}
-                    menuItems={[
-                      {
-                        id: `leave-policy-edit-${policy.id}`,
-                        label: translateText(["menuEdit"]),
-                        onClick: () => setEditingPolicy(policy)
-                      },
-                      isActive
-                        ? {
-                            id: `leave-policy-deactivate-${policy.id}`,
-                            label: translateText(["menuDeactivate"]),
-                            onClick: () => setDeactivatingPolicy(policy)
+                      className={{
+                        kebabMenu: {
+                          menuItem: {
+                            container: "justify-start",
+                            label: "text-left"
                           }
-                        : {
-                            id: `leave-policy-activate-${policy.id}`,
-                            label: translateText(["menuActivate"]),
-                            onClick: () => handleActivate(policy)
-                          }
-                    ]}
-                  />
+                        }
+                      }}
+                      menuItems={[
+                        isActive
+                          ? {
+                              id: `leave-policy-deactivate-${policy.id}`,
+                              label: translateText(["menuDeactivate"]),
+                              onClick: () => setDeactivatingPolicy(policy)
+                            }
+                          : {
+                              id: `leave-policy-activate-${policy.id}`,
+                              label: translateText(["menuActivate"]),
+                              onClick: () => handleActivate(policy)
+                            }
+                      ]}
+                    />
+                  </div>
                 )
               }
             : {})
@@ -267,14 +266,18 @@ const LeavePoliciesTable: FC<Props> = ({
     />
   );
 
+  const handleRowClick = (row: GridRow): void => {
+    const selectedPolicy = policies.find((policy) => policy.id === row.id);
+
+    if (selectedPolicy) {
+      onEditPolicy(selectedPolicy);
+    }
+  };
+
   const handleLoadMore = async (): Promise<void> => {
     if (hasNextPage && !isFetchingNextPage) {
       await fetchNextPage();
     }
-  };
-
-  const handleCloseEditModal = (): void => {
-    setEditingPolicy(null);
   };
 
   const handleCloseDeactivateModal = (): void => {
@@ -289,6 +292,7 @@ const LeavePoliciesTable: FC<Props> = ({
         headers={tableHeaders}
         rows={tableRows}
         isLoading={isLoading}
+        onRowClick={canManagePolicies ? handleRowClick : undefined}
         toolbar={{
           searchBar: {
             value: searchTerm,
@@ -327,11 +331,6 @@ const LeavePoliciesTable: FC<Props> = ({
           isFetchingNextPage,
           onLoadMore: handleLoadMore
         }}
-      />
-      <EditLeavePolicyModal
-        policy={editingPolicy}
-        isOpen={!!editingPolicy}
-        onClose={handleCloseEditModal}
       />
       <DeactivateLeavePolicyModal
         policy={deactivatingPolicy}

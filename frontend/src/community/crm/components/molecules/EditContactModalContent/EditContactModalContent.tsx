@@ -1,3 +1,5 @@
+import { useShallow } from "zustand/react/shallow";
+
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
@@ -19,12 +21,14 @@ const EditContactModalContent = () => {
     selectedContactId,
     getContactById,
     updateContact
-  } = useCrmStore((store) => ({
-    setIsContactModalOpen: store.setIsContactModalOpen,
-    selectedContactId: store.selectedContactId,
-    getContactById: store.getContactById,
-    updateContact: store.updateContact
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      selectedContactId: store.selectedContactId,
+      getContactById: store.getContactById,
+      updateContact: store.updateContact
+    }))
+  );
 
   const selectedContact = getContactById(selectedContactId!);
 
