@@ -20,11 +20,11 @@ import {
 } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactsInfinite } from "~community/crm/v2/api/ContactApi";
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
+import { CONTACT_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import {
-  CONTACT_PAGE_SIZE,
-  DEFAULT_LOOKUP_PAGE_SIZE
-} from "~community/crm/v2/constants/commonConstants";
-import { ALL_COMPANIES } from "~community/crm/v2/constants/contactConstants";
+  ALL_COMPANIES,
+  DEFAULT_COMPANY_PAGE_SIZE
+} from "~community/crm/v2/constants/contactConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmCompanyFilterRequest,
@@ -37,21 +37,22 @@ import {
   getOwnerById
 } from "~community/crm/v2/utils/commonUtil";
 import {
-  getCompanyNameById,
+  getCompanyById,
   getMissingCompanyIds,
   updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import {
   getContactCompanyIds,
+  getContactDisplayName,
   toContactIds,
   updateContactRecord
 } from "~community/crm/v2/utils/contactUtil";
 
 interface ContactTableProps {
-  initializeCrmData: boolean;
+  isCrmDataLoading: boolean;
 }
 
-export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
+export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -91,7 +92,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
   };
 
   const companyLookupFilters: CrmCompanyFilterRequest = {
-    size: DEFAULT_LOOKUP_PAGE_SIZE
+    size: DEFAULT_COMPANY_PAGE_SIZE
   };
 
   const {
@@ -147,7 +148,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
   }, [companyLookupData]);
 
   const isEmptyFilterState =
-    debouncedSearch !== "" || selectedCompany !== ALL_COMPANIES;
+    debouncedSearch === "" && selectedCompany === ALL_COMPANIES;
 
   const companyOptions = [
     {
@@ -169,7 +170,7 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
     }
   }
 
-  const isLoading = isContactsLoading || initializeCrmData;
+  const isLoading = isContactsLoading || isCrmDataLoading;
 
   const tableHeaders: GridHeader[] = [
     {
@@ -209,16 +210,20 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
     contactIds.map((id) => {
       const contact = contacts[id];
       const metrics = contact.metrics;
-      const companyName = getCompanyNameById(companies, contact.companyId);
+      const contactName = getContactDisplayName(contact);
+      const companyName =
+        contact.companyId != null
+          ? getCompanyById(companies, contact.companyId)?.name
+          : undefined;
       const owner = getOwnerById(owners, contact.ownerId);
 
       return {
         id,
-        ariaLabel: contact.name,
+        ariaLabel: contactName,
         name: (
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="w-full truncate" title={contact.name}>
-              {contact.name}
+            <div className="w-full truncate" title={contactName}>
+              {formatTableValue(contactName)}
             </div>
             <div
               className="subtitle4 text-secondary-text w-full truncate"
@@ -293,11 +298,11 @@ export const ContactTable: FC<ContactTableProps> = ({ initializeCrmData }) => {
       emptyState={{
         icon: <SearchIcon />,
         title: isEmptyFilterState
-          ? translateText(["table", "emptySearchState", "title"])
-          : translateText(["table", "emptyDataState", "title"]),
+          ? translateText(["table", "emptyDataState", "title"])
+          : translateText(["table", "emptySearchState", "title"]),
         description: isEmptyFilterState
-          ? translateText(["table", "emptySearchState", "description"])
-          : translateText(["table", "emptyDataState", "description"])
+          ? translateText(["table", "emptyDataState", "description"])
+          : translateText(["table", "emptySearchState", "description"])
       }}
       onRowClick={handleRowClick}
       infiniteScroll={{
