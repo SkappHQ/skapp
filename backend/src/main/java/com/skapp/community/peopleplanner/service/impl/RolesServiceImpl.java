@@ -313,7 +313,7 @@ public class RolesServiceImpl implements RolesService {
 		employeeRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		employeeRole.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		employeeRole.setIsSuperAdmin(false);
-		employeeRole.setChangedDate(timeZoneService.currentBusinessDate());
+		employeeRole.setChangedDate(timeZoneService.currentOrganizationDate());
 		employeeRole.setRoleChangedBy(employee);
 		return employeeRole;
 	}
@@ -518,7 +518,7 @@ public class RolesServiceImpl implements RolesService {
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setCrmRole(Role.CRM_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
-		superAdminRoles.setChangedDate(timeZoneService.currentBusinessDate());
+		superAdminRoles.setChangedDate(timeZoneService.currentOrganizationDate());
 		superAdminRoles.setRoleChangedBy(employee);
 
 		employeeRoleDao.save(superAdminRoles);

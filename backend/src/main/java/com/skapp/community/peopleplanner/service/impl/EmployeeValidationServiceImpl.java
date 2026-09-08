@@ -277,7 +277,7 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 	@Override
 	public void validateCreateEmployeeRequestPersonalDetails(EmployeePersonalDetailsDto employeePersonalDetailsDto,
 			User user) {
-		LocalDate businessDate = timeZoneService.currentBusinessDate();
+		LocalDate businessDate = timeZoneService.currentOrganizationDate();
 		if (employeePersonalDetailsDto != null) {
 			if (employeePersonalDetailsDto.getGeneral() != null) {
 				if (employeePersonalDetailsDto.getGeneral().getMiddleName() != null

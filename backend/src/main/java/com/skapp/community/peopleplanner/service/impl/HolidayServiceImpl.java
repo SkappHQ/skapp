@@ -406,7 +406,7 @@ public class HolidayServiceImpl implements HolidayService {
 			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year,
 			List<String> validWorkLocationNames) {
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		if (holidayDate == null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_DATE);
 		}
@@ -530,7 +530,7 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private boolean canDeleteHoliday(Holiday holiday) {
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		return holiday.getDate().isAfter(currentDate);
 	}
 
