@@ -36,12 +36,39 @@ describe("linkDealToRelatedEntities", () => {
     expect(linked.contacts?.[4].dealIds).toEqual([9]);
   });
 
-  it("starts the array when the entity has not loaded its deals yet", () => {
+  it("leaves an entity alone when it has not loaded its deals yet", () => {
     const unloaded: CrmCompanyRecord = { 1: { id: 1 } };
     const deal: CrmDealEntity = { id: 9, companyId: 1 };
 
     const linked = linkDealToRelatedEntities(deal, unloaded, contacts);
 
-    expect(linked.companies?.[1].dealIds).toEqual([9]);
+    expect(linked.companies?.[1].dealIds).toBeUndefined();
+    expect(linked.companies).toBe(unloaded);
+  });
+
+  it("does not add the same deal id twice", () => {
+    const deal: CrmDealEntity = { id: 7, companyId: 1 };
+
+    const linked = linkDealToRelatedEntities(deal, companies, contacts);
+
+    expect(linked.companies?.[1].dealIds).toEqual([7]);
+  });
+
+  it("returns the records untouched when the deal has no id", () => {
+    const deal: CrmDealEntity = { companyId: 1, contactId: 4 };
+
+    const linked = linkDealToRelatedEntities(deal, companies, contacts);
+
+    expect(linked.companies).toBe(companies);
+    expect(linked.contacts).toBe(contacts);
+  });
+
+  it("does not mutate the records it is given", () => {
+    const deal: CrmDealEntity = { id: 9, companyId: 1, contactId: 4 };
+
+    linkDealToRelatedEntities(deal, companies, contacts);
+
+    expect(companies[1].dealIds).toEqual([7]);
+    expect(contacts[4].dealIds).toEqual([]);
   });
 });

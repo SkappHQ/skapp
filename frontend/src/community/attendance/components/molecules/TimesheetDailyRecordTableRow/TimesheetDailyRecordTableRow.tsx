@@ -7,6 +7,7 @@ import {
   useTheme
 } from "@mui/material";
 import { FC, useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetPeriodAvailabilityMutation } from "~community/attendance/api/AttendanceEmployeeApi";
 import {
@@ -71,9 +72,11 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     "dailyLogTable"
   );
   const classes = styles(theme);
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   const {
     attendanceParams,

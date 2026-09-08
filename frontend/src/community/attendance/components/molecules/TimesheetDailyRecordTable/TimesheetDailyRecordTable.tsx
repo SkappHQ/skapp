@@ -2,6 +2,7 @@ import { Box, Divider, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
@@ -59,9 +60,11 @@ const TimesheetDailyRecordTable = ({
   const classes = styles(theme);
   const [tableHeaders, setTableHeaders] = useState<string[]>([]);
 
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   useEffect(() => {
     setTableHeaders(generateTimeSlots());

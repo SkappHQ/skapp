@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import { RefObject } from "react";
 
 import IndividualEmployeeTimeReportSection from "~community/attendance/components/molecules/IndividualEmployeeTimeReportBody/IndividualEmployeeTimeReportBody";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import {
   AdminTypes,
   EmployeeTypes,
@@ -15,7 +16,6 @@ import PrimaryContactDetailsSection from "../EmergencyDetailsSection/SubSections
 import SecondaryContactDetailsSection from "../EmergencyDetailsSection/SubSections/SecondaryContactDetailsSection";
 import EmploymentDetailsSection from "../EmploymentFormSection/SubSections/EmploymentDetailsSection";
 import GeneralDetailsSection from "../PersonDetailsSection/SubSections/GeneralDetailsSections";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 interface Props {
   employeeId: number;
