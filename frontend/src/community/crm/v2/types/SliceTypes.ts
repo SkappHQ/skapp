@@ -46,11 +46,14 @@ export interface CrmUiSliceTypes {
   contactModalType: CrmModalTypes;
   isTaskModalOpen: boolean;
   taskModalType: CrmModalTypes;
+  isDealStageModalOpen: boolean;
+  dealStageModalType: CrmModalTypes;
 
   selectedCompanyId: number | null;
   selectedContactId: number | null;
   selectedDealId: number | null;
   selectedTaskId: number | null;
+  selectedDealStageId: number | null;
 
   isCrmSidePanelOpen: boolean;
   crmSidePanelType: CrmSidePanelTypes | null;
@@ -71,11 +74,14 @@ export interface CrmUiSliceTypes {
   setContactModalType: (contactModalType: CrmModalTypes) => void;
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => void;
   setTaskModalType: (taskModalType: CrmModalTypes) => void;
+  setIsDealStageModalOpen: (isDealStageModalOpen: boolean) => void;
+  setDealStageModalType: (dealStageModalType: CrmModalTypes) => void;
 
   setSelectedCompanyId: (selectedCompanyId: number | null) => void;
   setSelectedContactId: (selectedContactId: number | null) => void;
   setSelectedDealId: (selectedDealId: number | null) => void;
   setSelectedTaskId: (selectedTaskId: number | null) => void;
+  setSelectedDealStageId: (selectedDealStageId: number | null) => void;
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) => void;
   closeCrmSidePanel: () => void;

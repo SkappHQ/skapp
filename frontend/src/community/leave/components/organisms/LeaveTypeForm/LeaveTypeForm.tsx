@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import { DateTime } from "luxon";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
 import DescribedSelection from "~community/common/components/atoms/DescribedSelection/DescribedSelection";
@@ -73,22 +74,26 @@ const LeaveTypeForm = () => {
     editingLeaveType,
     setLeaveTypeFormDirty,
     setLeaveTypeModalType
-  } = useLeaveStore((state) => ({
-    allLeaveTypes: state.allLeaveTypes,
-    editingLeaveType: state.editingLeaveType,
-    setLeaveTypeFormDirty: state.setLeaveTypeFormDirty,
-    setLeaveTypeModalType: state.setLeaveTypeModalType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      allLeaveTypes: state.allLeaveTypes,
+      editingLeaveType: state.editingLeaveType,
+      setLeaveTypeFormDirty: state.setLeaveTypeFormDirty,
+      setLeaveTypeModalType: state.setLeaveTypeModalType
+    }))
+  );
 
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [colors, setColors] = useState<string[]>(leaveTypeColors);
   const [selectedDate, setSelectedDate] = useState<DateTime | undefined>(
