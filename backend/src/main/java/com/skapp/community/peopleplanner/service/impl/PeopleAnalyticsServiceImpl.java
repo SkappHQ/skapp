@@ -186,9 +186,9 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 		EmployeeHireResponseDto employeeHireResponseDto = new EmployeeHireResponseDto();
 
 		Long newHires = employeeDao.countByIsActiveAndTeamsAndCreatedAt(true, teamIds,
-				timeZoneService.currentBusinessYear());
+				timeZoneService.currentOrganizationYear());
 		Long existsThisYear = employeeDao.countByIsActiveAndTeamsAndCreatedAt(false, teamIds,
-				timeZoneService.currentBusinessYear());
+				timeZoneService.currentOrganizationYear());
 
 		employeeHireResponseDto.setNewHires(newHires);
 		employeeHireResponseDto.setExistsThisYear(existsThisYear);
@@ -208,7 +208,7 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 			return emptyResponse;
 		}
 
-		LocalDate currentDate = timeZoneService.currentBusinessDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		LocalDate thirtyDaysBeforeCurrentDate = currentDate.minusDays(30);
 
 		Long numberOfTerminatedEmployeesInLastThirtyDays = employeeDao

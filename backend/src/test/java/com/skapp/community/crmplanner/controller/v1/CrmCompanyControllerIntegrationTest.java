@@ -395,10 +395,10 @@ class CrmCompanyControllerIntegrationTest {
 			.extracting(CrmTask::getId)
 			.contains(taskId);
 
-		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
+		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId, Instant.now()).getOpenTasksCount())
 			.as("contact task metrics still count tasks of a deleted company")
 			.isEqualTo(1L);
-		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId)))
+		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId), Instant.now()))
 			.as("open task summary still counts tasks of a deleted company")
 			.extracting(s -> s.getContactId())
 			.contains(contactId);

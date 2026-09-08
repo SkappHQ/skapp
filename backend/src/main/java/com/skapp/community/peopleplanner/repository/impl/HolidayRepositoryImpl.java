@@ -1,6 +1,5 @@
 package com.skapp.community.peopleplanner.repository.impl;
 
-import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.model.WorkLocation_;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -33,8 +32,6 @@ import java.util.List;
 @Repository
 @RequiredArgsConstructor
 public class HolidayRepositoryImpl implements HolidayRepository {
-
-	private final TimeZoneService timeZoneService;
 
 	private final EntityManager entityManager;
 
@@ -121,7 +118,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 	}
 
 	@Override
-	public List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId) {
+	public List<Holiday> findFutureActiveHolidaysExclusiveToWorkLocation(Long workLocationId, LocalDate fromDate) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Holiday> criteriaQuery = criteriaBuilder.createQuery(Holiday.class);
 		Root<Holiday> root = criteriaQuery.from(Holiday.class);
@@ -129,7 +126,7 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 
 		List<Predicate> predicates = new ArrayList<>();
 		predicates.add(criteriaBuilder.equal(root.get(Holiday_.isActive), true));
-		predicates.add(criteriaBuilder.greaterThan(root.get(Holiday_.date), timeZoneService.currentBusinessDate()));
+		predicates.add(criteriaBuilder.greaterThan(root.get(Holiday_.date), fromDate));
 		predicates.add(criteriaBuilder.equal(workLocationJoin.get(WorkLocation_.workLocationId), workLocationId));
 
 		Subquery<Long> workLocationCount = criteriaQuery.subquery(Long.class);

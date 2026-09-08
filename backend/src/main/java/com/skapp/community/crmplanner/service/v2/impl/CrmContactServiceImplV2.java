@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.service.v2.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
@@ -34,13 +35,16 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 
 	private final CrmMapperV2 crmMapperV2;
 
+	private final TimeZoneService timeZoneService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto) {
 		log.info("getContactMetrics: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContactMetricsResponseDtoV2> contactPage = crmContactDao.getContactMetricsV2(filterDto, pageable);
+		Page<CrmContactMetricsResponseDtoV2> contactPage = crmContactDao.getContactMetricsV2(filterDto, pageable,
+				timeZoneService.currentOrganizationDayStart());
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactPage.getContent());

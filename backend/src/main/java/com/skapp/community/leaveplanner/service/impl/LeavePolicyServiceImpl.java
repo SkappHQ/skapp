@@ -154,7 +154,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 				LeaveRequestStatus.CANCELLED);
 		int revokedRequests = voidPolicyLeaveRequests(
 				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
-						LeaveRequestStatus.APPROVED, timeZoneService.currentBusinessDate()),
+						LeaveRequestStatus.APPROVED, timeZoneService.currentOrganizationDate()),
 				LeaveRequestStatus.REVOKED);
 		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
@@ -345,7 +345,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private int revokeFutureApprovedLeaveRequests() {
 		List<LeaveRequest> futureApprovedRequests = leaveRequestDao
-			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, timeZoneService.currentBusinessDate());
+			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, timeZoneService.currentOrganizationDate());
 
 		return voidLeaveRequests(futureApprovedRequests, LeaveRequestStatus.REVOKED);
 	}
