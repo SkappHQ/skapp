@@ -421,6 +421,8 @@
       "apply": "Apply filters",
       "reset": "Reset filters",
       "demographicsFilters": {
+        "gender": "Gender",
+        "nationality": "Nationality",
         "male": "Male",
         "female": "Female",
         "other": "Other"

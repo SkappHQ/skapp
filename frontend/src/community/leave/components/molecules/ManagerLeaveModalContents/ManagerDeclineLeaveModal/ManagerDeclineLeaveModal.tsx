@@ -36,18 +36,29 @@ const ManagerDeclineLeaveModal = ({
   const [reason, setReason] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
 
-  const { mutate, isSuccess, error: leaveCancelError } = useHandelLeaves();
+  const {
+    mutate,
+    isPending,
+    isSuccess,
+    error: leaveCancelError
+  } = useHandelLeaves();
+
+  const isSubmitting = isPending || isSuccess;
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 
   const handelDecline = (): void => {
-    if (validateDescription(reason)) setError(true);
+    if (isSubmitting) return;
+
+    const trimmedReason = reason.trim();
+
+    if (validateDescription(trimmedReason)) setError(true);
     else {
       setError(false);
       const data = {
         leaveRequestId: leaveRequestData.leaveId as number,
         status: LeaveStatusTypes.DENIED.toUpperCase(),
-        reviewerComment: reason
+        reviewerComment: trimmedReason
       };
       mutate(data);
     }
@@ -92,6 +103,8 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"tertiary"}
           onClick={closeModel}
+          disabled={isSubmitting}
+          aria-label={translateText(["cancelDeclineAreaLabel"])}
           icon={<CloseIcon />}
           iconPosition="end"
         >
@@ -100,6 +113,9 @@ const ManagerDeclineLeaveModal = ({
         <ButtonV2
           variant={"error"}
           onClick={handelDecline}
+          isLoading={isSubmitting}
+          aria-busy={isSubmitting}
+          aria-label={translateText(["declineAreaLabel"])}
           icon={<CloseIcon fill="var(--color-primary-text)" />}
           iconPosition="end"
         >
