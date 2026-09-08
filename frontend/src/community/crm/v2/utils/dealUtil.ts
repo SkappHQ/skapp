@@ -62,6 +62,17 @@ export const resolveDeals = (
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
 
+export const getDealNameById = (
+  deals: CrmDealRecord,
+  dealId?: number
+): string | undefined => {
+  if (dealId === undefined) {
+    return undefined;
+  }
+
+  return deals[dealId]?.name;
+};
+
 export interface CrmDealLinks {
   companies?: CrmCompanyRecord;
   contacts?: CrmContactRecord;
