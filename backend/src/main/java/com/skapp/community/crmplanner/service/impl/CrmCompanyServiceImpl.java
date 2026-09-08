@@ -112,10 +112,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 	public CrmCompany findOrCreateCompanyByName(String name) {
 		log.info("findOrCreateCompanyByName: execution started");
 
-		String trimmedName = name.trim();
-		CrmValidations.validateCompanyName(trimmedName);
+		CrmValidations.validateCompanyName(name);
 
-		Optional<CrmCompany> existingCompany = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse(trimmedName);
+		Optional<CrmCompany> existingCompany = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse(name);
 		if (existingCompany.isPresent()) {
 			log.info("findOrCreateCompanyByName: matched an existing company");
 			return existingCompany.get();
@@ -124,7 +123,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		validateCompanyCreationLimit();
 
 		CrmCompany newCompany = new CrmCompany();
-		newCompany.setName(trimmedName);
+		newCompany.setName(name);
 		CrmCompany savedCompany = crmCompanyDao.save(newCompany);
 
 		log.info("findOrCreateCompanyByName: execution ended");
