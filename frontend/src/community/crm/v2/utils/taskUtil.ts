@@ -14,6 +14,60 @@ export interface CrmTaskLinks {
   deals?: CrmDealRecord;
 }
 
+const linkTaskToCompany = (
+  companies: CrmCompanyRecord | undefined,
+  companyId: number | undefined,
+  taskId: number
+): CrmCompanyRecord | undefined => {
+  if (companies === undefined || companyId === undefined) return companies;
+
+  const company = companies[companyId];
+
+  if (company?.taskIds === undefined) return companies;
+
+  const taskIds = appendId(company.taskIds, taskId);
+
+  if (taskIds === company.taskIds) return companies;
+
+  return { ...companies, [companyId]: { ...company, taskIds } };
+};
+
+const linkTaskToContact = (
+  contacts: CrmContactRecord | undefined,
+  contactId: number | undefined,
+  taskId: number
+): CrmContactRecord | undefined => {
+  if (contacts === undefined || contactId === undefined) return contacts;
+
+  const contact = contacts[contactId];
+
+  if (contact?.taskIds === undefined) return contacts;
+
+  const taskIds = appendId(contact.taskIds, taskId);
+
+  if (taskIds === contact.taskIds) return contacts;
+
+  return { ...contacts, [contactId]: { ...contact, taskIds } };
+};
+
+const linkTaskToDeal = (
+  deals: CrmDealRecord | undefined,
+  dealId: number | undefined,
+  taskId: number
+): CrmDealRecord | undefined => {
+  if (deals === undefined || dealId === undefined) return deals;
+
+  const deal = deals[dealId];
+
+  if (deal?.taskIds === undefined) return deals;
+
+  const taskIds = appendId(deal.taskIds, taskId);
+
+  if (taskIds === deal.taskIds) return deals;
+
+  return { ...deals, [dealId]: { ...deal, taskIds } };
+};
+
 export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
   companies?: CrmCompanyRecord,
@@ -21,55 +75,16 @@ export const linkTaskToRelatedEntities = (
   deals?: CrmDealRecord
 ): CrmTaskLinks => {
   const taskId = task.id;
-  const linked = { companies, contacts, deals };
 
   if (taskId === undefined) {
-    return linked;
+    return { companies, contacts, deals };
   }
 
-  if (companies !== undefined && task.companyId !== undefined) {
-    const company = companies[task.companyId];
-
-    if (company?.taskIds !== undefined) {
-      const taskIds = appendId(company.taskIds, taskId);
-
-      if (taskIds !== company.taskIds) {
-        linked.companies = {
-          ...companies,
-          [task.companyId]: { ...company, taskIds }
-        };
-      }
-    }
-  }
-
-  if (contacts !== undefined && task.contactId !== undefined) {
-    const contact = contacts[task.contactId];
-
-    if (contact?.taskIds !== undefined) {
-      const taskIds = appendId(contact.taskIds, taskId);
-
-      if (taskIds !== contact.taskIds) {
-        linked.contacts = {
-          ...contacts,
-          [task.contactId]: { ...contact, taskIds }
-        };
-      }
-    }
-  }
-
-  if (deals !== undefined && task.dealId !== undefined) {
-    const deal = deals[task.dealId];
-
-    if (deal?.taskIds !== undefined) {
-      const taskIds = appendId(deal.taskIds, taskId);
-
-      if (taskIds !== deal.taskIds) {
-        linked.deals = { ...deals, [task.dealId]: { ...deal, taskIds } };
-      }
-    }
-  }
-
-  return linked;
+  return {
+    companies: linkTaskToCompany(companies, task.companyId, taskId),
+    contacts: linkTaskToContact(contacts, task.contactId, taskId),
+    deals: linkTaskToDeal(deals, task.dealId, taskId)
+  };
 };
 
 export const parseDueDate = (dueAt?: string): Date | undefined => {
