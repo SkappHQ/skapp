@@ -491,7 +491,7 @@ const ApplyPolicyLeaveModal = () => {
             ref={dateFieldRef}
             tabIndex={-1}
             aria-label={translateAria(["calendar", "selectDateForLeave"])}
-            className={"min-w-0"}
+            className="min-w-0"
           >
             <CalendarDateRangePicker
               selectedDates={selectedDates}
