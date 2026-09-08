@@ -7,6 +7,7 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -51,7 +52,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
 
-  const deals = useCrmStoreV2((store) => store.deals);
+  const deals = useCrmStoreV2(useShallow((store) => store.deals));
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
