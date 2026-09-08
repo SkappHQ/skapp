@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { Stack } from "@mui/system";
 import { JSX } from "react";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import {
   useGetNotificationSettings,
   useUpdateNotificationSettings
@@ -13,7 +14,6 @@ import { EmployeeTypes } from "~community/common/types/AuthTypes";
 
 import SwitchRow from "../../atoms/SwitchRow/SwitchRow";
 import ToastMessage from "../ToastMessage/ToastMessage";
-import { useAuth } from "~community/auth/providers/AuthProvider";
 
 const NotificationSettings = (): JSX.Element => {
   const translateText = useTranslator("settings");
@@ -78,9 +78,7 @@ const NotificationSettings = (): JSX.Element => {
               }
               if (
                 index === 1 &&
-                !user?.roles?.includes(
-                  EmployeeTypes.ATTENDANCE_EMPLOYEE
-                )
+                !user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
               ) {
                 return null;
               }

@@ -78,8 +78,8 @@ const OwnerPopupSearch: FC<Props> = ({
     : null;
 
   const resolveUser = (id: number): CrmOwnerEntity | null =>
-    (users.find((user) => user.employeeId === id) ??
-      (selectedUser?.employeeId === id ? selectedUser : null));
+    users.find((user) => user.employeeId === id) ??
+    (selectedUser?.employeeId === id ? selectedUser : null);
 
   const handleChange = (val: DropdownValue | null) => {
     if (!val) {

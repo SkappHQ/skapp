@@ -8,7 +8,10 @@ interface Props {
   zIndex?: number;
 }
 
-const FullScreenLoader = ({ fullPage = true, zIndex = ZIndexEnums.MAX }: Props) => {
+const FullScreenLoader = ({
+  fullPage = true,
+  zIndex = ZIndexEnums.MAX
+}: Props) => {
   const theme = useTheme();
   const translateAria = useTranslator(
     "commonAria",

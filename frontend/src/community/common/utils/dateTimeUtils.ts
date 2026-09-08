@@ -204,6 +204,10 @@ export const convertUTCStringToLocalDateTime = (
   return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
 };
 
+export const parseTimestampToDate = (timestamp: string): Date => {
+  return new Date(timestamp);
+};
+
 export const getStartAndEndOfYear = (
   format?: string
 ): {

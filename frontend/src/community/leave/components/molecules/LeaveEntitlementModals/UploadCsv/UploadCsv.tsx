@@ -1,5 +1,6 @@
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
@@ -41,11 +42,14 @@ const UploadCsv = ({ leaveTypes, setLeaveTypes, setErrorLog }: Props) => {
     leaveEntitlementTableSelectedYear,
     setLeaveEntitlementModalType,
     page
-  } = useLeaveStore((state) => ({
-    leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
-    setLeaveEntitlementModalType: state.setLeaveEntitlementModalType,
-    page: state.page
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      leaveEntitlementTableSelectedYear:
+        state.leaveEntitlementTableSelectedYear,
+      setLeaveEntitlementModalType: state.setLeaveEntitlementModalType,
+      page: state.page
+    }))
+  );
 
   const [customError, setCustomError] = useState<string>("");
   const [isValid, setValid] = useState<boolean>(false);

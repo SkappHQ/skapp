@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useCallback, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useUploadImages } from "~community/common/api/FileHandleApi";
 import { useStorageAvailability } from "~community/common/api/StorageAvailabilityApi";
@@ -96,28 +97,30 @@ const ApplyLeaveModal = () => {
     setAttachments,
     setMyLeaveRequestModalType,
     setLeaveRequestId
-  } = useLeaveStore((state) => ({
-    comment: state.comment,
-    attachments: state.attachments,
-    formErrors: state.formErrors,
-    selectedTeam: state.selectedTeam,
-    selectedYear: state.selectedYear,
-    selectedMonth: state.selectedMonth,
-    selectedDates: state.selectedDates,
-    selectedDuration: state.selectedDuration,
-    selectedLeaveAllocationData: state.selectedLeaveAllocationData,
-    isApplyLeaveModalBtnDisabled: state.isApplyLeaveModalBtnDisabled,
-    setComment: state.setComment,
-    setSelectedTeam: state.setSelectedTeam,
-    setSelectedDates: state.setSelectedDates,
-    setSelectedMonth: state.setSelectedMonth,
-    setSelectedDuration: state.setSelectedDuration,
-    setFormErrors: state.setFormErrors,
-    setAttachments: state.setAttachments,
-    setMyLeaveRequestModalType: state.setMyLeaveRequestModalType,
-    setLeaveRequestId: state.setLeaveRequestId,
-    setIsMyRequestModalOpen: state.setIsMyRequestModalOpen
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      comment: state.comment,
+      attachments: state.attachments,
+      formErrors: state.formErrors,
+      selectedTeam: state.selectedTeam,
+      selectedYear: state.selectedYear,
+      selectedMonth: state.selectedMonth,
+      selectedDates: state.selectedDates,
+      selectedDuration: state.selectedDuration,
+      selectedLeaveAllocationData: state.selectedLeaveAllocationData,
+      isApplyLeaveModalBtnDisabled: state.isApplyLeaveModalBtnDisabled,
+      setComment: state.setComment,
+      setSelectedTeam: state.setSelectedTeam,
+      setSelectedDates: state.setSelectedDates,
+      setSelectedMonth: state.setSelectedMonth,
+      setSelectedDuration: state.setSelectedDuration,
+      setFormErrors: state.setFormErrors,
+      setAttachments: state.setAttachments,
+      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType,
+      setLeaveRequestId: state.setLeaveRequestId,
+      setIsMyRequestModalOpen: state.setIsMyRequestModalOpen
+    }))
+  );
 
   const firstDateOfYear = useMemo(
     () => getFirstDateOfYear(Number(selectedYear)).toJSDate(),
