@@ -1,5 +1,5 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
-import { ReactNode } from "react";
+import { FC, ReactNode } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -9,7 +9,7 @@ import EditContactModalContent from "~community/crm/v2/components/molecules/Edit
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
-const ContactModalController = () => {
+const ContactModalController: FC = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
@@ -25,7 +25,7 @@ const ContactModalController = () => {
     setIsContactModalOpen(false);
   };
 
-  const getModalTitle = (modalType: CrmModalTypes) => {
+  const getModalTitle = (modalType: CrmModalTypes): string => {
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
         return translateText(["addContactModal", "title"]);

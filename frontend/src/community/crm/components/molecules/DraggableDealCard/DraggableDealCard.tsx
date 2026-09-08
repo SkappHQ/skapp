@@ -1,5 +1,5 @@
-import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { FC } from "react";
 
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
@@ -15,7 +15,14 @@ const DraggableDealCard: FC<DraggableDealCardProps> = ({
   deal,
   onDealClick
 }) => {
-  const { setNodeRef, isDragging, attributes, listeners, transform, transition } = useSortable({
+  const {
+    setNodeRef,
+    isDragging,
+    attributes,
+    listeners,
+    transform,
+    transition
+  } = useSortable({
     id: deal.id,
     data: { type: "deal", stageId: deal.stageId, deal }
   });

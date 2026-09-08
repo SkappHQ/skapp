@@ -1,6 +1,5 @@
 import { useFormik } from "formik";
 import { FC } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,24 +21,8 @@ const AddContactModalContent: FC = () => {
     "addContactModal"
   );
 
-  const {
-    contacts,
-    companies,
-    contactIds,
-    setContacts,
-    setCompanies,
-    setContactIds,
-    setIsContactModalOpen
-  } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      companies: store.companies,
-      contactIds: store.contactIds,
-      setContacts: store.setContacts,
-      setCompanies: store.setCompanies,
-      setContactIds: store.setContactIds,
-      setIsContactModalOpen: store.setIsContactModalOpen
-    }))
+  const setIsContactModalOpen = useCrmStoreV2(
+    (store) => store.setIsContactModalOpen
   );
 
   const { data: currentUser } = useGetUserPersonalDetails();
@@ -50,7 +33,10 @@ const AddContactModalContent: FC = () => {
       email: "",
       contactNumber: "",
       companyId: undefined,
-      ownerId: Number(currentUser?.employeeId)
+      ownerId:
+        currentUser?.employeeId === undefined
+          ? undefined
+          : Number(currentUser.employeeId)
     },
     onSubmit: (values) => createContact(values),
     validationSchema: getContactValidationSchema(translateText),
@@ -69,10 +55,14 @@ const AddContactModalContent: FC = () => {
     setSubmitting(false);
 
     if (createdContact.id !== undefined) {
-      setContacts({ ...contacts, [createdContact.id]: createdContact });
-      setContactIds([createdContact.id, ...contactIds]);
+      const store = useCrmStoreV2.getState();
 
-      setCompanies(linkContactToCompany(createdContact, companies));
+      store.setContacts({
+        ...store.contacts,
+        [createdContact.id]: createdContact
+      });
+      store.setContactIds([createdContact.id, ...store.contactIds]);
+      store.setCompanies(linkContactToCompany(createdContact, store.companies));
     }
 
     handleCloseModal();
