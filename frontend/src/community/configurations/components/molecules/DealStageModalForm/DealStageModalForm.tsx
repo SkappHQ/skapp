@@ -7,6 +7,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -44,10 +45,12 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const translateText = useTranslator("configurations", "crm");
 
   const { setIsDealStageModalOpen, selectedDealStageId } =
-    useConfigurationStore((store) => ({
-      setIsDealStageModalOpen: store.setIsDealStageModalOpen,
-      selectedDealStageId: store.selectedDealStageId
-    }));
+    useConfigurationStore(
+      useShallow((store) => ({
+        setIsDealStageModalOpen: store.setIsDealStageModalOpen,
+        selectedDealStageId: store.selectedDealStageId
+      }))
+    );
 
   const selectedDealStage = useDealStageById(selectedDealStageId!);
 

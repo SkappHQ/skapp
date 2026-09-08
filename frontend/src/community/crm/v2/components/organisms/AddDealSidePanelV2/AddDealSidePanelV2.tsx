@@ -61,6 +61,7 @@ const AddDealSidePanelV2: FC = () => {
     board,
     dealIds,
     companies,
+    setCompanies,
     setDeals,
     setBoardColumn,
     setDealIds
@@ -74,6 +75,7 @@ const AddDealSidePanelV2: FC = () => {
       board: store.board,
       dealIds: store.dealIds,
       companies: store.companies,
+      setCompanies: store.setCompanies,
       setDeals: store.setDeals,
       setBoardColumn: store.setBoardColumn,
       setDealIds: store.setDealIds
@@ -115,8 +117,7 @@ const AddDealSidePanelV2: FC = () => {
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      setCompanies(mergeCompanies(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

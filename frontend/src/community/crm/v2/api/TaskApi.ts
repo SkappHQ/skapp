@@ -20,7 +20,7 @@ import {
 import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmRelatedTasksFilterRequest,
+  CrmRelatedTasksFilter,
   CrmTaskFilterRequest,
   CrmTaskListResponse,
   CrmTaskUpdateRequest
@@ -86,24 +86,26 @@ export const useGetTaskById = (
   });
 
 const fetchRelatedTasks = async (
-  params: CrmRelatedTasksFilterRequest
+  id: number,
+  filter: CrmRelatedTasksFilter
 ): Promise<CrmTaskListResponse> => {
   const response = await authFetchV2.get(
-    crmTaskEndpointsV2.GET_RELATED_TASKS(params.id),
-    { params }
+    crmTaskEndpointsV2.GET_RELATED_TASKS(id),
+    { params: filter }
   );
   return response?.data?.results?.[0];
 };
 
 export const useGetRelatedTasks = (
-  filter: CrmRelatedTasksFilterRequest,
+  id: number,
+  filter: CrmRelatedTasksFilter,
   enabled: boolean
 ): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> =>
   useInfiniteQuery({
     initialPageParam: 0,
-    queryKey: crmTaskQueryKeys.RELATED_TASKS(filter),
+    queryKey: crmTaskQueryKeys.RELATED_TASKS(id, filter),
     queryFn: ({ pageParam = 0 }) =>
-      fetchRelatedTasks({ ...filter, page: pageParam }),
+      fetchRelatedTasks(id, { size: filter.size, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (
         lastPage?.currentPage !== undefined &&
