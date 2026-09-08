@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { Modules } from "~community/common/enums/CommonEnums";
@@ -22,18 +23,18 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Deals page from the normalized v2 store surface.
-const isCrmDealsV2 = false;
+const isCrmDealsV2 = true;
 
 const DealsV1 = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { openCrmSidePanel, selectedDealId, isCrmSidePanelOpen } = useCrmStore(
-    (store) => ({
+    useShallow((store) => ({
       openCrmSidePanel: store.openCrmSidePanel,
       selectedDealId: store.selectedDealId,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen
-    })
+    }))
   );
 
   const handleAddDeal = () => {

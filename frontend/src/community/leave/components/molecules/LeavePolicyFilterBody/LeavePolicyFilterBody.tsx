@@ -33,12 +33,10 @@ const LeavePolicyFilterBody: FC<Props> = ({
   const [selectedLeaveTypeId, setSelectedLeaveTypeId] =
     useState<string>(appliedLeaveTypeId);
 
-  const leaveTypeOptions = (policyLeaveTypes?.items ?? []).map(
-    (leaveType) => ({
-      label: leaveType.name,
-      value: String(leaveType.id)
-    })
-  );
+  const leaveTypeOptions = (policyLeaveTypes?.items ?? []).map((leaveType) => ({
+    label: leaveType.name,
+    value: String(leaveType.id)
+  }));
 
   const handleChipClick = (leaveTypeId: string): void => {
     setSelectedLeaveTypeId((previous) =>

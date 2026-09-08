@@ -1,4 +1,5 @@
-import { ChangeEvent, useMemo } from "react";
+import { ChangeEvent, type JSX, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
@@ -40,14 +41,17 @@ const LeaveEntitlementTable = ({
     page,
     setPage,
     setLeaveEntitlementModalType
-  } = useLeaveStore((state) => ({
-    leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
-    setLeaveEntitlementTableSelectedYear:
-      state.setLeaveEntitlementTableSelectedYear,
-    page: (state.page - 1),
-    setPage: state.setPage,
-    setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      leaveEntitlementTableSelectedYear:
+        state.leaveEntitlementTableSelectedYear,
+      setLeaveEntitlementTableSelectedYear:
+        state.setLeaveEntitlementTableSelectedYear,
+      page: state.page - 1,
+      setPage: state.setPage,
+      setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
+    }))
+  );
   const { data: leaveTypes } = useGetLeaveTypes();
 
   const {

@@ -4,6 +4,7 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -39,12 +40,14 @@ export const CompanyTable: FC = () => {
     useGetCompanyMetrics(debouncedSearch, DEFAULT_PAGE_SIZE);
 
   const { companies, setSelectedCompanyId, setCompanies, openCrmSidePanel } =
-    useCrmStore((store) => ({
-      companies: store.companies,
-      setSelectedCompanyId: store.setSelectedCompanyId,
-      setCompanies: store.setCompanies,
-      openCrmSidePanel: store.openCrmSidePanel
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        companies: store.companies,
+        setSelectedCompanyId: store.setSelectedCompanyId,
+        setCompanies: store.setCompanies,
+        openCrmSidePanel: store.openCrmSidePanel
+      }))
+    );
 
   const fetchedCompanies = useMemo(() => {
     return data?.pages.flatMap((page) => page?.items ?? []);

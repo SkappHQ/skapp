@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -26,33 +26,26 @@ const EditContactModalContent: FC = () => {
     "editContactModal"
   );
 
-  const {
-    contacts,
-    companies,
-    selectedContactId,
-    setContacts,
-    setCompanies,
-    setIsContactModalOpen
-  } = useCrmStoreV2(
+  const { contacts, selectedContactId, setIsContactModalOpen } = useCrmStoreV2(
     useShallow((store) => ({
       contacts: store.contacts,
-      companies: store.companies,
       selectedContactId: store.selectedContactId,
-      setContacts: store.setContacts,
-      setCompanies: store.setCompanies,
       setIsContactModalOpen: store.setIsContactModalOpen
     }))
   );
 
   const selectedContact = getSelectedContact(contacts, selectedContactId);
 
-  const initialValues = {
-    name: selectedContact?.name ?? "",
-    email: selectedContact?.email ?? "",
-    contactNumber: selectedContact?.contactNumber ?? "",
-    companyId: selectedContact?.companyId,
-    ownerId: selectedContact?.ownerId
-  };
+  const initialValues = useMemo(
+    () => ({
+      name: selectedContact?.name ?? "",
+      email: selectedContact?.email ?? "",
+      contactNumber: selectedContact?.contactNumber ?? "",
+      companyId: selectedContact?.companyId,
+      ownerId: selectedContact?.ownerId
+    }),
+    [selectedContact]
+  );
 
   const formik = useFormik<CrmContactEntity>({
     initialValues,
@@ -73,11 +66,14 @@ const EditContactModalContent: FC = () => {
     setSubmitting(false);
 
     if (selectedContactId !== null) {
-      const previousCompanyId = contacts[selectedContactId]?.companyId;
+      const store = useCrmStoreV2.getState();
+      const previousCompanyId = store.contacts[selectedContactId]?.companyId;
 
-      setContacts(updateContact(contacts, selectedContactId, updatedContact));
-      setCompanies(
-        linkContactToCompany(updatedContact, companies, previousCompanyId)
+      store.setContacts(
+        updateContact(store.contacts, selectedContactId, updatedContact)
+      );
+      store.setCompanies(
+        linkContactToCompany(updatedContact, store.companies, previousCompanyId)
       );
     }
 
@@ -106,7 +102,8 @@ const EditContactModalContent: FC = () => {
   );
 
   const editContact = (values: CrmContactEntity) => {
-    if (selectedContactId === null) {
+    if (selectedContactId === null || selectedContact === undefined) {
+      setSubmitting(false);
       return;
     }
 
@@ -120,12 +117,17 @@ const EditContactModalContent: FC = () => {
     });
 
     if (Object.keys(changedFields).length === 0) {
+      setSubmitting(false);
       handleCloseModal();
       return;
     }
 
     editSelectedContact({ id: selectedContactId, contact: changedFields });
   };
+
+  if (selectedContact === undefined) {
+    return null;
+  }
 
   return (
     <ContactModalForm
