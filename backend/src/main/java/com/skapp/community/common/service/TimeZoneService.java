@@ -6,12 +6,12 @@ import java.time.ZoneId;
 
 public interface TimeZoneService {
 
-	ZoneId business();
+	ZoneId organizationTimezone();
 
-	LocalDate currentBusinessDate();
+	LocalDate currentOrganizationDate();
 
-	int currentBusinessYear();
+	int currentOrganizationYear();
 
-	Instant currentBusinessDayStart();
+	Instant currentOrganizationDayStart();
 
 }

@@ -625,9 +625,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			.get(LeaveCycleConfigField.DATE.getField())
 			.intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate, timeZoneService.business());
+		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate,
+				timeZoneService.organizationTimezone());
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
-		LocalDate today = timeZoneService.currentBusinessDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 
 		for (DayOfWeek day : days) {
 			for (LocalDate date : getAllDaysBetween(day, today, leaveCycleEndDate)) {
@@ -671,7 +672,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
 				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate,
-						timeZoneService.business());
+						timeZoneService.organizationTimezone());
 
 				leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(
 						startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1, startMonth,
@@ -713,7 +714,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.intValue();
 
 				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth - 1, startDate,
-						timeZoneService.business());
+						timeZoneService.organizationTimezone());
 
 				if (leaveRequestFilterDto.getStartDate() == null) {
 					leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(

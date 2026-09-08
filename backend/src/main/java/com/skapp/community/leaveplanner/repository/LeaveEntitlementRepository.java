@@ -11,6 +11,7 @@ import com.skapp.community.peopleplanner.model.Employee;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.ZoneId;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,16 +41,17 @@ public interface LeaveEntitlementRepository {
 	Float findAllEmployeesAnnualEntitlementDaysByDateRangeQuery(Long typeId, LocalDate firstDateOfYear,
 			LocalDate lastDateOfYear);
 
-	LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(Long id);
+	LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(Long id, ZoneId organizationZone);
 
-	Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(Long id);
+	Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(Long id, ZoneId organizationZone);
 
-	List<LeaveEntitlement> findAllByEmployeeId(Long employeeId, LeaveEntitlementsFilterDto leaveEntitlementsFilterDto);
+	List<LeaveEntitlement> findAllByEmployeeId(Long employeeId, LeaveEntitlementsFilterDto leaveEntitlementsFilterDto,
+			ZoneId organizationZone);
 
 	List<LeaveReportDto> getEmployeeDetailsWithLeaveEntitlements(List<Long> leaveTypeIds, LocalDate cycleStartDay,
 			LocalDate cycleEndDay, Long jobFamilyId, Long teamId, Pageable pageable, List<Long> employeeIds);
 
-	List<LeaveEntitlement> getEmployeeLeaveBalanceForLeaveType(Long employeeId, Long typeId);
+	List<LeaveEntitlement> getEmployeeLeaveBalanceForLeaveType(Long employeeId, Long typeId, ZoneId organizationZone);
 
 	List<EmployeeCustomEntitlementReportExportDto> generateEmployeeCustomEntitlementDetailedReport(
 			List<Long> leaveTypeIds, LocalDate startDate, LocalDate endDate, Long jobFamilyId, Long teamId);
@@ -71,6 +73,6 @@ public interface LeaveEntitlementRepository {
 			Pageable pageable);
 
 	List<LeaveEntitlement> findFilteredEntitlementsByEmployeeIds(List<Long> employeeIds, LocalDate validFrom,
-			LocalDate validTo);
+			LocalDate validTo, ZoneId organizationZone);
 
 }

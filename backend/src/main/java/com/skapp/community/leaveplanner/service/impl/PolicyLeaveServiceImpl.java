@@ -140,7 +140,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
 		boolean hasSupervisor = employeeManagerDao.existsByEmployee(currentUser.getEmployee());
-		LocalDate today = timeZoneService.currentBusinessDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
@@ -254,7 +254,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		User currentUser = userService.getCurrentUser();
 		MonthDay cycleAnchor = resolveCycleAnchor();
-		int resolvedYear = resolveCycleYear(filterDto.getYear(), timeZoneService.currentBusinessDate(), cycleAnchor);
+		int resolvedYear = resolveCycleYear(filterDto.getYear(), timeZoneService.currentOrganizationDate(),
+				cycleAnchor);
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolvedYear, cycleAnchor);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
@@ -418,7 +419,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			List<EmployeeLeavePolicy> assignments, Integer year) {
 		log.info("calculateBalancesForYear: execution started");
 
-		LocalDate today = timeZoneService.currentBusinessDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
 				cycleAnchor);
