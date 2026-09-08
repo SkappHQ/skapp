@@ -1,5 +1,4 @@
 import { SubTaskInput } from "@rootcodelabs/skapp-ui";
-import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -9,15 +8,14 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
-import { useCreateDeal } from "~community/crm/v2/api/DealApi";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import {
-  CrmErrorMessageKeyEnum,
-  CrmPriorityEnum
-} from "~community/crm/v2/enums/common";
+  useCheckDealNameExists,
+  useCreateDeal
+} from "~community/crm/v2/api/DealApi";
+import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmContactEntity,
@@ -95,19 +93,7 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     onClose();
   };
 
-  const handleCreateDealError = (
-    error: AxiosError<ErrorResponse["response"]["data"]>
-  ) => {
-    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
-
-    if (messageKey === CrmErrorMessageKeyEnum.DEAL_EXISTS) {
-      formik.setFieldError(
-        "name",
-        translateText(["inlineAddDeal", "validations", "dealNameExists"])
-      );
-      return;
-    }
-
+  const handleCreateDealError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -135,6 +121,10 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     currentUser?.employeeId == null;
 
   const handleSubmit = (values: InlineDealFormValues) => {
+    if (isDealNameCheckUnresolved || dealNameData?.isExists === true) {
+      return;
+    }
+
     guardCrmCreate(CrmLimitResource.DEALS, () => {
       createDeal({
         name: values.name.trim(),
@@ -156,6 +146,21 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     validateOnBlur: true,
     onSubmit: handleSubmit
   });
+
+  const trimmedDealName = formik.values.name.trim();
+
+  const debouncedDealName = useDebounce(trimmedDealName, SEARCH_DEBOUNCE_DELAY);
+
+  const { data: dealNameData, isFetching: isDealNameCheckFetching } =
+    useCheckDealNameExists(debouncedDealName, debouncedDealName.length > 0);
+
+  const isDealNameCheckUnresolved =
+    trimmedDealName.length > 0 &&
+    (trimmedDealName !== debouncedDealName || isDealNameCheckFetching);
+
+  const nameErrorMessage = dealNameData?.isExists
+    ? translateText(["inlineAddDeal", "validations", "dealNameExists"])
+    : formik.errors.name;
 
   const handleContactChange = (contact?: CrmContactEntity) => {
     setSelectedContact(contact);
@@ -208,10 +213,8 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
         placeholder={translateText(["inlineAddDeal", "dealNamePlaceholder"])}
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
-        errorMessage={formik.errors.name}
-        hasError={
-          Boolean(formik.errors.name) || Boolean(formik.errors.contactId)
-        }
+        errorMessage={nameErrorMessage}
+        hasError={Boolean(nameErrorMessage) || Boolean(formik.errors.contactId)}
         ariaLabels={{
           group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
           saveButton: translateText([
