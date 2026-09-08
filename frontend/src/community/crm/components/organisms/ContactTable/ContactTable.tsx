@@ -4,6 +4,7 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import TableView from "~community/common/components/organisms/TableView/TableView";
 import type {
@@ -57,12 +58,14 @@ export const ContactTable: FC = () => {
   );
 
   const { contacts, setSelectedContactId, openCrmSidePanel, setContacts } =
-    useCrmStore((store) => ({
-      contacts: store.contacts,
-      setSelectedContactId: store.setSelectedContactId,
-      openCrmSidePanel: store.openCrmSidePanel,
-      setContacts: store.setContacts
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        contacts: store.contacts,
+        setSelectedContactId: store.setSelectedContactId,
+        openCrmSidePanel: store.openCrmSidePanel,
+        setContacts: store.setContacts
+      }))
+    );
 
   useEffect(() => {
     if (fetchedContacts) setContacts(fetchedContacts);

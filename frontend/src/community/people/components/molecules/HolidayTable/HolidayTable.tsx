@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
 import Table from "~community/common/components/molecules/Table/Table";
@@ -73,19 +74,23 @@ const HolidayTable: FC<Props> = ({
     setIndividualDeleteId,
     selectedDeleteIds,
     setSelectedDeleteIds
-  } = usePeopleStore((state) => ({
-    setIsHolidayModalOpen: state.setIsHolidayModalOpen,
-    setHolidayModalType: state.setHolidayModalType,
-    setIndividualDeleteId: state.setIndividualDeleteId,
-    selectedDeleteIds: state.selectedDeleteIds,
-    setSelectedDeleteIds: state.setSelectedDeleteIds
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      setIsHolidayModalOpen: state.setIsHolidayModalOpen,
+      setHolidayModalType: state.setHolidayModalType,
+      setIndividualDeleteId: state.setIndividualDeleteId,
+      selectedDeleteIds: state.selectedDeleteIds,
+      setSelectedDeleteIds: state.setSelectedDeleteIds
+    }))
+  );
 
   const { ongoingQuickSetup, quickSetupCurrentFlowSteps } =
-    useCommonEnterpriseStore((state) => ({
-      ongoingQuickSetup: state.ongoingQuickSetup,
-      quickSetupCurrentFlowSteps: state.quickSetupCurrentFlowSteps
-    }));
+    useCommonEnterpriseStore(
+      useShallow((state) => ({
+        ongoingQuickSetup: state.ongoingQuickSetup,
+        quickSetupCurrentFlowSteps: state.quickSetupCurrentFlowSteps
+      }))
+    );
 
   const [selectedHolidays, setSelectedHolidays] = useState<number[]>([]);
 

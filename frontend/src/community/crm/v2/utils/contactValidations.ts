@@ -32,11 +32,14 @@ export const getContactValidationSchema = (
       .required(translator(["validations", "email"])),
     contactNumber: Yup.string()
       .trim()
+      .nullable()
       .optional()
       .matches(isValidPhoneNumber(), {
         message: translator(["validations", "contactNumber"]),
         excludeEmptyString: true
       }),
     companyId: Yup.number().nullable().optional(),
-    ownerId: Yup.number().required(translator(["validations", "owner"]))
+    ownerId: Yup.number()
+      .nullable()
+      .required(translator(["validations", "owner"]))
   });

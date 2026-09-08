@@ -1,6 +1,7 @@
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { LEAVE_ERROR_NUMBER_OF_DAYS_CANNOT_BE_LESS_THAN_USED_DAYS } from "~community/common/constants/errorMessageKeys";
@@ -39,11 +40,14 @@ const EditLeaveAllocationModal: React.FC<Props> = ({
     setCustomLeaveAllocationModalType,
     setIsLeaveAllocationModalOpen,
     currentEditingLeaveAllocation
-  } = useLeaveStore((state) => ({
-    setCustomLeaveAllocationModalType: state.setCustomLeaveAllocationModalType,
-    setIsLeaveAllocationModalOpen: state.setIsLeaveAllocationModalOpen,
-    currentEditingLeaveAllocation: state.currentEditingLeaveAllocation
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      setCustomLeaveAllocationModalType:
+        state.setCustomLeaveAllocationModalType,
+      setIsLeaveAllocationModalOpen: state.setIsLeaveAllocationModalOpen,
+      currentEditingLeaveAllocation: state.currentEditingLeaveAllocation
+    }))
+  );
 
   const { sendEvent } = useGoogleAnalyticsEvent();
 

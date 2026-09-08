@@ -124,10 +124,7 @@ const useEmployeeDetailsFormHandler = ({
     data: checkEmailAndIdentificationNo,
     refetch,
     isSuccess
-  } = useCheckEmailAndIdentificationNo(
-    debouncedEmail,
-    debouncedEmployeeNumber
-  );
+  } = useCheckEmailAndIdentificationNo(debouncedEmail, debouncedEmployeeNumber);
 
   useEffect(() => {
     if (employee?.employment?.employmentDetails?.email !== values.email) {
@@ -415,7 +412,11 @@ const useEmployeeDetailsFormHandler = ({
   useEffect(() => {
     const updatedData = checkEmailAndIdentificationNo;
     if (updatedData && isSuccess && !isProfileView && !isManager) {
-      if (updatedData.isWorkEmailExists && !formik.touched.email && !updatedData.isGuestUser) {
+      if (
+        updatedData.isWorkEmailExists &&
+        !formik.touched.email &&
+        !updatedData.isGuestUser
+      ) {
         setIsUniqueEmail(false);
       } else {
         setIsUniqueEmail(true);
