@@ -1,5 +1,6 @@
 import { AvatarChip } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -7,13 +8,17 @@ import SearchableDropdown, {
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import { useGetOwnerLookup } from "~community/crm/v2/api/ContactApi";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmOwnerLookupFilterRequest } from "~community/crm/v2/types/CrmTypes";
-import { getOwnerById, getOwnerName } from "~community/crm/v2/utils/commonUtil";
+import {
+  getOwnerById,
+  updateOwnerRecord
+} from "~community/crm/v2/utils/commonUtil";
 
 interface EditableContactOwnerFieldProps {
   ownerId?: number;
@@ -35,7 +40,12 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
     SEARCH_DEBOUNCE_DELAY
   );
 
-  const owners = useCrmStoreV2((store) => store.owners);
+  const { owners, setOwners } = useCrmStoreV2(
+    useShallow((store) => ({
+      owners: store.owners,
+      setOwners: store.setOwners
+    }))
+  );
 
   const ownerFilters: CrmOwnerLookupFilterRequest = {
     searchKeyword: debouncedOwnerSearch,
@@ -47,11 +57,15 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
   const selectedOwner = getOwnerById(owners, ownerId);
 
   const handleOwnerSelect = (item: SearchableDropdownItem) => {
-    onChange(
-      ownerLookupData?.items.find(
-        (owner) => String(owner.employeeId) === item.id
-      )
+    const owner = ownerLookupData?.items.find(
+      (lookupOwner) => String(lookupOwner.employeeId) === item.id
     );
+
+    if (owner !== undefined) {
+      setOwners(updateOwnerRecord(owners, [owner]));
+    }
+
+    onChange(owner);
     setOwnerSearchText("");
   };
 
@@ -82,7 +96,10 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
               src: owner.authPic ?? undefined,
               size: "sm"
             }}
-            label={getOwnerName(owner)}
+            label={concatStrings([
+              owner.firstName,
+              owner.lastName ?? ""
+            ]).trim()}
           />
         )
       });

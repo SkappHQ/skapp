@@ -5,3 +5,7 @@ export function isValidCompanyWebsiteUrl(): RegExp {
 export function isContactNameValid(): RegExp {
   return /^[\p{L} \-.,']+$/u;
 }
+
+export function isDealStageNameValid(): RegExp {
+  return /^(?=.*\p{L})[\p{L}\p{N} \-.']+$/u;
+}

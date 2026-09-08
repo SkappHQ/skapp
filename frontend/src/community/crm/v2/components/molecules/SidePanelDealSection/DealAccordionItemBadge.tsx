@@ -1,5 +1,6 @@
 import { Chip } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
@@ -13,7 +14,7 @@ interface DealAccordionItemBadgeProps {
 const DealAccordionItemBadge: FC<DealAccordionItemBadgeProps> = ({ deal }) => {
   const { getStageByName } = useStageNameMapper();
 
-  const stages = useCrmStoreV2((store) => store.stages);
+  const stages = useCrmStoreV2(useShallow((store) => store.stages));
 
   if (deal.stageId !== undefined) {
     const stage = stages[deal.stageId];

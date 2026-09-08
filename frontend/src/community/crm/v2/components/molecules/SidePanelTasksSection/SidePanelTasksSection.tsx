@@ -21,6 +21,7 @@ import SidePanelTasksList from "./SidePanelTasksList";
 
 interface SidePanelTasksSectionProps {
   taskIds?: number[];
+  emptyTitle?: string;
   emptyDescription?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
@@ -29,6 +30,7 @@ interface SidePanelTasksSectionProps {
 
 const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   taskIds,
+  emptyTitle,
   emptyDescription,
   hasNextPage = false,
   isFetchingNextPage = false,
@@ -115,7 +117,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   return (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
-      title={translateText(["tasks", "emptyTitle"])}
+      title={emptyTitle ?? translateText(["tasks", "emptyTitle"])}
       description={
         emptyDescription ?? translateText(["tasks", "emptyDescription"])
       }
