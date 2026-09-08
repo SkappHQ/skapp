@@ -12,10 +12,10 @@ import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/C
 import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmModalTypes } from "~community/crm/types/ModalTypes";
-import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import CompanyModalControllerV2 from "~community/crm/v2/components/organisms/CompanyModalController/CompanyModalController";
 import CompanySidePanelV2 from "~community/crm/v2/components/organisms/CompanySidePanel/CompanySidePanel";
 import { CompanyTable as CompanyTableV2 } from "~community/crm/v2/components/organisms/CompanyTable/CompanyTable";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -30,11 +30,13 @@ const CompaniesV1 = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType,
-      selectedCompanyId: store.selectedCompanyId
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+        setCompanyModalType: store.setCompanyModalType,
+        selectedCompanyId: store.selectedCompanyId
+      }))
+    );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {

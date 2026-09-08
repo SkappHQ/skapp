@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { Dispatch, FC, SetStateAction, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import CloseIcon from "~community/common/assets/Icons/CloseIcon";
 import RightArrowIcon from "~community/common/assets/Icons/RightArrowIcon";
@@ -45,30 +46,34 @@ const UploadHolidayBulk: FC<Props> = ({ setBulkUploadData }) => {
     setIsBulkUpload,
     setIsHolidayModalOpen,
     setFailedCount
-  } = usePeopleStore((state) => ({
-    isNewCalendarDetailsValid: state.isNewCalendarDetailsValid,
-    selectedYear: state.selectedYear,
-    newCalenderDetails: state.newCalenderDetails,
-    holidayModalType: state.holidayModalType,
-    calendarErrors: state.calendarErrors,
-    setCalendarErrors: state.setCalendarErrors,
-    setIsNewCalendarDetailsValid: state.setIsNewCalendarDetailsValid,
-    setNewCalendarDetails: state.setNewCalendarDetails,
-    setHolidayModalType: state.setHolidayModalType,
-    setIsBulkUpload: state.setIsBulkUpload,
-    setIsHolidayModalOpen: state.setIsHolidayModalOpen,
-    setFailedCount: state.setFailedCount
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      isNewCalendarDetailsValid: state.isNewCalendarDetailsValid,
+      selectedYear: state.selectedYear,
+      newCalenderDetails: state.newCalenderDetails,
+      holidayModalType: state.holidayModalType,
+      calendarErrors: state.calendarErrors,
+      setCalendarErrors: state.setCalendarErrors,
+      setIsNewCalendarDetailsValid: state.setIsNewCalendarDetailsValid,
+      setNewCalendarDetails: state.setNewCalendarDetails,
+      setHolidayModalType: state.setHolidayModalType,
+      setIsBulkUpload: state.setIsBulkUpload,
+      setIsHolidayModalOpen: state.setIsHolidayModalOpen,
+      setFailedCount: state.setFailedCount
+    }))
+  );
 
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [holidayBulkList, setHolidayBulkList] = useState<HolidayType[]>([]);
 

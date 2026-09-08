@@ -51,13 +51,14 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { getStageByName } = useStageNameMapper();
 
-  const { deal, stagesRecord, contactRecord, companies, owners } =
+  const { deal, stagesRecord, contactRecord, companies, setCompanies, owners } =
     useCrmStoreV2(
       useShallow((store) => ({
         deal: dealId != null ? store.deals[dealId] : undefined,
         stagesRecord: store.stages,
         contactRecord: store.contacts,
         companies: store.companies,
+        setCompanies: store.setCompanies,
         owners: store.owners
       }))
     );
@@ -97,8 +98,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      setCompanies(mergeCompanies(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

@@ -78,13 +78,11 @@ export interface CrmBoardReorderResultType extends CrmBoardDealNeighboursType {
   reorderedDeals: CrmBoardDealSliceType[];
 }
 
-export interface CrmBoardReorderWithinStagePayload
-  extends CrmBoardDealNeighboursType {
+export interface CrmBoardReorderWithinStagePayload extends CrmBoardDealNeighboursType {
   dealId: number;
 }
 
-export interface CrmBoardMoveBetweenStagesPayload
-  extends CrmBoardDealNeighboursType {
+export interface CrmBoardMoveBetweenStagesPayload extends CrmBoardDealNeighboursType {
   dealId: number;
   newStageId: number;
 }
