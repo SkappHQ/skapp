@@ -55,15 +55,31 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
     });
   };
 
-  const { stages, setPreselectedStageId, setSelectedDealId, openCrmSidePanel } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        stages: store.stages,
-        setPreselectedStageId: store.setPreselectedStageId,
-        setSelectedDealId: store.setSelectedDealId,
-        openCrmSidePanel: store.openCrmSidePanel
-      }))
-    );
+  const {
+    stages,
+    deals,
+    board,
+    dealIds,
+    setDeals,
+    setBoardColumn,
+    setDealIds,
+    setPreselectedStageId,
+    setSelectedDealId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      stages: store.stages,
+      deals: store.deals,
+      board: store.board,
+      dealIds: store.dealIds,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn,
+      setDealIds: store.setDealIds,
+      setPreselectedStageId: store.setPreselectedStageId,
+      setSelectedDealId: store.setSelectedDealId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const stageIds = useMemo(() => getBoardStageIds(stages), [stages]);
 
@@ -74,11 +90,12 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
 
   useEffect(() => {
     if (boardData) {
-      const store = useCrmStoreV2.getState();
-      const next = ingestBoardStageDeals(store, boardData, { append: false });
-      store.setDeals(next.deals);
-      store.setBoardColumn(next.board);
-      store.setDealIds(next.dealIds);
+      const next = ingestBoardStageDeals({ deals, board, dealIds }, boardData, {
+        append: false
+      });
+      setDeals(next.deals);
+      setBoardColumn(next.board);
+      setDealIds(next.dealIds);
     }
   }, [boardData]);
 

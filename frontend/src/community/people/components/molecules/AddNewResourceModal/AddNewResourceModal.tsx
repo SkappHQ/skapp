@@ -3,6 +3,7 @@ import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import Link from "next/link";
 import { ChangeEvent, useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import InputField from "~community/common/components/molecules/InputField/InputField";
@@ -13,7 +14,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { getBlinkClass } from "~community/common/utils/commonUtil";
 import {
   useCheckEmailAndIdentificationNoForQuickAdd,
@@ -26,6 +26,7 @@ import { quickAddEmployeeValidations } from "~community/people/utils/peopleValid
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
 
 const AddNewResourceModal = () => {
@@ -54,23 +55,27 @@ const AddNewResourceModal = () => {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const {
     setDirectoryModalType,
     setIsDirectoryModalOpen,
     setPendingAddResourceData,
     pendingAddResourceData
-  } = usePeopleStore((state) => ({
-    setDirectoryModalType: state.setDirectoryModalType,
-    setIsDirectoryModalOpen: state.setIsDirectoryModalOpen,
-    setPendingAddResourceData: state.setPendingAddResourceData,
-    pendingAddResourceData: state.pendingAddResourceData
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      setDirectoryModalType: state.setDirectoryModalType,
+      setIsDirectoryModalOpen: state.setIsDirectoryModalOpen,
+      setPendingAddResourceData: state.setPendingAddResourceData,
+      pendingAddResourceData: state.pendingAddResourceData
+    }))
+  );
 
   const { resetPeopleSlice } = usePeopleStore((state) => state);
 
@@ -150,7 +155,9 @@ const AddNewResourceModal = () => {
     }
 
     if (updatedData?.isWorkEmailExists && updatedData?.isGuestUser) {
-      setDirectoryModalType(DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION);
+      setDirectoryModalType(
+        DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION
+      );
       return false;
     }
 

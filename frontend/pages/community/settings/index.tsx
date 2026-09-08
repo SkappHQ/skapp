@@ -3,6 +3,7 @@ import { Tabs } from "@rootcodelabs/skapp-ui";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -29,9 +30,11 @@ const Settings: NextPage = () => {
   const isEnterprise = environment === appModes.ENTERPRISE;
   const { isEmployee } = useSessionData();
 
-  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    globalLoginMethod: state.globalLoginMethod
-  }));
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
 
   const shouldShowIntegrationsTitle =
     (globalLoginMethod === GlobalLoginMethod.GOOGLE ||

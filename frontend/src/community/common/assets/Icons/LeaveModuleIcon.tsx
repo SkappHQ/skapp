@@ -1,4 +1,5 @@
 import { JSX } from "react";
+
 import { IconProps } from "~community/common/types/IconTypes";
 
 const LeaveModuleIcon = ({
@@ -24,7 +25,7 @@ const LeaveModuleIcon = ({
         stroke="#D64550"
         style={{
           stroke: "color(display-p3 0.8392 0.2706 0.3137)",
-          strokeOpacity: 1,
+          strokeOpacity: 1
         }}
         strokeWidth="4.10244"
       />
@@ -33,7 +34,7 @@ const LeaveModuleIcon = ({
         fill="#2A61A0"
         style={{
           fill: "color(display-p3 0.1653 0.3810 0.6285)",
-          fillOpacity: 1,
+          fillOpacity: 1
         }}
       />
       <path
@@ -41,7 +42,7 @@ const LeaveModuleIcon = ({
         fill="#EF8D42"
         style={{
           fill: "color(display-p3 0.9373 0.5529 0.2588)",
-          fillOpacity: 1,
+          fillOpacity: 1
         }}
       />
       <path
@@ -49,7 +50,7 @@ const LeaveModuleIcon = ({
         fill="#2A61A0"
         style={{
           fill: "color(display-p3 0.1653 0.3810 0.6285)",
-          fillOpacity: 1,
+          fillOpacity: 1
         }}
       />
       <path
@@ -57,7 +58,7 @@ const LeaveModuleIcon = ({
         fill="#D64550"
         style={{
           fill: "color(display-p3 0.8392 0.2706 0.3137)",
-          fillOpacity: 1,
+          fillOpacity: 1
         }}
       />
       <path
@@ -65,7 +66,7 @@ const LeaveModuleIcon = ({
         fill="#EF8D42"
         style={{
           fill: "color(display-p3 0.9373 0.5529 0.2588)",
-          fillOpacity: 1,
+          fillOpacity: 1
         }}
       />
     </svg>

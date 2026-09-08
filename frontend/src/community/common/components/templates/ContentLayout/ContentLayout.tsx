@@ -217,11 +217,13 @@ const ContentLayout = ({
     setShowUserLimitBanner,
     showUserLimitBanner,
     setIsUserLimitExceeded
-  } = useUserLimitStore((state) => ({
-    setShowUserLimitBanner: state.setShowUserLimitBanner,
-    showUserLimitBanner: state.showUserLimitBanner,
-    setIsUserLimitExceeded: state.setIsUserLimitExceeded
-  }));
+  } = useUserLimitStore(
+    useShallow((state) => ({
+      setShowUserLimitBanner: state.setShowUserLimitBanner,
+      showUserLimitBanner: state.showUserLimitBanner,
+      setIsUserLimitExceeded: state.setIsUserLimitExceeded
+    }))
+  );
 
   const { data: storageAvailabilityData } = useStorageAvailability(!!user);
 
