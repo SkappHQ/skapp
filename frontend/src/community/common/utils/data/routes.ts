@@ -410,7 +410,7 @@ const routes = [
     ]
   },
   {
-    id: "10",
+    id: "8",
     name: "Report",
     url: ROUTES.REPORT.BASE,
     icon: IconName.REPORT_ICON,
@@ -428,7 +428,7 @@ const routes = [
     ]
   },
   {
-    id: "8",
+    id: "9",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -444,7 +444,7 @@ const routes = [
     ]
   },
   {
-    id: "9",
+    id: "10",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,
