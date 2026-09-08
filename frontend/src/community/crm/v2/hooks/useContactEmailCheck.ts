@@ -10,19 +10,11 @@ interface UseContactEmailCheckParams {
 }
 
 interface UseContactEmailCheckReturn {
-  /** The typed address already belongs to another contact. */
   isDuplicateEmail: boolean;
-  /** The address changed but the exists-check has not answered yet. */
   isEmailCheckUnresolved: boolean;
-  /** Domain of a settled, valid address, used to suggest a company. */
   suggestedDomain: string;
 }
 
-/**
- * Checks a contact email against the existing contacts while it is typed.
- * Both the check and the domain suggestion run on the debounced value, so the
- * contact's own address never reports itself as a duplicate mid-edit.
- */
 export const useContactEmailCheck = ({
   email,
   originalEmail
