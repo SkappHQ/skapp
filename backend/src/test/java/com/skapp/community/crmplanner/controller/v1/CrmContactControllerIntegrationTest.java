@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -380,6 +381,97 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Create contact with a new companyName - Creates the company and links it")
+	void createContact_NewCompanyName_CreatesAndLinksCompany() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setCompanyName("Brand New Corp");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Brand New Corp"));
+
+		assertThat(crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Brand New Corp")).isPresent();
+	}
+
+	@Test
+	@DisplayName("Create contact with companyName differing only in case - Reuses the existing company")
+	void createContact_CompanyNameDifferentCase_ReusesExistingCompany() throws Exception {
+		Long existingId = savedCompany("Integration Test Corp").getId();
+
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setCompanyName("integration test corp");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(existingId));
+
+		assertEquals(1L, crmCompanyDao.countByIsDeletedFalse());
+	}
+
+	@Test
+	@DisplayName("Create contact with blank companyName - Returns Created with no company")
+	void createContact_BlankCompanyName_ReturnsCreatedWithNoCompany() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setCompanyName("   ");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Create contact with companyName of a soft-deleted company - Creates a new company")
+	void createContact_SoftDeletedCompanyName_CreatesNewCompany() throws Exception {
+		CrmCompany deleted = savedCompany("Deleted Corp");
+		deleted.setIsDeleted(true);
+		crmCompanyDao.save(deleted);
+
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setCompanyName("Deleted Corp");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Deleted Corp"));
+
+		CrmCompany recreated = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Deleted Corp").orElseThrow();
+		assertThat(recreated.getId()).isNotEqualTo(deleted.getId());
+	}
+
+	@Test
+	@DisplayName("Create contact with both companyId and companyName - companyId takes precedence")
+	void createContact_BothCompanyIdAndName_CompanyIdWins() throws Exception {
+		Long companyId = savedCompany("Integration Test Corp").getId();
+
+		CrmContactCreateRequestDto dto = createValidPayload(companyId);
+		dto.setCompanyName("Should Be Ignored");
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Integration Test Corp"));
+
+		assertThat(crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Should Be Ignored")).isEmpty();
+	}
+
+	@Test
+	@DisplayName("Create contact with too long companyName - Returns Bad Request with company-name-too-long error")
+	void createContact_CompanyNameTooLong_ReturnsBadRequest() throws Exception {
+		CrmContactCreateRequestDto dto = createValidPayload(null);
+		dto.setCompanyName("A".repeat(CrmConstants.COMPANY_NAME_MAX_LENGTH + 1));
+
+		performPostRequest(dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NAME_TOO_LONG)));
 	}
 
 	@Test
