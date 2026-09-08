@@ -21,6 +21,7 @@ import SidePanelTasksList from "./SidePanelTasksList";
 
 interface SidePanelTasksSectionProps {
   taskIds?: number[];
+  showAddTaskAction?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
   hasNextPage?: boolean;
@@ -30,6 +31,7 @@ interface SidePanelTasksSectionProps {
 
 const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   taskIds,
+  showAddTaskAction = true,
   emptyTitle,
   emptyDescription,
   hasNextPage = false,
@@ -84,7 +86,8 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   const translateText = useTranslator(
     "crmModule",
     "contacts",
-    "contactDetailsPanel"
+    "contactDetailsPanel",
+    "tasks"
   );
 
   const { loadingRef } = useInfiniteScroll({
@@ -107,6 +110,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
           tasks={resolveTasks(taskIds, optimisticTasks)}
           onAddTask={handleAddTask}
           isAddTaskDisabled={isCheckingCrmLimit}
+          showAddTaskAction={showAddTaskAction}
           onToggleComplete={handleToggleComplete}
         />
         <div ref={loadingRef} />
@@ -117,19 +121,21 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   return (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
-      title={emptyTitle ?? translateText(["tasks", "emptyTitle"])}
-      description={
-        emptyDescription ?? translateText(["tasks", "emptyDescription"])
+      title={emptyTitle ?? translateText(["emptyTitle"])}
+      description={emptyDescription ?? translateText(["emptyDescription"])}
+      button={
+        showAddTaskAction
+          ? {
+              children: translateText(["addTaskButtonEmptyView"]),
+              variant: "tertiary",
+              onClick: handleAddTask,
+              disabled: isCheckingCrmLimit,
+              isLoading: isCheckingCrmLimit,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["addTaskButtonEmptyView"])
+            }
+          : undefined
       }
-      button={{
-        children: translateText(["tasks", "addTaskButtonEmptyView"]),
-        variant: "tertiary",
-        onClick: handleAddTask,
-        disabled: isCheckingCrmLimit,
-        isLoading: isCheckingCrmLimit,
-        icon: <PlusIcon />,
-        "aria-label": translateText(["tasks", "addTaskButtonEmptyView"])
-      }}
       className={{
         wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
       }}
