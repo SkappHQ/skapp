@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
@@ -139,8 +140,12 @@ const createDeal = async (payload: CrmDealEntity): Promise<CrmDealEntity> => {
 
 export const useCreateDeal = (
   onSuccess: (createdDeal: CrmDealEntity) => void,
-  onError: (error: AxiosError) => void
-): UseMutationResult<CrmDealEntity, AxiosError, CrmDealEntity> => {
+  onError: (error: AxiosError<ErrorResponse["response"]["data"]>) => void
+): UseMutationResult<
+  CrmDealEntity,
+  AxiosError<ErrorResponse["response"]["data"]>,
+  CrmDealEntity
+> => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createDeal,

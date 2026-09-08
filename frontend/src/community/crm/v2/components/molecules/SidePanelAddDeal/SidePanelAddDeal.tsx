@@ -9,6 +9,7 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
 import { useCreateDeal } from "~community/crm/v2/api/DealApi";
@@ -42,23 +43,6 @@ interface InlineDealFormValues {
   name: string;
   contactId: string;
 }
-
-interface CrmErrorPayload {
-  results?: { messageKey?: string }[];
-}
-
-const hasErrorResults = (data: unknown): data is CrmErrorPayload =>
-  typeof data === "object" && data !== null && "results" in data;
-
-const getErrorMessageKey = (error: AxiosError): string | undefined => {
-  const data = error.response?.data;
-
-  if (!hasErrorResults(data)) {
-    return undefined;
-  }
-
-  return data.results?.[0]?.messageKey;
-};
 
 const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
   onClose,
@@ -111,8 +95,12 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     onClose();
   };
 
-  const handleCreateDealError = (error: AxiosError) => {
-    if (getErrorMessageKey(error) === CrmErrorMessageKeyEnum.DEAL_EXISTS) {
+  const handleCreateDealError = (
+    error: AxiosError<ErrorResponse["response"]["data"]>
+  ) => {
+    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
+
+    if (messageKey === CrmErrorMessageKeyEnum.DEAL_EXISTS) {
       formik.setFieldError(
         "name",
         translateText(["inlineAddDeal", "validations", "dealNameExists"])
