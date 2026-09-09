@@ -356,11 +356,11 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
 		}
 
+		Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
+
 		if (params.getSearchKeyword() != null && !params.getSearchKeyword().isBlank()) {
 			String escaped = StringUtils.escapeLikePattern(params.getSearchKeyword().trim().toLowerCase());
-
-			Join<CrmTask, CrmContact> contactJoin = root.join(CrmTask_.contact, JoinType.LEFT);
-			Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
 
 			predicates.add(cb.or(cb.like(cb.lower(root.get(CrmTask_.name)), "%" + escaped + "%"),
 					cb.like(cb.lower(contactJoin.get(CrmContact_.name)), "%" + escaped + "%"),
@@ -368,7 +368,10 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getContactId() != null) {
-			predicates.add(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), params.getContactId()));
+			Join<CrmDeal, CrmContact> dealContactJoin = dealJoin.join(CrmDeal_.contact, JoinType.LEFT);
+
+			predicates.add(cb.or(cb.equal(contactJoin.get(CrmContact_.id), params.getContactId()),
+					cb.equal(dealContactJoin.get(CrmContact_.id), params.getContactId())));
 		}
 
 		if (params.getDealId() != null) {

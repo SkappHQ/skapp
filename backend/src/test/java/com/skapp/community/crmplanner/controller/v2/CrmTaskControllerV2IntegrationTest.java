@@ -417,6 +417,36 @@ class CrmTaskControllerV2IntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get tasks filtered by contactId - Includes tasks linked only through the contact's deal")
+	void getTasks_ByContactId_IncludesDealLinkedTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+		savedTaskWith("Deal Linked Task", company, null, savedDeal("Contact Deal"), false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Excludes tasks on another contact's deal")
+	void getTasks_ByContactId_ExcludesOtherContactsDealTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+
+		CrmDeal otherDeal = savedDeal("Other Contact Deal");
+		otherDeal.setContact(savedContact("Other Deal Contact"));
+		crmDealDao.save(otherDeal);
+		savedTaskWith("Other Deal Task", company, null, otherDeal, false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
 	@DisplayName("Get tasks with size -1 - Returns every match in a single page")
 	void getTasks_UnpagedSize_ReturnsEveryMatchInOnePage() throws Exception {
 		for (int index = 0; index < 12; index++) {
