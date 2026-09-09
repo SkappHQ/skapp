@@ -271,6 +271,28 @@ public class CrmValidations {
 		}
 	}
 
+	/**
+	 * Normalizes an industry name for storage and comparison: trims the ends and
+	 * collapses runs of internal whitespace to a single space, so "Real estate " and
+	 * "Real estate" resolve to the same name instead of becoming separate entries.
+	 */
+	public static String normalizeIndustryName(String name) {
+		if (name == null) {
+			return null;
+		}
+		return name.trim().replaceAll(CrmConstants.CONSECUTIVE_WHITESPACE_REGEX, " ");
+	}
+
+	public static void validateIndustryName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED);
+		}
+
+		if (normalizeIndustryName(name).length() > CrmConstants.INDUSTRY_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_TOO_LONG);
+		}
+	}
+
 	public static void validateContactBelongsToCompany(CrmContact contact, CrmCompany company) {
 		if (contact == null || company == null) {
 			return;

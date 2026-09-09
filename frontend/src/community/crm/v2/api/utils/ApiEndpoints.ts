@@ -42,6 +42,10 @@ export const crmTaskEndpoints = {
   DELETE_TASK: (id: number) => `${moduleAPIPath.CRM}/task/${id}`
 };
 
+export const crmIndustryEndpointsV2 = {
+  CREATE_INDUSTRY: `${moduleAPIPath.CRM}/industry`
+};
+
 export const crmLookupEndpoints = {
   CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`

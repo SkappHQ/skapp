@@ -1,19 +1,14 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  Dropdown,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { useTranslator } from "~community/common/hooks/useTranslator";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import IndustrySelect from "~community/crm/v2/components/molecules/IndustrySelect/IndustrySelect";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
@@ -31,21 +26,9 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   originalName,
   onCancel
 }) => {
-  const translateIndustryOptions = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
-
-  const industryOptions = useMemo(
-    () =>
-      Object.values(CrmIndustryEnum).map((industry) => ({
-        id: industry,
-        label: translateIndustryOptions([industry]),
-        value: industry
-      })),
-    [translateIndustryOptions]
-  );
+  // Creating an industry is restricted to Sales Managers and Admins. Admins inherit the
+  // manager role, so this single flag covers both, and matches the server-side rule.
+  const { isCrmSalesManager: canCreateIndustry } = useSessionData();
 
   const {
     values,
@@ -76,8 +59,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : errors.name;
 
-  const handleIndustryChange = (value: string) => {
-    setFieldValue("industry", value);
+  const handleIndustryChange = (industryId: number | null): void => {
+    void setFieldValue("industryId", industryId ?? undefined);
   };
 
   return (
@@ -136,15 +119,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <Dropdown
-        options={industryOptions}
-        value={values.industry}
+      <IndustrySelect
+        value={values.industryId}
         onChange={handleIndustryChange}
-        label={translateText(["labels", "industry"])}
-        className="rounded-lg"
-        variant="primary"
-        ariaLabel={translateText(["ariaLabels", "industry"])}
-        width="100%"
+        canCreate={Boolean(canCreateIndustry)}
+        translateText={translateText}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

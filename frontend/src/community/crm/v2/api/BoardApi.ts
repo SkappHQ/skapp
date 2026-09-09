@@ -6,7 +6,9 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch from "~community/common/utils/axiosInterceptor";
+import authFetch, {
+  authFetchV2
+} from "~community/common/utils/axiosInterceptor";
 import {
   CrmBoardInitDataResponse,
   CrmDealMoveBetweenStagesRequest,
@@ -19,7 +21,7 @@ import { crmBoardEndpoints } from "./utils/ApiEndpoints";
 import { crmBoardQueryKeys } from "./utils/QueryKeys";
 
 const fetchBoardInitData = async (): Promise<CrmBoardInitDataResponse> => {
-  const response = await authFetch.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
+  const response = await authFetchV2.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
   return response?.data?.results?.[0];
 };
 

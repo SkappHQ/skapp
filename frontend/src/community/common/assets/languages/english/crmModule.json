@@ -230,14 +230,18 @@
         "contactNumber": "Contact no.",
         "website": "Website URL",
         "address": "Address",
-        "industry": "Industry"
+        "industry": "Industry",
+        "addNamedIndustry": "+ Add \"{{name}}\"",
+        "noIndustriesFound": "No industries found",
+        "addIndustry": "Add industry"
       },
       "placeholders": {
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
         "address": "Enter address",
-        "industry": "Select industry"
+        "industry": "Select industry",
+        "industrySearch": "Search or add industry"
       },
       "buttons": {
         "save": "Save",
@@ -260,10 +264,15 @@
         "companyNameLength": "Company name must be less than 30 characters",
         "characterLength": "Entry must be less than 50 characters",
         "addressLength": "Address must be less than 100 characters",
-        "industry": "Please select a valid industry"
+        "industry": "Please select a valid industry",
+        "industryNameRequired": "Enter an industry name",
+        "industryExists": "This industry already exists"
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong",
+        "addIndustry": {
+          "errorDescription": "Failed to add industry"
+        },
         "add": {
           "successTitle": "Company added successfully",
           "successDescription": "The company has been successfully added",

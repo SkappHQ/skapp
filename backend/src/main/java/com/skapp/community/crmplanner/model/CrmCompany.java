@@ -38,6 +38,9 @@ public class CrmCompany extends Auditable<String> {
 	@Enumerated(EnumType.STRING)
 	private CrmIndustry industry;
 
+	@Column(name = "industry_id")
+	private Long industryId;
+
 	@Column(name = "website")
 	private String website;
 

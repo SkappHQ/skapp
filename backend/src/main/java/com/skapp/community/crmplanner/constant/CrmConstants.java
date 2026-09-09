@@ -58,6 +58,10 @@ public class CrmConstants {
 
 	public static final int DOMAIN_MAX_LENGTH = 255;
 
+	public static final int INDUSTRY_NAME_MAX_LENGTH = 100;
+
+	public static final String CONSECUTIVE_WHITESPACE_REGEX = "\\s+";
+
 	public static final String HTTPS_SCHEME = "https";
 
 	public static final Set<CrmDealStageType> TERMINAL_STAGES = EnumSet.of(CrmDealStageType.WON, CrmDealStageType.LOST);

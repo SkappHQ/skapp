@@ -85,6 +85,7 @@ export const getCompanyFormInitialValues = (
 ): CrmCompanyEntity => ({
   name: company?.name ?? "",
   industry: company?.industry ?? CrmIndustryEnum.NONE,
+  industryId: company?.industryId,
   website: company?.website ?? "",
   address: company?.address ?? "",
   contactNumber: company?.contactNumber ?? ""
@@ -95,6 +96,7 @@ export const getTrimmedCompanyValues = (
 ): CrmCompanyEntity => ({
   name: values.name?.trim(),
   industry: values.industry,
+  industryId: values.industryId,
   website: values.website?.trim(),
   address: values.address?.trim(),
   contactNumber: values.contactNumber?.trim()
@@ -112,6 +114,10 @@ export const getChangedCompanyFields = (
 
   if (currentValues.industry !== initialValues.industry) {
     changedFields.industry = currentValues.industry;
+  }
+
+  if (currentValues.industryId !== initialValues.industryId) {
+    changedFields.industryId = currentValues.industryId;
   }
 
   if (currentValues.website !== initialValues.website) {

@@ -173,7 +173,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
 		query.select(cb.construct(CrmCompanyMetricsResponseDtoV2.class, company.get(CrmCompany_.id),
-				company.get(CrmCompany_.name), company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
+				company.get(CrmCompany_.name), company.get(CrmCompany_.industryId), company.get(CrmCompany_.website),
 				company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber),
 				cb.construct(CrmCompanyMetrics.class, taskSubquery, overdueSubquery,
 						openValueSubquery.cast(String.class), accountValueSubquery.cast(String.class),

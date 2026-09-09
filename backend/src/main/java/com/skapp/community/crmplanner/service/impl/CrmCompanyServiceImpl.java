@@ -23,8 +23,10 @@ import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,8 @@ import java.util.List;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -99,6 +103,8 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		}
 
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		newCompany.setIndustryId(crmCompany.getIndustryId() != null
+				? requireExistingIndustryId(crmCompany.getIndustryId()) : resolveIndustryId(crmCompany.getIndustry()));
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
@@ -112,6 +118,32 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private boolean checkCompanyExists(String name) {
 		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+	}
+
+	/**
+	 * Resolves the legacy industry enum to its crm_industry row id. Returns null when the
+	 * enum has no matching row, so an unseeded tenant simply stores no industry id rather
+	 * than failing the write.
+	 */
+	/**
+	 * Validates a client-supplied industry id before it is written, so a stale or bogus
+	 * id fails with a readable error rather than a foreign key violation.
+	 */
+	private Long requireExistingIndustryId(Long industryId) {
+		if (!crmIndustryDao.existsById(industryId)) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
+		}
+		return industryId;
+	}
+
+	private Long resolveIndustryId(CrmIndustry industry) {
+		if (industry == null) {
+			return null;
+		}
+
+		// Lambda rather than a method reference: the imported CrmIndustry here is the
+		// legacy enum, while findByName returns the same-named entity class.
+		return crmIndustryDao.findByName(industry.name()).map(row -> row.getId()).orElse(null);
 	}
 
 	@Override
@@ -249,6 +281,13 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 		if (crmCompany.getIndustry() != null) {
 			existingCompany.setIndustry(crmCompany.getIndustry());
+			existingCompany.setIndustryId(resolveIndustryId(crmCompany.getIndustry()));
+		}
+
+		// Applied after the enum branch so an explicit id always wins over the value
+		// derived from the legacy enum.
+		if (crmCompany.getIndustryId() != null) {
+			existingCompany.setIndustryId(requireExistingIndustryId(crmCompany.getIndustryId()));
 		}
 
 		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);

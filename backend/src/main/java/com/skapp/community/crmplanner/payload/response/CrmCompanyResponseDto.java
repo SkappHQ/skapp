@@ -18,6 +18,13 @@ public class CrmCompanyResponseDto {
 
 	private CrmIndustry industry;
 
+	/**
+	 * The crm_industry reference. Added alongside the legacy enum rather than replacing
+	 * it, so existing consumers of this response keep working while the industry dropdown
+	 * has the id it needs to preselect the saved value.
+	 */
+	private Long industryId;
+
 	private String website;
 
 	private String address;

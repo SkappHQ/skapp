@@ -13,6 +13,7 @@ import {
   CrmCompanyEntity,
   CrmContactEntity,
   CrmDealEntity,
+  CrmIndustryEntity,
   CrmOwnerEntity,
   CrmStageEntity,
   CrmTaskEntity,
@@ -92,6 +93,7 @@ export interface CrmBoardInitDataResponse {
   contacts: CrmContactEntity[];
   owners: CrmOwnerEntity[];
   taskTypes: CrmTaskTypeEntity[];
+  industries: CrmIndustryEntity[];
 }
 
 export interface CrmOwnerListResponse {
@@ -127,6 +129,20 @@ export interface CrmTaskListResponse {
 
 export interface CrmTaskTypeListResponse {
   taskTypes: CrmTaskTypeEntity[];
+}
+
+export interface CrmIndustryCreateRequest {
+  name: string;
+}
+
+export interface CrmIndustryCreateResponse {
+  id: number;
+  name: string;
+  /**
+   * Set by the server when the industry already existed and was returned instead of
+   * being created, so a concurrent duplicate still resolves to the existing record.
+   */
+  alreadyExists: boolean;
 }
 
 export interface CrmExistsResponse {
