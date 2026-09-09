@@ -157,9 +157,6 @@ export const useCreateDeal = (
         queryClient.invalidateQueries({
           queryKey: crmContactQueryKeys.METRICS(createdDeal.contactId)
         });
-        queryClient.invalidateQueries({
-          queryKey: crmContactQueryKeys.LISTS
-        });
       }
       onSuccess(createdDeal);
     },
