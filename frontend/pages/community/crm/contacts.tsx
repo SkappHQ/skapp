@@ -31,11 +31,13 @@ const ContactsV1 = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStore((store) => ({
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      setContactModalType: store.setContactModalType,
-      selectedContactId: store.selectedContactId
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        setIsContactModalOpen: store.setIsContactModalOpen,
+        setContactModalType: store.setContactModalType,
+        selectedContactId: store.selectedContactId
+      }))
+    );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {
@@ -106,7 +108,7 @@ const ContactsV2 = () => {
       primaryButtonText={translateText(["contacts", "addContactBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
-      isPrimaryBtnLoading={isCheckingCrmLimit}
+      isPrimaryBtnLoading={isCheckingCrmLimit || isCrmInitialDataLoading}
       module={Modules.CRM}
     >
       <>
@@ -118,7 +120,7 @@ const ContactsV2 = () => {
 
         <ContactModalControllerV2 />
         <TaskModalControllerV2 />
-        <ContactTableV2 initializeCrmData={isCrmInitialDataLoading} />
+        <ContactTableV2 isCrmDataLoading={isCrmInitialDataLoading} />
       </>
     </ContentLayout>
   );

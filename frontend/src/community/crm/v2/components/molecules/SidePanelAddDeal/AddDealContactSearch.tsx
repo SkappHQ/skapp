@@ -4,11 +4,11 @@ import { ChangeEvent, FC, useState } from "react";
 import SearchableDropdown, {
   SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface AddDealContactSearchProps {
+  id: string;
   contacts: CrmContactEntity[];
   selectedContact?: CrmContactEntity;
   onChange: (contact?: CrmContactEntity) => void;
@@ -17,10 +17,12 @@ interface AddDealContactSearchProps {
   noResultsText: string;
   ariaLabel?: string;
   clearAriaLabel?: string;
+  errorMessage?: string;
   isInvalid?: boolean;
 }
 
 const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
+  id,
   contacts,
   selectedContact,
   onChange,
@@ -29,11 +31,10 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
   noResultsText,
   ariaLabel,
   clearAriaLabel,
+  errorMessage,
   isInvalid = false
 }) => {
   const [searchText, setSearchText] = useState("");
-
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const resetSearch = () => {
     setSearchText("");
@@ -46,7 +47,13 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
   };
 
   const handleSelect = (item: SearchableDropdownItem) => {
-    onChange(contacts.find((contact) => String(contact.id) === item.id));
+    const contact = contacts.find((option) => String(option.id) === item.id);
+
+    if (contact === undefined) {
+      return;
+    }
+
+    onChange(contact);
     resetSearch();
   };
 
@@ -83,7 +90,7 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
 
   return (
     <SearchableDropdown
-      id="add-deal-contact-search"
+      id={id}
       variant="sm"
       placeholder={placeholder}
       value={searchText}
@@ -94,11 +101,7 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
       state={isInvalid ? "error" : "default"}
       required
       isOpenOnFocus={true}
-      errorMessage={translateText([
-        "inlineAddDeal",
-        "validations",
-        "contactRequired"
-      ])}
+      errorMessage={errorMessage}
     />
   );
 };

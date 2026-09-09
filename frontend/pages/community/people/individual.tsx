@@ -39,9 +39,7 @@ const Individual: NextPage = () => {
 
   const isLeaveAdmin = user?.roles?.includes(AdminTypes.LEAVE_ADMIN);
 
-  const isAttendanceAdmin = user?.roles?.includes(
-    AdminTypes.ATTENDANCE_ADMIN
-  );
+  const isAttendanceAdmin = user?.roles?.includes(AdminTypes.ATTENDANCE_ADMIN);
 
   const isLeaveManager = user?.roles?.includes(
     ManagerTypes.LEAVE_MANAGER || AdminTypes.LEAVE_ADMIN
@@ -81,8 +79,7 @@ const Individual: NextPage = () => {
   const steps = [
     translateText(["editAllInfo", "personal"]),
     translateText(["editAllInfo", "employment"]),
-    ...(isLeaveTabVisible &&
-    user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+    ...(isLeaveTabVisible && user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [translateText(["editAllInfo", "leave"])]
       : []),
     ...(isTimeTabVisible &&

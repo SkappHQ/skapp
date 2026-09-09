@@ -22,7 +22,9 @@ export const crmContactEndpoints = {
   CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
   EDIT_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
   DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
-  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`
+  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`,
+  CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
+  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const crmDealEndpointsV2 = {
@@ -34,18 +36,15 @@ export const crmDealEndpointsV2 = {
 
 export const crmDealEndpoints = {
   GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
+  REORDER_DEAL: `${moduleAPIPath.CRM}/deal/reorder`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
+  LIST_VIEW_CONFIG: `${moduleAPIPath.CRM}/deal/list-view-config`,
   DELETE_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage`,
   CREATE_DEAL_STAGE: `${moduleAPIPath.CRM}/deal/stage`,
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
   DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
-};
-
-export const crmLookupEndpoints = {
-  CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
-  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const crmTaskEndpointsV2 = {

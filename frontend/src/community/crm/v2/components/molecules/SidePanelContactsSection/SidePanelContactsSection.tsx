@@ -11,10 +11,9 @@ import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
-  formatMonetaryValue,
+  formatMonetaryValueWithDecimals,
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
-import { getCompanyById } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface SidePanelContactsSectionProps {
@@ -92,8 +91,9 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
           <div className="flex flex-col gap-1 min-w-0">
             <div className="truncate">{contactName}</div>
             <div className="body2 text-secondary-text truncate">
-              {contact.companyId != null &&
-                getCompanyById(companies, contact.companyId)?.name}
+              {contact.companyId != null
+                ? companies[contact.companyId]?.name
+                : undefined}
             </div>
           </div>
         ),
@@ -103,7 +103,9 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
         ),
         closedDealValue: (
           <div className="flex flex-col gap-1 text-right">
-            <div>{formatMonetaryValue(metrics?.closedDealValue)}</div>
+            <div>
+              {formatMonetaryValueWithDecimals(metrics?.closedDealValue)}
+            </div>
             <div className="subtitle4 text-secondary-text">
               {metrics?.closedDealCount !== undefined &&
               metrics.closedDealCount > 0
@@ -140,6 +142,11 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
           description: translateText(["noContactsDescription"])
         }}
       />
+      {isFetchingNextPage && (
+        <p className="body3 text-secondary-text text-center py-2">
+          {translateText(["infiniteScrollLoadingMessage"])}
+        </p>
+      )}
       <div ref={loadingRef} />
     </div>
   );

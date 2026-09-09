@@ -28,7 +28,6 @@ import SelectableSearchField from "~community/crm/v2/components/molecules/Select
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { useGetPriorityOptions } from "~community/crm/v2/hooks/useGetPriorityOptions";
-import useGetTaskTypeOptions from "~community/crm/v2/hooks/useGetTaskTypeOptions";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -46,7 +45,10 @@ import {
   getDealNameById,
   updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
-import { parseDueDate } from "~community/crm/v2/utils/taskUtil";
+import {
+  getTaskTypeOptions,
+  parseDueDate
+} from "~community/crm/v2/utils/taskUtil";
 
 interface TaskModalFormProps {
   formik: FormikProps<CrmTaskEntity>;
@@ -78,6 +80,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     owners,
     contacts,
     deals,
+    taskTypes,
     selectedCompanyId,
     isCrmSidePanelOpen,
     crmSidePanelType,
@@ -87,6 +90,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   } = useCrmStoreV2(
     useShallow((store) => ({
       owners: store.owners,
+      taskTypes: store.taskTypes,
       contacts: store.contacts,
       deals: store.deals,
       selectedCompanyId: store.selectedCompanyId,
@@ -99,7 +103,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   );
 
   const priorityDropdownOptions = useGetPriorityOptions();
-  const taskTypeOptions = useGetTaskTypeOptions(translateText);
+  const taskTypeOptions = getTaskTypeOptions(taskTypes);
 
   const [ownerSearchText, setOwnerSearchText] = useState("");
   const [contactSearchText, setContactSearchText] = useState("");
@@ -402,8 +406,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           onClear={handleClearContact}
           clearAriaLabel={translateText(["ariaLabels", "clearContact"])}
           fieldAriaLabel={translateText(["ariaLabels", "contactName"])}
-          searchValue={contactSearchText}
-          onSearchChange={(event) => setContactSearchText(event.target.value)}
+          value={contactSearchText}
+          onChange={(event) => setContactSearchText(event.target.value)}
           items={contactDropdownItems}
           onSelect={handleContactSelect}
           emptyMessage={translateText(["emptyStates", "noContacts"])}
@@ -418,8 +422,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           onClear={handleClearDeal}
           clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
           fieldAriaLabel={translateText(["ariaLabels", "deal"])}
-          searchValue={dealSearchText}
-          onSearchChange={(event) => setDealSearchText(event.target.value)}
+          value={dealSearchText}
+          onChange={(event) => setDealSearchText(event.target.value)}
           items={dealDropdownItems}
           onSelect={handleDealSelect}
           emptyMessage={translateText(["emptyStates", "noDeals"])}

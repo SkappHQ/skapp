@@ -55,7 +55,7 @@ import {
   toDealIds,
   updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
-import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import CompanySidePanelHeaderActions from "./CompanySidePanelHeaderActions";
 import CompanySidePanelSkeleton from "./CompanySidePanelSkeleton";
@@ -127,10 +127,15 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const {
     data: fetchedCompany,
     isLoading: isCompanyLoading,
-    isError: isCompanyError
+    isError: isCompanyError,
+    isFetching: isCompanyFetching
   } = useGetCompanyById(companyId);
-  const { data: fetchedMetrics, isLoading: isMetricsLoading } =
-    useGetCompanyMetrics(companyId);
+  const {
+    data: fetchedMetrics,
+    isLoading: isMetricsLoading,
+    isError: isMetricsError,
+    isFetching: isMetricsFetching
+  } = useGetCompanyMetrics(companyId);
   const {
     data: fetchedTasks,
     isLoading: isTasksLoading,
@@ -176,12 +181,11 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     if (!fetchedTasks) return;
 
     const taskItems = fetchedTasks.pages.flatMap((page) => page.items ?? []);
-    const normalizedTasks = normalizeTasks(taskItems);
 
-    setTasks({ ...tasks, ...normalizedTasks.tasks });
+    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, taskItems));
     setCompanies(
       updateCompany(useCrmStoreV2.getState().companies, companyId, {
-        taskIds: normalizedTasks.taskIds
+        taskIds: toTaskIds(taskItems)
       })
     );
   }, [fetchedTasks]);
@@ -191,7 +195,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
 
-    setDeals(updateDealRecord(deals, dealItems));
+    setDeals(updateDealRecord(useCrmStoreV2.getState().deals, dealItems));
     setCompanies(
       updateCompany(useCrmStoreV2.getState().companies, companyId, {
         dealIds: toDealIds(dealItems)
@@ -206,7 +210,9 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       (page) => page.items ?? []
     );
 
-    setContacts(updateContactRecord(contacts, contactItems));
+    setContacts(
+      updateContactRecord(useCrmStoreV2.getState().contacts, contactItems)
+    );
     setCompanies(
       updateCompany(useCrmStoreV2.getState().companies, companyId, {
         contactIds: toContactIds(contactItems)
@@ -214,8 +220,14 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     );
   }, [fetchedContacts]);
 
+  const handleClose = () => {
+    setSelectedCompanyId(null);
+    closeCrmSidePanel();
+  };
+
   useEffect(() => {
-    if (!isCompanyError) return;
+    if (isCompanyFetching || isMetricsFetching) return;
+    if (!isCompanyError && !isMetricsError) return;
 
     setToastMessage({
       open: true,
@@ -224,7 +236,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       description: translateText(["errors", "companyNotFoundDescription"])
     });
     handleClose();
-  }, [isCompanyError]);
+  }, [isCompanyError, isMetricsError, isCompanyFetching, isMetricsFetching]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(updateDealRecord(deals, [createdDeal]));
@@ -240,11 +252,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
-
-  const handleClose = () => {
-    setSelectedCompanyId(null);
-    closeCrmSidePanel();
-  };
 
   const menuItems: MenuItemProps[] = useMemo(
     () => [

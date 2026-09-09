@@ -31,11 +31,13 @@ const CompaniesV1 = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
-    useCrmStore((store) => ({
-      setIsCompanyModalOpen: store.setIsCompanyModalOpen,
-      setCompanyModalType: store.setCompanyModalType,
-      selectedCompanyId: store.selectedCompanyId
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        setIsCompanyModalOpen: store.setIsCompanyModalOpen,
+        setCompanyModalType: store.setCompanyModalType,
+        selectedCompanyId: store.selectedCompanyId
+      }))
+    );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {

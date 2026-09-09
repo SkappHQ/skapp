@@ -10,8 +10,10 @@ import {
 import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useGetContactById,
   useGetContactMetrics
@@ -45,7 +47,7 @@ import {
   toDealIds,
   updateDealRecord
 } from "~community/crm/v2/utils/dealUtil";
-import { normalizeTasks } from "~community/crm/v2/utils/taskUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import ContactSidePanelSkeleton from "./ContactSidePanelSkeleton";
 
@@ -67,7 +69,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const {
     contacts,
     companies,
-    tasks,
     deals,
     isCrmSidePanelOpen,
     crmSidePanelType,
@@ -75,7 +76,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     setCompanies,
     setTasks,
     setDeals,
-    setSelectedContactId,
     setIsContactModalOpen,
     setContactModalType,
     closeCrmSidePanel
@@ -83,7 +83,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     useShallow((store) => ({
       contacts: store.contacts,
       companies: store.companies,
-      tasks: store.tasks,
       deals: store.deals,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
@@ -91,7 +90,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
       setCompanies: store.setCompanies,
       setTasks: store.setTasks,
       setDeals: store.setDeals,
-      setSelectedContactId: store.setSelectedContactId,
       setIsContactModalOpen: store.setIsContactModalOpen,
       setContactModalType: store.setContactModalType,
       closeCrmSidePanel: store.closeCrmSidePanel
@@ -99,6 +97,8 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   );
 
   const { isCrmSalesManager, userId } = useSessionData();
+
+  const { setToastMessage } = useToast();
 
   const taskFilters: CrmTaskFilterRequest = {
     contactId,
@@ -110,10 +110,16 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     size: DEAL_PAGE_SIZE
   };
 
-  const { data: fetchedContact, isLoading: isContactLoading } =
-    useGetContactById(contactId);
-  const { data: fetchedMetrics, isLoading: isMetricsLoading } =
-    useGetContactMetrics(contactId);
+  const {
+    data: fetchedContact,
+    isLoading: isContactLoading,
+    isError: isContactError
+  } = useGetContactById(contactId);
+  const {
+    data: fetchedMetrics,
+    isLoading: isMetricsLoading,
+    isError: isMetricsError
+  } = useGetContactMetrics(contactId);
   const {
     data: fetchedTasks,
     isLoading: isTasksLoading,
@@ -133,6 +139,18 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
 
   useEffect(() => {
+    if (!isContactError && !isMetricsError) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errors", "contactNotFoundTitle"]),
+      description: translateText(["errors", "contactNotFoundDescription"])
+    });
+    closeCrmSidePanel();
+  }, [isContactError, isMetricsError]);
+
+  useEffect(() => {
     if (!fetchedContact || !fetchedMetrics) return;
 
     setContacts(
@@ -141,34 +159,33 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
         metrics: fetchedMetrics
       })
     );
-  }, [fetchedContact, fetchedMetrics]);
+  }, [contactId, fetchedContact, fetchedMetrics]);
 
   useEffect(() => {
     if (!fetchedTasks) return;
 
     const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
-    const normalizedTasks = normalizeTasks(taskItems);
 
-    setTasks({ ...tasks, ...normalizedTasks.tasks });
+    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, taskItems));
     setContacts(
       updateContact(useCrmStoreV2.getState().contacts, contactId, {
-        taskIds: normalizedTasks.taskIds
+        taskIds: toTaskIds(taskItems)
       })
     );
-  }, [fetchedTasks]);
+  }, [contactId, fetchedTasks]);
 
   useEffect(() => {
     if (!fetchedDeals) return;
 
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
 
-    setDeals(updateDealRecord(deals, dealItems));
+    setDeals(updateDealRecord(useCrmStoreV2.getState().deals, dealItems));
     setContacts(
       updateContact(useCrmStoreV2.getState().contacts, contactId, {
         dealIds: toDealIds(dealItems)
       })
     );
-  }, [fetchedDeals]);
+  }, [contactId, fetchedDeals]);
 
   const contact = contacts[contactId];
 
@@ -188,11 +205,6 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const isOpen =
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.CONTACT_SIDE_PANEL;
-
-  const handleClose = () => {
-    setSelectedContactId(null);
-    closeCrmSidePanel();
-  };
 
   const menuItems: MenuItemProps[] = useMemo(() => {
     const items: MenuItemProps[] = [];
@@ -248,7 +260,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   return (
     <SidePanel
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={closeCrmSidePanel}
       closeOnBackdropClick
       header={
         isLoading ? (
@@ -295,9 +307,14 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               <Tabs
                 tabs={tabs}
                 activeTabId={activeTab}
-                onTabChange={(tabId) =>
-                  setActiveTab(tabId as CrmSidePanelTabEnum)
-                }
+                onTabChange={(tabId) => {
+                  if (
+                    tabId === CrmSidePanelTabEnum.TASKS ||
+                    tabId === CrmSidePanelTabEnum.DEALS
+                  ) {
+                    setActiveTab(tabId);
+                  }
+                }}
               />
               <hr className="border-secondary-accent" />
             </div>
@@ -317,6 +334,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
                 onDealCreated={handleDealCreated}
                 companyId={contact.companyId}
                 defaultContact={contact}
+                emptyDescription={translateText(["deals", "emptyDescription"])}
                 hasNextPage={hasNextDealsPage}
                 isFetchingNextPage={isFetchingNextDealsPage}
                 onFetchNextPage={fetchNextDealsPage}

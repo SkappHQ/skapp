@@ -7,6 +7,7 @@ import {
   SearchIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -26,9 +27,10 @@ import DealAccordionItemSkeleton from "./DealAccordionItemSkeleton";
 
 interface SidePanelDealSectionProps {
   dealIds?: number[];
-  onDealCreated: (deal: CrmDealEntity) => void;
+  onDealCreated?: (deal: CrmDealEntity) => void;
   companyId?: number | null;
   defaultContact?: CrmContactEntity;
+  showAddDealAction?: boolean;
   emptyDescription?: string;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
@@ -40,6 +42,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   onDealCreated,
   companyId,
   defaultContact,
+  showAddDealAction = true,
   emptyDescription,
   hasNextPage = false,
   isFetchingNextPage = false,
@@ -49,7 +52,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
 
-  const deals = useCrmStoreV2((store) => store.deals);
+  const deals = useCrmStoreV2(useShallow((store) => store.deals));
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
@@ -65,12 +68,14 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
 
   const handleCloseAddDeal = () => setIsAddingDeal(false);
 
+  const handleDealCreated = (deal: CrmDealEntity) => onDealCreated?.(deal);
+
   const renderAddDealAction = () => {
     if (isAddingDeal) {
       return (
         <SidePanelAddDeal
           onClose={handleCloseAddDeal}
-          onDealCreated={onDealCreated}
+          onDealCreated={handleDealCreated}
           companyId={companyId}
           defaultContact={defaultContact}
         />
@@ -114,17 +119,19 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
             className="gap-4"
           />
           {isFetchingNextPage && <DealAccordionItemSkeleton />}
-          <div className="mt-2">{renderAddDealAction()}</div>
+          {showAddDealAction && (
+            <div className="mt-2">{renderAddDealAction()}</div>
+          )}
           <div ref={loadingRef} />
         </div>
       );
     }
 
-    if (isAddingDeal) {
+    if (showAddDealAction && isAddingDeal) {
       return (
         <SidePanelAddDeal
           onClose={handleCloseAddDeal}
-          onDealCreated={onDealCreated}
+          onDealCreated={handleDealCreated}
           companyId={companyId}
           defaultContact={defaultContact}
         />
@@ -136,15 +143,19 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
         icon={<SearchIcon />}
         title={translateText(["emptyTitle"])}
         description={emptyDescription ?? translateText(["emptyDescription"])}
-        button={{
-          children: translateText(["addDealBtn"]),
-          variant: "tertiary",
-          onClick: handleAddDeal,
-          disabled: isCheckingCrmLimit,
-          isLoading: isCheckingCrmLimit,
-          icon: <PlusIcon />,
-          "aria-label": translateText(["ariaLabels", "addDealBtn"])
-        }}
+        button={
+          showAddDealAction
+            ? {
+                children: translateText(["addDealBtn"]),
+                variant: "tertiary",
+                onClick: handleAddDeal,
+                disabled: isCheckingCrmLimit,
+                isLoading: isCheckingCrmLimit,
+                icon: <PlusIcon />,
+                "aria-label": translateText(["ariaLabels", "addDealBtn"])
+              }
+            : undefined
+        }
         className={{
           wrapper: "h-[228px] bg-secondary-background rounded-lg"
         }}

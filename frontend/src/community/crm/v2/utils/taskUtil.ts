@@ -5,10 +5,7 @@ import {
   getDayDifference,
   isDateTimeSimilar
 } from "~community/common/utils/dateTimeUtils";
-import {
-  CrmPriorityEnum,
-  CrmTaskTabEnum
-} from "~community/crm/v2/enums/common";
+import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyRecord,
   CrmContactRecord,
@@ -198,118 +195,93 @@ export const getTaskGroups = (
   );
 };
 
-export const getTaskTypeName = (
-  taskTypes: CrmTaskTypeRecord,
-  typeId?: number
-) => {
-  if (typeId !== undefined) {
-    return taskTypes[typeId].name;
-  }
+export interface CrmTaskLinks {
+  companies: CrmCompanyRecord;
+  contacts: CrmContactRecord;
+  deals: CrmDealRecord;
+}
+
+const linkTaskToCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number,
+  taskId: number
+): CrmCompanyRecord => {
+  const company = companies[companyId];
+
+  if (company?.taskIds === undefined) return companies;
+
+  const taskIds = appendId(company.taskIds, taskId);
+
+  if (taskIds === company.taskIds) return companies;
+
+  return { ...companies, [companyId]: { ...company, taskIds } };
 };
 
-export const normalizeTasks = (items: CrmTaskEntity[]) => {
-  const tasks: CrmTaskRecord = {};
-  const taskIds: number[] = [];
+const linkTaskToContact = (
+  contacts: CrmContactRecord,
+  contactId: number,
+  taskId: number
+): CrmContactRecord => {
+  const contact = contacts[contactId];
 
-  items.forEach((task) => {
-    if (task.id !== undefined) {
-      tasks[task.id] = task;
-      taskIds.push(task.id);
-    }
-  });
+  if (contact?.taskIds === undefined) return contacts;
 
-  return { tasks, taskIds };
+  const taskIds = appendId(contact.taskIds, taskId);
+
+  if (taskIds === contact.taskIds) return contacts;
+
+  return { ...contacts, [contactId]: { ...contact, taskIds } };
 };
 
-export const parseDueDate = (dueAt?: string) => {
-  if (dueAt !== undefined) {
-    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
-  }
+const linkTaskToDeal = (
+  deals: CrmDealRecord,
+  dealId: number,
+  taskId: number
+): CrmDealRecord => {
+  const deal = deals[dealId];
+
+  if (deal?.taskIds === undefined) return deals;
+
+  const taskIds = appendId(deal.taskIds, taskId);
+
+  if (taskIds === deal.taskIds) return deals;
+
+  return { ...deals, [dealId]: { ...deal, taskIds } };
 };
-
-export const getTaskFormInitialValues = (
-  selectedContactId: number | null,
-  currentUserId?: string | number
-): CrmTaskEntity => {
-  const initialValues: CrmTaskEntity = {
-    name: "",
-    priority: CrmPriorityEnum.MEDIUM,
-    notes: ""
-  };
-
-  if (selectedContactId !== null) {
-    initialValues.contactId = selectedContactId;
-  }
-
-  if (currentUserId !== undefined) {
-    initialValues.ownerId = Number(currentUserId);
-  }
-
-  return initialValues;
-};
-
-export const getTrimmedTaskValues = (task: CrmTaskEntity): CrmTaskEntity => ({
-  ...task,
-  name: task.name?.trim(),
-  notes: task.notes?.trim()
-});
 
 export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
-  companies?: CrmCompanyRecord,
-  contacts?: CrmContactRecord,
-  deals?: CrmDealRecord
-) => {
-  const taskId = task.id;
-  const linked = { companies, contacts, deals };
+  companies: CrmCompanyRecord,
+  contacts: CrmContactRecord,
+  deals: CrmDealRecord
+): CrmTaskLinks => {
+  const { id: taskId, companyId, contactId, dealId } = task;
 
   if (taskId === undefined) {
-    return linked;
+    return { companies, contacts, deals };
   }
 
-  if (companies !== undefined && task.companyId !== undefined) {
-    const company = companies[task.companyId];
+  const links: CrmTaskLinks = { companies, contacts, deals };
 
-    if (company !== undefined) {
-      linked.companies = {
-        ...companies,
-        [task.companyId]: {
-          ...company,
-          taskIds: appendId(company.taskIds ?? [], taskId)
-        }
-      };
-    }
+  if (companyId !== undefined) {
+    links.companies = linkTaskToCompany(companies, companyId, taskId);
   }
 
-  if (contacts !== undefined && task.contactId !== undefined) {
-    const contact = contacts[task.contactId];
-
-    if (contact !== undefined) {
-      linked.contacts = {
-        ...contacts,
-        [task.contactId]: {
-          ...contact,
-          taskIds: appendId(contact.taskIds ?? [], taskId)
-        }
-      };
-    }
+  if (contactId !== undefined) {
+    links.contacts = linkTaskToContact(contacts, contactId, taskId);
   }
 
-  if (deals !== undefined && task.dealId !== undefined) {
-    const deal = deals[task.dealId];
-
-    if (deal !== undefined) {
-      linked.deals = {
-        ...deals,
-        [task.dealId]: {
-          ...deal,
-          taskIds: appendId(deal.taskIds ?? [], taskId)
-        }
-      };
-    }
+  if (dealId !== undefined) {
+    links.deals = linkTaskToDeal(deals, dealId, taskId);
   }
 
-  return linked;
+  return links;
+};
+
+export const parseDueDate = (dueAt?: string): Date | undefined => {
+  if (dueAt !== undefined) {
+    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
+  }
 };
 
 export const updateTask = (
