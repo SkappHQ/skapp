@@ -55,12 +55,14 @@ const TasksV1 = () => {
     setTaskModalType,
     selectedTaskId,
     setSelectedTaskId
-  } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    setTaskModalType: store.setTaskModalType,
-    selectedTaskId: store.selectedTaskId,
-    setSelectedTaskId: store.setSelectedTaskId
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      setTaskModalType: store.setTaskModalType,
+      selectedTaskId: store.selectedTaskId,
+      setSelectedTaskId: store.setSelectedTaskId
+    }))
+  );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.TASKS, () => {

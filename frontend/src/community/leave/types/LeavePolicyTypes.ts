@@ -92,6 +92,7 @@ export interface LeavePolicyType {
   leaveTypeEmoji: string | null;
   policyType: PolicyType;
   status: LeavePolicyStatus;
+  assignedEmployeeCount: number;
   // Accrual configuration is returned by the list endpoint for ACCRUAL policies.
   accrualDays?: number | null;
   frequency?: AccrualFrequency | null;

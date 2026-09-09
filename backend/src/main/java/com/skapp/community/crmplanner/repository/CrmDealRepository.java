@@ -18,6 +18,8 @@ public interface CrmDealRepository {
 
 	Page<CrmDealResponseDtoV2> findDealsV2(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable);
 
+	List<CrmDealResponseDtoV2> findDealsByIds(List<Long> dealIds, Long ownerId);
+
 	List<CrmDealSummary> findClosedDealSummaryByContactIds(List<Long> contactIds);
 
 	Page<CrmDeal> findDealsByStageId(Long stageId, CrmDealsByStagesRequestDto requestDto, Long ownerId,

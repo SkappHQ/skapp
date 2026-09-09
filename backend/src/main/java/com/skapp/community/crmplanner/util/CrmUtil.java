@@ -95,13 +95,7 @@ public class CrmUtil {
 	public CrmTaskResponseDtoV2 toTaskResponseDtoV2(CrmMapperV2 crmMapperV2, CrmTask task) {
 		CrmTaskResponseDtoV2 dto = crmMapperV2.crmTaskToCrmTaskResponseDtoV2(task);
 		if (isCompanyDeleted(task.getCompany())) {
-			dto.setCompany(null);
-		}
-		if (dto.getContact() != null && hasDeletedCompany(task.getContact())) {
-			dto.getContact().setCompany(null);
-		}
-		if (task.getDeal() != null && dto.getDeal() != null) {
-			maskDeletedCompaniesOnDeal(dto.getDeal(), task.getDeal());
+			dto.setCompanyId(null);
 		}
 		return dto;
 	}

@@ -1,6 +1,7 @@
 import { Divider, Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import LeaveCarryForward from "~community/common/components/molecules/LeaveCarryForward/LeaveCarryForward";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
@@ -24,19 +25,24 @@ const LeaveEntitlements: NextPage = () => {
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);
 
-  const { setLeaveTypes } = useLeaveStore((state) => ({
-    setLeaveTypes: state.setLeaveTypes
-  }));
+  const { setLeaveTypes } = useLeaveStore(
+    useShallow((state) => ({
+      setLeaveTypes: state.setLeaveTypes
+    }))
+  );
 
   const {
     page,
     leaveEntitlementTableSelectedYear,
     setLeaveEntitlementModalType
-  } = useLeaveStore((state) => ({
-    page: state.page,
-    leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
-    setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      page: state.page,
+      leaveEntitlementTableSelectedYear:
+        state.leaveEntitlementTableSelectedYear,
+      setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
+    }))
+  );
 
   const [searchTerm, setSearchTerm] = useState<string>("");
 

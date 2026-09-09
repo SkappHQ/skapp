@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 import { CommonStoreTypes } from "../types/zustand/StoreTypes";
+import { authTokenSlice } from "./slices/authTokenSlice";
 import { breadcrumbSlice } from "./slices/breadcrumbSlice";
 import { commonModalSlice } from "./slices/commonModalSlice";
 import { notificationsSlice } from "./slices/notificationsSlice";
@@ -20,7 +21,8 @@ export const useCommonStore = create<
       ...commonModalSlice(set),
       ...notificationsSlice(set),
       ...orgDetailsSlice(set),
-      ...breadcrumbSlice(set)
+      ...breadcrumbSlice(set),
+      ...authTokenSlice(set)
     }),
     { name: "commonStore" }
   )

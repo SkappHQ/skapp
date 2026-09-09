@@ -56,7 +56,12 @@ const LeaveConfigurations: FC = () => {
     onEnableError
   );
 
-  if (!canManageLeavePolicies || isLoading || isError || isLeavePoliciesEnabled) {
+  if (
+    !canManageLeavePolicies ||
+    isLoading ||
+    isError ||
+    isLeavePoliciesEnabled
+  ) {
     return null;
   }
 
