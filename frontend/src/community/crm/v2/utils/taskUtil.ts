@@ -196,9 +196,9 @@ export const getTaskGroups = (
 };
 
 export interface CrmTaskLinks {
-  companies?: CrmCompanyRecord;
-  contacts?: CrmContactRecord;
-  deals?: CrmDealRecord;
+  companies: CrmCompanyRecord;
+  contacts: CrmContactRecord;
+  deals: CrmDealRecord;
 }
 
 const linkTaskToCompany = (
@@ -251,9 +251,9 @@ const linkTaskToDeal = (
 
 export const linkTaskToRelatedEntities = (
   task: CrmTaskEntity,
-  companies?: CrmCompanyRecord,
-  contacts?: CrmContactRecord,
-  deals?: CrmDealRecord
+  companies: CrmCompanyRecord,
+  contacts: CrmContactRecord,
+  deals: CrmDealRecord
 ): CrmTaskLinks => {
   const { id: taskId, companyId, contactId, dealId } = task;
 
@@ -263,15 +263,15 @@ export const linkTaskToRelatedEntities = (
 
   const links: CrmTaskLinks = { companies, contacts, deals };
 
-  if (companies !== undefined && companyId !== undefined) {
+  if (companyId !== undefined) {
     links.companies = linkTaskToCompany(companies, companyId, taskId);
   }
 
-  if (contacts !== undefined && contactId !== undefined) {
+  if (contactId !== undefined) {
     links.contacts = linkTaskToContact(contacts, contactId, taskId);
   }
 
-  if (deals !== undefined && dealId !== undefined) {
+  if (dealId !== undefined) {
     links.deals = linkTaskToDeal(deals, dealId, taskId);
   }
 
