@@ -450,7 +450,6 @@ class CrmBoardControllerIntegrationTest {
 	@Test
 	@DisplayName("Deals grouped by stage as Sales Representative - taskCount excludes tasks owned by others")
 	void getDealsByStages_SalesRep_TaskCountExcludesOtherOwnersTasks() throws Exception {
-		// Rep-owned deal with one task of its own and one owned by employee 1
 		CrmDeal repDeal = createDeal("Rep Deal", stage1, "a0", 2L);
 		createTask(repDeal, 2L);
 		createTask(repDeal, 1L);

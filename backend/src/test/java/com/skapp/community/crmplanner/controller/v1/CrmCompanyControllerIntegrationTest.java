@@ -403,6 +403,12 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), null))
 			.as("deal task count still counts tasks of a deleted company")
 			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 1L))
+			.as("deal task count scoped to the task owner still counts tasks of a deleted company")
+			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 2L))
+			.as("deal task count scoped to another owner excludes the task")
+			.doesNotContainKey(dealId);
 	}
 
 	@Test
