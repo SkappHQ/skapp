@@ -9,15 +9,9 @@ interface PriorityLabelProps {
 }
 
 const PriorityLabel: FC<PriorityLabelProps> = ({ priority }) => {
-  const priorityConfig = getPriorityConfig(priority);
+  const { icon, bgColor } = getPriorityConfig(priority);
 
-  if (priorityConfig === undefined) {
-    return null;
-  }
-
-  return (
-    <PriorityIcon bgColor={priorityConfig.bgColor} icon={priorityConfig.icon} />
-  );
+  return <PriorityIcon bgColor={bgColor} icon={icon} />;
 };
 
 export default PriorityLabel;
