@@ -3,12 +3,14 @@ import { Box, Stack } from "@mui/system";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { JSX } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
 import ROUTES from "~community/common/constants/routes";
 import { appBarTestId } from "~community/common/constants/testIds";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { theme } from "~community/common/theme/theme";
 import { AdminTypes, ManagerTypes } from "~community/common/types/AuthTypes";
 import { IconName } from "~community/common/types/IconTypes";
@@ -26,6 +28,14 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   const router = useRouter();
   const translateText = useTranslator("appBar");
   const { user } = useAuth();
+
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
   const { data: employee } = useGetUserPersonalDetails();
   const isPeopleManagerOrSuperAdmin = user?.roles?.includes(
     ManagerTypes.PEOPLE_MANAGER || AdminTypes.SUPER_ADMIN
@@ -62,7 +72,7 @@ const ProfileMenu = ({ handleCloseMenu }: Props): JSX.Element => {
   };
 
   const handleSignOut = async () => {
-    await signOut();
+    await signOut({ accessToken, setAccessToken, clearAccessToken });
   };
 
   return (

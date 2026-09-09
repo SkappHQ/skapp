@@ -7,6 +7,7 @@ import {
   ingestEditedDeal,
   removeDeal
 } from "./boardUtil";
+import { reorderDealIds } from "./dealUtil";
 
 const STAGE_A = 1;
 const STAGE_B = 2;
@@ -54,7 +55,10 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
     );
     const current = { ...ingested, dealIds: [1] };
 
-    const result = ingestCreatedDeal(current, deal({ id: 100, stageId: STAGE_A }));
+    const result = ingestCreatedDeal(
+      current,
+      deal({ id: 100, stageId: STAGE_A })
+    );
 
     const { board, deals, dealIds } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 100]);
@@ -72,7 +76,10 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
       ]
     );
 
-    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_B, name: "Edited" }));
+    const result = ingestEditedDeal(
+      current,
+      deal({ id: 1, stageId: STAGE_B, name: "Edited" })
+    );
 
     const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([2]);
@@ -87,7 +94,10 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
       [group(STAGE_A, [boardDeal(1), boardDeal(2)])]
     );
 
-    const result = ingestEditedDeal(current, deal({ id: 1, stageId: STAGE_A, amount: "999" }));
+    const result = ingestEditedDeal(
+      current,
+      deal({ id: 1, stageId: STAGE_A, amount: "999" })
+    );
 
     const { board, deals } = result;
     expect(board[STAGE_A].dealIds).toEqual([1, 2]);
@@ -107,5 +117,33 @@ describe("deal create/edit/delete orchestration as pure record transforms", () =
     expect(board[STAGE_A].dealIds).toEqual([2]);
     expect(dealIds).toEqual([2]);
     expect(deals[1]).toBeUndefined();
+  });
+});
+
+describe("reorderDealIds", () => {
+  const ids = [1, 2, 3, 4];
+
+  it("inserts after the previous neighbour", () => {
+    expect(reorderDealIds(ids, 4, 1, 2)).toEqual([1, 4, 2, 3]);
+  });
+
+  it("inserts before the next neighbour when there is no previous one", () => {
+    expect(reorderDealIds(ids, 3, null, 1)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("moves to the top when neither neighbour is known", () => {
+    expect(reorderDealIds(ids, 3, null, null)).toEqual([3, 1, 2, 4]);
+  });
+
+  it("falls back to the next neighbour when the previous one is missing", () => {
+    expect(reorderDealIds(ids, 4, 99, 2)).toEqual([1, 4, 2, 3]);
+  });
+
+  it("appends when neither neighbour is present in the list", () => {
+    expect(reorderDealIds(ids, 2, 99, 98)).toEqual([1, 3, 4, 2]);
+  });
+
+  it("leaves the order unchanged when the deal is already in place", () => {
+    expect(reorderDealIds(ids, 2, 1, 3)).toEqual([1, 2, 3, 4]);
   });
 });

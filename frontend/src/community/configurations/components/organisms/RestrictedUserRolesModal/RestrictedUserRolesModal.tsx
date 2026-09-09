@@ -1,8 +1,7 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Checkbox, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 
-import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { Modules, RoleLevel } from "~community/common/enums/CommonEnums";
@@ -123,6 +122,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
       isOpen={isUserRoleModalOpen}
       onClose={handleCancelBtnClick}
       modalHeader={translateText(["restrictedUserRolesTitle"])}
+      closeButtonAriaLabel={translateText(["closeModalBtnAriaLabel"])}
       content={
         <Stack sx={classes.wrapper}>
           <Stack sx={classes.description}>
@@ -140,7 +140,6 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
               <Checkbox
                 key={roleLevel}
                 label={translateText([ROLE_LEVEL_LABEL_KEYS[roleLevel]])}
-                name={roleLevel}
                 checked={values.selected.includes(roleLevel)}
                 onChange={() => onRoleLevelChange(roleLevel)}
               />

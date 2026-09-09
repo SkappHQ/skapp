@@ -1,5 +1,6 @@
 import { CircularProgress, Stack } from "@mui/material";
 import { Box, type Theme, useTheme } from "@mui/system";
+import { Checkbox } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   Dispatch,
@@ -12,7 +13,6 @@ import {
   useState
 } from "react";
 
-import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
 import { KeyboardKeys } from "~community/common/enums/KeyboardEnums";
@@ -284,6 +284,8 @@ const MultiSelectManagerSearch = ({
                 sx={{
                   width: "100%",
                   px: "0.75rem",
+                  alignItems: "center",
+                  gap: "0.75rem",
                   backgroundColor: isFocused
                     ? theme.palette.action.hover
                     : !isSelected
@@ -299,17 +301,9 @@ const MultiSelectManagerSearch = ({
                 onMouseEnter={() => setFocusedIndex(index)}
               >
                 <Checkbox
-                  label={""}
-                  name={""}
                   checked={isSelected}
+                  ariaLabel={`${employee.firstName ?? ""} ${employee.lastName ?? ""}`}
                   onChange={() => toggleManagerSelection(employee)}
-                  customStyles={{
-                    color: theme.palette.primary.dark,
-                    "&.Mui-checked": {
-                      color: theme.palette.primary.dark
-                    }
-                  }}
-                  tabIndex={-1}
                 />
                 <Box
                   sx={{

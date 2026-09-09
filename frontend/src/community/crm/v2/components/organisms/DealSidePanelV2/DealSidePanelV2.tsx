@@ -75,8 +75,7 @@ const DealSidePanelV2: FC = () => {
 
   useEffect(() => {
     if (dealDetail) {
-      const store = useCrmStoreV2.getState();
-      store.setDeals(mergeDeals(store.deals, [dealDetail]));
+      setDeals(mergeDeals(deals, [dealDetail]));
     }
   }, [dealDetail]);
 

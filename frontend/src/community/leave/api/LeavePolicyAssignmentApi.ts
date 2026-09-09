@@ -78,6 +78,7 @@ export const useAssignLeavePolicy = (
   return useMutation({
     mutationFn: assignLeavePolicy,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
       });
@@ -148,6 +149,7 @@ export const useUnassignLeavePolicy = (
   return useMutation({
     mutationFn: unassignLeavePolicy,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: leavePolicyQueryKeys.ALL });
       queryClient.invalidateQueries({
         queryKey: leavePolicyAssignmentQueryKeys.ALL
       });

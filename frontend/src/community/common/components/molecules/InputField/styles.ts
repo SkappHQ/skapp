@@ -1,6 +1,6 @@
 import { type Theme } from "@mui/material";
-import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 
+import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { StyleProps } from "~community/common/types/CommonTypes";
 
 const styles = (theme: Theme): StyleProps => ({
@@ -13,15 +13,15 @@ const styles = (theme: Theme): StyleProps => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    [theme.breakpoints.down('sm')]: {
-      position: 'relative',
+    [theme.breakpoints.down("sm")]: {
+      position: "relative",
       zIndex: ZIndexEnums.DEFAULT,
       '& [role="tooltip"]': {
-        maxWidth: '90vw !important',
-        fontSize: '0.875rem',
-        padding: '0.5rem',
-        wordWrap: 'break-word',
-        whiteSpace: 'normal'
+        maxWidth: "90vw !important",
+        fontSize: "0.875rem",
+        padding: "0.5rem",
+        wordWrap: "break-word",
+        whiteSpace: "normal"
       }
     }
   },

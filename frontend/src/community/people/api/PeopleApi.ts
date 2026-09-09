@@ -10,6 +10,7 @@ import {
 import { rejects } from "assert";
 import { AxiosError, AxiosResponse } from "axios";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -42,7 +43,10 @@ import {
 } from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
-import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  EmployeeType,
+  SystemPermissionTypes
+} from "~community/people/types/AddNewResourceTypes";
 import {
   BirthdayNotificationPayloadType,
   BirthdayNotificationTodayResponse,
@@ -270,19 +274,28 @@ export const useAddUserBulkEntitlementsWithoutCSV = (
 
 export const useGetSearchedEmployees = (
   searchTerm: string,
-  permission = "EMPLOYEES"
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
+  selectedEmployeeId?: number | null
 ) => {
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
-    permission
+    permission,
+    selectedEmployeeId
   );
 
   const queryFn = async () => {
-    const sanitizedSearchTerm = removeSpecialCharacters(searchTerm, "_");
+    const sanitizedSearchTerm = removeSpecialCharacters(
+      debouncedSearchTerm,
+      "_"
+    );
     const endpoint = peoplesEndpoints.SEARCH_EMPLOYEE;
     const response = await authFetch.get(endpoint, {
-      params: { keyword: sanitizedSearchTerm, permission: permission }
+      params: {
+        keyword: sanitizedSearchTerm,
+        permission: permission,
+        ...(selectedEmployeeId != null && { selectedEmployeeId })
+      }
     });
     const processedData = searchEmployeeDataPreProcessor(
       response?.data?.results
@@ -294,7 +307,8 @@ export const useGetSearchedEmployees = (
     queryKey,
     queryFn,
     refetchOnWindowFocus: false,
-    enabled: debouncedSearchTerm.length > 0
+    enabled:
+      debouncedSearchTerm.length > 0 && debouncedSearchTerm === searchTerm
   });
 };
 
@@ -463,7 +477,8 @@ export const useResetSharePassword = () => {
 };
 
 export const useGetEmployeeById = (
-  memberId: number | undefined = undefined
+  memberId: number | undefined = undefined,
+  isEnabled: boolean = true
 ): UseQueryResult<EmployeeDetails> => {
   return useQuery({
     queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(memberId),
@@ -491,7 +506,7 @@ export const useGetEmployeeById = (
         };
       }
     },
-    enabled: memberId !== 0
+    enabled: isEnabled && memberId !== 0
   });
 };
 
@@ -1024,19 +1039,19 @@ export const useMarkBirthdayNotificationsViewedToday = (
   });
 };
 
-export const useGetBirthdayNotificationConfig = (): UseQueryResult<
-  BirthdayNotificationConfigType
-> => {
-  return useQuery({
-    queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
-    queryFn: async () => {
-      const response = await authFetch.get<BirthdayNotificationConfigResponse>(
-        peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
-      );
-      return response.data.results[0];
-    }
-  });
-};
+export const useGetBirthdayNotificationConfig =
+  (): UseQueryResult<BirthdayNotificationConfigType> => {
+    return useQuery({
+      queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
+      queryFn: async () => {
+        const response =
+          await authFetch.get<BirthdayNotificationConfigResponse>(
+            peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
+          );
+        return response.data.results[0];
+      }
+    });
+  };
 
 const updateBirthdayNotificationConfig = (
   config: BirthdayNotificationConfigPatchType

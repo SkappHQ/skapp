@@ -2,43 +2,40 @@ import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
-import { useTranslator } from "~community/common/hooks/useTranslator";
-import TaskGroup from "~community/crm/v2/components/atoms/TaskGroup/TaskGroup";
+import TaskGroup from "~community/crm/v2/components/molecules/TaskGroup/TaskGroup";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface Props {
-  taskIds: number[];
-  emptyDescription?: string;
+  tasks: CrmTaskEntity[];
+  emptyTitle: string;
+  emptyDescription: string;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onFetchNextPage: () => void;
+  onToggleComplete: (taskId: number, completed: boolean) => void;
 }
 
 const SidePanelTasksSection: FC<Props> = ({
-  taskIds,
+  tasks,
+  emptyTitle,
   emptyDescription,
   hasNextPage,
   isFetchingNextPage,
-  onFetchNextPage
+  onFetchNextPage,
+  onToggleComplete
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
-
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
     onLoadMore: onFetchNextPage
   });
 
-  if (taskIds.length === 0) {
+  if (tasks.length === 0) {
     return (
       <EmptyDataView
         icon={<SearchIcon width="24" height="24" />}
-        title={translateText(["emptyTitle"])}
-        description={emptyDescription ?? translateText(["emptyDescription"])}
+        title={emptyTitle}
+        description={emptyDescription}
         className={{
           wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
         }}
@@ -48,7 +45,11 @@ const SidePanelTasksSection: FC<Props> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <TaskGroup taskIds={taskIds} isShowContact={false} />
+      <TaskGroup
+        tasks={tasks}
+        isShowContact={false}
+        onToggleComplete={onToggleComplete}
+      />
       <div ref={loadingRef} />
     </div>
   );

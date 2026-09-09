@@ -13,6 +13,8 @@ import com.skapp.community.crmplanner.type.CrmDealStageColors;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.peopleplanner.util.Validations;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewConfigDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListViewFieldDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealStageReorderRequestDto;
 import lombok.experimental.UtilityClass;
 
@@ -138,6 +140,18 @@ public class CrmValidations {
 		}
 	}
 
+	public static void validateDealListViewConfig(CrmDealListViewConfigDto config) {
+		if (config == null || config.getFields() == null || config.getFields().isEmpty()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_LIST_VIEW_FIELDS_REQUIRED);
+		}
+
+		for (CrmDealListViewFieldDto field : config.getFields()) {
+			if (field.getField() == null) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_LIST_VIEW_FIELD_REQUIRED);
+			}
+		}
+	}
+
 	public static void validateDealDescription(String description) {
 		if (description == null || description.isBlank()) {
 			return;
@@ -183,6 +197,17 @@ public class CrmValidations {
 	public static void validateDealOwnerId(Long ownerId) {
 		if (ownerId == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_OWNER_NOT_FOUND);
+		}
+	}
+
+	public static void validateDealIds(List<Long> dealIds) {
+		if (dealIds == null || dealIds.isEmpty()) {
+			return;
+		}
+		for (Long dealId : dealIds) {
+			if (dealId == null || dealId <= 0) {
+				throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_NOT_FOUND);
+			}
 		}
 	}
 

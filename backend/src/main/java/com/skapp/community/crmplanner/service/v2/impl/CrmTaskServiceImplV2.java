@@ -5,19 +5,20 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskListResponseDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import com.skapp.community.crmplanner.service.v2.CrmTaskServiceV2;
+import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
+import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
 import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -43,50 +42,40 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	private final UserService userService;
 
+	private final PageTransformer pageTransformer;
+
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTasks(CrmTaskFilterDto filterDto) {
+	public ResponseEntityDto getTasks(CrmTaskFilterDtoV2 filterDto) {
 		log.info("getTasks: execution started");
 
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		List<CrmTaskResponseDtoV2> tasks = crmTaskDao.findTasksV2(ownerId, filterDto);
-
-		CrmTaskListResponseDtoV2 response = new CrmTaskListResponseDtoV2();
-		response.setTasks(tasks);
+		Pageable pageable = toPageable(filterDto.getPage(), filterDto.getSize());
+		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findTasksV2(ownerId, filterDto, pageable);
 
 		log.info("getTasks: execution ended");
-		return new ResponseEntityDto(false, response);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public ResponseEntityDto getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
-		log.info("getCompletedTasks: execution started");
-
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-
-		User currentUser = userService.getCurrentUser();
-		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
-		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findCompletedTasksV2(ownerId, filterDto, pageable);
-
-		log.info("getCompletedTasks: execution ended");
 		return new ResponseEntityDto(false, toPageDto(taskPage));
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
+	public ResponseEntityDto getRelatedTasks(Long id, CrmTaskRelatedFilterDtoV2 filterDto) {
 		log.info("getRelatedTasks: execution started");
 
-		CrmValidations.validateRelatedTaskContextFilter(filterDto.getContactId(), filterDto.getDealId());
+		CrmTaskLinkRefs linkRefs = crmTaskDao.findTaskLinkRefsById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND));
 
 		User currentUser = userService.getCurrentUser();
-		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		if (CrmValidations.isOwnerRestrictedForRepresentative(currentUser, linkRefs.getOwnerId())) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED);
+		}
 
-		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(filterDto, ownerId, pageable);
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
+		CrmTaskRelatedParams params = new CrmTaskRelatedParams(linkRefs.getContactId(), linkRefs.getDealId(), ownerId);
+		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(id, params,
+				toPageable(filterDto.getPage(), filterDto.getSize()));
 
 		log.info("getRelatedTasks: execution ended");
 		return new ResponseEntityDto(false, toPageDto(taskPage));
@@ -131,12 +120,13 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, updatedTask));
 	}
 
+	private Pageable toPageable(int page, int size) {
+		return size <= 0 ? Pageable.unpaged() : PageRequest.of(Math.max(page, 0), size);
+	}
+
 	private PageDto toPageDto(Page<CrmTaskResponseDtoV2> taskPage) {
-		PageDto pageDto = new PageDto();
+		PageDto pageDto = pageTransformer.transform(taskPage);
 		pageDto.setItems(taskPage.getContent());
-		pageDto.setCurrentPage(taskPage.getNumber());
-		pageDto.setTotalItems(taskPage.getTotalElements());
-		pageDto.setTotalPages(taskPage.getTotalPages());
 		return pageDto;
 	}
 
