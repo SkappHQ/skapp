@@ -88,9 +88,13 @@ class CrmBoardControllerV2IntegrationTest {
 		taskType.setOrderIndex(1);
 		crmTaskTypeDao.save(taskType);
 
-		CrmIndustry industry = new CrmIndustry();
-		industry.setName("RETAIL");
-		crmIndustryDao.save(industry);
+		CrmIndustry retail = new CrmIndustry();
+		retail.setName("RETAIL");
+		crmIndustryDao.save(retail);
+
+		CrmIndustry education = new CrmIndustry();
+		education.setName("EDUCATION");
+		crmIndustryDao.save(education);
 	}
 
 	@Test
@@ -120,6 +124,32 @@ class CrmBoardControllerV2IntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isNotEmpty())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']").isNotEmpty());
+	}
+
+	@Test
+	@DisplayName("Board init data - Returns industries as id and name pairs ordered by name")
+	void getBoardInitData_IndustriesAreOrderedIdNamePairs() throws Exception {
+		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['name']").value("EDUCATION"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['id']").isNumber())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['name']").value("RETAIL"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['id']").isNumber());
+	}
+
+	@Test
+	@DisplayName("Board init data - Omits soft-deleted industries")
+	void getBoardInitData_OmitsSoftDeletedIndustries() throws Exception {
+		CrmIndustry deleted = new CrmIndustry();
+		deleted.setName("AAA_DELETED");
+		deleted.setIsDeleted(true);
+		crmIndustryDao.save(deleted);
+
+		mvc.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'AAA_DELETED')]").isEmpty());
 	}
 
 	@Test

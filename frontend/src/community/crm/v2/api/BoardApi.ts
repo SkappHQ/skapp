@@ -17,11 +17,13 @@ import {
   CrmDealsByStagesResponse
 } from "~community/crm/v2/types/CrmTypes";
 
-import { crmBoardEndpoints } from "./utils/ApiEndpoints";
+import { crmBoardEndpoints, crmBoardEndpointsV2 } from "./utils/ApiEndpoints";
 import { crmBoardQueryKeys } from "./utils/QueryKeys";
 
 const fetchBoardInitData = async (): Promise<CrmBoardInitDataResponse> => {
-  const response = await authFetchV2.get(crmBoardEndpoints.GET_BOARD_INIT_DATA);
+  const response = await authFetchV2.get(
+    crmBoardEndpointsV2.GET_BOARD_INIT_DATA
+  );
   return response?.data?.results?.[0];
 };
 

@@ -20,6 +20,6 @@ public class CrmBoardInitDataResponseDtoV2 {
 
 	private List<CrmTaskTypeResponseDto> taskTypes;
 
-	private List<CrmIndustryResponseDto> industries;
+	private List<CrmIndustryResponseDtoV2> industries;
 
 }

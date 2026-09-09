@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long> {
 
-	List<CrmIndustry> findAllByOrderByNameAsc();
+	List<CrmIndustry> findAllByIsDeletedFalseOrderByNameAsc();
 
 }

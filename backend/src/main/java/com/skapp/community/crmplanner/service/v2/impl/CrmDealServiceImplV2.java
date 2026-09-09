@@ -19,7 +19,7 @@ import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageRespon
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmIndustryResponseDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmIndustryResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -80,8 +80,8 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
-		List<CrmIndustryResponseDto> industries = crmMapper
-			.crmIndustriesToCrmIndustryResponseDtos(crmIndustryDao.findAllByOrderByNameAsc());
+		List<CrmIndustryResponseDtoV2> industries = crmMapperV2
+			.crmIndustriesToCrmIndustryResponseDtosV2(crmIndustryDao.findAllByIsDeletedFalseOrderByNameAsc());
 
 		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
 		responseDto.setStages(stages);
