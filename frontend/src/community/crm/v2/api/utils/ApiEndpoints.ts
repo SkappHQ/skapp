@@ -22,7 +22,9 @@ export const crmContactEndpoints = {
   CREATE_CONTACT: `${moduleAPIPath.CRM}/contact`,
   EDIT_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
   DELETE_CONTACT: (id: number) => `${moduleAPIPath.CRM}/contact/${id}`,
-  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`
+  CHECK_CONTACT_EMAIL_EXISTS: `${moduleAPIPath.CRM}/contact/exists/email`,
+  CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
+  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const crmDealEndpointsV2 = {
@@ -43,11 +45,6 @@ export const crmDealEndpoints = {
   UPDATE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`,
   REORDER_DEAL_STAGES: `${moduleAPIPath.CRM}/deal/stage/reorder`,
   DELETE_DEAL_STAGE: (id: number) => `${moduleAPIPath.CRM}/deal/stage/${id}`
-};
-
-export const crmLookupEndpoints = {
-  CONTACT_LOOKUP: `${moduleAPIPath.CRM}/contact/lookup`,
-  OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
 export const crmTaskEndpointsV2 = {
