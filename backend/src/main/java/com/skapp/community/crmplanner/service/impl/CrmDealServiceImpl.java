@@ -214,7 +214,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		PageRequest pageRequest = PageRequest.of(page, limit);
 
 		User currentUser = userService.getCurrentUser();
-		Long ownerId = CrmUtil.resolveOwnerScopeId(currentUser);
+		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
 		Map<Long, Long> stageCounts = crmDealDao.countDealsByStageIds(uniqueStageIds, requestDto, ownerId);
 

@@ -26,10 +26,6 @@ public class CrmUtil {
 		return user.getEmployee().getEmployeeRole().getCrmRole() == Role.CRM_SALES_REPRESENTATIVE;
 	}
 
-	public Long resolveOwnerScopeId(User user) {
-		return isCrmSalesRepresentative(user) ? user.getEmployee().getEmployeeId() : null;
-	}
-
 	public boolean hasDeletedCompany(CrmContact contact) {
 		return isCompanyDeleted(contact.getCompany());
 	}
