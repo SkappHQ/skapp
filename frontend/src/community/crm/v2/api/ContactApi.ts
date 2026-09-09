@@ -13,10 +13,7 @@ import { AxiosError } from "axios";
 import authFetch, {
   authFetchV2
 } from "~community/common/utils/axiosInterceptor";
-import {
-  crmContactEndpoints,
-  crmLookupEndpoints
-} from "~community/crm/v2/api/utils/ApiEndpoints";
+import { crmContactEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmContactQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import {
   CrmContactEntity,
@@ -81,7 +78,7 @@ export const useGetContactMetrics = (
 const fetchContactLookup = async (
   params: CrmContactFilterRequest
 ): Promise<CrmContactListResponse> => {
-  const response = await authFetchV2.get(crmLookupEndpoints.CONTACT_LOOKUP, {
+  const response = await authFetchV2.get(crmContactEndpoints.CONTACT_LOOKUP, {
     params
   });
   return response?.data?.results?.[0];
@@ -101,7 +98,7 @@ export const useGetContactLookup = (
 const fetchOwnerLookup = async (
   params: CrmOwnerLookupFilterRequest
 ): Promise<CrmOwnerListResponse> => {
-  const response = await authFetch.get(crmLookupEndpoints.OWNER_LOOKUP, {
+  const response = await authFetch.get(crmContactEndpoints.OWNER_LOOKUP, {
     params
   });
   return response?.data?.results?.[0];
