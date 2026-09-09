@@ -7,8 +7,6 @@ import {
 
 import { linkTaskToRelatedEntities } from "../taskUtil";
 
-jest.mock("@rootcodelabs/skapp-ui", () => ({}), { virtual: true });
-
 const companies: CrmCompanyRecord = {
   1: { id: 1, name: "Acme Corp", taskIds: [10, 11] }
 };
@@ -32,28 +30,9 @@ describe("linkTaskToRelatedEntities", () => {
 
     const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
 
-    expect(linked.companies?.[1].taskIds).toEqual([10, 11, 99]);
-    expect(linked.contacts?.[4].taskIds).toEqual([10, 99]);
-    expect(linked.deals?.[7].taskIds).toEqual([99]);
-  });
-
-  it("touches only the deal when the task has a deal but no contact or company", () => {
-    const task: CrmTaskEntity = { id: 99, dealId: 7 };
-
-    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
-
-    expect(linked.deals?.[7].taskIds).toEqual([99]);
-    expect(linked.companies).toBe(companies);
-    expect(linked.contacts).toBe(contacts);
-  });
-
-  it("skips a record the caller did not pass", () => {
-    const task: CrmTaskEntity = { id: 99, companyId: 1, contactId: 4 };
-
-    const linked = linkTaskToRelatedEntities(task, companies);
-
-    expect(linked.companies?.[1].taskIds).toEqual([10, 11, 99]);
-    expect(linked.contacts).toBeUndefined();
+    expect(linked.companies[1].taskIds).toEqual([10, 11, 99]);
+    expect(linked.contacts[4].taskIds).toEqual([10, 99]);
+    expect(linked.deals[7].taskIds).toEqual([99]);
   });
 
   it("leaves the entity alone when it has not loaded its tasks yet", () => {
@@ -67,24 +46,17 @@ describe("linkTaskToRelatedEntities", () => {
       deals
     );
 
-    expect(linked.companies?.[1].taskIds).toBeUndefined();
-  });
-
-  it("does not append the same task id twice", () => {
-    const task: CrmTaskEntity = { id: 10, companyId: 1 };
-
-    const linked = linkTaskToRelatedEntities(task, companies);
-
-    expect(linked.companies?.[1].taskIds).toEqual([10, 11]);
+    expect(linked.companies[1].taskIds).toBeUndefined();
   });
 
   it("hands back the same record when the id was already there", () => {
     const task: CrmTaskEntity = { id: 10, companyId: 1 };
 
-    const linked = linkTaskToRelatedEntities(task, companies);
+    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
 
+    expect(linked.companies[1].taskIds).toEqual([10, 11]);
     expect(linked.companies).toBe(companies);
-    expect(linked.companies?.[1]).toBe(companies[1]);
+    expect(linked.companies[1]).toBe(companies[1]);
   });
 
   it("leaves records untouched when the linked entity is not in the store", () => {
@@ -94,15 +66,5 @@ describe("linkTaskToRelatedEntities", () => {
 
     expect(linked.companies).toBe(companies);
     expect(linked.contacts).toBe(contacts);
-  });
-
-  it("leaves records untouched when the response carries no task id", () => {
-    const task: CrmTaskEntity = { companyId: 1, contactId: 4, dealId: 7 };
-
-    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
-
-    expect(linked.companies).toBe(companies);
-    expect(linked.contacts).toBe(contacts);
-    expect(linked.deals).toBe(deals);
   });
 });

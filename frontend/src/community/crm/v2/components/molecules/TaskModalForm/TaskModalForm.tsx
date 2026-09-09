@@ -406,8 +406,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           onClear={handleClearContact}
           clearAriaLabel={translateText(["ariaLabels", "clearContact"])}
           fieldAriaLabel={translateText(["ariaLabels", "contactName"])}
-          searchValue={contactSearchText}
-          onSearchChange={(event) => setContactSearchText(event.target.value)}
+          value={contactSearchText}
+          onChange={(event) => setContactSearchText(event.target.value)}
           items={contactDropdownItems}
           onSelect={handleContactSelect}
           emptyMessage={translateText(["emptyStates", "noContacts"])}
@@ -422,8 +422,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           onClear={handleClearDeal}
           clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
           fieldAriaLabel={translateText(["ariaLabels", "deal"])}
-          searchValue={dealSearchText}
-          onSearchChange={(event) => setDealSearchText(event.target.value)}
+          value={dealSearchText}
+          onChange={(event) => setDealSearchText(event.target.value)}
           items={dealDropdownItems}
           onSelect={handleDealSelect}
           emptyMessage={translateText(["emptyStates", "noDeals"])}
