@@ -1,5 +1,5 @@
 import { AvatarChip, AvatarSize } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, MouseEvent, ReactNode } from "react";
 
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { concatStrings } from "~community/common/utils/commonUtil";
@@ -10,13 +10,21 @@ interface OwnerAvatarChipProps {
   owner: CrmOwnerEntity;
   backgroundColor?: string;
   size?: AvatarSize;
+  actionIcon?: ReactNode;
+  onActionClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  showActionButton?: boolean;
+  actionButtonAriaLabel?: string;
 }
 
 const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
   id,
   owner,
   backgroundColor,
-  size = "sm"
+  size = "sm",
+  actionIcon,
+  onActionClick,
+  showActionButton,
+  actionButtonAriaLabel
 }) => {
   const imageUrl = useGetImageUrl(owner.authPic ?? "");
 
@@ -31,6 +39,10 @@ const OwnerAvatarChip: FC<OwnerAvatarChipProps> = ({
       }}
       label={concatStrings([owner.firstName, owner.lastName ?? ""]).trim()}
       backgroundColor={backgroundColor}
+      actionIcon={actionIcon}
+      onActionClick={onActionClick}
+      showActionButton={showActionButton}
+      actionButtonAriaLabel={actionButtonAriaLabel}
     />
   );
 };

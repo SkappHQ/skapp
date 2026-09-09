@@ -11,7 +11,7 @@ import {
   toStagesRecord,
   toTaskTypesRecord
 } from "~community/crm/v2/utils/commonUtil";
-import { toContactsRecord } from "~community/crm/v2/utils/contactUtil";
+import { updateContactRecord } from "~community/crm/v2/utils/contactUtil";
 
 interface UseInitializeCrmDataReturn {
   isCrmInitialDataLoading: boolean;
@@ -58,7 +58,9 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
 
     setStages(toStagesRecord(data.stages));
     setOwners(toOwnersRecord(data.owners));
-    setContacts(toContactsRecord(data.contacts));
+    setContacts(
+      updateContactRecord(useCrmStoreV2.getState().contacts, data.contacts)
+    );
     setTaskTypes(toTaskTypesRecord(data.taskTypes));
     setIsCrmDataInitialized(true);
   }, [data, isSuccess, isError, isCrmDataInitialized]);

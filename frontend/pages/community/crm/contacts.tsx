@@ -31,11 +31,13 @@ const ContactsV1 = () => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStore((store) => ({
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      setContactModalType: store.setContactModalType,
-      selectedContactId: store.selectedContactId
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        setIsContactModalOpen: store.setIsContactModalOpen,
+        setContactModalType: store.setContactModalType,
+        selectedContactId: store.selectedContactId
+      }))
+    );
 
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.CONTACTS, () => {

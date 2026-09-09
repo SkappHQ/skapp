@@ -36,23 +36,15 @@ export const CompanyTable: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const {
-    companies,
-    companyIds,
-    setCompanies,
-    setCompanyIds,
-    setSelectedCompanyId,
-    openCrmSidePanel
-  } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      companyIds: store.companyIds,
-      setCompanies: store.setCompanies,
-      setCompanyIds: store.setCompanyIds,
-      setSelectedCompanyId: store.setSelectedCompanyId,
-      openCrmSidePanel: store.openCrmSidePanel
-    }))
-  );
+  const { companies, companyIds, setSelectedCompanyId, openCrmSidePanel } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        companies: store.companies,
+        companyIds: store.companyIds,
+        setSelectedCompanyId: store.setSelectedCompanyId,
+        openCrmSidePanel: store.openCrmSidePanel
+      }))
+    );
 
   const companyFilters: CrmCompanyFilterRequest = {
     searchKeyword: debouncedSearch,
@@ -69,8 +61,9 @@ export const CompanyTable: FC = () => {
 
     const items = data.pages.flatMap((page) => page.items);
 
-    setCompanies(updateCompanyRecord(companies, items));
-    setCompanyIds(toCompanyIds(items));
+    const store = useCrmStoreV2.getState();
+    store.setCompanies(updateCompanyRecord(store.companies, items));
+    store.setCompanyIds(toCompanyIds(items));
   }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {

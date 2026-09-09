@@ -10,7 +10,10 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
-import { useCreateDeal } from "~community/crm/v2/api/DealApi";
+import {
+  useCheckDealNameExists,
+  useCreateDeal
+} from "~community/crm/v2/api/DealApi";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -110,9 +113,18 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
-  const isFormDisabled = isPending || isUserLoading || isCheckingCrmLimit;
+  const isFormDisabled =
+    isPending ||
+    isUserLoading ||
+    isCheckingCrmLimit ||
+    initialStageId === undefined ||
+    currentUser?.employeeId == null;
 
   const handleSubmit = (values: InlineDealFormValues) => {
+    if (isDealNameCheckUnresolved || dealNameData?.isExists === true) {
+      return;
+    }
+
     guardCrmCreate(CrmLimitResource.DEALS, () => {
       createDeal({
         name: values.name.trim(),
@@ -135,6 +147,21 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     onSubmit: handleSubmit
   });
 
+  const trimmedDealName = formik.values.name.trim();
+
+  const debouncedDealName = useDebounce(trimmedDealName, SEARCH_DEBOUNCE_DELAY);
+
+  const { data: dealNameData, isFetching: isDealNameCheckFetching } =
+    useCheckDealNameExists(debouncedDealName, debouncedDealName.length > 0);
+
+  const isDealNameCheckUnresolved =
+    trimmedDealName.length > 0 &&
+    (trimmedDealName !== debouncedDealName || isDealNameCheckFetching);
+
+  const nameErrorMessage = dealNameData?.isExists
+    ? translateText(["inlineAddDeal", "validations", "dealNameExists"])
+    : formik.errors.name;
+
   const handleContactChange = (contact?: CrmContactEntity) => {
     setSelectedContact(contact);
     formik.setFieldValue("contactId", contact ? String(contact.id) : "");
@@ -155,11 +182,13 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
         prefixNode={
           <div className="w-60 shrink-0">
             <AddDealContactSearch
+              id="add-deal-contact-search"
               contacts={contactLookupData?.items ?? []}
               selectedContact={selectedContact}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               isInvalid={Boolean(formik.errors.contactId)}
+              errorMessage={formik.errors.contactId}
               placeholder={translateText([
                 "inlineAddDeal",
                 "contactPlaceholder"
@@ -184,10 +213,8 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
         placeholder={translateText(["inlineAddDeal", "dealNamePlaceholder"])}
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
-        errorMessage={formik.errors.name}
-        hasError={
-          Boolean(formik.errors.name) || Boolean(formik.errors.contactId)
-        }
+        errorMessage={nameErrorMessage}
+        hasError={Boolean(nameErrorMessage) || Boolean(formik.errors.contactId)}
         ariaLabels={{
           group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
           saveButton: translateText([

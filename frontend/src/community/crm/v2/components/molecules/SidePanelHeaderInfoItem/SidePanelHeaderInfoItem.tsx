@@ -16,6 +16,10 @@ const SidePanelHeaderInfoItem: FC<SidePanelHeaderInfoItemProps> = ({
   endIcon,
   onClick
 }) => {
+  if (!value) {
+    return null;
+  }
+
   const isInteractive = !!onClick;
 
   return (

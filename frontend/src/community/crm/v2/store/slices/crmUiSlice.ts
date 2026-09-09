@@ -25,11 +25,14 @@ const CrmUiSlice: StateCreator<
   contactModalType: CrmModalTypes.ADD_CONTACT_MODAL,
   isTaskModalOpen: false,
   taskModalType: CrmModalTypes.ADD_TASK_MODAL,
+  isDealStageModalOpen: false,
+  dealStageModalType: CrmModalTypes.ADD_DEAL_STAGE_MODAL,
 
   selectedCompanyId: null,
   selectedContactId: null,
   selectedDealId: null,
   selectedTaskId: null,
+  selectedDealStageId: null,
 
   isCrmSidePanelOpen: false,
   crmSidePanelType: null,
@@ -54,6 +57,10 @@ const CrmUiSlice: StateCreator<
     set({ contactModalType }),
   setIsTaskModalOpen: (isTaskModalOpen: boolean) => set({ isTaskModalOpen }),
   setTaskModalType: (taskModalType: CrmModalTypes) => set({ taskModalType }),
+  setIsDealStageModalOpen: (isDealStageModalOpen: boolean) =>
+    set({ isDealStageModalOpen }),
+  setDealStageModalType: (dealStageModalType: CrmModalTypes) =>
+    set({ dealStageModalType }),
 
   setSelectedCompanyId: (selectedCompanyId: number | null) =>
     set({ selectedCompanyId }),
@@ -61,11 +68,17 @@ const CrmUiSlice: StateCreator<
     set({ selectedContactId }),
   setSelectedDealId: (selectedDealId: number | null) => set({ selectedDealId }),
   setSelectedTaskId: (selectedTaskId: number | null) => set({ selectedTaskId }),
+  setSelectedDealStageId: (selectedDealStageId: number | null) =>
+    set({ selectedDealStageId }),
 
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
     set({ isCrmSidePanelOpen: true, crmSidePanelType }),
   closeCrmSidePanel: () =>
-    set({ isCrmSidePanelOpen: false, crmSidePanelType: null }),
+    set({
+      isCrmSidePanelOpen: false,
+      crmSidePanelType: null,
+      selectedContactId: null
+    }),
 
   setPreselectedStageId: (preselectedStageId: number | null) =>
     set({ preselectedStageId }),

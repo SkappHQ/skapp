@@ -24,7 +24,7 @@ import {
 } from "~community/crm/v2/api/utils/QueryKeys";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmRelatedTasksFilterRequest,
+  CrmRelatedTasksFilter,
   CrmTaskFilterRequest,
   CrmTaskListResponse,
   CrmTaskUpdateRequest
@@ -105,33 +105,33 @@ export const useGetTaskById = (
   enabled?: boolean
 ): UseQueryResult<CrmTaskEntity, AxiosError> =>
   useQuery({
-    queryKey: crmTaskQueryKeys.DETAIL(id),
+    queryKey: crmTaskQueryKeys.TASK_BY_ID(id),
     queryFn: () => fetchTaskById(id),
     enabled,
     refetchOnWindowFocus: false
   });
 
 const fetchRelatedTasks = async (
-  params: CrmRelatedTasksFilterRequest
+  id: number,
+  filter: CrmRelatedTasksFilter
 ): Promise<CrmTaskListResponse> => {
-  const { id, ...query } = params;
   const response = await authFetchV2.get(
     crmTaskEndpointsV2.GET_RELATED_TASKS(id),
-    { params: query }
+    { params: filter }
   );
   return response?.data?.results?.[0];
 };
 
 export const useGetRelatedTasks = (
-  params: CrmRelatedTasksFilterRequest,
-  enabled?: boolean
-): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>, AxiosError> =>
+  id: number,
+  filter: CrmRelatedTasksFilter,
+  enabled: boolean
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> =>
   useInfiniteQuery({
-    queryKey: crmTaskQueryKeys.RELATED(params),
-    queryFn: ({ pageParam }) =>
-      fetchRelatedTasks({ ...params, page: pageParam }),
-    enabled,
     initialPageParam: 0,
+    queryKey: crmTaskQueryKeys.RELATED_TASKS(id, filter),
+    queryFn: ({ pageParam = 0 }) =>
+      fetchRelatedTasks(id, { size: filter.size, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (
         lastPage?.currentPage !== undefined &&
@@ -142,14 +142,12 @@ export const useGetRelatedTasks = (
       }
       return undefined;
     },
+    enabled,
     refetchOnWindowFocus: false
   });
 
-const createTask = async (payload: CrmTaskEntity): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.post(
-    crmTaskEndpointsV2.CREATE_TASK,
-    payload
-  );
+const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
+  const response = await authFetchV2.post(crmTaskEndpointsV2.CREATE_TASK, task);
   return response?.data?.results?.[0];
 };
 
