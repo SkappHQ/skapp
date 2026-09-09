@@ -16,6 +16,7 @@ export const crmContactQueryKeys = {
   LISTS: [CRM_CONTACTS, "list"],
   LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
   DETAIL: (id: number) => [CRM_CONTACTS, "detail", id],
+  METRICS_ROOT: [CRM_CONTACTS, "metrics"],
   METRICS: (id: number) => [CRM_CONTACTS, "metrics", id],
   EMAIL_EXISTS: (email: string) => [CRM_CONTACTS, "email-exists", email],
   LOOKUP: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "lookup", params],
@@ -57,6 +58,7 @@ export const crmCompanyQueryKeys = {
   COMPANIES_BY_IDS: (ids: number[]) => [CRM_COMPANIES, "by-ids", ids],
   LIST: (params: CrmCompanyFilterRequest) => [CRM_COMPANIES, "list", params],
   DETAIL: (id: number) => [CRM_COMPANIES, "detail", id],
+  METRICS_ROOT: [CRM_COMPANIES, "metrics"],
   METRICS: (id: number) => [CRM_COMPANIES, "metrics", id],
   NAME_EXISTS: (name: string) => [CRM_COMPANIES, "name-exists", name],
   LOOKUP: (params: CrmCompanyFilterRequest) => [
