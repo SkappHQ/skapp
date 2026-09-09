@@ -19,6 +19,10 @@ export function phoneNumberPattern(): RegExp {
   return /\d/;
 }
 
+export function nonPhoneNumberCharacterPattern(): RegExp {
+  return /\D/g;
+}
+
 export function isValidNameWithAccentsAndApostrophes(): RegExp {
   return /^[a-zA-Z\u00C0-\u00ff']+([ a-zA-Z\u00C0-\u00ff']+)*$/;
 }

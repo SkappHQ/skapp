@@ -2,6 +2,7 @@ import { Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import {
   type ChangeEvent,
+  ClipboardEvent,
   FC,
   KeyboardEvent,
   useEffect,
@@ -14,7 +15,10 @@ import "react-phone-input-2/lib/material.css";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { phoneNumberPattern } from "~community/common/regex/regexPatterns";
+import {
+  nonPhoneNumberCharacterPattern,
+  phoneNumberPattern
+} from "~community/common/regex/regexPatterns";
 import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 import {
   shouldActivateButton,
@@ -76,6 +80,47 @@ const InputPhoneNumber: FC<Props> = ({
   const phoneInputRef = useRef<PhoneInputInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
+
+  const maxLength = getPhoneNumberMaxLength(countryCodeValue);
+
+  const handlePhoneNumberChange = async (
+    e: ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    e.target.value = e.target.value.replace(
+      nonPhoneNumberCharacterPattern(),
+      ""
+    );
+
+    await onChange?.(e);
+  };
+
+  const handlePhoneNumberPaste = async (
+    e: ClipboardEvent<HTMLInputElement>
+  ): Promise<void> => {
+    e.preventDefault();
+
+    const pastedDigits = e.clipboardData
+      .getData("Text")
+      .replace(nonPhoneNumberCharacterPattern(), "");
+
+    if (!pastedDigits) {
+      return;
+    }
+
+    const input = e.target as HTMLInputElement;
+    const selectionStart = input.selectionStart ?? value.length;
+    const selectionEnd = input.selectionEnd ?? value.length;
+
+    input.value = `${value.slice(0, selectionStart)}${pastedDigits}${value.slice(
+      selectionEnd
+    )}`.slice(0, maxLength);
+
+    await onChange?.({
+      ...e,
+      target: input,
+      currentTarget: input
+    } as unknown as ChangeEvent<HTMLInputElement>);
+  };
 
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
@@ -281,7 +326,7 @@ const InputPhoneNumber: FC<Props> = ({
           inputName={inputName}
           placeHolder={placeHolder}
           value={value}
-          onChange={onChange}
+          onChange={handlePhoneNumberChange}
           readOnly={readOnly}
           componentStyle={{ mt: 0, width: "400%", ...componentStyle }}
           inputStyle={{
@@ -294,7 +339,7 @@ const InputPhoneNumber: FC<Props> = ({
           }}
           inputType="text"
           error={error}
-          maxLength={getPhoneNumberMaxLength(countryCodeValue)}
+          maxLength={maxLength}
           inputMode="numeric"
           onKeyDown={(e) => {
             // TODO: move this to a separate file and write unit test cases
@@ -308,12 +353,7 @@ const InputPhoneNumber: FC<Props> = ({
               e.preventDefault();
             }
           }}
-          onPaste={(e) => {
-            // TODO: move this to a separate file and write unit test cases
-            if (!phoneNumberPattern().test(e.clipboardData.getData("Text"))) {
-              e.preventDefault();
-            }
-          }}
+          onPaste={handlePhoneNumberPaste}
           ariaLabel={ariaLabel}
           isDisabled={isDisabled}
         />
