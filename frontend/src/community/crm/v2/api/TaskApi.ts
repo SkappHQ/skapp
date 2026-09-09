@@ -164,16 +164,12 @@ export const useCreateTask = (
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
       queryClient.invalidateQueries({ queryKey: crmTaskQueryKeys.LISTS });
-      if (createdTask.companyId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmCompanyQueryKeys.METRICS(createdTask.companyId)
-        });
-      }
-      if (createdTask.contactId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmContactQueryKeys.METRICS(createdTask.contactId)
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
       onSuccess(createdTask);
     },
     onError
@@ -201,19 +197,12 @@ export const useUpdateTask = (
     mutationFn: updateTask,
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: crmTaskQueryKeys.LISTS });
-      if (updatedTask.companyId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmCompanyQueryKeys.METRICS(updatedTask.companyId)
-        });
-      }
-      if (updatedTask.contactId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmContactQueryKeys.METRICS(updatedTask.contactId)
-        });
-        queryClient.invalidateQueries({
-          queryKey: crmContactQueryKeys.LISTS
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
       onSuccess?.(updatedTask);
     },
     onError
