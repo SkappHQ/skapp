@@ -1,45 +1,29 @@
 import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 
 import SearchableDropdown, {
-  SearchableDropdownItem
+  SearchableDropdownProps
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 
-interface SelectableSearchFieldProps {
-  id: string;
-  label: string;
-  placeholder: string;
+interface SelectableSearchFieldProps extends SearchableDropdownProps {
   selectedValue?: string;
   onClear: () => void;
-  isOpenOnFocus?: boolean;
   clearAriaLabel: string;
   fieldAriaLabel: string;
-  searchValue: string;
-  onSearchChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  items: SearchableDropdownItem[];
-  onSelect: (item: SearchableDropdownItem) => void;
-  emptyMessage?: string;
 }
 
 const SelectableSearchField: FC<SelectableSearchFieldProps> = ({
-  id,
-  label,
-  placeholder,
   selectedValue,
   onClear,
   clearAriaLabel,
   fieldAriaLabel,
-  searchValue,
-  onSearchChange,
-  items,
-  onSelect,
-  emptyMessage,
-  isOpenOnFocus = true
+  isOpenOnFocus = true,
+  ...dropdownProps
 }) => {
   if (selectedValue) {
     return (
       <InputField
-        label={label}
+        label={dropdownProps.label}
         value={selectedValue}
         readOnly
         fullWidth
@@ -59,17 +43,7 @@ const SelectableSearchField: FC<SelectableSearchFieldProps> = ({
   }
 
   return (
-    <SearchableDropdown
-      id={id}
-      label={label}
-      placeholder={placeholder}
-      value={searchValue}
-      onChange={onSearchChange}
-      items={items}
-      onSelect={onSelect}
-      emptyMessage={emptyMessage}
-      isOpenOnFocus={isOpenOnFocus}
-    />
+    <SearchableDropdown {...dropdownProps} isOpenOnFocus={isOpenOnFocus} />
   );
 };
 
