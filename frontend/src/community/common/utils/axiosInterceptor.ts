@@ -1,6 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { ApiVersions } from "../constants/configs";
@@ -14,13 +15,8 @@ export const authFetchV2 = axios.create({
   baseURL: getApiUrl() + ApiVersions.V2
 });
 
-export const authFetchSameOrigin = axios.create({
-  baseURL: "",
-  withCredentials: true
-});
-
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken(useCommonStore.getState());
 
   if (
     accessToken &&
@@ -49,11 +45,6 @@ authFetch.interceptors.request.use(
 );
 
 authFetchV2.interceptors.request.use(
-  requestInterceptorConfig,
-  requestInterceptorConfigError
-);
-
-authFetchSameOrigin.interceptors.request.use(
   requestInterceptorConfig,
   requestInterceptorConfigError
 );

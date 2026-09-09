@@ -83,29 +83,6 @@ export const getLeavePolicyErrorToastKeys = (
   }
 };
 
-interface TranslatableOptionItem {
-  id: string;
-  labelKey: string;
-  value: string;
-}
-
-interface TranslatedOption {
-  id: string;
-  label: string;
-  value: string;
-}
-
-export const buildTranslatedOptionList = (
-  itemList: TranslatableOptionItem[],
-  optionGroup: string,
-  translateOptions: (suffixes: string[]) => string
-): TranslatedOption[] =>
-  itemList.map((item) => ({
-    id: item.id,
-    label: translateOptions([optionGroup, item.labelKey]),
-    value: item.value
-  }));
-
 export const mapLeavePolicyFormToPayload = (
   formData: LeavePolicyFormData
 ): AddLeavePolicyPayload => {

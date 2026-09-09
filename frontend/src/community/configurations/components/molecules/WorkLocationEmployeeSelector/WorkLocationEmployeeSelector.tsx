@@ -293,7 +293,8 @@ const WorkLocationEmployeeSelector = ({
           avatarProps={{
             id: `${idPrefix}-all-employees`,
             firstName: allEmployeesLabel,
-            size: "sm"
+            size: "sm",
+            isPlaceholder: true
           }}
           label={allEmployeesLabel}
         />

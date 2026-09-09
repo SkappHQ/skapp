@@ -10,11 +10,14 @@ import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
+import com.skapp.community.leaveplanner.payload.LeavePolicyAssignedEmployeeCountDto;
 import com.skapp.community.leaveplanner.payload.LeavePolicyConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
@@ -24,13 +27,16 @@ import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigRespon
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyNameAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
+import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
+import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
+import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
@@ -45,6 +51,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +75,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final LeaveRequestDao leaveRequestDao;
 
 	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
+
+	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
+
+	private final PolicyLeaveRequestDao policyLeaveRequestDao;
 
 	private final JsonMapper jsonMapper;
 
@@ -134,7 +145,14 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
-		log.info("deactivateLeavePolicy: policy deactivated successfully");
+		int cancelledRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatus(leavePolicy.getId(), LeaveRequestStatus.PENDING),
+				LeaveRequestStatus.CANCELLED);
+		int revokedRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
+						LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()),
+				LeaveRequestStatus.REVOKED);
+		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
 		return new ResponseEntityDto(false,
 				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
@@ -167,10 +185,17 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		Pageable pageable = leavePolicyFilterDto.getSize() < 0 ? Pageable.unpaged()
 				: PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
-		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
+		Page<LeavePolicyAssignedEmployeeCountDto> leavePolicyPage = leavePolicyDao
+			.findLeavePolicies(leavePolicyFilterDto, pageable);
 
-		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
-			.leavePolicyListToLeavePolicyResponseDtoList(leavePolicyPage.getContent());
+		List<LeavePolicyResponseDto> leavePolicyResponseDtos = new ArrayList<>();
+		for (LeavePolicyAssignedEmployeeCountDto leavePolicyAssignedEmployeeCountDto : leavePolicyPage.getContent()) {
+			LeavePolicyResponseDto leavePolicyResponseDto = leaveMapper
+				.leavePolicyToLeavePolicyResponseDto(leavePolicyAssignedEmployeeCountDto.getLeavePolicy());
+			leavePolicyResponseDto
+				.setAssignedEmployeeCount(leavePolicyAssignedEmployeeCountDto.getAssignedEmployeeCount());
+			leavePolicyResponseDtos.add(leavePolicyResponseDto);
+		}
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(leavePolicyResponseDtos);
@@ -265,6 +290,33 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 			.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue()));
 
 		log.info("setDefaultLeavePolicyConfig: execution ended");
+	}
+
+	private int endActivePolicyAssignments(Long policyId) {
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
+				EmployeeLeavePolicyStatus.ACTIVE);
+		if (assignments.isEmpty()) {
+			return 0;
+		}
+
+		assignments.forEach(assignment -> assignment.setStatus(EmployeeLeavePolicyStatus.ENDED));
+		employeeLeavePolicyDao.saveAll(assignments);
+
+		return assignments.size();
+	}
+
+	private int voidPolicyLeaveRequests(List<PolicyLeaveRequest> policyLeaveRequests, LeaveRequestStatus status) {
+		if (policyLeaveRequests.isEmpty()) {
+			return 0;
+		}
+
+		policyLeaveRequests.forEach(policyLeaveRequest -> {
+			policyLeaveRequest.setStatus(status);
+			policyLeaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		});
+		policyLeaveRequestDao.saveAll(policyLeaveRequests);
+
+		return policyLeaveRequests.size();
 	}
 
 	private int removeExistingLeaveAllocations() {

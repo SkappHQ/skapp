@@ -1,3 +1,5 @@
+import { AuthTokenSliceType } from "~community/common/stores/slices/authTokenSlice";
+
 export interface EnterpriseSignInParams {
   email?: string;
   password?: string;
@@ -14,9 +16,11 @@ export interface EnterpriseSignUpParams {
 }
 
 export const enterpriseSignIn = async (
-  _params: EnterpriseSignInParams
+  _params: EnterpriseSignInParams,
+  _authTokenStore: AuthTokenSliceType
 ): Promise<void> => {};
 
 export const enterpriseSignUp = async (
-  _params: EnterpriseSignUpParams
+  _params: EnterpriseSignUpParams,
+  _authTokenStore: AuthTokenSliceType
 ): Promise<void> => {};

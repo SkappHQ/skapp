@@ -12,6 +12,7 @@ import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -88,7 +89,8 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Test
 	void updateAttendanceConfig_whenGeoFencingNull_skipsGeoConfigUpdate() {
-		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null, null, null);
+		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null, null, null,
+				null);
 
 		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
 
@@ -109,12 +111,59 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Test
 	void updateAttendanceConfig_whenGeoFencingProvided_savesAllFiveConfigs() {
-		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, true, null, null);
+		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, true, null, null,
+				null);
 		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
 
 		attendanceConfigService.updateAttendanceConfig(request);
 
 		verify(attendanceConfigDao, times(5)).save(any(AttendanceConfig.class));
+	}
+
+	@Test
+	void updateAttendanceConfig_whenManualEntryRestrictionProvided_savesManualEntryRestrictionConfig() {
+		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null, null, null,
+				true);
+		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
+
+		attendanceConfigService.updateAttendanceConfig(request);
+
+		ArgumentCaptor<AttendanceConfig> captor = ArgumentCaptor.forClass(AttendanceConfig.class);
+		verify(attendanceConfigDao, times(5)).save(captor.capture());
+
+		assertTrue(captor.getAllValues()
+			.stream()
+			.anyMatch(config -> config
+				.getAttendanceConfigType() == AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED
+					&& "true".equals(config.getAttendanceConfigValue())));
+	}
+
+	@Test
+	void updateManualEntryRestrictionEnabled_savesRequestedValue() {
+		when(attendanceConfigDao.findByAttendanceConfigType(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED))
+			.thenReturn(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED, "true"));
+
+		attendanceConfigService.updateManualEntryRestrictionEnabled(false);
+
+		ArgumentCaptor<AttendanceConfig> captor = ArgumentCaptor.forClass(AttendanceConfig.class);
+		verify(attendanceConfigDao).save(captor.capture());
+
+		assertEquals(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED,
+				captor.getValue().getAttendanceConfigType());
+		assertEquals("false", captor.getValue().getAttendanceConfigValue());
+	}
+
+	@Test
+	void getAllAttendanceConfigs_nonAdminReturnsManualEntryRestriction() {
+		when(userService.getCurrentUserRoles()).thenReturn(Set.of(Role.ATTENDANCE_EMPLOYEE.name()));
+		when(attendanceConfigDao.findAll()).thenReturn(
+				List.of(new AttendanceConfig(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED, "true")));
+
+		AttendanceConfigRequestDto dto = (AttendanceConfigRequestDto) attendanceConfigService.getAllAttendanceConfigs()
+			.getResults()
+			.getFirst();
+
+		assertTrue(dto.getIsManualTimeEntryRestrictionEnabled());
 	}
 
 	@Test

@@ -93,6 +93,7 @@ import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationRe
 import com.skapp.community.peopleplanner.payload.response.BirthdayNotificationViewedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkErrorResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeBulkResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeCountDto;
@@ -1612,9 +1613,8 @@ public class PeopleServiceImpl implements PeopleService {
 			return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, List.of()));
 		}
 
-		List<EmployeeBasicDetailsResponseDto> response = employeesWithBirthdays.stream()
-			.map(peopleMapper::employeeToEmployeeBasicDetailsResponseDto)
-			.toList();
+		List<EmployeeBirthdayResponseDto> response = peopleMapper
+			.employeesToEmployeeBirthdayResponseDtos(employeesWithBirthdays);
 
 		log.info("getTodayBirthdayNotifications: execution ended");
 		return new ResponseEntityDto(false, new BirthdayNotificationResponseDto(lastViewedDate, response));
@@ -1674,6 +1674,11 @@ public class PeopleServiceImpl implements PeopleService {
 
 		if (newPrimarySupervisor.getEmployeeId().equals(employee.getEmployeeId())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
+		}
+
+		if (employeeManagerDao.existsByManagerAndEmployeeAndManagerTypeIn(newPrimarySupervisor, employee,
+				Set.of(ManagerType.PRIMARY, ManagerType.SECONDARY))) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_ALREADY_ASSIGNED);
 		}
 
 		EmployeeManager primarySupervisorRecord = employeeManagerDao

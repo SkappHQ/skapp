@@ -12,6 +12,8 @@ public interface AttendanceConfigService {
 
 	ResponseEntityDto getAllAttendanceConfigs();
 
+	void updateManualEntryRestrictionEnabled(boolean enabled);
+
 	boolean getAttendanceConfigByType(AttendanceConfigType attendanceConfigType);
 
 	boolean isAttendanceConfigEnabled(AttendanceConfigType attendanceConfigType);

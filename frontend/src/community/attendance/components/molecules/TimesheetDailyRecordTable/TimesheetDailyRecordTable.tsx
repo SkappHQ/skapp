@@ -2,8 +2,10 @@ import { Box, Divider, Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { JSX, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { DailyLogChipTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { DailyLogType } from "~community/attendance/types/timeSheetTypes";
 import {
   generateTimeSlots,
@@ -16,6 +18,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import { IconName } from "~community/common/types/IconTypes";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
+import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
 
 import TimesheetDailyRecordSkeleton from "../AttendanceSkeletons/TimesheetDailyRecordSkeleton";
 import TimesheetDailyRecordTableHeader from "../TimesheetDailyRecordTableHeader/TimesheetDailyRecordTableHeader";
@@ -26,14 +29,29 @@ interface Props {
   dailyLogData: DailyLogType[];
   downloadEmployeeDailyLogCsv?: () => void;
   isDailyLogLoading?: boolean;
+  targetEmployeeId?: number;
+  targetEmployeeDetails?: EmployeeDetails;
 }
 
 const TimesheetDailyRecordTable = ({
   dailyLogData,
   downloadEmployeeDailyLogCsv,
-  isDailyLogLoading
+  isDailyLogLoading,
+  targetEmployeeId,
+  targetEmployeeDetails
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
+  const {
+    isManualEntryRestricted,
+    canDirectlyAddOrEditEntry,
+    isLoading: isRestrictionLoading
+  } = useManualEntryRestriction();
+
+  const isRowInteractive =
+    !isRestrictionLoading &&
+    (targetEmployeeDetails
+      ? canDirectlyAddOrEditEntry
+      : !isManualEntryRestricted);
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -42,9 +60,11 @@ const TimesheetDailyRecordTable = ({
   const classes = styles(theme);
   const [tableHeaders, setTableHeaders] = useState<string[]>([]);
 
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   useEffect(() => {
     setTableHeaders(generateTimeSlots());
@@ -125,6 +145,10 @@ const TimesheetDailyRecordTable = ({
                   record={record}
                   key={record?.date}
                   headerLength={tableHeaders?.length}
+                  targetEmployeeId={targetEmployeeId}
+                  targetEmployeeDetails={targetEmployeeDetails}
+                  isRowInteractive={isRowInteractive}
+                  isManualEntryRestricted={isManualEntryRestricted}
                 />
               ))
             ) : (
@@ -134,6 +158,10 @@ const TimesheetDailyRecordTable = ({
                     record={record}
                     key={record?.date}
                     headerLength={tableHeaders?.length}
+                    targetEmployeeId={targetEmployeeId}
+                    targetEmployeeDetails={targetEmployeeDetails}
+                    isRowInteractive={isRowInteractive}
+                    isManualEntryRestricted={isManualEntryRestricted}
                   />
                 ))}
               </Box>

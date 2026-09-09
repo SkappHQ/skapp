@@ -17,7 +17,8 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
     isEmployeeTimesheetModalOpen,
     employeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen,
-    setCurrentAddTimeChanges
+    setCurrentAddTimeChanges,
+    setDirectManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
 
   const [fromDateTime, setFromDateTime] = useState<string>("");
@@ -61,8 +62,9 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
   useEffect(() => {
     if (!isEmployeeTimesheetModalOpen) {
       setCurrentAddTimeChanges(undefined);
+      setDirectManualTimeEntryEligibleEmployee(null);
     }
-  }, [isEmployeeTimesheetModalOpen, setCurrentAddTimeChanges]);
+  }, [isEmployeeTimesheetModalOpen]);
 
   const modalContent = (): JSX.Element => (
     <>
