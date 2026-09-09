@@ -56,7 +56,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         ...option,
         label: translateText(["taskTypes", option.label])
       })),
-    [taskTypes, translateText]
+    [taskTypes]
   );
 
   const priorityOptions = useGetPriorityOptions();
