@@ -148,16 +148,12 @@ export const useCreateDeal = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
-      if (createdDeal.companyId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmCompanyQueryKeys.METRICS(createdDeal.companyId)
-        });
-      }
-      if (createdDeal.contactId !== undefined) {
-        queryClient.invalidateQueries({
-          queryKey: crmContactQueryKeys.METRICS(createdDeal.contactId)
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
       onSuccess(createdDeal);
     },
     onError
