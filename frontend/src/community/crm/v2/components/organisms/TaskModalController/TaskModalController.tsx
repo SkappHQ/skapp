@@ -16,11 +16,11 @@ const TaskModalController: FC = () => {
     setIsTaskModalOpen,
     setSelectedTaskId
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isTaskModalOpen: store.isTaskModalOpen,
-      taskModalType: store.taskModalType,
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setSelectedTaskId: store.setSelectedTaskId
+    useShallow((state) => ({
+      isTaskModalOpen: state.isTaskModalOpen,
+      taskModalType: state.taskModalType,
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      setSelectedTaskId: state.setSelectedTaskId
     }))
   );
 

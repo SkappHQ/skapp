@@ -41,9 +41,9 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
   );
 
   const { owners, setOwners } = useCrmStoreV2(
-    useShallow((store) => ({
-      owners: store.owners,
-      setOwners: store.setOwners
+    useShallow((state) => ({
+      owners: state.owners,
+      setOwners: state.setOwners
     }))
   );
 
@@ -61,7 +61,7 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
       (lookupOwner) => String(lookupOwner.employeeId) === item.id
     );
 
-    if (owner !== undefined) {
+    if (owner) {
       setOwners(updateOwnerRecord(owners, [owner]));
     }
 
