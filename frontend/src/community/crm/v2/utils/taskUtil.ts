@@ -61,17 +61,17 @@ export const removeTaskFromRecord = (
   tasks: CrmTaskRecord,
   id: number
 ): CrmTaskRecord => {
-  const next: CrmTaskRecord = {};
+  const remainingTasks: CrmTaskRecord = {};
 
   for (const [taskId, task] of Object.entries(tasks)) {
     if (Number(taskId) === id) continue;
 
-    next[Number(taskId)] = task.relatedTaskIds?.includes(id)
+    remainingTasks[Number(taskId)] = task.relatedTaskIds?.includes(id)
       ? { ...task, relatedTaskIds: removeTaskId(task.relatedTaskIds, id) }
       : task;
   }
 
-  return next;
+  return remainingTasks;
 };
 
 export const resolveTasks = (
