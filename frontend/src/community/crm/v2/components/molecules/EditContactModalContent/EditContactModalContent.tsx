@@ -26,11 +26,21 @@ const EditContactModalContent: FC = () => {
     "editContactModal"
   );
 
-  const { contacts, selectedContactId, setIsContactModalOpen } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      selectedContactId: store.selectedContactId,
-      setIsContactModalOpen: store.setIsContactModalOpen
+  const {
+    contacts,
+    companies,
+    selectedContactId,
+    setContacts,
+    setCompanies,
+    setIsContactModalOpen
+  } = useCrmStoreV2(
+    useShallow((state) => ({
+      contacts: state.contacts,
+      companies: state.companies,
+      selectedContactId: state.selectedContactId,
+      setContacts: state.setContacts,
+      setCompanies: state.setCompanies,
+      setIsContactModalOpen: state.setIsContactModalOpen
     }))
   );
 
@@ -66,14 +76,11 @@ const EditContactModalContent: FC = () => {
     setSubmitting(false);
 
     if (selectedContactId !== null) {
-      const store = useCrmStoreV2.getState();
-      const previousCompanyId = store.contacts[selectedContactId]?.companyId;
+      const previousCompanyId = contacts[selectedContactId]?.companyId;
 
-      store.setContacts(
-        updateContact(store.contacts, selectedContactId, updatedContact)
-      );
-      store.setCompanies(
-        linkContactToCompany(updatedContact, store.companies, previousCompanyId)
+      setContacts(updateContact(contacts, selectedContactId, updatedContact));
+      setCompanies(
+        linkContactToCompany(updatedContact, companies, previousCompanyId)
       );
     }
 
@@ -102,7 +109,7 @@ const EditContactModalContent: FC = () => {
   );
 
   const editContact = (values: CrmContactEntity) => {
-    if (selectedContactId === null || selectedContact === undefined) {
+    if (!selectedContactId || !selectedContact) {
       setSubmitting(false);
       return;
     }
@@ -125,7 +132,7 @@ const EditContactModalContent: FC = () => {
     editSelectedContact({ id: selectedContactId, contact: changedFields });
   };
 
-  if (selectedContact === undefined) {
+  if (!selectedContact) {
     return null;
   }
 

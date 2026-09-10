@@ -25,16 +25,26 @@ const DeleteContactModalContent: FC = () => {
   const {
     contacts,
     selectedContactId,
+    contactIds,
+    companies,
+    setContacts,
+    setContactIds,
+    setCompanies,
     setSelectedContactId,
     closeCrmSidePanel,
     setIsContactModalOpen
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      selectedContactId: store.selectedContactId,
-      setSelectedContactId: store.setSelectedContactId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setIsContactModalOpen: store.setIsContactModalOpen
+    useShallow((state) => ({
+      contacts: state.contacts,
+      contactIds: state.contactIds,
+      companies: state.companies,
+      selectedContactId: state.selectedContactId,
+      setContacts: state.setContacts,
+      setContactIds: state.setContactIds,
+      setCompanies: state.setCompanies,
+      setSelectedContactId: state.setSelectedContactId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setIsContactModalOpen: state.setIsContactModalOpen
     }))
   );
 
@@ -46,18 +56,13 @@ const DeleteContactModalContent: FC = () => {
 
   const handleSuccess = () => {
     if (selectedContactId !== null) {
-      const store = useCrmStoreV2.getState();
-      const remaining = removeContact(
-        store.contacts,
-        store.contactIds,
-        selectedContactId
-      );
+      const remaining = removeContact(contacts, contactIds, selectedContactId);
 
-      store.setContacts(remaining.contacts);
-      store.setContactIds(remaining.contactIds);
-      store.setCompanies(
+      setContacts(remaining.contacts);
+      setContactIds(remaining.contactIds);
+      setCompanies(
         unlinkContactFromCompany(
-          store.companies,
+          companies,
           selectedContact?.companyId,
           selectedContactId
         )
@@ -98,7 +103,7 @@ const DeleteContactModalContent: FC = () => {
     }
   };
 
-  if (selectedContact === undefined) {
+  if (!selectedContact) {
     return null;
   }
 
