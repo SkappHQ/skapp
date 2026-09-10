@@ -14,10 +14,10 @@ const ContactModalController: FC = () => {
 
   const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
     useCrmStoreV2(
-      useShallow((store) => ({
-        isContactModalOpen: store.isContactModalOpen,
-        contactModalType: store.contactModalType,
-        setIsContactModalOpen: store.setIsContactModalOpen
+      useShallow((state) => ({
+        isContactModalOpen: state.isContactModalOpen,
+        contactModalType: state.contactModalType,
+        setIsContactModalOpen: state.setIsContactModalOpen
       }))
     );
 

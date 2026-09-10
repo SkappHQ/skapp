@@ -25,7 +25,6 @@ frontend/.env
 
 # typescript
 frontend/next-env.d.ts
-frontend/tsconfig.tsbuildinfo
 
 
 

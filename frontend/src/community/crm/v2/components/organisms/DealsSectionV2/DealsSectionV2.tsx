@@ -61,17 +61,21 @@ const DealsSectionV2: FC = () => {
     companies,
     dealIds,
     dealRecord,
+    setDeals,
+    setCompanies,
     setDealIds,
     setSelectedDealId,
     openCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      dealIds: store.dealIds,
-      dealRecord: store.deals,
-      setDealIds: store.setDealIds,
-      setSelectedDealId: store.setSelectedDealId,
-      openCrmSidePanel: store.openCrmSidePanel
+    useShallow((state) => ({
+      companies: state.companies,
+      dealIds: state.dealIds,
+      dealRecord: state.deals,
+      setDeals: state.setDeals,
+      setCompanies: state.setCompanies,
+      setDealIds: state.setDealIds,
+      setSelectedDealId: state.setSelectedDealId,
+      openCrmSidePanel: state.openCrmSidePanel
     }))
   );
 
@@ -153,9 +157,8 @@ const DealsSectionV2: FC = () => {
   useEffect(() => {
     if (!data || activeView !== DealViewEnum.LIST) return;
     const items = data.pages.flatMap((page) => page.items);
-    const store = useCrmStoreV2.getState();
-    store.setDeals(updateDealRecord(store.deals, items));
-    store.setDealIds(toDealIds(items));
+    setDeals(updateDealRecord(dealRecord, items));
+    setDealIds(toDealIds(items));
   }, [data, activeView]);
 
   const companyIds = useMemo(
@@ -178,10 +181,7 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(
-        updateCompanyRecord(store.companies, fetchedCompanies)
-      );
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

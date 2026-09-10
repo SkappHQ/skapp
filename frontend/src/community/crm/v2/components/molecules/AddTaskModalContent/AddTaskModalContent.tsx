@@ -34,17 +34,17 @@ const AddTaskModalContent: FC = () => {
     setDeals,
     setIsTaskModalOpen
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      tasks: store.tasks,
-      companies: store.companies,
-      contacts: store.contacts,
-      deals: store.deals,
-      selectedContactId: store.selectedContactId,
-      setTasks: store.setTasks,
-      setCompanies: store.setCompanies,
-      setContacts: store.setContacts,
-      setDeals: store.setDeals,
-      setIsTaskModalOpen: store.setIsTaskModalOpen
+    useShallow((state) => ({
+      tasks: state.tasks,
+      companies: state.companies,
+      contacts: state.contacts,
+      deals: state.deals,
+      selectedContactId: state.selectedContactId,
+      setTasks: state.setTasks,
+      setCompanies: state.setCompanies,
+      setContacts: state.setContacts,
+      setDeals: state.setDeals,
+      setIsTaskModalOpen: state.setIsTaskModalOpen
     }))
   );
 
@@ -65,7 +65,7 @@ const AddTaskModalContent: FC = () => {
   const { setSubmitting } = formik;
 
   const handleSuccess = (createdTask: CrmTaskEntity) => {
-    if (createdTask.id !== undefined) {
+    if (createdTask.id) {
       setTasks({ ...tasks, [createdTask.id]: createdTask });
     }
 

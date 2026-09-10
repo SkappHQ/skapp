@@ -43,9 +43,9 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
   });
 
   const { contacts, companies } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      companies: store.companies
+    useShallow((state) => ({
+      contacts: state.contacts,
+      companies: state.companies
     }))
   );
 
@@ -91,9 +91,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
           <div className="flex flex-col gap-1 min-w-0">
             <div className="truncate">{contactName}</div>
             <div className="body2 text-secondary-text truncate">
-              {contact.companyId != null
-                ? companies[contact.companyId]?.name
-                : undefined}
+              {contact.companyId && companies[contact.companyId]?.name}
             </div>
           </div>
         ),

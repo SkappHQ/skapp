@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -21,8 +22,24 @@ const AddContactModalContent: FC = () => {
     "addContactModal"
   );
 
-  const setIsContactModalOpen = useCrmStoreV2(
-    (store) => store.setIsContactModalOpen
+  const {
+    contacts,
+    contactIds,
+    companies,
+    setContacts,
+    setContactIds,
+    setCompanies,
+    setIsContactModalOpen
+  } = useCrmStoreV2(
+    useShallow((state) => ({
+      contacts: state.contacts,
+      contactIds: state.contactIds,
+      companies: state.companies,
+      setContacts: state.setContacts,
+      setContactIds: state.setContactIds,
+      setCompanies: state.setCompanies,
+      setIsContactModalOpen: state.setIsContactModalOpen
+    }))
   );
 
   const { data: currentUser } = useGetUserPersonalDetails();
@@ -33,10 +50,9 @@ const AddContactModalContent: FC = () => {
       email: "",
       contactNumber: "",
       companyId: undefined,
-      ownerId:
-        currentUser?.employeeId === undefined
-          ? undefined
-          : Number(currentUser.employeeId)
+      ownerId: currentUser?.employeeId
+        ? Number(currentUser.employeeId)
+        : undefined
     },
     onSubmit: (values) => createContact(values),
     validationSchema: getContactValidationSchema(translateText),
@@ -54,15 +70,10 @@ const AddContactModalContent: FC = () => {
   const handleSuccess = (createdContact: CrmContactEntity) => {
     setSubmitting(false);
 
-    if (createdContact.id !== undefined) {
-      const store = useCrmStoreV2.getState();
-
-      store.setContacts({
-        ...store.contacts,
-        [createdContact.id]: createdContact
-      });
-      store.setContactIds([createdContact.id, ...store.contactIds]);
-      store.setCompanies(linkContactToCompany(createdContact, store.companies));
+    if (createdContact.id) {
+      setContacts({ ...contacts, [createdContact.id]: createdContact });
+      setContactIds([createdContact.id, ...contactIds]);
+      setCompanies(linkContactToCompany(createdContact, companies));
     }
 
     handleCloseModal();

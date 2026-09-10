@@ -23,11 +23,10 @@ import {
   CrmContactEntity,
   CrmOwnerEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingCompanyIds,
-  updateCompanyRecord
+  mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
@@ -52,14 +51,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { getStageByName } = useStageNameMapper();
 
-  const { deal, stagesRecord, contactRecord, companies, owners } =
+  const { deal, stagesRecord, contactRecord, companies, setCompanies, owners } =
     useCrmStoreV2(
-      useShallow((store) => ({
-        deal: dealId != null ? store.deals[dealId] : undefined,
-        stagesRecord: store.stages,
-        contactRecord: store.contacts,
-        companies: store.companies,
-        owners: store.owners
+      useShallow((state) => ({
+        deal: dealId != null ? state.deals[dealId] : undefined,
+        stagesRecord: state.stages,
+        contactRecord: state.contacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies,
+        owners: state.owners
       }))
     );
 
@@ -70,13 +70,11 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const contactFilters: CrmContactFilterRequest = {
-    searchKeyword: debouncedContactSearchTerm,
-    size: DEFAULT_LOOKUP_PAGE_SIZE
-  };
-
   const { data: contactLookupData } = useGetContactLookup(
-    contactFilters,
+    {
+      searchKeyword: debouncedContactSearchTerm,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    },
     debouncedContactSearchTerm.length > 0
   );
   const contacts = useMemo(
@@ -100,10 +98,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(
-        updateCompanyRecord(store.companies, fetchedCompanies)
-      );
+      setCompanies(mergeCompanies(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

@@ -44,11 +44,11 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } =
     useCrmStoreV2(
-      useShallow((store) => ({
-        tasks: store.tasks,
-        setTasks: store.setTasks,
-        setIsTaskModalOpen: store.setIsTaskModalOpen,
-        setTaskModalType: store.setTaskModalType
+      useShallow((state) => ({
+        tasks: state.tasks,
+        setTasks: state.setTasks,
+        setIsTaskModalOpen: state.setIsTaskModalOpen,
+        setTaskModalType: state.setTaskModalType
       }))
     );
 
@@ -68,7 +68,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     });
 
   const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
-    if (updatedTask.id !== undefined) {
+    if (updatedTask.id) {
       setTasks(updateTask(tasks, updatedTask.id, updatedTask));
     }
   });
@@ -103,7 +103,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     });
   };
 
-  if (taskIds !== undefined && taskIds.length > 0) {
+  if (taskIds?.length) {
     return (
       <div>
         <SidePanelTasksList

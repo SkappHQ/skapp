@@ -67,15 +67,15 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      stage: store.stages[stageId],
-      column: store.board[stageId],
-      dealRecord: store.deals,
-      board: store.board,
-      dealIds: store.dealIds,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setDealIds: store.setDealIds
+    useShallow((state) => ({
+      stage: state.stages[stageId],
+      column: state.board[stageId],
+      dealRecord: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
     }))
   );
 
