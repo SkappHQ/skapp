@@ -58,7 +58,7 @@ const DealCardV2: FC<DealCardV2Props> = ({
           <Avatar
             id={String(owner.employeeId)}
             size="xs"
-            src={imageUrl ?? undefined}
+            src={owner.authPic ? (imageUrl ?? undefined) : undefined}
             firstName={owner.firstName}
             lastName={owner.lastName}
           />
