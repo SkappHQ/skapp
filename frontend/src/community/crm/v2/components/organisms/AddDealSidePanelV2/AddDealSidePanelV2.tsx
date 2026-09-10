@@ -68,6 +68,7 @@ const AddDealSidePanelV2: FC = () => {
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
+<<<<<<< HEAD
     useShallow((store) => ({
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
@@ -80,6 +81,21 @@ const AddDealSidePanelV2: FC = () => {
       setDeals: store.setDeals,
       setBoardColumn: store.setBoardColumn,
       setDealIds: store.setDealIds
+=======
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setPreselectedStageId: state.setPreselectedStageId,
+      deals: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      companies: state.companies,
+      setCompanies: state.setCompanies,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
+>>>>>>> refactor/crm-v2-14-contact-side-panel
     }))
   );
 

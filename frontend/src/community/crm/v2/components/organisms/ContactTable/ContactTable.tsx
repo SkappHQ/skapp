@@ -65,18 +65,24 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
     contactIds,
     companies,
     owners,
+    setContacts,
+    setContactIds,
+    setCompanies,
     setSelectedContactId,
     openCrmSidePanel,
     isCrmDataInitialized
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      contactIds: store.contactIds,
-      companies: store.companies,
-      owners: store.owners,
-      setSelectedContactId: store.setSelectedContactId,
-      openCrmSidePanel: store.openCrmSidePanel,
-      isCrmDataInitialized: store.isCrmDataInitialized
+    useShallow((state) => ({
+      contacts: state.contacts,
+      contactIds: state.contactIds,
+      companies: state.companies,
+      owners: state.owners,
+      setContacts: state.setContacts,
+      setContactIds: state.setContactIds,
+      setCompanies: state.setCompanies,
+      setSelectedContactId: state.setSelectedContactId,
+      openCrmSidePanel: state.openCrmSidePanel,
+      isCrmDataInitialized: state.isCrmDataInitialized
     }))
   );
 
@@ -109,9 +115,8 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   useEffect(() => {
     if (!fetchedContacts) return;
 
-    const store = useCrmStoreV2.getState();
-    store.setContacts(updateContactRecord(store.contacts, fetchedContacts));
-    store.setContactIds(toContactIds(fetchedContacts));
+    setContacts(updateContactRecord(contacts, fetchedContacts));
+    setContactIds(toContactIds(fetchedContacts));
   }, [fetchedContacts]);
 
   const missingCompanyIds = useMemo(
@@ -131,17 +136,13 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   useEffect(() => {
     if (!fetchedCompanies) return;
 
-    const store = useCrmStoreV2.getState();
-    store.setCompanies(updateCompanyRecord(store.companies, fetchedCompanies));
+    setCompanies(updateCompanyRecord(companies, fetchedCompanies));
   }, [fetchedCompanies]);
 
   useEffect(() => {
     if (!companyLookupData) return;
 
-    const store = useCrmStoreV2.getState();
-    store.setCompanies(
-      updateCompanyRecord(store.companies, companyLookupData.items)
-    );
+    setCompanies(updateCompanyRecord(companies, companyLookupData.items));
   }, [companyLookupData]);
 
   const isEmptyFilterState =
@@ -157,7 +158,7 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
 
   if (companyLookupData) {
     for (const company of companyLookupData.items) {
-      if (company.id !== undefined && company.name !== undefined) {
+      if (company.id && company.name) {
         companyOptions.push({
           id: String(company.id),
           label: company.name,

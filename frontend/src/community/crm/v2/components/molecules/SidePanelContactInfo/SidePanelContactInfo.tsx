@@ -4,6 +4,7 @@ import {
   PhoneIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -14,24 +15,31 @@ interface SidePanelContactInfoProps {
 }
 
 const SidePanelContactInfo: FC<SidePanelContactInfoProps> = ({ contact }) => {
-  const companies = useCrmStoreV2((store) => store.companies);
+  const { companies } = useCrmStoreV2(
+    useShallow((state) => ({ companies: state.companies }))
+  );
 
-  const companyName =
-    contact.companyId != null ? companies[contact.companyId]?.name : undefined;
+  const companyName = contact.companyId && companies[contact.companyId]?.name;
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">
-      <SidePanelHeaderInfoItem
-        icon={
-          <EmailOutlineIcon style={{ color: "var(--color-secondary-icon)" }} />
-        }
-        value={contact.email}
-      />
+      {contact.email && (
+        <SidePanelHeaderInfoItem
+          icon={
+            <EmailOutlineIcon
+              style={{ color: "var(--color-secondary-icon)" }}
+            />
+          }
+          value={contact.email}
+        />
+      )}
 
-      <SidePanelHeaderInfoItem
-        icon={<PhoneIcon style={{ color: "var(--color-secondary-icon)" }} />}
-        value={contact.contactNumber}
-      />
+      {contact.contactNumber && (
+        <SidePanelHeaderInfoItem
+          icon={<PhoneIcon style={{ color: "var(--color-secondary-icon)" }} />}
+          value={contact.contactNumber}
+        />
+      )}
 
       {companyName && (
         <SidePanelHeaderInfoItem

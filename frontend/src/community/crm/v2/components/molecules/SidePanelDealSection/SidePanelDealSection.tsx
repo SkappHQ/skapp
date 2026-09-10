@@ -52,7 +52,9 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
 
-  const deals = useCrmStoreV2(useShallow((store) => store.deals));
+  const { deals } = useCrmStoreV2(
+    useShallow((state) => ({ deals: state.deals }))
+  );
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
@@ -99,7 +101,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   };
 
   const renderDealsContent = () => {
-    if (dealIds !== undefined && dealIds.length > 0) {
+    if (dealIds?.length) {
       const accordionItems: AdvancedAccordionItem[] = dealIds.map((dealId) => {
         const deal = deals[dealId];
 
