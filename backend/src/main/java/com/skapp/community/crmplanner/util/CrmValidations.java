@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.util;
 
+import com.skapp.community.common.constant.ValidationConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -268,6 +269,23 @@ public class CrmValidations {
 	public static void validateIndustry(CrmIndustry industry) {
 		if (industry == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_INVALID);
+		}
+	}
+
+	public static String normalizeIndustryName(String name) {
+		if (name == null) {
+			return null;
+		}
+		return ValidationConstant.MULTIPLE_WHITESPACE_PATTERN.matcher(name.trim()).replaceAll(" ");
+	}
+
+	public static void validateIndustryName(String name) {
+		if (name == null || name.isBlank()) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_REQUIRED);
+		}
+
+		if (normalizeIndustryName(name).length() > CrmConstants.INDUSTRY_NAME_MAX_LENGTH) {
+			throw new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NAME_TOO_LONG);
 		}
 	}
 
