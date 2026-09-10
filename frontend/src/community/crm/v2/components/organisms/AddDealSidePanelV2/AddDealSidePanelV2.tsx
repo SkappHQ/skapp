@@ -66,19 +66,19 @@ const AddDealSidePanelV2: FC = () => {
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setPreselectedStageId: store.setPreselectedStageId,
-      deals: store.deals,
-      board: store.board,
-      dealIds: store.dealIds,
-      companies: store.companies,
-      setCompanies: store.setCompanies,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setDealIds: store.setDealIds
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setPreselectedStageId: state.setPreselectedStageId,
+      deals: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      companies: state.companies,
+      setCompanies: state.setCompanies,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
     }))
   );
 
