@@ -448,6 +448,27 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Deals grouped by stage as Sales Representative - taskCount excludes tasks owned by others")
+	void getDealsByStages_SalesRep_TaskCountExcludesOtherOwnersTasks() throws Exception {
+		CrmDeal repDeal = createDeal("Rep Deal", stage1, "a0", 2L);
+		createTask(repDeal, 2L);
+		createTask(repDeal, 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(1));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(2));
+	}
+
+	@Test
 	@DisplayName("Deals grouped by stage - search keyword matching deal ID returns matching deal")
 	void getDealsByStages_SearchKeywordMatchesDealId_ReturnsMatchingDeal() throws Exception {
 		CrmDeal deal = createDeal("Deal To Find By Id", stage1, "a0", 1L);
@@ -582,11 +603,15 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	private CrmTask createTask(CrmDeal deal) {
+		return createTask(deal, 1L);
+	}
+
+	private CrmTask createTask(CrmDeal deal, Long ownerId) {
 		CrmTask task = new CrmTask();
 		task.setName("Test Task");
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setOwner(employeeDao.getReferenceById(ownerId));
 		task.setDeal(deal);
 		task.setIsDeleted(false);
 		task.setIsCompleted(false);
