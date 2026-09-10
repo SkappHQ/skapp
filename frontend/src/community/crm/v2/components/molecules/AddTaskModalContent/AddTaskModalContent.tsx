@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { FC } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -7,12 +7,16 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useCreateTask } from "~community/crm/v2/api/TaskApi";
 import TaskModalForm from "~community/crm/v2/components/molecules/TaskModalForm/TaskModalForm";
+import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  getTaskFormInitialValues,
-  getTrimmedTaskValues,
-  linkTaskToRelatedEntities
+  CrmOwnerEntity,
+  CrmTaskEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
+import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
+import {
+  linkTaskToRelatedEntities,
+  updateTaskRecord
 } from "~community/crm/v2/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
@@ -24,11 +28,15 @@ const AddTaskModalContent: FC = () => {
 
   const {
     tasks,
+    taskIds,
+    owners,
     companies,
     contacts,
     deals,
     selectedContactId,
     setTasks,
+    setTaskIds,
+    setOwners,
     setCompanies,
     setContacts,
     setDeals,
@@ -36,11 +44,15 @@ const AddTaskModalContent: FC = () => {
   } = useCrmStoreV2(
     useShallow((state) => ({
       tasks: state.tasks,
+      taskIds: state.taskIds,
+      owners: state.owners,
       companies: state.companies,
       contacts: state.contacts,
       deals: state.deals,
       selectedContactId: state.selectedContactId,
       setTasks: state.setTasks,
+      setTaskIds: state.setTaskIds,
+      setOwners: state.setOwners,
       setCompanies: state.setCompanies,
       setContacts: state.setContacts,
       setDeals: state.setDeals,
@@ -50,12 +62,45 @@ const AddTaskModalContent: FC = () => {
 
   const { data: currentUser } = useGetUserPersonalDetails();
 
+  const defaultOwner = useMemo((): CrmOwnerEntity | null => {
+    if (!currentUser?.employeeId) return null;
+
+    return {
+      employeeId: Number(currentUser.employeeId),
+      firstName: currentUser.firstName ?? "",
+      lastName: currentUser.lastName ?? "",
+      authPic: currentUser.authPic as string | null
+    };
+  }, [
+    currentUser?.employeeId,
+    currentUser?.firstName,
+    currentUser?.lastName,
+    currentUser?.authPic
+  ]);
+
+  useEffect(() => {
+    if (!defaultOwner) return;
+
+    setOwners(updateOwnerRecord(owners, [defaultOwner]));
+  }, [defaultOwner]);
+
+  const initialValues: CrmTaskEntity = useMemo(
+    () => ({
+      name: "",
+      typeId: undefined,
+      priority: CrmPriorityEnum.MEDIUM,
+      dueAt: undefined,
+      ownerId: defaultOwner?.employeeId,
+      contactId: selectedContactId ?? undefined,
+      dealId: undefined,
+      notes: ""
+    }),
+    [defaultOwner, selectedContactId]
+  );
+
   const formik = useFormik<CrmTaskEntity>({
-    initialValues: getTaskFormInitialValues(
-      selectedContactId,
-      currentUser?.employeeId
-    ),
-    onSubmit: (values) => createNewTask(getTrimmedTaskValues(values)),
+    initialValues,
+    onSubmit: (values) => createTask(values),
     validationSchema: getTaskValidationSchema(translateText),
     validateOnChange: false,
     validateOnBlur: true,
@@ -64,9 +109,16 @@ const AddTaskModalContent: FC = () => {
 
   const { setSubmitting } = formik;
 
+  const handleCloseModal = (): void => {
+    setIsTaskModalOpen(false);
+  };
+
   const handleSuccess = (createdTask: CrmTaskEntity) => {
-    if (createdTask.id) {
-      setTasks({ ...tasks, [createdTask.id]: createdTask });
+    setSubmitting(false);
+
+    if (createdTask.id !== undefined) {
+      setTasks(updateTaskRecord(tasks, [createdTask]));
+      setTaskIds([createdTask.id, ...taskIds]);
     }
 
     const linked = linkTaskToRelatedEntities(
@@ -76,12 +128,11 @@ const AddTaskModalContent: FC = () => {
       deals
     );
 
-    setCompanies({ ...companies, ...linked.companies });
-    setContacts({ ...contacts, ...linked.contacts });
-    setDeals({ ...deals, ...linked.deals });
+    setCompanies(linked.companies);
+    setContacts(linked.contacts);
+    setDeals(linked.deals);
 
-    setSubmitting(false);
-    setIsTaskModalOpen(false);
+    handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -104,6 +155,21 @@ const AddTaskModalContent: FC = () => {
     handleSuccess,
     handleError
   );
+
+  const createTask = (values: CrmTaskEntity) => {
+    const payload: CrmTaskEntity = {
+      name: values.name?.trim(),
+      typeId: values.typeId,
+      priority: values.priority,
+      dueAt: values.dueAt,
+      ownerId: values.ownerId,
+      contactId: values.contactId,
+      dealId: values.dealId,
+      notes: values.notes?.trim()
+    };
+
+    createNewTask(payload);
+  };
 
   return (
     <TaskModalForm
