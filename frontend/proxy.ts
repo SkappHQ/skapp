@@ -34,7 +34,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { TenantStatusEnums } from "~enterprise/common/enums/Common";
+import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -79,7 +79,8 @@ const superAdminRoutes = {
     ROUTES.CRM.BASE,
     ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
     ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
-    ROUTES.PEOPLE.SYNC_CHANGES
+    ROUTES.PEOPLE.SYNC_CHANGES,
+    ROUTES.REPORT.BASE
   ]
 };
 
@@ -87,7 +88,8 @@ const adminRoutes = {
   [AdminTypes.PEOPLE_ADMIN]: [
     ROUTES.PEOPLE.BASE,
     ROUTES.CONFIGURATIONS.BASE,
-    ROUTES.LEAVE.LEAVE_POLICIES
+    ROUTES.LEAVE.LEAVE_POLICIES,
+    ROUTES.REPORT.BASE
   ],
   [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
@@ -356,13 +358,22 @@ const resolveSignAccess: AccessGuard = ({ request, currentPath, roles }) =>
     ? redirectToUnauthorized(request)
     : null;
 
+const getClaimTiers = (claims: Record<string, any>): TierEnum[] =>
+  claims?.tier ? [claims.tier] : (claims?.tiers ?? []);
+
 const resolveIntegrationsAccess: AccessGuard = ({
   request,
   currentPath,
   claims
 }) =>
   currentPath.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-  !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+  !isCoreOrProTier(getClaimTiers(claims))
+    ? redirectToUnauthorized(request)
+    : null;
+
+const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
+  currentPath.startsWith(ROUTES.REPORT.BASE) &&
+  !isCoreOrProTier(getClaimTiers(claims))
     ? redirectToUnauthorized(request)
     : null;
 
@@ -400,6 +411,7 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
 const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveSignAccess,
   resolveIntegrationsAccess,
+  resolveReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess
 ];
@@ -537,6 +549,9 @@ export const config = {
     "/invoice",
     "/invoice/:path*",
     "/invoice/create/:path*",
+    // Report module routes
+    "/report",
+    "/report/:path*",
     // CRM module routes
     "/crm",
     "/crm/:path*"
