@@ -48,7 +48,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
     submitForm
   } = formik;
 
-  const owners = useCrmStoreV2(useShallow((store) => store.owners));
+  const owners = useCrmStoreV2(useShallow((state) => state.owners));
 
   const { isDuplicateEmail, isEmailCheckUnresolved, suggestedDomain } =
     useContactEmailCheck({ email: values.email, originalEmail });
