@@ -38,11 +38,17 @@ const initData: CrmBoardInitDataResponse = {
       stageType: CrmDealStageEnum.INITIAL
     }
   ],
-  owners: [{ employeeId: 7, firstName: "Jane", lastName: "Doe" }],
+  owners: [
+    { employeeId: 7, firstName: "Jane", lastName: "Doe", authPic: null }
+  ],
   contacts: [{ id: 3, firstName: "John", lastName: "Smith", companyId: 9 }],
   taskTypes: [
     { id: 5, name: "CALL", orderIndex: 1 },
     { id: 4, name: "EMAIL", orderIndex: 0 }
+  ],
+  industries: [
+    { id: 2, name: "RETAIL" },
+    { id: 1, name: "EDUCATION" }
   ]
 };
 
@@ -126,7 +132,7 @@ describe("useInitializeCrmData", () => {
 
     const state = useCrmStoreV2.getState();
     expect(state.owners).toEqual({
-      7: { employeeId: 7, firstName: "Jane", lastName: "Doe" }
+      7: { employeeId: 7, firstName: "Jane", lastName: "Doe", authPic: null }
     });
     expect(state.contacts).toEqual({
       3: { id: 3, firstName: "John", lastName: "Smith", companyId: 9 }
@@ -134,6 +140,10 @@ describe("useInitializeCrmData", () => {
     expect(state.taskTypes).toEqual({
       4: { id: 4, name: "EMAIL", orderIndex: 0 },
       5: { id: 5, name: "CALL", orderIndex: 1 }
+    });
+    expect(state.industries).toEqual({
+      1: { id: 1, name: "EDUCATION" },
+      2: { id: 2, name: "RETAIL" }
     });
     expect(state.isCrmDataInitialized).toBe(true);
     expect(mockSetToastMessage).not.toHaveBeenCalled();
@@ -156,6 +166,7 @@ describe("useInitializeCrmData", () => {
     const state = useCrmStoreV2.getState();
     expect(state.stages).toEqual({});
     expect(state.contacts).toEqual({});
+    expect(state.industries).toEqual({});
     expect(state.isCrmDataInitialized).toBe(false);
   });
 });

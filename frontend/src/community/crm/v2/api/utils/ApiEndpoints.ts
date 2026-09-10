@@ -49,8 +49,11 @@ export const crmLookupEndpoints = {
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
+export const crmBoardEndpointsV2 = {
+  GET_BOARD_INIT_DATA: `${moduleAPIPath.CRM}/board/init-data`
+};
+
 export const crmBoardEndpoints = {
-  GET_BOARD_INIT_DATA: `${moduleAPIPath.CRM}/board/init-data`,
   GET_DEALS_GROUPED_BY_STAGES: `${moduleAPIPath.CRM}/board/deals-grouped-by-stages`,
   REORDER_DEAL_WITHIN_STAGE: `${moduleAPIPath.CRM}/board/deal-reorder-within-stage`,
   MOVE_DEAL_BETWEEN_STAGES: `${moduleAPIPath.CRM}/board/deal-move-between-stages`

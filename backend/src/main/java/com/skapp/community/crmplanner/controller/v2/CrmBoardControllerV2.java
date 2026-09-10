@@ -21,7 +21,7 @@ public class CrmBoardControllerV2 {
 	private final CrmDealServiceV2 crmDealServiceV2;
 
 	@Operation(summary = "Get board init data",
-			description = "Returns the shared CRM lookup set: stages, contacts, CRM roles, owners and task types. "
+			description = "Returns the shared CRM lookup set: stages, contacts, owners, task types and industries. "
 					+ "Related records are carried as id references only - a contact names its company by id rather "
 					+ "than nesting it.")
 	@GetMapping("/init-data")
