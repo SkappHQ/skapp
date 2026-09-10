@@ -63,20 +63,20 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      tasks: store.tasks,
-      taskTypes: store.taskTypes,
-      owners: store.owners,
-      contacts: store.contacts,
-      deals: store.deals,
-      setTasks: store.setTasks,
-      setDeals: store.setDeals,
-      setSelectedTaskId: store.setSelectedTaskId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      tasks: state.tasks,
+      taskTypes: state.taskTypes,
+      owners: state.owners,
+      contacts: state.contacts,
+      deals: state.deals,
+      setTasks: state.setTasks,
+      setDeals: state.setDeals,
+      setSelectedTaskId: state.setSelectedTaskId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      setTaskModalType: state.setTaskModalType
     }))
   );
 
@@ -252,7 +252,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               <hr className="border-secondary-accent" />
               {!isDealLoading && (
                 <SidePanelDealSection
-                  dealIds={deal?.id !== undefined ? [deal.id] : []}
+                  dealIds={deal?.id ? [deal.id] : []}
                   showAddDealAction={false}
                   emptyDescription={translateText([
                     "sidePanel",
