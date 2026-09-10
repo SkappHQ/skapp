@@ -32,6 +32,10 @@ export const crmCompanyEndpoints = {
   CHECK_COMPANY_NAME_EXISTS: `${moduleAPIPath.CRM}/company/exists`
 };
 
+export const crmIndustryEndpointsV2 = {
+  CREATE_INDUSTRY: `${moduleAPIPath.CRM}/industry`
+};
+
 export const crmTaskEndpointsV2 = {
   GET_TASKS: `${moduleAPIPath.CRM}/task`,
   GET_TASK_BY_ID: (id: number) => `${moduleAPIPath.CRM}/task/${id}`,
