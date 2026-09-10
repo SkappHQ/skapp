@@ -1,20 +1,22 @@
-import {
-  ButtonV2,
-  CloseIcon,
-  Dropdown,
-  InputField
-} from "@rootcodelabs/skapp-ui";
+import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
-import { FC, useMemo } from "react";
+import { ChangeEvent, FC, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
-import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import AddIndustryOption from "~community/crm/v2/components/atoms/AddIndustryOption/AddIndustryOption";
+import { ADD_INDUSTRY_ITEM_ID } from "~community/crm/v2/constants/commonConstants";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import {
+  CrmCompanyEntity,
+  CrmIndustryEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
@@ -31,21 +33,22 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   originalName,
   onCancel
 }) => {
-  const translateIndustryOptions = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
+  const { industries } = useCrmStoreV2(
+    useShallow((store) => ({
+      industries: store.industries
+    }))
   );
 
   const industryOptions = useMemo(
     () =>
-      Object.values(CrmIndustryEnum).map((industry) => ({
-        id: industry,
-        label: translateIndustryOptions([industry]),
-        value: industry
+      Object.values(industries).map((industry) => ({
+        id: String(industry.id),
+        label: industry.name
       })),
-    [translateIndustryOptions]
+    [industries]
   );
+
+  const [industrySearchTerm, setIndustrySearchTerm] = useState("");
 
   const {
     values,
@@ -76,8 +79,61 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : errors.name;
 
-  const handleIndustryChange = (value: string) => {
-    setFieldValue("industry", value);
+  const industryDropdownItems: SearchableDropdownItem[] = useMemo(() => {
+    const searchTerm = industrySearchTerm.trim();
+
+    const matches = industryOptions.filter((option) =>
+      option.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const items: SearchableDropdownItem[] = matches.map((option) => ({
+      id: option.id,
+      content: option.label
+    }));
+
+    const hasExactMatch = matches.some(
+      (option) => option.label.toLowerCase() === searchTerm.toLowerCase()
+    );
+
+    if (searchTerm.length > 0 && !hasExactMatch) {
+      items.push({
+        id: ADD_INDUSTRY_ITEM_ID,
+        content: (
+          <AddIndustryOption
+            name={searchTerm}
+            onCreated={handleIndustrySelected}
+          />
+        )
+      });
+    }
+
+    return items;
+  }, [industryOptions, industrySearchTerm]);
+
+  const selectedIndustryLabel = values.industry
+    ? (industries[Number(values.industry)]?.name ?? "")
+    : "";
+
+  const handleIndustrySearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setIndustrySearchTerm(e.target.value);
+  };
+
+  const handleIndustrySelected = (industry: CrmIndustryEntity) => {
+    setFieldValue("industry", industry.id);
+    setIndustrySearchTerm("");
+  };
+
+  const handleIndustrySelect = (item: SearchableDropdownItem) => {
+    const industry = industries[Number(item.id)];
+
+    if (!industry) return;
+
+    handleIndustrySelected(industry);
+  };
+
+  const handleClearIndustry = () => {
+    setFieldValue("industry", undefined);
+    setIndustrySearchTerm("");
   };
 
   return (
@@ -136,15 +192,19 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         fullWidth
       />
 
-      <Dropdown
-        options={industryOptions}
-        value={values.industry}
-        onChange={handleIndustryChange}
+      <SelectableSearchField
+        id="company-industry-search"
         label={translateText(["labels", "industry"])}
-        className="rounded-lg"
-        variant="primary"
-        ariaLabel={translateText(["ariaLabels", "industry"])}
-        width="100%"
+        placeholder={translateText(["placeholders", "industry"])}
+        selectedValue={selectedIndustryLabel}
+        onClear={handleClearIndustry}
+        clearAriaLabel={translateText(["ariaLabels", "clearIndustry"])}
+        fieldAriaLabel={translateText(["ariaLabels", "industry"])}
+        searchValue={industrySearchTerm}
+        onSearchChange={handleIndustrySearchChange}
+        items={industryDropdownItems}
+        onSelect={handleIndustrySelect}
+        emptyMessage={translateText(["emptyStates", "noIndustries"])}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

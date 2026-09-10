@@ -230,14 +230,18 @@
         "contactNumber": "Contact no.",
         "website": "Website URL",
         "address": "Address",
-        "industry": "Industry"
+        "industry": "Industry",
+        "addNewIndustry": "Add \"{{name}}\" as a new industry"
       },
       "placeholders": {
         "name": "Enter company name",
         "contactNumber": "Enter contact no.",
         "website": "Enter website",
         "address": "Enter address",
-        "industry": "Select industry"
+        "industry": "Search or add industry"
+      },
+      "emptyStates": {
+        "noIndustries": "No industries found"
       },
       "buttons": {
         "save": "Save",
@@ -249,6 +253,7 @@
         "website": "Website",
         "address": "Address",
         "industry": "Industry",
+        "clearIndustry": "Clear selected industry",
         "save": "Save",
         "cancel": "Cancel"
       },
@@ -264,6 +269,9 @@
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong",
+        "addIndustry": {
+          "errorDescription": "Failed to add the industry. Please try again"
+        },
         "add": {
           "successTitle": "Company added successfully",
           "successDescription": "The company has been successfully added",
