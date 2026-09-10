@@ -60,7 +60,7 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
   );
 
   const { stages } = useCrmStoreV2(
-    useShallow((store) => ({ stages: store.stages }))
+    useShallow((state) => ({ stages: state.stages }))
   );
 
   const contactFilters: CrmContactFilterRequest = {
@@ -117,7 +117,7 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     isPending ||
     isUserLoading ||
     isCheckingCrmLimit ||
-    initialStageId === undefined ||
+    !initialStageId ||
     currentUser?.employeeId == null;
 
   const handleSubmit = (values: InlineDealFormValues) => {

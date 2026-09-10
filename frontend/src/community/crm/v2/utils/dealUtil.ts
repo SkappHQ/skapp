@@ -75,14 +75,14 @@ export const linkDealToRelatedEntities = (
   const dealId = deal.id;
   const linked: CrmDealLinks = { companies, contacts };
 
-  if (dealId === undefined) {
+  if (!dealId) {
     return linked;
   }
 
-  if (companies !== undefined && deal.companyId !== undefined) {
+  if (companies && deal.companyId) {
     const company = companies[deal.companyId];
 
-    if (company?.dealIds !== undefined) {
+    if (company?.dealIds) {
       linked.companies = {
         ...companies,
         [deal.companyId]: {
@@ -93,10 +93,10 @@ export const linkDealToRelatedEntities = (
     }
   }
 
-  if (contacts !== undefined && deal.contactId !== undefined) {
+  if (contacts && deal.contactId) {
     const contact = contacts[deal.contactId];
 
-    if (contact?.dealIds !== undefined) {
+    if (contact?.dealIds) {
       linked.contacts = {
         ...contacts,
         [deal.contactId]: {
