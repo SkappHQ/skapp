@@ -69,6 +69,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const {
     contacts,
     companies,
+    tasks,
     deals,
     isCrmSidePanelOpen,
     crmSidePanelType,
@@ -80,23 +81,34 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     setContactModalType,
     closeCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      contacts: store.contacts,
-      companies: store.companies,
-      deals: store.deals,
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      setContacts: store.setContacts,
-      setCompanies: store.setCompanies,
-      setTasks: store.setTasks,
-      setDeals: store.setDeals,
-      setIsContactModalOpen: store.setIsContactModalOpen,
-      setContactModalType: store.setContactModalType,
-      closeCrmSidePanel: store.closeCrmSidePanel
+    useShallow((state) => ({
+      contacts: state.contacts,
+      companies: state.companies,
+      tasks: state.tasks,
+      deals: state.deals,
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      setContacts: state.setContacts,
+      setCompanies: state.setCompanies,
+      setTasks: state.setTasks,
+      setDeals: state.setDeals,
+      setIsContactModalOpen: state.setIsContactModalOpen,
+      setContactModalType: state.setContactModalType,
+      closeCrmSidePanel: state.closeCrmSidePanel
     }))
   );
 
   const { isCrmSalesManager, userId } = useSessionData();
+
+  const handleLoadError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["errors", "contactNotFoundTitle"]),
+      description: translateText(["errors", "contactNotFoundDescription"])
+    });
+    closeCrmSidePanel();
+  };
 
   const { setToastMessage } = useToast();
 
@@ -110,16 +122,10 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     size: DEAL_PAGE_SIZE
   };
 
-  const {
-    data: fetchedContact,
-    isLoading: isContactLoading,
-    isError: isContactError
-  } = useGetContactById(contactId);
-  const {
-    data: fetchedMetrics,
-    isLoading: isMetricsLoading,
-    isError: isMetricsError
-  } = useGetContactMetrics(contactId);
+  const { data: fetchedContact, isLoading: isContactLoading } =
+    useGetContactById(contactId, handleLoadError);
+  const { data: fetchedMetrics, isLoading: isMetricsLoading } =
+    useGetContactMetrics(contactId, handleLoadError);
   const {
     data: fetchedTasks,
     isLoading: isTasksLoading,
@@ -139,22 +145,10 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
 
   useEffect(() => {
-    if (!isContactError && !isMetricsError) return;
-
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["errors", "contactNotFoundTitle"]),
-      description: translateText(["errors", "contactNotFoundDescription"])
-    });
-    closeCrmSidePanel();
-  }, [isContactError, isMetricsError]);
-
-  useEffect(() => {
     if (!fetchedContact || !fetchedMetrics) return;
 
     setContacts(
-      updateContact(useCrmStoreV2.getState().contacts, contactId, {
+      updateContact(contacts, contactId, {
         ...fetchedContact,
         metrics: fetchedMetrics
       })
@@ -166,9 +160,9 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
     const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
 
-    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, taskItems));
+    setTasks(updateTaskRecord(tasks, taskItems));
     setContacts(
-      updateContact(useCrmStoreV2.getState().contacts, contactId, {
+      updateContact(contacts, contactId, {
         taskIds: toTaskIds(taskItems)
       })
     );
@@ -179,9 +173,9 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
     const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
 
-    setDeals(updateDealRecord(useCrmStoreV2.getState().deals, dealItems));
+    setDeals(updateDealRecord(deals, dealItems));
     setContacts(
-      updateContact(useCrmStoreV2.getState().contacts, contactId, {
+      updateContact(contacts, contactId, {
         dealIds: toDealIds(dealItems)
       })
     );
