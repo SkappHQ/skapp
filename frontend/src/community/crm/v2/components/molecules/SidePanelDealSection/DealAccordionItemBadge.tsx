@@ -14,12 +14,14 @@ interface DealAccordionItemBadgeProps {
 const DealAccordionItemBadge: FC<DealAccordionItemBadgeProps> = ({ deal }) => {
   const { getStageByName } = useStageNameMapper();
 
-  const stages = useCrmStoreV2(useShallow((store) => store.stages));
+  const { stages } = useCrmStoreV2(
+    useShallow((state) => ({ stages: state.stages }))
+  );
 
-  if (deal.stageId !== undefined) {
+  if (deal.stageId) {
     const stage = stages[deal.stageId];
 
-    if (stage?.name !== undefined) {
+    if (stage?.name) {
       return (
         <Chip
           label={

@@ -16,17 +16,18 @@ interface DealAccordionItemHeaderProps {
 const DealAccordionItemHeader: FC<DealAccordionItemHeaderProps> = ({
   deal
 }) => {
-  const owners = useCrmStoreV2(useShallow((store) => store.owners));
+  const { owners } = useCrmStoreV2(
+    useShallow((state) => ({ owners: state.owners }))
+  );
 
-  const owner = deal.ownerId !== undefined ? owners[deal.ownerId] : undefined;
+  const owner = deal.ownerId ? owners[deal.ownerId] : undefined;
 
-  const ownerName =
-    owner !== undefined
-      ? concatStrings([owner.firstName, owner.lastName ?? ""]).trim()
-      : undefined;
+  const ownerName = owner
+    ? concatStrings([owner.firstName, owner.lastName ?? ""]).trim()
+    : undefined;
 
   const amount =
-    deal.amount !== undefined && Number(deal.amount) > 0
+    deal.amount && Number(deal.amount) > 0
       ? formatMonetaryValueWithDecimals(deal.amount)
       : undefined;
 
@@ -35,7 +36,7 @@ const DealAccordionItemHeader: FC<DealAccordionItemHeaderProps> = ({
       <span className="body2">{deal.name}</span>
       <div className="flex items-center gap-2 text-secondary-text">
         <span className="body3">{formatTableValue(ownerName)}</span>
-        {amount !== undefined && (
+        {amount && (
           <>
             <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />
             <span className="body3">{amount}</span>
