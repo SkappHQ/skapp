@@ -35,7 +35,7 @@ public interface CrmTaskRepository {
 
 	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 
-	Map<Long, Long> countTasksByDealIds(List<Long> dealIds);
+	Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId);
 
 	Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Long ownerId, Pageable pageable);
 

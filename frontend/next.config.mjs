@@ -440,6 +440,10 @@ const nextConfig = {
         destination: "/enterprise/app-link"
       },
       {
+        source: "/report",
+        destination: "/enterprise/report"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
