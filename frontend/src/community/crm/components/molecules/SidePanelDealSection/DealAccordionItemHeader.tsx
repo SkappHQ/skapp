@@ -9,8 +9,10 @@ interface Props {
 }
 
 const DealAccordionItemHeader: React.FC<Props> = ({ deal }) => (
-  <div className="flex flex-col gap-[2px]">
-    <span className="body2">{deal.name}</span>
+  <div className="flex flex-col gap-[2px] min-w-0">
+    <div className="body2 truncate" title={deal.name}>
+      {deal.name}
+    </div>
     <div className="flex items-center gap-2 text-secondary-text">
       <span className="body3">
         {concatStrings([deal?.owner?.firstName, deal?.owner?.lastName ?? ""])}
