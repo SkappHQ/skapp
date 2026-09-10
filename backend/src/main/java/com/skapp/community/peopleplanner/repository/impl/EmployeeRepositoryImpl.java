@@ -594,6 +594,8 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		Subquery<Long> totalEmployeesSubquery = criteriaQuery.subquery(Long.class);
 		Root<Employee> totalEmployeeRoot = totalEmployeesSubquery.from(Employee.class);
 		Join<Employee, User> userJoin = totalEmployeeRoot.join(Employee_.user);
+		Join<Employee, EmployeeRole> totalEmployeeRoleJoin = totalEmployeeRoot.join(Employee_.employeeRole,
+				JoinType.LEFT);
 
 		Subquery<Long> employeesOnLeaveSubquery = criteriaQuery.subquery(Long.class);
 		Root<LeaveRequest> leaveRoot = employeesOnLeaveSubquery.from(LeaveRequest.class);
@@ -607,6 +609,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 			if (isLeaveAdmin) {
 				totalEmployeesSubquery.select(criteriaBuilder.countDistinct(totalEmployeeRoot))
 					.where(criteriaBuilder.and(criteriaBuilder.equal(userJoin.get(User_.isActive), true),
+							PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, totalEmployeeRoleJoin),
 							criteriaBuilder
 								.not(totalEmployeeRoot.get(Employee_.employeeId).in(employeesOnLeaveSubquery))));
 			}
@@ -639,6 +642,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 
 				totalEmployeesSubquery.select(criteriaBuilder.countDistinct(totalEmployeeRoot))
 					.where(criteriaBuilder.and(criteriaBuilder.equal(userJoin.get(User_.isActive), true),
+							PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, totalEmployeeRoleJoin),
 							totalEmployeeRoot.get(Employee_.employeeId).in(employeesSubquery), criteriaBuilder
 								.not(totalEmployeeRoot.get(Employee_.employeeId).in(employeesOnLeaveSubquery))));
 			}
@@ -653,6 +657,7 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 				.where(criteriaBuilder.and(
 						totalEmployeeTeamJoin.get(EmployeeTeam_.team).get(Team_.teamId).in(filterDto.getTeamIds()),
 						criteriaBuilder.equal(userJoin.get(User_.isActive), true),
+						PeopleUtil.notGuestEmployeePredicate(criteriaBuilder, totalEmployeeRoleJoin),
 						criteriaBuilder.not(totalEmployeeRoot.get(Employee_.employeeId).in(employeesOnLeaveSubquery))));
 		}
 
@@ -695,29 +700,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		TypedQuery<Long> query = entityManager.createQuery(criteriaQuery);
 
 		return query.getResultList();
-	}
-
-	@Override
-	public Long findAllActiveEmployeesCount() {
-		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<Long> criteriaQuery = criteriaBuilder.createQuery(Long.class);
-		Root<Employee> root = criteriaQuery.from(Employee.class);
-
-		List<Predicate> predicates = new ArrayList<>();
-
-		Join<Employee, User> userJoin = root.join(Employee_.user);
-		predicates.add(criteriaBuilder.equal(userJoin.get(User_.isActive), true));
-
-		Predicate[] predArray = new Predicate[predicates.size()];
-		predicates.toArray(predArray);
-		criteriaQuery.where(predArray);
-		criteriaQuery.distinct(true);
-		criteriaQuery.select(criteriaBuilder.count(root));
-
-		TypedQuery<Long> query = entityManager.createQuery(criteriaQuery);
-
-		return query.getSingleResult();
 	}
 
 	@Override
@@ -1359,11 +1341,6 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
 		boolean isTeamSupervisor = !teamTypedQuery.setMaxResults(1).getResultList().isEmpty();
 
 		return new PrimarySecondaryOrTeamSupervisorResponseDto(isPrimaryManager, isSecondaryManager, isTeamSupervisor);
-	}
-
-	@Override
-	public Long findAllActiveAndPendingEmployeesCount() {
-		return 0L;
 	}
 
 	@Override
