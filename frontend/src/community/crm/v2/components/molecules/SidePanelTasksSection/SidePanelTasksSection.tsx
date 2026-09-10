@@ -103,7 +103,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     });
   };
 
-  if (taskIds !== undefined && taskIds.length > 0) {
+  if (taskIds?.length) {
     return (
       <div>
         <SidePanelTasksList
