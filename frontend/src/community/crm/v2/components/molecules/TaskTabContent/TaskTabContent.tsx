@@ -16,6 +16,7 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { getEmptyStateType } from "~community/common/utils/commonUtil";
+import { useGetDealsByIds } from "~community/crm/v2/api/DealApi";
 import {
   useGetCompletedTasks,
   useGetTasks,
@@ -32,9 +33,11 @@ import {
   CrmSidePanelTypes,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
+import { getMissingDealIds, mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskGroups,
   resolveTasks,
+  toTaskDealIds,
   toTaskIds,
   updateTaskRecord
 } from "~community/crm/v2/utils/taskUtil";
@@ -53,16 +56,25 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
-  const { tasks, setTasks, setTaskIds, setSelectedTaskId, openCrmSidePanel } =
-    useCrmStoreV2(
-      useShallow((store) => ({
-        tasks: store.tasks,
-        setTasks: store.setTasks,
-        setTaskIds: store.setTaskIds,
-        setSelectedTaskId: store.setSelectedTaskId,
-        openCrmSidePanel: store.openCrmSidePanel
-      }))
-    );
+  const {
+    tasks,
+    deals,
+    setTasks,
+    setTaskIds,
+    setDeals,
+    setSelectedTaskId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      tasks: store.tasks,
+      deals: store.deals,
+      setTasks: store.setTasks,
+      setTaskIds: store.setTaskIds,
+      setDeals: store.setDeals,
+      setSelectedTaskId: store.setSelectedTaskId,
+      openCrmSidePanel: store.openCrmSidePanel
+    }))
+  );
 
   const { mutate: updateCompletion } = useUpdateTask();
 
@@ -119,6 +131,22 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setTasks(updateTaskRecord(tasks, fetchedTasks));
     setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
+
+  const missingDealIds = useMemo(
+    () => getMissingDealIds(toTaskDealIds(fetchedTasks), deals),
+    [fetchedTasks, deals]
+  );
+
+  const { data: fetchedDeals } = useGetDealsByIds(
+    missingDealIds,
+    missingDealIds.length > 0
+  );
+
+  useEffect(() => {
+    if (!fetchedDeals?.length) return;
+
+    setDeals(mergeDeals(deals, fetchedDeals));
+  }, [fetchedDeals]);
 
   const tasksInView = useMemo(
     () => resolveTasks(visibleTaskIds, tasks),
