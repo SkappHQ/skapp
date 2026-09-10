@@ -8,13 +8,13 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
-import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
+import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   getMissingCompanyIds,
-  updateCompanyRecord
+  mergeCompanies
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
@@ -42,8 +42,9 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     searchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: contactLookupData } = useGetContactLookup(
-    { searchKeyword: debouncedSearchTerm, size: DEFAULT_LOOKUP_PAGE_SIZE },
+  const { data: contactLookupData } = useGetContactLookupV2(
+    debouncedSearchTerm,
+    DEFAULT_LOOKUP_PAGE_SIZE,
     isEditing && debouncedSearchTerm.length > 0
   );
   const contacts = useMemo(
@@ -66,7 +67,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     missingCompanyIds.length > 0
   );
   const companyRecord = useMemo(
-    () => updateCompanyRecord(companies, fetchedCompanies ?? []),
+    () => mergeCompanies(companies, fetchedCompanies ?? []),
     [companies, fetchedCompanies]
   );
 

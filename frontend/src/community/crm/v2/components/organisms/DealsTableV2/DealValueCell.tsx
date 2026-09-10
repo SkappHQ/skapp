@@ -3,7 +3,7 @@ import { ChangeEvent, FC, KeyboardEvent } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
-import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
+import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 
 import EditableCell from "./EditableCell";
@@ -42,7 +42,7 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
       onClickOutside={save}
       display={
         <span className="body2 w-full block text-right">
-          {formatMonetaryValueWithDecimals(amount)}
+          {formatCurrency(amount)}
         </span>
       }
     >
