@@ -42,20 +42,20 @@ const DealSidePanelV2: FC = () => {
     setDeals,
     setBoardColumn
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      selectedDealId: store.selectedDealId,
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      selectedDealId: state.selectedDealId,
       selectedDeal:
-        store.selectedDealId != null
-          ? store.deals[store.selectedDealId]
+        state.selectedDealId != null
+          ? state.deals[state.selectedDealId]
           : undefined,
-      setSelectedDealId: store.setSelectedDealId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      deals: store.deals,
-      board: store.board,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn
+      setSelectedDealId: state.setSelectedDealId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      deals: state.deals,
+      board: state.board,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn
     }))
   );
 
@@ -75,8 +75,7 @@ const DealSidePanelV2: FC = () => {
 
   useEffect(() => {
     if (dealDetail) {
-      const store = useCrmStoreV2.getState();
-      store.setDeals(updateDealRecord(store.deals, [dealDetail]));
+      setDeals(updateDealRecord(deals, [dealDetail]));
     }
   }, [dealDetail]);
 

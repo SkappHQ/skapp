@@ -49,7 +49,7 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
   const handleSelect = (item: SearchableDropdownItem) => {
     const contact = contacts.find((option) => String(option.id) === item.id);
 
-    if (contact === undefined) {
+    if (!contact) {
       return;
     }
 

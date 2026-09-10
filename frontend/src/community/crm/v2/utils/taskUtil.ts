@@ -208,7 +208,7 @@ const linkTaskToCompany = (
 ): CrmCompanyRecord => {
   const company = companies[companyId];
 
-  if (company?.taskIds === undefined) return companies;
+  if (!company?.taskIds) return companies;
 
   const taskIds = appendId(company.taskIds, taskId);
 
@@ -224,7 +224,7 @@ const linkTaskToContact = (
 ): CrmContactRecord => {
   const contact = contacts[contactId];
 
-  if (contact?.taskIds === undefined) return contacts;
+  if (!contact?.taskIds) return contacts;
 
   const taskIds = appendId(contact.taskIds, taskId);
 
@@ -240,7 +240,7 @@ const linkTaskToDeal = (
 ): CrmDealRecord => {
   const deal = deals[dealId];
 
-  if (deal?.taskIds === undefined) return deals;
+  if (!deal?.taskIds) return deals;
 
   const taskIds = appendId(deal.taskIds, taskId);
 
@@ -257,21 +257,19 @@ export const linkTaskToRelatedEntities = (
 ): CrmTaskLinks => {
   const { id: taskId, companyId, contactId, dealId } = task;
 
-  if (taskId === undefined) {
-    return { companies, contacts, deals };
-  }
-
   const links: CrmTaskLinks = { companies, contacts, deals };
 
-  if (companyId !== undefined) {
+  if (!taskId) return links;
+
+  if (companyId) {
     links.companies = linkTaskToCompany(companies, companyId, taskId);
   }
 
-  if (contactId !== undefined) {
+  if (contactId) {
     links.contacts = linkTaskToContact(contacts, contactId, taskId);
   }
 
-  if (dealId !== undefined) {
+  if (dealId) {
     links.deals = linkTaskToDeal(deals, dealId, taskId);
   }
 
@@ -279,7 +277,7 @@ export const linkTaskToRelatedEntities = (
 };
 
 export const parseDueDate = (dueAt?: string): Date | undefined => {
-  if (dueAt !== undefined) {
+  if (dueAt) {
     return convertUTCStringToLocalDateTime(dueAt).toJSDate();
   }
 };

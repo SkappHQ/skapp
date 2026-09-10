@@ -5,7 +5,7 @@ import { IconName } from "~community/common/types/IconTypes";
 
 interface SidePanelHeaderInfoItemProps {
   icon: ReactElement;
-  value?: string;
+  value: string;
   endIcon?: IconName;
   onClick?: () => void;
 }
@@ -16,10 +16,6 @@ const SidePanelHeaderInfoItem: FC<SidePanelHeaderInfoItemProps> = ({
   endIcon,
   onClick
 }) => {
-  if (!value) {
-    return null;
-  }
-
   const isInteractive = !!onClick;
 
   return (

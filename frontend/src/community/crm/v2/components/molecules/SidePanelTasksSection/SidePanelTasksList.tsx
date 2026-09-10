@@ -33,7 +33,7 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
     <>
       <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
         {tasks.map((task) =>
-          task.id === undefined ? null : (
+          task.id ? (
             <TaskRow
               key={task.id}
               task={task}
@@ -41,11 +41,11 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
               onRowClick={onRowClick ?? (() => undefined)}
               onToggleComplete={onToggleComplete}
             />
-          )
+          ) : null
         )}
       </div>
       {showAddTaskAction && (
-        <div className=" flex">
+        <div className="flex">
           <ButtonV2
             type="button"
             variant="line"

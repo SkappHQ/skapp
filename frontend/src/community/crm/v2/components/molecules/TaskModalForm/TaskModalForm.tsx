@@ -88,17 +88,17 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     setDeals,
     setIsTaskModalOpen
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      owners: store.owners,
-      taskTypes: store.taskTypes,
-      contacts: store.contacts,
-      deals: store.deals,
-      selectedCompanyId: store.selectedCompanyId,
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      setContacts: store.setContacts,
-      setDeals: store.setDeals,
-      setIsTaskModalOpen: store.setIsTaskModalOpen
+    useShallow((state) => ({
+      owners: state.owners,
+      taskTypes: state.taskTypes,
+      contacts: state.contacts,
+      deals: state.deals,
+      selectedCompanyId: state.selectedCompanyId,
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      setContacts: state.setContacts,
+      setDeals: state.setDeals,
+      setIsTaskModalOpen: state.setIsTaskModalOpen
     }))
   );
 
@@ -129,8 +129,8 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
 
   const companyScopeId = isCompanySidePanelOpen ? selectedCompanyId : undefined;
 
-  const hasSelectedContact = values.contactId !== undefined;
-  const hasSelectedDeal = values.dealId !== undefined;
+  const hasSelectedContact = Boolean(values.contactId);
+  const hasSelectedDeal = Boolean(values.dealId);
 
   const ownerFilters: CrmOwnerLookupFilterRequest = {
     searchKeyword: debouncedOwnerSearchText,
@@ -154,12 +154,12 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   const isContactSearchEnabled =
     debouncedContactSearchText.length > 0 ||
     hasSelectedDeal ||
-    contactFilters.companyId !== undefined;
+    Boolean(contactFilters.companyId);
 
   const isDealSearchEnabled =
     debouncedDealSearchText.length > 0 ||
     hasSelectedContact ||
-    dealFilters.companyId !== undefined;
+    Boolean(dealFilters.companyId);
 
   const { data: ownerLookupData } = useGetOwnerLookup(
     ownerFilters,
@@ -185,10 +185,9 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   }, [dealLookupData]);
 
   const selectedOwner = getOwnerById(owners, values.ownerId);
-  const selectedContactName =
-    values.contactId !== undefined
-      ? getContactDisplayName(contacts[values.contactId])
-      : undefined;
+  const selectedContactName = values.contactId
+    ? getContactDisplayName(contacts[values.contactId])
+    : undefined;
   const selectedDealName = getDealNameById(deals, values.dealId);
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(() => {
@@ -272,7 +271,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
     setDealSearchText("");
 
     const dealContactId = deals[dealId]?.contactId;
-    if (dealContactId !== undefined) {
+    if (dealContactId) {
       setFieldValue("contactId", dealContactId);
       setContactSearchText("");
     }

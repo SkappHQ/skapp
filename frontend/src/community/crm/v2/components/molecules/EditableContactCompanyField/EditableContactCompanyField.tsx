@@ -12,8 +12,6 @@ import {
   useGetCompanyLookup,
   useSearchCompaniesByDomain
 } from "~community/crm/v2/api/CompanyApi";
-import AddNewCompanyOption from "~community/crm/v2/components/atoms/AddNewCompanyOption/AddNewCompanyOption";
-import SuggestedBadge from "~community/crm/v2/components/atoms/SuggestedBadge/SuggestedBadge";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/v2/constants/contactConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -27,6 +25,9 @@ import {
   CrmCompanyOption,
   getCompanyOptions
 } from "~community/crm/v2/utils/contactUtil";
+
+import AddNewCompanyOption from "./AddNewCompanyOption";
+import SuggestedBadge from "./SuggestedBadge";
 
 interface EditableContactCompanyFieldProps {
   companyId?: number | null;
@@ -55,13 +56,13 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
   const debouncedSearch = useDebounce(trimmedSearch, SEARCH_DEBOUNCE_DELAY);
 
   const { companies, setCompanies } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      setCompanies: store.setCompanies
+    useShallow((state) => ({
+      companies: state.companies,
+      setCompanies: state.setCompanies
     }))
   );
 
-  const isSearching = companyId == null && companyName === undefined;
+  const isSearching = companyId == null && !companyName;
 
   const companyLookupFilters: CrmCompanyFilterRequest = {
     searchKeyword: debouncedSearch,
@@ -134,7 +135,7 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
     }
 
     const company = findCompany(item.id);
-    if (company !== undefined) {
+    if (company) {
       setCompanies(updateCompanyRecord(companies, [company]));
     }
 
