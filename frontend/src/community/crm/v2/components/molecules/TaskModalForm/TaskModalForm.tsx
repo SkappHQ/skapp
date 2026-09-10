@@ -185,9 +185,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
   const selectedContactName = values.contactId
     ? getContactDisplayName(contacts[values.contactId])
     : undefined;
-  const selectedDealName = values.dealId
-    ? deals[values.dealId]?.name
-    : undefined;
+  const selectedDeal = values.dealId != null ? deals[values.dealId] : undefined;
 
   const ownerDropdownItems: SearchableDropdownItem[] = useMemo(() => {
     if (ownerLookupData) {
@@ -416,7 +414,7 @@ const TaskModalForm: FC<TaskModalFormProps> = ({
           id="deal-search"
           label={translateText(["labels", "deal"])}
           placeholder={translateText(["placeholders", "deal"])}
-          selectedValue={selectedDealName}
+          selectedValue={selectedDeal?.name ?? ""}
           onClear={handleClearDeal}
           clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
           fieldAriaLabel={translateText(["ariaLabels", "deal"])}
