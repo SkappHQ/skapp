@@ -14,8 +14,6 @@ import com.skapp.community.timeplanner.type.TimeAttendanceStatus;
 import com.skapp.community.timeplanner.type.TimeBlocks;
 import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
@@ -23,10 +21,8 @@ import tools.jackson.databind.JsonNode;
 import java.time.LocalTime;
 import java.time.ZoneId;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(name = "EpAttendanceStatusResolverImpl")
 public class AttendanceStatusResolverImpl implements AttendanceStatusResolver {
 
 	private static final int MINUTES_PER_HOUR = 60;
@@ -60,7 +56,6 @@ public class AttendanceStatusResolverImpl implements AttendanceStatusResolver {
 		}
 
 		if (timeConfig.getStartHour() == null || timeConfig.getStartMinute() == null) {
-			log.warn("isLateArrival: no start time configured for {}, skipping the late check", timeRecord.getDay());
 			return false;
 		}
 
@@ -110,7 +105,6 @@ public class AttendanceStatusResolverImpl implements AttendanceStatusResolver {
 			return Double.parseDouble(hours.trim());
 		}
 		catch (NumberFormatException e) {
-			log.warn("toHours: time block hours '{}' is not numeric, treating as zero", hours);
 			return 0d;
 		}
 	}
