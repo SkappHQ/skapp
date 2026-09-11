@@ -188,12 +188,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       setDirectManualTimeEntryEligibleEmployee({
         employeeId: targetEmployeeId,
         employeeName: concatStrings([
-          employeeGeneralDetails?.firstName ??
-            targetEmployeeDetails.firstName ??
-            "",
-          employeeGeneralDetails?.lastName ??
-            targetEmployeeDetails.lastName ??
-            ""
+          employeeGeneralDetails?.firstName ?? "",
+          employeeGeneralDetails?.lastName ?? ""
         ]).trim()
       });
       handleEdit();
