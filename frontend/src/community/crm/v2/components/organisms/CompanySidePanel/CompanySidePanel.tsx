@@ -354,7 +354,6 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
             {activeTab === CrmSidePanelTabEnum.CONTACTS && (
               <SidePanelContactsSection
-                contactIds={company.contactIds}
                 hasNextPage={hasNextContactsPage}
                 isFetchingNextPage={isFetchingNextContactsPage}
                 onFetchNextPage={fetchNextContactsPage}
