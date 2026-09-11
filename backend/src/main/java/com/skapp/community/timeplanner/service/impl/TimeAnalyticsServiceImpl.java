@@ -5,14 +5,12 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
-import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -34,7 +32,6 @@ import com.skapp.community.timeplanner.payload.request.AverageHoursWorkedTrendFi
 import com.skapp.community.timeplanner.payload.request.ClockInClockOutTrendFilterDto;
 import com.skapp.community.timeplanner.payload.request.ClockInSummaryFilterDto;
 import com.skapp.community.timeplanner.payload.request.LateArrivalTrendFilterDto;
-import com.skapp.community.timeplanner.payload.request.TimeBlockDto;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryResponseDto;
 import com.skapp.community.timeplanner.payload.response.UtilizationPercentageDto;
@@ -48,22 +45,15 @@ import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.ClockInType;
 import com.skapp.community.timeplanner.type.TimeAttendanceStatus;
 import com.skapp.community.timeplanner.type.RecordType;
-import com.skapp.community.timeplanner.type.TimeBlocks;
-import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TrendPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -102,8 +92,6 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	private final TimeService timeService;
 
 	private final AttendanceConfigService attendanceConfigService;
-
-	private final OrganizationService organizationService;
 
 	private final AttendanceStatusResolver attendanceStatusResolver;
 
