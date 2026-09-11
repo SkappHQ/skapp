@@ -23,8 +23,10 @@ import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,8 @@ import java.util.Optional;
 public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private final CrmMapper crmCompanyMapper;
 
@@ -92,7 +96,6 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		CrmValidations.validateContactNumber(crmCompany.getContactNumber());
 		CrmValidations.validateWebsite(crmCompany.getWebsite());
 		CrmValidations.validateAddress(crmCompany.getAddress());
-		CrmValidations.validateIndustry(crmCompany.getIndustry());
 		validateCompanyCreationLimit();
 
 		if (checkCompanyExists(crmCompany.getName())) {
@@ -100,6 +103,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		}
 
 		CrmCompany newCompany = crmCompanyMapper.crmCompanyCreateDtoToCrmCompany(crmCompany);
+		newCompany.setIndustryDetails(resolveIndustry(crmCompany.getIndustryId(), crmCompany.getIndustryName()));
 		CrmCompany result = crmCompanyDao.save(newCompany);
 		CrmCompanyResponseDto responseDto = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(result);
 
@@ -136,6 +140,39 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	private boolean checkCompanyExists(String name) {
 		return crmCompanyDao.existsByNameIgnoreCaseAndIsDeletedFalse(name);
+	}
+
+	private CrmIndustry resolveIndustry(Long industryId, String industryName) {
+		if (industryId != null) {
+			return crmIndustryDao.findById(industryId)
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_INDUSTRY_NOT_FOUND));
+		}
+
+		if (industryName != null && !industryName.isBlank()) {
+			return findOrCreateIndustryByName(industryName);
+		}
+
+		return null;
+	}
+
+	private CrmIndustry findOrCreateIndustryByName(String name) {
+		log.info("findOrCreateIndustryByName: execution started");
+
+		CrmValidations.validateIndustryName(name);
+		String normalizedName = CrmValidations.normalizeIndustryName(name);
+
+		Optional<CrmIndustry> existingIndustry = crmIndustryDao.findByNameIgnoreCaseAndIsDeletedFalse(normalizedName);
+		if (existingIndustry.isPresent()) {
+			log.info("findOrCreateIndustryByName: matched an existing industry");
+			return existingIndustry.get();
+		}
+
+		CrmIndustry newIndustry = new CrmIndustry();
+		newIndustry.setName(normalizedName);
+		CrmIndustry savedIndustry = crmIndustryDao.save(newIndustry);
+
+		log.info("findOrCreateIndustryByName: execution ended");
+		return savedIndustry;
 	}
 
 	@Override
@@ -271,8 +308,9 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 			existingCompany.setAddress(address);
 		}
 
-		if (crmCompany.getIndustry() != null) {
-			existingCompany.setIndustry(crmCompany.getIndustry());
+		if (crmCompany.getIndustryId().isPresent() || crmCompany.getIndustryName() != null) {
+			existingCompany.setIndustryDetails(
+					resolveIndustry(crmCompany.getIndustryId().orElse(null), crmCompany.getIndustryName()));
 		}
 
 		CrmCompany updatedCompany = crmCompanyDao.save(existingCompany);
