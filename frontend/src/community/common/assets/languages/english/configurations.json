@@ -24,6 +24,7 @@
     "restrictedUserRolesDescriptionPartTwo": "People Admin",
     "restrictedUserRolesDescriptionPartThree": " to employees.",
     "restrictedUserRolesTooltip": "Both Super Admin and People Admin can assign roles. Use this setting to specify which roles the People Admin cannot assign to employees for security purposes.",
+    "closeModalBtnAriaLabel": "Close restricted user roles modal",
     "saveBtnText": "Save",
     "cancelBtnText": "Cancel",
     "successToastTitle": "Restriction Updated",
