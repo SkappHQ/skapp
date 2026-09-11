@@ -22,26 +22,32 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
-  --color-label-bg-sand: #ffe3a6;
-  --color-label-bg-lemon: #f4f478;
+  --color-label-bg-sand: #ffcecf;
+  --color-label-bg-lemon: #fff085;
   --color-label-bg-slate: #cbd5e1;
   --color-label-bg-peach: #ffd6a8;
   --color-label-bg-mint: #b9f8cf;
   --color-label-bg-aqua: #96f7e4;
   --color-label-bg-indigo: #c6d2ff;
   --color-label-bg-magenta: #f4a8ff;
-  --color-label-bg-purple: #ddd6ff;
+  --color-label-bg-purple: #e9d4ff;
+  --color-label-bg-sky: #b8e6fe;
+  --color-label-bg-pink: #fccee8;
+  --color-label-bg-bluegray: #e2e8f0;
 
   --color-label-text-seafoam: #1a4a4a;
-  --color-label-text-sand: #9e4f00;
-  --color-label-text-lemon: #715613;
+  --color-label-text-sand: #983f40;
+  --color-label-text-lemon: #894b00;
   --color-label-text-slate: #1e293b;
   --color-label-text-peach: #9f2d00;
   --color-label-text-mint: #0d542b;
   --color-label-text-aqua: #0b4f4a;
-  --color-label-text-indigo: #3730a3;
+  --color-label-text-indigo: #372aac;
   --color-label-text-magenta: #721378;
   --color-label-text-purple: #4d179a;
+  --color-label-text-sky: #024a70;
+  --color-label-text-pink: #c6005c;
+  --color-label-text-bluegray: #334155;
 
   --color-status-sky: #60a5fa;
   --color-status-pink: #14b8a6;
@@ -79,7 +85,16 @@
   --color-semantic-green-text: #016630;
   --color-semantic-green-accent: #62b774;
 
+  --color-chart-purple: #ad46ff;
   --color-chart-blue: #2b7fff;
+  --color-chart-indigo: #7c86ff;
+  --color-chart-sky: #00a6f4;
+  --color-chart-mint: #00bc7d;
+  --color-chart-lemon: #f0b100;
+  --color-chart-orange: #ff6900;
+  --color-chart-sand: #d26768;
+  --color-chart-pink: #f6339a;
+  --color-chart-bluegray: #64748b;
 
   --color-ai-gradient-start: var(--color-blue-dark);
   --color-ai-gradient-end: var(--color-blue-mid);
