@@ -290,13 +290,3 @@ export const updateTask = (
   ...tasks,
   [taskId]: { ...tasks[taskId], ...updatedFields }
 });
-
-export interface CrmTaskCompletion {
-  taskId: number;
-  isCompleted: boolean;
-}
-
-export const applyTaskCompletion = (
-  tasks: CrmTaskRecord,
-  { taskId, isCompleted }: CrmTaskCompletion
-): CrmTaskRecord => updateTask(tasks, taskId, { isCompleted });
