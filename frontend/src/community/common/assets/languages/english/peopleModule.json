@@ -1174,5 +1174,110 @@
       "heading": "Today is {{name}}'s birthday!",
       "body": "Take a moment to send your birthday wishes and help make their day a little more special."
     }
+  },
+  "demographics": {
+    "pageHead": "Workforce Demographics",
+    "title": "Workforce Demographics",
+    "breadcrumbs": {
+      "reports": "Reports"
+    },
+    "groupBy": {
+      "ariaLabel": "Group employees by"
+    },
+    "search": {
+      "placeholder": "Search employees",
+      "ariaLabel": "Search employees by name"
+    },
+    "filters": {
+      "ariaLabel": "Show filters",
+      "panelLabel": "Demographics filters",
+      "title": "Filters",
+      "clearAll": "Clear all"
+    },
+    "summary": {
+      "heading": "Job Family",
+      "panelAriaLabel": "Demographics summary",
+      "tableCaption": "Employee count and share for each category",
+      "rowAriaLabel": "Show only {{category}}",
+      "employees": "Employees",
+      "percentOfTotal": "% of total",
+      "percentOfFiltered": "% of filtered",
+      "total": "Total"
+    },
+    "jobFamily": {
+      "header": "Job family",
+      "tableCaption": "Employee count and share for each job family"
+    },
+    "details": {
+      "employee": "Employee",
+      "jobTitle": "Job title",
+      "noResultsTitle": "No matching employees",
+      "noResultsDescription": "No employee matches your search. Try a different name."
+    },
+    "empty": {
+      "title": "No employees to show",
+      "description": "No active employee matches the selected filters."
+    },
+    "categories": {
+      "notRecorded": "Not recorded",
+      "other": "Other ({{count}})",
+      "otherPlain": "Other"
+    },
+    "export": {
+      "button": "Export",
+      "errorTitle": "Export failed",
+      "errorDescription": "The demographics report could not be generated. Please try again."
+    },
+    "error": {
+      "title": "Could not load the report",
+      "description": "The workforce demographics report could not be loaded. Please try again."
+    },
+    "dimensions": {
+      "GENDER": "Gender",
+      "AGE_BAND": "Age band",
+      "NATIONALITY": "Nationality",
+      "ETHNICITY": "Ethnicity"
+    },
+    "values": {
+      "GENDER": {
+        "MALE": "Male",
+        "FEMALE": "Female",
+        "OTHER": "Other"
+      },
+      "AGE_BAND": {
+        "UNDER_25": "Under 25",
+        "AGE_25_TO_34": "25-34",
+        "AGE_35_TO_44": "35-44",
+        "AGE_45_TO_54": "45-54",
+        "AGE_55_AND_OVER": "55 and over",
+        "NOT_RECORDED": "Not recorded"
+      },
+      "ETHNICITY": {
+        "AFRICAN": "African",
+        "CARIBBEAN": "Caribbean",
+        "INDIAN": "Indian",
+        "MELANESIAN": "Melanesian",
+        "AUSTRALASIAN_OR_ABORIGINAL": "Australasian or Aboriginal",
+        "CHINESE": "Chinese",
+        "GUAMANIAN": "Guamanian",
+        "JAPANESE": "Japanese",
+        "KOREAN": "Korean",
+        "POLYNESIAN": "Polynesian",
+        "EUROPEAN_OR_ANGLO_SAXON": "European or Anglo-Saxon",
+        "OTHER_PACIFIC_ISLANDER": "Other Pacific Islander",
+        "LATIN_AMERICAN": "Latin American",
+        "ARABIC": "Arabic",
+        "VIETNAMESE": "Vietnamese",
+        "MICRONESIAN": "Micronesian",
+        "OTHER_HISPANIC": "Other Hispanic",
+        "US_OR_CANADIAN_INDIAN": "US or Canadian Indian",
+        "OTHER_ASIAN": "Other Asian",
+        "PUERTO_RICAN": "Puerto Rican",
+        "FILIPINO": "Filipino",
+        "MEXICAN": "Mexican",
+        "ALASKAN_NATIVE": "Alaskan Native",
+        "CUBAN": "Cuban"
+      }
+    }
   }
 }
