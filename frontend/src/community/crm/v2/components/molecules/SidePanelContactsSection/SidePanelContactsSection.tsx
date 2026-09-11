@@ -7,8 +7,8 @@ import type {
   GridHeader,
   GridRow
 } from "~community/common/components/organisms/TableView/types";
-import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { SIDE_PANEL_TABLE_HEIGHT } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   formatMonetaryValueWithDecimals,
@@ -17,14 +17,12 @@ import {
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface SidePanelContactsSectionProps {
-  contactIds?: number[];
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onFetchNextPage?: () => void;
 }
 
 const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
-  contactIds,
   hasNextPage = false,
   isFetchingNextPage = false,
   onFetchNextPage
@@ -36,18 +34,16 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
     "sidePanelCompanyContacts"
   );
 
-  const { loadingRef } = useInfiniteScroll({
-    hasNextPage,
-    isLoading: isFetchingNextPage,
-    onLoadMore: () => onFetchNextPage?.()
-  });
-
-  const { contacts, companies } = useCrmStoreV2(
+  const { contacts, companies, selectedCompanyId } = useCrmStoreV2(
     useShallow((state) => ({
       contacts: state.contacts,
-      companies: state.companies
+      companies: state.companies,
+      selectedCompanyId: state.selectedCompanyId
     }))
   );
+
+  const contactIds =
+    selectedCompanyId !== null ? companies[selectedCompanyId]?.contactIds : [];
 
   const tableHeaders: GridHeader[] = [
     {
@@ -130,23 +126,23 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
     });
 
   return (
-    <div>
-      <TableView
-        headers={tableHeaders}
-        rows={transformToTableRows()}
-        emptyState={{
-          icon: <SearchIcon />,
-          title: translateText(["noContacts"]),
-          description: translateText(["noContactsDescription"])
-        }}
-      />
-      {isFetchingNextPage && (
-        <p className="body3 text-secondary-text text-center py-2">
-          {translateText(["infiniteScrollLoadingMessage"])}
-        </p>
-      )}
-      <div ref={loadingRef} />
-    </div>
+    <TableView
+      headers={tableHeaders}
+      rows={transformToTableRows()}
+      emptyState={{
+        icon: <SearchIcon />,
+        title: translateText(["noContacts"]),
+        description: translateText(["noContactsDescription"])
+      }}
+      infiniteScroll={{
+        isEnabled: true,
+        height: SIDE_PANEL_TABLE_HEIGHT,
+        hasMore: hasNextPage,
+        isFetchingNextPage,
+        onLoadMore: onFetchNextPage,
+        loadingMessage: translateText(["infiniteScrollLoadingMessage"])
+      }}
+    />
   );
 };
 
