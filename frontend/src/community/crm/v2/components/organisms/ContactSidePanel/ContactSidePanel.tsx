@@ -125,10 +125,18 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     size: DEAL_PAGE_SIZE
   };
 
-  const { data: fetchedContact, isLoading: isContactLoading } =
-    useGetContactById(contactId, handleLoadError);
-  const { data: fetchedMetrics, isLoading: isMetricsLoading } =
-    useGetContactMetrics(contactId, handleLoadError);
+  const {
+    data: fetchedContact,
+    isLoading: isContactLoading,
+    isError: isContactError,
+    isFetching: isContactFetching
+  } = useGetContactById(contactId);
+  const {
+    data: fetchedMetrics,
+    isLoading: isMetricsLoading,
+    isError: isMetricsError,
+    isFetching: isMetricsFetching
+  } = useGetContactMetrics(contactId);
   const {
     data: fetchedTasks,
     isLoading: isTasksLoading,
@@ -146,6 +154,15 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const isLoading =
     isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
+
+  useEffect(() => {
+    if (
+      (isContactError && !isContactFetching) ||
+      (isMetricsError && !isMetricsFetching)
+    ) {
+      handleLoadError();
+    }
+  }, [isContactError, isContactFetching, isMetricsError, isMetricsFetching]);
 
   useEffect(() => {
     const contactFields: CrmContactEntity = {};
