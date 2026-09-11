@@ -111,21 +111,22 @@ export const linkContactToCompany = (
   return linked;
 };
 
-/** Drops a deleted contact from its company's contact list. */
 export const unlinkContactFromCompany = (
   companies: CrmCompanyRecord,
-  companyId: number | null | undefined,
+  companyId: number,
   contactId: number
 ): CrmCompanyRecord => {
-  if (companyId == null) return companies;
-
   const company = companies[companyId];
+
   if (!company?.contactIds) return companies;
 
-  const contactIds = company.contactIds.filter((id) => id !== contactId);
-  if (contactIds.length === company.contactIds.length) return companies;
-
-  return { ...companies, [companyId]: { ...company, contactIds } };
+  return {
+    ...companies,
+    [companyId]: {
+      ...company,
+      contactIds: company.contactIds.filter((id) => id !== contactId)
+    }
+  };
 };
 
 export const getContactDisplayName = (
