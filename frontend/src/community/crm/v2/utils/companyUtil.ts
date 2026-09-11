@@ -1,8 +1,11 @@
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
 import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmIndustryRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
 export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
@@ -84,7 +87,8 @@ export const getCompanyFormInitialValues = (
   company?: CrmCompanyEntity
 ): CrmCompanyEntity => ({
   name: company?.name ?? "",
-  industry: company?.industry ?? CrmIndustryEnum.NONE,
+  industryId: company?.industryId ?? null,
+  industryName: company?.industryName,
   website: company?.website ?? "",
   address: company?.address ?? "",
   contactNumber: company?.contactNumber ?? ""
@@ -94,7 +98,8 @@ export const getTrimmedCompanyValues = (
   values: CrmCompanyEntity
 ): CrmCompanyEntity => ({
   name: values.name?.trim(),
-  industry: values.industry,
+  industryId: values.industryId,
+  industryName: values.industryName?.trim(),
   website: values.website?.trim(),
   address: values.address?.trim(),
   contactNumber: values.contactNumber?.trim()
@@ -110,8 +115,12 @@ export const getChangedCompanyFields = (
     changedFields.name = currentValues.name;
   }
 
-  if (currentValues.industry !== initialValues.industry) {
-    changedFields.industry = currentValues.industry;
+  if (currentValues.industryId !== initialValues.industryId) {
+    changedFields.industryId = currentValues.industryId;
+  }
+
+  if (currentValues.industryName !== initialValues.industryName) {
+    changedFields.industryName = currentValues.industryName;
   }
 
   if (currentValues.website !== initialValues.website) {
@@ -162,4 +171,57 @@ export const mergeCompanies = (
     merged[company.id] = { ...merged[company.id], ...company };
   }
   return merged;
+};
+
+/**
+ * Seeded industries are stored under their constant name, so those are
+ * translated while anything a user created is shown exactly as they typed it.
+ */
+export const getIndustryDisplayName = (
+  industryName: string,
+  translateText: TranslatorFunctionType
+): string =>
+  Object.values<string>(CrmIndustryEnum).includes(industryName)
+    ? translateText([industryName])
+    : industryName;
+
+export interface CrmIndustryOption {
+  id: string;
+  name: string;
+}
+
+/**
+ * Industries matching the typed name, followed by an add-new option when that
+ * name is not taken yet - the company save is what actually creates it.
+ */
+export const getIndustryOptions = (
+  industries: CrmIndustryRecord,
+  translateText: TranslatorFunctionType,
+  searchKeyword: string,
+  canAddNewIndustry: boolean
+): CrmIndustryOption[] => {
+  const trimmedName = searchKeyword.trim();
+  const normalizedName = trimmedName.toLowerCase();
+
+  const options: CrmIndustryOption[] = Object.values(industries)
+    .map((industry) => ({
+      id: String(industry.id),
+      name: getIndustryDisplayName(industry.name, translateText)
+    }))
+    .filter((option) => option.name.toLowerCase().includes(normalizedName));
+
+  const isNameAvailable = !options.some(
+    (option) => option.name.toLowerCase() === normalizedName
+  );
+
+  if (
+    canAddNewIndustry &&
+    trimmedName.length > 0 &&
+    trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
+    isNameAvailable
+  ) {
+    options.push({ id: ADD_NEW_INDUSTRY_OPTION_ID, name: trimmedName });
+  }
+
+  return options;
 };

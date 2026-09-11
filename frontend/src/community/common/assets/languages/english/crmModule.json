@@ -269,9 +269,6 @@
       },
       "toastMessages": {
         "errorTitle": "Oops! Something went wrong",
-        "addIndustry": {
-          "errorDescription": "Failed to add the industry. Please try again"
-        },
         "add": {
           "successTitle": "Company added successfully",
           "successDescription": "The company has been successfully added",

@@ -1,4 +1,3 @@
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
@@ -20,7 +19,7 @@ const mockTranslateText = (keys: string[]): string => keys.join(".");
 const acme: CrmCompanyEntity = {
   id: 1,
   name: "Acme Corp",
-  industry: CrmIndustryEnum.TECHNOLOGY_INFORMATION_AND_MEDIA,
+  industryId: 7,
   website: "https://acme.com",
   address: "122 Main Street",
   contactNumber: "94771234567",
@@ -116,7 +115,7 @@ describe("getCompanyFormInitialValues", () => {
     const result = getCompanyFormInitialValues();
 
     expect(result.name).toBe("");
-    expect(result.industry).toBe(CrmIndustryEnum.NONE);
+    expect(result.industryId).toBeNull();
   });
 
   it("maps an existing company onto the form values", () => {

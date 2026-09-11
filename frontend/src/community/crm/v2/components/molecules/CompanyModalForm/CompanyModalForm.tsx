@@ -7,16 +7,19 @@ import { SearchableDropdownItem } from "~community/common/components/molecules/S
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
 import AddIndustryOption from "~community/crm/v2/components/atoms/AddIndustryOption/AddIndustryOption";
-import { ADD_INDUSTRY_ITEM_ID } from "~community/crm/v2/constants/commonConstants";
+import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  CrmCompanyEntity,
-  CrmIndustryEntity
-} from "~community/crm/v2/types/CrmCommonTypes";
+  CrmIndustryOption,
+  getIndustryDisplayName,
+  getIndustryOptions
+} from "~community/crm/v2/utils/companyUtil";
 
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
@@ -33,19 +36,16 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   originalName,
   onCancel
 }) => {
+  const translateIndustryOptions = useTranslator(
+    "crmModule",
+    "companies",
+    "industryOptions"
+  );
+
   const { industries } = useCrmStoreV2(
     useShallow((store) => ({
       industries: store.industries
     }))
-  );
-
-  const industryOptions = useMemo(
-    () =>
-      Object.values(industries).map((industry) => ({
-        id: String(industry.id),
-        label: industry.name
-      })),
-    [industries]
   );
 
   const [industrySearchTerm, setIndustrySearchTerm] = useState("");
@@ -79,60 +79,67 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     ? translateText(["validations", "companyExists"])
     : errors.name;
 
-  const industryDropdownItems: SearchableDropdownItem[] = useMemo(() => {
-    const searchTerm = industrySearchTerm.trim();
+  const industryOptions = useMemo(
+    () =>
+      getIndustryOptions(
+        industries,
+        translateIndustryOptions,
+        industrySearchTerm,
+        true
+      ),
+    [industries, translateIndustryOptions, industrySearchTerm]
+  );
 
-    const matches = industryOptions.filter((option) =>
-      option.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const items: SearchableDropdownItem[] = matches.map((option) => ({
-      id: option.id,
-      content: option.label
-    }));
-
-    const hasExactMatch = matches.some(
-      (option) => option.label.toLowerCase() === searchTerm.toLowerCase()
-    );
-
-    if (searchTerm.length > 0 && !hasExactMatch) {
-      items.push({
-        id: ADD_INDUSTRY_ITEM_ID,
-        content: (
-          <AddIndustryOption
-            name={searchTerm}
-            onCreated={handleIndustrySelected}
-          />
-        )
-      });
+  const renderIndustryOptionContent = (option: CrmIndustryOption) => {
+    if (option.id === ADD_NEW_INDUSTRY_OPTION_ID) {
+      return (
+        <AddIndustryOption
+          label={translateText(["labels", "addNewIndustry"], {
+            name: option.name
+          })}
+        />
+      );
     }
 
-    return items;
-  }, [industryOptions, industrySearchTerm]);
+    return option.name;
+  };
 
-  const selectedIndustryLabel = values.industry
-    ? (industries[Number(values.industry)]?.name ?? "")
-    : "";
+  const industryDropdownItems: SearchableDropdownItem[] = industryOptions.map(
+    (option) => ({
+      id: option.id,
+      content: renderIndustryOptionContent(option)
+    })
+  );
+
+  const selectedIndustry =
+    values.industryId != null ? industries[values.industryId] : undefined;
+
+  const selectedIndustryLabel =
+    values.industryName ??
+    (selectedIndustry
+      ? getIndustryDisplayName(selectedIndustry.name, translateIndustryOptions)
+      : "");
 
   const handleIndustrySearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setIndustrySearchTerm(e.target.value);
   };
 
-  const handleIndustrySelected = (industry: CrmIndustryEntity) => {
-    setFieldValue("industry", industry.id);
+  const handleIndustrySelect = (item: SearchableDropdownItem) => {
+    if (item.id === ADD_NEW_INDUSTRY_OPTION_ID) {
+      setFieldValue("industryId", null);
+      setFieldValue("industryName", industrySearchTerm.trim());
+      setIndustrySearchTerm("");
+      return;
+    }
+
+    setFieldValue("industryId", Number(item.id));
+    setFieldValue("industryName", undefined);
     setIndustrySearchTerm("");
   };
 
-  const handleIndustrySelect = (item: SearchableDropdownItem) => {
-    const industry = industries[Number(item.id)];
-
-    if (!industry) return;
-
-    handleIndustrySelected(industry);
-  };
-
   const handleClearIndustry = () => {
-    setFieldValue("industry", undefined);
+    setFieldValue("industryId", null);
+    setFieldValue("industryName", undefined);
     setIndustrySearchTerm("");
   };
 
