@@ -31,8 +31,11 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
 }));
 
 jest.mock("~community/attendance/utils/TimeUtils", () => ({
-  convertToUtc: jest.fn((time) => time),
-  getCurrentTimeZone: jest.fn(() => "UTC")
+  convertToUtc: jest.fn((time) => time)
+}));
+
+jest.mock("~community/common/hooks/useDisplayZone", () => ({
+  useEntryZone: jest.fn(() => "UTC")
 }));
 
 describe("TimeEntryExists", () => {

@@ -33,13 +33,14 @@ export const getTimeEntryModalType = (
 export const getModalBeforeManualEntry = (
   values: TimeEntryFormValueType,
   timeAvailability: TimeAvailabilityType,
-  slotType?: AttendanceSlotType | null
+  slotType?: AttendanceSlotType | null,
+  entryZone?: string
 ): EmployeeTimesheetModalTypes | null => {
   const isOngoingSession =
     (slotType === AttendanceSlotType.START ||
       slotType === AttendanceSlotType.PAUSE ||
       slotType === AttendanceSlotType.RESUME) &&
-    isToday(values?.timeEntryDate);
+    isToday(values?.timeEntryDate, entryZone);
 
   if (isOngoingSession) {
     return EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY;

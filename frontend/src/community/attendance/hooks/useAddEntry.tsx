@@ -18,7 +18,6 @@ import {
   convertTo12HourByDateString,
   convertToDateTime,
   convertToUtc,
-  getCurrentTimeZone,
   getDuration
 } from "~community/attendance/utils/TimeUtils";
 import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
@@ -28,6 +27,7 @@ import {
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useEntryZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
@@ -63,6 +63,7 @@ const useAddEntry = () => {
     directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+  const entryZone = useEntryZone();
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
     setToastMessage({
@@ -183,14 +184,15 @@ const useAddEntry = () => {
     const employeeConfirmationModalType = getModalBeforeManualEntry(
       values,
       timeAvailability,
-      status
+      status,
+      entryZone
     );
 
     if (employeeConfirmationModalType === null) {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
       setCurrentAddTimeChanges(values);
@@ -227,11 +229,13 @@ const useAddEntry = () => {
   ) => {
     const dateTimeFromTime = convertToDateTime(
       values.timeEntryDate,
-      values.fromTime
+      values.fromTime,
+      entryZone
     );
     const dateTimeToTime = convertToDateTime(
       values.timeEntryDate,
-      values.toTime
+      values.toTime,
+      entryZone
     );
 
     if (!isDurationValid(values.fromTime, values.toTime)) return;
@@ -244,7 +248,7 @@ const useAddEntry = () => {
           startTime: convertToUtc(dateTimeFromTime),
           endTime: convertToUtc(dateTimeToTime),
           recordId: existingRecordId,
-          zoneId: getCurrentTimeZone()
+          zoneId: entryZone
         }
       };
 
@@ -280,7 +284,7 @@ const useAddEntry = () => {
       manualEntryMutate({
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
       return;
@@ -296,7 +300,7 @@ const useAddEntry = () => {
         startTime: convertToUtc(dateTimeFromTime),
         endTime: convertToUtc(dateTimeToTime),
         recordId: selectedDailyRecord?.timeRecordId || undefined,
-        zoneId: getCurrentTimeZone()
+        zoneId: entryZone
       });
       setIsEmployeeTimesheetModalOpen(false);
     }

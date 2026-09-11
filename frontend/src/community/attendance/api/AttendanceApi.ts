@@ -23,7 +23,7 @@ import {
   TimeRecordResponse
 } from "~community/attendance/types/attendanceTypes";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
-import { useBusinessZone } from "~community/common/hooks/useDisplayZone";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   convertDateToUTC,
@@ -277,13 +277,13 @@ export const useGetEmployeeLeaveStatus = (
   const setAttendanceLeaveStatus = useAttendanceStore(
     (state) => state.setAttendanceLeaveStatus
   );
-  const businessZone = useBusinessZone();
-  const currentDate = nowInZone(businessZone);
+  const organizationZone = useOrganizationZone();
+  const currentDate = nowInZone(organizationZone);
   const formattedDate = currentDate.toFormat(DATE_FORMAT);
   const currentHour = currentDate.hour;
 
   const query = useQuery({
-    enabled: !!businessZone,
+    enabled: !!organizationZone,
     queryKey: [getAttendanceQueryKeys.employeeLeaveStatus(), formattedDate],
     queryFn: async () => {
       return await authFetch.get(
