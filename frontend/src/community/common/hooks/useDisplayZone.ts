@@ -6,7 +6,7 @@ interface OrganizationQueryResponse {
   results?: OrganizationDetailsType[];
 }
 
-const useOrganizationTimeZone = (): string | undefined => {
+export const useOrganizationZone = (): string | undefined => {
   const { data } = useGetOrganization();
   const organization = (data as OrganizationQueryResponse | undefined)
     ?.results?.[0];
@@ -14,12 +14,12 @@ const useOrganizationTimeZone = (): string | undefined => {
   return organization?.organizationTimeZone || undefined;
 };
 
-export const useBusinessZone = (): string | undefined =>
-  useOrganizationTimeZone();
-
 export const useDisplayZone = (): string | undefined => {
   const { data: employee } = useGetUserPersonalDetails();
-  const organizationTimeZone = useOrganizationTimeZone();
+  const organizationZone = useOrganizationZone();
 
-  return employee?.timeZone || organizationTimeZone;
+  return employee?.timeZone || organizationZone;
 };
+
+export const useEntryZone = (): string =>
+  useDisplayZone() ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
