@@ -20,8 +20,9 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
-  useBusinessZone,
-  useDisplayZone
+  useDisplayZone,
+  useEntryZone,
+  useOrganizationZone
 } from "~community/common/hooks/useDisplayZone";
 import {
   ErrorResponse,
@@ -35,12 +36,12 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 
 export const useGetTodaysTimeRequestAvailability = () => {
-  const businessZone = useBusinessZone();
-  const startOfToday = nowInZone(businessZone).startOf("day");
+  const organizationZone = useOrganizationZone();
+  const startOfToday = nowInZone(organizationZone).startOf("day");
   const today = startOfToday.toFormat(DATE_FORMAT);
   const tomorrow = startOfToday.plus({ days: 1 }).toFormat(DATE_FORMAT);
   return useQuery({
-    enabled: !!businessZone,
+    enabled: !!organizationZone,
     queryKey: attendanceQueryKeys.getEmployeeRequests({
       startDate: today,
       endDate: tomorrow,
@@ -84,9 +85,10 @@ export const useGetPeriodAvailabilityMutation = (
   endTime: string,
   onSuccess: (data: TimeAvailabilityType) => void
 ) => {
+  const entryZone = useEntryZone();
   const fetchPeriodAvailability = async () => {
-    const startDateTime = convertToDateTime(date, startTime);
-    const endDateTime = convertToDateTime(date, endTime);
+    const startDateTime = convertToDateTime(date, startTime, entryZone);
+    const endDateTime = convertToDateTime(date, endTime, entryZone);
     const startUTC = convertToUtc(startDateTime);
     const endUTC = convertToUtc(endDateTime);
     const startTimestamp = convertToMilliseconds(startUTC);
@@ -296,8 +298,9 @@ export const useGetPeriodAvailability = (
   startTime: string,
   endTime: string
 ) => {
-  const dateTimeFromTime = convertToDateTime(date, startTime);
-  const dateTimeToTime = convertToDateTime(date, endTime);
+  const entryZone = useEntryZone();
+  const dateTimeFromTime = convertToDateTime(date, startTime, entryZone);
+  const dateTimeToTime = convertToDateTime(date, endTime, entryZone);
   const timestampStartTime = convertToMilliseconds(
     convertToUtc(dateTimeFromTime)
   );

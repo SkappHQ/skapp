@@ -300,7 +300,8 @@
     "ok": "Okay",
     "clockInErrorTitle": "Oops! Something went wrong",
     "clockInErrorDescription": "Failed to record your attendance. Please try again.",
-    "timeZoneNotice": "Times shown in {{displayZone}}. Your work day follows {{businessZone}}."
+    "displayZoneNotice": "Times shown in {{displayZone}}.",
+    "organizationZoneNotice": "Your work day follows {{organizationZone}}."
   },
   "myTimesheet": {
     "pageHead": "My Timesheet | Skapp",

@@ -15,7 +15,7 @@ import {
   AttendancePopupTypes,
   AttendanceSlotType
 } from "~community/attendance/types/attendanceTypes";
-import { useBusinessZone } from "~community/common/hooks/useDisplayZone";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { millisUntilTodayAt } from "~community/common/utils/dateTimeUtils";
 
@@ -34,7 +34,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
     setIsPreMidnightClockOutAlertOpen,
     setIsAutoClockOutMidnightModalOpen
   } = useAttendanceStore((state) => state);
-  const businessZone = useBusinessZone();
+  const organizationZone = useOrganizationZone();
 
   const { mutateAsync: updateEmployeeStatus } = useUpdateEmployeeStatus();
 
@@ -66,7 +66,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
   useEffect(() => {
     const timeUntilAlert = millisUntilTodayAt(
       PRE_MIDNIGHT_ALERT_TIME,
-      businessZone
+      organizationZone
     );
     if (timeUntilAlert === undefined) {
       return;
@@ -82,12 +82,12 @@ const TimeWidgetPopupController = (): JSX.Element => {
     }, timeUntilAlert);
 
     return () => clearTimeout(timeoutId);
-  }, [status, businessZone]);
+  }, [status, organizationZone]);
 
   useEffect(() => {
     const timeUntilAlert = millisUntilTodayAt(
       AUTO_CLOCK_OUT_TIME,
-      businessZone
+      organizationZone
     );
     if (timeUntilAlert === undefined) {
       return;
@@ -104,7 +104,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
     }, timeUntilAlert);
 
     return () => clearTimeout(timeoutId);
-  }, [status, businessZone]);
+  }, [status, organizationZone]);
 
   const getModalTitle = (): string => {
     if (isAttendanceModalOpen && popupType === AttendancePopupTypes.CLOCK_OUT) {

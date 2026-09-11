@@ -5,6 +5,7 @@ import {
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
 import { daysTypes } from "~community/common/constants/stringConstants";
+import { nowInZone } from "~community/common/utils/dateTimeUtils";
 
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
   timeRecordId: null,
@@ -60,11 +61,8 @@ export const formatDuration = (durationInHours: number) => {
   return formattedDuration;
 };
 
-export const isToday = (date: string) => {
-  const givenDate = DateTime.fromISO(date);
-  const currentDate = DateTime.local().startOf("day");
-  return givenDate.hasSame(currentDate, "day");
-};
+export const isToday = (date: string, zone?: string) =>
+  DateTime.fromISO(date, { zone }).hasSame(nowInZone(zone), "day");
 
 export const getDayStartTimeEndTime = () => {
   const currentDate = DateTime.local();
@@ -101,8 +99,18 @@ export const convertToMilliseconds = (timeString: string) => {
   return milliseconds;
 };
 
-export const convertToDateTime = (date: string, time: string) => {
-  const dateTime = DateTime.fromFormat(`${date} ${time}`, "yyyy-MM-dd hh:mm a");
+export const convertToDateTime = (
+  date: string,
+  time: string,
+  zone?: string
+) => {
+  const dateTime = DateTime.fromFormat(
+    `${date} ${time}`,
+    "yyyy-MM-dd hh:mm a",
+    {
+      zone
+    }
+  );
   const formattedDateTime = dateTime.toISO();
   return formattedDateTime;
 };
