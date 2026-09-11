@@ -1,5 +1,5 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC, startTransition, useOptimistic } from "react";
+import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -9,11 +9,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
-import {
-  applyTaskCompletion,
-  resolveTasks,
-  updateTask
-} from "~community/crm/v2/utils/taskUtil";
+import { resolveTasks, updateTask } from "~community/crm/v2/utils/taskUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -54,33 +50,31 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const translateTaskText = useTranslator("crmModule", "tasks");
 
-  const [optimisticTasks, applyOptimisticCompletion] = useOptimistic(
-    tasks,
-    applyTaskCompletion
-  );
+  const { mutate: updateCompletion } = useUpdateTask();
 
-  const showToggleError = () =>
+  const applyCompletion = (taskId: number, isCompleted: boolean) => {
+    setTasks(updateTask(tasks, taskId, { isCompleted }));
+  };
+
+  const handleToggleError = (taskId: number, wasCompleted: boolean) => {
+    applyCompletion(taskId, wasCompleted);
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
       title: translateTaskText(["toggleErrorTitle"]),
       description: translateTaskText(["toggleErrorDescription"])
     });
-
-  const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
-    if (updatedTask.id) {
-      setTasks(updateTask(tasks, updatedTask.id, updatedTask));
-    }
-  });
+  };
 
   const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
-    startTransition(async () => {
-      applyOptimisticCompletion({ taskId, isCompleted });
+    const wasCompleted = tasks[taskId]?.isCompleted === true;
 
-      await updateCompletion({ id: taskId, task: { isCompleted } }).catch(
-        showToggleError
-      );
-    });
+    applyCompletion(taskId, isCompleted);
+
+    updateCompletion(
+      { id: taskId, task: { isCompleted } },
+      { onError: () => handleToggleError(taskId, wasCompleted) }
+    );
   };
 
   const translateText = useTranslator(
@@ -107,7 +101,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     return (
       <div>
         <SidePanelTasksList
-          tasks={resolveTasks(taskIds, optimisticTasks)}
+          tasks={resolveTasks(taskIds, tasks)}
           onAddTask={handleAddTask}
           isAddTaskDisabled={isCheckingCrmLimit}
           showAddTaskAction={showAddTaskAction}
