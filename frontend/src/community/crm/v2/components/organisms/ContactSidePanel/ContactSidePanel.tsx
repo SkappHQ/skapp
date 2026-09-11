@@ -31,7 +31,10 @@ import { DEAL_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmContactEntity,
+  CrmDealEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmDealFilterRequest,
   CrmModalTypes,
@@ -145,41 +148,28 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     isContactLoading || isMetricsLoading || isTasksLoading || isDealsLoading;
 
   useEffect(() => {
-    if (!fetchedContact || !fetchedMetrics) return;
+    const contactFields: CrmContactEntity = {};
 
-    setContacts(
-      updateContact(contacts, contactId, {
-        ...fetchedContact,
-        metrics: fetchedMetrics
-      })
-    );
-  }, [contactId, fetchedContact, fetchedMetrics]);
+    if (fetchedContact && fetchedMetrics) {
+      Object.assign(contactFields, fetchedContact, { metrics: fetchedMetrics });
+    }
 
-  useEffect(() => {
-    if (!fetchedTasks) return;
+    if (fetchedTasks) {
+      const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
 
-    const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
+      setTasks(updateTaskRecord(tasks, taskItems));
+      contactFields.taskIds = toTaskIds(taskItems);
+    }
 
-    setTasks(updateTaskRecord(tasks, taskItems));
-    setContacts(
-      updateContact(contacts, contactId, {
-        taskIds: toTaskIds(taskItems)
-      })
-    );
-  }, [contactId, fetchedTasks]);
+    if (fetchedDeals) {
+      const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
 
-  useEffect(() => {
-    if (!fetchedDeals) return;
+      setDeals(updateDealRecord(deals, dealItems));
+      contactFields.dealIds = toDealIds(dealItems);
+    }
 
-    const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
-
-    setDeals(updateDealRecord(deals, dealItems));
-    setContacts(
-      updateContact(contacts, contactId, {
-        dealIds: toDealIds(dealItems)
-      })
-    );
-  }, [contactId, fetchedDeals]);
+    setContacts(updateContact(contacts, contactId, contactFields));
+  }, [contactId, fetchedContact, fetchedMetrics, fetchedTasks, fetchedDeals]);
 
   const contact = contacts[contactId];
 
