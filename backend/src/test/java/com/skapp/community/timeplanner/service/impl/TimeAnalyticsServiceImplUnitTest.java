@@ -4,7 +4,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
@@ -93,9 +92,6 @@ class TimeAnalyticsServiceImplUnitTest {
 
 	@Mock
 	private AttendanceConfigService attendanceConfigService;
-
-	@Mock
-	private OrganizationService organizationService;
 
 	@Mock
 	private AttendanceStatusResolver attendanceStatusResolver;
