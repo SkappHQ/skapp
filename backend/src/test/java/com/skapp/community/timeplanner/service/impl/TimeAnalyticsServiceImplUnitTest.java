@@ -4,7 +4,6 @@ import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.MessageUtil;
@@ -22,6 +21,7 @@ import com.skapp.community.timeplanner.payload.request.AverageHoursWorkedTrendFi
 import com.skapp.community.timeplanner.payload.request.ClockInClockOutTrendFilterDto;
 import com.skapp.community.timeplanner.payload.request.ClockInSummaryFilterDto;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
+import com.skapp.community.timeplanner.service.AttendanceStatusResolver;
 import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
 import com.skapp.community.timeplanner.service.TimeService;
@@ -94,7 +94,7 @@ class TimeAnalyticsServiceImplUnitTest {
 	private AttendanceConfigService attendanceConfigService;
 
 	@Mock
-	private OrganizationService organizationService;
+	private AttendanceStatusResolver attendanceStatusResolver;
 
 	@Mock
 	private MessageUtil messageUtil;

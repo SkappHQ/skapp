@@ -5,14 +5,12 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.mapper.CommonMapper;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
 import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
-import com.skapp.community.leaveplanner.type.LeaveState;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeRole;
@@ -34,34 +32,28 @@ import com.skapp.community.timeplanner.payload.request.AverageHoursWorkedTrendFi
 import com.skapp.community.timeplanner.payload.request.ClockInClockOutTrendFilterDto;
 import com.skapp.community.timeplanner.payload.request.ClockInSummaryFilterDto;
 import com.skapp.community.timeplanner.payload.request.LateArrivalTrendFilterDto;
-import com.skapp.community.timeplanner.payload.request.TimeBlockDto;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryLeaveRequestResponseDto;
 import com.skapp.community.timeplanner.payload.response.ClockInSummaryResponseDto;
 import com.skapp.community.timeplanner.payload.response.UtilizationPercentageDto;
 import com.skapp.community.timeplanner.repository.TimeConfigDao;
 import com.skapp.community.timeplanner.repository.TimeRecordDao;
 import com.skapp.community.timeplanner.service.AttendanceConfigService;
+import com.skapp.community.timeplanner.service.AttendanceStatusResolver;
 import com.skapp.community.timeplanner.service.TimeAnalyticsService;
 import com.skapp.community.timeplanner.service.TimeService;
 import com.skapp.community.timeplanner.type.AttendanceConfigType;
 import com.skapp.community.timeplanner.type.ClockInType;
+import com.skapp.community.timeplanner.type.TimeAttendanceStatus;
 import com.skapp.community.timeplanner.type.RecordType;
-import com.skapp.community.timeplanner.type.TimeBlocks;
-import com.skapp.community.timeplanner.type.TimeConfigFieldName;
 import com.skapp.community.timeplanner.type.TrendPeriod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Month;
 import java.time.Year;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -101,7 +93,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 
 	private final AttendanceConfigService attendanceConfigService;
 
-	private final OrganizationService organizationService;
+	private final AttendanceStatusResolver attendanceStatusResolver;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -385,43 +377,7 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 	}
 
 	private boolean isLateArrival(TimeRecord timeRecord) {
-		if (timeRecord.getEmployee() == null)
-			return false;
-
-		if (timeRecord.getClockInTime() == null)
-			return false;
-
-		TimeConfig timeConfig = timeConfigDao.findByDay(timeRecord.getDay());
-		if (timeConfig == null)
-			return false;
-
-		ZoneId orgTimeZone = ZoneId.of(organizationService.getOrganizationTimeZone());
-		LocalTime utcTime = DateTimeUtils.epochMillisToUtcLocalTime(timeRecord.getClockInTime());
-
-		ZonedDateTime orgDateTime = ZonedDateTime.of(timeRecord.getDate(), utcTime, ZoneOffset.UTC)
-			.withZoneSameInstant(orgTimeZone);
-
-		LocalTime recordStartTime = orgDateTime.toLocalTime();
-		LocalTime lateThreshold = LocalTime.of(timeConfig.getStartHour(), timeConfig.getStartMinute());
-
-		LeaveRequest leaveRequest = leaveRequestDao.findByEmployeeAndDate(timeRecord.getEmployee().getEmployeeId(),
-				timeRecord.getDate());
-		return isLateArrivalBasedOnLeave(leaveRequest, recordStartTime, timeConfig, lateThreshold);
-	}
-
-	private boolean isLateArrivalBasedOnLeave(LeaveRequest leaveRequest, LocalTime recordStartTime,
-			TimeConfig timeConfig, LocalTime lateThreshold) {
-		if (leaveRequest != null) {
-			if (leaveRequest.getLeaveState() == LeaveState.FULLDAY)
-				return false;
-			if (leaveRequest.getLeaveState() == LeaveState.HALFDAY_MORNING) {
-				TimeBlockDto timeBlockDto = processTimeBlocks(timeConfig.getTimeBlocks(), timeConfig.getTotalHours());
-				LocalTime adjustedLateThreshold = lateThreshold
-					.plusHours((long) Double.parseDouble(timeBlockDto.getMorningHours()));
-				return recordStartTime.isAfter(adjustedLateThreshold);
-			}
-		}
-		return recordStartTime.isAfter(lateThreshold);
+		return attendanceStatusResolver.resolveTimeStatus(timeRecord) == TimeAttendanceStatus.LATE_ARRIVAL;
 	}
 
 	private boolean isHolidayOrNoTimeConfig(LocalDate date) {
@@ -540,49 +496,6 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 			return start.format(dayFormatter) + " " + start.format(monthFormatter) + " - " + end.format(dayFormatter)
 					+ " " + end.format(monthFormatter);
 		}
-	}
-
-	private TimeBlockDto processTimeBlocks(JsonNode timeBlocks, Float totalHours) {
-		if (timeBlocks == null || !timeBlocks.isArray() || timeBlocks.isEmpty()) {
-			return buildDefaultTimeBlocks(totalHours);
-		}
-
-		TimeBlockDto timeBlockDto = new TimeBlockDto();
-		for (JsonNode block : timeBlocks) {
-			if (!block.hasNonNull(TimeConfigFieldName.TIME_BLOCK.getFieldName())
-					|| !block.hasNonNull(TimeConfigFieldName.HOURS.getFieldName())) {
-				return buildDefaultTimeBlocks(totalHours);
-			}
-
-			String timeBlock = block.get(TimeConfigFieldName.TIME_BLOCK.getFieldName()).asString();
-			String hours = block.get(TimeConfigFieldName.HOURS.getFieldName()).asString();
-
-			if (TimeBlocks.MORNING_HOURS.name().equals(timeBlock)) {
-				timeBlockDto.setMorningTimeBlock(timeBlock);
-				timeBlockDto.setMorningHours(hours);
-			}
-			else if (TimeBlocks.EVENING_HOURS.name().equals(timeBlock)) {
-				timeBlockDto.setEveningTimeBlock(timeBlock);
-				timeBlockDto.setEveningHours(hours);
-			}
-		}
-
-		if (timeBlockDto.getMorningHours() == null) {
-			return buildDefaultTimeBlocks(totalHours);
-		}
-
-		return timeBlockDto;
-	}
-
-	private TimeBlockDto buildDefaultTimeBlocks(Float totalHours) {
-		float halfDayHours = (totalHours != null ? totalHours : 0f) / 2;
-
-		TimeBlockDto timeBlockDto = new TimeBlockDto();
-		timeBlockDto.setMorningTimeBlock(TimeBlocks.MORNING_HOURS.name());
-		timeBlockDto.setMorningHours(String.valueOf(halfDayHours));
-		timeBlockDto.setEveningTimeBlock(TimeBlocks.EVENING_HOURS.name());
-		timeBlockDto.setEveningHours(String.valueOf(halfDayHours));
-		return timeBlockDto;
 	}
 
 	private List<TimeRecordTrendDto> getTrendBasedOnRecordType(ClockInClockOutTrendFilterDto filterDto) {
