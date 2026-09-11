@@ -60,13 +60,16 @@ const DeleteContactModalContent: FC = () => {
 
       setContacts(remaining.contacts);
       setContactIds(remaining.contactIds);
-      setCompanies(
-        unlinkContactFromCompany(
-          companies,
-          selectedContact?.companyId,
-          selectedContactId
-        )
-      );
+
+      if (selectedContact?.companyId != null) {
+        setCompanies(
+          unlinkContactFromCompany(
+            companies,
+            selectedContact.companyId,
+            selectedContactId
+          )
+        );
+      }
     }
 
     setToastMessage({
