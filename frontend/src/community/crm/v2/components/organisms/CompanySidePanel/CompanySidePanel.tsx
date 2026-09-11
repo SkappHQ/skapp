@@ -34,7 +34,10 @@ import {
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmCompanyEntity,
+  CrmDealEntity
+} from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmContactFilterRequest,
   CrmDealFilterRequest,
@@ -174,56 +177,44 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     isContactsLoading;
 
   useEffect(() => {
-    if (!fetchedCompany || !fetchedMetrics) return;
+    const companyFields: CrmCompanyEntity = {};
 
-    setCompanies(
-      updateCompany(companies, companyId, {
-        ...fetchedCompany,
-        metrics: fetchedMetrics
-      })
-    );
-  }, [fetchedCompany, fetchedMetrics]);
+    if (fetchedCompany && fetchedMetrics) {
+      Object.assign(companyFields, fetchedCompany, { metrics: fetchedMetrics });
+    }
 
-  useEffect(() => {
-    if (!fetchedTasks) return;
+    if (fetchedTasks) {
+      const taskItems = fetchedTasks.pages.flatMap((page) => page.items ?? []);
 
-    const taskItems = fetchedTasks.pages.flatMap((page) => page.items ?? []);
+      setTasks(updateTaskRecord(tasks, taskItems));
+      companyFields.taskIds = toTaskIds(taskItems);
+    }
 
-    setTasks(updateTaskRecord(tasks, taskItems));
-    setCompanies(
-      updateCompany(companies, companyId, {
-        taskIds: toTaskIds(taskItems)
-      })
-    );
-  }, [fetchedTasks]);
+    if (fetchedDeals) {
+      const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
 
-  useEffect(() => {
-    if (!fetchedDeals) return;
+      setDeals(updateDealRecord(deals, dealItems));
+      companyFields.dealIds = toDealIds(dealItems);
+    }
 
-    const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
+    if (fetchedContacts) {
+      const contactItems = fetchedContacts.pages.flatMap(
+        (page) => page.items ?? []
+      );
 
-    setDeals(updateDealRecord(deals, dealItems));
-    setCompanies(
-      updateCompany(companies, companyId, {
-        dealIds: toDealIds(dealItems)
-      })
-    );
-  }, [fetchedDeals]);
+      setContacts(updateContactRecord(contacts, contactItems));
+      companyFields.contactIds = toContactIds(contactItems);
+    }
 
-  useEffect(() => {
-    if (!fetchedContacts) return;
-
-    const contactItems = fetchedContacts.pages.flatMap(
-      (page) => page.items ?? []
-    );
-
-    setContacts(updateContactRecord(contacts, contactItems));
-    setCompanies(
-      updateCompany(companies, companyId, {
-        contactIds: toContactIds(contactItems)
-      })
-    );
-  }, [fetchedContacts]);
+    setCompanies(updateCompany(companies, companyId, companyFields));
+  }, [
+    companyId,
+    fetchedCompany,
+    fetchedMetrics,
+    fetchedTasks,
+    fetchedDeals,
+    fetchedContacts
+  ]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(updateDealRecord(deals, [createdDeal]));
