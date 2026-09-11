@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { Dispatch, SetStateAction, useRef } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 import {
   useAddManualTimeEntry,
@@ -30,10 +30,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import {
-  convertYYYYMMDDToDateTime,
-  formatDateTimeWithOrdinalIndicator
-} from "~community/common/utils/dateTimeUtils";
 import {
   useAddDirectTimeEntry,
   useEditDirectTimeEntry
@@ -66,9 +62,6 @@ const useAddEntry = () => {
     directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
-
-  const lastDirectManualTimeEntryRequest =
-    useRef<DirectManualTimeEntryVariablesType | null>(null);
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
     setToastMessage({
@@ -124,27 +117,11 @@ const useAddEntry = () => {
     showErrorToast("addTimeEntryErrorTitle", "addTimeEntryErrorDes");
   };
 
-  const getDirectManualTimeEntryDetails = () => {
-    const request = lastDirectManualTimeEntryRequest.current;
-
-    return {
-      employeeName: request?.employeeName ?? "",
-      date: request?.entryDate
-        ? formatDateTimeWithOrdinalIndicator(
-            convertYYYYMMDDToDateTime(request.entryDate)
-          )
-        : ""
-    };
-  };
-
   const onDirectManualTimeEntryAddSuccess = () => {
     setToastMessage({
       open: true,
       title: translateText(["directEntryAddedToastTitle"]),
-      description: translateText(
-        ["directEntryAddedToastDes"],
-        getDirectManualTimeEntryDetails()
-      ),
+      description: translateText(["directEntryAddedToastDes"]),
       toastType: ToastType.SUCCESS
     });
   };
@@ -153,10 +130,7 @@ const useAddEntry = () => {
     setToastMessage({
       open: true,
       title: translateText(["directEntryUpdatedToastTitle"]),
-      description: translateText(
-        ["directEntryUpdatedToastDes"],
-        getDirectManualTimeEntryDetails()
-      ),
+      description: translateText(["directEntryUpdatedToastDes"]),
       toastType: ToastType.SUCCESS
     });
   };
@@ -284,8 +258,6 @@ const useAddEntry = () => {
           zoneId: getCurrentTimeZone()
         }
       };
-
-      lastDirectManualTimeEntryRequest.current = directManualTimeEntryRequest;
 
       if (existingRecordId) {
         editDirectManualTimeEntryMutate(directManualTimeEntryRequest);
