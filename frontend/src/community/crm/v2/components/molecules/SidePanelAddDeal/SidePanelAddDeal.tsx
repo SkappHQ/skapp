@@ -187,13 +187,13 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
               selectedContact={selectedContact}
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
-              isInvalid={Boolean(formik.errors.contactId)}
+              state={formik.errors.contactId ? "error" : "default"}
               errorMessage={formik.errors.contactId}
               placeholder={translateText([
                 "inlineAddDeal",
                 "contactPlaceholder"
               ])}
-              noResultsText={translateText(["inlineAddDeal", "noResults"])}
+              emptyMessage={translateText(["inlineAddDeal", "noResults"])}
               ariaLabel={translateText([
                 "inlineAddDeal",
                 "ariaLabels",
