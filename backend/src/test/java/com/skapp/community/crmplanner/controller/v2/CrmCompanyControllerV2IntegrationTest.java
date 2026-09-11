@@ -107,7 +107,7 @@ class CrmCompanyControllerV2IntegrationTest {
 	private CrmCompany savedCompany(String name) {
 		CrmCompany company = new CrmCompany();
 		company.setName(name);
-		company.setIndustryId(industry.getId());
+		company.setIndustryDetails(industry);
 		company.setWebsite("https://metrics-v2.com");
 		company.setAddress("123 Metrics St");
 		company.setContactNumber("94771234567");

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CrmIndustryDao extends JpaRepository<CrmIndustry, Long> {
 
-	Optional<CrmIndustry> findByName(String name);
+	Optional<CrmIndustry> findByNameIgnoreCaseAndIsDeletedFalse(String name);
 
 }
