@@ -379,9 +379,9 @@
       "ON_TIME": "On time",
       "LATE_ARRIVAL": "Late arrival",
       "NOT_CLOCKED_IN": "Not clocked in",
-      "OFFICE": "Office",
-      "OUT_OF_OFFICE": "Out of office",
-      "NOT_AVAILABLE": "Not available"
+      "INSIDE": "Office",
+      "OUTSIDE": "Out of office",
+      "UNAVAILABLE": "Not available"
     },
     "export": {
       "button": "Export",
