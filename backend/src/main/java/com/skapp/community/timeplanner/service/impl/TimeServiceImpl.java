@@ -1383,11 +1383,10 @@ public class TimeServiceImpl implements TimeService {
 	}
 
 	private TimeRecord buildTimeRecord(TimeRequest timeRequest, Employee employee) {
-		LocalDateTime clockInDateTime = DateTimeUtils.epochMillisToUtcLocalDateTime(timeRequest.getRequestedStartTime(),
-				null);
-		DayOfWeek dayOfWeek = DayOfWeek.values()[(clockInDateTime.getDayOfWeek().getValue() + 5) % 7];
-		LocalDate clockInDate = clockInDateTime.toLocalDate();
-		return timeMapper.buildNewTimeRecord(employee, timeRequest, dayOfWeek, clockInDate);
+		LocalDate clockInDate = DateTimeUtils.toDateAt(timeRequest.getRequestedStartTime(),
+				timeZoneService.organizationTimezone());
+		return timeMapper.buildNewTimeRecord(employee, timeRequest, CommonModuleUtils.getDayOfWeek(clockInDate),
+				clockInDate);
 	}
 
 	private void handleShrinkClockInClockOut(TimeRequest timeRequest, TimeRecord timeRecord, RecordType recordType,
@@ -1674,13 +1673,13 @@ public class TimeServiceImpl implements TimeService {
 			List<LocalDate> holidays) {
 		float standardWorkHoursPerDay = getHoursPerDay();
 
-		LocalDate businessDate = timeZoneService.currentOrganizationDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 
-		LocalDate yesterday = businessDate.minusDays(1);
+		LocalDate yesterday = today.minusDays(1);
 
-		LocalDate oneDayBeforeOneMonthPriorDate = businessDate.minusMonths(1).minusDays(1);
+		LocalDate oneDayBeforeOneMonthPriorDate = today.minusMonths(1).minusDays(1);
 
-		LocalDate sixtyDaysBeforeYesterday = businessDate.minusMonths(2).minusDays(1);
+		LocalDate sixtyDaysBeforeYesterday = today.minusMonths(2).minusDays(1);
 
 		int noOfWorkingDaysForLast30daysFromYesterday = CommonModuleUtils
 			.getWorkingDaysBetweenTwoDates(oneDayBeforeOneMonthPriorDate, yesterday, timeConfigs, holidays);
@@ -1981,8 +1980,9 @@ public class TimeServiceImpl implements TimeService {
 
 	private void recordClockInAndClockOut(User currentUser, long timeInMillis, TimeRecordActionTypes actionType) {
 		log.info("recordClockInAndClockOut: execution started");
-		LocalDate businessDate = DateTimeUtils.toDateAt(timeInMillis, timeZoneService.organizationTimezone());
-		Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(), businessDate);
+		LocalDate organizationDate = DateTimeUtils.toDateAt(timeInMillis, timeZoneService.organizationTimezone());
+		Optional<TimeRecord> timeRecord = timeRecordDao.findByEmployeeAndDate(currentUser.getEmployee(),
+				organizationDate);
 
 		if (actionType == TimeRecordActionTypes.START) {
 			if (timeRecord.isPresent()) {
@@ -1991,12 +1991,12 @@ public class TimeServiceImpl implements TimeService {
 			}
 
 			TimeRecord newTimeRecord = timeMapper.newTimeRecordToTimeRecord(currentUser.getEmployee(), timeInMillis,
-					CommonModuleUtils.getDayOfWeek(businessDate), businessDate);
+					CommonModuleUtils.getDayOfWeek(organizationDate), organizationDate);
 			newTimeRecord.setClockInSource(TimeRecordSource.WEB);
 			timeRecordDao.save(newTimeRecord);
 			createTimeSlot(newTimeRecord, timeInMillis, TimeRecordActionTypes.START);
 			Employee currentEmployee = currentUser.getEmployee();
-			currentEmployee.setLastClockInDate(businessDate);
+			currentEmployee.setLastClockInDate(organizationDate);
 			employeeDao.save(currentEmployee);
 		}
 		else {
