@@ -142,10 +142,18 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     size: CONTACT_PAGE_SIZE
   };
 
-  const { data: fetchedCompany, isLoading: isCompanyLoading } =
-    useGetCompanyById(companyId, handleLoadError);
-  const { data: fetchedMetrics, isLoading: isMetricsLoading } =
-    useGetCompanyMetrics(companyId, handleLoadError);
+  const {
+    data: fetchedCompany,
+    isLoading: isCompanyLoading,
+    isError: isCompanyError,
+    isFetching: isCompanyFetching
+  } = useGetCompanyById(companyId);
+  const {
+    data: fetchedMetrics,
+    isLoading: isMetricsLoading,
+    isError: isMetricsError,
+    isFetching: isMetricsFetching
+  } = useGetCompanyMetrics(companyId);
   const {
     data: fetchedTasks,
     isLoading: isTasksLoading,
@@ -175,6 +183,15 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     isTasksLoading ||
     isDealsLoading ||
     isContactsLoading;
+
+  useEffect(() => {
+    if (
+      (isCompanyError && !isCompanyFetching) ||
+      (isMetricsError && !isMetricsFetching)
+    ) {
+      handleLoadError();
+    }
+  }, [isCompanyError, isCompanyFetching, isMetricsError, isMetricsFetching]);
 
   useEffect(() => {
     const companyFields: CrmCompanyEntity = {};
