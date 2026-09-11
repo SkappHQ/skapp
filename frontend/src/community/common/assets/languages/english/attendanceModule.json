@@ -340,5 +340,57 @@
     "viewFullReport": "View full report",
     "members": "Members",
     "member": "Member"
+  },
+  "attendanceOverview": {
+    "pageHead": "Attendance Overview",
+    "title": "Attendance Overview",
+    "breadcrumbs": {
+      "reports": "Reports"
+    },
+    "date": {
+      "ariaLabel": "Report date"
+    },
+    "nonWorkingDay": "This date is a holiday or a non-working day, so no attendance was recorded.",
+    "groupBy": {
+      "ariaLabel": "Group employees by",
+      "CLOCK_IN_TIME": "Clock-in status",
+      "CLOCK_IN_LOCATION": "Clock-in location"
+    },
+    "summary": {
+      "heading": "Summary",
+      "panelAriaLabel": "Attendance summary",
+      "tableCaption": "Employee count and share for each attendance status",
+      "status": "Status",
+      "employees": "Employees",
+      "percentOfTotal": "% of total",
+      "total": "Total"
+    },
+    "details": {
+      "employee": "Employee",
+      "employeeNumber": "Employee number",
+      "clockIn": "Clock in time",
+      "clockOut": "Clock out time"
+    },
+    "empty": {
+      "title": "No employees to show",
+      "description": "No active employee matches the selected date and filters."
+    },
+    "statuses": {
+      "ON_TIME": "On time",
+      "LATE_ARRIVAL": "Late arrival",
+      "NOT_CLOCKED_IN": "Not clocked in",
+      "OFFICE": "Office",
+      "OUT_OF_OFFICE": "Out of office",
+      "NOT_AVAILABLE": "Not available"
+    },
+    "export": {
+      "button": "Export",
+      "errorTitle": "Export failed",
+      "errorDescription": "The attendance overview report could not be generated. Please try again."
+    },
+    "error": {
+      "title": "Could not load the report",
+      "description": "The attendance overview report could not be loaded. Please try again."
+    }
   }
 }
