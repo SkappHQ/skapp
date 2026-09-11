@@ -183,11 +183,17 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     if (targetEmployeeDetails && targetEmployeeId) {
       if (getTimeEntryModalType(record) === null) return;
 
+      const employeeGeneralDetails = targetEmployeeDetails.personal?.general;
+
       setDirectManualTimeEntryEligibleEmployee({
         employeeId: targetEmployeeId,
         employeeName: concatStrings([
-          targetEmployeeDetails.firstName ?? "",
-          targetEmployeeDetails.lastName ?? ""
+          employeeGeneralDetails?.firstName ??
+            targetEmployeeDetails.firstName ??
+            "",
+          employeeGeneralDetails?.lastName ??
+            targetEmployeeDetails.lastName ??
+            ""
         ]).trim()
       });
       handleEdit();

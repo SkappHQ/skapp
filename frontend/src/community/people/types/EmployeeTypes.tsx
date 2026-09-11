@@ -5,6 +5,7 @@ import {
 } from "~community/common/types/CommonTypes";
 import { AccountStatus } from "~community/leave/types/LeaveTypes";
 import { TitleEnum } from "~community/people/enums/PeopleEnums";
+import type { L2PersonalDetailsType } from "~community/people/types/PeopleTypes";
 
 import {
   EmploymentAllocationTypes,
@@ -341,6 +342,7 @@ export interface EmployeeDetails {
   };
   userRoles: EmployeeRoleType;
   accountStatus?: string | null;
+  personal?: L2PersonalDetailsType;
   employment?: {
     employmentDetails?: { workLocationId?: number; joinedDate?: string };
   };
