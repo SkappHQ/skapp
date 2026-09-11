@@ -357,7 +357,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           label={translateText(["directEntryEmployeeLabel"])}
           inputName={"direct_entry_employee"}
           value={directManualTimeEntryEligibleEmployee.employeeName}
-          componentStyle={classes.inputField}
+          labelStyles={classes.disabledInputFieldLabel}
           isDisabled
         />
       )}
@@ -493,6 +493,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           value={breakHours}
           placeHolder="0h 00m"
           componentStyle={classes.inputField}
+          labelStyles={classes.disabledInputFieldLabel}
           isDisabled
         />
       )}
