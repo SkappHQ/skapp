@@ -19,7 +19,7 @@ export function phoneNumberPattern(): RegExp {
   return /\d/;
 }
 
-export function nonPhoneNumberCharacterPattern(): RegExp {
+export function nonDigitPattern(): RegExp {
   return /\D/g;
 }
 

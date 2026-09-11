@@ -2,9 +2,10 @@ import { Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import {
   type ChangeEvent,
-  ClipboardEvent,
+  type ClipboardEvent,
   FC,
   KeyboardEvent,
+  useCallback,
   useEffect,
   useId,
   useRef
@@ -16,7 +17,7 @@ import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
-  nonPhoneNumberCharacterPattern,
+  nonDigitPattern,
   phoneNumberPattern
 } from "~community/common/regex/regexPatterns";
 import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
@@ -83,44 +84,77 @@ const InputPhoneNumber: FC<Props> = ({
 
   const maxLength = getPhoneNumberMaxLength(countryCodeValue);
 
-  const handlePhoneNumberChange = async (
-    e: ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
-    e.target.value = e.target.value.replace(
-      nonPhoneNumberCharacterPattern(),
-      ""
-    );
+  const handlePhoneNumberChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const input = e.target;
+      const sanitizedValue = input.value.replace(nonDigitPattern(), "");
 
-    await onChange?.(e);
-  };
+      if (sanitizedValue !== input.value) {
+        const caretPosition = input.value
+          .slice(0, input.selectionStart ?? input.value.length)
+          .replace(nonDigitPattern(), "").length;
 
-  const handlePhoneNumberPaste = async (
-    e: ClipboardEvent<HTMLInputElement>
-  ): Promise<void> => {
-    e.preventDefault();
+        input.value = sanitizedValue;
+        input.setSelectionRange(caretPosition, caretPosition);
+      }
 
-    const pastedDigits = e.clipboardData
-      .getData("Text")
-      .replace(nonPhoneNumberCharacterPattern(), "");
+      await onChange?.(e);
+    },
+    [onChange]
+  );
 
-    if (!pastedDigits) {
-      return;
-    }
+  const handlePhoneNumberPaste = useCallback(
+    (e: ClipboardEvent<HTMLInputElement>): void => {
+      e.preventDefault();
 
-    const input = e.target as HTMLInputElement;
-    const selectionStart = input.selectionStart ?? value.length;
-    const selectionEnd = input.selectionEnd ?? value.length;
+      if (readOnly || isDisabled || !onChange) {
+        return;
+      }
 
-    input.value = `${value.slice(0, selectionStart)}${pastedDigits}${value.slice(
-      selectionEnd
-    )}`.slice(0, maxLength);
+      const input = e.target;
 
-    await onChange?.({
-      ...e,
-      target: input,
-      currentTarget: input
-    } as unknown as ChangeEvent<HTMLInputElement>);
-  };
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+
+      const pastedDigits = e.clipboardData
+        .getData("Text")
+        .replace(nonDigitPattern(), "");
+
+      if (!pastedDigits) {
+        return;
+      }
+
+      const selectionStart = input.selectionStart ?? value.length;
+      const selectionEnd = input.selectionEnd ?? value.length;
+      const remainingLength =
+        maxLength - (value.length - (selectionEnd - selectionStart));
+      const insertedDigits = pastedDigits.slice(
+        0,
+        Math.max(remainingLength, 0)
+      );
+
+      if (!insertedDigits) {
+        return;
+      }
+
+      const caretPosition = selectionStart + insertedDigits.length;
+      const nativeValueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      nativeValueSetter?.call(
+        input,
+        `${value.slice(0, selectionStart)}${insertedDigits}${value.slice(
+          selectionEnd
+        )}`
+      );
+      input.setSelectionRange(caretPosition, caretPosition);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    },
+    [readOnly, isDisabled, onChange, value, maxLength]
+  );
 
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
