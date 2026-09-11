@@ -249,8 +249,6 @@ const useAddEntry = () => {
       const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
       const directManualTimeEntryRequest: DirectManualTimeEntryVariablesType = {
         employeeId: directManualTimeEntryEligibleEmployee.employeeId,
-        employeeName: directManualTimeEntryEligibleEmployee.employeeName,
-        entryDate: selectedDailyRecord?.date ?? "",
         payload: {
           startTime: convertToUtc(dateTimeFromTime),
           endTime: convertToUtc(dateTimeToTime),
