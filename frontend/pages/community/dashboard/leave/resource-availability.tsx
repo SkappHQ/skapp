@@ -29,7 +29,7 @@ const ResourceAvailability: NextPage = () => {
       title={translateText(["resourceAvailability"])}
       isDividerVisible={false}
       isBackButtonVisible={true}
-      onBackClick={() => router.replace(ROUTES.DASHBOARD.BASE)}
+      onBackClick={() => router.replace(`${ROUTES.DASHBOARD.BASE}?tab=leave`)}
     >
       <>
         <ResourceAvailabilityCalendar />
