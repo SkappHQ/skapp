@@ -8,13 +8,18 @@ import TabPanel from "./TabPanel";
 import styles from "./styles";
 
 // TabsContainer component
-const TabsContainer: React.FC<TabsComponentProps> = ({ tabs }) => {
-  const [value, setValue] = useState<number>(0);
+const TabsContainer: React.FC<TabsComponentProps> = ({
+  tabs,
+  defaultActiveTab = 0,
+  onTabChange
+}) => {
+  const [value, setValue] = useState<number>(defaultActiveTab);
   const theme = useTheme();
   const classes = styles(theme);
 
   const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+    onTabChange?.(newValue);
   };
 
   return (

@@ -26,6 +26,7 @@ import {
   ManagerTypes
 } from "~community/common/types/AuthTypes";
 import { ModuleTypes } from "~community/common/types/CommonTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
@@ -97,7 +98,8 @@ const LeaveYearSelector: FC<{
 };
 
 const Dashboard: NextPage = () => {
-  const { query } = useRouter();
+  const router = useRouter();
+  const { query } = router;
 
   const queryMatches = useMediaQuery();
   const isBelow900 = queryMatches(MediaQueries.BELOW_900);
@@ -212,6 +214,21 @@ const Dashboard: NextPage = () => {
 
   const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
   const visibleTabs = getVisibleTabs(userRoles);
+  const requestedTabIndex = visibleTabs.findIndex(
+    (tab) =>
+      typeof query.tab === "string" &&
+      tab.module.toLowerCase() === query.tab.toLowerCase()
+  );
+  const defaultActiveTab =
+    requestedTabIndex === -1 ? undefined : requestedTabIndex;
+
+  const handleTabChange = (index: number) => {
+    const selectedModule = visibleTabs[index]?.module;
+    if (selectedModule) {
+      replaceTabQueryParam(router.asPath, selectedModule.toLowerCase());
+    }
+  };
+
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
   const currentDate = DateTime.now();
@@ -275,7 +292,11 @@ const Dashboard: NextPage = () => {
             <LeaveAllocationSummary />
           </div>
         ) : (
-          <TabsContainer tabs={visibleTabs} />
+          <TabsContainer
+            tabs={visibleTabs}
+            defaultActiveTab={defaultActiveTab}
+            onTabChange={handleTabChange}
+          />
         )}
 
         <VersionUpgradeModal />
