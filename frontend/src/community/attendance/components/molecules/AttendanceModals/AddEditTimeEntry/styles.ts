@@ -30,7 +30,7 @@ const styles = (theme: Theme) => ({
   },
   disabledInputFieldLabel: {
     color: theme.palette.common.black,
-    fontWeight: 500
+    fontWeight: theme.typography.label.fontWeight
   },
   button: {
     mt: "1rem"
