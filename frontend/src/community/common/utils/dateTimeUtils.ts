@@ -3,6 +3,7 @@ import type { DateRange } from "react-day-picker";
 
 import {
   DATE_FORMAT,
+  HALF_YEAR_IN_MONTHS,
   LONG_DATE_TIME_FORMAT,
   MEDIUM_DATE_TIME_FORMAT,
   monthAbbreviations
@@ -216,6 +217,17 @@ export const nowInZone = (zone: string | undefined): DateTime =>
 
 export const currentDateIn = (zone: string | undefined): string =>
   nowInZone(zone).toFormat(DATE_FORMAT);
+
+export const readsSameWallClock = (
+  zone: string,
+  otherZone: string
+): boolean => {
+  const yearStart = DateTime.now().startOf("year");
+  return [yearStart, yearStart.plus({ months: HALF_YEAR_IN_MONTHS })].every(
+    (instant) =>
+      instant.setZone(zone).offset === instant.setZone(otherZone).offset
+  );
+};
 
 export const millisUntilTodayAt = (
   time: { hour: number; minute: number; second: number },

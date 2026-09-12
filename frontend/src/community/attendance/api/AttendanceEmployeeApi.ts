@@ -119,6 +119,7 @@ export const useGetDailyLogs = (
   isEnable: boolean = true
 ) => {
   const displayZone = useDisplayZone();
+  const organizationZone = useOrganizationZone();
   //const { setGeneralErrors } = useGeneralErrors();
   return useQuery({
     queryKey: attendanceQueryKeys.getEmployeeDailyLog(startDate, endDate),
@@ -137,7 +138,11 @@ export const useGetDailyLogs = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items, displayZone);
+      return dailyLogPreProcessor(
+        data?.data?.results?.[0]?.items,
+        displayZone,
+        organizationZone
+      );
     },
     //onError: setGeneralErrors,
     enabled: isEnable
@@ -342,6 +347,7 @@ export const useGetDailyLogsByEmployeeId = (
   isEnabled: boolean = true
 ) => {
   const displayZone = useDisplayZone();
+  const organizationZone = useOrganizationZone();
   return useQuery({
     enabled: isEnabled && !!employeeId,
     queryKey: attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(
@@ -369,7 +375,11 @@ export const useGetDailyLogsByEmployeeId = (
       });
     },
     select(data) {
-      return dailyLogPreProcessor(data?.data?.results?.[0]?.items, displayZone);
+      return dailyLogPreProcessor(
+        data?.data?.results?.[0]?.items,
+        displayZone,
+        organizationZone
+      );
     }
   });
 };

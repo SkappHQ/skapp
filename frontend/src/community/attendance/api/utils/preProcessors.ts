@@ -11,7 +11,10 @@ import {
   convertToTimeZoneISO,
   convertUnixTimestampToISO
 } from "~community/attendance/utils/TimeUtils";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  currentDateIn
+} from "~community/common/utils/dateTimeUtils";
 
 export const timeRequestPreProcessor = (
   requestResponce: TimeRequestDataResponseType,
@@ -92,7 +95,8 @@ export const timeRecordPreProcessor = (
 
 export const dailyLogPreProcessor = (
   dailyLogList: DailyLogType[],
-  zone?: string
+  zone?: string,
+  organizationZone?: string
 ) => {
   const newLogArray: DailyLogType[] = dailyLogList?.reduce<DailyLogType[]>(
     (acc, dailyLog) => {
@@ -115,8 +119,9 @@ export const dailyLogPreProcessor = (
     },
     []
   );
+  const today = currentDateIn(organizationZone);
   const filteredArray = newLogArray
     ?.reverse()
-    ?.filter((item) => new Date(item?.date) <= new Date());
+    ?.filter((item) => item?.date <= today);
   return filteredArray;
 };

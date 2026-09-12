@@ -38,7 +38,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
 import { concatStrings, getEmoji } from "~community/common/utils/commonUtil";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
   shouldActivateButton,
@@ -258,8 +258,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     >
       <Box sx={classes.boxContainerStyle(isDrawerToggled)}>
         <Typography variant="body2" sx={classes.dateFontStyle}>
-          {convertDateToFormat(
-            new Date(record?.date),
+          {convertYYYYMMDDToDateTime(record?.date).toFormat(
             WEEKDAY_DAY_MONTH_YEAR_FORMAT
           )}
         </Typography>
