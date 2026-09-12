@@ -21,7 +21,7 @@ export const toContactsRecord = (
 ): CrmContactRecord => {
   const contactRecord: CrmContactRecord = {};
   for (const contact of contacts) {
-    if (contact.id !== undefined) {
+    if (contact.id) {
       contactRecord[contact.id] = contact;
     }
   }
@@ -31,7 +31,7 @@ export const toContactsRecord = (
 export const toContactIds = (contacts: CrmContactEntity[]): number[] => {
   const contactIds: number[] = [];
   for (const contact of contacts) {
-    if (contact.id !== undefined) {
+    if (contact.id) {
       contactIds.push(contact.id);
     }
   }
@@ -44,7 +44,7 @@ export const updateContactRecord = (
 ): CrmContactRecord => {
   const merged: CrmContactRecord = { ...existing };
   for (const contact of incoming) {
-    if (contact.id !== undefined) {
+    if (contact.id) {
       merged[contact.id] = { ...merged[contact.id], ...contact };
     }
   }
@@ -72,7 +72,7 @@ export const linkContactToCompany = (
 ): CrmCompanyRecord => {
   const contactId = contact.id;
 
-  if (contactId === undefined) {
+  if (!contactId) {
     return companies;
   }
 
@@ -81,7 +81,7 @@ export const linkContactToCompany = (
   if (previousCompanyId != null && previousCompanyId !== contact.companyId) {
     const previousCompany = linked[previousCompanyId];
 
-    if (previousCompany?.contactIds !== undefined) {
+    if (previousCompany?.contactIds) {
       linked = {
         ...linked,
         [previousCompanyId]: {
@@ -97,7 +97,7 @@ export const linkContactToCompany = (
   if (contact.companyId != null) {
     const company = linked[contact.companyId];
 
-    if (company?.contactIds !== undefined) {
+    if (company?.contactIds) {
       linked = {
         ...linked,
         [contact.companyId]: {
@@ -109,6 +109,24 @@ export const linkContactToCompany = (
   }
 
   return linked;
+};
+
+export const unlinkContactFromCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number,
+  contactId: number
+): CrmCompanyRecord => {
+  const company = companies[companyId];
+
+  if (!company?.contactIds) return companies;
+
+  return {
+    ...companies,
+    [companyId]: {
+      ...company,
+      contactIds: company.contactIds.filter((id) => id !== contactId)
+    }
+  };
 };
 
 export const getContactDisplayName = (
@@ -134,7 +152,7 @@ export const buildContactOptions = (
   const options: DropdownOption[] = [];
 
   for (const contact of contacts) {
-    if (contact.id !== undefined) {
+    if (contact.id) {
       const contactName = getContactDisplayName(contact);
       const companyName = getContactCompanyName(contact, companies);
 
@@ -276,7 +294,7 @@ export const getCompanyOptions = (
   const options: CrmCompanyOption[] = [];
 
   for (const company of suggestedCompanies ?? []) {
-    if (company.id !== undefined) {
+    if (company.id) {
       suggestedIds.add(company.id);
       options.push({
         id: String(company.id),
@@ -287,7 +305,7 @@ export const getCompanyOptions = (
   }
 
   for (const company of lookupCompanies ?? []) {
-    if (company.id !== undefined && !suggestedIds.has(company.id)) {
+    if (company.id && !suggestedIds.has(company.id)) {
       options.push({
         id: String(company.id),
         name: company.name,
@@ -296,7 +314,7 @@ export const getCompanyOptions = (
     }
   }
 
-  if (newCompanyName !== undefined) {
+  if (newCompanyName) {
     const trimmedName = newCompanyName.trim();
     const isNameAvailable = !options.some(
       (option) => option.name?.toLowerCase() === trimmedName.toLowerCase()
