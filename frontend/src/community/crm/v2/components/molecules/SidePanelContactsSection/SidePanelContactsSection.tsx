@@ -16,14 +16,14 @@ import {
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface SidePanelContactsSectionProps {
-  hasNextPage?: boolean;
-  isFetchingNextPage?: boolean;
-  onFetchNextPage?: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onFetchNextPage: () => void;
 }
 
 const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
-  hasNextPage = false,
-  isFetchingNextPage = false,
+  hasNextPage,
+  isFetchingNextPage,
   onFetchNextPage
 }) => {
   const translateText = useTranslator(
