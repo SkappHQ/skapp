@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository;
 
+import java.time.Instant;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
@@ -19,7 +20,7 @@ import java.util.Optional;
 
 public interface CrmTaskRepository {
 
-	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds);
+	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds, Instant overdueBefore);
 
 	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
 
@@ -31,7 +32,7 @@ public interface CrmTaskRepository {
 
 	List<CrmTask> findByContactIdWithAssociations(Long contactId);
 
-	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId);
+	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId, Instant overdueBefore);
 
 	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
 

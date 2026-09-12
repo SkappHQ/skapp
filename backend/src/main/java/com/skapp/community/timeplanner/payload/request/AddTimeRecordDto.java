@@ -5,13 +5,13 @@ import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
 public class AddTimeRecordDto {
 
-	private LocalDateTime time = DateTimeUtils.getCurrentUtcDateTime();
+	private Instant time = Instant.now();
 
 	private TimeRecordActionTypes recordActionType;
 

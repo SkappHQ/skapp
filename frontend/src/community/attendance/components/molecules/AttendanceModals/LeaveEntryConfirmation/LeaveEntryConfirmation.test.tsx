@@ -33,6 +33,16 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (key: string[]) => key[key.length - 1]
 }));
 
+jest.mock("~community/common/hooks/useDisplayZone", () => ({
+  useEntryZone: jest.fn(() => "UTC")
+}));
+
+jest.mock(
+  "@rootcodelabs/skapp-ui",
+  () => require("~community/common/mocks/MockSkappUi"),
+  { virtual: true }
+);
+
 jest.mock("~community/common/providers/ToastProvider", () => ({
   useToast: jest.fn(() => ({
     setToastMessage: jest.fn()

@@ -24,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -204,7 +205,7 @@ class TimeControllerIntegrationTest extends AbstractControllerIntegrationTest {
 				.thenReturn(response("updateCurrentUserIncompleteTimeRecords"));
 
 			UpdateIncompleteTimeRecordsRequestDto request = new UpdateIncompleteTimeRecordsRequestDto();
-			request.setClockOutTime(LocalDateTime.now());
+			request.setClockOutTime(Instant.now());
 
 			assertOk(performPatchRequest(BASE_PATH + "/incomplete-clockouts/1", request),
 					"updateCurrentUserIncompleteTimeRecords");

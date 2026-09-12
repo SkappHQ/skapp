@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.repository.impl;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +68,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
 					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
 					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
+					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(Instant.now())));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);
@@ -142,7 +143,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
 					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
 					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
+					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(Instant.now())));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);
@@ -218,7 +219,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
 					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
 					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
+					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.literal(Instant.now())));
 
 		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
 		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);

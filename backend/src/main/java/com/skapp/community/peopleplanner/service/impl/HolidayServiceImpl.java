@@ -1,12 +1,12 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.WorkLocation;
 import com.skapp.community.common.payload.response.BulkStatusSummary;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.WorkLocationDao;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -71,6 +71,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HolidayServiceImpl implements HolidayService {
 
+	private final TimeZoneService timeZoneService;
+
 	private final MessageUtil messageUtil;
 
 	private final PeopleMapper peopleMapper;
@@ -90,8 +92,6 @@ public class HolidayServiceImpl implements HolidayService {
 	private final PeopleEmailService peopleEmailService;
 
 	private final PeopleNotificationService peopleNotificationService;
-
-	private final OrganizationService organizationService;
 
 	private final WorkLocationDao workLocationDao;
 
@@ -201,8 +201,7 @@ public class HolidayServiceImpl implements HolidayService {
 		List<TimeConfig> workingDays = timeConfigDao.findAll();
 
 		List<HolidayResponseDto> holidayResponseDtos = new ArrayList<>();
-		if (!workingDays.isEmpty() && !CommonModuleUtils.checkIfDayIsWorkingDay(date, workingDays,
-				organizationService.getOrganizationTimeZone())) {
+		if (!workingDays.isEmpty() && !CommonModuleUtils.checkIfDayIsWorkingDay(date, workingDays)) {
 			HolidayResponseDto holiday = new HolidayResponseDto();
 			holiday.setDate(date);
 			holiday.setName("Day Off!");
@@ -407,7 +406,7 @@ public class HolidayServiceImpl implements HolidayService {
 			AtomicInteger holidaysOnCurrentDate, AtomicInteger holidaysOnPastDates, int year,
 			List<String> validWorkLocationNames) {
 
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		if (holidayDate == null) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_HOLIDAY_REQUIRED_DATE);
 		}
@@ -531,7 +530,7 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	private boolean canDeleteHoliday(Holiday holiday) {
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		return holiday.getDate().isAfter(currentDate);
 	}
 

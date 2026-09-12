@@ -22,11 +22,13 @@ import {
   AttendanceSlotType,
   TimeRecordResponse
 } from "~community/attendance/types/attendanceTypes";
+import { DATE_FORMAT } from "~community/common/constants/timeConstants";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   convertDateToUTC,
-  formatDateToISOString,
-  formatDateWithOrdinalIndicator
+  formatDateWithOrdinalIndicator,
+  nowInZone
 } from "~community/common/utils/dateTimeUtils";
 import { DefaultDayCapacityType } from "~community/configurations/types/TimeConfigurationsTypes";
 import { EmployeeDataResponse } from "~community/people/types/EmployeeTypes";
@@ -275,11 +277,13 @@ export const useGetEmployeeLeaveStatus = (
   const setAttendanceLeaveStatus = useAttendanceStore(
     (state) => state.setAttendanceLeaveStatus
   );
-  const currentDate = new Date();
-  const formattedDate = formatDateToISOString(currentDate);
-  const currentHour = currentDate.getHours();
+  const organizationZone = useOrganizationZone();
+  const currentDate = nowInZone(organizationZone);
+  const formattedDate = currentDate.toFormat(DATE_FORMAT);
+  const currentHour = currentDate.hour;
 
   const query = useQuery({
+    enabled: !!organizationZone,
     queryKey: [getAttendanceQueryKeys.employeeLeaveStatus(), formattedDate],
     queryFn: async () => {
       return await authFetch.get(

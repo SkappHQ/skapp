@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.constant.AuthConstants;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.EntityNotFoundException;
@@ -16,7 +17,6 @@ import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.service.BulkContextService;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.SpecialNotificationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.UserVersionService;
@@ -178,6 +178,8 @@ public class PeopleServiceImpl implements PeopleService {
 
 	protected final UserService userService;
 
+	private final TimeZoneService timeZoneService;
+
 	private final MessageUtil messageUtil;
 
 	private final PeopleMapper peopleMapper;
@@ -229,8 +231,6 @@ public class PeopleServiceImpl implements PeopleService {
 	private final EmployeeSkillService employeeSkillService;
 
 	private final SpecialNotificationService specialNotificationService;
-
-	private final OrganizationService organizationService;
 
 	@Override
 	@Transactional
@@ -1652,7 +1652,7 @@ public class PeopleServiceImpl implements PeopleService {
 	}
 
 	private LocalDate resolveBirthdayNotificationDate() {
-		return LocalDate.now(ZoneId.of(organizationService.getOrganizationTimeZone()));
+		return timeZoneService.currentOrganizationDate();
 	}
 
 	private void processPrimaryManagerTransfer(Employee currentPrimarySupervisor,
@@ -2954,7 +2954,7 @@ public class PeopleServiceImpl implements PeopleService {
 		employee.setJobTitle(null);
 		employee.setJobFamily(null);
 		employee.setAccountStatus(status);
-		employee.setTerminationDate(DateTimeUtils.getCurrentUtcDate());
+		employee.setTerminationDate(timeZoneService.currentOrganizationDate());
 
 		user.setIsActive(false);
 

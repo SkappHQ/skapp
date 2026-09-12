@@ -1,5 +1,6 @@
 package com.skapp.community.leaveplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.OrganizationConfig;
@@ -56,11 +57,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.Instant;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class LeavePolicyServiceImpl implements LeavePolicyService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final LeavePolicyDao leavePolicyDao;
 
@@ -150,7 +154,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 				LeaveRequestStatus.CANCELLED);
 		int revokedRequests = voidPolicyLeaveRequests(
 				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
-						LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()),
+						LeaveRequestStatus.APPROVED, timeZoneService.currentOrganizationDate()),
 				LeaveRequestStatus.REVOKED);
 		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
@@ -312,7 +316,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		policyLeaveRequests.forEach(policyLeaveRequest -> {
 			policyLeaveRequest.setStatus(status);
-			policyLeaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+			policyLeaveRequest.setReviewedDate(Instant.now());
 		});
 		policyLeaveRequestDao.saveAll(policyLeaveRequests);
 
@@ -341,7 +345,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 	private int revokeFutureApprovedLeaveRequests() {
 		List<LeaveRequest> futureApprovedRequests = leaveRequestDao
-			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate());
+			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, timeZoneService.currentOrganizationDate());
 
 		return voidLeaveRequests(futureApprovedRequests, LeaveRequestStatus.REVOKED);
 	}
@@ -353,7 +357,7 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		leaveRequests.forEach(leaveRequest -> {
 			leaveRequest.setStatus(status);
-			leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+			leaveRequest.setReviewedDate(Instant.now());
 		});
 		leaveRequestDao.saveAll(leaveRequests);
 

@@ -28,12 +28,13 @@ import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { LeaveStates } from "~community/common/types/CommonTypes";
 import { concatStrings, getEmoji } from "~community/common/utils/commonUtil";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
 import {
   getTabIndex,
   shouldActivateButton,
@@ -63,6 +64,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   isManualEntryRestricted
 }) => {
   const { isFreeTier } = useSessionData();
+  const organizationZone = useOrganizationZone();
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -150,7 +152,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
         (status === AttendanceSlotType.START ||
           status === AttendanceSlotType.PAUSE ||
           status === AttendanceSlotType.RESUME) &&
-        isToday(record?.date)
+        isToday(record?.date, organizationZone)
       ) {
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
@@ -233,8 +235,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     >
       <Box sx={classes.boxContainerStyle(isDrawerToggled)}>
         <Typography variant="body2" sx={classes.dateFontStyle}>
-          {convertDateToFormat(
-            new Date(record?.date),
+          {convertYYYYMMDDToDateTime(record?.date).toFormat(
             WEEKDAY_DAY_MONTH_YEAR_FORMAT
           )}
         </Typography>

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.openapitools.jackson.nullable.JsonNullable;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class CrmTaskEditRequestDto {
 
 	private Boolean isCompleted;
 
-	private LocalDateTime dueAt;
+	private Instant dueAt;
 
 	private JsonNullable<String> notes = JsonNullable.undefined();
 

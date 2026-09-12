@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -50,7 +50,7 @@ public class CrmDeal extends Auditable<String> {
 	private String orderIndex;
 
 	@Column(name = "closing_at")
-	private LocalDateTime closingAt;
+	private Instant closingAt;
 
 	@Column(name = "amount")
 	private String amount;

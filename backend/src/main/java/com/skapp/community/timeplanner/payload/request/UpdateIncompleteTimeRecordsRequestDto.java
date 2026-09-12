@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
 public class UpdateIncompleteTimeRecordsRequestDto {
 
 	@Schema(description = "Employee clock out time")
-	private LocalDateTime clockOutTime;
+	private Instant clockOutTime;
 
 }
