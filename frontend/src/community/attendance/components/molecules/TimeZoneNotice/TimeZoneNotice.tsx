@@ -6,6 +6,7 @@ import {
   useOrganizationZone
 } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { readsSameWallClock } from "~community/common/utils/dateTimeUtils";
 
 const TimeZoneNotice: FC = () => {
   const displayZone = useDisplayZone();
@@ -17,9 +18,9 @@ const TimeZoneNotice: FC = () => {
   }
 
   const notices = [
-    getCurrentTimeZone() !== displayZone &&
+    !readsSameWallClock(getCurrentTimeZone(), displayZone) &&
       translateText(["displayZoneNotice"], { displayZone }),
-    displayZone !== organizationZone &&
+    !readsSameWallClock(displayZone, organizationZone) &&
       translateText(["organizationZoneNotice"], { organizationZone })
   ].filter(Boolean);
 

@@ -268,7 +268,8 @@
       "timeUtilizationCardDescription": "Last 30 Days",
       "workHours": "Worked Hours",
       "title": "Timesheet"
-    }
+    },
+    "nonexistentTimeDes": "This time does not exist on this date because the clocks change. Choose another time."
   },
   "timeWidget": {
     "clockIn": "Clock In",

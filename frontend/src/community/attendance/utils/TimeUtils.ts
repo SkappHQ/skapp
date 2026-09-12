@@ -61,7 +61,7 @@ export const formatDuration = (durationInHours: number) => {
   return formattedDuration;
 };
 
-export const isToday = (date: string, zone?: string) =>
+export const isToday = (date: string, zone?: string): boolean =>
   DateTime.fromISO(date, { zone }).hasSame(nowInZone(zone), "day");
 
 export const getDayStartTimeEndTime = () => {
@@ -103,16 +103,17 @@ export const convertToDateTime = (
   date: string,
   time: string,
   zone?: string
-) => {
-  const dateTime = DateTime.fromFormat(
+): string | null => {
+  const typedWallClock = DateTime.fromFormat(
     `${date} ${time}`,
     "yyyy-MM-dd hh:mm a",
-    {
-      zone
-    }
+    { zone: "utc" }
   );
-  const formattedDateTime = dateTime.toISO();
-  return formattedDateTime;
+  const dateTime = typedWallClock.setZone(zone, { keepLocalTime: true });
+  const existsInZone =
+    dateTime.toISO({ includeOffset: false }) ===
+    typedWallClock.toISO({ includeOffset: false });
+  return existsInZone ? dateTime.toISO() : null;
 };
 
 export const convertToTimeZoneISO = (isoTime: string, zone?: string) => {
@@ -138,8 +139,8 @@ export const getCurrentTimeZone = () => {
   return timeZone;
 };
 
-export const convertTo12HourByDateString = (date: string) => {
-  const dateTime = DateTime.fromISO(date);
+export const convertTo12HourByDateString = (date: string, zone?: string) => {
+  const dateTime = DateTime.fromISO(date, { zone });
   return dateTime.toFormat("hh:mm a");
 };
 
@@ -157,10 +158,11 @@ export const getTotalSlotTypeHours = (
   timeSlots: TimeSlotsType[],
   startTimeStr: string,
   endTimeStr: string,
-  slotType: "BREAK" | "WORK"
+  slotType: "BREAK" | "WORK",
+  zone?: string
 ) => {
-  const startTime = DateTime.fromFormat(startTimeStr, "hh:mm a");
-  let endTime = DateTime.fromFormat(endTimeStr, "hh:mm a");
+  const startTime = DateTime.fromFormat(startTimeStr, "hh:mm a", { zone });
+  let endTime = DateTime.fromFormat(endTimeStr, "hh:mm a", { zone });
 
   if (endTime < startTime) {
     endTime = endTime.plus({ days: 1 });
@@ -169,13 +171,13 @@ export const getTotalSlotTypeHours = (
   let totalBreakHours = 0;
 
   timeSlots.forEach((slot) => {
-    const today = DateTime.local();
-    let slotStartTime = DateTime.fromISO(slot.startTime).set({
+    const today = nowInZone(zone);
+    let slotStartTime = DateTime.fromISO(slot.startTime, { zone }).set({
       year: today.year,
       month: today.month,
       day: today.day
     });
-    let slotEndTime = DateTime.fromISO(slot.endTime).set({
+    let slotEndTime = DateTime.fromISO(slot.endTime, { zone }).set({
       year: today.year,
       month: today.month,
       day: today.day
