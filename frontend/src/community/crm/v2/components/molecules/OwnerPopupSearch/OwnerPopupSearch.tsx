@@ -15,6 +15,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import { useGetOwnerLookup } from "~community/crm/v2/api/ContactApi";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmOwnerLookupFilterRequest } from "~community/crm/v2/types/CrmTypes";
 
 import OwnerOptionItem from "./OwnerOptionItem";
 import OwnerTriggerContent from "./OwnerTriggerContent";
@@ -42,8 +43,14 @@ const OwnerPopupSearch: FC<Props> = ({
     ownerSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+
+  const ownerFilters: CrmOwnerLookupFilterRequest = {
+    searchKeyword: debouncedOwnerSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
   const { data: ownerLookupData } = useGetOwnerLookup(
-    { searchKeyword: debouncedOwnerSearch, size: DEFAULT_LOOKUP_PAGE_SIZE },
+    ownerFilters,
     isCrmSalesManager ?? false
   );
   const users = useMemo(

@@ -25,7 +25,10 @@ import {
   formatMonetaryValue,
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
-import { normalizeCompanies } from "~community/crm/v2/utils/companyUtil";
+import {
+  toCompanyIds,
+  updateCompanyRecord
+} from "~community/crm/v2/utils/companyUtil";
 
 export const CompanyTable: FC = () => {
   const translateText = useTranslator("crmModule", "companies");
@@ -41,13 +44,13 @@ export const CompanyTable: FC = () => {
     setSelectedCompanyId,
     openCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      companyIds: store.companyIds,
-      setCompanies: store.setCompanies,
-      setCompanyIds: store.setCompanyIds,
-      setSelectedCompanyId: store.setSelectedCompanyId,
-      openCrmSidePanel: store.openCrmSidePanel
+    useShallow((state) => ({
+      companies: state.companies,
+      companyIds: state.companyIds,
+      setCompanies: state.setCompanies,
+      setCompanyIds: state.setCompanyIds,
+      setSelectedCompanyId: state.setSelectedCompanyId,
+      openCrmSidePanel: state.openCrmSidePanel
     }))
   );
 
@@ -65,10 +68,9 @@ export const CompanyTable: FC = () => {
     if (!data) return;
 
     const items = data.pages.flatMap((page) => page.items);
-    const normalized = normalizeCompanies(items);
 
-    setCompanies({ ...companies, ...normalized.companies });
-    setCompanyIds(normalized.companyIds);
+    setCompanies(updateCompanyRecord(companies, items));
+    setCompanyIds(toCompanyIds(items));
   }, [data]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -183,9 +185,7 @@ export const CompanyTable: FC = () => {
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: () => {
-          void fetchNextPage();
-        }
+        onLoadMore: fetchNextPage
       }}
       toolbar={{
         searchBar: {

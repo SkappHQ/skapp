@@ -26,7 +26,7 @@ import {
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
@@ -98,7 +98,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      setCompanies(mergeCompanies(companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 
