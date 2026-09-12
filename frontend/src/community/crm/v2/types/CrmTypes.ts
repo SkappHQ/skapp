@@ -237,3 +237,8 @@ export interface CrmTaskUpdateRequest {
   id: number;
   task: CrmTaskEntity;
 }
+
+export interface CrmContactUpdateRequest {
+  id: number;
+  contact: CrmContactEntity;
+}

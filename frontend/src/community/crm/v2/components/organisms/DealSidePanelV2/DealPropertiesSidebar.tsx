@@ -10,7 +10,7 @@ import {
 } from "~community/crm/constants/commonConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
-import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
+import { useGetContactLookup } from "~community/crm/v2/api/ContactApi";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/v2/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
@@ -53,13 +53,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const { deal, stagesRecord, contactRecord, companies, setCompanies, owners } =
     useCrmStoreV2(
-      useShallow((store) => ({
-        deal: dealId != null ? store.deals[dealId] : undefined,
-        stagesRecord: store.stages,
-        contactRecord: store.contacts,
-        companies: store.companies,
-        setCompanies: store.setCompanies,
-        owners: store.owners
+      useShallow((state) => ({
+        deal: dealId != null ? state.deals[dealId] : undefined,
+        stagesRecord: state.stages,
+        contactRecord: state.contacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies,
+        owners: state.owners
       }))
     );
 
@@ -70,9 +70,11 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearchTerm,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+  const { data: contactLookupData } = useGetContactLookup(
+    {
+      searchKeyword: debouncedContactSearchTerm,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    },
     debouncedContactSearchTerm.length > 0
   );
   const contacts = useMemo(

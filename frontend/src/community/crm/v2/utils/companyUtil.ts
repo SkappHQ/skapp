@@ -1,29 +1,31 @@
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import { CrmMetricLabelThemeEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
-export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
-  const companies: CrmCompanyRecord = {};
+export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
   const companyIds: number[] = [];
-
-  items.forEach((company) => {
+  for (const company of companies) {
     if (company.id !== undefined) {
-      companies[company.id] = company;
       companyIds.push(company.id);
     }
-  });
-
-  return { companies, companyIds };
+  }
+  return companyIds;
 };
+
+export interface CrmMetricChip {
+  label: string;
+  variant: CrmMetricLabelThemeEnum;
+}
 
 export interface CrmMetricItem {
   id: string;
   title: string;
   amount?: string | number;
   isCurrency?: boolean;
+  chip?: CrmMetricChip;
 }
 
 export const getCompanyMetricItems = (
@@ -39,23 +41,19 @@ export const getCompanyMetricItems = (
   {
     id: "openDeals",
     title: translateText(["metrics", "openDeals"]),
-    amount: company.metrics?.openDealsCount
+    amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
     title: translateText(["metrics", "closedDeals"]),
-    amount: company.metrics?.closedDealsCount
+    amount: company.metrics?.closedDealsCount ?? 0
   }
 ];
 
-export const getSelectedCompany = (
+export const getCompanyById = (
   companies: CrmCompanyRecord,
-  companyId: number | null
-) => {
-  if (companyId === null) return undefined;
-
-  return companies[companyId];
-};
+  companyId: number
+): CrmCompanyEntity | undefined => companies[companyId];
 
 export const updateCompany = (
   companies: CrmCompanyRecord,
@@ -80,27 +78,7 @@ export const removeCompany = (
   };
 };
 
-export const getCompanyFormInitialValues = (
-  company?: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: company?.name ?? "",
-  industry: company?.industry ?? CrmIndustryEnum.NONE,
-  website: company?.website ?? "",
-  address: company?.address ?? "",
-  contactNumber: company?.contactNumber ?? ""
-});
-
-export const getTrimmedCompanyValues = (
-  values: CrmCompanyEntity
-): CrmCompanyEntity => ({
-  name: values.name?.trim(),
-  industry: values.industry,
-  website: values.website?.trim(),
-  address: values.address?.trim(),
-  contactNumber: values.contactNumber?.trim()
-});
-
-export const getChangedCompanyFields = (
+export const getCompanyFieldDiff = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
 ): CrmCompanyEntity => {
@@ -129,18 +107,6 @@ export const getChangedCompanyFields = (
   return changedFields;
 };
 
-export const toCompaniesRecord = (
-  companies: CrmCompanyEntity[]
-): CrmCompanyRecord => {
-  const companyRecord: CrmCompanyRecord = {};
-  for (const company of companies) {
-    if (company.id != null) {
-      companyRecord[company.id] = company;
-    }
-  }
-  return companyRecord;
-};
-
 export const getMissingCompanyIds = (
   companyIds: number[],
   companies: CrmCompanyRecord
@@ -152,13 +118,13 @@ export const getMissingCompanyIds = (
   return Array.from(unique);
 };
 
-export const mergeCompanies = (
+export const updateCompanyRecord = (
   existing: CrmCompanyRecord,
   incoming: CrmCompanyEntity[]
 ): CrmCompanyRecord => {
   const merged: CrmCompanyRecord = { ...existing };
   for (const company of incoming) {
-    if (company.id == null) continue;
+    if (company.id === undefined) continue;
     merged[company.id] = { ...merged[company.id], ...company };
   }
   return merged;
