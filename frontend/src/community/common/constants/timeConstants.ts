@@ -42,3 +42,5 @@ export const monthAbbreviations = [
 ];
 
 export type DateFormatType = "YYYY/MM/DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+
+export const HALF_YEAR_IN_MONTHS = 6;

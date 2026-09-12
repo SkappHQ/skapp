@@ -38,10 +38,13 @@ import TimeInput from "~community/common/components/atoms/TimeInput/TimeInput";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
+import { useEntryZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { datePatternReverse } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
 import {
+  convertYYYYMMDDToDateTime,
+  currentDateIn,
   currentYear,
   formatDateWithOrdinalIndicator,
   getLocalDate,
@@ -63,6 +66,7 @@ interface Props {
 const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const entryZone = useEntryZone();
   const [duration, setDuration] = useState<string>();
   const [breakHours, setBreakHours] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<DateTime | undefined>(
@@ -95,7 +99,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     handleTimeEntrySubmit,
     isSubmitDisabled,
     clockInOutWithPrevTimeValidation,
-    clockInOutValidation
+    clockInOutValidation,
+    getNonexistentTimeErrors
   } = useAddEntry();
 
   const initialValues = {
@@ -107,6 +112,11 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const getTimeEntryErrors = (
     formValues: TimeEntryFormValueType
   ): TimeEntryTimeErrorsType => {
+    const nonexistentTimeErrors = getNonexistentTimeErrors(formValues);
+    if (nonexistentTimeErrors.fromTime || nonexistentTimeErrors.toTime) {
+      return nonexistentTimeErrors;
+    }
+
     if (
       employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
@@ -263,7 +273,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
       void setFieldValue(
         "fromTime",
         convertTo12HourByDateString(
-          selectedDailyRecord?.timeSlots[0]?.startTime as string
+          selectedDailyRecord?.timeSlots[0]?.startTime as string,
+          entryZone
         )
       );
       void setFieldValue(
@@ -271,7 +282,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         convertTo12HourByDateString(
           selectedDailyRecord?.timeSlots[
             selectedDailyRecord?.timeSlots?.length - 1
-          ].endTime as string
+          ].endTime as string,
+          entryZone
         )
       );
     } else if (
@@ -299,7 +311,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     employeeTimesheetModalType,
     selectedDailyRecord?.date,
     selectedDailyRecord?.timeSlots,
-    setFieldValue
+    setFieldValue,
+    entryZone
   ]);
 
   useEffect(() => {
@@ -313,7 +326,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         selectedDailyRecord?.timeSlots as TimeSlotsType[],
         values.fromTime,
         values.toTime,
-        "BREAK"
+        "BREAK",
+        entryZone
       );
       setBreakHours(breakHours);
 
@@ -321,7 +335,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         selectedDailyRecord?.timeSlots as TimeSlotsType[],
         values.fromTime,
         values.toTime,
-        "WORK"
+        "WORK",
+        entryZone
       );
       setDuration(workHours);
     }
@@ -329,7 +344,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     employeeTimesheetModalType,
     selectedDailyRecord?.timeSlots,
     values.fromTime,
-    values.toTime
+    values.toTime,
+    entryZone
   ]);
 
   useEffect(() => {
@@ -384,7 +400,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
             isDateReadOnly ? classes.disabledInputFieldLabel : undefined
           }
           placeholder={translateText(["datePickerPlaceholder"])}
-          maxDate={DateTime.fromISO(new Date()?.toISOString()?.split("T")[0])}
+          maxDate={convertYYYYMMDDToDateTime(currentDateIn(entryZone))}
           disableMaskedInput
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
