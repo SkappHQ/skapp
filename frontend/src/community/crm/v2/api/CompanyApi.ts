@@ -16,7 +16,6 @@ import authFetch, {
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import { DOMAIN_SEARCH_LIMIT } from "~community/crm/v2/constants/commonConstants";
-import { useOnQueryError } from "~community/crm/v2/hooks/useOnQueryError";
 import {
   CrmCompanyEntity,
   CrmCompanyMetrics
@@ -66,18 +65,12 @@ const fetchCompanyById = async (id: number): Promise<CrmCompanyEntity> => {
 };
 
 export const useGetCompanyById = (
-  id: number,
-  onError?: () => void
-): UseQueryResult<CrmCompanyEntity> => {
-  const query = useQuery({
+  id: number
+): UseQueryResult<CrmCompanyEntity> =>
+  useQuery({
     queryKey: crmCompanyQueryKeys.DETAIL(id),
     queryFn: () => fetchCompanyById(id)
   });
-
-  useOnQueryError(query.isError, query.isFetching, onError);
-
-  return query;
-};
 
 const fetchCompanyMetrics = async (id: number): Promise<CrmCompanyMetrics> => {
   const response = await authFetch.get(
@@ -87,18 +80,12 @@ const fetchCompanyMetrics = async (id: number): Promise<CrmCompanyMetrics> => {
 };
 
 export const useGetCompanyMetrics = (
-  id: number,
-  onError?: () => void
-): UseQueryResult<CrmCompanyMetrics> => {
-  const query = useQuery({
+  id: number
+): UseQueryResult<CrmCompanyMetrics> =>
+  useQuery({
     queryKey: crmCompanyQueryKeys.METRICS(id),
     queryFn: () => fetchCompanyMetrics(id)
   });
-
-  useOnQueryError(query.isError, query.isFetching, onError);
-
-  return query;
-};
 
 const checkCompanyNameExists = async (
   name: string
