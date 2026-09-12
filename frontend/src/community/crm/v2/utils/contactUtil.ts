@@ -119,6 +119,14 @@ export const getContactDisplayName = (
   return [contact.firstName, contact.lastName].filter(Boolean).join(" ");
 };
 
+export const getContactCompanyName = (
+  contact: CrmContactEntity,
+  companies: CrmCompanyRecord
+): string | undefined =>
+  contact.companyId != null
+    ? getCompanyById(companies, contact.companyId)?.name
+    : undefined;
+
 export const buildContactOptions = (
   contacts: CrmContactEntity[],
   companies: CrmCompanyRecord
@@ -128,10 +136,7 @@ export const buildContactOptions = (
   for (const contact of contacts) {
     if (contact.id !== undefined) {
       const contactName = getContactDisplayName(contact);
-      const companyName =
-        contact.companyId != null
-          ? getCompanyById(companies, contact.companyId)?.name
-          : undefined;
+      const companyName = getContactCompanyName(contact, companies);
 
       options.push({
         id: contact.id,
@@ -251,7 +256,6 @@ export const getContactFieldDiff = (
   return changedFields;
 };
 
-/** The part of an email after the @, used to suggest a matching company. */
 export const getEmailDomain = (email: string): string => {
   const parts = email.trim().split("@");
   return parts.length === 2 ? parts[1].toLowerCase() : "";
@@ -263,10 +267,6 @@ export interface CrmCompanyOption {
   isSuggested: boolean;
 }
 
-/**
- * Companies matching the email domain come first and are marked, the rest of
- * the lookup follows with duplicates removed.
- */
 export const getCompanyOptions = (
   lookupCompanies?: CrmCompanyEntity[],
   suggestedCompanies?: CrmCompanyEntity[],
