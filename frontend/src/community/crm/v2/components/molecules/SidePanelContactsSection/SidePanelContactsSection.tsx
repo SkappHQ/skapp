@@ -8,7 +8,6 @@ import type {
   GridRow
 } from "~community/common/components/organisms/TableView/types";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { SIDE_PANEL_TABLE_HEIGHT } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   formatMonetaryValueWithDecimals,
@@ -136,7 +135,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
       }}
       infiniteScroll={{
         isEnabled: true,
-        height: SIDE_PANEL_TABLE_HEIGHT,
+        height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
         onLoadMore: onFetchNextPage,
