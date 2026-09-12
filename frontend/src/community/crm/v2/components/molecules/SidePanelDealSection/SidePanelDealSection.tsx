@@ -32,9 +32,9 @@ interface SidePanelDealSectionProps {
   defaultContact?: CrmContactEntity;
   showAddDealAction?: boolean;
   emptyDescription?: string;
-  hasNextPage: boolean;
-  isFetchingNextPage: boolean;
-  onFetchNextPage: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onFetchNextPage?: () => void;
 }
 
 const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
@@ -44,8 +44,8 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   defaultContact,
   showAddDealAction = true,
   emptyDescription,
-  hasNextPage,
-  isFetchingNextPage,
+  hasNextPage = false,
+  isFetchingNextPage = false,
   onFetchNextPage
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
@@ -61,7 +61,7 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
-    onLoadMore: onFetchNextPage
+    onLoadMore: () => onFetchNextPage?.()
   });
 
   const handleAddDeal = () => {
