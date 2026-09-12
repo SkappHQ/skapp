@@ -1,12 +1,12 @@
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { concatStrings } from "~community/common/utils/commonUtil";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   formatMonetaryValueWithDecimals,
-  formatTableValue
+  formatTableValue,
+  getOwnerName
 } from "~community/crm/v2/utils/commonUtil";
 
 interface DealAccordionItemHeaderProps {
@@ -20,16 +20,10 @@ const DealAccordionItemHeader: FC<DealAccordionItemHeaderProps> = ({
     useShallow((state) => ({ owners: state.owners }))
   );
 
-  const owner = deal.ownerId ? owners[deal.ownerId] : undefined;
-
-  const ownerName = owner
-    ? concatStrings([owner.firstName, owner.lastName ?? ""]).trim()
-    : undefined;
+  const ownerName = getOwnerName(owners, deal.ownerId);
 
   const amount =
-    deal.amount && Number(deal.amount) > 0
-      ? formatMonetaryValueWithDecimals(deal.amount)
-      : undefined;
+    Number(deal.amount) > 0 ? formatMonetaryValueWithDecimals(deal.amount) : "";
 
   return (
     <div className="flex flex-col gap-[2px]">
