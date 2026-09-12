@@ -911,14 +911,16 @@ public class TimeServiceImpl implements TimeService {
 			timeRequestResponse = deleteTimeRequest(timeRequest);
 		}
 		else if (timeRequestManagerPatchDto.getStatus().equals(RequestStatus.APPROVED)) {
-			TimeRecord timeRecord = timeRequest.getTimeRecord();
+			TimeRecord timeRecord = Optional.ofNullable(timeRequest.getTimeRecord())
+				.or(() -> timeRecordDao.findByEmployeeAndDate(timeRequest.getEmployee(),
+						organizationDateOf(timeRequest)))
+				.orElse(null);
 			List<TimeSlot> overlappingSlots = new ArrayList<>();
 			if (timeRecord == null)
 				timeRecord = buildTimeRecord(timeRequest, timeRequest.getEmployee());
 			else {
-				overlappingSlots = timeSlotDao.getFullyAndPartiallyOverlappingSlots(
-						timeRequest.getTimeRecord().getTimeRecordId(), timeRequest.getRequestedStartTime(),
-						timeRequest.getRequestedEndTime());
+				overlappingSlots = timeSlotDao.getFullyAndPartiallyOverlappingSlots(timeRecord.getTimeRecordId(),
+						timeRequest.getRequestedStartTime(), timeRequest.getRequestedEndTime());
 			}
 
 			if (!overlappingSlots.isEmpty())
@@ -1382,9 +1384,12 @@ public class TimeServiceImpl implements TimeService {
 		}
 	}
 
+	private LocalDate organizationDateOf(TimeRequest timeRequest) {
+		return DateTimeUtils.toDateAt(timeRequest.getRequestedStartTime(), timeZoneService.organizationTimezone());
+	}
+
 	private TimeRecord buildTimeRecord(TimeRequest timeRequest, Employee employee) {
-		LocalDate clockInDate = DateTimeUtils.toDateAt(timeRequest.getRequestedStartTime(),
-				timeZoneService.organizationTimezone());
+		LocalDate clockInDate = organizationDateOf(timeRequest);
 		return timeMapper.buildNewTimeRecord(employee, timeRequest, CommonModuleUtils.getDayOfWeek(clockInDate),
 				clockInDate);
 	}
