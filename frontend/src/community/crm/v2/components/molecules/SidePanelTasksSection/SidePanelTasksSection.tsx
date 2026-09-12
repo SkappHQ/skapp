@@ -1,5 +1,5 @@
 import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { FC, startTransition, useOptimistic } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -50,31 +50,30 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 
   const translateTaskText = useTranslator("crmModule", "tasks");
 
-  const { mutate: updateCompletion } = useUpdateTask();
+  const [optimisticTasks, setOptimisticTasks] = useOptimistic(tasks);
 
-  const applyCompletion = (taskId: number, isCompleted: boolean) => {
-    setTasks(updateTask(tasks, taskId, { isCompleted }));
-  };
-
-  const handleToggleError = (taskId: number, wasCompleted: boolean) => {
-    applyCompletion(taskId, wasCompleted);
+  const showToggleError = () =>
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
       title: translateTaskText(["toggleErrorTitle"]),
       description: translateTaskText(["toggleErrorDescription"])
     });
-  };
+
+  const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
+    if (updatedTask.id) {
+      setTasks(updateTask(tasks, updatedTask.id, updatedTask));
+    }
+  });
 
   const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
-    const wasCompleted = tasks[taskId]?.isCompleted === true;
+    startTransition(async () => {
+      setOptimisticTasks(updateTask(tasks, taskId, { isCompleted }));
 
-    applyCompletion(taskId, isCompleted);
-
-    updateCompletion(
-      { id: taskId, task: { isCompleted } },
-      { onError: () => handleToggleError(taskId, wasCompleted) }
-    );
+      await updateCompletion({ id: taskId, task: { isCompleted } }).catch(
+        showToggleError
+      );
+    });
   };
 
   const translateText = useTranslator(
@@ -101,7 +100,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     return (
       <div>
         <SidePanelTasksList
-          tasks={resolveTasks(taskIds, tasks)}
+          tasks={resolveTasks(taskIds, optimisticTasks)}
           onAddTask={handleAddTask}
           isAddTaskDisabled={isCheckingCrmLimit}
           showAddTaskAction={showAddTaskAction}
