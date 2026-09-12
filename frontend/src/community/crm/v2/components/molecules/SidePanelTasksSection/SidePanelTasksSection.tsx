@@ -20,9 +20,9 @@ interface SidePanelTasksSectionProps {
   showAddTaskAction?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
-  hasNextPage?: boolean;
-  isFetchingNextPage?: boolean;
-  onFetchNextPage?: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onFetchNextPage: () => void;
 }
 
 const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
@@ -30,8 +30,8 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   showAddTaskAction = true,
   emptyTitle,
   emptyDescription,
-  hasNextPage = false,
-  isFetchingNextPage = false,
+  hasNextPage,
+  isFetchingNextPage,
   onFetchNextPage
 }) => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
@@ -87,7 +87,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
-    onLoadMore: () => onFetchNextPage?.()
+    onLoadMore: onFetchNextPage
   });
 
   const handleAddTask = () => {

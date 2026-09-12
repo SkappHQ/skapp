@@ -10,6 +10,17 @@ import {
 const isEmptyValue = (value?: string | number) =>
   value === undefined || Number(value) === 0;
 
+export const getOwnerName = (
+  owners: CrmOwnerRecord,
+  ownerId?: number
+): string => {
+  if (!ownerId) return "";
+
+  const owner = owners[ownerId];
+
+  return [owner?.firstName, owner?.lastName].filter(Boolean).join(" ");
+};
+
 export const formatTableValue = (value?: string | number, prefix = "") =>
   isEmptyValue(value) ? "-" : `${prefix}${value}`;
 
