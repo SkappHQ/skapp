@@ -15,7 +15,6 @@ import authFetch, {
 } from "~community/common/utils/axiosInterceptor";
 import { crmContactEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmContactQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
-import { useOnQueryError } from "~community/crm/v2/hooks/useOnQueryError";
 import {
   CrmContactEntity,
   CrmContactMetrics
@@ -69,18 +68,12 @@ const fetchContactMetrics = async (id: number): Promise<CrmContactMetrics> => {
 };
 
 export const useGetContactMetrics = (
-  id: number,
-  onError?: () => void
-): UseQueryResult<CrmContactMetrics> => {
-  const query = useQuery({
+  id: number
+): UseQueryResult<CrmContactMetrics> =>
+  useQuery({
     queryKey: crmContactQueryKeys.METRICS(id),
     queryFn: () => fetchContactMetrics(id)
   });
-
-  useOnQueryError(query.isError, query.isFetching, onError);
-
-  return query;
-};
 
 const fetchContactLookup = async (
   params: CrmContactFilterRequest
@@ -130,18 +123,12 @@ const fetchContactById = async (id: number): Promise<CrmContactEntity> => {
 };
 
 export const useGetContactById = (
-  id: number,
-  onError?: () => void
-): UseQueryResult<CrmContactEntity> => {
-  const query = useQuery({
+  id: number
+): UseQueryResult<CrmContactEntity> =>
+  useQuery({
     queryKey: crmContactQueryKeys.DETAIL(id),
     queryFn: () => fetchContactById(id)
   });
-
-  useOnQueryError(query.isError, query.isFetching, onError);
-
-  return query;
-};
 
 const checkContactEmailExists = async (
   email: string
