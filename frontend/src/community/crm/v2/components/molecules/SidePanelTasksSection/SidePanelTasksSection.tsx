@@ -8,6 +8,7 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 import { resolveTasks, updateTask } from "~community/crm/v2/utils/taskUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
@@ -60,19 +61,23 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
       description: translateTaskText(["toggleErrorDescription"])
     });
 
-  const { mutateAsync: updateCompletion } = useUpdateTask((updatedTask) => {
+  const handleToggleSuccess = (updatedTask: CrmTaskEntity) => {
     if (updatedTask.id) {
       setTasks(updateTask(tasks, updatedTask.id, updatedTask));
     }
-  });
+  };
+
+  const { mutateAsync: updateCompletion } = useUpdateTask(handleToggleSuccess);
 
   const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
     startTransition(async () => {
       setOptimisticTasks(updateTask(tasks, taskId, { isCompleted }));
 
-      await updateCompletion({ id: taskId, task: { isCompleted } }).catch(
-        showToggleError
-      );
+      try {
+        await updateCompletion({ id: taskId, task: { isCompleted } });
+      } catch {
+        showToggleError();
+      }
     });
   };
 
