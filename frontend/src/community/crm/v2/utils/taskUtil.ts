@@ -7,6 +7,9 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import {
+  CrmCompanyRecord,
+  CrmContactRecord,
+  CrmDealRecord,
   CrmTaskEntity,
   CrmTaskRecord,
   CrmTaskTypeRecord
@@ -16,6 +19,7 @@ import {
   GroupedTasks,
   TaskDueDateInfo
 } from "~community/crm/v2/types/CrmTypes";
+import { appendId } from "~community/crm/v2/utils/commonUtil";
 import {
   isDueToday,
   isDueTomorrow,
@@ -190,3 +194,99 @@ export const getTaskGroups = (
       : openTasks
   );
 };
+
+export interface CrmTaskLinks {
+  companies: CrmCompanyRecord;
+  contacts: CrmContactRecord;
+  deals: CrmDealRecord;
+}
+
+const linkTaskToCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number,
+  taskId: number
+): CrmCompanyRecord => {
+  const company = companies[companyId];
+
+  if (!company?.taskIds) return companies;
+
+  const taskIds = appendId(company.taskIds, taskId);
+
+  if (taskIds === company.taskIds) return companies;
+
+  return { ...companies, [companyId]: { ...company, taskIds } };
+};
+
+const linkTaskToContact = (
+  contacts: CrmContactRecord,
+  contactId: number,
+  taskId: number
+): CrmContactRecord => {
+  const contact = contacts[contactId];
+
+  if (!contact?.taskIds) return contacts;
+
+  const taskIds = appendId(contact.taskIds, taskId);
+
+  if (taskIds === contact.taskIds) return contacts;
+
+  return { ...contacts, [contactId]: { ...contact, taskIds } };
+};
+
+const linkTaskToDeal = (
+  deals: CrmDealRecord,
+  dealId: number,
+  taskId: number
+): CrmDealRecord => {
+  const deal = deals[dealId];
+
+  if (!deal?.taskIds) return deals;
+
+  const taskIds = appendId(deal.taskIds, taskId);
+
+  if (taskIds === deal.taskIds) return deals;
+
+  return { ...deals, [dealId]: { ...deal, taskIds } };
+};
+
+export const linkTaskToRelatedEntities = (
+  task: CrmTaskEntity,
+  companies: CrmCompanyRecord,
+  contacts: CrmContactRecord,
+  deals: CrmDealRecord
+): CrmTaskLinks => {
+  const { id: taskId, companyId, contactId, dealId } = task;
+
+  const links: CrmTaskLinks = { companies, contacts, deals };
+
+  if (!taskId) return links;
+
+  if (companyId) {
+    links.companies = linkTaskToCompany(companies, companyId, taskId);
+  }
+
+  if (contactId) {
+    links.contacts = linkTaskToContact(contacts, contactId, taskId);
+  }
+
+  if (dealId) {
+    links.deals = linkTaskToDeal(deals, dealId, taskId);
+  }
+
+  return links;
+};
+
+export const parseDueDate = (dueAt?: string): Date | undefined => {
+  if (dueAt) {
+    return convertUTCStringToLocalDateTime(dueAt).toJSDate();
+  }
+};
+
+export const updateTask = (
+  tasks: CrmTaskRecord,
+  taskId: number,
+  updatedFields: CrmTaskEntity
+): CrmTaskRecord => ({
+  ...tasks,
+  [taskId]: { ...tasks[taskId], ...updatedFields }
+});
