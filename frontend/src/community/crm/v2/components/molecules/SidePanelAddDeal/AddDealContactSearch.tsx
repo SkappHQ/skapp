@@ -2,32 +2,37 @@ import { ButtonV2, CloseIcon, InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, useState } from "react";
 
 import SearchableDropdown, {
-  SearchableDropdownItem,
-  SearchableDropdownProps
+  SearchableDropdownItem
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
-interface AddDealContactSearchProps extends Pick<
-  SearchableDropdownProps,
-  "id" | "placeholder" | "emptyMessage" | "state" | "errorMessage"
-> {
+interface AddDealContactSearchProps {
+  id: string;
   contacts: CrmContactEntity[];
   selectedContact?: CrmContactEntity;
   onChange: (contact?: CrmContactEntity) => void;
   onSearch: (term: string) => void;
+  placeholder?: string;
+  emptyMessage?: string;
+  state?: "default" | "error";
+  errorMessage?: string;
   ariaLabel?: string;
   clearAriaLabel?: string;
 }
 
 const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
+  id,
   contacts,
   selectedContact,
   onChange,
   onSearch,
+  placeholder,
+  emptyMessage,
+  state,
+  errorMessage,
   ariaLabel,
-  clearAriaLabel,
-  ...dropdownProps
+  clearAriaLabel
 }) => {
   const [searchText, setSearchText] = useState("");
 
@@ -85,10 +90,14 @@ const AddDealContactSearch: FC<AddDealContactSearchProps> = ({
 
   return (
     <SearchableDropdown
+      id={id}
       variant="sm"
       required
       isOpenOnFocus
-      {...dropdownProps}
+      placeholder={placeholder}
+      emptyMessage={emptyMessage}
+      state={state}
+      errorMessage={errorMessage}
       value={searchText}
       onChange={handleSearchChange}
       items={contactItems}
