@@ -8,9 +8,9 @@ import SearchableDropdown, {
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
-interface AddDealContactSearchProps extends Omit<
+interface AddDealContactSearchProps extends Pick<
   SearchableDropdownProps,
-  "items" | "onSelect" | "value" | "onChange"
+  "id" | "placeholder" | "emptyMessage" | "state" | "errorMessage"
 > {
   contacts: CrmContactEntity[];
   selectedContact?: CrmContactEntity;
