@@ -28,3 +28,5 @@ export const drawerHiddenProtectedRoutes = [
   ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
   ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
 ];
+
+export const sidebarHiddenRoutes = [ROUTES.REPORT.HEADCOUNT_SUMMARY];
