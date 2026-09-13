@@ -350,6 +350,21 @@
     "date": {
       "ariaLabel": "Report date"
     },
+    "filters": {
+      "ariaLabel": "Show filters",
+      "panelLabel": "Attendance filters",
+      "title": "Filters",
+      "close": "Close filters",
+      "selectPlaceholder": "Select",
+      "clockInByTime": "Clock-in by time",
+      "clockInByLocation": "Clock-in by location",
+      "workLocation": "Work location",
+      "team": "Team",
+      "unassigned": "Unassigned",
+      "noLocations": "No clock-in locations available",
+      "reset": "Reset filters",
+      "apply": "Apply filters"
+    },
     "nonWorkingDay": "This date is a holiday or a non-working day, so no attendance was recorded.",
     "groupBy": {
       "ariaLabel": "Group employees by",
