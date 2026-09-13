@@ -11,7 +11,6 @@ import { TimeSheetRequestStates } from "../enums/timesheetEnums";
 const useApproveDenyTimeRequest = () => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
   const { setToastMessage } = useToast();
-  const [currentRequester, setCurrentRequester] = useState<string>();
   const [currentRequesAction, setCurrentRequestAction] = useState<string>();
 
   const handleSuccess = () => {
@@ -20,9 +19,7 @@ const useApproveDenyTimeRequest = () => {
         open: true,
         toastType: ToastType.SUCCESS,
         title: translateTexts(["approveSuccessTitle"]),
-        description: translateTexts(["approveSuccessDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["approveSuccessDes"]),
         isIcon: true
       });
     } else {
@@ -30,9 +27,7 @@ const useApproveDenyTimeRequest = () => {
         open: true,
         toastType: ToastType.SUCCESS,
         title: translateTexts(["declineSuccessTitle"]),
-        description: translateTexts(["declineSuccessDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["declineSuccessDes"]),
         isIcon: true
       });
     }
@@ -73,8 +68,7 @@ const useApproveDenyTimeRequest = () => {
   const { mutate: approveDenyRequest, isPending: isApproveDenyLoading } =
     useApproveDenyTimeRequestAPI(handleSuccess, handleError);
 
-  const approveTimesheetRequest = (timeRequestId: number, name: string) => {
-    setCurrentRequester(name);
+  const approveTimesheetRequest = (timeRequestId: number) => {
     setCurrentRequestAction(TimeSheetRequestStates.APPROVED);
     approveDenyRequest({
       id: timeRequestId,
@@ -82,8 +76,7 @@ const useApproveDenyTimeRequest = () => {
     });
   };
 
-  const declineTimesheetRequest = (timeRequestId: number, name: string) => {
-    setCurrentRequester(name);
+  const declineTimesheetRequest = (timeRequestId: number) => {
     setCurrentRequestAction(TimeSheetRequestStates.DENIED);
     approveDenyRequest({
       id: timeRequestId,
