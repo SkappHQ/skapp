@@ -26,4 +26,7 @@ public class CrmIndustry extends Auditable<String> {
 	@Column(name = "name", nullable = false)
 	private String name;
 
+	@Column(name = "is_deleted", nullable = false)
+	private Boolean isDeleted = false;
+
 }
