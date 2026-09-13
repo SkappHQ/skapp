@@ -264,6 +264,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
     ) {
       void setFieldValue("timeEntryDate", selectedDailyRecord?.date);
+      setSelectedDate(DateTime.fromISO(selectedDailyRecord?.date as string));
     } else if (
       employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
     ) {
@@ -364,6 +365,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
       {(employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
         employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE ||
+        employeeTimesheetModalType ===
           EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY) && (
         <InputDate
           label={translateText(["dateInputLabel"])}
@@ -379,7 +382,9 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           error={errors.timeEntryDate}
           readOnly={
             employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
+              EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+            employeeTimesheetModalType ===
+              EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
           }
           placeholder={translateText(["datePickerPlaceholder"])}
           maxDate={DateTime.fromISO(new Date()?.toISOString()?.split("T")[0])}
