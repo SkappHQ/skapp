@@ -35,7 +35,11 @@ import {
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
-import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
+import {
+  resolveTasks,
+  toTaskIds,
+  updateTaskRecord
+} from "~community/crm/v2/utils/taskUtil";
 
 import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
 
@@ -118,6 +122,11 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     [relatedTasksData]
   );
 
+  const resolvedRelatedTasks = useMemo(
+    () => resolveTasks(task?.relatedTaskIds ?? [], tasks),
+    [task?.relatedTaskIds, tasks]
+  );
+
   useEffect(() => {
     if (!taskDetail && !relatedTasksData) return;
 
@@ -160,8 +169,35 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     handleMarkAsDoneError
   );
 
+  const { mutate: updateRelatedTaskCompletion } = useUpdateTask();
+
   const handleMarkAsDone = () => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
+  };
+
+  const applyCompletion = (id: number, completed: boolean) => {
+    setTasks(updateTaskRecord(tasks, [{ id, isCompleted: completed }]));
+  };
+
+  const handleToggleError = (id: number, wasCompleted: boolean) => {
+    applyCompletion(id, wasCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+  };
+
+  const handleRelatedTaskToggleComplete = (id: number, completed: boolean) => {
+    const wasCompleted = tasks[id]?.isCompleted === true;
+
+    applyCompletion(id, completed);
+
+    updateRelatedTaskCompletion(
+      { id, task: { isCompleted: completed } },
+      { onError: () => handleToggleError(id, wasCompleted) }
+    );
   };
 
   const menuItems: MenuItemProps[] = useMemo(
@@ -208,7 +244,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
           <div className="flex items-center gap-4 pl-2">
-            <TaskTypeIcon typeName={taskType?.name} size={TASK_DETAIL_ICON_SIZE} />
+            {taskType && (
+              <TaskTypeIcon
+                typeName={taskType.name}
+                size={TASK_DETAIL_ICON_SIZE}
+              />
+            )}
             <span className="h1 text-black">{task.name}</span>
           </div>
         )
@@ -269,7 +310,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               </h2>
               <hr className="border-secondary-accent" />
               <SidePanelTasksSection
-                taskIds={task.relatedTaskIds ?? []}
+                tasks={resolvedRelatedTasks}
+                onToggleComplete={handleRelatedTaskToggleComplete}
                 emptyTitle={translateText([
                   "sidePanel",
                   "noRelatedTasksTitle"

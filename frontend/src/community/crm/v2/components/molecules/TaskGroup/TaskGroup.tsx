@@ -8,7 +8,7 @@ interface Props {
   tasks: CrmTaskEntity[];
   isCheckTaskVisible?: boolean;
   isShowContact?: boolean;
-  onRowClick: (taskId: number) => void;
+  onRowClick?: (taskId: number) => void;
   onToggleComplete: (taskId: number, completed: boolean) => void;
 }
 
