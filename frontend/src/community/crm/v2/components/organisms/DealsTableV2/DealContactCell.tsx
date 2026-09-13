@@ -15,7 +15,7 @@ import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
@@ -74,7 +74,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     missingCompanyIds.length > 0
   );
   const companyRecord = useMemo(
-    () => mergeCompanies(companies, fetchedCompanies ?? []),
+    () => updateCompanyRecord(companies, fetchedCompanies ?? []),
     [companies, fetchedCompanies]
   );
 

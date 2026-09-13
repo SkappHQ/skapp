@@ -8,7 +8,7 @@ import {
   CrmOwnerEntity,
   CrmStageEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
+import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 
 interface Props {
   deal: CrmDealEntity;
@@ -36,7 +36,9 @@ const SidePanelDealCard: FC<Props> = ({ deal, owner, stage }) => {
             <span className="inline-block h-1 w-1 rounded-full bg-secondary-icon" />
           )}
           {deal.amount && (
-            <span className="body3">{formatCurrency(deal.amount)}</span>
+            <span className="body3">
+              {formatMonetaryValueWithDecimals(deal.amount)}
+            </span>
           )}
         </div>
       </div>
