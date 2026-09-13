@@ -1192,7 +1192,10 @@
       "ariaLabel": "Show filters",
       "panelLabel": "Demographics filters",
       "title": "Filters",
-      "clearAll": "Clear all"
+      "close": "Close filters",
+      "selectPlaceholder": "Select",
+      "reset": "Reset filters",
+      "apply": "Apply filters"
     },
     "summary": {
       "heading": "Job Family",
