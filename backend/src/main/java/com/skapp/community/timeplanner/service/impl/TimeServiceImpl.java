@@ -158,7 +158,7 @@ public class TimeServiceImpl implements TimeService {
 
 	protected final TimeRecordDao timeRecordDao;
 
-	private final TimeSlotDao timeSlotDao;
+	protected final TimeSlotDao timeSlotDao;
 
 	protected final AttendanceConfigService attendanceConfigService;
 
@@ -977,6 +977,7 @@ public class TimeServiceImpl implements TimeService {
 
 		List<LeaveRequest> leaveRequests = getLeaveRequests(startDate, endDate, employeeIds);
 		boolean geoFencingEnabled = isGeoFencingEnabled();
+		Set<Long> activeClockInTimeRecordIds = findActiveClockInTimeRecordIds(timeRecords);
 
 		List<TimeRecordsResponseDto> response = new ArrayList<>();
 		for (Employee employee : employees.getContent()) {
@@ -994,6 +995,8 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				timeRecordChip.setIsActiveClockInTimeEntryAvailable(timeRecord.getTimeRecordId() != null
+						&& activeClockInTimeRecordIds.contains(timeRecord.getTimeRecordId()));
 				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
@@ -2210,6 +2213,22 @@ public class TimeServiceImpl implements TimeService {
 		if (!isAuthorized) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED);
 		}
+	}
+
+	protected Set<Long> findActiveClockInTimeRecordIds(List<EmployeeTimeRecord> timeRecords) {
+		List<Long> timeRecordIds = timeRecords.stream()
+			.map(EmployeeTimeRecord::getTimeRecordId)
+			.filter(Objects::nonNull)
+			.toList();
+
+		if (timeRecordIds.isEmpty()) {
+			return Collections.emptySet();
+		}
+
+		return timeSlotDao.findByTimeRecordTimeRecordIdInAndIsActiveRightNow(timeRecordIds, true)
+			.stream()
+			.map(timeSlot -> timeSlot.getTimeRecord().getTimeRecordId())
+			.collect(Collectors.toSet());
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

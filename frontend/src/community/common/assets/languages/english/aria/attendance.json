@@ -16,7 +16,8 @@
       "filterButton": "Filter options"
     },
     "employeeTimeRecordsTable": {
-      "directEntryCellLabel": "Add or edit time entry for {{employeeName}}, {{date}}"
+      "directEntryCellLabel": "Add or edit time entry for {{employeeName}}, {{date}}",
+      "ongoingEntryCellLabel": "Time entry in progress"
     }
   },
   "dashboards": {

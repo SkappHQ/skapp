@@ -24,6 +24,7 @@ export interface TimeRecordType {
   workedHours: number;
   clockInLocationStatus?: RecordLocationStatus;
   clockOutLocationStatus?: RecordLocationStatus;
+  isActiveClockInTimeEntryAvailable?: boolean;
 }
 
 export interface TimeRecordDataType {

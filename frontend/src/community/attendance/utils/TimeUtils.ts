@@ -218,3 +218,6 @@ export const sortTimeSlots = (timeSlots: TimeSlotsType[]) => {
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   );
 };
+
+export const isActiveClockInTimeSlotAvailable = (timeSlots?: TimeSlotsType[]) =>
+  Boolean(timeSlots?.some((timeSlot) => timeSlot?.isActiveRightNow));

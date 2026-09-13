@@ -21,7 +21,8 @@ import {
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
-  formatDuration
+  formatDuration,
+  isActiveClockInTimeSlotAvailable
 } from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
@@ -139,10 +140,20 @@ const EmployeeTimeRecordsTable = ({
 
     const dayRecord = pendingDayLogs?.[0] ?? createEmptyDailyLog(date);
 
-    const modalType = getTimeEntryModalType(dayRecord);
-
     setHandledCell(cellKey);
     setPendingCell(null);
+
+    if (isActiveClockInTimeSlotAvailable(dayRecord?.timeSlots)) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateText(["addTimeEntryErrorTitle"]),
+        description: translateText(["ongoingEntryCellTooltip"])
+      });
+      return;
+    }
+
+    const modalType = getTimeEntryModalType(dayRecord);
     if (modalType === null) return;
 
     setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
@@ -319,14 +330,38 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            if (canDirectlyAddOrEditEntry && !isFutureDate) {
-              const employeeId = employeeData?.employeeId;
+            if (
+              canDirectlyAddOrEditEntry &&
+              !isFutureDate &&
+              employeeData?.employeeId
+            ) {
+              const employeeId = employeeData.employeeId;
               const employeeName = concatStrings([
                 employeeData?.firstName ?? "",
                 employeeData?.lastName ?? ""
               ]).trim();
+              const cellDate = formatDateWithOrdinalIndicator(dateAsISOString);
 
-              if (employeeId) {
+              if (timeSheetRecord.isActiveClockInTimeEntryAvailable) {
+                const ongoingEntryTooltip = translateText([
+                  "ongoingEntryCellTooltip"
+                ]);
+
+                finalCellData = (
+                  <Tooltip content={ongoingEntryTooltip}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-disabled={true}
+                      aria-label={translateAria(["ongoingEntryCellLabel"])}
+                      title={ongoingEntryTooltip}
+                      className="flex w-full cursor-not-allowed items-center justify-center"
+                    >
+                      {finalCellData}
+                    </div>
+                  </Tooltip>
+                );
+              } else {
                 const openDirectEntry = () =>
                   setPendingCell({
                     employeeId,
@@ -343,7 +378,7 @@ const EmployeeTimeRecordsTable = ({
                     type="button"
                     aria-label={translateAria(["directEntryCellLabel"], {
                       employeeName,
-                      date: formatDateWithOrdinalIndicator(dateAsISOString)
+                      date: cellDate
                     })}
                     aria-busy={isCellLoading}
                     disabled={isCellLoading}

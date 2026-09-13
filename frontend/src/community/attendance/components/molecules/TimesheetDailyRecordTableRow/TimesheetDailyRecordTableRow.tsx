@@ -24,7 +24,11 @@ import {
   DailyLogType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
-import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
+import {
+  formatDuration,
+  isActiveClockInTimeSlotAvailable,
+  isToday
+} from "~community/attendance/utils/TimeUtils";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
@@ -86,6 +90,18 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     setDirectManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+
+  const isActiveClockInEntryAvailable =
+    Boolean(targetEmployeeDetails) &&
+    isActiveClockInTimeSlotAvailable(record?.timeSlots);
+
+  const isRowClickable = isRowInteractive && !isActiveClockInEntryAvailable;
+
+  const rowTooltipText = isActiveClockInEntryAvailable
+    ? translateText(["ongoingEntryCellTooltip"])
+    : isManualEntryRestricted && !targetEmployeeDetails
+      ? translateText(["manualEntryRestrictedCellTooltip"])
+      : undefined;
 
   const handleEdit = useCallback(() => {
     setSelectedDailyRecord(record);
@@ -178,7 +194,7 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   );
 
   const handleRowActivate = () => {
-    if (!isRowInteractive) return;
+    if (!isRowClickable) return;
 
     if (targetEmployeeDetails && targetEmployeeId) {
       if (getTimeEntryModalType(record) === null) return;
@@ -203,14 +219,10 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={classes.stackContainerStyle(isRowInteractive)}
+      sx={classes.stackContainerStyle(isRowClickable)}
       onClick={handleRowActivate}
-      aria-disabled={!isRowInteractive}
-      title={
-        isManualEntryRestricted && !targetEmployeeDetails
-          ? translateText(["manualEntryRestrictedCellTooltip"])
-          : undefined
-      }
+      aria-disabled={!isRowClickable}
+      title={rowTooltipText}
       tabIndex={getTabIndex(isFreeTier)}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {

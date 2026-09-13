@@ -22,6 +22,7 @@ import {
 } from "~community/attendance/utils/TimeUtils";
 import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
 import {
+  EP_TIME_ERROR_DIRECT_ENTRY_ONGOING_SESSION,
   EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
   PEOPLE_ERROR_NO_MANAGERS_FOUND,
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
@@ -162,9 +163,15 @@ const useAddEntry = () => {
   };
 
   const onDirectManualTimeEntryError = (error: ErrorResponse) => {
+    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
+
+    if (messageKey === EP_TIME_ERROR_DIRECT_ENTRY_ONGOING_SESSION) {
+      showErrorToast("addTimeEntryErrorTitle", "ongoingEntryCellTooltip");
+      return;
+    }
+
     const isConflict =
-      error?.response?.data?.results?.[0]?.messageKey ===
-      EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
+      messageKey === EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
 
     showErrorToast(
       "addTimeEntryErrorTitle",

@@ -18,4 +18,6 @@ public class TimeRecordChipResponseDto {
 
 	private LeaveRequestResponseDto leaveRequest;
 
+	private Boolean isActiveClockInTimeEntryAvailable;
+
 }
