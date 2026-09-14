@@ -76,3 +76,20 @@ export const validateDealDescription = (
   description: string,
   translator: TranslatorFunctionType
 ): string => validateField("description", description, translator);
+
+export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
+  Yup.object().shape({
+    name: Yup.string()
+      .trim()
+      .max(DEAL_NAME_MAX_LENGTH)
+      .matches(
+        isDealNameValid(),
+        translator(["inlineAddDeal", "validations", "dealNameInvalidChars"])
+      )
+      .required(
+        translator(["inlineAddDeal", "validations", "dealNameRequired"])
+      ),
+    contactId: Yup.string().required(
+      translator(["inlineAddDeal", "validations", "contactRequired"])
+    )
+  });
