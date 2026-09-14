@@ -100,8 +100,7 @@ const LeaveYearSelector: FC<{
 };
 
 const Dashboard: NextPage = () => {
-  const router = useRouter();
-  const { query } = router;
+  const { query, asPath } = useRouter();
 
   const queryMatches = useMediaQuery();
   const isBelow900 = queryMatches(MediaQueries.BELOW_900);
@@ -117,6 +116,7 @@ const Dashboard: NextPage = () => {
   const { setToastMessage } = useToast();
 
   const [showLoader, setShowLoader] = useState(true);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   useEffect(() => {
     if (showLoader) {
@@ -217,33 +217,32 @@ const Dashboard: NextPage = () => {
     return userRoles.some((role) => allowedRoles?.includes(role));
   });
 
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-
   const findRequestedTabIndex = (
     tabs: TabModule[],
     tabParam: string
-  ): number | undefined => {
-    const matchedTab = tabs.find(
-      (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
-    );
-    return matchedTab && tabs.indexOf(matchedTab);
+  ): number => {
+    try {
+      const matchedTab = tabs.find(
+        (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
+      );
+      if (!matchedTab) {
+        throw new Error("Requested tab not found");
+      }
+      return tabs.indexOf(matchedTab);
+    } catch {
+      return 0;
+    }
   };
 
   useEffect(() => {
-    if (typeof query.tab !== "string") {
-      return;
-    }
-    const matchedIndex = findRequestedTabIndex(visibleTabs, query.tab);
-    if (matchedIndex !== undefined) {
-      setActiveTabIndex(matchedIndex);
-    }
+    setActiveTabIndex(findRequestedTabIndex(visibleTabs, query.tab as string));
   }, [query.tab]);
 
   const handleTabChange = (index: number) => {
     setActiveTabIndex(index);
     const selectedModule = visibleTabs[index]?.module;
     if (selectedModule) {
-      replaceTabQueryParam(router.asPath, selectedModule.toLowerCase());
+      replaceTabQueryParam(asPath, selectedModule.toLowerCase());
     }
   };
 
