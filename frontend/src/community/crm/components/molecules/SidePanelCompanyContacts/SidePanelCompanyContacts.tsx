@@ -35,10 +35,7 @@ const SidePanelCompanyContacts: FC<Props> = ({
             <div className="truncate" title={row.name}>
               {row.name}
             </div>
-            <div
-              className="body2 text-secondary-text truncate"
-              title={row.company?.name}
-            >
+            <div className="body2 text-secondary-text truncate">
               {row.company?.name}
             </div>
           </div>
@@ -51,11 +48,7 @@ const SidePanelCompanyContacts: FC<Props> = ({
       header: translateText(["columns", "email"]),
       key: "email",
       render(_value, row) {
-        return (
-          <div className="truncate" title={row.email}>
-            {row.email}
-          </div>
-        );
+        return <div className="truncate">{row.email}</div>;
       },
       width: "25%"
     },
@@ -63,13 +56,6 @@ const SidePanelCompanyContacts: FC<Props> = ({
       columnAriaLabel: translateText(["columns", "contactNo"]),
       header: translateText(["columns", "contactNo"]),
       key: "contactNumber",
-      render(_value, row) {
-        return (
-          <div className="truncate" title={row.contactNumber ?? undefined}>
-            {row.contactNumber}
-          </div>
-        );
-      },
       width: "20%"
     },
     {
