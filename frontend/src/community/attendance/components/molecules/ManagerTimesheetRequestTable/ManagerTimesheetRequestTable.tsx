@@ -35,10 +35,7 @@ import { TableNames } from "~community/common/enums/Table";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
-import {
-  concatStrings,
-  pascalCaseFormatter
-} from "~community/common/utils/commonUtil";
+import { pascalCaseFormatter } from "~community/common/utils/commonUtil";
 import { formatDateWithOrdinalIndicator } from "~community/common/utils/dateTimeUtils";
 
 import TimesheetRequestFilterBody from "../TimesheetRequestFilterBody/TimesheetRequestFilterBody";
@@ -49,8 +46,8 @@ interface Props {
   isRequestLoading?: boolean;
   totalHours?: number;
   hasFullList?: boolean;
-  approveTimesheetRequest: (timeRequestId: number, name: string) => void;
-  declineTimesheetRequest: (timeRequestId: number, name: string) => void;
+  approveTimesheetRequest: (timeRequestId: number) => void;
+  declineTimesheetRequest: (timeRequestId: number) => void;
   isApproveDenyLoading?: boolean;
   tableName: TableNames;
 }
@@ -276,13 +273,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
               onClick={() => {
-                declineTimesheetRequest(
-                  timesheetRequest?.timeRequestId,
-                  concatStrings([
-                    timesheetRequest?.employee?.firstName as string,
-                    timesheetRequest?.employee?.lastName as string
-                  ])
-                );
+                declineTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
               <CloseIcon fill={"black"} />
@@ -300,13 +291,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
               onClick={() => {
-                approveTimesheetRequest(
-                  timesheetRequest?.timeRequestId,
-                  concatStrings([
-                    timesheetRequest?.employee?.firstName as string,
-                    timesheetRequest?.employee?.lastName as string
-                  ])
-                );
+                approveTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
               <CheckIcon fill={theme.palette.primary.dark} />
