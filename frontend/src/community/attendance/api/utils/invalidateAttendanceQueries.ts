@@ -32,6 +32,6 @@ export const invalidateTimeEntryQueries = (queryClient: QueryClient): void => {
     attendanceQueryKeys.getManagerRecords(),
     attendanceQueryKeys.getManagerWorkSummary(),
     ["employee-utilization"],
-    attendanceQueryKeys.individualWorkHoursGraphData()
+    ["workHoursGraphData"]
   ]);
 };

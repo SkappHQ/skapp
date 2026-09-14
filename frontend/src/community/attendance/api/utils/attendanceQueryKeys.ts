@@ -126,7 +126,7 @@ export const attendanceQueryKeys = {
   ) {
     return ["admin-individual-work-hour-trend", month, employeeId];
   },
-  individualWorkHoursGraphData: function (month?: string, employeeId?: number) {
+  individualWorkHoursGraphData: function (month: string, employeeId: number) {
     return ["workHoursGraphData", month, employeeId].filter(
       (val) => val !== undefined
     );
