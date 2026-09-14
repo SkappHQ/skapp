@@ -31,7 +31,9 @@ public class CrmTaskControllerV2 {
 
 	@Operation(summary = "Get tasks",
 			description = "Returns a paginated list of non-deleted CRM tasks with optional search and filter by "
-					+ "contact, company and deal. The optional isCompleted filter selects completed (true) or open "
+					+ "contact, company and deal. The contactId filter matches tasks linked to that contact "
+					+ "directly or through one of the contact's deals, so a task carrying only a deal is included. "
+					+ "The optional isCompleted filter selects completed (true) or open "
 					+ "(false) tasks; omit it to return both. Optional sortKey (DUE_AT default, or LAST_MODIFIED_DATE) "
 					+ "and sortOrder (ASC/DESC) control ordering. Pass size < 0 to disable pagination and return "
 					+ "every matching task. Related records are carried as id references only.")

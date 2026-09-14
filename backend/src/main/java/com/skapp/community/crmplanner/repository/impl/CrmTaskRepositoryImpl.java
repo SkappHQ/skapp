@@ -333,13 +333,12 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		Join<CrmTask, CrmCompany> company = task.join(CrmTask_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		Join<CrmTask, CrmContact> contact = task.join(CrmTask_.contact, JoinType.LEFT);
-		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
 
 		return cb.construct(CrmTaskResponseDtoV2.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
 				type.get(CrmTaskType_.id), task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted),
 				task.get(CrmTask_.dueAt), task.get(Auditable_.lastModifiedDate), task.get(CrmTask_.notes),
 				owner.get(Employee_.employeeId), contact.get(CrmContact_.id), company.get(CrmCompany_.id),
-				deal.get(CrmDeal_.id));
+				task.get(CrmTask_.deal).get(CrmDeal_.id));
 	}
 
 	private List<Predicate> buildTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root, CrmTaskFilterParams params) {
