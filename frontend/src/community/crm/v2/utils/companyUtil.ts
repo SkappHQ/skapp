@@ -78,7 +78,7 @@ export const removeCompany = (
   };
 };
 
-export const getCompanyFieldDiff = (
+export const getChangedCompanyFields = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
 ): CrmCompanyEntity => {
