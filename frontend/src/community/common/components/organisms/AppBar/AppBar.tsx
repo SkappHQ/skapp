@@ -13,6 +13,7 @@ import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBar
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
 import useDrawer from "~community/common/hooks/useDrawer";
+import useIsSidebarHidden from "~community/common/hooks/useIsSidebarHidden";
 import {
   MediaQueries,
   useMediaQuery
@@ -38,6 +39,7 @@ const AppBar = () => {
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
   const { handleDrawer, isDrawerExpanded, isBelow1024 } = useDrawer();
+  const isSidebarHidden = useIsSidebarHidden();
   const translateAria = useTranslator("commonAria", "components", "appBar");
 
   const { user } = useAuth();
@@ -174,7 +176,7 @@ const AppBar = () => {
               />
             )}
 
-            {isBelow1024 && !isDrawerExpanded && (
+            {isBelow1024 && !isDrawerExpanded && !isSidebarHidden && (
               <button
                 className="flex cursor-pointer items-center justify-center w-10 h-10"
                 onClick={handleDrawer}

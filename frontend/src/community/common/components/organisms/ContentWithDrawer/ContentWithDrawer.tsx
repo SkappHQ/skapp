@@ -1,14 +1,13 @@
 import { Stack } from "@mui/material";
-import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import TimeWidgetPopupController from "~community/attendance/components/organisms/TimeWidgetPopupController/TimeWidgetPopupController";
-import { sidebarHiddenRoutes } from "~community/auth/constants/routeConfigs";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ToastMessage from "~community/common/components/molecules/ToastMessage/ToastMessage";
 import AppBar from "~community/common/components/organisms/AppBar/AppBar";
 import Drawer from "~community/common/components/organisms/Drawer/Drawer";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
+import useIsSidebarHidden from "~community/common/hooks/useIsSidebarHidden";
 import useRouteLoading from "~community/common/hooks/useRouteLoading";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -31,10 +30,7 @@ const ContentWithDrawer = ({ children }: Props) => {
   const translateAria = useTranslator("commonAria", "contentWithDrawer");
   const loading = useRouteLoading();
 
-  const router = useRouter();
-  const isSidebarHidden = sidebarHiddenRoutes.some((prefix) =>
-    router.asPath.startsWith(prefix)
-  );
+  const isSidebarHidden = useIsSidebarHidden();
 
   return (
     <>
