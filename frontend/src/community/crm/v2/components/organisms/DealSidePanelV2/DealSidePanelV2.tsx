@@ -33,7 +33,6 @@ const DealSidePanelV2: FC = () => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     selectedDealId,
-    selectedDeal,
     setSelectedDealId,
     closeCrmSidePanel,
     deals,
@@ -47,10 +46,6 @@ const DealSidePanelV2: FC = () => {
       isCrmSidePanelOpen: state.isCrmSidePanelOpen,
       crmSidePanelType: state.crmSidePanelType,
       selectedDealId: state.selectedDealId,
-      selectedDeal:
-        state.selectedDealId != null
-          ? state.deals[state.selectedDealId]
-          : undefined,
       setSelectedDealId: state.setSelectedDealId,
       closeCrmSidePanel: state.closeCrmSidePanel,
       deals: state.deals,
@@ -61,6 +56,9 @@ const DealSidePanelV2: FC = () => {
       setBoardColumn: state.setBoardColumn
     }))
   );
+
+  const selectedDeal =
+    selectedDealId != null ? deals[selectedDealId] : undefined;
 
   const isOpen =
     isCrmSidePanelOpen &&
