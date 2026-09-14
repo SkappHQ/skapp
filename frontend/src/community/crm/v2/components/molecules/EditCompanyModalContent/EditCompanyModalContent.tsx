@@ -7,13 +7,12 @@ import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { useEditCompany } from "~community/crm/v2/api/CompanyApi";
 import CompanyModalForm from "~community/crm/v2/components/molecules/CompanyModalForm/CompanyModalForm";
+import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  getChangedCompanyFields,
-  getCompanyFormInitialValues,
+  getCompanyFieldDiff,
   getSelectedCompany,
-  getTrimmedCompanyValues,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
 import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValidations";
@@ -36,7 +35,13 @@ const EditCompanyModalContent: FC = () => {
   const selectedCompany = getSelectedCompany(companies, selectedCompanyId);
 
   const initialValues = useMemo(
-    () => getCompanyFormInitialValues(selectedCompany),
+    () => ({
+      name: selectedCompany?.name ?? "",
+      industry: selectedCompany?.industry ?? CrmIndustryEnum.NONE,
+      website: selectedCompany?.website ?? "",
+      address: selectedCompany?.address ?? "",
+      contactNumber: selectedCompany?.contactNumber ?? ""
+    }),
     [selectedCompany]
   );
 
@@ -93,10 +98,13 @@ const EditCompanyModalContent: FC = () => {
   const submitEditCompany = (values: CrmCompanyEntity) => {
     if (selectedCompanyId === null) return;
 
-    const changedFields = getChangedCompanyFields(
-      initialValues,
-      getTrimmedCompanyValues(values)
-    );
+    const changedFields = getCompanyFieldDiff(initialValues, {
+      name: values.name?.trim(),
+      industry: values.industry,
+      website: values.website?.trim(),
+      address: values.address?.trim(),
+      contactNumber: values.contactNumber?.trim()
+    });
 
     if (Object.keys(changedFields).length === 0) {
       handleCloseModal();
