@@ -17,7 +17,10 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
-import { updateDealRecord } from "~community/crm/v2/utils/dealUtil";
+import {
+  getSelectedDeal,
+  updateDealRecord
+} from "~community/crm/v2/utils/dealUtil";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
@@ -57,8 +60,7 @@ const DealSidePanelV2: FC = () => {
     }))
   );
 
-  const selectedDeal =
-    selectedDealId != null ? deals[selectedDealId] : undefined;
+  const selectedDeal = getSelectedDeal(deals, selectedDealId);
 
   const isOpen =
     isCrmSidePanelOpen &&
