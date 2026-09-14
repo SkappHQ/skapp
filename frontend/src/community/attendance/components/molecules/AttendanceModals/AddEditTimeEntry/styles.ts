@@ -29,8 +29,22 @@ const styles = (theme: Theme) => ({
     pt: "1rem"
   },
   disabledInputFieldLabel: {
-    color: theme.palette.common.black,
+    color: theme.palette.text.disabled,
     fontWeight: theme.typography.label.fontWeight
+  },
+  disabledInputFieldValue: {
+    "&& .MuiInputBase-input": {
+      "&.Mui-disabled": {
+        WebkitTextFillColor: theme.palette.text.disabledValue,
+        fontWeight: theme.typography.placeholder.fontWeight
+      }
+    }
+  },
+  readOnlyDateValue: {
+    "& .MuiBox-root > .MuiTypography-root": {
+      color: theme.palette.text.disabledValue,
+      fontWeight: theme.typography.placeholder.fontWeight
+    }
   },
   button: {
     mt: "1rem"

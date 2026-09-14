@@ -247,6 +247,7 @@ declare module "@mui/material/styles/createPalette" {
     whiteText?: string;
     blackText?: string;
     neutral?: string;
+    disabledValue?: string;
   }
 }
 
@@ -333,7 +334,8 @@ export const theme = createTheme({
       whiteText: "#ffffff",
       blackText: "#000000",
       neutral: "#6B7280",
-      disabled: "#71717A"
+      disabled: "#71717A",
+      disabledValue: "#99A1AF"
     },
     notifyBadge: {
       main: "#EF4444",

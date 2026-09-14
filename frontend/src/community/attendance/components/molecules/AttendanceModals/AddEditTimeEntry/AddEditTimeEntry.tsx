@@ -351,6 +351,12 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     }
   }, []);
 
+  const isDateReadOnly =
+    employeeTimesheetModalType ===
+      EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+    employeeTimesheetModalType ===
+      EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE;
+
   return (
     <Form onSubmit={handleSubmit}>
       {directManualTimeEntryEligibleEmployee && (
@@ -359,6 +365,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           inputName={"direct_entry_employee"}
           value={directManualTimeEntryEligibleEmployee.employeeName}
           labelStyles={classes.disabledInputFieldLabel}
+          inputBaseStyle={classes.disabledInputFieldValue}
           isDisabled
         />
       )}
@@ -380,11 +387,12 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           isWithLeaves
           isWithHolidays
           error={errors.timeEntryDate}
-          readOnly={
-            employeeTimesheetModalType ===
-              EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-            employeeTimesheetModalType ===
-              EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+          readOnly={isDateReadOnly}
+          labelStyles={
+            isDateReadOnly ? classes.disabledInputFieldLabel : undefined
+          }
+          componentStyle={
+            isDateReadOnly ? classes.readOnlyDateValue : undefined
           }
           placeholder={translateText(["datePickerPlaceholder"])}
           maxDate={DateTime.fromISO(new Date()?.toISOString()?.split("T")[0])}
@@ -486,6 +494,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         value={duration}
         placeHolder="0h 00m"
         componentStyle={classes.inputField}
+        labelStyles={classes.disabledInputFieldLabel}
+        inputBaseStyle={classes.disabledInputFieldValue}
         isDisabled
       />
       {(employeeTimesheetModalType ===
@@ -499,6 +509,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           placeHolder="0h 00m"
           componentStyle={classes.inputField}
           labelStyles={classes.disabledInputFieldLabel}
+          inputBaseStyle={classes.disabledInputFieldValue}
           isDisabled
         />
       )}
