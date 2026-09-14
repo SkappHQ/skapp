@@ -44,6 +44,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
     handleChange,
     handleBlur,
     dirty,
+    isSubmitting,
     setFieldValue,
     submitForm
   } = formik;
@@ -149,7 +150,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         <ButtonV2
           variant="tertiary"
           type="button"
-          disabled={isPending}
+          disabled={isPending || isSubmitting}
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
@@ -162,7 +163,11 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
           type="button"
           onClick={submitForm}
           disabled={
-            isPending || !dirty || isEmailCheckUnresolved || isDuplicateEmail
+            isPending ||
+            isSubmitting ||
+            !dirty ||
+            isEmailCheckUnresolved ||
+            isDuplicateEmail
           }
           isLoading={isPending}
           aria-label={translateText(["ariaLabels", "save"])}

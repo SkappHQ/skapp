@@ -55,6 +55,15 @@ export const getCompanyById = (
   companyId: number
 ): CrmCompanyEntity | undefined => companies[companyId];
 
+export const getSelectedCompany = (
+  companies: CrmCompanyRecord,
+  companyId: number | null
+) => {
+  if (companyId !== null) {
+    return companies[companyId];
+  }
+};
+
 export const updateCompany = (
   companies: CrmCompanyRecord,
   companyId: number,
