@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { ModuleTypes } from "~community/common/types/CommonTypes";
 import ResourceAvailabilityCalendar from "~community/leave/components/organisms/LeaveDashboard/ResourceAvailability";
 import LeaveManagerModalController from "~community/leave/components/organisms/LeaveManagerModalController/LeaveManagerModalController";
 
@@ -29,7 +30,11 @@ const ResourceAvailability: NextPage = () => {
       title={translateText(["resourceAvailability"])}
       isDividerVisible={false}
       isBackButtonVisible={true}
-      onBackClick={() => router.replace(`${ROUTES.DASHBOARD.BASE}?tab=leave`)}
+      onBackClick={() =>
+        router.replace(
+          `${ROUTES.DASHBOARD.BASE}?tab=${ModuleTypes.LEAVE.toLowerCase()}`
+        )
+      }
     >
       <>
         <ResourceAvailabilityCalendar />

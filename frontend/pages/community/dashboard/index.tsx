@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
@@ -187,49 +187,60 @@ const Dashboard: NextPage = () => {
   // Permissions map for modules
 
   // Define tabs
-  const tabs = [
-    ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-      ? [
-          {
-            label: translateText(["attendanceTab"]),
-            content: <AttendanceDashboard />,
-            module: ModuleTypes.TIME
-          }
-        ]
-      : []),
-    ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
-      ? [
-          {
-            label: translateText(["leaveTab"]),
-            content: (
-              <div>
-                <LeaveDashboard />
-              </div>
-            ),
-            module: ModuleTypes.LEAVE
-          }
-        ]
-      : []),
-    {
-      label: translateText(["peopleTab"]),
-      content: <PeopleDashboard />,
-      module: ModuleTypes.PEOPLE
-    }
-  ];
+  const tabs = useMemo(
+    () => [
+      ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+        ? [
+            {
+              label: translateText(["attendanceTab"]),
+              content: <AttendanceDashboard />,
+              module: ModuleTypes.TIME
+            }
+          ]
+        : []),
+      ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+        ? [
+            {
+              label: translateText(["leaveTab"]),
+              content: (
+                <div>
+                  <LeaveDashboard />
+                </div>
+              ),
+              module: ModuleTypes.LEAVE
+            }
+          ]
+        : []),
+      {
+        label: translateText(["peopleTab"]),
+        content: <PeopleDashboard />,
+        module: ModuleTypes.PEOPLE
+      }
+    ],
+    [translateText, user?.roles]
+  );
+
+  const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
 
   // Filters tabs based on user roles.
-  const getVisibleTabs = (userRoles: RoleTypes[] = []) => {
+  const visibleTabs = useMemo(() => {
     return tabs.filter((tab) => {
       const allowedRoles = modulePermissions[tab.module];
       return userRoles.some((role) => allowedRoles?.includes(role));
     });
-  };
+  }, [tabs, userRoles]);
 
-  const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
-  const visibleTabs = getVisibleTabs(userRoles);
-  const defaultActiveTab = findRequestedTabIndex(visibleTabs, query.tab);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  useEffect(() => {
+    const matchedIndex = findRequestedTabIndex(visibleTabs, query.tab);
+    if (matchedIndex !== undefined) {
+      setActiveTabIndex(matchedIndex);
+    }
+  }, [query.tab]);
 
   const handleTabChange = (index: number) => {
+    setActiveTabIndex(index);
     const selectedModule = visibleTabs[index]?.module;
     if (selectedModule) {
       replaceTabQueryParam(router.asPath, selectedModule.toLowerCase());
@@ -301,7 +312,7 @@ const Dashboard: NextPage = () => {
         ) : (
           <TabsContainer
             tabs={visibleTabs}
-            defaultActiveTab={defaultActiveTab}
+            activeTabIndex={activeTabIndex}
             onTabChange={handleTabChange}
           />
         )}

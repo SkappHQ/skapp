@@ -13,6 +13,6 @@ export interface TabPanelProps {
 
 export interface TabsComponentProps {
   tabs: TabItem[];
-  defaultActiveTab?: number;
-  onTabChange?: (index: number) => void;
+  activeTabIndex: number;
+  onTabChange: (index: number) => void;
 }

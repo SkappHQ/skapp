@@ -609,8 +609,8 @@ export const isAndroidDevice = (): boolean => {
 };
 
 export const replaceTabQueryParam = (path: string, tabId: string): void => {
-  const [basePath] = path.split("?");
-  const params = new URLSearchParams();
+  const [basePath, existingQuery] = path.split("?");
+  const params = new URLSearchParams(existingQuery);
   params.set("tab", tabId);
   const newUrl = `${basePath}?${params.toString()}`;
 
