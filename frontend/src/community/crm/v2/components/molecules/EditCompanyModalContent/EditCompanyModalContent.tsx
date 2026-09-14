@@ -11,7 +11,7 @@ import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  getCompanyFieldDiff,
+  getChangedCompanyFields,
   getSelectedCompany,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
@@ -98,7 +98,7 @@ const EditCompanyModalContent: FC = () => {
   const submitEditCompany = (values: CrmCompanyEntity) => {
     if (selectedCompanyId === null) return;
 
-    const changedFields = getCompanyFieldDiff(initialValues, {
+    const changedFields = getChangedCompanyFields(initialValues, {
       name: values.name?.trim(),
       industry: values.industry,
       website: values.website?.trim(),
