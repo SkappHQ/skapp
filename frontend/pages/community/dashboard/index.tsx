@@ -2,7 +2,7 @@ import { Typography } from "@mui/material";
 import { DateTime } from "luxon";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import AttendanceDashboard from "~community/attendance/components/organisms/AttendanceDashboard/AttendanceDashboard";
@@ -61,19 +61,6 @@ const modulePermissions: Record<string, RoleTypes[]> = {
     AdminTypes.PEOPLE_ADMIN,
     ManagerTypes.PEOPLE_MANAGER
   ]
-};
-
-const findRequestedTabIndex = (
-  tabs: { module: string }[],
-  tabParam: string | string[] | undefined
-): number | undefined => {
-  if (typeof tabParam !== "string") {
-    return undefined;
-  }
-  const matchedTab = tabs.find(
-    (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
-  );
-  return matchedTab && tabs.indexOf(matchedTab);
 };
 
 const LeaveYearSelector: FC<{
@@ -187,50 +174,58 @@ const Dashboard: NextPage = () => {
   // Permissions map for modules
 
   // Define tabs
-  const tabs = useMemo(
-    () => [
-      ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
-        ? [
-            {
-              label: translateText(["attendanceTab"]),
-              content: <AttendanceDashboard />,
-              module: ModuleTypes.TIME
-            }
-          ]
-        : []),
-      ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
-        ? [
-            {
-              label: translateText(["leaveTab"]),
-              content: (
-                <div>
-                  <LeaveDashboard />
-                </div>
-              ),
-              module: ModuleTypes.LEAVE
-            }
-          ]
-        : []),
-      {
-        label: translateText(["peopleTab"]),
-        content: <PeopleDashboard />,
-        module: ModuleTypes.PEOPLE
-      }
-    ],
-    [translateText, user?.roles]
-  );
+  const tabs = [
+    ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
+      ? [
+          {
+            label: translateText(["attendanceTab"]),
+            content: <AttendanceDashboard />,
+            module: ModuleTypes.TIME
+          }
+        ]
+      : []),
+    ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
+      ? [
+          {
+            label: translateText(["leaveTab"]),
+            content: (
+              <div>
+                <LeaveDashboard />
+              </div>
+            ),
+            module: ModuleTypes.LEAVE
+          }
+        ]
+      : []),
+    {
+      label: translateText(["peopleTab"]),
+      content: <PeopleDashboard />,
+      module: ModuleTypes.PEOPLE
+    }
+  ];
 
   const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
 
   // Filters tabs based on user roles.
-  const visibleTabs = useMemo(() => {
-    return tabs.filter((tab) => {
-      const allowedRoles = modulePermissions[tab.module];
-      return userRoles.some((role) => allowedRoles?.includes(role));
-    });
-  }, [tabs, userRoles]);
+  const visibleTabs = tabs.filter((tab) => {
+    const allowedRoles = modulePermissions[tab.module];
+    return userRoles.some((role) => allowedRoles?.includes(role));
+  });
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  const findRequestedTabIndex = (
+    tabs: { module: string }[],
+    tabParam: string | string[] | undefined
+  ): number | undefined => {
+    if (typeof tabParam !== "string") {
+      return undefined;
+    }
+    const matchedTab = tabs.find(
+      (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
+    );
+    return matchedTab && tabs.indexOf(matchedTab);
+  };
 
   useEffect(() => {
     const matchedIndex = findRequestedTabIndex(visibleTabs, query.tab);
