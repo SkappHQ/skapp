@@ -380,7 +380,6 @@
       "heading": "Summary",
       "panelAriaLabel": "Attendance summary",
       "tableCaption": "Employee count and share for each attendance status",
-      "status": "Status",
       "employees": "Employees",
       "percentOfTotal": "% of total",
       "total": "Total"
