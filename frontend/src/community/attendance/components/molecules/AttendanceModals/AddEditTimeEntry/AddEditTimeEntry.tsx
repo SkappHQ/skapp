@@ -17,6 +17,7 @@ import useAddEntry from "~community/attendance/hooks/useAddEntry";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeAvailabilityType,
+  TimeEntryTimeErrorsType,
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
 import {
@@ -102,13 +103,59 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     toTime: ""
   };
 
+  const getTimeEntryErrors = (formValues: {
+    fromTime: string;
+    toTime: string;
+  }): TimeEntryTimeErrorsType => {
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
+    ) {
+      return clockInOutWithPrevTimeValidation(
+        formValues.fromTime,
+        formValues.toTime,
+        selectedDailyRecord?.timeSlots[0]?.startTime as string,
+        selectedDailyRecord?.timeSlots[
+          selectedDailyRecord?.timeSlots?.length - 1
+        ]?.endTime as string
+      );
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+    ) {
+      return clockInOutValidation(formValues.fromTime, formValues.toTime);
+    }
+
+    return {};
+  };
+
   const { values, errors, setFieldValue, setFieldError, handleSubmit } =
     useFormik({
       initialValues,
       validationSchema: timeEntryValidation,
       validateOnChange: false,
       validateOnBlur: true,
-      onSubmit: (values) => {
+      onSubmit: (values, { setFieldError: setTimeEntryFieldError }) => {
+        const timeErrors = getTimeEntryErrors(values);
+
+        if (timeErrors.fromTime || timeErrors.toTime) {
+          if (timeErrors.fromTime) {
+            setTimeEntryFieldError("fromTime", timeErrors.fromTime);
+          }
+          if (timeErrors.toTime) {
+            setTimeEntryFieldError("toTime", timeErrors.toTime);
+          }
+          return;
+        }
+
         handleTimeEntrySubmit(
           values,
           timeAvailability as TimeAvailabilityType,
@@ -128,36 +175,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     values.fromTime,
     values.toTime
   );
-
-  const isInvalidTimeForDisableButton = () => {
-    if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-    ) {
-      return clockInOutWithPrevTimeValidation(
-        values.fromTime,
-        values.toTime,
-        selectedDailyRecord?.timeSlots[0]?.startTime as string,
-        selectedDailyRecord?.timeSlots[
-          selectedDailyRecord?.timeSlots?.length - 1
-        ]?.endTime as string,
-        false
-      );
-    } else if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-    ) {
-      return clockInOutValidation(values.fromTime, values.toTime, false);
-    } else {
-      return false;
-    }
-  };
 
   useEffect(() => {
     if (
@@ -315,34 +332,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     values.fromTime,
     values.toTime
   ]);
-
-  useEffect(() => {
-    if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-    ) {
-      clockInOutWithPrevTimeValidation(
-        values.fromTime,
-        values.toTime,
-        selectedDailyRecord?.timeSlots[0]?.startTime as string,
-        selectedDailyRecord?.timeSlots[
-          selectedDailyRecord?.timeSlots?.length - 1
-        ]?.endTime as string,
-        true
-      );
-    } else if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-    ) {
-      clockInOutValidation(values.fromTime, values.toTime, true);
-    }
-  }, [selectedDailyRecord?.timeSlots, values.fromTime, values.toTime]);
 
   useEffect(() => {
     if (values.timeEntryDate) {
@@ -526,13 +515,11 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         <ButtonV2
           variant={"primary"}
           type={"submit"}
-          disabled={
-            isSubmitDisabled(
-              values,
-              isGetTimeAvailabilityLoading &&
-                getAvailabilityFetchStatus !== "idle"
-            ) || isInvalidTimeForDisableButton()
-          }
+          disabled={isSubmitDisabled(
+            values,
+            isGetTimeAvailabilityLoading &&
+              getAvailabilityFetchStatus !== "idle"
+          )}
           icon={<Icon name={IconName.CHECK_ICON} />}
           iconPosition="end"
         >
