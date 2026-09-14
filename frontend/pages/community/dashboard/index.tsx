@@ -221,11 +221,8 @@ const Dashboard: NextPage = () => {
 
   const findRequestedTabIndex = (
     tabs: TabModule[],
-    tabParam: string | string[] | undefined
+    tabParam: string
   ): number | undefined => {
-    if (typeof tabParam !== "string") {
-      return undefined;
-    }
     const matchedTab = tabs.find(
       (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
     );
@@ -233,6 +230,9 @@ const Dashboard: NextPage = () => {
   };
 
   useEffect(() => {
+    if (typeof query.tab !== "string") {
+      return;
+    }
     const matchedIndex = findRequestedTabIndex(visibleTabs, query.tab);
     if (matchedIndex !== undefined) {
       setActiveTabIndex(matchedIndex);
