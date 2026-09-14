@@ -178,6 +178,7 @@ const Dashboard: NextPage = () => {
     ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [
           {
+            id: ModuleTypes.TIME,
             label: translateText(["attendanceTab"]),
             content: <AttendanceDashboard />,
             module: ModuleTypes.TIME
@@ -187,6 +188,7 @@ const Dashboard: NextPage = () => {
     ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [
           {
+            id: ModuleTypes.LEAVE,
             label: translateText(["leaveTab"]),
             content: (
               <div>
@@ -198,6 +200,7 @@ const Dashboard: NextPage = () => {
         ]
       : []),
     {
+      id: ModuleTypes.PEOPLE,
       label: translateText(["peopleTab"]),
       content: <PeopleDashboard />,
       module: ModuleTypes.PEOPLE

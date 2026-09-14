@@ -35,7 +35,7 @@ const TabsContainer: React.FC<TabsComponentProps> = ({
             {tabs.map((tab, index) => (
               <Tab
                 sx={classes.tab}
-                key={index}
+                key={tab.id}
                 label={tab.label}
                 id={`tab-${index}`}
                 aria-controls={`tabpanel-${index}`}
@@ -45,7 +45,7 @@ const TabsContainer: React.FC<TabsComponentProps> = ({
         </Box>
       )}
       {tabs.map((tab, index) => (
-        <TabPanel key={index} value={activeTabIndex} index={index}>
+        <TabPanel key={tab.id} value={activeTabIndex} index={index}>
           {tab.content}
         </TabPanel>
       ))}
