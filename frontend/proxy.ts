@@ -531,6 +531,7 @@ export const config = {
     "/leave/:path*",
     "/people/:path*",
     "/timesheet/:path*",
+    "/reports/:path*",
     "/remove-people",
     "/integrations",
     "/user-account",
