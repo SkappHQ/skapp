@@ -25,7 +25,7 @@ const TaskRowSubtitle: FC<Props> = ({
   const dueDateStatus = getDueDateStatus(task.dueAt, task.isCompleted);
 
   return (
-    <p className="body3 leading-none mt-0.5 flex items-center gap-2">
+    <p className="body3 leading-none mt-0.5 flex items-center gap-2 min-w-0">
       {dueDateStatus && (
         <span
           className={
@@ -45,11 +45,12 @@ const TaskRowSubtitle: FC<Props> = ({
         <>
           <span className="w-1 h-1 rounded-full bg-secondary-accent shrink-0" />
           <span
-            className={
+            className={`min-w-0 truncate ${
               applyCompletedStyle
                 ? "line-through text-secondary-icon"
                 : "text-secondary-text"
-            }
+            }`}
+            title={task.contact?.name}
           >
             {task.contact?.name}
           </span>
