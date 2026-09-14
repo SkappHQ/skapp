@@ -24,7 +24,6 @@ export const invalidateAttendanceTimeRecordQueries = (
 
 export const invalidateTimeEntryQueries = (queryClient: QueryClient): void => {
   invalidateQueryKeys(queryClient, [
-    getAttendanceQueryKeys.employeeStatus(),
     attendanceQueryKeys.getEmployeeWorkSummary(),
     attendanceQueryKeys.getEmployeeDailyLog(),
     attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),
