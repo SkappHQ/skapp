@@ -67,17 +67,16 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     }
   };
 
-  const { mutateAsync: updateCompletion } = useUpdateTask(handleToggleSuccess);
+  const { mutate: updateCompletion } = useUpdateTask(
+    handleToggleSuccess,
+    showToggleError
+  );
 
   const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
-    startTransition(async () => {
+    startTransition(() => {
       setOptimisticTasks(updateTask(tasks, taskId, { isCompleted }));
 
-      try {
-        await updateCompletion({ id: taskId, task: { isCompleted } });
-      } catch {
-        showToggleError();
-      }
+      updateCompletion({ id: taskId, task: { isCompleted } });
     });
   };
 
