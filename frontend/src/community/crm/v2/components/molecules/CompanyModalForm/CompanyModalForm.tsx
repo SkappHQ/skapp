@@ -50,7 +50,6 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const {
     values,
     errors,
-    touched,
     handleChange,
     handleBlur,
     dirty,
@@ -73,11 +72,9 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     trimmedName !== trimmedOriginalName &&
     companyNameData?.isExists;
 
-  const nameFieldError = touched.name ? errors.name : undefined;
-
   const nameError = isAlreadyNameExists
     ? translateText(["validations", "companyExists"])
-    : nameFieldError;
+    : errors.name;
 
   const handleIndustryChange = (value: string) => {
     setFieldValue("industry", value);
@@ -107,10 +104,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         placeholder={translateText(["placeholders", "contactNumber"])}
         onChange={handleChange}
         onBlur={handleBlur}
-        errorMessage={touched.contactNumber ? errors.contactNumber : undefined}
-        state={
-          touched.contactNumber && errors.contactNumber ? "error" : "default"
-        }
+        errorMessage={errors.contactNumber}
+        state={errors.contactNumber ? "error" : "default"}
         aria-label={translateText(["ariaLabels", "contactNumber"])}
         fullWidth
       />
@@ -118,8 +113,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="website"
         value={values.website}
-        errorMessage={touched.website ? errors.website : undefined}
-        state={touched.website && errors.website ? "error" : "default"}
+        errorMessage={errors.website}
+        state={errors.website ? "error" : "default"}
         label={translateText(["labels", "website"])}
         placeholder={translateText(["placeholders", "website"])}
         onChange={handleChange}
@@ -131,8 +126,8 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
       <InputField
         name="address"
         value={values.address}
-        errorMessage={touched.address ? errors.address : undefined}
-        state={touched.address && errors.address ? "error" : "default"}
+        errorMessage={errors.address}
+        state={errors.address ? "error" : "default"}
         label={translateText(["labels", "address"])}
         placeholder={translateText(["placeholders", "address"])}
         onChange={handleChange}
