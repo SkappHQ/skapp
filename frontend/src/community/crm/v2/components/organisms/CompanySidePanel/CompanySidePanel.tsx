@@ -19,7 +19,10 @@ import SidePanelCompanyHeader from "~community/crm/v2/components/molecules/SideP
 import SidePanelMetricCards from "~community/crm/v2/components/molecules/SidePanelMetricCards/SidePanelMetricCards";
 import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
-import { CrmSidePanelTabEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmIndustryEnum,
+  CrmSidePanelTabEnum
+} from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmModalTypes,
@@ -27,6 +30,7 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import {
   getCompanyMetricItems,
+  getIndustryDisplayName,
   updateCompany
 } from "~community/crm/v2/utils/companyUtil";
 
@@ -38,7 +42,7 @@ interface CompanySidePanelProps {
 }
 
 const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
-  const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const translateText = useTranslator("crmModule", "companies");
   const { isCrmSalesManager } = useSessionData();
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
@@ -47,6 +51,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
   const {
     companies,
+    industries,
     isCrmSidePanelOpen,
     crmSidePanelType,
     setCompanies,
@@ -57,6 +62,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   } = useCrmStoreV2(
     useShallow((store) => ({
       companies: store.companies,
+      industries: store.industries,
       isCrmSidePanelOpen: store.isCrmSidePanelOpen,
       crmSidePanelType: store.crmSidePanelType,
       setCompanies: store.setCompanies,
@@ -86,6 +92,12 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   }, [fetchedCompany, fetchedMetrics]);
 
   const company = companies[companyId];
+  const industry =
+    company?.industryId != null ? industries[company.industryId] : undefined;
+
+  const industryName = industry
+    ? getIndustryDisplayName(industry, translateText)
+    : translateText(["industryOptions", CrmIndustryEnum.NONE]);
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -100,7 +112,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     () => [
       {
         id: "edit",
-        label: translateText(["editCompany"]),
+        label: translateText(["sidePanel", "editCompany"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
         onClick: () => {
           setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
@@ -109,7 +121,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       },
       {
         id: "delete",
-        label: translateText(["deleteCompany"]),
+        label: translateText(["sidePanel", "deleteCompany"]),
         icon: {
           start: (
             <DeleteButtonIcon
@@ -133,15 +145,15 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const tabs: TabItem[] = [
     {
       id: CrmSidePanelTabEnum.TASKS,
-      label: translateText(["tabs", "tasks"])
+      label: translateText(["sidePanel", "tabs", "tasks"])
     },
     {
       id: CrmSidePanelTabEnum.DEALS,
-      label: translateText(["tabs", "deals"])
+      label: translateText(["sidePanel", "tabs", "deals"])
     },
     {
       id: CrmSidePanelTabEnum.CONTACTS,
-      label: translateText(["tabs", "contacts"])
+      label: translateText(["sidePanel", "tabs", "contacts"])
     }
   ];
 
@@ -173,7 +185,10 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
           <CompanySidePanelSkeleton />
         ) : (
           <>
-            <SidePanelCompanyHeader company={company} />
+            <SidePanelCompanyHeader
+              company={company}
+              industryName={industryName}
+            />
 
             <SidePanelMetricCards
               metrics={getCompanyMetricItems(company, translateText)}

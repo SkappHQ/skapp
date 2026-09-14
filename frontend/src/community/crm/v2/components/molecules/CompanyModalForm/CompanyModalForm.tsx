@@ -36,11 +36,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   originalName,
   onCancel
 }) => {
-  const translateIndustryOptions = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
+  const translateCompanies = useTranslator("crmModule", "companies");
 
   const { industries } = useCrmStoreV2(
     useShallow((store) => ({
@@ -83,11 +79,11 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     () =>
       getIndustryOptions(
         industries,
-        translateIndustryOptions,
+        translateCompanies,
         industrySearchTerm,
         true
       ),
-    [industries, translateIndustryOptions, industrySearchTerm]
+    [industries, translateCompanies, industrySearchTerm]
   );
 
   const renderIndustryOptionContent = (option: CrmIndustryOption) => {
@@ -117,7 +113,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const selectedIndustryLabel =
     values.industryName ??
     (selectedIndustry
-      ? getIndustryDisplayName(selectedIndustry.name, translateIndustryOptions)
+      ? getIndustryDisplayName(selectedIndustry, translateCompanies)
       : "");
 
   const handleIndustrySearchChange = (e: ChangeEvent<HTMLInputElement>) => {

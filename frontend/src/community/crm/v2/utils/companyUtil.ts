@@ -5,6 +5,7 @@ import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord,
+  CrmIndustryEntity,
   CrmIndustryRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
@@ -35,18 +36,18 @@ export const getCompanyMetricItems = (
 ): CrmMetricItem[] => [
   {
     id: "accountValue",
-    title: translateText(["metrics", "accountValue"]),
+    title: translateText(["sidePanel", "metrics", "accountValue"]),
     amount: company.metrics?.accountValue,
     isCurrency: true
   },
   {
     id: "openDeals",
-    title: translateText(["metrics", "openDeals"]),
+    title: translateText(["sidePanel", "metrics", "openDeals"]),
     amount: company.metrics?.openDealsCount
   },
   {
     id: "closedDeals",
-    title: translateText(["metrics", "closedDeals"]),
+    title: translateText(["sidePanel", "metrics", "closedDeals"]),
     amount: company.metrics?.closedDealsCount
   }
 ];
@@ -173,27 +174,19 @@ export const mergeCompanies = (
   return merged;
 };
 
-/**
- * Seeded industries are stored under their constant name, so those are
- * translated while anything a user created is shown exactly as they typed it.
- */
 export const getIndustryDisplayName = (
-  industryName: string,
+  industry: CrmIndustryEntity,
   translateText: TranslatorFunctionType
 ): string =>
-  Object.values<string>(CrmIndustryEnum).includes(industryName)
-    ? translateText([industryName])
-    : industryName;
+  Object.values<string>(CrmIndustryEnum).includes(industry.name)
+    ? translateText(["industryOptions", industry.name])
+    : industry.name;
 
 export interface CrmIndustryOption {
   id: string;
   name: string;
 }
 
-/**
- * Industries matching the typed name, followed by an add-new option when that
- * name is not taken yet - the company save is what actually creates it.
- */
 export const getIndustryOptions = (
   industries: CrmIndustryRecord,
   translateText: TranslatorFunctionType,
@@ -206,7 +199,7 @@ export const getIndustryOptions = (
   const options: CrmIndustryOption[] = Object.values(industries)
     .map((industry) => ({
       id: String(industry.id),
-      name: getIndustryDisplayName(industry.name, translateText)
+      name: getIndustryDisplayName(industry, translateText)
     }))
     .filter((option) => option.name.toLowerCase().includes(normalizedName));
 
