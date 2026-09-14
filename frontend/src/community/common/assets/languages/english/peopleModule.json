@@ -1198,7 +1198,7 @@
       "apply": "Apply filters"
     },
     "summary": {
-      "heading": "Job Family",
+      "heading": "Job family",
       "panelAriaLabel": "Demographics summary",
       "tableCaption": "Employee count and share for each category",
       "rowAriaLabel": "Show only {{category}}",
