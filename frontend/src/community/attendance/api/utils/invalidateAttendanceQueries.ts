@@ -1,11 +1,11 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryKey } from "@tanstack/react-query";
 
 import { attendanceQueryKeys } from "~community/attendance/api/utils/attendanceQueryKeys";
 import { getAttendanceQueryKeys } from "~community/attendance/api/utils/queryKeys";
 
 const invalidateQueryKeys = (
   queryClient: QueryClient,
-  queryKeys: unknown[][]
+  queryKeys: QueryKey[]
 ): void => {
   queryKeys.forEach((queryKey) => {
     queryClient.invalidateQueries({ queryKey }).catch((error) => error);
@@ -31,7 +31,7 @@ export const invalidateTimeEntryQueries = (queryClient: QueryClient): void => {
     attendanceQueryKeys.getManagerRequests(),
     attendanceQueryKeys.getManagerRecords(),
     attendanceQueryKeys.getManagerWorkSummary(),
-    attendanceQueryKeys.getIndividualUtilization(),
+    ["employee-utilization"],
     attendanceQueryKeys.individualWorkHoursGraphData()
   ]);
 };

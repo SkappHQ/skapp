@@ -70,10 +70,8 @@ export const attendanceQueryKeys = {
       return ["manager-team-records"];
     }
   },
-  getIndividualUtilization: function (employeeId?: number) {
-    return ["employee-utilization", employeeId].filter(
-      (val) => val !== undefined
-    );
+  getIndividualUtilization: function (employeeId: number) {
+    return ["employee-utilization", employeeId];
   },
   getTeamUtilization: function (teamIds: number) {
     return ["team-utilization", teamIds];
