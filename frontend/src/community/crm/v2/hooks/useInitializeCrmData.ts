@@ -32,14 +32,14 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     setTaskTypes,
     setIsCrmDataInitialized
   } = useCrmStoreV2(
-    useShallow((state) => ({
-      isCrmDataInitialized: state.isCrmDataInitialized,
-      contacts: state.contacts,
-      setStages: state.setStages,
-      setOwners: state.setOwners,
-      setContacts: state.setContacts,
-      setTaskTypes: state.setTaskTypes,
-      setIsCrmDataInitialized: state.setIsCrmDataInitialized
+    useShallow((store) => ({
+      isCrmDataInitialized: store.isCrmDataInitialized,
+      contacts: store.contacts,
+      setStages: store.setStages,
+      setOwners: store.setOwners,
+      setContacts: store.setContacts,
+      setTaskTypes: store.setTaskTypes,
+      setIsCrmDataInitialized: store.setIsCrmDataInitialized
     }))
   );
 
