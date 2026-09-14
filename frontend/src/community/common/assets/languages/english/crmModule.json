@@ -32,7 +32,8 @@
         "contactNumber": "Contact no.",
         "company": "Company",
         "owner": "Contact owner",
-        "suggested": "Suggested"
+        "suggested": "Suggested",
+        "addNewCompany": "Add \"{{companyName}}\" as a new company"
       },
       "placeholders": {
         "name": "Enter name",
@@ -379,6 +380,10 @@
       },
       "tasks": {
         "emptyDescription": "No tasks associated with this company"
+      },
+      "errors": {
+        "companyNotFoundTitle": "Company not found",
+        "companyNotFoundDescription": "This company is no longer available."
       }
     }
   },
