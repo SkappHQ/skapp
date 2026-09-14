@@ -1198,7 +1198,7 @@
       "apply": "Apply filters"
     },
     "summary": {
-      "heading": "Job family",
+      "heading": "Summary",
       "panelAriaLabel": "Demographics summary",
       "tableCaption": "Employee count and share for each category",
       "rowAriaLabel": "Show only {{category}}",
@@ -1206,10 +1206,6 @@
       "percentOfTotal": "% of total",
       "percentOfFiltered": "% of filtered",
       "total": "Total"
-    },
-    "jobFamily": {
-      "header": "Job family",
-      "tableCaption": "Employee count and share for each job family"
     },
     "details": {
       "employee": "Employee",
