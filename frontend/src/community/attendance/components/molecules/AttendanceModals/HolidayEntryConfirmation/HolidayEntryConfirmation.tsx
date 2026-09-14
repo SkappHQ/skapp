@@ -2,20 +2,14 @@ import { Stack, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
-import { useAddManualTimeEntry } from "~community/attendance/api/AttendanceEmployeeApi";
 import { holidayDurationSelector } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import useAddEntry from "~community/attendance/hooks/useAddEntry";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import {
-  convertToUtc,
-  getCurrentTimeZone
-} from "~community/attendance/utils/TimeUtils";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
-import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
 
@@ -27,43 +21,16 @@ interface Props {
 const HolidayEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const { setToastMessage } = useToast();
   const {
     timeAvailabilityForPeriod,
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType
   } = useAttendanceStore((state) => state);
 
-  const onSuccess = () => {
-    setToastMessage({
-      open: true,
-      title: translateText(["addTimeEntrySuccessTitle"]),
-      description: translateText(["addTimeEntrySuccessDes"]),
-      toastType: ToastType.SUCCESS
-    });
-  };
-
-  const onError = () => {
-    setToastMessage({
-      open: true,
-      title: translateText(["addTimeEntryErrorTitle"]),
-      description: translateText(["addTimeEntryErrorDes"]),
-      toastType: ToastType.ERROR
-    });
-  };
-
-  const { mutate: manualEntryMutate } = useAddManualTimeEntry(
-    onSuccess,
-    onError
-  );
+  const { confirmManualTimeEntry } = useAddEntry();
 
   const handleSubmit = () => {
-    manualEntryMutate({
-      startTime: convertToUtc(fromDateTime) as string,
-      endTime: convertToUtc(toDateTime) as string,
-      zoneId: getCurrentTimeZone()
-    });
-    setIsEmployeeTimesheetModalOpen(false);
+    confirmManualTimeEntry(fromDateTime, toDateTime);
   };
 
   return (

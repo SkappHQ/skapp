@@ -89,6 +89,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   } = useAttendanceStore((state) => state);
 
   const {
+    isDirectTimeEntry,
     isDurationValid,
     handleTimeEntrySubmit,
     isSubmitDisabled,
@@ -525,7 +526,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           icon={<Icon name={IconName.CHECK_ICON} />}
           iconPosition="end"
         >
-          {directManualTimeEntryEligibleEmployee
+          {isDirectTimeEntry
             ? translateText(["directEntrySaveBtnTxt"])
             : translateText(["submitRequestBtnTxt"])}
         </ButtonV2>

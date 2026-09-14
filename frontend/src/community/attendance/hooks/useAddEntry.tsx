@@ -7,6 +7,7 @@ import {
 } from "~community/attendance/api/AttendanceEmployeeApi";
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   DirectManualTimeEntryVariablesType,
@@ -27,6 +28,7 @@ import {
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
@@ -62,6 +64,15 @@ const useAddEntry = () => {
     directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
+
+  const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
+  const { employeeDetails } = useSessionData();
+
+  const directTimeEntryEmployeeId =
+    directManualTimeEntryEligibleEmployee?.employeeId ??
+    (canDirectlyAddOrEditEntry ? employeeDetails?.employeeId : undefined);
+
+  const isDirectTimeEntry = directTimeEntryEmployeeId !== undefined;
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
     setToastMessage({
@@ -166,6 +177,48 @@ const useAddEntry = () => {
     onError
   );
 
+  const addTimeEntry = (startTime: string, endTime: string): void => {
+    const zoneId = getCurrentTimeZone();
+
+    if (directTimeEntryEmployeeId !== undefined) {
+      const directTimeEntryRequest: DirectManualTimeEntryVariablesType = {
+        employeeId: directTimeEntryEmployeeId,
+        payload: { startTime, endTime, zoneId }
+      };
+      addDirectManualTimeEntryMutate(directTimeEntryRequest);
+      return;
+    }
+
+    manualEntryMutate({ startTime, endTime, zoneId });
+  };
+
+  const editTimeEntry = (
+    startTime: string,
+    endTime: string,
+    recordId?: number
+  ): void => {
+    const zoneId = getCurrentTimeZone();
+
+    if (directTimeEntryEmployeeId !== undefined) {
+      const directTimeEntryRequest: DirectManualTimeEntryVariablesType = {
+        employeeId: directTimeEntryEmployeeId,
+        payload: { startTime, endTime, recordId, zoneId }
+      };
+      editDirectManualTimeEntryMutate(directTimeEntryRequest);
+      return;
+    }
+
+    editClockInOutMutate({ startTime, endTime, recordId, zoneId });
+  };
+
+  const confirmManualTimeEntry = (
+    fromDateTime: string,
+    toDateTime: string
+  ): void => {
+    addTimeEntry(convertToUtc(fromDateTime), convertToUtc(toDateTime));
+    setIsEmployeeTimesheetModalOpen(false);
+  };
+
   const isDurationValid = (fromTime: string, toTime: string): boolean => {
     const duration = getDuration(fromTime, toTime);
     if (duration?.includes("-")) {
@@ -196,11 +249,10 @@ const useAddEntry = () => {
     );
 
     if (employeeConfirmationModalType === null) {
-      manualEntryMutate({
-        startTime: convertToUtc(dateTimeFromTime),
-        endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
-      });
+      addTimeEntry(
+        convertToUtc(dateTimeFromTime),
+        convertToUtc(dateTimeToTime)
+      );
       setIsEmployeeTimesheetModalOpen(false);
       setCurrentAddTimeChanges(values);
       return;
@@ -245,27 +297,6 @@ const useAddEntry = () => {
 
     if (!isDurationValid(values.fromTime, values.toTime)) return;
 
-    if (directManualTimeEntryEligibleEmployee) {
-      const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
-      const directManualTimeEntryRequest: DirectManualTimeEntryVariablesType = {
-        employeeId: directManualTimeEntryEligibleEmployee.employeeId,
-        payload: {
-          startTime: convertToUtc(dateTimeFromTime),
-          endTime: convertToUtc(dateTimeToTime),
-          recordId: existingRecordId,
-          zoneId: getCurrentTimeZone()
-        }
-      };
-
-      if (existingRecordId) {
-        editDirectManualTimeEntryMutate(directManualTimeEntryRequest);
-      } else {
-        addDirectManualTimeEntryMutate(directManualTimeEntryRequest);
-      }
-      setIsEmployeeTimesheetModalOpen(false);
-      return;
-    }
-
     if (
       employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
     ) {
@@ -286,11 +317,10 @@ const useAddEntry = () => {
       employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
     ) {
-      manualEntryMutate({
-        startTime: convertToUtc(dateTimeFromTime),
-        endTime: convertToUtc(dateTimeToTime),
-        zoneId: getCurrentTimeZone()
-      });
+      addTimeEntry(
+        convertToUtc(dateTimeFromTime),
+        convertToUtc(dateTimeToTime)
+      );
       setIsEmployeeTimesheetModalOpen(false);
       return;
     }
@@ -301,12 +331,11 @@ const useAddEntry = () => {
       employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
     ) {
-      editClockInOutMutate({
-        startTime: convertToUtc(dateTimeFromTime),
-        endTime: convertToUtc(dateTimeToTime),
-        recordId: selectedDailyRecord?.timeRecordId || undefined,
-        zoneId: getCurrentTimeZone()
-      });
+      editTimeEntry(
+        convertToUtc(dateTimeFromTime),
+        convertToUtc(dateTimeToTime),
+        selectedDailyRecord?.timeRecordId || undefined
+      );
       setIsEmployeeTimesheetModalOpen(false);
     }
   };
@@ -424,8 +453,10 @@ const useAddEntry = () => {
   };
 
   return {
+    isDirectTimeEntry,
     isDurationValid,
     handleTimeEntrySubmit,
+    confirmManualTimeEntry,
     isSubmitDisabled,
     clockInOutWithPrevTimeValidation,
     clockInOutValidation
