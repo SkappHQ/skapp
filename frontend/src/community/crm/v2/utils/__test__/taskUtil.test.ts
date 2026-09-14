@@ -1,70 +1,70 @@
-import {
-  CrmCompanyRecord,
-  CrmContactRecord,
-  CrmDealRecord,
-  CrmTaskEntity
-} from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmTaskRecord } from "~community/crm/v2/types/CrmCommonTypes";
 
-import { linkTaskToRelatedEntities } from "../taskUtil";
+import { removeTaskFromRecord, removeTaskId } from "../taskUtil";
 
-const companies: CrmCompanyRecord = {
-  1: { id: 1, name: "Acme Corp", taskIds: [10, 11] }
-};
+describe("removeTaskId", () => {
+  it("removes the id when it is present", () => {
+    expect(removeTaskId([1, 2, 3], 2)).toEqual([1, 3]);
+  });
 
-const contacts: CrmContactRecord = {
-  4: { id: 4, firstName: "Dulsara", taskIds: [10] }
-};
+  it("returns the remaining ids unchanged when the id is absent", () => {
+    expect(removeTaskId([1, 2, 3], 99)).toEqual([1, 2, 3]);
+  });
 
-const deals: CrmDealRecord = {
-  7: { id: 7, name: "Renewal", taskIds: [] }
-};
+  it("does not mutate the input array", () => {
+    const taskIds = [1, 2, 3];
 
-describe("linkTaskToRelatedEntities", () => {
-  it("appends the task id to every entity the task is linked to", () => {
-    const task: CrmTaskEntity = {
-      id: 99,
-      companyId: 1,
-      contactId: 4,
-      dealId: 7
+    removeTaskId(taskIds, 2);
+
+    expect(taskIds).toEqual([1, 2, 3]);
+  });
+
+  it("removes every occurrence of the id", () => {
+    expect(removeTaskId([1, 2, 2, 3], 2)).toEqual([1, 3]);
+  });
+});
+
+describe("removeTaskFromRecord", () => {
+  const buildTasks = (): CrmTaskRecord => ({
+    1: { id: 1, name: "Call the contact" },
+    2: { id: 2, name: "Send the proposal" }
+  });
+
+  it("removes the task when it is present", () => {
+    expect(removeTaskFromRecord(buildTasks(), 1)).toEqual({
+      2: { id: 2, name: "Send the proposal" }
+    });
+  });
+
+  it("returns the record unchanged when the id is absent", () => {
+    expect(removeTaskFromRecord(buildTasks(), 99)).toEqual(buildTasks());
+  });
+
+  it("does not mutate the input record", () => {
+    const tasks = buildTasks();
+
+    removeTaskFromRecord(tasks, 1);
+
+    expect(tasks).toEqual(buildTasks());
+  });
+
+  it("sweeps the removed id out of other tasks' relatedTaskIds", () => {
+    const tasks: CrmTaskRecord = {
+      1: { id: 1, name: "Call the contact" },
+      2: { id: 2, name: "Send the proposal", relatedTaskIds: [1, 3] }
     };
 
-    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
-
-    expect(linked.companies[1].taskIds).toEqual([10, 11, 99]);
-    expect(linked.contacts[4].taskIds).toEqual([10, 99]);
-    expect(linked.deals[7].taskIds).toEqual([99]);
+    expect(removeTaskFromRecord(tasks, 1)).toEqual({
+      2: { id: 2, name: "Send the proposal", relatedTaskIds: [3] }
+    });
   });
 
-  it("leaves the entity alone when it has not loaded its tasks yet", () => {
-    const unloadedCompanies: CrmCompanyRecord = { 1: { id: 1, name: "Acme" } };
-    const task: CrmTaskEntity = { id: 99, companyId: 1 };
+  it("leaves tasks untouched when they do not reference the removed id", () => {
+    const tasks: CrmTaskRecord = {
+      1: { id: 1, name: "Call the contact" },
+      2: { id: 2, name: "Send the proposal", relatedTaskIds: [3] }
+    };
 
-    const linked = linkTaskToRelatedEntities(
-      task,
-      unloadedCompanies,
-      contacts,
-      deals
-    );
-
-    expect(linked.companies[1].taskIds).toBeUndefined();
-  });
-
-  it("hands back the same record when the id was already there", () => {
-    const task: CrmTaskEntity = { id: 10, companyId: 1 };
-
-    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
-
-    expect(linked.companies[1].taskIds).toEqual([10, 11]);
-    expect(linked.companies).toBe(companies);
-    expect(linked.companies[1]).toBe(companies[1]);
-  });
-
-  it("leaves records untouched when the linked entity is not in the store", () => {
-    const task: CrmTaskEntity = { id: 99, companyId: 42, contactId: 42 };
-
-    const linked = linkTaskToRelatedEntities(task, companies, contacts, deals);
-
-    expect(linked.companies).toBe(companies);
-    expect(linked.contacts).toBe(contacts);
+    expect(removeTaskFromRecord(tasks, 1)[2]).toBe(tasks[2]);
   });
 });
