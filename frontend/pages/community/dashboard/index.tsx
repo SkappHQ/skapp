@@ -63,6 +63,19 @@ const modulePermissions: Record<string, RoleTypes[]> = {
   ]
 };
 
+const findRequestedTabIndex = (
+  tabs: { module: string }[],
+  tabParam: string | string[] | undefined
+): number | undefined => {
+  if (typeof tabParam !== "string") {
+    return undefined;
+  }
+  const matchedTab = tabs.find(
+    (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
+  );
+  return matchedTab && tabs.indexOf(matchedTab);
+};
+
 const LeaveYearSelector: FC<{
   selectedYear: string;
   setSelectedYear: (year: string) => void;
@@ -214,13 +227,7 @@ const Dashboard: NextPage = () => {
 
   const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
   const visibleTabs = getVisibleTabs(userRoles);
-  const requestedTabIndex = visibleTabs.findIndex(
-    (tab) =>
-      typeof query.tab === "string" &&
-      tab.module.toLowerCase() === query.tab.toLowerCase()
-  );
-  const defaultActiveTab =
-    requestedTabIndex === -1 ? undefined : requestedTabIndex;
+  const defaultActiveTab = findRequestedTabIndex(visibleTabs, query.tab);
 
   const handleTabChange = (index: number) => {
     const selectedModule = visibleTabs[index]?.module;

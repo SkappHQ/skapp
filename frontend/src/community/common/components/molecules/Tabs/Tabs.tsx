@@ -18,6 +18,9 @@ const TabsContainer: React.FC<TabsComponentProps> = ({
   const classes = styles(theme);
 
   const handleChange = (_: React.SyntheticEvent, newValue: number) => {
+    if (newValue === value) {
+      return;
+    }
     setValue(newValue);
     onTabChange?.(newValue);
   };
