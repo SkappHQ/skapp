@@ -41,6 +41,15 @@ export const updateDealRecord = (
   return merged;
 };
 
+export const getSelectedDeal = (
+  deals: CrmDealRecord,
+  dealId: number | null
+) => {
+  if (dealId !== null) {
+    return deals[dealId];
+  }
+};
+
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);
 
