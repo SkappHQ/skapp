@@ -12,6 +12,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   buildContactOptions,
+  getContactCompanyName,
   getContactDisplayName
 } from "~community/crm/v2/utils/contactUtil";
 
@@ -43,9 +44,6 @@ const ContactPopupSearch: FC<Props> = ({
   ariaInvalid,
   ariaRequired
 }) => {
-  const resolveCompanyName = (contact: CrmContactEntity): string | undefined =>
-    contact.companyId != null ? companies[contact.companyId]?.name : undefined;
-
   const dropdownOptions: DropdownOption[] = useMemo(
     () => buildContactOptions(contacts, companies),
     [contacts, companies]
@@ -75,7 +73,9 @@ const ContactPopupSearch: FC<Props> = ({
         selectedContact ? getContactDisplayName(selectedContact) : undefined
       }
       companyName={
-        selectedContact ? resolveCompanyName(selectedContact) : undefined
+        selectedContact
+          ? getContactCompanyName(selectedContact, companies)
+          : undefined
       }
       placeholder={placeholder}
       triggerProps={triggerProps}
@@ -93,7 +93,7 @@ const ContactPopupSearch: FC<Props> = ({
       <ContactOptionItem
         key={option.id}
         contact={contact}
-        companyName={resolveCompanyName(contact)}
+        companyName={getContactCompanyName(contact, companies)}
         option={option}
         onSelect={onSelect}
       />
