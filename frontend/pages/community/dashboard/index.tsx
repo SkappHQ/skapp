@@ -45,6 +45,8 @@ import { getBillingSuccessToast } from "~enterprise/common/utils/billingToastUti
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
 
+type TabModule = { module: ModuleTypes };
+
 const modulePermissions: Record<string, RoleTypes[]> = {
   TIME: [
     AdminTypes.SUPER_ADMIN,
@@ -218,7 +220,7 @@ const Dashboard: NextPage = () => {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const findRequestedTabIndex = (
-    tabs: { module: string }[],
+    tabs: TabModule[],
     tabParam: string | string[] | undefined
   ): number | undefined => {
     if (typeof tabParam !== "string") {
