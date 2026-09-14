@@ -70,8 +70,10 @@ export const attendanceQueryKeys = {
       return ["manager-team-records"];
     }
   },
-  getIndividualUtilization: function (employeeId: number) {
-    return ["employee-utilization", employeeId];
+  getIndividualUtilization: function (employeeId?: number) {
+    return ["employee-utilization", employeeId].filter(
+      (val) => val !== undefined
+    );
   },
   getTeamUtilization: function (teamIds: number) {
     return ["team-utilization", teamIds];
@@ -126,7 +128,7 @@ export const attendanceQueryKeys = {
   ) {
     return ["admin-individual-work-hour-trend", month, employeeId];
   },
-  individualWorkHoursGraphData: function (month: string, employeeId: number) {
+  individualWorkHoursGraphData: function (month?: string, employeeId?: number) {
     return ["workHoursGraphData", month, employeeId].filter(
       (val) => val !== undefined
     );
