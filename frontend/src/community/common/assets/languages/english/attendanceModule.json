@@ -371,6 +371,10 @@
       "apply": "Apply filters"
     },
     "nonWorkingDay": "This date is a holiday or a non-working day, so no attendance was recorded.",
+    "geoFencingDisabled": {
+      "title": "Clock-in location needs geo-fencing",
+      "description": "Geo-fencing is turned off, so no clock-in can be matched to a location. Turn it on in attendance settings, or group by clock-in status instead."
+    },
     "groupBy": {
       "ariaLabel": "Group employees by",
       "CLOCK_IN_TIME": "Clock-in status",
