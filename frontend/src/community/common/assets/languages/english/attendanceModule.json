@@ -350,12 +350,17 @@
     "date": {
       "ariaLabel": "Report date"
     },
+    "search": {
+      "placeholder": "Search employees",
+      "ariaLabel": "Search employees by name"
+    },
     "filters": {
       "ariaLabel": "Show filters",
       "panelLabel": "Attendance filters",
       "title": "Filters",
       "close": "Close filters",
       "selectPlaceholder": "Select",
+      "date": "Report date",
       "clockInByTime": "Clock-in by time",
       "clockInByLocation": "Clock-in by location",
       "workLocation": "Work location",
