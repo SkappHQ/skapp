@@ -69,19 +69,19 @@ const AddDealSidePanelV2: FC = () => {
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setPreselectedStageId: store.setPreselectedStageId,
-      deals: store.deals,
-      board: store.board,
-      dealIds: store.dealIds,
-      companies: store.companies,
-      setCompanies: store.setCompanies,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setDealIds: store.setDealIds
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setPreselectedStageId: state.setPreselectedStageId,
+      deals: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      companies: state.companies,
+      setCompanies: state.setCompanies,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
     }))
   );
 
@@ -94,15 +94,13 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const contactLookupFilter: CrmContactFilterRequest = useMemo(
-    () => ({
-      searchKeyword: debouncedContactSearch,
-      size: DEFAULT_LOOKUP_PAGE_SIZE
-    }),
-    [debouncedContactSearch]
-  );
+  const contactFilters: CrmContactFilterRequest = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
   const { data: contactLookupData } = useGetContactLookupV2(
-    contactLookupFilter,
+    contactFilters,
     isOpen
   );
   const contacts = useMemo(

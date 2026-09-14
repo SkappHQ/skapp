@@ -1,5 +1,4 @@
 import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
-import type { InfiniteData } from "@tanstack/react-query";
 import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -8,18 +7,18 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
+import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
+import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
-import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { getSelectedDeal, mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -34,30 +33,31 @@ const DealSidePanelV2: FC = () => {
     isCrmSidePanelOpen,
     crmSidePanelType,
     selectedDealId,
-    selectedDeal,
     setSelectedDealId,
     closeCrmSidePanel,
     deals,
     board,
+    tasks,
     setDeals,
+    setTasks,
     setBoardColumn
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      selectedDealId: store.selectedDealId,
-      selectedDeal:
-        store.selectedDealId != null
-          ? store.deals[store.selectedDealId]
-          : undefined,
-      setSelectedDealId: store.setSelectedDealId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      deals: store.deals,
-      board: store.board,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      selectedDealId: state.selectedDealId,
+      setSelectedDealId: state.setSelectedDealId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      deals: state.deals,
+      board: state.board,
+      tasks: state.tasks,
+      setDeals: state.setDeals,
+      setTasks: state.setTasks,
+      setBoardColumn: state.setBoardColumn
     }))
   );
+
+  const selectedDeal = getSelectedDeal(deals, selectedDealId);
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -68,16 +68,16 @@ const DealSidePanelV2: FC = () => {
     closeCrmSidePanel();
   };
 
-  const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
+  const { data: dealDetail } = useGetDealById(
     selectedDealId ?? 0,
     selectedDealId != null
   );
 
   useEffect(() => {
-    if (dealDetail && isFetchedAfterMount) {
+    if (dealDetail) {
       setDeals(mergeDeals(deals, [dealDetail]));
     }
-  }, [dealDetail, isFetchedAfterMount]);
+  }, [dealDetail]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
@@ -102,16 +102,24 @@ const DealSidePanelV2: FC = () => {
   };
 
   const {
-    data: relatedTasksData,
+    data: fetchedTasks,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetRelatedTasks({ dealId: selectedDealId, size: TASK_PAGE_SIZE });
+  } = useGetTasksInfinite({
+    dealId: selectedDealId ?? undefined,
+    size: TASK_PAGE_SIZE
+  });
 
-  const relatedTasks =
-    (
-      relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined
-    )?.pages.flatMap((page) => page.items) ?? [];
+  const taskItems = fetchedTasks?.pages.flatMap((page) => page.items) ?? [];
+
+  const taskIds = toTaskIds(taskItems);
+
+  useEffect(() => {
+    if (fetchedTasks) {
+      setTasks(updateTaskRecord(tasks, taskItems));
+    }
+  }, [fetchedTasks]);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -189,7 +197,7 @@ const DealSidePanelV2: FC = () => {
                   <h2 className="h2">{translateText(["tasks", "title"])}</h2>
                   <hr className="border-secondary-accent" />
                   <SidePanelTasksSection
-                    tasks={relatedTasks}
+                    taskIds={taskIds}
                     emptyDescription={translateText([
                       "tasks",
                       "emptyDescription"
