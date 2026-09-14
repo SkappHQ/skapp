@@ -26,8 +26,7 @@ interface Props {
 const DirectorySteppers = ({
   employeeId,
   isIndividualView,
-  isAccountView,
-  formRef
+  isAccountView
 }: Props) => {
   const [isLeaveTabVisible, setIsLeaveTabVisible] = useState(false);
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
@@ -129,14 +128,11 @@ const DirectorySteppers = ({
   };
 
   useEffect(() => {
-    if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
-      const focusableElement = formRef.current.querySelector(
-        'button, input, [tabindex]:not([tabindex="-1"])'
-      ) as HTMLElement | null;
-      focusableElement?.focus();
+    if (prevStep !== null && prevStep !== currentStep) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
     setPrevStep(currentStep);
-  }, [currentStep, formRef, prevStep]);
+  }, [currentStep, prevStep]);
 
   return (
     <BoxStepper
