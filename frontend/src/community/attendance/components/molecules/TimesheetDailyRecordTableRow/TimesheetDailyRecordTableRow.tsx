@@ -52,6 +52,7 @@ interface Props {
   targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
+  canDirectlyAddOrEditEntry?: boolean;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
@@ -60,7 +61,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   targetEmployeeId,
   targetEmployeeDetails,
   isRowInteractive,
-  isManualEntryRestricted
+  isManualEntryRestricted,
+  canDirectlyAddOrEditEntry = false
 }) => {
   const { isFreeTier } = useSessionData();
 
@@ -157,8 +159,9 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
           EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY_BY_EDIT
         );
       } else if (
-        timeAvailabilityForPeriod?.editTimeRequests ||
-        timeAvailabilityForPeriod?.manualEntryRequests?.length
+        !canDirectlyAddOrEditEntry &&
+        (timeAvailabilityForPeriod?.editTimeRequests ||
+          timeAvailabilityForPeriod?.manualEntryRequests?.length)
       ) {
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(

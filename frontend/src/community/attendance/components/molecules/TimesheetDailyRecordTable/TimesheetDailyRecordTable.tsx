@@ -149,6 +149,7 @@ const TimesheetDailyRecordTable = ({
                   targetEmployeeDetails={targetEmployeeDetails}
                   isRowInteractive={isRowInteractive}
                   isManualEntryRestricted={isManualEntryRestricted}
+                  canDirectlyAddOrEditEntry={canDirectlyAddOrEditEntry}
                 />
               ))
             ) : (
@@ -162,6 +163,7 @@ const TimesheetDailyRecordTable = ({
                     targetEmployeeDetails={targetEmployeeDetails}
                     isRowInteractive={isRowInteractive}
                     isManualEntryRestricted={isManualEntryRestricted}
+                    canDirectlyAddOrEditEntry={canDirectlyAddOrEditEntry}
                   />
                 ))}
               </Box>
