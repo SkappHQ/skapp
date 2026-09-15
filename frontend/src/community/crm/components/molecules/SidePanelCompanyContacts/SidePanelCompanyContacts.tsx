@@ -32,9 +32,7 @@ const SidePanelCompanyContacts: FC<Props> = ({
       render(_value, row) {
         return (
           <div className="flex flex-col gap-1 min-w-0">
-            <div className="truncate" title={row.name}>
-              {row.name}
-            </div>
+            <div className="truncate">{row.name}</div>
             <div className="body2 text-secondary-text truncate">
               {row.company?.name}
             </div>
