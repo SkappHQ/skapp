@@ -338,6 +338,11 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     }
   }, []);
 
+  const clearTimeEntryTimeErrors = () => {
+    setFieldError("fromTime", "");
+    setFieldError("toTime", "");
+  };
+
   const isDateReadOnly =
     employeeTimesheetModalType ===
       EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
@@ -449,7 +454,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           time={convertToDateObjectBy12Hour(values.fromTime)}
           setTime={async (time: Date) => {
             await setFieldValue("fromTime", convertTo12HourByDateObject(time));
-            setFieldError("fromTime", "");
+            clearTimeEntryTimeErrors();
           }}
           error={errors.fromTime}
         />
@@ -466,7 +471,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           time={convertToDateObjectBy12Hour(values.toTime)}
           setTime={async (time: Date) => {
             await setFieldValue("toTime", convertTo12HourByDateObject(time));
-            setFieldError("toTime", "");
+            clearTimeEntryTimeErrors();
           }}
           error={errors.toTime}
         />
