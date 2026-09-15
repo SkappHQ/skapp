@@ -352,7 +352,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           inputName={"direct_entry_employee"}
           value={directManualTimeEntryEligibleEmployee.employeeName}
           labelStyles={classes.disabledInputFieldLabel}
-          inputBaseStyle={classes.disabledInputFieldValue}
           isDisabled
         />
       )}
@@ -377,9 +376,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           readOnly={isDateReadOnly}
           labelStyles={
             isDateReadOnly ? classes.disabledInputFieldLabel : undefined
-          }
-          componentStyle={
-            isDateReadOnly ? classes.readOnlyDateValue : undefined
           }
           placeholder={translateText(["datePickerPlaceholder"])}
           maxDate={DateTime.fromISO(new Date()?.toISOString()?.split("T")[0])}
@@ -482,7 +478,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         placeHolder="0h 00m"
         componentStyle={classes.inputField}
         labelStyles={classes.disabledInputFieldLabel}
-        inputBaseStyle={classes.disabledInputFieldValue}
         isDisabled
       />
       {(employeeTimesheetModalType ===
@@ -496,7 +491,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           placeHolder="0h 00m"
           componentStyle={classes.inputField}
           labelStyles={classes.disabledInputFieldLabel}
-          inputBaseStyle={classes.disabledInputFieldValue}
           isDisabled
         />
       )}
