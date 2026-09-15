@@ -12,10 +12,14 @@ import {
   useGetCompanyLookup,
   useSearchCompaniesByDomain
 } from "~community/crm/v2/api/CompanyApi";
-import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  DOMAIN_SEARCH_LIMIT
+} from "~community/crm/v2/constants/commonConstants";
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/v2/constants/contactConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmCompanyDomainSearchFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { CrmCompanyFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import {
   getCompanyById,
@@ -74,8 +78,13 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
     isSearching
   );
 
+  const domainSearchFilters: CrmCompanyDomainSearchFilterRequest = {
+    domain: suggestedDomain,
+    limit: DOMAIN_SEARCH_LIMIT
+  };
+
   const { data: domainSearchData } = useSearchCompaniesByDomain(
-    suggestedDomain,
+    domainSearchFilters,
     isSearching && suggestedDomain.length > 0
   );
 
