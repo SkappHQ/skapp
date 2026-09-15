@@ -224,10 +224,8 @@ const Dashboard: NextPage = () => {
     try {
       const matchedTab = tabs.find(
         (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
-      );
-      if (!matchedTab) {
-        throw new Error("Requested tab not found");
-      }
+      ) as TabModule;
+      matchedTab.module;
       return tabs.indexOf(matchedTab);
     } catch {
       return 0;
