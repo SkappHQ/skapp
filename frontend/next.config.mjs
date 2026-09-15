@@ -105,14 +105,6 @@ const nextConfig = {
         destination: "/community/leave/leave-analytics"
       },
       {
-        source: "/report/workforce-demographics",
-        destination: "/enterprise/report/workforce-demographics"
-      },
-      {
-        source: "/report/attendance-overview",
-        destination: "/enterprise/report/attendance-overview"
-      },
-      {
         source: "/people/directory",
         destination: isEnterpriseMode
           ? "/enterprise/people/directory"
@@ -450,6 +442,14 @@ const nextConfig = {
       {
         source: "/report",
         destination: "/enterprise/report"
+      },
+      {
+        source: "/report/workforce-demographics",
+        destination: "/enterprise/report/workforce-demographics"
+      },
+      {
+        source: "/report/attendance-overview",
+        destination: "/enterprise/report/attendance-overview"
       },
       {
         source: "/crm",

@@ -30,6 +30,6 @@ export const drawerHiddenProtectedRoutes = [
 ];
 
 export const appBarOnlyProtectedRoutes = [
-  ROUTES.REPORT.DETAIL_BASE,
-  ROUTES.REPORT.ENTERPRISE_DETAIL_BASE
+  ROUTES.REPORT.WORKFORCE_DEMOGRAPHICS,
+  ROUTES.REPORT.ATTENDANCE_OVERVIEW
 ];

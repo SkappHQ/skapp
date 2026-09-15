@@ -12,6 +12,28 @@ const styles = () => ({
     minHeight: 0,
     flex: 1,
     boxSizing: "border-box"
+  },
+  main: {
+    display: "flex",
+    flexDirection: "column",
+    width: "100%",
+    flex: 1,
+    minHeight: 0,
+    overflowX: "clip",
+    overflowY: "auto"
+  },
+  mainContent: {
+    flexDirection: "column",
+    width: "100%",
+    flex: 1,
+    minHeight: 0,
+    overflowX: "clip"
+  },
+  loader: {
+    width: "100%",
+    flex: 1,
+    minHeight: 0,
+    position: "relative"
   }
 });
 
