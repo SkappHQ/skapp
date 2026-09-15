@@ -47,28 +47,6 @@ export const useGetTasks = (
     refetchOnWindowFocus: false
   });
 
-export const useGetTasksInfinite = (
-  filter: CrmTaskFilterRequest,
-  enabled: boolean
-): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> =>
-  useInfiniteQuery({
-    initialPageParam: 0,
-    queryKey: crmTaskQueryKeys.TASKS_INFINITE(filter),
-    queryFn: ({ pageParam = 0 }) => fetchTasks({ ...filter, page: pageParam }),
-    getNextPageParam: (lastPage) => {
-      if (
-        lastPage?.currentPage !== undefined &&
-        lastPage?.totalPages !== undefined &&
-        lastPage.currentPage < lastPage.totalPages - 1
-      ) {
-        return lastPage.currentPage + 1;
-      }
-      return undefined;
-    },
-    enabled,
-    refetchOnWindowFocus: false
-  });
-
 export const useGetCompletedTasks = (
   filter: CrmTaskFilterRequest,
   enabled: boolean
