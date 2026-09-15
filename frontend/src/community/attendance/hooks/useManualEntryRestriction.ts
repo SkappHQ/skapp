@@ -41,8 +41,6 @@ const useManualEntryRestriction = (): ManualEntryRestrictionResult => {
   const canDirectlyAddOrEditEntry =
     !isError && isRestrictionEnabled && canManageTimeEntries;
 
-  // Users who can add or edit entries directly are their own valid direct
-  // entry target, so their own entries bypass the supervisor approval flow.
   const selfDirectEntryTarget = useMemo<DirectEntryEmployeeType | null>(() => {
     if (!canDirectlyAddOrEditEntry || !employeeDetails?.employeeId) {
       return null;
