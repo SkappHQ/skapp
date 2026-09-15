@@ -40,7 +40,7 @@ import {
   shouldMoveDownward,
   shouldMoveUpward
 } from "~community/common/utils/keyboardUtils";
-import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
+import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 import TimesheetTimelineBar from "../TimesheetTimelineBar/TimesheetTimelineBar";
 import styles from "./styles";
@@ -49,7 +49,7 @@ interface Props {
   record: DailyLogType;
   headerLength: number;
   targetEmployeeId?: number;
-  targetEmployeeDetails?: EmployeeDetails;
+  targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
 }
@@ -183,11 +183,13 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     if (targetEmployeeDetails && targetEmployeeId) {
       if (getTimeEntryModalType(record) === null) return;
 
+      const employeeGeneralDetails = targetEmployeeDetails.personal?.general;
+
       setDirectManualTimeEntryEligibleEmployee({
         employeeId: targetEmployeeId,
         employeeName: concatStrings([
-          targetEmployeeDetails.firstName ?? "",
-          targetEmployeeDetails.lastName ?? ""
+          employeeGeneralDetails?.firstName ?? "",
+          employeeGeneralDetails?.lastName ?? ""
         ]).trim()
       });
       handleEdit();
