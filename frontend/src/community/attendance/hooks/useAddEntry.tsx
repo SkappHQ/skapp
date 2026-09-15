@@ -169,17 +169,7 @@ const useAddEntry = () => {
 
   const isDurationValid = (fromTime: string, toTime: string): boolean => {
     const duration = getDuration(fromTime, toTime);
-    if (duration?.includes("-")) {
-      setToastMessage({
-        open: true,
-        title: translateText(["invalidTimeTitle"]),
-        description: translateText(["invalidTimeDes"]),
-        toastType: ToastType.ERROR
-      });
-      return false;
-    } else {
-      return true;
-    }
+    return !duration?.includes("-");
   };
 
   const submitManualTimeEntry = (
@@ -393,9 +383,18 @@ const useAddEntry = () => {
     fromTime: string,
     toTime: string
   ): TimeEntryTimeErrorsType => {
-    if (!!fromTime && !!toTime && fromTime === toTime) {
+    if (!fromTime || !toTime) {
+      return {};
+    }
+
+    if (fromTime === toTime) {
       return { fromTime: translateText(["invalidEntryDes"]) };
     }
+
+    if (!isDurationValid(fromTime, toTime)) {
+      return { fromTime: translateText(["invalidTimeDes"]) };
+    }
+
     return {};
   };
 

@@ -90,7 +90,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   } = useAttendanceStore((state) => state);
 
   const {
-    isDurationValid,
     handleTimeEntrySubmit,
     isSubmitDisabled,
     clockInOutWithPrevTimeValidation,
@@ -323,7 +322,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         values.toTime,
         "WORK"
       );
-      isDurationValid(values.fromTime, values.toTime);
       setDuration(workHours);
     }
   }, [
