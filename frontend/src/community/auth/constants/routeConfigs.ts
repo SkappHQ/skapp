@@ -28,3 +28,8 @@ export const drawerHiddenProtectedRoutes = [
   ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
   ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
 ];
+
+export const appBarOnlyProtectedRoutes = [
+  ROUTES.REPORT.DETAIL_BASE,
+  ROUTES.REPORT.ENTERPRISE_DETAIL_BASE
+];
