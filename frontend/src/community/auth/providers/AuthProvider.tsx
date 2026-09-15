@@ -61,7 +61,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuth = useCallback(async (): Promise<User | null> => {
     if (isCheckingAuth.current) return null;
     isCheckingAuth.current = true;
-    setIsLoading(true);
+
+    const isInitialCheck = !initialCheckDone.current;
+
+    if (isInitialCheck) {
+      setIsLoading(true);
+    }
 
     try {
       const userData = await checkUserAuthentication({
@@ -75,7 +80,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return userData;
     } finally {
-      setIsLoading(false);
+      if (isInitialCheck) {
+        setIsLoading(false);
+      }
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
       setHasCompletedInitialCheck(true);
@@ -122,7 +129,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         if (response.status === SignInStatus.SUCCESS) {
-          setIsLoading(true);
           // Refresh auth state after successful sign in
           const userData = await checkAuth();
 
