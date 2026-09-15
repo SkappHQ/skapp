@@ -72,7 +72,6 @@ const ToastMessage = ({
 
   return (
     <Snackbar
-      data-skapp-inert-skip
       key={key}
       open={open}
       autoHideDuration={autoHideDuration}
