@@ -85,16 +85,17 @@
   --color-semantic-green-text: #016630;
   --color-semantic-green-accent: #62b774;
 
-  --color-chart-purple: #ad46ff;
   --color-chart-blue: #2b7fff;
-  --color-chart-indigo: #7c86ff;
-  --color-chart-sky: #00a6f4;
-  --color-chart-mint: #00bc7d;
-  --color-chart-lemon: #f0b100;
-  --color-chart-orange: #ff6900;
-  --color-chart-sand: #d26768;
-  --color-chart-pink: #f6339a;
-  --color-chart-bluegray: #64748b;
+  --color-purple-nebula: #AD46FF;
+  --color-chart-blue: #2B7FFF;
+  --color-indigo-twilight: #7C86FF;
+  --color-sky-meridian: #00A6F4;
+  --color-mint-lagoon: #00BC7D;
+  --color-lemon-solstice: #F0B100;
+  --color-orange-ember: #FF6900;
+  --color-sand-dusk: #D26768;
+  --color-pink-aurora: #F6339A;
+  --color-bluegray-overcast: #64748B;
 
   --color-ai-gradient-start: var(--color-blue-dark);
   --color-ai-gradient-end: var(--color-blue-mid);
