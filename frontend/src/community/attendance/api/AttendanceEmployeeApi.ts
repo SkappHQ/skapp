@@ -12,7 +12,9 @@ import { TimeSheetRequestStates } from "~community/attendance/enums/timesheetEnu
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   ManualEntryPayloadType,
-  TimeAvailabilityType
+  TimeAvailabilityType,
+  TimeRequestApiResponseType,
+  TimeRequestDataType
 } from "~community/attendance/types/timeSheetTypes";
 import {
   convertToDateTime,
@@ -241,40 +243,40 @@ export const useCancelTimeRequest = (
 };
 
 export const useAddManualTimeEntry = (
-  onSuccess: () => void,
+  onSuccess: (timeRequest?: TimeRequestDataType) => void,
   onEnhancedError: (error: ErrorResponse) => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: ManualEntryPayloadType) => {
       const url = employeeAttendanceEndpoints.ADD_MANUAL_ENTRY;
-      return await authFetch.post(url, data);
+      return await authFetch.post<TimeRequestApiResponseType>(url, data);
     },
     onError(error: ErrorResponse) {
       onEnhancedError(error);
     },
-    onSuccess() {
-      onSuccess();
+    onSuccess(response) {
+      onSuccess(response?.data?.results?.[0]);
       invalidateTimesheetRecordQueries(queryClient);
     }
   });
 };
 
 export const useEditClockInOut = (
-  onSuccess: () => void,
+  onSuccess: (timeRequest?: TimeRequestDataType) => void,
   onError: () => void
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: ManualEntryPayloadType) => {
       const url = employeeAttendanceEndpoints.EDIT_CLOCK_IN_OUT;
-      return await authFetch.patch(url, data);
+      return await authFetch.patch<TimeRequestApiResponseType>(url, data);
     },
     onError() {
       onError();
     },
-    onSuccess() {
-      onSuccess();
+    onSuccess(response) {
+      onSuccess(response?.data?.results?.[0]);
       invalidateTimesheetRecordQueries(queryClient);
     }
   });

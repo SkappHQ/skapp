@@ -558,6 +558,7 @@ public class TimeServiceImpl implements TimeService {
 		log.info("editClockInClockOut: execution started");
 
 		validateManualEntryRestriction(currentUser);
+		boolean isSelfApprovedEntry = isSelfApprovedManualEntry(currentUser);
 		validateRequestParameters(timeRequestDto);
 
 		TimeRecord timeRecord = findTimeRecordForTheRequest(timeRequestDto);
@@ -576,6 +577,10 @@ public class TimeServiceImpl implements TimeService {
 
 		TimeRequest timeRequestToSave = timeRequestBuilder(timeRequestDto, currentUser.getEmployee(), timeRecord);
 		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
+
+		if (isSelfApprovedEntry) {
+			timeRequestToSave = selfApproveTimeRequest(timeRequestToSave, currentUser);
+		}
 
 		log.info("editClockInClockOut: execution completed");
 		return new ResponseEntityDto(false, timeMapper.timeRequestToTimeRequestResponseDto(timeRequestToSave));
@@ -604,7 +609,8 @@ public class TimeServiceImpl implements TimeService {
 
 		validateManualEntryRestriction(currentUser);
 
-		if (!employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
+		boolean isSelfApprovedEntry = isSelfApprovedManualEntry(currentUser);
+		if (!isSelfApprovedEntry && !employeeManagerDao.existsByEmployee(currentUser.getEmployee())) {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_NO_MANAGERS_FOUND);
 		}
 
@@ -617,6 +623,12 @@ public class TimeServiceImpl implements TimeService {
 		TimeRequest timeRequestToSave = timeRequestBuilder(timeRequestDto, currentUser.getEmployee(), timeRecord);
 		validateTimeRequestToSave(timeRequestToSave);
 		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
+
+		if (isSelfApprovedEntry) {
+			TimeRequest selfApprovedRequest = selfApproveTimeRequest(timeRequestToSave, currentUser);
+			log.info("addManualEntryRequest: execution completed with self approval");
+			return new ResponseEntityDto(false, timeMapper.timeRequestToTimeRequestResponseDto(selfApprovedRequest));
+		}
 
 		boolean attendanceConfigForAutoApproval = attendanceConfigService
 			.getAttendanceConfigByType(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES);
@@ -2202,14 +2214,67 @@ public class TimeServiceImpl implements TimeService {
 			return;
 		}
 
-		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
-				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
-				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
-
-		if (!isAuthorized) {
+		if (!isAuthorizedForRestrictedManualEntry(currentUser)) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED);
 		}
+	}
+
+	/**
+	 * While the manual time entry restriction is enabled, only these roles may add or edit
+	 * time entries - both their own and those of the employees they oversee.
+	 * @param currentUser the user submitting the time entry
+	 * @return true if the user is allowed to add or edit time entries under the
+	 * restriction
+	 */
+	private boolean isAuthorizedForRestrictedManualEntry(User currentUser) {
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+
+		return Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+	}
+
+	/**
+	 * A user who is authorized under the manual time entry restriction already approves
+	 * time entries, so their own entry needs no supervisor to review it. When no
+	 * supervisor is assigned to them the request cannot be routed to anyone, and blocking
+	 * it would leave them unable to record their own time, so the entry is approved on
+	 * submission instead.
+	 * @param currentUser the user submitting the time entry
+	 * @return true if the user's own time entry should be approved on submission
+	 */
+	private boolean isSelfApprovedManualEntry(User currentUser) {
+		return isManualEntryRestrictionEnabled() && isAuthorizedForRestrictedManualEntry(currentUser)
+				&& !employeeManagerDao.existsByEmployee(currentUser.getEmployee());
+	}
+
+	/**
+	 * Approves a freshly submitted time request on behalf of its own submitter, stamping
+	 * them as the reviewer. No manager email or notification is sent, as the employee has
+	 * no supervisor to notify.
+	 * @param timeRequest the saved, pending time request
+	 * @param currentUser the user who submitted and approves the request
+	 * @return the approved time request
+	 */
+	private TimeRequest selfApproveTimeRequest(TimeRequest timeRequest, User currentUser) {
+		log.info("selfApproveTimeRequest: approving time request {} of an employee with no supervisor assigned",
+				timeRequest.getTimeRequestId());
+
+		TimeRequestManagerPatchDto selfApprovalDto = new TimeRequestManagerPatchDto();
+		selfApprovalDto.setStatus(RequestStatus.APPROVED);
+
+		timeRequest.setReviewerId(currentUser.getEmployee());
+		timeRequest.setReviewedAt(DateTimeUtils.getCurrentUtcDateTime());
+
+		TimeRequest approvedRequest = RequestType.EDIT_RECORD_REQUEST.equals(timeRequest.getRequestType())
+				? handleEditTimeRecordRequests(timeRequest, currentUser, selfApprovalDto)
+				: handleManualTimeEntryRequests(timeRequest, currentUser, selfApprovalDto);
+
+		timeEmailService.sendTimeEntryRequestAutoApprovedEmployeeEmail(approvedRequest);
+		attendanceNotificationService.sendTimeEntryRequestAutoApprovedEmployeeNotification(approvedRequest);
+
+		log.info("selfApproveTimeRequest: execution completed");
+		return approvedRequest;
 	}
 
 	protected void populateEnterpriseChipFields(TimeRecordChipResponseDto chip, EmployeeTimeRecord employeeTimeRecord,

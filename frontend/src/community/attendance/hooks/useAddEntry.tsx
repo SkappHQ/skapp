@@ -6,13 +6,17 @@ import {
   useEditClockInOut
 } from "~community/attendance/api/AttendanceEmployeeApi";
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
-import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import {
+  EmployeeTimesheetModalTypes,
+  TimeSheetRequestStates
+} from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   DirectManualTimeEntryVariablesType,
   TimeAvailabilityType,
-  TimeEntryFormValueType
+  TimeEntryFormValueType,
+  TimeRequestDataType
 } from "~community/attendance/types/timeSheetTypes";
 import {
   convertTo12HourByDateString,
@@ -91,20 +95,35 @@ const useAddEntry = () => {
     });
   };
 
-  const onSuccessAddManualTimeEntry = () => {
+  const isApprovedOnSubmission = (timeRequest?: TimeRequestDataType): boolean =>
+    timeRequest?.status === TimeSheetRequestStates.APPROVED;
+
+  const onSuccessAddManualTimeEntry = (timeRequest?: TimeRequestDataType) => {
+    const isApproved = isApprovedOnSubmission(timeRequest);
+
     setToastMessage({
       open: true,
-      title: translateText(["addTimeEntrySuccessTitle"]),
-      description: translateText(["addTimeEntrySuccessDes"]),
+      title: translateText([
+        isApproved ? "directEntryAddedToastTitle" : "addTimeEntrySuccessTitle"
+      ]),
+      description: translateText([
+        isApproved ? "directEntryAddedToastDes" : "addTimeEntrySuccessDes"
+      ]),
       toastType: ToastType.SUCCESS
     });
   };
 
-  const onSuccessEditManualTimeEntry = () => {
+  const onSuccessEditManualTimeEntry = (timeRequest?: TimeRequestDataType) => {
+    const isApproved = isApprovedOnSubmission(timeRequest);
+
     setToastMessage({
       open: true,
-      title: translateText(["addTimeEntrySuccessTitle"]),
-      description: translateText(["editTimeEntrySuccessDes"]),
+      title: translateText([
+        isApproved ? "directEntryUpdatedToastTitle" : "addTimeEntrySuccessTitle"
+      ]),
+      description: translateText([
+        isApproved ? "directEntryUpdatedToastDes" : "editTimeEntrySuccessDes"
+      ]),
       toastType: ToastType.SUCCESS
     });
   };

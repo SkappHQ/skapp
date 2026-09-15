@@ -113,6 +113,10 @@ export interface TimeRequestDataResponseType {
   totalPages: number;
 }
 
+export interface TimeRequestApiResponseType {
+  results: TimeRequestDataType[];
+}
+
 export interface TimeSlotsType {
   slotType: string;
   startTime: string;
