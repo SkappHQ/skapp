@@ -994,6 +994,7 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				timeRecordChip.setIsOngoingTimeRequest(Boolean.TRUE.equals(timeRecord.getIsOngoingTimeRequest()));
 				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}

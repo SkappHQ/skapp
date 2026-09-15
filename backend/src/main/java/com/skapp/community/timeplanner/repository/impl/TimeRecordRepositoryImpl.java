@@ -409,7 +409,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 			.collect(Collectors.toMap(tuple -> tuple.get(2, LocalDate.class) + "_" + tuple.get(1, Long.class),
 					tuple -> new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
 							tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
-							tuple.get(5, String.class)),
+							tuple.get(5, String.class), null),
 					(existing,
 							replacement) -> existing.getTimeRecordId() != null && replacement.getTimeRecordId() != null
 									&& replacement.getTimeRecordId() > existing.getTimeRecordId() ? replacement
@@ -422,7 +422,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				EmployeeTimeRecord record = existingRecords.get(key);
 
 				if (record == null) {
-					record = new EmployeeTimeRecordImpl(null, employee.getEmployeeId(), date, 0.0f, 0.0f, null);
+					record = new EmployeeTimeRecordImpl(null, employee.getEmployeeId(), date, 0.0f, 0.0f, null, null);
 				}
 				allRecords.add(record);
 			}
@@ -466,6 +466,7 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.workedHours), 0.0));
 				selections.add(cb.coalesce(timeRecord.get(TimeRecord_.breakHours), 0.0));
 				selections.add(cb.nullLiteral(String.class));
+				selections.add(buildOngoingTimeSlotCountSubquery(cb, query, timeRecord));
 
 				addLocationStatusSelections(cb, query, timeRecord, selections);
 
@@ -494,11 +495,29 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 	protected EmployeeTimeRecord buildTimeRecord(Tuple tuple) {
 		return new EmployeeTimeRecordImpl(tuple.get(0, Long.class), tuple.get(1, Long.class),
 				tuple.get(2, LocalDate.class), tuple.get(3, Float.class), tuple.get(4, Float.class),
-				tuple.get(5, String.class));
+				tuple.get(5, String.class), hasOngoingTimeSlot(tuple.get(6, Long.class)));
 	}
 
 	protected EmployeeTimeRecord buildEmptyTimeRecord(Long employeeId, LocalDate date) {
-		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null);
+		return new EmployeeTimeRecordImpl(null, employeeId, date, 0.0f, 0.0f, null, false);
+	}
+
+	protected Boolean hasOngoingTimeSlot(Long ongoingTimeSlotCount) {
+		return ongoingTimeSlotCount != null && ongoingTimeSlotCount > 0;
+	}
+
+	private Subquery<Long> buildOngoingTimeSlotCountSubquery(CriteriaBuilder cb, CriteriaQuery<Tuple> query,
+			Root<TimeRecord> timeRecord) {
+		Subquery<Long> subquery = query.subquery(Long.class);
+		Root<TimeSlot> timeSlot = subquery.from(TimeSlot.class);
+
+		subquery.select(cb.count(timeSlot));
+		subquery.where(
+				cb.equal(timeSlot.get(TimeSlot_.timeRecord).get(TimeRecord_.timeRecordId),
+						timeRecord.get(TimeRecord_.timeRecordId)),
+				cb.isTrue(timeSlot.get(TimeSlot_.isActiveRightNow)));
+
+		return subquery;
 	}
 
 	private Subquery<Long> buildTeamEmployeeIdSubquery(CriteriaQuery<?> query, List<Long> teamIds) {
