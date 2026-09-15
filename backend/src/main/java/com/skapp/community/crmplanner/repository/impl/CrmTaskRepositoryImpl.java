@@ -155,15 +155,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		task.fetch(CrmTask_.type, JoinType.INNER);
 		task.fetch(CrmTask_.owner, JoinType.INNER);
 
-		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
-		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
-		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
-
 		query.distinct(true);
-		query.where(cb.and(
-				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
-						cb.equal(dealContact.get(CrmContact_.id), contactId)),
-				cb.isFalse(task.get(CrmTask_.isDeleted))));
+		query.where(cb.and(buildContactMatchPredicate(cb, task, contactId), cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getResultList();
 	}
@@ -208,10 +201,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		CriteriaQuery<CrmContactTaskMetrics> query = cb.createQuery(CrmContactTaskMetrics.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
-		Join<CrmTask, CrmContact> directContact = task.join(CrmTask_.contact, JoinType.LEFT);
-		Join<CrmTask, CrmDeal> deal = task.join(CrmTask_.deal, JoinType.LEFT);
-		Join<CrmDeal, CrmContact> dealContact = deal.join(CrmDeal_.contact, JoinType.LEFT);
-
 		Expression<Long> openCount = cb.coalesce(
 				cb.sum(cb.<Long>selectCase().when(cb.isFalse(task.get(CrmTask_.isCompleted)), 1L).otherwise(0L)), 0L);
 
@@ -222,10 +211,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		query.select(cb.construct(CrmContactTaskMetrics.class, openCount, overdueCount));
 
-		query.where(cb.and(
-				cb.or(cb.equal(directContact.get(CrmContact_.id), contactId),
-						cb.equal(dealContact.get(CrmContact_.id), contactId)),
-				cb.isFalse(task.get(CrmTask_.isDeleted))));
+		query.where(cb.and(buildContactMatchPredicate(cb, task, contactId), cb.isFalse(task.get(CrmTask_.isDeleted))));
 
 		return entityManager.createQuery(query).getSingleResult();
 	}
