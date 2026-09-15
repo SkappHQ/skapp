@@ -245,7 +245,7 @@ export const getSelectedContact = (
   }
 };
 
-export const getContactFieldDiff = (
+export const getChangedContactFields = (
   initialValues: CrmContactEntity,
   currentValues: CrmContactEntity
 ): CrmContactEntity => {
