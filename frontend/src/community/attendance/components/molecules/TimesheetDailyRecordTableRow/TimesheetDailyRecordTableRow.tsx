@@ -22,6 +22,7 @@ import { useAttendanceStore } from "~community/attendance/store/attendanceStore"
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   DailyLogType,
+  DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
@@ -52,6 +53,7 @@ interface Props {
   targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
+  selfDirectEntryTarget?: DirectEntryEmployeeType | null;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
@@ -60,7 +62,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   targetEmployeeId,
   targetEmployeeDetails,
   isRowInteractive,
-  isManualEntryRestricted
+  isManualEntryRestricted,
+  selfDirectEntryTarget
 }) => {
   const { isFreeTier } = useSessionData();
 
@@ -192,6 +195,14 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
           employeeGeneralDetails?.lastName ?? ""
         ]).trim()
       });
+      handleEdit();
+      return;
+    }
+
+    if (selfDirectEntryTarget) {
+      if (getTimeEntryModalType(record) === null) return;
+
+      setDirectManualTimeEntryEligibleEmployee(selfDirectEntryTarget);
       handleEdit();
       return;
     }
