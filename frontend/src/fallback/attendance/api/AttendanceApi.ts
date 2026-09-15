@@ -9,7 +9,7 @@ export const useUpdateEmployeeStatusWithLocation = () => {
   };
 };
 
-export const useAddDirectTimeEntry = (
+const useDirectTimeEntryMutation = (
   _onSuccess: () => void,
   _onError: (error: ErrorResponse) => void
 ) => {
@@ -19,15 +19,9 @@ export const useAddDirectTimeEntry = (
   };
 };
 
-export const useEditDirectTimeEntry = (
-  _onSuccess: () => void,
-  _onError: (error: ErrorResponse) => void
-) => {
-  return {
-    mutate: (_: DirectManualTimeEntryVariablesType) => {},
-    isPending: false
-  };
-};
+export const useAddDirectTimeEntry = useDirectTimeEntryMutation;
+
+export const useEditDirectTimeEntry = useDirectTimeEntryMutation;
 
 export interface UserGeofenceStatus {
   isGeofenceConfigured: boolean;
