@@ -245,7 +245,8 @@ const useAddEntry = () => {
     const employeeConfirmationModalType = getModalBeforeManualEntry(
       values,
       timeAvailability,
-      status
+      status,
+      isDirectTimeEntry
     );
 
     if (employeeConfirmationModalType === null) {

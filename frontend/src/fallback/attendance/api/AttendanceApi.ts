@@ -1,4 +1,5 @@
 import { DirectManualTimeEntryVariablesType } from "~community/attendance/types/timeSheetTypes";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import { EpAddTimeRecordDto } from "~enterprise/attendance/api/AttendanceApi";
 
 export const useUpdateEmployeeStatusWithLocation = () => {
@@ -8,14 +9,20 @@ export const useUpdateEmployeeStatusWithLocation = () => {
   };
 };
 
-export const useAddDirectTimeEntry = () => {
+export const useAddDirectTimeEntry = (
+  _onSuccess: () => void,
+  _onError: (error: ErrorResponse) => void
+) => {
   return {
     mutate: (_: DirectManualTimeEntryVariablesType) => {},
     isPending: false
   };
 };
 
-export const useEditDirectTimeEntry = () => {
+export const useEditDirectTimeEntry = (
+  _onSuccess: () => void,
+  _onError: (error: ErrorResponse) => void
+) => {
   return {
     mutate: (_: DirectManualTimeEntryVariablesType) => {},
     isPending: false

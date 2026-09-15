@@ -21,6 +21,7 @@ export const invalidateTimesheetRecordQueries = (
   queryClient: QueryClient
 ): void => {
   const queryKeys = [
+    getAttendanceQueryKeys.employeeStatus(),
     attendanceQueryKeys.getEmployeeDailyLog(),
     attendanceQueryKeys.getEmployeeWorkSummary(),
     attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),

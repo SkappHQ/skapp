@@ -33,7 +33,8 @@ export const getTimeEntryModalType = (
 export const getModalBeforeManualEntry = (
   values: TimeEntryFormValueType,
   timeAvailability: TimeAvailabilityType,
-  slotType?: AttendanceSlotType | null
+  slotType?: AttendanceSlotType | null,
+  isDirectTimeEntry: boolean = false
 ): EmployeeTimesheetModalTypes | null => {
   const isOngoingSession =
     (slotType === AttendanceSlotType.START ||
@@ -45,8 +46,9 @@ export const getModalBeforeManualEntry = (
     return EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY;
   }
   if (
-    timeAvailability?.editTimeRequests ||
-    timeAvailability?.manualEntryRequests?.length
+    !isDirectTimeEntry &&
+    (timeAvailability?.editTimeRequests ||
+      timeAvailability?.manualEntryRequests?.length)
   ) {
     return EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS;
   }
