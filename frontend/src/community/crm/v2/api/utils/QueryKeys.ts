@@ -11,6 +11,10 @@ const CRM_COMPANIES = "crm-companies";
 
 export const crmTaskQueryKeys = {
   TASKS: (filter: CrmTaskFilterRequest) => ["crm-tasks-v2", filter],
+  TASKS_INFINITE: (filter: CrmTaskFilterRequest) => [
+    "crm-tasks-infinite-v2",
+    filter
+  ],
   COMPLETED_TASKS: (filter: CrmTaskFilterRequest) => [
     "crm-completed-tasks-v2",
     filter
