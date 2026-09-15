@@ -10,7 +10,10 @@ import {
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
-import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
+import {
+  replaceTabQueryParam,
+  scrollToTop
+} from "~community/common/utils/commonUtil";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
@@ -26,7 +29,8 @@ interface Props {
 const DirectorySteppers = ({
   employeeId,
   isIndividualView,
-  isAccountView
+  isAccountView,
+  formRef
 }: Props) => {
   const [isLeaveTabVisible, setIsLeaveTabVisible] = useState(false);
   const [isTimeTabVisible, setIsTimeTabVisible] = useState(false);
@@ -128,11 +132,16 @@ const DirectorySteppers = ({
   };
 
   useEffect(() => {
-    if (prevStep !== null && prevStep !== currentStep) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
+      scrollToTop(0, "auto");
+
+      const focusableElement = formRef.current.querySelector(
+        'button, input, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement | null;
+      focusableElement?.focus({ preventScroll: true });
     }
     setPrevStep(currentStep);
-  }, [currentStep, prevStep]);
+  }, [currentStep, formRef, prevStep]);
 
   return (
     <BoxStepper
