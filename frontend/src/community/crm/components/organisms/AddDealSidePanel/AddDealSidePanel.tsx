@@ -1,6 +1,7 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -55,13 +56,15 @@ const AddDealSidePanel: FC = () => {
     closeCrmSidePanel,
     addDealToStage,
     setPreselectedStageId
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    addDealToStage: store.addDealToStage,
-    setPreselectedStageId: store.setPreselectedStageId
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      addDealToStage: store.addDealToStage,
+      setPreselectedStageId: store.setPreselectedStageId
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

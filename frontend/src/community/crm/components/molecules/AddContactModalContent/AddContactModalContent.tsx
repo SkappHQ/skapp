@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -21,9 +22,11 @@ const AddContactModalContent = () => {
     "addContactModal"
   );
   const { data: currentUser } = useGetUserPersonalDetails();
-  const { setIsContactModalOpen } = useCrmStore((store) => ({
-    setIsContactModalOpen: store.setIsContactModalOpen
-  }));
+  const { setIsContactModalOpen } = useCrmStore(
+    useShallow((store) => ({
+      setIsContactModalOpen: store.setIsContactModalOpen
+    }))
+  );
 
   const handleCloseModal = () => {
     setIsContactModalOpen(false);

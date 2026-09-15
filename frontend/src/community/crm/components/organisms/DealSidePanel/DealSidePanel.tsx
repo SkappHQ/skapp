@@ -1,5 +1,6 @@
 import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -42,17 +43,19 @@ const DealSidePanel: FC = () => {
     updateDeal: updateDealInStore,
     updateDealInStage,
     boardStageDeals
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    selectedDealId: store.selectedDealId,
-    setSelectedDealId: store.setSelectedDealId,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    getDealById: store.getDealById,
-    boardStageDeals: store.boardStageDeals,
-    updateDeal: store.updateDeal,
-    updateDealInStage: store.updateDealInStage
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      getDealById: store.getDealById,
+      boardStageDeals: store.boardStageDeals,
+      updateDeal: store.updateDeal,
+      updateDealInStage: store.updateDealInStage
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&

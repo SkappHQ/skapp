@@ -34,14 +34,14 @@ export const useBoardData = ({
 
   const { data: dealsByStages, isLoading: isDealsLoading } =
     useGetDealsGroupedByStages(
-    {
-      stageIds,
-      searchKeyword,
-      page: INITIAL_BOARD_PAGE,
-      limit: DEFAULT_BOARD_PAGE_SIZE
-    },
-    stageIds.length > 0
-  );
+      {
+        stageIds,
+        searchKeyword,
+        page: INITIAL_BOARD_PAGE,
+        limit: DEFAULT_BOARD_PAGE_SIZE
+      },
+      stageIds.length > 0
+    );
 
   useEffect(() => {
     if (!initData || !dealsByStages) return;

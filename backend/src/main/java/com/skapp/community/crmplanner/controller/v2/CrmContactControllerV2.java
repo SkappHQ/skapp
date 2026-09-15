@@ -45,7 +45,7 @@ public class CrmContactControllerV2 {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get CRM contact by ID", description = "Returns the base contact with its company and owner.")
+	@Operation(summary = "Get CRM contact by ID", description = "Returns a single CRM contact by its ID.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/{id}")
 	public ResponseEntity<ResponseEntityDto> getContactById(@PathVariable Long id) {
@@ -63,7 +63,7 @@ public class CrmContactControllerV2 {
 	}
 
 	@Operation(summary = "Get CRM contacts for lookup",
-			description = "Returns a paginated list of contacts for dropdowns and deal forms, each with a scalar companyId, plus the referenced companies for name display.")
+			description = "Returns a paginated list of contacts for dropdowns and deal forms.")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	@GetMapping("/lookup")
 	public ResponseEntity<ResponseEntityDto> getContactsLookup(CrmContactFilterDto filterDto) {

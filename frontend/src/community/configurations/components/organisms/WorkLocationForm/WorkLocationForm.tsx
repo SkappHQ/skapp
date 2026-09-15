@@ -1,11 +1,10 @@
 import { ButtonV2, InputField, SmallModal } from "@rootcodelabs/skapp-ui";
+import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useRef } from "react";
 
 import { useGetAttendanceConfiguration } from "~community/attendance/api/AttendanceAdminApi";
-import { AxiosError } from "axios";
-
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";

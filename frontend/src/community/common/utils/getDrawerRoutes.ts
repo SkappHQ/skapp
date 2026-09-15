@@ -11,6 +11,7 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 type Role =
   | AdminTypes
@@ -156,9 +157,34 @@ const getDrawerRoutes = ({
       }
 
       if (route?.name === "Leave") {
+        const canViewLeavePolicies = userRoles?.some((role) =>
+          [
+            AdminTypes.SUPER_ADMIN,
+            AdminTypes.LEAVE_ADMIN,
+            AdminTypes.PEOPLE_ADMIN
+          ].includes(role as AdminTypes)
+        );
+
+        const isLeavePoliciesVisible = Boolean(
+          canViewLeavePolicies &&
+          (isLeavePoliciesEnabled || isLeavePoliciesConfigError)
+        );
+
         if (!userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)) {
-          return null;
+          if (!isLeavePoliciesVisible) {
+            return null;
+          }
+
+          return {
+            id: route?.id,
+            name: "Leave Policies",
+            url: ROUTES.LEAVE.LEAVE_POLICIES,
+            icon: route?.icon,
+            hasSubTree: false,
+            featureBadge: (route as RouteWithBadge)?.badge
+          };
         }
+
         const isLeaveEmployeeWithoutManagerOrAdminRole =
           userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
           !userRoles?.some((role) =>
@@ -167,7 +193,10 @@ const getDrawerRoutes = ({
             )
           );
 
-        if (isLeaveEmployeeWithoutManagerOrAdminRole) {
+        if (
+          isLeaveEmployeeWithoutManagerOrAdminRole &&
+          !isLeavePoliciesVisible
+        ) {
           const hasAdditionalRolesForLeaveEmployee =
             userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
             userRoles?.some((role) =>
@@ -233,6 +262,12 @@ const getDrawerRoutes = ({
           hasSubTree: false,
           featureBadge: (route as RouteWithBadge)?.badge
         };
+      }
+
+      if (route?.name === "Report") {
+        if (!isCoreOrProTier(tiers)) {
+          return null;
+        }
       }
 
       if (route?.name === "Invoices") {

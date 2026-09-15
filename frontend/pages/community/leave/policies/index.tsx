@@ -1,4 +1,5 @@
 import { NextPage } from "next";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -9,8 +10,12 @@ import { IconName } from "~community/common/types/IconTypes";
 import BulkAssignPolicyModal from "~community/leave/components/molecules/BulkAssignPolicyModals/BulkAssignPolicyModal";
 import LeavePoliciesTable from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTable";
 import PolicyTypeSelectionModal from "~community/leave/components/molecules/PolicyTypeSelectionModal/PolicyTypeSelectionModal";
+import EditLeavePolicyView from "~community/leave/components/organisms/EditLeavePolicyView/EditLeavePolicyView";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
-import { PolicyType } from "~community/leave/types/LeavePolicyTypes";
+import {
+  LeavePolicyType,
+  PolicyType
+} from "~community/leave/types/LeavePolicyTypes";
 
 const LeavePolicies: NextPage = () => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
@@ -23,6 +28,9 @@ const LeavePolicies: NextPage = () => {
   const [isBulkAssignModalOpen, setIsBulkAssignModalOpen] =
     useState<boolean>(false);
   const [isPoliciesEmpty, setIsPoliciesEmpty] = useState<boolean>(false);
+  const [editingPolicy, setEditingPolicy] = useState<LeavePolicyType | null>(
+    null
+  );
 
   const showTopActionButtons = canManagePolicies && !isPoliciesEmpty;
 
@@ -33,6 +41,22 @@ const LeavePolicies: NextPage = () => {
       query: { type: policyType }
     });
   };
+
+  if (editingPolicy) {
+    return (
+      <>
+        <Head>
+          <title>{translateText(["editPolicy", "pageHead"])}</title>
+        </Head>
+        <div className="h-full p-4 sm:px-12 sm:py-6">
+          <EditLeavePolicyView
+            policy={editingPolicy}
+            onClose={() => setEditingPolicy(null)}
+          />
+        </div>
+      </>
+    );
+  }
 
   return (
     <ContentLayout
@@ -60,6 +84,7 @@ const LeavePolicies: NextPage = () => {
       <>
         <LeavePoliciesTable
           onCreatePolicy={() => setIsPolicyTypeModalOpen(true)}
+          onEditPolicy={setEditingPolicy}
           onEmptyStateChange={setIsPoliciesEmpty}
         />
         <PolicyTypeSelectionModal

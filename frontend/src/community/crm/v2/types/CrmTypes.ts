@@ -42,7 +42,7 @@ export enum CrmSidePanelTypes {
   DEAL_DETAIL_SIDE_PANEL = "DEAL_DETAIL_SIDE_PANEL"
 }
 
-export interface CrmDealReorderWithinStageRequest {
+export interface CrmDealReorderRequest {
   dealId: number;
   previousDealId: number | null;
   nextDealId: number | null;
@@ -191,11 +191,11 @@ export interface TaskDueDateInfo {
   textColorClass: string;
 }
 
-export interface GroupedTaskIds {
-  overdue: number[];
-  dueToday: number[];
-  dueTomorrow: number[];
-  upcoming: number[];
+export interface GroupedTasks {
+  overdue: CrmTaskEntity[];
+  dueToday: CrmTaskEntity[];
+  dueTomorrow: CrmTaskEntity[];
+  upcoming: CrmTaskEntity[];
   isOpenTasksEmpty: boolean;
 }
 
@@ -228,8 +228,7 @@ export interface CrmTaskFilterRequest {
   size?: number;
 }
 
-export interface CrmRelatedTasksFilterRequest {
-  id: number;
+export interface CrmRelatedTasksFilter {
   page?: number;
   size?: number;
 }

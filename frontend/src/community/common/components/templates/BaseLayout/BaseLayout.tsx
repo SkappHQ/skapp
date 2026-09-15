@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { IsAProtectedUrlWithDrawer } from "~community/auth/utils/authUtils";
 import SkipToContentPopup from "~community/common/components/atoms/SkipToContentPopup/SkipToContentPopup";
@@ -35,9 +36,11 @@ const BaseLayout = ({ children }: Props) => {
 
   const [isClient, setIsClient] = useState<boolean>(false);
 
-  const { setGlobalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    setGlobalLoginMethod: state.setGlobalLoginMethod
-  }));
+  const { setGlobalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      setGlobalLoginMethod: state.setGlobalLoginMethod
+    }))
+  );
 
   const { data: globalLogin, isLoading: isGlobalLoginMethodLoading } =
     useGetGlobalLoginMethod(isEnterprise, getTenantId());

@@ -13,12 +13,15 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealIdsRequestDto;
+import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
+import com.skapp.community.crmplanner.repository.CrmDealOrderIndexDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
+import com.skapp.community.crmplanner.service.CrmDealOrderIndexService;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
@@ -56,6 +59,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,7 +75,11 @@ class CrmDealControllerIntegrationTest {
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists";
 
+	private static final String LIST_VIEW_CONFIG_PATH = BASE_PATH + "/list-view-config";
+
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
+
+	private static final String REORDER_PATH = BASE_PATH + "/reorder";
 
 	private final MockMvc mvc;
 
@@ -98,6 +106,10 @@ class CrmDealControllerIntegrationTest {
 	private final EmployeeDao employeeDao;
 
 	private final EmployeeRoleDao employeeRoleDao;
+
+	private final CrmDealOrderIndexDao crmDealOrderIndexDao;
+
+	private final CrmDealOrderIndexService crmDealOrderIndexService;
 
 	private String authToken;
 
@@ -128,6 +140,20 @@ class CrmDealControllerIntegrationTest {
 		return performRequest(delete(BASE_PATH + "/{id}", id).accept(MediaType.APPLICATION_JSON));
 	}
 
+	private ResultActions performReorderRequest(CrmDealListReorderRequestDto dto) throws Exception {
+		return performRequest(patch(REORDER_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmDealListReorderRequestDto reorderPayload(Long dealId, Long previousDealId, Long nextDealId) {
+		CrmDealListReorderRequestDto dto = new CrmDealListReorderRequestDto();
+		dto.setDealId(dealId);
+		dto.setPreviousDealId(previousDealId);
+		dto.setNextDealId(nextDealId);
+		return dto;
+	}
+
 	private ResultActions performGetExistsRequest(String name) throws Exception {
 		return performRequest(get(EXISTS_PATH).param("name", name).accept(MediaType.APPLICATION_JSON));
 	}
@@ -135,6 +161,16 @@ class CrmDealControllerIntegrationTest {
 	private ResultActions performGetDealsRequest(Long companyId) throws Exception {
 		return performRequest(
 				get(BASE_PATH).param("companyId", companyId.toString()).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetListViewConfigRequest() throws Exception {
+		return performRequest(get(LIST_VIEW_CONFIG_PATH).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performPutListViewConfigRequest(String configJson) throws Exception {
+		return performRequest(put(LIST_VIEW_CONFIG_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(configJson)
+			.accept(MediaType.APPLICATION_JSON));
 	}
 
 	private CrmDealStage savedStage() {
@@ -982,6 +1018,70 @@ class CrmDealControllerIntegrationTest {
 		performDeleteRequest(1L).andDo(print()).andExpect(status().isForbidden());
 	}
 
+	// --- List-view config tests ---
+
+	@Test
+	@DisplayName("Get list-view config - No saved config - Returns default config")
+	void getListViewConfig_NoSavedConfig_ReturnsDefault() throws Exception {
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(400))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']").value(nullValue()));
+	}
+
+	@Test
+	@DisplayName("Update then get list-view config - Round-trips the saved config")
+	void updateThenGetListViewConfig_RoundTripsSavedConfig() throws Exception {
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":{\"field\":\"AMOUNT\",\"direction\":\"ASC\"}}";
+
+		performPutListViewConfigRequest(config).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"));
+
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("AMOUNT"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['width']").value(200))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['sort']['field']").value("AMOUNT"));
+	}
+
+	@Test
+	@DisplayName("Update list-view config for one user - Does not affect another user's config")
+	void updateListViewConfig_DoesNotAffectAnotherUser() throws Exception {
+		// user1 (admin) saves a custom config
+		String config = "{\"fields\":[{\"field\":\"AMOUNT\",\"width\":200}],\"sort\":null}";
+		performPutListViewConfigRequest(config).andDo(print()).andExpect(status().isOk());
+
+		// user2 is a CRM sales representative who has never saved a config
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		// user2 still gets the default, unaffected by user1's save
+		performGetListViewConfigRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'].length()").value(7))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['fields'][0]['field']").value("NAME"));
+	}
+
+	@Test
+	@DisplayName("Get list-view config - Without CRM role returns forbidden")
+	void getListViewConfig_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(get(LIST_VIEW_CONFIG_PATH).accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
+	}
+
 	// --- getDealsByIds (batch) ---
 
 	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
@@ -1178,6 +1278,51 @@ class CrmDealControllerIntegrationTest {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performBatchRequest(List.of(1L)).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view - repositions the deal's list key between its neighbours")
+	void reorderDealInList_ListView_RepositionsDeal() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder@example.com");
+		CrmDeal dealA = savedBatchDeal("Reorder Deal A", stage, company, contact, 1L);
+		CrmDeal dealB = savedBatchDeal("Reorder Deal B", stage, company, contact, 1L);
+		CrmDeal dealC = savedBatchDeal("Reorder Deal C", stage, company, contact, 1L);
+		crmDealOrderIndexService.createForNewDeal(dealA);
+		crmDealOrderIndexService.createForNewDeal(dealB);
+		crmDealOrderIndexService.createForNewDeal(dealC);
+
+		performReorderRequest(reorderPayload(dealC.getId(), dealA.getId(), dealB.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(dealC.getId()));
+
+		String keyA = crmDealOrderIndexDao.findById(dealA.getId()).orElseThrow().getList();
+		String keyB = crmDealOrderIndexDao.findById(dealB.getId()).orElseThrow().getList();
+		String keyC = crmDealOrderIndexDao.findById(dealC.getId()).orElseThrow().getList();
+		assertThat(keyC).isGreaterThan(keyA).isLessThan(keyB);
+	}
+
+	@Test
+	@DisplayName("Reorder deal in list view as Sales Representative on another owner's deal - returns edit-denied error")
+	void reorderDealInList_SalesRepOtherOwner_ReturnsEditDenied() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Reorder Denial Co");
+		CrmContact contact = savedBatchContact(company, "deal.reorder.denial@example.com");
+		CrmDeal target = savedBatchDeal("Admin Owned Reorder Deal", stage, company, contact, 1L);
+		CrmDeal neighbour = savedBatchDeal("Admin Owned Neighbour Deal", stage, company, contact, 1L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performReorderRequest(reorderPayload(target.getId(), neighbour.getId(), null)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['message']")
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_DEAL_EDIT_DENIED)));
 	}
 
 }

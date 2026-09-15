@@ -2,6 +2,7 @@ import { SelectChangeEvent, Stack } from "@mui/material";
 import { FormikErrors } from "formik";
 import { DateTime } from "luxon";
 import React, { useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import PeopleAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/PeopleAutocompleteSearch";
 import Form from "~community/common/components/molecules/Form/Form";
@@ -70,11 +71,13 @@ const CustomLeaveAllocationForm: React.FC<Props> = ({
     customLeaveAllocationModalType,
     currentEditingLeaveAllocation,
     selectedYear
-  } = useLeaveStore((state) => ({
-    customLeaveAllocationModalType: state.customLeaveAllocationModalType,
-    currentEditingLeaveAllocation: state.currentEditingLeaveAllocation,
-    selectedYear: state.selectedYear
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      customLeaveAllocationModalType: state.customLeaveAllocationModalType,
+      currentEditingLeaveAllocation: state.currentEditingLeaveAllocation,
+      selectedYear: state.selectedYear
+    }))
+  );
 
   useEffect(() => {
     if (

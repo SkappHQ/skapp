@@ -1676,6 +1676,11 @@ public class PeopleServiceImpl implements PeopleService {
 			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN);
 		}
 
+		if (employeeManagerDao.existsByManagerAndEmployeeAndManagerTypeIn(newPrimarySupervisor, employee,
+				Set.of(ManagerType.PRIMARY, ManagerType.SECONDARY))) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TRANSFER_SUPERVISOR_ALREADY_ASSIGNED);
+		}
+
 		EmployeeManager primarySupervisorRecord = employeeManagerDao
 			.findByManagerAndEmployeeAndManagerType(currentPrimarySupervisor, employee, ManagerType.PRIMARY)
 			.orElseThrow(() -> new ModuleException(

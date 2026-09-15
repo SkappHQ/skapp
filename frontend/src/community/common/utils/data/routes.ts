@@ -411,6 +411,24 @@ const routes = [
   },
   {
     id: "8",
+    name: "Report",
+    url: ROUTES.REPORT.BASE,
+    icon: IconName.REPORT_ICON,
+    hasSubTree: false,
+    badge: "New",
+    requiredAuthLevel: [
+      AdminTypes.SUPER_ADMIN,
+      AdminTypes.PEOPLE_ADMIN,
+      AdminTypes.LEAVE_ADMIN,
+      AdminTypes.ATTENDANCE_ADMIN,
+      AdminTypes.ESIGN_ADMIN,
+      AdminTypes.INVOICE_ADMIN,
+      AdminTypes.PM_ADMIN,
+      AdminTypes.CRM_ADMIN
+    ]
+  },
+  {
+    id: "9",
     name: "Configurations",
     url: ROUTES.CONFIGURATIONS.BASE,
     icon: IconName.CONFIGURATIONS_ICON,
@@ -426,7 +444,7 @@ const routes = [
     ]
   },
   {
-    id: "9",
+    id: "10",
     name: "Settings",
     url: ROUTES.SETTINGS.BASE,
     icon: IconName.SETTINGS_ICON,

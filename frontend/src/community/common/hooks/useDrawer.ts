@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import {
   MediaQueries,
@@ -8,11 +9,13 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 
 const useDrawer = () => {
   const { isDrawerExpanded, setIsDrawerExpanded, setExpandedDrawerListItem } =
-    useCommonStore((state) => ({
-      isDrawerExpanded: state.isDrawerExpanded,
-      setIsDrawerExpanded: state.setIsDrawerExpanded,
-      setExpandedDrawerListItem: state.setExpandedDrawerListItem
-    }));
+    useCommonStore(
+      useShallow((state) => ({
+        isDrawerExpanded: state.isDrawerExpanded,
+        setIsDrawerExpanded: state.setIsDrawerExpanded,
+        setExpandedDrawerListItem: state.setExpandedDrawerListItem
+      }))
+    );
 
   const queryMatches = useMediaQuery();
   const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);

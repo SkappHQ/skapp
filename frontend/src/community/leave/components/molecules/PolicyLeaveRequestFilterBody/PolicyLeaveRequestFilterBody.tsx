@@ -3,6 +3,7 @@ import {
   SelectableItemList
 } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -36,12 +37,14 @@ const PolicyLeaveRequestFilterBody: FC<Props> = ({ onClose }) => {
     requestParams,
     setRequestFilters,
     resetRequestFilters
-  } = usePolicyLeaveStore((state) => ({
-    selectedYear: state.selectedYear,
-    requestParams: state.requestParams,
-    setRequestFilters: state.setRequestFilters,
-    resetRequestFilters: state.resetRequestFilters
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedYear: state.selectedYear,
+      requestParams: state.requestParams,
+      setRequestFilters: state.setRequestFilters,
+      resetRequestFilters: state.resetRequestFilters
+    }))
+  );
 
   const { data: policyBalances } = useGetMyPolicyBalances(selectedYear);
 

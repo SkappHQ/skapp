@@ -651,7 +651,10 @@ const CareerProgressionDetailsSection = ({
                   checked={values.currentPosition}
                   disabled={isInputsDisabled}
                   label={translateText(["currentEmployment"])}
-                  ariaLabel={translateAria(["careerProgression", "selectCurrentEmploymentChecked"])}
+                  ariaLabel={translateAria([
+                    "careerProgression",
+                    "selectCurrentEmploymentChecked"
+                  ])}
                   onChange={(checked) =>
                     handleCheckboxChange("currentPosition", checked)
                   }

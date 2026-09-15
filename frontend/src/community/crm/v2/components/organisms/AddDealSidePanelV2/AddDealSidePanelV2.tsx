@@ -24,7 +24,10 @@ import {
   CrmContactEntity,
   CrmDealEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmContactFilterRequest,
+  CrmSidePanelTypes
+} from "~community/crm/v2/types/CrmTypes";
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
@@ -61,6 +64,7 @@ const AddDealSidePanelV2: FC = () => {
     board,
     dealIds,
     companies,
+    setCompanies,
     setDeals,
     setBoardColumn,
     setDealIds
@@ -74,6 +78,7 @@ const AddDealSidePanelV2: FC = () => {
       board: store.board,
       dealIds: store.dealIds,
       companies: store.companies,
+      setCompanies: store.setCompanies,
       setDeals: store.setDeals,
       setBoardColumn: store.setBoardColumn,
       setDealIds: store.setDealIds
@@ -89,9 +94,15 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupFilter: CrmContactFilterRequest = useMemo(
+    () => ({
+      searchKeyword: debouncedContactSearch,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    }),
+    [debouncedContactSearch]
+  );
   const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupFilter,
     isOpen
   );
   const contacts = useMemo(
@@ -115,8 +126,7 @@ const AddDealSidePanelV2: FC = () => {
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      const store = useCrmStoreV2.getState();
-      store.setCompanies(mergeCompanies(store.companies, fetchedCompanies));
+      setCompanies(mergeCompanies(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

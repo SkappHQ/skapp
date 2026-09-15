@@ -342,4 +342,32 @@ class CrmDealControllerV2IntegrationTest {
 			.andExpect(status().isForbidden());
 	}
 
+	private CrmDeal savedDealWithPriority(String name, CrmDealStage stage, CrmCompany company, CrmContact contact,
+			CrmDealPriority priority) {
+		CrmDeal deal = savedDeal(name, stage, company, contact, 1L);
+		deal.setPriority(priority);
+		return crmDealDao.save(deal);
+	}
+
+	@Test
+	@DisplayName("Get deals sorted by priority - Returns severity order, not alphabetical order")
+	void getDeals_SortByPriority_ReturnsSeverityOrder() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Priority Sort V2 Corp");
+		CrmContact contact = savedContact(company, "deal.priority.sort.v2@example.com");
+		savedDealWithPriority("Priority High Deal", stage, company, contact, CrmDealPriority.HIGH);
+		savedDealWithPriority("Priority Low Deal", stage, company, contact, CrmDealPriority.LOW);
+		savedDealWithPriority("Priority Medium Deal", stage, company, contact, CrmDealPriority.MEDIUM);
+
+		performRequest(get(BASE_PATH).param("companyId", company.getId().toString())
+			.param("sortKey", "PRIORITY")
+			.accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['priority']").value("LOW"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['priority']").value("MEDIUM"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][2]['priority']").value("HIGH"));
+	}
+
 }

@@ -1,5 +1,6 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
+import { useShallow } from "zustand/react/shallow";
 
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -19,9 +20,11 @@ const LeaveTypes: NextPage = () => {
 
   const router = useRouter();
 
-  const { ongoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup
-  }));
+  const { ongoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup
+    }))
+  );
 
   const { destroyDriverObj } = useProductTour();
 

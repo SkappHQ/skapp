@@ -7,6 +7,7 @@ import {
   useTheme
 } from "@mui/material";
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import AvatarGroupWithLabel from "~community/common/components/molecules/AvatarGroupWithLabel/AvatarGroupWithLabel";
@@ -49,13 +50,15 @@ const PolicyTeamAvailabilityCard = ({ teams, resourceAvailability }: Props) => {
     setSelectedTeam,
     setTeamAvailabilityData,
     setModalType
-  } = usePolicyLeaveStore((state) => ({
-    selectedDates: state.selectedDates,
-    selectedTeam: state.selectedTeam,
-    setSelectedTeam: state.setSelectedTeam,
-    setTeamAvailabilityData: state.setTeamAvailabilityData,
-    setModalType: state.setModalType
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      selectedDates: state.selectedDates,
+      selectedTeam: state.selectedTeam,
+      setSelectedTeam: state.setSelectedTeam,
+      setTeamAvailabilityData: state.setTeamAvailabilityData,
+      setModalType: state.setModalType
+    }))
+  );
 
   const cardData = useMemo(() => {
     const teamAvailabilityData = getTeamAvailabilityData({

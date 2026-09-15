@@ -60,24 +60,23 @@ export const getDueDateStatus = (
   };
 };
 
-const TASK_TYPE_ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+const TASK_TYPE_ICON_MAP: Record<
+  string,
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
   email: EmailFilledIcon,
   call: PhoneFilledIcon,
   meeting: MeetingFilledIcon,
   other: ChecklistVerificationFilledIcon
 };
 
-export const getTaskTypeIcon = (
-  typeName: string,
-  size = 20
-): ReactElement => {
+export const getTaskTypeIcon = (typeName: string, size = 20): ReactElement => {
   return createElement(
     TASK_TYPE_ICON_MAP[typeName.toLowerCase()] ??
       ChecklistVerificationFilledIcon,
     { width: size, height: size }
   );
 };
-
 
 export const getPriorityConfig = (
   priority: CrmPriorityEnum

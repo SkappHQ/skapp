@@ -11,8 +11,7 @@ import {
 } from "~community/leave/types/PolicyLeaveTypes";
 
 export type PolicyLeavePopupType =
-  | PolicyLeaveRequestStatus
-  | PolicyLeaveReviewModalEnums;
+  PolicyLeaveRequestStatus | PolicyLeaveReviewModalEnums;
 
 export interface PolicyLeaveReviewFilters {
   status: PolicyLeaveRequestStatus[];

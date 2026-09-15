@@ -92,20 +92,29 @@ describe("hasSelectionChanged", () => {
 describe("getRestrictionChanges", () => {
   it("should report a newly selected role in addedRoles", () => {
     expect(
-      getRestrictionChanges([RoleLevel.ADMIN, RoleLevel.MANAGER], [RoleLevel.ADMIN])
+      getRestrictionChanges(
+        [RoleLevel.ADMIN, RoleLevel.MANAGER],
+        [RoleLevel.ADMIN]
+      )
     ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [] });
   });
 
   it("should report a newly cleared role in removedRoles", () => {
     expect(
-      getRestrictionChanges([RoleLevel.ADMIN], [RoleLevel.ADMIN, RoleLevel.MANAGER])
+      getRestrictionChanges(
+        [RoleLevel.ADMIN],
+        [RoleLevel.ADMIN, RoleLevel.MANAGER]
+      )
     ).toEqual({ addedRoles: [], removedRoles: [RoleLevel.MANAGER] });
   });
 
   it("should report a swapped role in both addedRoles and removedRoles", () => {
     expect(
       getRestrictionChanges([RoleLevel.MANAGER], [RoleLevel.ADMIN])
-    ).toEqual({ addedRoles: [RoleLevel.MANAGER], removedRoles: [RoleLevel.ADMIN] });
+    ).toEqual({
+      addedRoles: [RoleLevel.MANAGER],
+      removedRoles: [RoleLevel.ADMIN]
+    });
   });
 
   it("should report empty addedRoles and removedRoles when nothing changed", () => {

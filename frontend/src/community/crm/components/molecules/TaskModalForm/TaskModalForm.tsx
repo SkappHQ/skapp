@@ -9,6 +9,7 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FormikProps } from "formik";
 import { ChangeEvent, FC, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import SearchableDropdown, {
   SearchableDropdownItem
@@ -73,16 +74,18 @@ const TaskModalForm: FC<TaskFormProps> = ({
     crmSidePanelType,
     getContactById,
     getTaskById
-  } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    selectedTaskId: store.selectedTaskId,
-    selectedContactId: store.selectedContactId,
-    selectedCompanyId: store.selectedCompanyId,
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    getContactById: store.getContactById,
-    getTaskById: store.getTaskById
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      selectedTaskId: store.selectedTaskId,
+      selectedContactId: store.selectedContactId,
+      selectedCompanyId: store.selectedCompanyId,
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      getContactById: store.getContactById,
+      getTaskById: store.getTaskById
+    }))
+  );
 
   const { isCrmSalesManager } = useSessionData();
 

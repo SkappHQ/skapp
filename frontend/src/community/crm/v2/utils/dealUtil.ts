@@ -66,3 +66,27 @@ export const resolveDeals = (
   dealIds
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
+
+export const reorderDealIds = (
+  dealIds: number[],
+  movedDealId: number,
+  previousDealId: number | null,
+  nextDealId: number | null
+): number[] => {
+  const rest = dealIds.filter((id) => id !== movedDealId);
+
+  const previousIndex =
+    previousDealId == null ? -1 : rest.indexOf(previousDealId);
+  const nextIndex = nextDealId == null ? -1 : rest.indexOf(nextDealId);
+
+  let insertAt: number;
+  if (previousIndex !== -1) {
+    insertAt = previousIndex + 1;
+  } else if (nextIndex !== -1) {
+    insertAt = nextIndex;
+  } else {
+    insertAt = previousDealId == null ? 0 : rest.length;
+  }
+
+  return [...rest.slice(0, insertAt), movedDealId, ...rest.slice(insertAt)];
+};

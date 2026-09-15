@@ -134,6 +134,9 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
+  REPORT: {
+    BASE: "/report"
+  },
   CRM: {
     BASE: "/crm",
     CONTACTS: "/crm/contacts",
@@ -198,6 +201,10 @@ export const nonSuperAdminRestrictedRoutes = [
 ];
 
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
+
+export const leavePolicyManagementRestrictedRoutes = [
+  ROUTES.LEAVE.CREATE_LEAVE_POLICY
+];
 
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
 

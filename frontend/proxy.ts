@@ -19,6 +19,7 @@ import {
 import ROUTES, {
   employeeRestrictedRoutes,
   invoiceEmployeeRestrictedRoutes,
+  leavePolicyManagementRestrictedRoutes,
   managerRestrictedRoutes,
   nonSuperAdminRestrictedRoutes,
   userRolesRestrictedRoutes
@@ -33,7 +34,7 @@ import {
   SuperAdminType
 } from "~community/common/types/AuthTypes";
 import { checkRestrictedRoutesAndRedirect } from "~community/common/utils/commonUtil";
-import { TenantStatusEnums } from "~enterprise/common/enums/Common";
+import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 // Define common routes shared by all roles
@@ -78,13 +79,19 @@ const superAdminRoutes = {
     ROUTES.CRM.BASE,
     ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
     ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
-    ROUTES.PEOPLE.SYNC_CHANGES
+    ROUTES.PEOPLE.SYNC_CHANGES,
+    ROUTES.REPORT.BASE
   ]
 };
 
 const adminRoutes = {
-  [AdminTypes.PEOPLE_ADMIN]: [ROUTES.PEOPLE.BASE, ROUTES.CONFIGURATIONS.BASE],
-  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE],
+  [AdminTypes.PEOPLE_ADMIN]: [
+    ROUTES.PEOPLE.BASE,
+    ROUTES.CONFIGURATIONS.BASE,
+    ROUTES.LEAVE.LEAVE_POLICIES,
+    ROUTES.REPORT.BASE
+  ],
+  [AdminTypes.LEAVE_ADMIN]: [ROUTES.LEAVE.BASE, ROUTES.CONFIGURATIONS.BASE],
   [AdminTypes.ATTENDANCE_ADMIN]: [
     ROUTES.TIMESHEET.BASE,
     ROUTES.CONFIGURATIONS.BASE
@@ -316,6 +323,20 @@ const resolveLeaveReportAccess: AccessGuard = ({
     ? redirectToUnauthorized(request)
     : null;
 
+// Leave policy management is for leave admins and super admins only
+const resolveLeavePolicyManagementAccess: AccessGuard = ({
+  request,
+  currentPath,
+  roles
+}) =>
+  leavePolicyManagementRestrictedRoutes.some((url) =>
+    currentPath.startsWith(url)
+  ) &&
+  !roles.includes(AdminTypes.LEAVE_ADMIN) &&
+  !roles.includes(ROLE_SUPER_ADMIN)
+    ? redirectToUnauthorized(request)
+    : null;
+
 // Attendance-only employees land on their timesheet instead of the dashboard
 const resolveDashboardAccess: AccessGuard = ({
   request,
@@ -337,13 +358,22 @@ const resolveSignAccess: AccessGuard = ({ request, currentPath, roles }) =>
     ? redirectToUnauthorized(request)
     : null;
 
+const getClaimTiers = (claims: Record<string, any>): TierEnum[] =>
+  claims?.tier ? [claims.tier] : (claims?.tiers ?? []);
+
 const resolveIntegrationsAccess: AccessGuard = ({
   request,
   currentPath,
   claims
 }) =>
   currentPath.startsWith(ROUTES.SETTINGS.INTEGRATIONS) &&
-  !isCoreOrProTier(claims?.tier ? [claims.tier] : (claims?.tiers ?? []))
+  !isCoreOrProTier(getClaimTiers(claims))
+    ? redirectToUnauthorized(request)
+    : null;
+
+const resolveReportAccess: AccessGuard = ({ request, currentPath, claims }) =>
+  currentPath.startsWith(ROUTES.REPORT.BASE) &&
+  !isCoreOrProTier(getClaimTiers(claims))
     ? redirectToUnauthorized(request)
     : null;
 
@@ -373,6 +403,7 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
   resolveRemovePeopleAccess,
   resolveFirstTimePasswordAccess,
   resolveLeaveReportAccess,
+  resolveLeavePolicyManagementAccess,
   resolveDashboardAccess
 ];
 
@@ -380,6 +411,7 @@ const ROUTE_ACCESS_GUARDS: AccessGuard[] = [
 const ALLOWED_ROUTE_GUARDS: AccessGuard[] = [
   resolveSignAccess,
   resolveIntegrationsAccess,
+  resolveReportAccess,
   resolveCrmAccess,
   resolveRestrictedRouteAccess
 ];
@@ -438,7 +470,7 @@ function resolveRouteAccess(
   return redirectTo(request, ROUTES.AUTH.SIGNIN);
 }
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (isUnguardedPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
@@ -517,6 +549,9 @@ export const config = {
     "/invoice",
     "/invoice/:path*",
     "/invoice/create/:path*",
+    // Report module routes
+    "/report",
+    "/report/:path*",
     // CRM module routes
     "/crm",
     "/crm/:path*"

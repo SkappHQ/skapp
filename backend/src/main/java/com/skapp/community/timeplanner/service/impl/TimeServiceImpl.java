@@ -122,6 +122,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -255,15 +256,13 @@ public class TimeServiceImpl implements TimeService {
 
 			if (activeTimeSlot.isEmpty()) {
 				if (timeRecord.get().getClockOutTime() != null) {
-					LocalDateTime clockOutTimeUtc = DateTimeUtils
-						.epochMillisToUtcLocalDateTime(timeRecord.get().getClockOutTime(), null);
+					Instant clockOutTimeUtc = DateTimeUtils.epochMillisToInstant(timeRecord.get().getClockOutTime());
 					activeTimeSlotResponseDto.setStarTime(clockOutTimeUtc);
 					activeTimeSlotResponseDto.setPeriodType(TimeRecordActionTypes.END);
 				}
 			}
 			else {
-				LocalDateTime slotStartTimeUtc = DateTimeUtils
-					.epochMillisToUtcLocalDateTime(activeTimeSlot.get().getStartTime(), null);
+				Instant slotStartTimeUtc = DateTimeUtils.epochMillisToInstant(activeTimeSlot.get().getStartTime());
 				activeTimeSlotResponseDto.setStarTime(slotStartTimeUtc);
 				activeTimeSlotResponseDto.setPeriodType(activeTimeSlot.get().getSlotType() == SlotType.WORK
 						? TimeRecordActionTypes.RESUME : TimeRecordActionTypes.PAUSE);

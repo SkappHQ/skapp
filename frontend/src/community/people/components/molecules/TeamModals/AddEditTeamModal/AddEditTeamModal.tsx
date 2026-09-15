@@ -1,6 +1,7 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import TeamMemberAutocompleteSearch from "~community/common/components/molecules/AutocompleteSearch/TeamMemberAutocompleteSearch";
@@ -59,22 +60,26 @@ const AddEditTeamModal = ({
     currentEditingTeam,
     setTeamModalType,
     setIsTeamModalOpen
-  } = usePeopleStore((state) => ({
-    teamModalType: state.teamModalType,
-    currentEditingTeam: state.currentEditingTeam,
-    setTeamModalType: state.setTeamModalType,
-    setIsTeamModalOpen: state.setIsTeamModalOpen
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      teamModalType: state.teamModalType,
+      currentEditingTeam: state.currentEditingTeam,
+      setTeamModalType: state.setTeamModalType,
+      setIsTeamModalOpen: state.setIsTeamModalOpen
+    }))
+  );
 
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [searchErrors, _setSearchErrors] = useState<string | undefined>(

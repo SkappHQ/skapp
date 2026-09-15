@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>, EmployeeManagerRepository {
@@ -24,6 +25,9 @@ public interface EmployeeManagerDao extends JpaRepository<EmployeeManager, Long>
 
 	Optional<EmployeeManager> findByManagerAndEmployeeAndManagerType(Employee manager, Employee employee,
 			ManagerType managerType);
+
+	boolean existsByManagerAndEmployeeAndManagerTypeIn(Employee manager, Employee employee,
+			Set<ManagerType> managerTypes);
 
 	boolean existsByManagerEmployeeIdAndEmployeeEmployeeId(Long managerId, Long employeeId);
 

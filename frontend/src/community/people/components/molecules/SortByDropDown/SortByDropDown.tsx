@@ -1,5 +1,6 @@
 import { SelectChangeEvent, Stack, Typography } from "@mui/material";
 import { MutableRefObject, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import RoundedSelect from "~community/common/components/molecules/RoundedSelect/RoundedSelect";
@@ -35,13 +36,15 @@ const SortByDropDown = ({ holidayData, listInnerRef }: Props) => {
     holidayDataSort,
     selectedWorkLocationId,
     setSelectedWorkLocationId
-  } = usePeopleStore((state) => ({
-    selectedYear: state.selectedYear,
-    setSelectedYear: state.setSelectedYear,
-    holidayDataSort: state.holidayDataParams.sortOrder,
-    selectedWorkLocationId: state.selectedWorkLocationId,
-    setSelectedWorkLocationId: state.setSelectedWorkLocationId
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      selectedYear: state.selectedYear,
+      setSelectedYear: state.setSelectedYear,
+      holidayDataSort: state.holidayDataParams.sortOrder,
+      selectedWorkLocationId: state.selectedWorkLocationId,
+      setSelectedWorkLocationId: state.setSelectedWorkLocationId
+    }))
+  );
 
   const { data: workLocations } = useGetAllWorkLocations();
 

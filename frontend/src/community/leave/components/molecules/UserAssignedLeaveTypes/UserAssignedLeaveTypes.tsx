@@ -10,10 +10,10 @@ import { useGetEmployeeEntitlements } from "~community/leave/api/LeaveAnalyticsA
 import useResponsiveCardSize from "~community/leave/hooks/useResponsiveCardSize";
 import { LeaveEntitlementsCardType } from "~community/leave/types/MyRequests";
 import { getPercentage } from "~community/leave/utils/LeavePreprocessors";
+import useTier from "~enterprise/common/hooks/useTier";
 import entitlementMockData from "~enterprise/leave/data/entitlementMockData.json";
 
 import AnalyticCard from "../AnalyticCard/AnalyticCard";
-import useTier from "~enterprise/common/hooks/useTier";
 
 interface Props {
   employeeId: number;

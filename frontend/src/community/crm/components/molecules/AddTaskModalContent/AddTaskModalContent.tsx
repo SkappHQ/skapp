@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,10 +23,12 @@ const AddTaskModalContent: FC = () => {
 
   const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
 
-  const { setIsTaskModalOpen, selectedContactId } = useCrmStore((store) => ({
-    setIsTaskModalOpen: store.setIsTaskModalOpen,
-    selectedContactId: store.selectedContactId
-  }));
+  const { setIsTaskModalOpen, selectedContactId } = useCrmStore(
+    useShallow((store) => ({
+      setIsTaskModalOpen: store.setIsTaskModalOpen,
+      selectedContactId: store.selectedContactId
+    }))
+  );
 
   const { data: currentUser } = useGetUserPersonalDetails();
 

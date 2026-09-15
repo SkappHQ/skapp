@@ -1,5 +1,6 @@
 import { Dropdown } from "@rootcodelabs/skapp-ui";
 import { FC, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -43,10 +44,12 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
-  const { selectedDealId, getDealById } = useCrmStore((store) => ({
-    selectedDealId: store.selectedDealId,
-    getDealById: store.getDealById
-  }));
+  const { selectedDealId, getDealById } = useCrmStore(
+    useShallow((store) => ({
+      selectedDealId: store.selectedDealId,
+      getDealById: store.getDealById
+    }))
+  );
   const deal = getDealById(selectedDealId!)!;
 
   const selectedStageId = String(deal.stage.id);

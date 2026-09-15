@@ -1,8 +1,4 @@
-import {
-  CircleMinusIcon,
-  CloseIcon,
-  SmallModal
-} from "@rootcodelabs/skapp-ui";
+import { CircleMinusIcon, CloseIcon, SmallModal } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
 import { FC } from "react";
 

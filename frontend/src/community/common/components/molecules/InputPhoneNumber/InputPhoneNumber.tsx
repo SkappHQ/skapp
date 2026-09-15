@@ -2,8 +2,10 @@ import { Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import {
   type ChangeEvent,
+  type ClipboardEvent,
   FC,
   KeyboardEvent,
+  useCallback,
   useEffect,
   useId,
   useRef
@@ -14,7 +16,10 @@ import "react-phone-input-2/lib/material.css";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { phoneNumberPattern } from "~community/common/regex/regexPatterns";
+import {
+  nonDigitPattern,
+  phoneNumberPattern
+} from "~community/common/regex/regexPatterns";
 import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 import {
   shouldActivateButton,
@@ -76,6 +81,80 @@ const InputPhoneNumber: FC<Props> = ({
   const phoneInputRef = useRef<PhoneInputInstance | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
+
+  const maxLength = getPhoneNumberMaxLength(countryCodeValue);
+
+  const handlePhoneNumberChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const input = e.target;
+      const sanitizedValue = input.value.replace(nonDigitPattern(), "");
+
+      if (sanitizedValue !== input.value) {
+        const caretPosition = input.value
+          .slice(0, input.selectionStart ?? input.value.length)
+          .replace(nonDigitPattern(), "").length;
+
+        input.value = sanitizedValue;
+        input.setSelectionRange(caretPosition, caretPosition);
+      }
+
+      await onChange?.(e);
+    },
+    [onChange]
+  );
+
+  const handlePhoneNumberPaste = useCallback(
+    (e: ClipboardEvent<HTMLInputElement>): void => {
+      e.preventDefault();
+
+      if (readOnly || isDisabled || !onChange) {
+        return;
+      }
+
+      const input = e.target;
+
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+
+      const pastedDigits = e.clipboardData
+        .getData("Text")
+        .replace(nonDigitPattern(), "");
+
+      if (!pastedDigits) {
+        return;
+      }
+
+      const selectionStart = input.selectionStart ?? value.length;
+      const selectionEnd = input.selectionEnd ?? value.length;
+      const remainingLength =
+        maxLength - (value.length - (selectionEnd - selectionStart));
+      const insertedDigits = pastedDigits.slice(
+        0,
+        Math.max(remainingLength, 0)
+      );
+
+      if (!insertedDigits) {
+        return;
+      }
+
+      const caretPosition = selectionStart + insertedDigits.length;
+      const nativeValueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      nativeValueSetter?.call(
+        input,
+        `${value.slice(0, selectionStart)}${insertedDigits}${value.slice(
+          selectionEnd
+        )}`
+      );
+      input.setSelectionRange(caretPosition, caretPosition);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    },
+    [readOnly, isDisabled, onChange, value, maxLength]
+  );
 
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
@@ -281,7 +360,7 @@ const InputPhoneNumber: FC<Props> = ({
           inputName={inputName}
           placeHolder={placeHolder}
           value={value}
-          onChange={onChange}
+          onChange={handlePhoneNumberChange}
           readOnly={readOnly}
           componentStyle={{ mt: 0, width: "400%", ...componentStyle }}
           inputStyle={{
@@ -294,7 +373,7 @@ const InputPhoneNumber: FC<Props> = ({
           }}
           inputType="text"
           error={error}
-          maxLength={getPhoneNumberMaxLength(countryCodeValue)}
+          maxLength={maxLength}
           inputMode="numeric"
           onKeyDown={(e) => {
             // TODO: move this to a separate file and write unit test cases
@@ -308,12 +387,7 @@ const InputPhoneNumber: FC<Props> = ({
               e.preventDefault();
             }
           }}
-          onPaste={(e) => {
-            // TODO: move this to a separate file and write unit test cases
-            if (!phoneNumberPattern().test(e.clipboardData.getData("Text"))) {
-              e.preventDefault();
-            }
-          }}
+          onPaste={handlePhoneNumberPaste}
           ariaLabel={ariaLabel}
           isDisabled={isDisabled}
         />

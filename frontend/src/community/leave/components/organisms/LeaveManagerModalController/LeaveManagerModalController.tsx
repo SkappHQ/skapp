@@ -1,5 +1,6 @@
 import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useLeaveStore } from "~community/leave/store/store";
@@ -28,16 +29,18 @@ const LeaveManagerModalController = () => {
     isOnLeaveModalOpen,
     onLeaveModalTitle,
     setIsOnLeaveModalOpen
-  } = useLeaveStore((state) => ({
-    removeLeaveRequestRowData: state.removeLeaveRequestRowData,
-    leaveRequestData: state.leaveRequestData,
-    isManagerModalOpen: state.isManagerModalOpen,
-    setIsManagerModal: state.setIsManagerModal,
-    removeNewLeaveId: state.removeNewLeaveId,
-    isOnLeaveModalOpen: state.isOnLeaveModalOpen,
-    onLeaveModalTitle: state.onLeaveModalTitle,
-    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      removeLeaveRequestRowData: state.removeLeaveRequestRowData,
+      leaveRequestData: state.leaveRequestData,
+      isManagerModalOpen: state.isManagerModalOpen,
+      setIsManagerModal: state.setIsManagerModal,
+      removeNewLeaveId: state.removeNewLeaveId,
+      isOnLeaveModalOpen: state.isOnLeaveModalOpen,
+      onLeaveModalTitle: state.onLeaveModalTitle,
+      setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen
+    }))
+  );
   const [modalTitle, setModalTitle] = useState<string>("");
   const [popupType, setPopupType] = useState<
     LeaveStatusTypes | LeaveExtraPopupTypes | string

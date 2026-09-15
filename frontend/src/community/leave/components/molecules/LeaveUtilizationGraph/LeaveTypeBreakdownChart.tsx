@@ -3,6 +3,7 @@ import { type Theme, useTheme } from "@mui/material/styles";
 import { Box } from "@mui/system";
 import ReactECharts from "echarts-for-react";
 import React, { JSX, useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -46,9 +47,11 @@ const LeaveTypeBreakdownChart = ({
   const translateTexts = useTranslator("leaveModule", "dashboard");
   const translateAria = useTranslator("leaveAria", "dashboard");
 
-  const { isDrawerExpanded } = useCommonStore((state) => ({
-    isDrawerExpanded: state.isDrawerExpanded
-  }));
+  const { isDrawerExpanded } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerExpanded: state.isDrawerExpanded
+    }))
+  );
 
   const [buttonColors, setButtonColors] = useState<string[]>([]);
   const [toggle, setToggle] = useState<Record<string, boolean> | undefined>(

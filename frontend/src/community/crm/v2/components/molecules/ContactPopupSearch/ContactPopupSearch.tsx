@@ -7,8 +7,8 @@ import {
 import { FC, useMemo } from "react";
 
 import {
-  CrmContactEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmContactEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   buildContactOptions,
@@ -71,8 +71,12 @@ const ContactPopupSearch: FC<Props> = ({
 
   const handleRenderTrigger = (triggerProps: TriggerProps) => (
     <ContactTriggerContent
-      name={selectedContact ? getContactDisplayName(selectedContact) : undefined}
-      companyName={selectedContact ? resolveCompanyName(selectedContact) : undefined}
+      name={
+        selectedContact ? getContactDisplayName(selectedContact) : undefined
+      }
+      companyName={
+        selectedContact ? resolveCompanyName(selectedContact) : undefined
+      }
       placeholder={placeholder}
       triggerProps={triggerProps}
     />

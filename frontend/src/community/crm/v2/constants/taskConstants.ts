@@ -16,8 +16,10 @@ import {
 
 export const TASK_PAGE_SIZE = 12;
 
+export const TASK_DETAIL_ICON_SIZE = 24;
+
 export const TASK_SKELETON_CONFIG = {
-  COMPLETED: { rowCount: 20, groupCount: 1 },
+  COMPLETED: { rowCount: TASK_PAGE_SIZE, groupCount: 1 },
   OPEN: { rowCount: 4, groupCount: 4 }
 };
 

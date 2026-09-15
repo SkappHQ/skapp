@@ -1,6 +1,7 @@
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -33,19 +34,23 @@ const LeaveType: NextPage = () => {
     setLeaveTypeModalType,
     resetEditingLeaveType,
     setPendingNavigation
-  } = useLeaveStore((state) => ({
-    isLeaveTypeFormDirty: state.isLeaveTypeFormDirty,
-    isLeaveTypeModalOpen: state.isLeaveTypeModalOpen,
-    setLeaveTypeModalType: state.setLeaveTypeModalType,
-    resetEditingLeaveType: state.resetEditingLeaveType,
-    setPendingNavigation: state.setPendingNavigation
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      isLeaveTypeFormDirty: state.isLeaveTypeFormDirty,
+      isLeaveTypeModalOpen: state.isLeaveTypeModalOpen,
+      setLeaveTypeModalType: state.setLeaveTypeModalType,
+      resetEditingLeaveType: state.resetEditingLeaveType,
+      setPendingNavigation: state.setPendingNavigation
+    }))
+  );
 
   const { ongoingQuickSetup, stopAllOngoingQuickSetup } =
-    useCommonEnterpriseStore((state) => ({
-      ongoingQuickSetup: state.ongoingQuickSetup,
-      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-    }));
+    useCommonEnterpriseStore(
+      useShallow((state) => ({
+        ongoingQuickSetup: state.ongoingQuickSetup,
+        stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+      }))
+    );
 
   useEffect(() => {
     const handleRouteChangeStart = (url: string) => {

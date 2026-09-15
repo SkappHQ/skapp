@@ -1,6 +1,7 @@
 import { Box, InputAdornment, Stack, Theme, useTheme } from "@mui/material";
 import { FormikErrors, FormikState } from "formik";
 import { JSX, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import IconButton from "~community/common/components/atoms/IconButton/IconButton";
@@ -55,12 +56,14 @@ const JobTitleField = ({ formik }: Props): JSX.Element => {
     previousJobTitleData,
     setPreviousJobTitleData,
     setJobFamilyModalType
-  } = usePeopleStore((state) => ({
-    allJobFamilies: state.allJobFamilies,
-    previousJobTitleData: state.previousJobTitleData,
-    setPreviousJobTitleData: state.setPreviousJobTitleData,
-    setJobFamilyModalType: state.setJobFamilyModalType
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      allJobFamilies: state.allJobFamilies,
+      previousJobTitleData: state.previousJobTitleData,
+      setPreviousJobTitleData: state.setPreviousJobTitleData,
+      setJobFamilyModalType: state.setJobFamilyModalType
+    }))
+  );
 
   const { values, errors, setFieldValue, setFieldError } = formik;
 

@@ -7,6 +7,7 @@ import {
 import { useFormik } from "formik";
 import { useRouter } from "next/router";
 import { ChangeEvent, FC, useEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import ColorPaletteSkeleton from "~community/common/components/atoms/ColorPaletteSkeleton/ColorPaletteSkeleton";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
@@ -51,13 +52,17 @@ const PolicyLeaveTypeForm: FC = () => {
 
   const isMissingEditId = isEditMode && router.isReady && !policyLeaveTypeId;
 
-  const { setLeaveTypeFormDirty } = useLeaveStore((state) => ({
-    setLeaveTypeFormDirty: state.setLeaveTypeFormDirty
-  }));
+  const { setLeaveTypeFormDirty } = useLeaveStore(
+    useShallow((state) => ({
+      setLeaveTypeFormDirty: state.setLeaveTypeFormDirty
+    }))
+  );
 
-  const { ongoingQuickSetup } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup
-  }));
+  const { ongoingQuickSetup } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup
+    }))
+  );
 
   const durationGroupRef = useRef<HTMLDivElement>(null);
 

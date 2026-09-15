@@ -333,7 +333,7 @@ export const theme = createTheme({
       whiteText: "#ffffff",
       blackText: "#000000",
       neutral: "#6B7280",
-      disabled: "#71717A",
+      disabled: "#71717A"
     },
     notifyBadge: {
       main: "#EF4444",

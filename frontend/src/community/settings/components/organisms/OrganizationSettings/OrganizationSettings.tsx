@@ -15,11 +15,11 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { FileUploadType } from "~community/common/types/CommonTypes";
 import { IconName } from "~community/common/types/IconTypes";
-import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { organizationSetupValidation } from "~community/common/utils/validation";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { FileCategories } from "~enterprise/common/types/s3Types";
 import { uploadFileToS3ByUrl } from "~enterprise/common/utils/awsS3ServiceFunctions";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 import { useGetGlobalLoginMethod } from "~enterprise/people/api/GlobalLoginMethodApi";
 
 import BrandingDetails from "../BrandingDetails/BrandingDetails";

@@ -1,152 +1,158 @@
 import {
-  BaseRowData,
   Column,
   GroupData,
   ListTable,
-  ProjectTableSkeletonLoader
+  ProjectTableSkeletonLoader,
+  SortConfig
 } from "@rootcodelabs/skapp-ui";
-import { FC, ReactNode, useMemo } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
-import { useContainerWidth } from "~community/crm/components/organisms/DealsTable/utils/dealsTableUtils";
-import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
-import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useEditDeal } from "~community/crm/v2/api/DealApi";
+import {
+  DEAL_COLUMN_MIN_WIDTH,
+  DEAL_FIELD_META
+} from "~community/crm/v2/constants/dealConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
+import {
+  CrmDealListViewConfig,
+  DealRow
+} from "~community/crm/v2/types/CrmListViewConfigTypes";
+import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 
-interface DealRow extends BaseRowData {
-  id: string;
-  dealName: ReactNode;
-  value: ReactNode;
-  stage: ReactNode;
-  companyName: ReactNode;
-  contactName: ReactNode;
-  dealOwner: ReactNode;
-}
+import DealContactCell from "./DealContactCell";
+import DealOwnerCell from "./DealOwnerCell";
+import DealPriorityCell from "./DealPriorityCell";
+import DealStageCell from "./DealStageCell";
+import DealValueCell from "./DealValueCell";
 
 interface Props {
   searchKeyword: string;
   isLoading: boolean;
+  isConfigLoading: boolean;
   deals: CrmDealEntity[];
   hasNextPage: boolean;
   onLoadMore: () => Promise<void>;
   onDealClick?: (dealId: number) => void;
+  columnConfig: CrmDealListViewConfig | null;
+  sortConfig: SortConfig[];
+  onColumnReorder: (columns: Column<DealRow>[]) => void;
+  onColumnVisibilityChange: (columns: Column<DealRow>[]) => void;
+  onColumnResize: (columnId: string, width: number) => void;
+  onSort: (sortConfig: SortConfig[]) => void;
+  enableRowReorder: boolean;
+  onRowReorder: (
+    movingId: string,
+    previousId?: string,
+    nextId?: string
+  ) => void;
 }
 
 const DealsTableV2: FC<Props> = ({
   searchKeyword,
   isLoading,
+  isConfigLoading,
   deals,
   hasNextPage,
   onLoadMore,
-  onDealClick
+  onDealClick,
+  columnConfig,
+  sortConfig,
+  onColumnReorder,
+  onColumnVisibilityChange,
+  onColumnResize,
+  onSort,
+  enableRowReorder,
+  onRowReorder
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
-  const { getStageByName } = useStageNameMapper();
+  const { setToastMessage } = useToast();
+
+  const {
+    companies,
+    deals: dealRecord,
+    board,
+    setDeals,
+    setBoardColumn
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      companies: store.companies,
+      deals: store.deals,
+      board: store.board,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn
+    }))
+  );
+
+  const handleEditSuccess = (updatedDeal: CrmDealEntity): void => {
+    const next = ingestEditedDeal({ deals: dealRecord, board }, updatedDeal);
+    setDeals(next.deals);
+    setBoardColumn(next.board);
+  };
+
+  const handleEditError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      description: translateText([
+        "inlineEdit",
+        "toastMessages",
+        "editErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: editDeal } = useEditDeal(handleEditSuccess, handleEditError);
+
+  const onInlineEdit = useCallback(
+    (dealId: number | undefined, fields: Partial<CrmDealEntity>): void => {
+      if (dealId == null) return;
+      editDeal({ ...fields, id: dealId });
+    },
+    [editDeal]
+  );
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
     searchKeyword: `'${searchKeyword}'`
   });
 
-  const [containerRef, tableWidth] = useContainerWidth();
+  const columnHeaders = useMemo((): Column<DealRow>[] => {
+    const fields = columnConfig?.fields ?? [];
+    return fields.flatMap((fieldConfig): Column<DealRow>[] => {
+      const meta = DEAL_FIELD_META[fieldConfig.field];
+      if (!meta) return [];
+      return [
+        {
+          id: fieldConfig.field,
+          title: translateText([meta.titleKey]),
+          field: meta.rowKey,
+          width: fieldConfig.width,
+          minWidth: DEAL_COLUMN_MIN_WIDTH,
+          resizable: fieldConfig.isResizable,
+          draggable: fieldConfig.isDraggable,
+          sortable: fieldConfig.isSortable,
+          visible: fieldConfig.isHideable ? fieldConfig.isVisible : true
+        }
+      ];
+    });
+  }, [columnConfig, translateText]);
 
-  const { stages, companies, contacts, owners } = useCrmStoreV2(
-    useShallow((store) => ({
-      stages: store.stages,
-      companies: store.companies,
-      contacts: store.contacts,
-      owners: store.owners
-    }))
-  );
-
-  const columnHeaders = useMemo(
-    (): Column<DealRow>[] => [
-      {
-        id: "dealName",
-        title: translateText(["dealColumn"]),
-        field: "dealName",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.DEAL_NAME,
-        minWidth: 400,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      },
-      {
-        id: "value",
-        title: translateText(["valueColumn"]),
-        field: "value",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.VALUE,
-        minWidth: 140,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      },
-      {
-        id: "stage",
-        title: translateText(["stageColumn"]),
-        field: "stage",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.STAGE,
-        minWidth: 140,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      },
-      {
-        id: "companyName",
-        title: translateText(["companyNameColumn"]),
-        field: "companyName",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.COMPANY_NAME,
-        minWidth: 140,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      },
-      {
-        id: "contactName",
-        title: translateText(["contactNameColumn"]),
-        field: "contactName",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.CONTACT_NAME,
-        minWidth: 140,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      },
-      {
-        id: "dealOwner",
-        title: translateText(["dealOwnerColumn"]),
-        field: "dealOwner",
-        width: tableWidth * DEAL_TABLE_COLUMN_WIDTH_RATIO.DEAL_OWNER,
-        minWidth: 140,
-        resizable: false,
-        draggable: false,
-        visible: true,
-        sortable: false
-      }
-    ],
-    [tableWidth, translateText]
+  const rowDragColumnId = useMemo(
+    () => columnHeaders.find((column) => column.visible)?.id,
+    [columnHeaders]
   );
 
   const tableRows = useMemo(
     (): DealRow[] =>
       deals.map((deal) => {
-        const stage = deal.stageId != null ? stages[deal.stageId] : undefined;
         const company =
           deal.companyId != null ? companies[deal.companyId] : undefined;
-        const contact =
-          deal.contactId != null ? contacts[deal.contactId] : undefined;
-        const owner = deal.ownerId != null ? owners[deal.ownerId] : undefined;
-        const contactName = getContactDisplayName(contact);
 
         return {
           id: String(deal.id),
@@ -183,14 +189,15 @@ const DealsTableV2: FC<Props> = ({
             </div>
           ),
           value: (
-            <span className="body2 w-full block text-right">
-              {formatCurrency(deal.amount)}
-            </span>
+            <DealValueCell
+              amount={deal.amount}
+              onSave={(amount) => onInlineEdit(deal.id, { amount })}
+            />
           ),
           stage: (
-            <StageLabel
-              label={getStageByName(stage?.name ?? "") || "-"}
-              color={stage?.color}
+            <DealStageCell
+              stageId={deal.stageId}
+              onSave={(stageId) => onInlineEdit(deal.id, { stageId })}
             />
           ),
           companyName: (
@@ -199,22 +206,32 @@ const DealsTableV2: FC<Props> = ({
             </span>
           ),
           contactName: (
-            <span className="body2 block w-full truncate" title={contactName}>
-              {contactName || "-"}
-            </span>
-          ),
-          dealOwner: owner ? (
-            <OwnerAvatarChip
-              id={`deal-${deal.id}-owner-${owner.employeeId}`}
-              owner={owner}
-              backgroundColor="bg-secondary-background"
+            <DealContactCell
+              contactId={deal.contactId}
+              companyId={deal.companyId}
+              onSave={(contact) =>
+                onInlineEdit(deal.id, { contactId: contact.id })
+              }
             />
-          ) : (
-            <span className="body2">-</span>
+          ),
+          priority: (
+            <DealPriorityCell
+              priority={deal.priority}
+              onSave={(priority) => onInlineEdit(deal.id, { priority })}
+            />
+          ),
+          dealOwner: (
+            <DealOwnerCell
+              dealId={deal.id}
+              ownerId={deal.ownerId}
+              onSave={(nextOwner) =>
+                onInlineEdit(deal.id, { ownerId: nextOwner.employeeId })
+              }
+            />
           )
         };
       }),
-    [deals, stages, companies, contacts, owners, translateText, getStageByName]
+    [deals, companies, translateText, onDealClick, onInlineEdit]
   );
 
   const tableData = useMemo(
@@ -222,7 +239,7 @@ const DealsTableV2: FC<Props> = ({
     [tableRows]
   );
 
-  if (isLoading) {
+  if (isLoading || isConfigLoading) {
     return (
       <div className="w-fit h-full rounded-lg overflow-hidden">
         <ProjectTableSkeletonLoader rowCount={8} />
@@ -231,12 +248,30 @@ const DealsTableV2: FC<Props> = ({
   }
 
   return (
-    <div ref={containerRef} className="rounded-lg h-full overflow-y-auto">
+    <div className="rounded-lg h-full overflow-auto">
       <ListTable<DealRow>
         columnHeaders={columnHeaders}
         data={tableData}
         hasMore={hasNextPage}
         onLoadMore={onLoadMore}
+        onColumnReorder={onColumnReorder}
+        onColumnVisibilityChange={onColumnVisibilityChange}
+        onColumnResize={onColumnResize}
+        rowDragColumn={
+          enableRowReorder
+            ? (rowDragColumnId as unknown as keyof DealRow)
+            : undefined
+        }
+        onRowReorder={enableRowReorder ? onRowReorder : undefined}
+        showColumnVisibilityToggle
+        showKebabMenu
+        sortConfig={sortConfig}
+        onSort={onSort}
+        menuLabels={{
+          sortAscending: translateText(["sortAscending"]),
+          sortDescending: translateText(["sortDescending"]),
+          hideField: translateText(["hideColumn"])
+        }}
         emptyStateTitle={
           searchKeyword.trim()
             ? noSearchResultsTitle
@@ -248,9 +283,6 @@ const DealsTableV2: FC<Props> = ({
             : translateText(["noDealsDescription"])
         }
         scrollThreshold={0.8}
-        showKebabMenu={false}
-        showColumnVisibilityToggle={false}
-        disableColumnDragging
         infiniteScrollLoadingMessage={translateText([
           "infiniteScrollLoadingMessage"
         ])}

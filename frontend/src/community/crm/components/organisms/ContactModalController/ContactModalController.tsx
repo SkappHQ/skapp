@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
@@ -13,11 +14,13 @@ const ContactModalController = () => {
   const translateText = useTranslator("crmModule", "contacts");
 
   const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
-    useCrmStore((store) => ({
-      isContactModalOpen: store.isContactModalOpen,
-      contactModalType: store.contactModalType,
-      setIsContactModalOpen: store.setIsContactModalOpen
-    }));
+    useCrmStore(
+      useShallow((store) => ({
+        isContactModalOpen: store.isContactModalOpen,
+        contactModalType: store.contactModalType,
+        setIsContactModalOpen: store.setIsContactModalOpen
+      }))
+    );
 
   const handleCloseModal = (): void => {
     setIsContactModalOpen(false);

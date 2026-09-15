@@ -7,6 +7,10 @@ import OrganizationConfigurations from "~community/configurations/components/org
 import PeopleConfigurations from "~community/configurations/components/organisms/PeopleConfigurations/PeopleConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
+import CrmConfigurationsV2 from "~community/crm/v2/components/organisms/CrmConfigurations/CrmConfigurations";
+
+// Flip to true to serve the CRM configurations tab from the normalized v2 store surface.
+const isCrmConfigurationsV2 = false;
 
 export const getConfigurationTabs = (
   translateText: (keys: string[]) => string
@@ -55,7 +59,11 @@ export const getConfigurationTabs = (
       id: "crm",
       label: translateText(["tabs", "crm"]),
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
-      component: <CrmConfigurations />,
+      component: isCrmConfigurationsV2 ? (
+        <CrmConfigurationsV2 />
+      ) : (
+        <CrmConfigurations />
+      ),
       position: 7
     },
     {

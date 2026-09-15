@@ -1,4 +1,5 @@
 import { FC, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useGetManagerAssignedLeaveRequests } from "~community/leave/api/LeaveApi";
 import LeaveRequestEmployeeTeamSearch from "~community/leave/components/molecules/LeaveRequestEmployeeTeamSearch/LeaveRequestEmployeeTeamSearch";
@@ -11,9 +12,11 @@ const LegacyAllLeaveRequests: FC = () => {
   const { data: assignedLeaveRequests, isLoading } =
     useGetManagerAssignedLeaveRequests();
 
-  const { setLeaveRequestParams } = useLeaveStore((state) => ({
-    setLeaveRequestParams: state.setLeaveRequestParams
-  }));
+  const { setLeaveRequestParams } = useLeaveStore(
+    useShallow((state) => ({
+      setLeaveRequestParams: state.setLeaveRequestParams
+    }))
+  );
 
   useEffect(() => {
     setLeaveRequestParams("status", [LeaveStatusTypes.PENDING]);

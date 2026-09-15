@@ -238,9 +238,7 @@ export const leavePolicyWizardValidation = (
             is: true,
             then: (schema) =>
               schema
-                .required(
-                  translateText(["errors", "maxCarryOverDaysRequired"])
-                )
+                .required(translateText(["errors", "maxCarryOverDaysRequired"]))
                 .test(
                   "max-carryover-days-valid",
                   translateText(["errors", "maxCarryOverDaysInvalid"]),

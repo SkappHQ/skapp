@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { useShallow } from "zustand/react/shallow";
 
 import AvatarChip from "~community/common/components/molecules/AvatarChip/AvatarChip";
 import TableView from "~community/common/components/organisms/TableView/TableView";
@@ -53,14 +54,16 @@ const PolicyManagerLeaveRequests: FC = () => {
     setReviewRequestDateRange,
     setReviewRequestStatusFilter,
     openManagerModal
-  } = usePolicyLeaveStore((state) => ({
-    reviewRequestParams: state.reviewRequestParams,
-    setReviewRequestPage: state.setReviewRequestPage,
-    setReviewRequestSortKey: state.setReviewRequestSortKey,
-    setReviewRequestDateRange: state.setReviewRequestDateRange,
-    setReviewRequestStatusFilter: state.setReviewRequestStatusFilter,
-    openManagerModal: state.openManagerModal
-  }));
+  } = usePolicyLeaveStore(
+    useShallow((state) => ({
+      reviewRequestParams: state.reviewRequestParams,
+      setReviewRequestPage: state.setReviewRequestPage,
+      setReviewRequestSortKey: state.setReviewRequestSortKey,
+      setReviewRequestDateRange: state.setReviewRequestDateRange,
+      setReviewRequestStatusFilter: state.setReviewRequestStatusFilter,
+      openManagerModal: state.openManagerModal
+    }))
+  );
 
   const [selectedDateRange, setSelectedDateRange] = useState<
     DateRange | undefined

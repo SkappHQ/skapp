@@ -6,8 +6,12 @@ import { BirthdayModalVariant } from "~community/people/enums/BirthdayNotificati
 import useBirthdayNotifications from "~community/people/hooks/useBirthdayNotifications";
 
 const BirthdayModalController: FC = () => {
-  const { currentEntry: entry, position, total, onDismiss } =
-    useBirthdayNotifications();
+  const {
+    currentEntry: entry,
+    position,
+    total,
+    onDismiss
+  } = useBirthdayNotifications();
 
   if (!entry) {
     return null;

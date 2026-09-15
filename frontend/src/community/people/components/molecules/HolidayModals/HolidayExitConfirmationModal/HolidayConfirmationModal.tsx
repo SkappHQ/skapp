@@ -1,4 +1,5 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { usePeopleStore } from "~community/people/store/store";
@@ -13,13 +14,15 @@ const HolidayExitConfirmationModal = () => {
     setIsHolidayModalOpen,
     resetHolidayDetails,
     removeAddedCalendarDetails
-  } = usePeopleStore((state) => ({
-    isBulkUpload: state.isBulkUpload,
-    setHolidayModalType: state.setHolidayModalType,
-    setIsHolidayModalOpen: state.setIsHolidayModalOpen,
-    resetHolidayDetails: state.resetHolidayDetails,
-    removeAddedCalendarDetails: state.removeAddedCalendarDetails
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      isBulkUpload: state.isBulkUpload,
+      setHolidayModalType: state.setHolidayModalType,
+      setIsHolidayModalOpen: state.setIsHolidayModalOpen,
+      resetHolidayDetails: state.resetHolidayDetails,
+      removeAddedCalendarDetails: state.removeAddedCalendarDetails
+    }))
+  );
 
   const resumeTaskHandler = () => {
     if (isBulkUpload) {
@@ -42,9 +45,7 @@ const HolidayExitConfirmationModal = () => {
 
   return (
     <div>
-      <p className="mt-4">
-        {translateText(["deletionConfirmDescription"])}
-      </p>
+      <p className="mt-4">{translateText(["deletionConfirmDescription"])}</p>
       <div className="flex flex-row justify-end gap-3 mt-4">
         <ButtonV2 variant={"primary"} onClick={resumeTaskHandler}>
           {translateText(["deletionConfirmResumeBtn"])}

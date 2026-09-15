@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetPolicyManagerLeaveRequestById } from "~community/leave/api/PolicyLeaveReviewApi";
@@ -20,11 +21,13 @@ const PolicyLeaveReviewModalController: FC = () => {
   );
 
   const { isManagerModalOpen, selectedRequestId, closeManagerModal } =
-    usePolicyLeaveStore((state) => ({
-      isManagerModalOpen: state.isManagerModalOpen,
-      selectedRequestId: state.selectedRequestId,
-      closeManagerModal: state.closeManagerModal
-    }));
+    usePolicyLeaveStore(
+      useShallow((state) => ({
+        isManagerModalOpen: state.isManagerModalOpen,
+        selectedRequestId: state.selectedRequestId,
+        closeManagerModal: state.closeManagerModal
+      }))
+    );
 
   const [popupType, setPopupType] = useState<PolicyLeavePopupType>(
     PolicyLeaveReviewModalEnums.NONE

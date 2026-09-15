@@ -13,6 +13,8 @@ public class CrmContactCreateRequestDto {
 
 	private Long companyId;
 
+	private String companyName;
+
 	private String contactNumber;
 
 	private Long ownerId;

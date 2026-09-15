@@ -1,5 +1,6 @@
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
@@ -21,11 +22,11 @@ const PolicyAddAttachmentModal = () => {
   );
 
   const { attachments, setAttachments, setModalType } = usePolicyLeaveStore(
-    (state) => ({
+    useShallow((state) => ({
       attachments: state.attachments,
       setAttachments: state.setAttachments,
       setModalType: state.setModalType
-    })
+    }))
   );
 
   const [attachmentError, setAttachmentError] = useState(false);

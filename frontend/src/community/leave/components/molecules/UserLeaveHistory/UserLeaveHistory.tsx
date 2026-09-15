@@ -7,6 +7,7 @@ import {
   useMemo,
   useState
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import FilterIconButton from "~community/common/components/atoms/FilterIconButton/FilterIconButton";
@@ -73,12 +74,14 @@ const UserLeaveHistory: FC<Props> = ({
     leaveRequestsFilter,
     leaveRequestFilterOrder,
     setLeaveRequestParams
-  } = useLeaveStore((state) => ({
-    resetLeaveRequestParams: state.resetLeaveRequestParams,
-    leaveRequestsFilter: state.leaveRequestsFilter,
-    leaveRequestFilterOrder: state.leaveRequestFilterOrder,
-    setLeaveRequestParams: state.setLeaveRequestParams
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      resetLeaveRequestParams: state.resetLeaveRequestParams,
+      leaveRequestsFilter: state.leaveRequestsFilter,
+      leaveRequestFilterOrder: state.leaveRequestFilterOrder,
+      setLeaveRequestParams: state.setLeaveRequestParams
+    }))
+  );
 
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
@@ -94,12 +97,14 @@ const UserLeaveHistory: FC<Props> = ({
     });
 
   const { setIsManagerModal, setLeaveRequestData, setNewLeaveId, newLeaveId } =
-    useLeaveStore((state) => ({
-      setIsManagerModal: state.setIsManagerModal,
-      setLeaveRequestData: state.setLeaveRequestData,
-      setNewLeaveId: state.setNewLeaveId,
-      newLeaveId: state.newLeaveId
-    }));
+    useLeaveStore(
+      useShallow((state) => ({
+        setIsManagerModal: state.setIsManagerModal,
+        setLeaveRequestData: state.setLeaveRequestData,
+        setNewLeaveId: state.setNewLeaveId,
+        newLeaveId: state.newLeaveId
+      }))
+    );
 
   const {
     refetch,

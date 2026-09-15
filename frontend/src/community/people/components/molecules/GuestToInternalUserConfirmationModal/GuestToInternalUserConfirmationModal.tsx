@@ -1,3 +1,5 @@
+import { useShallow } from "zustand/react/shallow";
+
 import UserPromptModal from "~community/common/components/molecules/UserPromptModal/UserPromptModal";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
@@ -11,19 +13,29 @@ import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
 const GuestToInternalUserConfirmationModal = () => {
   const translateText = useTranslator("peopleModule", "peoples");
 
-  const { setDirectoryModalType, setPendingAddResourceData, pendingAddResourceData } =
-    usePeopleStore((state) => ({
+  const {
+    setDirectoryModalType,
+    setPendingAddResourceData,
+    pendingAddResourceData
+  } = usePeopleStore(
+    useShallow((state) => ({
       setDirectoryModalType: state.setDirectoryModalType,
       setPendingAddResourceData: state.setPendingAddResourceData,
       pendingAddResourceData: state.pendingAddResourceData
-    }));
+    }))
+  );
 
-  const { ongoingQuickSetup, setQuickSetupModalType, stopAllOngoingQuickSetup } =
-    useCommonEnterpriseStore((state) => ({
+  const {
+    ongoingQuickSetup,
+    setQuickSetupModalType,
+    stopAllOngoingQuickSetup
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
       ongoingQuickSetup: state.ongoingQuickSetup,
       setQuickSetupModalType: state.setQuickSetupModalType,
       stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-    }));
+    }))
+  );
 
   const handleSuccess = () => {
     setPendingAddResourceData(null);
