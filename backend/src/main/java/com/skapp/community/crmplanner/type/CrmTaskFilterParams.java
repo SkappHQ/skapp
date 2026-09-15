@@ -19,6 +19,4 @@ public class CrmTaskFilterParams {
 
 	private final Long companyId;
 
-	private final boolean matchDealContact;
-
 }

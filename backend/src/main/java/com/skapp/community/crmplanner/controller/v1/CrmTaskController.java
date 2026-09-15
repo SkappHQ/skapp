@@ -32,7 +32,9 @@ public class CrmTaskController {
 	private final CrmTaskService taskService;
 
 	@Operation(summary = "Get tasks",
-			description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
+			description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal. "
+					+ "The contactId filter matches tasks linked to that contact directly or through one of the "
+					+ "contact's deals, so a task carrying only a deal is included.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
@@ -41,7 +43,9 @@ public class CrmTaskController {
 	}
 
 	@Operation(summary = "Get completed tasks",
-			description = "Returns a paginated list of completed non-deleted CRM tasks with search and filter by owner and deal.")
+			description = "Returns a paginated list of completed non-deleted CRM tasks with search and filter by "
+					+ "owner and deal. The contactId filter matches tasks linked to that contact directly or "
+					+ "through one of the contact's deals, so a task carrying only a deal is included.")
 	@GetMapping("/completed")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {

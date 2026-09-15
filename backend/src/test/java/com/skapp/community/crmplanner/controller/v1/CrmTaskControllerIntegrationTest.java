@@ -44,6 +44,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -302,8 +303,8 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get tasks filtered by contactId - Excludes tasks linked only through the contact's deal")
-	void getTasks_FilterByContactId_ExcludesDealLinkedTasks() throws Exception {
+	@DisplayName("Get tasks filtered by contactId - Includes tasks linked only through the contact's deal")
+	void getTasks_FilterByContactId_IncludesDealLinkedTasks() throws Exception {
 		CrmDeal deal = savedDeal("Contact Deal", crmContactDao.getReferenceById(contactId), null);
 
 		savedTask("Task for main contact", false, false, contactId);
@@ -312,8 +313,9 @@ class CrmTaskControllerIntegrationTest {
 		performGetRequest(authToken, null, contactId, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task for main contact"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][*]['name']")
+				.value(containsInAnyOrder("Task for main contact", "Deal linked task")));
 	}
 
 	@Test
@@ -732,8 +734,8 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get completed tasks filtered by contactId - Excludes tasks linked only through the contact's deal")
-	void getCompletedTasks_FilterByContactId_ExcludesDealLinkedTasks() throws Exception {
+	@DisplayName("Get completed tasks filtered by contactId - Includes tasks linked only through the contact's deal")
+	void getCompletedTasks_FilterByContactId_IncludesDealLinkedTasks() throws Exception {
 		CrmDeal deal = savedDeal("Completed Contact Deal", crmContactDao.getReferenceById(contactId), null);
 
 		savedTask("Completed for main", false, true, contactId);
@@ -742,9 +744,10 @@ class CrmTaskControllerIntegrationTest {
 		performGetCompletedRequest(authToken, "0", "10", null, contactId, null).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed for main"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][*]['name']")
+				.value(containsInAnyOrder("Completed for main", "Completed deal linked")));
 	}
 
 	@Test

@@ -78,7 +78,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId(), false);
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -98,7 +98,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		applyFetchGraph(task);
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId(), false);
+				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
 		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
 
 		query.select(task)
@@ -239,8 +239,8 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		query.select(buildTaskProjectionSelection(cb, task));
 
 		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, filterDto.getIsCompleted(),
-				filterDto.getSearchKeyword(), filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId(),
-				true);
+				filterDto.getSearchKeyword(), filterDto.getContactId(), filterDto.getDealId(),
+				filterDto.getCompanyId());
 		query.where(buildTaskPredicates(cb, task, params).toArray(new Predicate[0]))
 			.orderBy(buildTaskOrder(cb, task, filterDto.getSortKey(), filterDto.getSortOrder()));
 
@@ -367,7 +367,7 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		}
 
 		if (params.getContactId() != null) {
-			predicates.add(buildContactMatchPredicate(cb, root, params));
+			predicates.add(buildContactMatchPredicate(cb, root, params.getContactId()));
 		}
 
 		if (params.getDealId() != null) {
@@ -381,17 +381,11 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		return predicates;
 	}
 
-	private Predicate buildContactMatchPredicate(CriteriaBuilder cb, Root<CrmTask> root, CrmTaskFilterParams params) {
-		Predicate directContact = cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), params.getContactId());
-
-		if (!params.isMatchDealContact()) {
-			return directContact;
-		}
-
+	private Predicate buildContactMatchPredicate(CriteriaBuilder cb, Root<CrmTask> root, Long contactId) {
 		Join<CrmTask, CrmDeal> dealJoin = root.join(CrmTask_.deal, JoinType.LEFT);
 
-		return cb.or(directContact,
-				cb.equal(dealJoin.get(CrmDeal_.contact).get(CrmContact_.id), params.getContactId()));
+		return cb.or(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), contactId),
+				cb.equal(dealJoin.get(CrmDeal_.contact).get(CrmContact_.id), contactId));
 	}
 
 	private void applyFetchGraph(Root<CrmTask> root) {
