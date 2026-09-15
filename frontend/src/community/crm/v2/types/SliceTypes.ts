@@ -3,6 +3,7 @@ import {
   CrmCompanyRecord,
   CrmContactRecord,
   CrmDealRecord,
+  CrmIndustryRecord,
   CrmOwnerRecord,
   CrmStageRecord,
   CrmTaskRecord,
@@ -22,6 +23,7 @@ export interface CrmDataSliceTypes {
   owners: CrmOwnerRecord;
   stages: CrmStageRecord;
   taskTypes: CrmTaskTypeRecord;
+  industries: CrmIndustryRecord;
 
   setCompanies: (companies: CrmCompanyRecord) => void;
   setContacts: (contacts: CrmContactRecord) => void;
@@ -31,6 +33,7 @@ export interface CrmDataSliceTypes {
   setOwners: (owners: CrmOwnerRecord) => void;
   setStages: (stages: CrmStageRecord) => void;
   setTaskTypes: (taskTypes: CrmTaskTypeRecord) => void;
+  setIndustries: (industries: CrmIndustryRecord) => void;
 }
 
 export interface CrmUiSliceTypes {

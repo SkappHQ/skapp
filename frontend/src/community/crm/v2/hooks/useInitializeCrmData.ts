@@ -7,6 +7,7 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetBoardInitData } from "~community/crm/v2/api/BoardApi";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
+  toIndustriesRecord,
   toOwnersRecord,
   toStagesRecord,
   toTaskTypesRecord
@@ -29,6 +30,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     setOwners,
     setContacts,
     setTaskTypes,
+    setIndustries,
     setIsCrmDataInitialized
   } = useCrmStoreV2(
     useShallow((store) => ({
@@ -37,6 +39,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
       setOwners: store.setOwners,
       setContacts: store.setContacts,
       setTaskTypes: store.setTaskTypes,
+      setIndustries: store.setIndustries,
       setIsCrmDataInitialized: store.setIsCrmDataInitialized
     }))
   );
@@ -60,6 +63,7 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
     setOwners(toOwnersRecord(data.owners));
     setContacts(toContactsRecord(data.contacts));
     setTaskTypes(toTaskTypesRecord(data.taskTypes));
+    setIndustries(toIndustriesRecord(data.industries));
     setIsCrmDataInitialized(true);
   }, [data, isSuccess, isError, isCrmDataInitialized]);
 

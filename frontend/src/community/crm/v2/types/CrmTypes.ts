@@ -13,6 +13,7 @@ import {
   CrmCompanyEntity,
   CrmContactEntity,
   CrmDealEntity,
+  CrmIndustryEntity,
   CrmOwnerEntity,
   CrmStageEntity,
   CrmTaskEntity,
@@ -92,6 +93,7 @@ export interface CrmBoardInitDataResponse {
   contacts: CrmContactEntity[];
   owners: CrmOwnerEntity[];
   taskTypes: CrmTaskTypeEntity[];
+  industries: CrmIndustryEntity[];
 }
 
 export interface CrmOwnerListResponse {
