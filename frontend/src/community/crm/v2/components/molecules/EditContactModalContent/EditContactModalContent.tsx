@@ -10,7 +10,7 @@ import ContactModalForm from "~community/crm/v2/components/molecules/ContactModa
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
-  getContactFieldDiff,
+  getChangedContactFields,
   getSelectedContact,
   linkContactToCompany,
   updateContact
@@ -114,7 +114,7 @@ const EditContactModalContent: FC = () => {
       return;
     }
 
-    const changedFields = getContactFieldDiff(initialValues, {
+    const changedFields = getChangedContactFields(initialValues, {
       name: values.name?.trim(),
       email: values.email?.trim(),
       contactNumber: values.contactNumber?.trim(),

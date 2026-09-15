@@ -23,7 +23,7 @@ import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/
 import { CONTACT_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import {
   ALL_COMPANIES,
-  DEFAULT_COMPANY_PAGE_SIZE
+  COMPANY_LOOKUP_PAGE_SIZE
 } from "~community/crm/v2/constants/contactConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
@@ -94,7 +94,7 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   };
 
   const companyLookupFilters: CrmCompanyFilterRequest = {
-    size: DEFAULT_COMPANY_PAGE_SIZE
+    size: COMPANY_LOOKUP_PAGE_SIZE
   };
 
   const {
