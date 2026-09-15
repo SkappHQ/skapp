@@ -105,12 +105,12 @@ const nextConfig = {
         destination: "/community/leave/leave-analytics"
       },
       {
-        source: "/reports/workforce-demographics",
-        destination: "/enterprise/reports/demographics"
+        source: "/report/workforce-demographics",
+        destination: "/enterprise/report/workforce-demographics"
       },
       {
-        source: "/reports/attendance-overview",
-        destination: "/enterprise/reports/attendance-overview"
+        source: "/report/attendance-overview",
+        destination: "/enterprise/report/attendance-overview"
       },
       {
         source: "/people/directory",
