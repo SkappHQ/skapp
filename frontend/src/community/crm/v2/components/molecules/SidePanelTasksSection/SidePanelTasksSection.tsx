@@ -1,57 +1,142 @@
-import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
-import { FC } from "react";
+import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { FC, startTransition, useOptimistic } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
-import TaskGroup from "~community/crm/v2/components/molecules/TaskGroup/TaskGroup";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
+import { resolveTasks, updateTask } from "~community/crm/v2/utils/taskUtil";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-interface Props {
-  tasks: CrmTaskEntity[];
-  emptyTitle: string;
-  emptyDescription: string;
+import SidePanelTasksList from "./SidePanelTasksList";
+
+interface SidePanelTasksSectionProps {
+  taskIds?: number[];
+  showAddTaskAction?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onFetchNextPage: () => void;
-  onToggleComplete: (taskId: number, completed: boolean) => void;
 }
 
-const SidePanelTasksSection: FC<Props> = ({
-  tasks,
+const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
+  taskIds,
+  showAddTaskAction = true,
   emptyTitle,
   emptyDescription,
   hasNextPage,
   isFetchingNextPage,
-  onFetchNextPage,
-  onToggleComplete
+  onFetchNextPage
 }) => {
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const { setToastMessage } = useToast();
+
+  const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } =
+    useCrmStoreV2(
+      useShallow((state) => ({
+        tasks: state.tasks,
+        setTasks: state.setTasks,
+        setIsTaskModalOpen: state.setIsTaskModalOpen,
+        setTaskModalType: state.setTaskModalType
+      }))
+    );
+
+  const translateTaskText = useTranslator("crmModule", "tasks");
+
+  const [optimisticTasks, setOptimisticTasks] = useOptimistic(tasks);
+
+  const showToggleError = () =>
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateTaskText(["toggleErrorTitle"]),
+      description: translateTaskText(["toggleErrorDescription"])
+    });
+
+  const handleToggleSuccess = (updatedTask: CrmTaskEntity) => {
+    if (updatedTask.id) {
+      setTasks(updateTask(tasks, updatedTask.id, updatedTask));
+    }
+  };
+
+  const { mutate: updateCompletion } = useUpdateTask(
+    handleToggleSuccess,
+    showToggleError
+  );
+
+  const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
+    startTransition(() => {
+      setOptimisticTasks(updateTask(tasks, taskId, { isCompleted }));
+
+      updateCompletion({ id: taskId, task: { isCompleted } });
+    });
+  };
+
+  const translateText = useTranslator(
+    "crmModule",
+    "contacts",
+    "contactDetailsPanel",
+    "tasks"
+  );
+
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
     onLoadMore: onFetchNextPage
   });
 
-  if (tasks.length === 0) {
+  const handleAddTask = () => {
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+      setIsTaskModalOpen(true);
+    });
+  };
+
+  if (taskIds?.length) {
     return (
-      <EmptyDataView
-        icon={<SearchIcon width="24" height="24" />}
-        title={emptyTitle}
-        description={emptyDescription}
-        className={{
-          wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
-        }}
-      />
+      <div>
+        <SidePanelTasksList
+          tasks={resolveTasks(taskIds, optimisticTasks)}
+          onAddTask={handleAddTask}
+          isAddTaskDisabled={isCheckingCrmLimit}
+          showAddTaskAction={showAddTaskAction}
+          onToggleComplete={handleToggleComplete}
+        />
+        <div ref={loadingRef} />
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <TaskGroup
-        tasks={tasks}
-        isShowContact={false}
-        onToggleComplete={onToggleComplete}
-      />
-      <div ref={loadingRef} />
-    </div>
+    <EmptyDataView
+      icon={<SearchIcon width="24" height="24" />}
+      title={emptyTitle ?? translateText(["emptyTitle"])}
+      description={emptyDescription ?? translateText(["emptyDescription"])}
+      button={
+        showAddTaskAction
+          ? {
+              children: translateText(["addTaskButtonEmptyView"]),
+              variant: "tertiary",
+              onClick: handleAddTask,
+              disabled: isCheckingCrmLimit,
+              isLoading: isCheckingCrmLimit,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["addTaskButtonEmptyView"])
+            }
+          : undefined
+      }
+      className={{
+        wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
+      }}
+    />
   );
 };
 
