@@ -1,9 +1,18 @@
-import { DeleteButtonIcon, KebabMenu, SidePanel } from "@rootcodelabs/skapp-ui";
+import {
+  CopyIcon,
+  DeleteButtonIcon,
+  IconButton,
+  KebabMenu,
+  Popover,
+  SidePanel,
+  TickIcon
+} from "@rootcodelabs/skapp-ui";
 import type { InfiniteData } from "@tanstack/react-query";
 import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
+import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -15,6 +24,7 @@ import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
 import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
+import { LINK_COPIED_POPOVER_DURATION } from "~community/crm/v2/constants/dealConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
@@ -68,6 +78,19 @@ const DealSidePanelV2: FC = () => {
     closeCrmSidePanel();
   };
 
+  const handleCopyLink = async () => {
+    if (selectedDealId === null) return;
+
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(selectedDealId)}`
+      );
+      setIsLinkCopied(true);
+    } catch {
+      setIsLinkCopied(false);
+    }
+  };
+
   const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
     selectedDealId ?? 0,
     selectedDealId != null
@@ -115,6 +138,19 @@ const DealSidePanelV2: FC = () => {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
+
+  useEffect(() => {
+    if (!isLinkCopied) return;
+
+    const timer = setTimeout(
+      () => setIsLinkCopied(false),
+      LINK_COPIED_POPOVER_DURATION
+    );
+
+    return () => clearTimeout(timer);
+  }, [isLinkCopied]);
+
   const menuItems = [
     {
       id: "delete",
@@ -156,19 +192,40 @@ const DealSidePanelV2: FC = () => {
           </div>
         }
         headerActions={
-          isCrmSalesManager && (
-            <KebabMenu
-              id="deal-actions"
-              menuItems={menuItems}
-              anchorButton={{
-                "aria-label": translateText(["kebabMenuAriaLabel"])
-              }}
-              className={{
-                anchorElement:
-                  "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
-              }}
-            />
-          )
+          <>
+            <Popover
+              side="bottom"
+              open={isLinkCopied}
+              content={translateText(["linkCopied"])}
+              className="body3 text-secondary-text rounded-lg px-3 py-2 shadow-lg"
+            >
+              <IconButton
+                icon={
+                  isLinkCopied ? (
+                    <TickIcon fill="var(--color-semantic-green-text)" />
+                  ) : (
+                    <CopyIcon width="16" height="16" />
+                  )
+                }
+                shape="rounded"
+                onClick={handleCopyLink}
+                aria-label={translateText(["ariaLabels", "copyLink"])}
+              />
+            </Popover>
+            {isCrmSalesManager && (
+              <KebabMenu
+                id="deal-actions"
+                menuItems={menuItems}
+                anchorButton={{
+                  "aria-label": translateText(["kebabMenuAriaLabel"])
+                }}
+                className={{
+                  anchorElement:
+                    "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
+                }}
+              />
+            )}
+          </>
         }
       >
         {!selectedDeal ? (

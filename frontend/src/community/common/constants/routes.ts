@@ -142,6 +142,7 @@ const ROUTES = {
     CONTACTS: "/crm/contacts",
     COMPANIES: "/crm/companies",
     DEALS: "/crm/deals",
+    DEAL_DETAIL: (dealId: number) => `/crm/deals/${dealId}`,
     TASKS: "/crm/tasks"
   },
   PROJECTS: {
