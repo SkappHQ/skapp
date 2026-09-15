@@ -15,12 +15,12 @@ import authFetch, {
 } from "~community/common/utils/axiosInterceptor";
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
-import { DOMAIN_SEARCH_LIMIT } from "~community/crm/v2/constants/commonConstants";
 import {
   CrmCompanyEntity,
   CrmCompanyMetrics
 } from "~community/crm/v2/types/CrmCommonTypes";
 import {
+  CrmCompanyDomainSearchFilterRequest,
   CrmCompanyDomainSearchResponse,
   CrmCompanyFilterRequest,
   CrmCompanyListResponse,
@@ -219,23 +219,24 @@ export const useGetCompanyLookup = (
     refetchOnWindowFocus: false
   });
 
-const searchCompaniesByDomain = async (
-  domain: string
-): Promise<CrmCompanyDomainSearchResponse> => {
+const searchCompaniesByDomain = async ({
+  domain,
+  limit
+}: CrmCompanyDomainSearchFilterRequest): Promise<CrmCompanyDomainSearchResponse> => {
   const response = await authFetch.get(
     crmCompanyEndpoints.SEARCH_COMPANIES_BY_DOMAIN,
-    { params: { domain, limit: DOMAIN_SEARCH_LIMIT } }
+    { params: { domain, limit } }
   );
   return response?.data?.results?.[0];
 };
 
 export const useSearchCompaniesByDomain = (
-  domain: string,
+  params: CrmCompanyDomainSearchFilterRequest,
   enabled?: boolean
 ): UseQueryResult<CrmCompanyDomainSearchResponse> =>
   useQuery({
-    queryKey: crmCompanyQueryKeys.DOMAIN_SEARCH(domain),
-    queryFn: () => searchCompaniesByDomain(domain),
+    queryKey: crmCompanyQueryKeys.DOMAIN_SEARCH(params),
+    queryFn: () => searchCompaniesByDomain(params),
     enabled,
     refetchOnWindowFocus: false
   });

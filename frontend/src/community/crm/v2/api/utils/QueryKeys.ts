@@ -1,4 +1,5 @@
 import {
+  CrmCompanyDomainSearchFilterRequest,
   CrmCompanyFilterRequest,
   CrmContactFilterRequest,
   CrmDealFilterRequest,
@@ -13,7 +14,6 @@ const CRM_CONTACTS = "crm-contacts";
 const CRM_TASKS = "crm-tasks";
 
 export const crmContactQueryKeys = {
-  LISTS: [CRM_CONTACTS, "list"],
   LIST: (params: CrmContactFilterRequest) => [CRM_CONTACTS, "list", params],
   DETAIL: (id: number) => [CRM_CONTACTS, "detail", id],
   METRICS_ROOT: [CRM_CONTACTS, "metrics"],
@@ -28,7 +28,6 @@ export const crmContactQueryKeys = {
 };
 
 export const crmTaskQueryKeys = {
-  LISTS: [CRM_TASKS, "list"],
   LIST: (params: CrmTaskFilterRequest) => [CRM_TASKS, "list", params],
   COMPLETED_LIST: (params: CrmTaskFilterRequest) => [
     CRM_TASKS,
@@ -66,7 +65,11 @@ export const crmCompanyQueryKeys = {
     "lookup",
     params
   ],
-  DOMAIN_SEARCH: (domain: string) => [CRM_COMPANIES, "domain-search", domain]
+  DOMAIN_SEARCH: (params: CrmCompanyDomainSearchFilterRequest) => [
+    CRM_COMPANIES,
+    "domain-search",
+    params
+  ]
 };
 
 export const crmBoardQueryKeys = {

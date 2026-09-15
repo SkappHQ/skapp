@@ -163,7 +163,6 @@ export const useCreateTask = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
-      queryClient.invalidateQueries({ queryKey: crmTaskQueryKeys.LISTS });
       queryClient.invalidateQueries({
         queryKey: crmCompanyQueryKeys.METRICS_ROOT
       });
@@ -196,7 +195,6 @@ export const useUpdateTask = (
   return useMutation({
     mutationFn: updateTask,
     onSuccess: (updatedTask) => {
-      queryClient.invalidateQueries({ queryKey: crmTaskQueryKeys.LISTS });
       queryClient.invalidateQueries({
         queryKey: crmCompanyQueryKeys.METRICS_ROOT
       });
