@@ -1,18 +1,29 @@
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmMetricLabelThemeEnum } from "~community/crm/v2/enums/common";
+import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmIndustryEntity,
+  CrmIndustryRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
 
-export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
+export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
+  const companies: CrmCompanyRecord = {};
   const companyIds: number[] = [];
-  for (const company of companies) {
+
+  items.forEach((company) => {
     if (company.id !== undefined) {
+      companies[company.id] = company;
       companyIds.push(company.id);
     }
-  }
-  return companyIds;
+  });
+
+  return { companies, companyIds };
 };
 
 export interface CrmMetricChip {
@@ -34,26 +45,30 @@ export const getCompanyMetricItems = (
 ): CrmMetricItem[] => [
   {
     id: "accountValue",
-    title: translateText(["metrics", "accountValue"]),
+    title: translateText(["sidePanel", "metrics", "accountValue"]),
     amount: company.metrics?.accountValue,
     isCurrency: true
   },
   {
     id: "openDeals",
-    title: translateText(["metrics", "openDeals"]),
+    title: translateText(["sidePanel", "metrics", "openDeals"]),
     amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
-    title: translateText(["metrics", "closedDeals"]),
+    title: translateText(["sidePanel", "metrics", "closedDeals"]),
     amount: company.metrics?.closedDealsCount ?? 0
   }
 ];
 
-export const getCompanyById = (
+export const getSelectedCompany = (
   companies: CrmCompanyRecord,
-  companyId: number
-): CrmCompanyEntity | undefined => companies[companyId];
+  companyId: number | null
+) => {
+  if (companyId === null) return undefined;
+
+  return companies[companyId];
+};
 
 export const updateCompany = (
   companies: CrmCompanyRecord,
@@ -78,7 +93,29 @@ export const removeCompany = (
   };
 };
 
-export const getCompanyFieldDiff = (
+export const getCompanyFormInitialValues = (
+  company?: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: company?.name ?? "",
+  industryId: company?.industryId ?? null,
+  industryName: company?.industryName,
+  website: company?.website ?? "",
+  address: company?.address ?? "",
+  contactNumber: company?.contactNumber ?? ""
+});
+
+export const getTrimmedCompanyValues = (
+  values: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: values.name?.trim(),
+  industryId: values.industryId,
+  industryName: values.industryName?.trim(),
+  website: values.website?.trim(),
+  address: values.address?.trim(),
+  contactNumber: values.contactNumber?.trim()
+});
+
+export const getChangedCompanyFields = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
 ): CrmCompanyEntity => {
@@ -88,8 +125,12 @@ export const getCompanyFieldDiff = (
     changedFields.name = currentValues.name;
   }
 
-  if (currentValues.industry !== initialValues.industry) {
-    changedFields.industry = currentValues.industry;
+  if (currentValues.industryId !== initialValues.industryId) {
+    changedFields.industryId = currentValues.industryId;
+  }
+
+  if (currentValues.industryName !== initialValues.industryName) {
+    changedFields.industryName = currentValues.industryName;
   }
 
   if (currentValues.website !== initialValues.website) {
@@ -107,6 +148,18 @@ export const getCompanyFieldDiff = (
   return changedFields;
 };
 
+export const toCompaniesRecord = (
+  companies: CrmCompanyEntity[]
+): CrmCompanyRecord => {
+  const companyRecord: CrmCompanyRecord = {};
+  for (const company of companies) {
+    if (company.id != null) {
+      companyRecord[company.id] = company;
+    }
+  }
+  return companyRecord;
+};
+
 export const getMissingCompanyIds = (
   companyIds: number[],
   companies: CrmCompanyRecord
@@ -116,6 +169,63 @@ export const getMissingCompanyIds = (
     if (!companies[id]) unique.add(id);
   }
   return Array.from(unique);
+};
+
+export const mergeCompanies = (
+  existing: CrmCompanyRecord,
+  incoming: CrmCompanyEntity[]
+): CrmCompanyRecord => {
+  const merged: CrmCompanyRecord = { ...existing };
+  for (const company of incoming) {
+    if (company.id == null) continue;
+    merged[company.id] = { ...merged[company.id], ...company };
+  }
+  return merged;
+};
+
+export const getIndustryDisplayName = (
+  industry: CrmIndustryEntity,
+  translateText: TranslatorFunctionType
+): string =>
+  Object.values<string>(CrmIndustryEnum).includes(industry.name)
+    ? translateText(["industryOptions", industry.name])
+    : industry.name;
+
+export interface CrmIndustryOption {
+  id: string;
+  name: string;
+}
+
+export const getIndustryOptions = (
+  industries: CrmIndustryRecord,
+  translateText: TranslatorFunctionType,
+  searchKeyword: string,
+  canAddNewIndustry: boolean
+): CrmIndustryOption[] => {
+  const trimmedName = searchKeyword.trim();
+  const normalizedName = trimmedName.toLowerCase();
+
+  const options: CrmIndustryOption[] = Object.values(industries)
+    .map((industry) => ({
+      id: String(industry.id),
+      name: getIndustryDisplayName(industry, translateText)
+    }))
+    .filter((option) => option.name.toLowerCase().includes(normalizedName));
+
+  const isNameAvailable = !options.some(
+    (option) => option.name.toLowerCase() === normalizedName
+  );
+
+  if (
+    canAddNewIndustry &&
+    trimmedName.length > 0 &&
+    trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
+    isNameAvailable
+  ) {
+    options.push({ id: ADD_NEW_INDUSTRY_OPTION_ID, name: trimmedName });
+  }
+
+  return options;
 };
 
 export const updateCompanyRecord = (

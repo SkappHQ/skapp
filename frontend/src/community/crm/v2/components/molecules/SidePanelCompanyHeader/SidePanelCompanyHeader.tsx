@@ -6,7 +6,6 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
 import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
@@ -14,18 +13,14 @@ import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface SidePanelCompanyHeaderProps {
   company: CrmCompanyEntity;
+  industryName: string;
 }
 
 const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
-  company
+  company,
+  industryName
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
-
-  const { website, contactNumber, address, industry } = company;
+  const { website, contactNumber, address } = company;
 
   return (
     <div className="flex items-center gap-12 flex-wrap">
@@ -67,18 +62,16 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
           value={address}
         />
       )}
-      {industry && (
-        <SidePanelHeaderInfoItem
-          icon={
-            <OfficeIcon
-              width="20"
-              height="20"
-              fill="var(--color-secondary-icon)"
-            />
-          }
-          value={translateText([industry])}
-        />
-      )}
+      <SidePanelHeaderInfoItem
+        icon={
+          <OfficeIcon
+            width="20"
+            height="20"
+            fill="var(--color-secondary-icon)"
+          />
+        }
+        value={industryName}
+      />
     </div>
   );
 };
