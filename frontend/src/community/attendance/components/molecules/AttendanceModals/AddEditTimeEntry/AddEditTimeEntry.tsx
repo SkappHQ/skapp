@@ -17,6 +17,7 @@ import useAddEntry from "~community/attendance/hooks/useAddEntry";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeAvailabilityType,
+  TimeEntryFormValueType,
   TimeEntryTimeErrorsType,
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
@@ -102,10 +103,9 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     toTime: ""
   };
 
-  const getTimeEntryErrors = (formValues: {
-    fromTime: string;
-    toTime: string;
-  }): TimeEntryTimeErrorsType => {
+  const getTimeEntryErrors = (
+    formValues: TimeEntryFormValueType
+  ): TimeEntryTimeErrorsType => {
     if (
       employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
