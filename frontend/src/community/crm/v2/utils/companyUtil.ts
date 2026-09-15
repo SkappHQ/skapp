@@ -1,7 +1,10 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/v2/enums/common";
 import {
   CrmCompanyEntity,
   CrmCompanyRecord,
@@ -23,11 +26,17 @@ export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
   return { companies, companyIds };
 };
 
+export interface CrmMetricChip {
+  label: string;
+  variant: CrmMetricLabelThemeEnum;
+}
+
 export interface CrmMetricItem {
   id: string;
   title: string;
   amount?: string | number;
   isCurrency?: boolean;
+  chip?: CrmMetricChip;
 }
 
 export const getCompanyMetricItems = (
@@ -43,12 +52,12 @@ export const getCompanyMetricItems = (
   {
     id: "openDeals",
     title: translateText(["sidePanel", "metrics", "openDeals"]),
-    amount: company.metrics?.openDealsCount
+    amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
     title: translateText(["sidePanel", "metrics", "closedDeals"]),
-    amount: company.metrics?.closedDealsCount
+    amount: company.metrics?.closedDealsCount ?? 0
   }
 ];
 
@@ -217,4 +226,16 @@ export const getIndustryOptions = (
   }
 
   return options;
+};
+
+export const updateCompanyRecord = (
+  existing: CrmCompanyRecord,
+  incoming: CrmCompanyEntity[]
+): CrmCompanyRecord => {
+  const merged: CrmCompanyRecord = { ...existing };
+  for (const company of incoming) {
+    if (company.id === undefined) continue;
+    merged[company.id] = { ...merged[company.id], ...company };
+  }
+  return merged;
 };

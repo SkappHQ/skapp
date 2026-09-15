@@ -68,16 +68,16 @@ const DealSidePanelV2: FC = () => {
     closeCrmSidePanel();
   };
 
-  const { data: dealDetail } = useGetDealById(
+  const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
     selectedDealId ?? 0,
     selectedDealId != null
   );
 
   useEffect(() => {
-    if (dealDetail) {
+    if (dealDetail && isFetchedAfterMount) {
       setDeals(mergeDeals(deals, [dealDetail]));
     }
-  }, [dealDetail]);
+  }, [dealDetail, isFetchedAfterMount]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
