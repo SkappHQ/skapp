@@ -16,3 +16,21 @@ export const invalidateAttendanceTimeRecordQueries = (
     queryClient.invalidateQueries({ queryKey }).catch((error) => error);
   });
 };
+
+export const invalidateTimesheetRecordQueries = (
+  queryClient: QueryClient
+): void => {
+  const queryKeys = [
+    attendanceQueryKeys.getEmployeeDailyLog(),
+    attendanceQueryKeys.getEmployeeWorkSummary(),
+    attendanceQueryKeys.getEmployeeDailyLogByEmployeeId(),
+    attendanceQueryKeys.getEmployeeRequests(),
+    attendanceQueryKeys.getManagerRecords(),
+    attendanceQueryKeys.getManagerWorkSummary(),
+    attendanceQueryKeys.getManagerRequests()
+  ];
+
+  queryKeys.forEach((queryKey) => {
+    queryClient.invalidateQueries({ queryKey }).catch((error) => error);
+  });
+};
