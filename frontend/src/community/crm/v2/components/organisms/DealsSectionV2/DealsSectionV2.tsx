@@ -23,7 +23,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { resolveSortChange } from "~community/crm/v2/utils/dealListViewUtil";
 import {
@@ -181,7 +181,7 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      setCompanies(mergeCompanies(companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 
