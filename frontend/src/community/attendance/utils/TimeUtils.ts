@@ -5,6 +5,7 @@ import {
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
 import { daysTypes } from "~community/common/constants/stringConstants";
+import { nowInZone } from "~community/common/utils/dateTimeUtils";
 
 export const createEmptyDailyLog = (date: string): DailyLogType => ({
   timeRecordId: null,
@@ -17,13 +18,20 @@ export const createEmptyDailyLog = (date: string): DailyLogType => ({
   holiday: null
 });
 
-export const convertTo24HourByDateString = (date: string) => {
-  const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });
+export const convertTo24HourByDateString = (date: string, zone?: string) => {
+  const dateTime = DateTime.fromISO(date, {
+    zone: zone ?? getCurrentTimeZone()
+  });
   return dateTime.toFormat("HH:mm");
 };
 
-export const convertUnixTimestampToISO = (unixTimestamp: number) => {
-  const dateTime = DateTime.fromMillis(unixTimestamp);
+export const convertUnixTimestampToISO = (
+  unixTimestamp: number,
+  zone?: string
+) => {
+  const dateTime = zone
+    ? DateTime.fromMillis(unixTimestamp, { zone })
+    : DateTime.fromMillis(unixTimestamp);
   return dateTime.toISO({ includeOffset: false });
 };
 
@@ -53,11 +61,8 @@ export const formatDuration = (durationInHours: number) => {
   return formattedDuration;
 };
 
-export const isToday = (date: string) => {
-  const givenDate = DateTime.fromISO(date);
-  const currentDate = DateTime.local().startOf("day");
-  return givenDate.hasSame(currentDate, "day");
-};
+export const isToday = (date: string, zone?: string): boolean =>
+  DateTime.fromISO(date, { zone }).hasSame(nowInZone(zone), "day");
 
 export const getDayStartTimeEndTime = () => {
   const currentDate = DateTime.local();
@@ -94,15 +99,26 @@ export const convertToMilliseconds = (timeString: string) => {
   return milliseconds;
 };
 
-export const convertToDateTime = (date: string, time: string) => {
-  const dateTime = DateTime.fromFormat(`${date} ${time}`, "yyyy-MM-dd hh:mm a");
-  const formattedDateTime = dateTime.toISO();
-  return formattedDateTime;
+export const convertToDateTime = (
+  date: string,
+  time: string,
+  zone?: string
+): string | null => {
+  const typedWallClock = DateTime.fromFormat(
+    `${date} ${time}`,
+    "yyyy-MM-dd hh:mm a",
+    { zone: "utc" }
+  );
+  const dateTime = typedWallClock.setZone(zone, { keepLocalTime: true });
+  const existsInZone =
+    dateTime.toISO({ includeOffset: false }) ===
+    typedWallClock.toISO({ includeOffset: false });
+  return existsInZone ? dateTime.toISO() : null;
 };
 
-export const convertToTimeZoneISO = (isoTime: string) => {
+export const convertToTimeZoneISO = (isoTime: string, zone?: string) => {
   const dateTime = DateTime.fromISO(isoTime, { zone: "utc" });
-  const localDateTime = dateTime.setZone(getCurrentTimeZone());
+  const localDateTime = dateTime.setZone(zone ?? getCurrentTimeZone());
   return localDateTime.toISO();
 };
 
@@ -123,8 +139,8 @@ export const getCurrentTimeZone = () => {
   return timeZone;
 };
 
-export const convertTo12HourByDateString = (date: string) => {
-  const dateTime = DateTime.fromISO(date);
+export const convertTo12HourByDateString = (date: string, zone?: string) => {
+  const dateTime = DateTime.fromISO(date, { zone });
   return dateTime.toFormat("hh:mm a");
 };
 
@@ -142,10 +158,11 @@ export const getTotalSlotTypeHours = (
   timeSlots: TimeSlotsType[],
   startTimeStr: string,
   endTimeStr: string,
-  slotType: "BREAK" | "WORK"
+  slotType: "BREAK" | "WORK",
+  zone?: string
 ) => {
-  const startTime = DateTime.fromFormat(startTimeStr, "hh:mm a");
-  let endTime = DateTime.fromFormat(endTimeStr, "hh:mm a");
+  const startTime = DateTime.fromFormat(startTimeStr, "hh:mm a", { zone });
+  let endTime = DateTime.fromFormat(endTimeStr, "hh:mm a", { zone });
 
   if (endTime < startTime) {
     endTime = endTime.plus({ days: 1 });
@@ -154,13 +171,13 @@ export const getTotalSlotTypeHours = (
   let totalBreakHours = 0;
 
   timeSlots.forEach((slot) => {
-    const today = DateTime.local();
-    let slotStartTime = DateTime.fromISO(slot.startTime).set({
+    const today = nowInZone(zone);
+    let slotStartTime = DateTime.fromISO(slot.startTime, { zone }).set({
       year: today.year,
       month: today.month,
       day: today.day
     });
-    let slotEndTime = DateTime.fromISO(slot.endTime).set({
+    let slotEndTime = DateTime.fromISO(slot.endTime, { zone }).set({
       year: today.year,
       month: today.month,
       day: today.day

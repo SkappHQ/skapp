@@ -11,6 +11,7 @@ import com.skapp.community.common.type.CriteriaBuilderSqlLiteral;
 import com.skapp.community.common.type.OrganizationConfigType;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.model.LeaveRequest;
@@ -88,6 +89,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
+	private final TimeZoneService timeZoneService;
+
 	private final MessageUtil messageUtil;
 
 	private final EntityManager entityManager;
@@ -106,16 +109,16 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public static float getLeaveCount(List<LeaveRequest> leaveRequests, List<LocalDate> holidays,
-			List<TimeConfig> timeConfigs, String organizationTimeZone) {
+			List<TimeConfig> timeConfigs) {
 		float leaveCount = 0;
 		for (LeaveRequest leaveRequest : leaveRequests) {
 			if (leaveRequest.getLeaveState().equals(LeaveState.FULLDAY)
 					&& leaveRequest.getEndDate().isAfter(leaveRequest.getStartDate())) {
 				leaveCount = leaveCount + getAllDaysBetween(leaveRequest.getStartDate(), leaveRequest.getEndDate(),
-						holidays, timeConfigs, organizationTimeZone);
+						holidays, timeConfigs);
 			}
-			else if (!holidays.contains(leaveRequest.getStartDate()) && !CommonModuleUtils
-				.checkIfDayIsWorkingDay(leaveRequest.getStartDate(), timeConfigs, organizationTimeZone)) {
+			else if (!holidays.contains(leaveRequest.getStartDate())
+					&& !CommonModuleUtils.checkIfDayIsWorkingDay(leaveRequest.getStartDate(), timeConfigs)) {
 				leaveCount = leaveRequest.getLeaveState().equals(LeaveState.FULLDAY) ? leaveCount + 1
 						: (float) (leaveCount + 0.5);
 			}
@@ -124,11 +127,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 	}
 
 	public static Integer getAllDaysBetween(LocalDate startDate, LocalDate endDate, List<LocalDate> holidays,
-			List<TimeConfig> timeConfigs, String organizationTimeZone) {
+			List<TimeConfig> timeConfigs) {
 		int daysBetween = 0;
 
-		while (!holidays.contains(startDate)
-				&& !CommonModuleUtils.checkIfDayIsWorkingDay(startDate, timeConfigs, organizationTimeZone)
+		while (!holidays.contains(startDate) && !CommonModuleUtils.checkIfDayIsWorkingDay(startDate, timeConfigs)
 				&& (startDate.isBefore(endDate) || startDate.isEqual(endDate))) {
 			daysBetween = daysBetween + 1;
 			startDate = startDate.plusDays(1);
@@ -264,8 +266,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 
 	@Override
 	public Float findAllEmployeeRequestsByWithinThirtyDays(LocalDate startDate, LocalDate endDate,
-			List<TimeConfig> timeConfigs, List<LocalDate> holidayDates, List<Long> teamIds,
-			String organizationTimeZone) {
+			List<TimeConfig> timeConfigs, List<LocalDate> holidayDates, List<Long> teamIds) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
@@ -295,7 +296,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
 		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
 
-		return getLeaveCount(query.getResultList(), holidayDates, timeConfigs, organizationTimeZone);
+		return getLeaveCount(query.getResultList(), holidayDates, timeConfigs);
 	}
 
 	private List<Predicate> createPredicatesForLeaverRequest(CriteriaBuilder cb, Root<LeaveRequest> leaveRequest,
@@ -624,9 +625,10 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 			.get(LeaveCycleConfigField.DATE.getField())
 			.intValue();
 
-		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+		int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate,
+				timeZoneService.organizationTimezone());
 		LocalDate leaveCycleEndDate = DateTimeUtils.getUtcLocalDate(leaveCycleEndYear, endMonth, endDate);
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 
 		for (DayOfWeek day : days) {
 			for (LocalDate date : getAllDaysBetween(day, today, leaveCycleEndDate)) {
@@ -669,7 +671,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 				int endDate = leaveCycleConfig.get(LeaveCycleConfigField.END.getField())
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
-				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate);
+				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth, startDate,
+						timeZoneService.organizationTimezone());
 
 				leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(
 						startMonth == 1 && startDate == 1 ? leaveCycleEndYear : leaveCycleEndYear - 1, startMonth,
@@ -710,7 +713,8 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 					.get(LeaveCycleConfigField.DATE.getField())
 					.intValue();
 
-				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth - 1, startDate);
+				int leaveCycleEndYear = LeaveModuleUtil.getLeaveCycleEndYear(startMonth - 1, startDate,
+						timeZoneService.organizationTimezone());
 
 				if (leaveRequestFilterDto.getStartDate() == null) {
 					leaveRequestFilterDto.setStartDate(DateTimeUtils.getUtcLocalDate(

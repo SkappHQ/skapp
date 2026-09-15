@@ -5,17 +5,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
 public class TimeRequestDto {
 
 	@Schema(description = "Work started time.")
-	private LocalDateTime startTime;
+	private Instant startTime;
 
 	@Schema(description = "Work ended time.")
-	private LocalDateTime endTime;
+	private Instant endTime;
 
 	@Schema(description = "Time request type", example = "MANUAL_ENTRY_REQUEST")
 	private RequestType requestType;

@@ -30,12 +30,14 @@ import AvatarChip from "~community/common/components/molecules/AvatarChip/Avatar
 import Table from "~community/common/components/molecules/HtmlTable/Table";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { TableNames } from "~community/common/enums/Table";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   convertYYYYMMDDToDateTime,
+  currentDateIn,
   formatDateWithOrdinalIndicator
 } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
@@ -89,6 +91,8 @@ const EmployeeTimeRecordsTable = ({
   const { data: timeConfigData } = useDefaultCapacity();
 
   const { getHolidaysArrayByDate } = useGetHoliday();
+
+  const organizationZone = useOrganizationZone();
 
   const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
 
@@ -201,7 +205,8 @@ const EmployeeTimeRecordsTable = ({
               timeSheetRecord.date
             ).toJSDate();
 
-            const isFutureDate = dateAsISOString > new Date();
+            const isFutureDate =
+              timeSheetRecord.date > currentDateIn(organizationZone);
 
             const holidays = getHolidaysArrayByDate(dateAsISOString);
 
@@ -398,7 +403,8 @@ const EmployeeTimeRecordsTable = ({
     translateText,
     translateAria,
     canDirectlyAddOrEditEntry,
-    pendingCell
+    pendingCell,
+    organizationZone
   ]);
 
   return (

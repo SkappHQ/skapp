@@ -8,8 +8,8 @@ import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.NotificationType;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
@@ -81,6 +81,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -105,6 +106,8 @@ import static com.skapp.community.leaveplanner.constant.LeaveMessageConstant.LEA
 @Slf4j
 @RequiredArgsConstructor
 public class LeaveServiceImpl implements LeaveService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final UserService userService;
 
@@ -144,12 +147,10 @@ public class LeaveServiceImpl implements LeaveService {
 
 	private final NotificationDao notificationDao;
 
-	private final OrganizationService organizationService;
-
 	public static int getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(LocalDate leaveRequestStartDate,
 			LocalDate leaveRequestEndDate, LocalDate entitlementValidFrom, LocalDate entitlementValidTo,
 			List<TimeConfig> timeConfigs, List<LocalDate> holidays, List<Holiday> holidayObjects,
-			LeaveRequest leaveRequest, String organizationTimeZone) {
+			LeaveRequest leaveRequest) {
 
 		LocalDate startDate = leaveRequestStartDate.isAfter(leaveRequestEndDate) ? leaveRequestEndDate
 				: leaveRequestStartDate;
@@ -167,7 +168,7 @@ public class LeaveServiceImpl implements LeaveService {
 
 		LocalDate currentDate = overlapStart;
 		while (!currentDate.isAfter(overlapEnd)) {
-			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs, organizationTimeZone)
+			if (CommonModuleUtils.checkIfDayIsWorkingDay(currentDate, timeConfigs)
 					&& CommonModuleUtils.checkIfDayIsNotAHoliday(leaveRequest, holidayObjects, holidays, currentDate)) {
 				count++;
 			}
@@ -300,7 +301,7 @@ public class LeaveServiceImpl implements LeaveService {
 			}
 		}
 
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 		LeaveRequest saveResponse = leaveRequestDao.save(leaveRequest);
 
 		if (isInvokedByManager) {
@@ -612,7 +613,7 @@ public class LeaveServiceImpl implements LeaveService {
 		log.info("leaveRequestAvailability: execution started");
 
 		if (requestAvailabilityDto.getDate() == null) {
-			requestAvailabilityDto.setDate(DateTimeUtils.getCurrentUtcDate());
+			requestAvailabilityDto.setDate(timeZoneService.currentOrganizationDate());
 		}
 
 		List<LeaveRequest> leaveRequests = leaveRequestDao
@@ -709,8 +710,8 @@ public class LeaveServiceImpl implements LeaveService {
 		}
 	}
 
-	private boolean isLeaveRequestNudgeAllowed(LocalDateTime lastNudgeNotificationDate) {
-		LocalDateTime now = DateTimeUtils.getCurrentUtcDateTime();
+	private boolean isLeaveRequestNudgeAllowed(Instant lastNudgeNotificationDate) {
+		Instant now = Instant.now();
 		Duration duration = Duration.between(lastNudgeNotificationDate, now);
 		long hours = duration.toHours();
 		return hours >= LeaveModuleConstant.HOURS_PER_DAY;
@@ -825,7 +826,7 @@ public class LeaveServiceImpl implements LeaveService {
 		leaveEntitlementsFilterDto.setLeaveTypeId(leaveRequest.getLeaveType().getTypeId());
 
 		List<LeaveEntitlement> leaveEntitlements = leaveEntitlementDao.findAllByEmployeeId(employeeId,
-				leaveEntitlementsFilterDto);
+				leaveEntitlementsFilterDto, timeZoneService.organizationTimezone());
 
 		if (leaveEntitlements == null || leaveEntitlements.isEmpty() || leaveEntitlements.getFirst() == null) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_FOUND);
@@ -840,7 +841,7 @@ public class LeaveServiceImpl implements LeaveService {
 		validateLeaveWithHoliday(leaveRequest.getStartDate(), leaveRequest.getEndDate(), holidayObjects, leaveRequest);
 
 		float weekDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(leaveRequest.getStartDate(),
-				leaveRequest.getEndDate(), timeConfigs, holidayObjects, organizationService.getOrganizationTimeZone());
+				leaveRequest.getEndDate(), timeConfigs, holidayObjects);
 
 		if (weekDays <= 0) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_ENTITLEMENT_NOT_APPLICABLE);
@@ -1052,15 +1053,12 @@ public class LeaveServiceImpl implements LeaveService {
 		LocalDate selectedEndDate = leaveRequest.getEndDate();
 		LocalDate currentDate = selectedStartDate;
 
-		String organizationTimeZone = organizationService.getOrganizationTimeZone();
-
 		for (LeaveEntitlement selectedEntitlement : leaveEntitlements) {
 			LocalDate validFrom = selectedEntitlement.getValidFrom();
 			LocalDate validTo = selectedEntitlement.getValidTo();
 
 			int numberOfWorkingDays = getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(currentDate,
-					selectedEndDate, validFrom, validTo, timeConfigs, holidays, holidayObjects, leaveRequest,
-					organizationTimeZone);
+					selectedEndDate, validFrom, validTo, timeConfigs, holidays, holidayObjects, leaveRequest);
 
 			if (numberOfWorkingDays > 0) {
 				float numberOfDaysToDeduct = leaveRequest.getLeaveState().equals(LeaveState.HALFDAY_EVENING)
@@ -1164,7 +1162,7 @@ public class LeaveServiceImpl implements LeaveService {
 			List<Holiday> holidayObjects, LeaveRequest leaveRequest) {
 		return getNumberOfDaysBetweenLeaveRequestForGivenEntitlementRange(startCal, selectedEndDate,
 				leaveEntitlement.getValidFrom(), leaveEntitlement.getValidTo(), timeConfigs, holidayDates,
-				holidayObjects, leaveRequest, organizationService.getOrganizationTimeZone());
+				holidayObjects, leaveRequest);
 	}
 
 	private float calculateDaysToUtilize(float leaveDays, float entitlementRemainingDays, int workingDays,

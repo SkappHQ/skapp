@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -24,9 +24,9 @@ public class CrmTaskResponseDtoV2 {
 
 	private Boolean isCompleted;
 
-	private LocalDateTime dueAt;
+	private Instant dueAt;
 
-	private LocalDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 
 	private String notes;
 

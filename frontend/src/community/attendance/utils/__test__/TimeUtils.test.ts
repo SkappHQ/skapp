@@ -50,6 +50,37 @@ describe("Date and Time Utility Functions", () => {
     expect(convertUnixTimestampToISO(unixTimestamp)).toBe(isoString);
   });
 
+  test("convertUnixTimestampToISO renders in the given zone, not the browser's", () => {
+    const unixTimestamp = DateTime.fromISO("2026-09-07T06:37:00Z").toMillis();
+
+    expect(convertUnixTimestampToISO(unixTimestamp, "Asia/Tokyo")).toBe(
+      "2026-09-07T15:37:00.000"
+    );
+    expect(convertUnixTimestampToISO(unixTimestamp, "America/Denver")).toBe(
+      "2026-09-07T00:37:00.000"
+    );
+  });
+
+  test("convertTo24HourByDateString renders in the given zone, not the browser's", () => {
+    const isoInstant = "2026-09-07T06:37:00Z";
+
+    expect(convertTo24HourByDateString(isoInstant, "Asia/Tokyo")).toBe("15:37");
+    expect(convertTo24HourByDateString(isoInstant, "America/Denver")).toBe(
+      "00:37"
+    );
+  });
+
+  test("convertToTimeZoneISO renders in the given zone, not the browser's", () => {
+    const isoInstant = "2026-09-07T06:37:00";
+
+    expect(convertToTimeZoneISO(isoInstant, "Asia/Tokyo")).toBe(
+      "2026-09-07T15:37:00.000+09:00"
+    );
+    expect(convertToTimeZoneISO(isoInstant, "America/Denver")).toBe(
+      "2026-09-07T00:37:00.000-06:00"
+    );
+  });
+
   test("generateTimeSlots", () => {
     const timeSlots = generateTimeSlots();
     expect(timeSlots.length).toBe(25);

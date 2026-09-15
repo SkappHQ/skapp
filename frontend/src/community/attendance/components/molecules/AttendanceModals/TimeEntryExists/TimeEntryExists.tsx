@@ -4,12 +4,10 @@ import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useAddManualTimeEntry } from "~community/attendance/api/AttendanceEmployeeApi";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import {
-  convertToUtc,
-  getCurrentTimeZone
-} from "~community/attendance/utils/TimeUtils";
+import { convertToUtc } from "~community/attendance/utils/TimeUtils";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useEntryZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -21,6 +19,7 @@ interface Props {
 
 const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const entryZone = useEntryZone();
   const { setIsEmployeeTimesheetModalOpen, setEmployeeTimesheetModalType } =
     useAttendanceStore((state) => state);
   const { setToastMessage } = useToast();
@@ -52,7 +51,7 @@ const TimeEntryExists = ({ fromDateTime, toDateTime }: Props) => {
     manualEntryMutate({
       startTime: convertToUtc(fromDateTime) as string,
       endTime: convertToUtc(toDateTime) as string,
-      zoneId: getCurrentTimeZone()
+      zoneId: entryZone
     });
     setIsEmployeeTimesheetModalOpen(false);
   };

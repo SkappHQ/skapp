@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -21,9 +21,9 @@ public class CrmContactResponseDtoV2 {
 
 	private String contactNumber;
 
-	private LocalDateTime lastContactAt;
+	private Instant lastContactAt;
 
-	private LocalDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 
 	private Long companyId;
 

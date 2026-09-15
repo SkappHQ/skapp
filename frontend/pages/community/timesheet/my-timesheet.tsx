@@ -1,6 +1,7 @@
 import { NextPage } from "next";
 import { useShallow } from "zustand/react/shallow";
 
+import TimeZoneNotice from "~community/attendance/components/molecules/TimeZoneNotice/TimeZoneNotice";
 import EmployeeTimesheet from "~community/attendance/components/organisms/EmployeeTimesheet/EmployeeTimesheet";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
@@ -55,7 +56,10 @@ const MyTimeSheet: NextPage = () => {
       isDividerVisible={true}
       dividerStyles={{ my: "1rem" }}
     >
-      <EmployeeTimesheet />
+      <>
+        <TimeZoneNotice />
+        <EmployeeTimesheet />
+      </>
     </ContentLayout>
   );
 };

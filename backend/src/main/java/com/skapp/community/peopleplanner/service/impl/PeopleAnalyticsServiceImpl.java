@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.util.DateTimeUtils;
@@ -54,6 +55,8 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 
 	@NonNull
 	private final PeopleMapper peopleMapper;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	public ResponseEntityDto getDashBoardSummary(PeopleAnalyticsFilterDto peopleAnalyticsFilterDto) {
@@ -182,9 +185,10 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 	private EmployeeHireResponseDto getEmployeeHireResponseDto(List<Long> teamIds) {
 		EmployeeHireResponseDto employeeHireResponseDto = new EmployeeHireResponseDto();
 
-		Long newHires = employeeDao.countByIsActiveAndTeamsAndCreatedAt(true, teamIds, DateTimeUtils.getCurrentYear());
+		Long newHires = employeeDao.countByIsActiveAndTeamsAndCreatedAt(true, teamIds,
+				timeZoneService.currentOrganizationYear());
 		Long existsThisYear = employeeDao.countByIsActiveAndTeamsAndCreatedAt(false, teamIds,
-				DateTimeUtils.getCurrentYear());
+				timeZoneService.currentOrganizationYear());
 
 		employeeHireResponseDto.setNewHires(newHires);
 		employeeHireResponseDto.setExistsThisYear(existsThisYear);
@@ -204,7 +208,7 @@ public class PeopleAnalyticsServiceImpl implements PeopleAnalyticsService {
 			return emptyResponse;
 		}
 
-		LocalDate currentDate = DateTimeUtils.getCurrentUtcDate();
+		LocalDate currentDate = timeZoneService.currentOrganizationDate();
 		LocalDate thirtyDaysBeforeCurrentDate = currentDate.minusDays(30);
 
 		Long numberOfTerminatedEmployeesInLastThirtyDays = employeeDao
