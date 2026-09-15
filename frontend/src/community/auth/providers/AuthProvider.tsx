@@ -41,6 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User | null>(null);
+  const [hasCompletedInitialCheck, setHasCompletedInitialCheck] =
+    useState<boolean>(false);
   const router = useRouter();
 
   const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
@@ -76,6 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
+      setHasCompletedInitialCheck(true);
     }
   }, [accessToken, setAccessToken, clearAccessToken]);
 
@@ -162,14 +165,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth
   };
 
-  // Show loading state during initial authentication check
-  if (!initialCheckDone.current || isLoading) {
+  if (!hasCompletedInitialCheck) {
     return <FullScreenLoader />;
-  } else {
-    return (
-      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-    );
   }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use auth context
