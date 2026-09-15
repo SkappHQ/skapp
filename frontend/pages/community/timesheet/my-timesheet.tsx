@@ -23,8 +23,11 @@ const MyTimeSheet: NextPage = () => {
         state.setDirectManualTimeEntryEligibleEmployee
     }))
   );
-  const { isManualEntryRestricted, isLoading: isRestrictionLoading } =
-    useManualEntryRestriction();
+  const {
+    isManualEntryRestricted,
+    selfDirectEntryTarget,
+    isLoading: isRestrictionLoading
+  } = useManualEntryRestriction();
 
   return (
     <ContentLayout
@@ -46,7 +49,7 @@ const MyTimeSheet: NextPage = () => {
       primaryButtonType={ButtonStyle.PRIMARY}
       isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
-        setDirectManualTimeEntryEligibleEmployee(null);
+        setDirectManualTimeEntryEligibleEmployee(selfDirectEntryTarget);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

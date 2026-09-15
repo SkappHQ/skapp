@@ -353,15 +353,16 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      {directManualTimeEntryEligibleEmployee && (
-        <InputField
-          label={translateText(["directEntryEmployeeLabel"])}
-          inputName={"direct_entry_employee"}
-          value={directManualTimeEntryEligibleEmployee.employeeName}
-          labelStyles={classes.disabledInputFieldLabel}
-          isDisabled
-        />
-      )}
+      {directManualTimeEntryEligibleEmployee &&
+        !directManualTimeEntryEligibleEmployee.isSelf && (
+          <InputField
+            label={translateText(["directEntryEmployeeLabel"])}
+            inputName={"direct_entry_employee"}
+            value={directManualTimeEntryEligibleEmployee.employeeName}
+            labelStyles={classes.disabledInputFieldLabel}
+            isDisabled
+          />
+        )}
       {(employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
         employeeTimesheetModalType ===

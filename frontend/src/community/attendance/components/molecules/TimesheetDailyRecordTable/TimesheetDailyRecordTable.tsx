@@ -44,6 +44,7 @@ const TimesheetDailyRecordTable = ({
   const {
     isManualEntryRestricted,
     canDirectlyAddOrEditEntry,
+    selfDirectEntryTarget,
     isLoading: isRestrictionLoading
   } = useManualEntryRestriction();
 
@@ -149,6 +150,7 @@ const TimesheetDailyRecordTable = ({
                   targetEmployeeDetails={targetEmployeeDetails}
                   isRowInteractive={isRowInteractive}
                   isManualEntryRestricted={isManualEntryRestricted}
+                  selfDirectEntryTarget={selfDirectEntryTarget}
                 />
               ))
             ) : (
@@ -162,6 +164,7 @@ const TimesheetDailyRecordTable = ({
                     targetEmployeeDetails={targetEmployeeDetails}
                     isRowInteractive={isRowInteractive}
                     isManualEntryRestricted={isManualEntryRestricted}
+                    selfDirectEntryTarget={selfDirectEntryTarget}
                   />
                 ))}
               </Box>
