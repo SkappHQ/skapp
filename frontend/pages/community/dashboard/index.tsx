@@ -225,7 +225,7 @@ const Dashboard: NextPage = () => {
       const matchedTab = tabs.find(
         (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
       ) as TabModule;
-      matchedTab.module;
+      String(matchedTab.module);
       return tabs.indexOf(matchedTab);
     } catch {
       return 0;
