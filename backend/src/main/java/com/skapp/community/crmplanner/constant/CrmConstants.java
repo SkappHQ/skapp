@@ -60,6 +60,8 @@ public class CrmConstants {
 
 	public static final String HTTPS_SCHEME = "https";
 
+	public static final int INDUSTRY_NAME_MAX_LENGTH = 100;
+
 	public static final Set<CrmDealStageType> TERMINAL_STAGES = EnumSet.of(CrmDealStageType.WON, CrmDealStageType.LOST);
 
 	public static final Set<CrmDealStageType> NON_DELETABLE_STAGES = EnumSet.of(CrmDealStageType.INITIAL,
