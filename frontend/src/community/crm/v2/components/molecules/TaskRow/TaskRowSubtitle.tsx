@@ -31,7 +31,7 @@ const TaskRowSubtitle: FC<Props> = ({
   const contactName = getContactDisplayName(contact);
 
   return (
-    <div className="body3 leading-none mt-0.5 flex items-center gap-2 min-w-0">
+    <div className="body3 leading-none mt-0.5 flex items-center gap-2">
       {dueDateStatus && (
         <span
           className={
