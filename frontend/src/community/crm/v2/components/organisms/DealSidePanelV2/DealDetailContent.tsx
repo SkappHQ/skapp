@@ -1,20 +1,22 @@
-import type { InfiniteData } from "@tanstack/react-query";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
+import {
+  useGetTasksInfinite,
+  useUpdateTask
+} from "~community/crm/v2/api/TaskApi";
+import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -26,17 +28,21 @@ interface DealDetailContentProps {
 
 const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateTaskText = useTranslator("crmModule", "tasks");
   const { setToastMessage } = useToast();
 
-  const { deal, deals, board, setDeals, setBoardColumn } = useCrmStoreV2(
-    useShallow((store) => ({
-      deal: store.deals[dealId],
-      deals: store.deals,
-      board: store.board,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn
-    }))
-  );
+  const { deal, deals, board, tasks, setDeals, setBoardColumn, setTasks } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        deal: store.deals[dealId],
+        deals: store.deals,
+        board: store.board,
+        tasks: store.tasks,
+        setDeals: store.setDeals,
+        setBoardColumn: store.setBoardColumn,
+        setTasks: store.setTasks
+      }))
+    );
 
   const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
     dealId,
@@ -71,16 +77,43 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   };
 
   const {
-    data: relatedTasksData,
+    data: dealTasksData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetRelatedTasks({ dealId, size: TASK_PAGE_SIZE });
+  } = useGetTasksInfinite({ dealId, size: TASK_PAGE_SIZE }, true);
 
-  const relatedTasks =
-    (
-      relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined
-    )?.pages.flatMap((page) => page.items) ?? [];
+  const dealTasks = useMemo(
+    () => dealTasksData?.pages.flatMap((page) => page.items) ?? [],
+    [dealTasksData]
+  );
+
+  const { mutate: updateTaskCompletion } = useUpdateTask();
+
+  const applyCompletion = (taskId: number, isCompleted: boolean) => {
+    setTasks(updateTaskRecord(tasks, [{ id: taskId, isCompleted }]));
+  };
+
+  const handleToggleError = (taskId: number, wasCompleted: boolean) => {
+    applyCompletion(taskId, wasCompleted);
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateTaskText(["toggleErrorTitle"]),
+      description: translateTaskText(["toggleErrorDescription"])
+    });
+  };
+
+  const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
+    const wasCompleted = tasks[taskId]?.isCompleted === true;
+
+    applyCompletion(taskId, isCompleted);
+
+    updateTaskCompletion(
+      { id: taskId, task: { isCompleted } },
+      { onError: () => handleToggleError(taskId, wasCompleted) }
+    );
+  };
 
   if (!deal) {
     return <DealSidePanelSkeleton />;
@@ -102,11 +135,13 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <h2 className="h2">{translateText(["tasks", "title"])}</h2>
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
-              tasks={relatedTasks}
+              tasks={dealTasks}
+              emptyTitle={translateText(["tasks", "emptyTitle"])}
               emptyDescription={translateText(["tasks", "emptyDescription"])}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               onFetchNextPage={fetchNextPage}
+              onToggleComplete={handleToggleComplete}
             />
           </div>
         </div>

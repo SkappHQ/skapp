@@ -14,9 +14,15 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   dealName: string;
+  onDeleted?: () => void;
 }
 
-const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
+const DeleteDealModalV2: FC<Props> = ({
+  isOpen,
+  onClose,
+  dealName,
+  onDeleted
+}) => {
   const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
 
   const { setToastMessage } = useToast();
@@ -62,6 +68,7 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
     onClose();
     closeCrmSidePanel();
     setSelectedDealId(null);
+    onDeleted?.();
   };
 
   const handleError = (): void => {
