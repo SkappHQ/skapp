@@ -28,10 +28,11 @@ import {
   TIME_ERROR_MANUAL_ENTRY_RESTRICTED
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { ErrorResponse } from "~community/common/types/CommonTypes";
+import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
+import { normalizeEmployeeId } from "~community/people/utils/birthdayNotificationUtils";
 import {
   useAddDirectTimeEntry,
   useEditDirectTimeEntry
@@ -66,13 +67,20 @@ const useAddEntry = () => {
   const status = attendanceParams.slotType;
 
   const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
-  const { employeeDetails } = useSessionData();
+  const { data: currentEmployee } = useGetUserPersonalDetails();
+
+  const ownEmployeeId = normalizeEmployeeId(currentEmployee?.employeeId);
 
   const directTimeEntryEmployeeId =
     directManualTimeEntryEligibleEmployee?.employeeId ??
-    (canDirectlyAddOrEditEntry ? employeeDetails?.employeeId : undefined);
+    (canDirectlyAddOrEditEntry ? ownEmployeeId : undefined);
 
   const isDirectTimeEntry = directTimeEntryEmployeeId !== undefined;
+
+  const isOwnDirectEntryUnresolved =
+    canDirectlyAddOrEditEntry &&
+    !directManualTimeEntryEligibleEmployee &&
+    ownEmployeeId === undefined;
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {
     setToastMessage({
@@ -345,6 +353,10 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType,
     isGetTimeAvailabilityLoading: boolean
   ) => {
+    if (isOwnDirectEntryUnresolved) {
+      return true;
+    }
+
     const timeSlots = selectedDailyRecord?.timeSlots ?? [];
 
     const currentRecordStartTime = convertTo12HourByDateString(
