@@ -74,7 +74,12 @@ const CrmUiSlice: StateCreator<
   openCrmSidePanel: (crmSidePanelType: CrmSidePanelTypes) =>
     set({ isCrmSidePanelOpen: true, crmSidePanelType }),
   closeCrmSidePanel: () =>
-    set({ isCrmSidePanelOpen: false, crmSidePanelType: null }),
+    set({
+      isCrmSidePanelOpen: false,
+      crmSidePanelType: null,
+      selectedContactId: null,
+      selectedCompanyId: null
+    }),
 
   setPreselectedStageId: (preselectedStageId: number | null) =>
     set({ preselectedStageId }),
