@@ -135,7 +135,10 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   REPORT: {
-    BASE: "/report"
+    BASE: "/report",
+    DETAIL_BASE: "/report/",
+    ENTERPRISE_DETAIL_BASE: "/enterprise/report/",
+    HEADCOUNT_SUMMARY: "/report/headcount-summary"
   },
   CRM: {
     BASE: "/crm",
