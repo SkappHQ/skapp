@@ -142,7 +142,7 @@ const ROUTES = {
     CONTACTS: "/crm/contacts",
     COMPANIES: "/crm/companies",
     DEALS: "/crm/deals",
-    DEAL_DETAIL: (dealId: number) => `/crm/deals/${dealId}`,
+    DEAL_DETAIL: (id: number) => `/crm/deals/${id}`,
     TASKS: "/crm/tasks"
   },
   PROJECTS: {
