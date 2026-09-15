@@ -2,7 +2,24 @@ import { Theme } from "@mui/material";
 
 import { TimeRequestDataType } from "~community/attendance/types/timeSheetTypes";
 
+const DISABLED_ACTION_BUTTON_OPACITY = 0.5;
+
 const styles = (theme: Theme) => ({
+  declineActionButtonStyles: {
+    backgroundColor: theme.palette.grey[100],
+    margin: "0rem 0.75rem 0rem auto",
+    "&.Mui-disabled": {
+      opacity: DISABLED_ACTION_BUTTON_OPACITY
+    }
+  },
+  approveActionButtonStyles: {
+    backgroundColor: theme.palette.secondary.light,
+    border: `0.0625rem solid ${theme.palette.secondary.dark}`,
+    margin: "0rem auto 0rem 0rem",
+    "&.Mui-disabled": {
+      opacity: DISABLED_ACTION_BUTTON_OPACITY
+    }
+  },
   boxDateContainer: {
     display: "flex",
     flexDirection: "row",
