@@ -7,9 +7,10 @@ import MockTheme from "~community/common/mocks/MockTheme";
 import TimeEntryExists from "./TimeEntryExists";
 
 // Mock hooks and functions
-jest.mock("~community/attendance/api/AttendanceEmployeeApi", () => ({
-  useAddManualTimeEntry: jest.fn(() => ({
-    mutate: jest.fn()
+jest.mock("~community/attendance/hooks/useAddEntry", () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    confirmManualTimeEntry: jest.fn()
   }))
 }));
 
@@ -20,36 +21,21 @@ jest.mock("~community/attendance/store/attendanceStore", () => ({
   }))
 }));
 
-jest.mock("~community/common/providers/ToastProvider", () => ({
-  useToast: jest.fn(() => ({
-    setToastMessage: jest.fn()
-  }))
-}));
-
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (key: string[]) => key[key.length - 1]
-}));
-
-jest.mock("~community/attendance/utils/TimeUtils", () => ({
-  convertToUtc: jest.fn((time) => time),
-  getCurrentTimeZone: jest.fn(() => "UTC")
 }));
 
 describe("TimeEntryExists", () => {
   const mockSetIsEmployeeTimesheetModalOpen = jest.fn();
   const mockSetEmployeeTimesheetModalType = jest.fn();
-  const mockMutate = jest.fn();
-  const mockSetToastMessage = jest.fn();
+  const mockConfirmManualTimeEntry = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest
-      .mocked(
-        require("~community/attendance/api/AttendanceEmployeeApi")
-          .useAddManualTimeEntry
-      )
+      .mocked(require("~community/attendance/hooks/useAddEntry").default)
       .mockReturnValue({
-        mutate: mockMutate
+        confirmManualTimeEntry: mockConfirmManualTimeEntry
       });
     jest
       .mocked(
@@ -59,11 +45,6 @@ describe("TimeEntryExists", () => {
       .mockReturnValue({
         setIsEmployeeTimesheetModalOpen: mockSetIsEmployeeTimesheetModalOpen,
         setEmployeeTimesheetModalType: mockSetEmployeeTimesheetModalType
-      });
-    jest
-      .mocked(require("~community/common/providers/ToastProvider").useToast)
-      .mockReturnValue({
-        setToastMessage: mockSetToastMessage
       });
   });
 
@@ -82,7 +63,7 @@ describe("TimeEntryExists", () => {
     expect(screen.getByText("cancelBtnTxt")).toBeInTheDocument();
   });
 
-  test("calls mutate and closes modal when confirm button is clicked", async () => {
+  test("submits the time entry when confirm button is clicked", async () => {
     const user = userEvent.setup();
     render(
       <MockTheme>
@@ -93,12 +74,10 @@ describe("TimeEntryExists", () => {
     const confirmButton = screen.getByText("confirmBtnTxt");
     await user.click(confirmButton);
 
-    expect(mockMutate).toHaveBeenCalledWith({
-      startTime: fromDateTime,
-      endTime: toDateTime,
-      zoneId: "UTC"
-    });
-    expect(mockSetIsEmployeeTimesheetModalOpen).toHaveBeenCalledWith(false);
+    expect(mockConfirmManualTimeEntry).toHaveBeenCalledWith(
+      fromDateTime,
+      toDateTime
+    );
   });
 
   test("reopens the modal and sets modal type when cancel button is clicked", async () => {

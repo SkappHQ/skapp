@@ -18,20 +18,15 @@ jest.mock("~community/attendance/store/attendanceStore", () => ({
   }))
 }));
 
-jest.mock("~community/attendance/api/AttendanceEmployeeApi", () => ({
-  useAddManualTimeEntry: jest.fn(() => ({
-    mutate: jest.fn()
+jest.mock("~community/attendance/hooks/useAddEntry", () => ({
+  __esModule: true,
+  default: jest.fn(() => ({
+    confirmManualTimeEntry: jest.fn()
   }))
 }));
 
 jest.mock("~community/common/hooks/useTranslator", () => ({
   useTranslator: () => (key: string[]) => key[key.length - 1]
-}));
-
-jest.mock("~community/common/providers/ToastProvider", () => ({
-  useToast: jest.fn(() => ({
-    setToastMessage: jest.fn()
-  }))
 }));
 
 describe("HolidayEntryConfirmation", () => {
