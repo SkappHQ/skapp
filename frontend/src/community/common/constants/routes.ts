@@ -137,6 +137,12 @@ const ROUTES = {
   REPORT: {
     BASE: "/report"
   },
+  REPORTS: {
+    BASE: "/reports",
+    ENTERPRISE_BASE: "/enterprise/reports",
+    WORKFORCE_DEMOGRAPHICS: "/reports/workforce-demographics",
+    ATTENDANCE_OVERVIEW: "/reports/attendance-overview"
+  },
   CRM: {
     BASE: "/crm",
     CONTACTS: "/crm/contacts",

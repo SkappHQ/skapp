@@ -77,7 +77,6 @@
     "teamActionModalDes": "Proceeding with this action will remove all members from the team. To reassign members, please create a new team, or you may proceed with deletion.",
     "teamActionModalBtnText": "Add new team"
   },
-
   "holidays": {
     "title": "Holidays | Skapp",
     "holidays": "Holidays",
@@ -198,7 +197,6 @@
     "decToJan": "Dec to Jan",
     "allLocations": "All locations"
   },
-
   "editAllInfo": {
     "tabTitle": "Edit Profile | Skapp",
     "title": "Edit Profile",
@@ -226,7 +224,6 @@
       "uploadError": "Could not upload profile picture."
     }
   },
-
   "termination": {
     "status": "Status",
     "terminateButtonText": "Terminate",
@@ -252,7 +249,6 @@
     "terminateErrorTitle": "Termination Failed",
     "terminateErrorDescription": "Resource termination has failed."
   },
-
   "deletion": {
     "deleteConfirmationModalTitle": "Are you sure ?",
     "deleteButtonLabel": "Delete",
@@ -267,7 +263,6 @@
     "deleteWarningPrimarySupervisorDescription": "This user is currently assigned as the primary supervisor for an employee. Please assign a new primary supervisor to that employee before proceeding with the deletion.",
     "deleteWarningTeamSupervisorDescription": "This user is assigned as a supervisor for team/s. Please update their assignments before changing the user role."
   },
-
   "supervisorReassignment": {
     "modalTitle": "Change supervisors",
     "subtitle": "Please update the supervisor assignments for the list below:",
@@ -288,7 +283,6 @@
     "actionErrorTitle": "Oops! Something went wrong",
     "actionErrorDescription": "Failed to complete the action. Please try again."
   },
-
   "discardChangesModal": {
     "title": "Unsaved Changes",
     "leaveTabDescription": "You have unsaved changes. To proceed, would you like to save or discard them?",
@@ -299,7 +293,6 @@
     "cancel": "Cancel",
     "discard": "Discard"
   },
-
   "peoples": {
     "pageHead": "Directory | Skapp",
     "title": "Directory",
@@ -495,7 +488,6 @@
     "guestUserConfirmationModalDescription": "This user has already been added to the system as a guest. By proceeding, the user will be converted to an internal employee. Are you sure you want to continue?",
     "guestUserConfirmationModalContinueBtn": "Continue",
     "guestUserConfirmationModalCancelBtn": "Cancel",
-
     "reactivateErrorTitle": "Oops! Something went wrong",
     "reactivateErrorDescription": "Failed to reactivate the user. Please try again.",
     "unsavedModalTitle": "Unsaved changes",
@@ -514,7 +506,6 @@
       "exportPeopleDirectoryNoDataDescription": "Your current filters return no employees."
     }
   },
-
   "addResource": {
     "title": "Add New Resource",
     "next": "Confirm and Proceed",
@@ -977,7 +968,6 @@
       "copy": "Copy text"
     }
   },
-
   "jobFamily": {
     "tabTitle": "Job Families | Skapp",
     "title": "Job Families",
@@ -1085,7 +1075,6 @@
     "viewBtnText": "View",
     "viewJobFamilyTitle": "View job family"
   },
-
   "dashboard": {
     "all": "all employees",
     "records": "Records of ",
@@ -1105,7 +1094,6 @@
     "people": "People",
     "trend": "last 30 days"
   },
-
   "individualLeaveAnalytics": {
     "pageHead": "Leave Analytics",
     "tableHeaders": {
@@ -1173,110 +1161,6 @@
     "colleague": {
       "heading": "Today is {{name}}'s birthday!",
       "body": "Take a moment to send your birthday wishes and help make their day a little more special."
-    }
-  },
-  "demographics": {
-    "pageHead": "Demographics",
-    "title": "Demographics",
-    "breadcrumbs": {
-      "reports": "Reports"
-    },
-    "groupBy": {
-      "ariaLabel": "Group employees by"
-    },
-    "search": {
-      "placeholder": "Search employees",
-      "ariaLabel": "Search employees by name"
-    },
-    "filters": {
-      "ariaLabel": "Show filters",
-      "panelLabel": "Demographics filters",
-      "title": "Filters",
-      "close": "Close filters",
-      "selectPlaceholder": "Select",
-      "reset": "Reset filters",
-      "apply": "Apply filters"
-    },
-    "summary": {
-      "heading": "Summary",
-      "panelAriaLabel": "Demographics summary",
-      "tableCaption": "Employee count and share for each category",
-      "rowAriaLabel": "Show only {{category}}",
-      "employees": "Employees",
-      "percentOfTotal": "% of total",
-      "percentOfFiltered": "% of filtered",
-      "total": "Total"
-    },
-    "details": {
-      "employee": "Employee",
-      "jobTitle": "Job title",
-      "noResultsTitle": "No matching employees",
-      "noResultsDescription": "No employee matches your search. Try a different name."
-    },
-    "empty": {
-      "title": "No employees to show",
-      "description": "No active employee matches the selected filters."
-    },
-    "categories": {
-      "notRecorded": "Not recorded",
-      "other": "Other ({{count}})",
-      "otherPlain": "Other"
-    },
-    "export": {
-      "button": "Export",
-      "errorTitle": "Export failed",
-      "errorDescription": "The demographics report could not be generated. Please try again."
-    },
-    "error": {
-      "title": "Could not load the report",
-      "description": "The workforce demographics report could not be loaded. Please try again."
-    },
-    "dimensions": {
-      "GENDER": "Gender",
-      "AGE_BAND": "Age band",
-      "NATIONALITY": "Nationality",
-      "ETHNICITY": "Ethnicity"
-    },
-    "values": {
-      "GENDER": {
-        "MALE": "Male",
-        "FEMALE": "Female",
-        "OTHER": "Other"
-      },
-      "AGE_BAND": {
-        "UNDER_25": "Under 25",
-        "AGE_25_TO_34": "25-34",
-        "AGE_35_TO_44": "35-44",
-        "AGE_45_TO_54": "45-54",
-        "AGE_55_AND_OVER": "55 and over",
-        "NOT_RECORDED": "Not recorded"
-      },
-      "ETHNICITY": {
-        "AFRICAN": "African",
-        "CARIBBEAN": "Caribbean",
-        "INDIAN": "Indian",
-        "MELANESIAN": "Melanesian",
-        "AUSTRALASIAN_OR_ABORIGINAL": "Australasian or Aboriginal",
-        "CHINESE": "Chinese",
-        "GUAMANIAN": "Guamanian",
-        "JAPANESE": "Japanese",
-        "KOREAN": "Korean",
-        "POLYNESIAN": "Polynesian",
-        "EUROPEAN_OR_ANGLO_SAXON": "European or Anglo-Saxon",
-        "OTHER_PACIFIC_ISLANDER": "Other Pacific Islander",
-        "LATIN_AMERICAN": "Latin American",
-        "ARABIC": "Arabic",
-        "VIETNAMESE": "Vietnamese",
-        "MICRONESIAN": "Micronesian",
-        "OTHER_HISPANIC": "Other Hispanic",
-        "US_OR_CANADIAN_INDIAN": "US or Canadian Indian",
-        "OTHER_ASIAN": "Other Asian",
-        "PUERTO_RICAN": "Puerto Rican",
-        "FILIPINO": "Filipino",
-        "MEXICAN": "Mexican",
-        "ALASKAN_NATIVE": "Alaskan Native",
-        "CUBAN": "Cuban"
-      }
     }
   }
 }
