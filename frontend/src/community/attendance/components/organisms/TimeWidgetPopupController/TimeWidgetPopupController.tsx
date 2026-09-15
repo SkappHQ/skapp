@@ -120,6 +120,13 @@ const TimeWidgetPopupController = (): JSX.Element => {
     return "";
   };
 
+  const getModalRole = (): "dialog" | "alertdialog" => {
+    if (isPreMidnightClockOutAlertOpen || isAutoClockOutMidnightModalOpen) {
+      return "alertdialog";
+    }
+    return "dialog";
+  };
+
   const handleCloseModal = (): void => {
     if (isAttendanceModalOpen) {
       handleCloseAttendanceModal();
@@ -162,6 +169,7 @@ const TimeWidgetPopupController = (): JSX.Element => {
       }
       onClose={handleCloseModal}
       modalHeader={getModalTitle()}
+      role={getModalRole()}
       content={modalContent()}
     />
   );
