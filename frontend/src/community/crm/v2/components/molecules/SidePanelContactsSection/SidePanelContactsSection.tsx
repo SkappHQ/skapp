@@ -103,7 +103,9 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
             <div className="subtitle4 text-secondary-text">
               {metrics?.closedDealCount !== undefined &&
               metrics.closedDealCount > 0
-                ? `${metrics.closedDealCount} ${translateText(["dealsClosed"])}`
+                ? `${metrics.closedDealCount} ${translateText(["dealsClosed"], {
+                    count: metrics.closedDealCount
+                  })}`
                 : ""}
             </div>
           </div>
