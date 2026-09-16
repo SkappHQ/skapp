@@ -276,7 +276,10 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
         timesheetRequest?.status === TimeSheetRequestStates.PENDING ? (
           <>
             <IconButton
-              sx={classes.declineActionButtonStyles}
+              sx={{
+                backgroundColor: theme.palette.grey[100],
+                margin: "0rem 0.75rem 0rem auto"
+              }}
               disabled={isActionInProgress}
               aria-busy={isRequestActionPending(
                 timesheetRequest?.timeRequestId,
@@ -302,7 +305,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
               )}
             </IconButton>
             <IconButton
-              sx={classes.approveActionButtonStyles}
+              sx={{
+                backgroundColor: theme.palette.secondary.light,
+                border: `0.0625rem solid ${theme.palette.secondary.dark}`,
+                margin: "0rem auto 0rem 0rem"
+              }}
               disabled={isActionInProgress}
               aria-busy={isRequestActionPending(
                 timesheetRequest?.timeRequestId,
