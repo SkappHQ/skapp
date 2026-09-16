@@ -512,10 +512,8 @@ public class TimeRecordRepositoryImpl implements TimeRecordRepository {
 		Root<TimeSlot> timeSlot = subquery.from(TimeSlot.class);
 
 		subquery.select(cb.count(timeSlot));
-		subquery.where(
-				cb.equal(timeSlot.get(TimeSlot_.timeRecord).get(TimeRecord_.timeRecordId),
-						timeRecord.get(TimeRecord_.timeRecordId)),
-				cb.isTrue(timeSlot.get(TimeSlot_.isActiveRightNow)));
+		subquery.where(cb.equal(timeSlot.get(TimeSlot_.timeRecord).get(TimeRecord_.timeRecordId),
+				timeRecord.get(TimeRecord_.timeRecordId)), cb.isTrue(timeSlot.get(TimeSlot_.isActiveRightNow)));
 
 		return subquery;
 	}
