@@ -77,7 +77,6 @@
     "teamActionModalDes": "Proceeding with this action will remove all members from the team. To reassign members, please create a new team, or you may proceed with deletion.",
     "teamActionModalBtnText": "Add new team"
   },
-
   "holidays": {
     "title": "Holidays | Skapp",
     "holidays": "Holidays",
@@ -198,7 +197,6 @@
     "decToJan": "Dec to Jan",
     "allLocations": "All locations"
   },
-
   "editAllInfo": {
     "tabTitle": "Edit Profile | Skapp",
     "title": "Edit Profile",
@@ -226,7 +224,6 @@
       "uploadError": "Could not upload profile picture."
     }
   },
-
   "termination": {
     "status": "Status",
     "terminateButtonText": "Terminate",
@@ -252,7 +249,6 @@
     "terminateErrorTitle": "Termination Failed",
     "terminateErrorDescription": "Resource termination has failed."
   },
-
   "deletion": {
     "deleteConfirmationModalTitle": "Are you sure ?",
     "deleteButtonLabel": "Delete",
@@ -267,7 +263,6 @@
     "deleteWarningPrimarySupervisorDescription": "This user is currently assigned as the primary supervisor for an employee. Please assign a new primary supervisor to that employee before proceeding with the deletion.",
     "deleteWarningTeamSupervisorDescription": "This user is assigned as a supervisor for team/s. Please update their assignments before changing the user role."
   },
-
   "supervisorReassignment": {
     "modalTitle": "Change supervisors",
     "subtitle": "Please update the supervisor assignments for the list below:",
@@ -288,7 +283,6 @@
     "actionErrorTitle": "Oops! Something went wrong",
     "actionErrorDescription": "Failed to complete the action. Please try again."
   },
-
   "discardChangesModal": {
     "title": "Unsaved Changes",
     "leaveTabDescription": "You have unsaved changes. To proceed, would you like to save or discard them?",
@@ -299,7 +293,6 @@
     "cancel": "Cancel",
     "discard": "Discard"
   },
-
   "peoples": {
     "pageHead": "Directory | Skapp",
     "title": "Directory",
@@ -495,7 +488,6 @@
     "guestUserConfirmationModalDescription": "This user has already been added to the system as a guest. By proceeding, the user will be converted to an internal employee. Are you sure you want to continue?",
     "guestUserConfirmationModalContinueBtn": "Continue",
     "guestUserConfirmationModalCancelBtn": "Cancel",
-
     "reactivateErrorTitle": "Oops! Something went wrong",
     "reactivateErrorDescription": "Failed to reactivate the user. Please try again.",
     "unsavedModalTitle": "Unsaved changes",
@@ -514,7 +506,6 @@
       "exportPeopleDirectoryNoDataDescription": "Your current filters return no employees."
     }
   },
-
   "addResource": {
     "title": "Add New Resource",
     "next": "Confirm and Proceed",
@@ -977,7 +968,6 @@
       "copy": "Copy text"
     }
   },
-
   "jobFamily": {
     "tabTitle": "Job Families | Skapp",
     "title": "Job Families",
@@ -1085,7 +1075,6 @@
     "viewBtnText": "View",
     "viewJobFamilyTitle": "View job family"
   },
-
   "dashboard": {
     "all": "all employees",
     "records": "Records of ",
@@ -1105,7 +1094,6 @@
     "people": "People",
     "trend": "last 30 days"
   },
-
   "individualLeaveAnalytics": {
     "pageHead": "Leave Analytics",
     "tableHeaders": {

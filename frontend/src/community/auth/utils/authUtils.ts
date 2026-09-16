@@ -26,7 +26,10 @@ import { TenantStatusEnums, TierEnum } from "~enterprise/common/enums/Common";
 import { isAuthHost } from "~enterprise/common/utils/tenantUtil";
 
 import { config } from "../../../../proxy";
-import { drawerHiddenProtectedRoutes } from "../constants/routeConfigs";
+import {
+  appBarOnlyProtectedRoutes,
+  drawerHiddenProtectedRoutes
+} from "../constants/routeConfigs";
 import { SignInStatus } from "../enums/auth";
 import {
   AuthResponseType,
@@ -67,6 +70,9 @@ export const resolvePostSignInPath = (
     return ROUTES.DASHBOARD.BASE;
   }
 };
+
+export const IsAProtectedUrlWithAppBarOnly = (asPath: string): boolean =>
+  appBarOnlyProtectedRoutes.some((prefix) => asPath.startsWith(prefix));
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
