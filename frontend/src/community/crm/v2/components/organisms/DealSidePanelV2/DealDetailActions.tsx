@@ -109,12 +109,13 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
           }}
         />
       )}
-
-      <DeleteDealModalV2
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        dealName={dealName}
-      />
+      {dealName && (
+        <DeleteDealModalV2
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          dealName={dealName}
+        />
+      )}
     </>
   );
 };

@@ -6,12 +6,12 @@ import useInlineEditForm from "~community/crm/hooks/useInlineEditForm";
 import { validateDealDescription } from "~community/crm/v2/utils/dealValidations";
 
 interface DealDescriptionSectionProps {
-  description?: string;
+  description: string;
   onSave: (description: string) => void;
 }
 
 const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
-  description = "",
+  description,
   onSave
 }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
