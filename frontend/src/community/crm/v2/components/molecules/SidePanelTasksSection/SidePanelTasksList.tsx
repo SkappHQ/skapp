@@ -10,7 +10,6 @@ interface SidePanelTasksListProps {
   onAddTask: () => void;
   isAddTaskDisabled?: boolean;
   showAddTaskAction?: boolean;
-  onRowClick?: (taskId: number) => void;
   onToggleComplete: (taskId: number, isCompleted: boolean) => void;
 }
 
@@ -19,7 +18,6 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
   onAddTask,
   isAddTaskDisabled,
   showAddTaskAction = true,
-  onRowClick,
   onToggleComplete
 }) => {
   const translateText = useTranslator(
@@ -38,7 +36,6 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
               key={task.id}
               task={task}
               taskId={task.id}
-              onRowClick={onRowClick ?? (() => undefined)}
               onToggleComplete={onToggleComplete}
             />
           ) : null
@@ -53,6 +50,7 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
             icon={<PlusIcon />}
             iconPosition="end"
             onClick={onAddTask}
+            aria-label={translateText(["addTaskButtonEmptyView"])}
             disabled={isAddTaskDisabled}
             isLoading={isAddTaskDisabled}
           >
