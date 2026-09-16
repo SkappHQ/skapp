@@ -131,13 +131,19 @@ const BaseLayout = ({ children }: Props) => {
     isProtectedRouteWithAppBarOnly
   ]);
 
+  const shouldShowBirthdayNotifications =
+    sessionStatus === "authenticated" &&
+    (isProtectedRouteWithDrawer || isProtectedRouteWithAppBarOnly);
+
   return (
     <>
       {renderComponent}
       <CommonModalController />
-      <BirthdayNotificationProvider>
-        <BirthdayModalController />
-      </BirthdayNotificationProvider>
+      {shouldShowBirthdayNotifications && (
+        <BirthdayNotificationProvider>
+          <BirthdayModalController />
+        </BirthdayNotificationProvider>
+      )}
     </>
   );
 };

@@ -14,12 +14,8 @@ import {
   CrmOwnerRecord
 } from "../types/CrmCommonTypes";
 import { CrmDealsByStagesResponse } from "../types/CrmTypes";
-import {
-  appendDealId,
-  mergeDeals,
-  removeDealFromRecord,
-  removeDealId
-} from "./dealUtil";
+import { appendId } from "./commonUtil";
+import { mergeDeals, removeDealFromRecord, removeDealId } from "./dealUtil";
 
 const appendDealIds = (existing: number[], incoming: number[]): number[] => {
   const seen = new Set(existing);
@@ -195,7 +191,7 @@ export const ingestCreatedDeal = (
   return {
     deals,
     board: addDealToColumn(current.board, deal),
-    dealIds: appendDealId(current.dealIds, deal.id)
+    dealIds: appendId(current.dealIds, deal.id)
   };
 };
 

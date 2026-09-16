@@ -26,6 +26,7 @@ import {
   ManagerTypes
 } from "~community/common/types/AuthTypes";
 import { ModuleTypes } from "~community/common/types/CommonTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
 import { useGetMyPolicyBalances } from "~community/leave/api/PolicyLeaveApi";
@@ -43,6 +44,8 @@ import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTy
 import { getBillingSuccessToast } from "~enterprise/common/utils/billingToastUtils";
 
 type RoleTypes = AdminTypes | ManagerTypes | EmployeeTypes;
+
+type TabModule = { module: ModuleTypes };
 
 const modulePermissions: Record<string, RoleTypes[]> = {
   TIME: [
@@ -97,7 +100,7 @@ const LeaveYearSelector: FC<{
 };
 
 const Dashboard: NextPage = () => {
-  const { query } = useRouter();
+  const { query, asPath } = useRouter();
 
   const queryMatches = useMediaQuery();
   const isBelow900 = queryMatches(MediaQueries.BELOW_900);
@@ -113,6 +116,7 @@ const Dashboard: NextPage = () => {
   const { setToastMessage } = useToast();
 
   const [showLoader, setShowLoader] = useState(true);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   useEffect(() => {
     if (showLoader) {
@@ -176,6 +180,7 @@ const Dashboard: NextPage = () => {
     ...(user?.roles?.includes(EmployeeTypes.ATTENDANCE_EMPLOYEE)
       ? [
           {
+            id: ModuleTypes.TIME,
             label: translateText(["attendanceTab"]),
             content: <AttendanceDashboard />,
             module: ModuleTypes.TIME
@@ -185,6 +190,7 @@ const Dashboard: NextPage = () => {
     ...(user?.roles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)
       ? [
           {
+            id: ModuleTypes.LEAVE,
             label: translateText(["leaveTab"]),
             content: (
               <div>
@@ -196,22 +202,48 @@ const Dashboard: NextPage = () => {
         ]
       : []),
     {
+      id: ModuleTypes.PEOPLE,
       label: translateText(["peopleTab"]),
       content: <PeopleDashboard />,
       module: ModuleTypes.PEOPLE
     }
   ];
 
+  const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
+
   // Filters tabs based on user roles.
-  const getVisibleTabs = (userRoles: RoleTypes[] = []) => {
-    return tabs.filter((tab) => {
-      const allowedRoles = modulePermissions[tab.module];
-      return userRoles.some((role) => allowedRoles?.includes(role));
-    });
+  const visibleTabs = tabs.filter((tab) => {
+    const allowedRoles = modulePermissions[tab.module];
+    return userRoles.some((role) => allowedRoles?.includes(role));
+  });
+
+  const findRequestedTabIndex = (
+    tabs: TabModule[],
+    tabParam: string
+  ): number => {
+    try {
+      const matchedTab = tabs.find(
+        (tab) => tab.module.toLowerCase() === tabParam.toLowerCase()
+      ) as TabModule;
+      String(matchedTab.module);
+      return tabs.indexOf(matchedTab);
+    } catch {
+      return 0;
+    }
   };
 
-  const userRoles: RoleTypes[] = (user?.roles || []) as RoleTypes[];
-  const visibleTabs = getVisibleTabs(userRoles);
+  useEffect(() => {
+    setActiveTabIndex(findRequestedTabIndex(visibleTabs, query.tab as string));
+  }, [query.tab]);
+
+  const handleTabChange = (index: number) => {
+    setActiveTabIndex(index);
+    const selectedModule = visibleTabs[index]?.module;
+    if (selectedModule) {
+      replaceTabQueryParam(asPath, selectedModule.toLowerCase());
+    }
+  };
+
   const { selectedYear, setSelectedYear } = useLeaveStore((state) => state);
 
   const currentDate = DateTime.now();
@@ -275,7 +307,11 @@ const Dashboard: NextPage = () => {
             <LeaveAllocationSummary />
           </div>
         ) : (
-          <TabsContainer tabs={visibleTabs} />
+          <TabsContainer
+            tabs={visibleTabs}
+            activeTabIndex={activeTabIndex}
+            onTabChange={handleTabChange}
+          />
         )}
 
         <VersionUpgradeModal />

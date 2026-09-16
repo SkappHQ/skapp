@@ -9,6 +9,7 @@ import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import useRouteLoading from "~community/common/hooks/useRouteLoading";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import MyRequestModalController from "~community/leave/components/organisms/MyRequestModalController/MyRequestModalController";
 import QuickSetupModalController from "~enterprise/common/components/organisms/QuickSetupModalController/QuickSetupModalController";
 
 import styles from "./styles";
@@ -21,7 +22,7 @@ const ContentWithAppBar = ({ children }: Props) => {
   const classes = styles();
 
   const { toastMessage, setToastMessage } = useToast();
-  const translateAria = useTranslator("commonAria", "contentWithDrawer");
+  const translateAria = useTranslator("commonAria", "contentWithAppBar");
   const loading = useRouteLoading();
 
   return (
@@ -30,47 +31,26 @@ const ContentWithAppBar = ({ children }: Props) => {
         <Stack sx={classes.contentWrapper}>
           <AppBar isDrawerAvailable={false} />
           {loading ? (
-            <div
+            <Stack
               role="status"
               aria-busy={true}
               aria-live="polite"
-              style={{
-                width: "100%",
-                flex: 1,
-                minHeight: 0,
-                position: "relative"
-              }}
+              sx={classes.loader}
             >
               <FullScreenLoader fullPage={false} zIndex={ZIndexEnums.MODAL} />
-            </div>
+            </Stack>
           ) : (
-            <main
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-                flex: 1,
-                minHeight: 0,
-                overflowX: "clip",
-                overflowY: "auto"
-              }}
-            >
+            <Stack component="main" sx={classes.main}>
               <Stack
-                id="content-with-app-bar-main-content"
+                id="content-with-drawer-main-content"
                 tabIndex={0}
                 role="document"
-                aria-label={translateAria(["contentAreaWithDrawer"])}
-                style={{
-                  flexDirection: "column",
-                  width: "100%",
-                  flex: 1,
-                  minHeight: 0,
-                  overflowX: "clip"
-                }}
+                aria-label={translateAria(["contentAreaWithAppBar"])}
+                sx={classes.mainContent}
               >
                 {children}
               </Stack>
-            </main>
+            </Stack>
           )}
         </Stack>
       </Stack>
@@ -88,6 +68,7 @@ const ContentWithAppBar = ({ children }: Props) => {
         }}
       />
       <TimeWidgetPopupController />
+      <MyRequestModalController />
       <QuickSetupModalController />
     </>
   );

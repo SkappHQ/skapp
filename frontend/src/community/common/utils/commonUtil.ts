@@ -237,8 +237,11 @@ export const scrollToFirstError = (theme: Theme) => {
   }
 };
 
-export const scrollToTop = (top: number = 0) => {
-  window.scrollTo({ top, behavior: "smooth" });
+export const scrollToTop = (
+  top: number = 0,
+  behavior: ScrollBehavior = "smooth"
+) => {
+  window.scrollTo({ top, behavior });
 };
 
 export const capitalizeFirstLetter = (string: string): string => {
