@@ -619,7 +619,9 @@ public class TimeServiceImpl implements TimeService {
 		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
 
 		boolean attendanceConfigForAutoApproval = attendanceConfigService
-			.getAttendanceConfigByType(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES);
+			.getAttendanceConfigByType(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES)
+				|| attendanceConfigService
+					.getAttendanceConfigByType(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED);
 		if (attendanceConfigForAutoApproval) {
 			handleTimeEntryRequestAutoApproval(timeRequestToSave);
 		}

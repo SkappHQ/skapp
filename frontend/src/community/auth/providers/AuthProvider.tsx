@@ -41,6 +41,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [user, setUser] = useState<User | null>(null);
+  const [hasCompletedInitialCheck, setHasCompletedInitialCheck] =
+    useState<boolean>(false);
   const router = useRouter();
 
   const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
@@ -59,7 +61,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuth = useCallback(async (): Promise<User | null> => {
     if (isCheckingAuth.current) return null;
     isCheckingAuth.current = true;
-    setIsLoading(true);
+
+    const isInitialCheck = !initialCheckDone.current;
+
+    if (isInitialCheck) {
+      setIsLoading(true);
+    }
 
     try {
       const userData = await checkUserAuthentication({
@@ -73,9 +80,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return userData;
     } finally {
-      setIsLoading(false);
+      if (isInitialCheck) {
+        setIsLoading(false);
+      }
       isCheckingAuth.current = false;
       initialCheckDone.current = true;
+      setHasCompletedInitialCheck(true);
     }
   }, [accessToken, setAccessToken, clearAccessToken]);
 
@@ -119,7 +129,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
 
         if (response.status === SignInStatus.SUCCESS) {
-          setIsLoading(true);
           // Refresh auth state after successful sign in
           const userData = await checkAuth();
 
@@ -162,14 +171,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth
   };
 
-  // Show loading state during initial authentication check
-  if (!initialCheckDone.current || isLoading) {
+  if (!hasCompletedInitialCheck) {
     return <FullScreenLoader />;
-  } else {
-    return (
-      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-    );
   }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // Custom hook to use auth context
