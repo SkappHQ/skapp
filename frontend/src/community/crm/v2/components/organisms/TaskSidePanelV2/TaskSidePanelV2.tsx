@@ -205,10 +205,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
           <div className="flex items-center gap-4 pl-2">
-            <TaskTypeIcon
-              typeName={taskType?.name}
-              size={TASK_DETAIL_ICON_SIZE}
-            />
+            {taskType && (
+              <TaskTypeIcon
+                typeName={taskType.name}
+                size={TASK_DETAIL_ICON_SIZE}
+              />
+            )}
             <span className="h1 text-black">{task.name}</span>
           </div>
         )
@@ -268,7 +270,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               </h2>
               <hr className="border-secondary-accent" />
               <SidePanelTasksSection
-                taskIds={task.relatedTaskIds ?? []}
+                taskIds={task?.relatedTaskIds ?? []}
                 emptyTitle={translateText(["sidePanel", "noRelatedTasksTitle"])}
                 emptyDescription={translateText([
                   "sidePanel",

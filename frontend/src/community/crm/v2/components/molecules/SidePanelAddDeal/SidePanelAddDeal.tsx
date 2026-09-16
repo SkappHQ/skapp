@@ -8,13 +8,13 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { DEAL_NAME_MAX_LENGTH } from "~community/crm/constants/dealConstants";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import {
   useCheckDealNameExists,
   useCreateDeal
 } from "~community/crm/v2/api/DealApi";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { DEAL_NAME_MAX_LENGTH } from "~community/crm/v2/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
