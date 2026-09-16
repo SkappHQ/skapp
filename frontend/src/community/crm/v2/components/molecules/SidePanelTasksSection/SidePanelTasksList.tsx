@@ -50,7 +50,6 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
             icon={<PlusIcon />}
             iconPosition="end"
             onClick={onAddTask}
-            aria-label={translateText(["addTaskButtonEmptyView"])}
             disabled={isAddTaskDisabled}
             isLoading={isAddTaskDisabled}
           >
