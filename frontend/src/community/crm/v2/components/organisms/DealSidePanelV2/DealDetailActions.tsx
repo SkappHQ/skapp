@@ -11,6 +11,7 @@ import { FC, useEffect, useState } from "react";
 import ROUTES from "~community/common/constants/routes";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { copyToClipboard } from "~community/common/utils/commonUtil";
 import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
 import { LINK_COPIED_POPOVER_DURATION } from "~community/crm/v2/constants/dealConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -41,14 +42,11 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
   }, [isLinkCopied]);
 
   const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
-      );
-      setIsLinkCopied(true);
-    } catch {
-      setIsLinkCopied(false);
-    }
+    const isCopied = await copyToClipboard(
+      `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
+    );
+
+    setIsLinkCopied(isCopied);
   };
 
   const menuItems = [
@@ -112,7 +110,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
       <DeleteDealModalV2
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        dealName={dealName ?? ""}
+        dealName={dealName}
       />
     </>
   );
