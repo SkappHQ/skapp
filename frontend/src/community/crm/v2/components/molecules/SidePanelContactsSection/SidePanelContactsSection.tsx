@@ -13,6 +13,7 @@ import {
   formatMonetaryValueWithDecimals,
   formatTableValue
 } from "~community/crm/v2/utils/commonUtil";
+import { getSelectedCompany } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 
 interface SidePanelContactsSectionProps {
@@ -42,7 +43,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
   );
 
   const contactIds =
-    selectedCompanyId !== null ? companies[selectedCompanyId]?.contactIds : [];
+    getSelectedCompany(companies, selectedCompanyId)?.contactIds ?? [];
 
   const tableHeaders: GridHeader[] = [
     {
@@ -74,7 +75,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
   ];
 
   const transformToTableRows = (): GridRow[] =>
-    (contactIds ?? []).map((contactId) => {
+    contactIds.map((contactId) => {
       const contact = contacts[contactId];
       const contactName = getContactDisplayName(contact);
       const metrics = contact.metrics;
