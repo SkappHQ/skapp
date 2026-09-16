@@ -42,11 +42,14 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
   }, [isLinkCopied]);
 
   const handleCopyLink = async () => {
-    const isCopied = await copyToClipboard(
-      `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
-    );
-
-    setIsLinkCopied(isCopied);
+    try {
+      await copyToClipboard(
+        `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
+      );
+      setIsLinkCopied(true);
+    } catch {
+      setIsLinkCopied(false);
+    }
   };
 
   const menuItems = [
