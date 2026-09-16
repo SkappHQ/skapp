@@ -13,10 +13,10 @@ import { removeDeal } from "~community/crm/v2/utils/boardUtil";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  dealName: string;
+  dealName?: string;
 }
 
-const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
+const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName = "" }) => {
   const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
 
   const { setToastMessage } = useToast();

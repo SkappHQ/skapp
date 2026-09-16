@@ -89,13 +89,13 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   return (
     <div className="flex flex-col gap-6">
       <DealTitleSection
-        name={deal.name ?? ""}
+        name={deal.name}
         onSave={(name) => updateDeal({ name })}
       />
       <div className="flex gap-6 items-start">
         <div className="flex-1 flex flex-col gap-6 min-w-0">
           <DealDescriptionSection
-            description={deal.description ?? ""}
+            description={deal.description}
             onSave={(description) => updateDeal({ description })}
           />
           <div className="flex flex-col gap-3">
