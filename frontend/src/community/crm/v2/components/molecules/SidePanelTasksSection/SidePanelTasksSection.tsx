@@ -37,6 +37,8 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
 }) => {
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
+  const translateText = useTranslator("crmModule", "tasks");
+
   const { setToastMessage } = useToast();
 
   const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } =
@@ -49,16 +51,14 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
       }))
     );
 
-  const translateTaskText = useTranslator("crmModule", "tasks");
-
   const [optimisticTasks, setOptimisticTasks] = useOptimistic(tasks);
 
   const showToggleError = () =>
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateTaskText(["toggleErrorTitle"]),
-      description: translateTaskText(["toggleErrorDescription"])
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
     });
 
   const handleToggleSuccess = (updatedTask: CrmTaskEntity) => {
@@ -81,13 +81,6 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
     });
   };
 
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
-
   const { loadingRef } = useInfiniteScroll({
     hasNextPage,
     isLoading: isFetchingNextPage,
@@ -107,6 +100,7 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
         <SidePanelTasksList
           tasks={resolveTasks(taskIds, optimisticTasks)}
           onAddTask={handleAddTask}
+          addTaskLabel={translateText(["sidePanel", "addTaskButton"])}
           isAddTaskDisabled={isCheckingCrmLimit}
           showAddTaskAction={showAddTaskAction}
           onToggleComplete={handleToggleComplete}
@@ -119,18 +113,20 @@ const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
   return (
     <EmptyDataView
       icon={<SearchIcon width="24" height="24" />}
-      title={emptyTitle ?? translateText(["emptyTitle"])}
-      description={emptyDescription ?? translateText(["emptyDescription"])}
+      title={emptyTitle ?? translateText(["sidePanel", "emptyTitle"])}
+      description={
+        emptyDescription ?? translateText(["sidePanel", "emptyDescription"])
+      }
       button={
         showAddTaskAction
           ? {
-              children: translateText(["addTaskButtonEmptyView"]),
+              children: translateText(["sidePanel", "addTaskButton"]),
               variant: "tertiary",
               onClick: handleAddTask,
               disabled: isCheckingCrmLimit,
               isLoading: isCheckingCrmLimit,
               icon: <PlusIcon />,
-              "aria-label": translateText(["addTaskButtonEmptyView"])
+              "aria-label": translateText(["sidePanel", "addTaskButton"])
             }
           : undefined
       }
