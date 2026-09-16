@@ -226,7 +226,6 @@ export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
   date?: string;
-  isSelf?: boolean;
 }
 
 export interface DirectManualTimeEntryVariablesType {
