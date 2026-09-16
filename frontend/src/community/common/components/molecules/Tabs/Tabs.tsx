@@ -1,6 +1,6 @@
 import { Box, Tab, Tabs } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useState } from "react";
+import React from "react";
 
 import { TabsComponentProps } from "~community/common/types/TabsTypes";
 
@@ -8,13 +8,19 @@ import TabPanel from "./TabPanel";
 import styles from "./styles";
 
 // TabsContainer component
-const TabsContainer: React.FC<TabsComponentProps> = ({ tabs }) => {
-  const [value, setValue] = useState<number>(0);
+const TabsContainer: React.FC<TabsComponentProps> = ({
+  tabs,
+  activeTabIndex,
+  onTabChange
+}) => {
   const theme = useTheme();
   const classes = styles(theme);
 
   const handleChange = (_: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    if (newValue === activeTabIndex) {
+      return;
+    }
+    onTabChange(newValue);
   };
 
   return (
@@ -22,14 +28,14 @@ const TabsContainer: React.FC<TabsComponentProps> = ({ tabs }) => {
       {tabs.length > 1 && (
         <Box sx={classes.tabsBox}>
           <Tabs
-            value={value}
+            value={activeTabIndex}
             onChange={handleChange}
             TabIndicatorProps={{ sx: classes.indicator }}
           >
             {tabs.map((tab, index) => (
               <Tab
                 sx={classes.tab}
-                key={index}
+                key={tab.id}
                 label={tab.label}
                 id={`tab-${index}`}
                 aria-controls={`tabpanel-${index}`}
@@ -39,7 +45,7 @@ const TabsContainer: React.FC<TabsComponentProps> = ({ tabs }) => {
         </Box>
       )}
       {tabs.map((tab, index) => (
-        <TabPanel key={index} value={value} index={index}>
+        <TabPanel key={tab.id} value={activeTabIndex} index={index}>
           {tab.content}
         </TabPanel>
       ))}
