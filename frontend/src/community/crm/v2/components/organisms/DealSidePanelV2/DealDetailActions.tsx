@@ -87,7 +87,11 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
           }
           shape="rounded"
           onClick={handleCopyLink}
-          aria-label={translateText(["ariaLabels", "copyLink"])}
+          aria-label={
+            isLinkCopied
+              ? translateText(["linkCopied"])
+              : translateText(["ariaLabels", "copyLink"])
+          }
         />
       </Popover>
 
