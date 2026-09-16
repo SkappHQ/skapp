@@ -2,10 +2,14 @@ import { useRouter } from "next/router";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { IsAProtectedUrlWithDrawer } from "~community/auth/utils/authUtils";
+import {
+  IsAProtectedUrlWithAppBarOnly,
+  IsAProtectedUrlWithDrawer
+} from "~community/auth/utils/authUtils";
 import SkipToContentPopup from "~community/common/components/atoms/SkipToContentPopup/SkipToContentPopup";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import CommonModalController from "~community/common/components/organisms/CommonModalController/CommonModalController";
+import ContentWithAppBar from "~community/common/components/organisms/ContentWithAppBar/ContentWithAppBar";
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
@@ -59,11 +63,18 @@ const BaseLayout = ({ children }: Props) => {
     return isClient ? IsAProtectedUrlWithDrawer(asPath) : false;
   }, [asPath, isClient]);
 
+  const isProtectedRouteWithAppBarOnly = useMemo(() => {
+    return isClient ? IsAProtectedUrlWithAppBarOnly(asPath) : false;
+  }, [asPath, isClient]);
+
   useEffect(() => {
-    if (isProtectedRouteWithDrawer && token) {
+    if (
+      (isProtectedRouteWithDrawer || isProtectedRouteWithAppBarOnly) &&
+      token
+    ) {
       setDeviceToken(token);
     }
-  }, [isProtectedRouteWithDrawer, token]);
+  }, [isProtectedRouteWithDrawer, isProtectedRouteWithAppBarOnly, token]);
 
   const renderComponent = useMemo(() => {
     switch (sessionStatus) {
@@ -73,6 +84,15 @@ const BaseLayout = ({ children }: Props) => {
         if (isEnterprise && isGlobalLoginMethodLoading) {
           if (asPath === "/settings?status=success") return <LogoColorLoader />;
           return <FullScreenLoader />;
+        }
+
+        if (isProtectedRouteWithAppBarOnly) {
+          return (
+            <>
+              <SkipToContentPopup />
+              <ContentWithAppBar>{children}</ContentWithAppBar>
+            </>
+          );
         }
 
         if (isProtectedRouteWithDrawer) {
@@ -107,11 +127,13 @@ const BaseLayout = ({ children }: Props) => {
     children,
     isEnterprise,
     isGlobalLoginMethodLoading,
-    isProtectedRouteWithDrawer
+    isProtectedRouteWithDrawer,
+    isProtectedRouteWithAppBarOnly
   ]);
 
   const shouldShowBirthdayNotifications =
-    sessionStatus === "authenticated" && isProtectedRouteWithDrawer;
+    sessionStatus === "authenticated" &&
+    (isProtectedRouteWithDrawer || isProtectedRouteWithAppBarOnly);
 
   return (
     <>
