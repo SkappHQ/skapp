@@ -1,7 +1,6 @@
 import { SubTaskInput } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 import { FC, useState } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -11,17 +10,18 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import {
   useCheckDealNameExists,
-  useCreateDeal
+  useCreateDeal,
+  useGetDealStages
 } from "~community/crm/v2/api/DealApi";
 import { DEFAULT_LOOKUP_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
 import { DEAL_NAME_MAX_LENGTH } from "~community/crm/v2/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmContactEntity,
   CrmDealEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
+import { toStagesRecord } from "~community/crm/v2/utils/commonUtil";
 import { getInitialStageId } from "~community/crm/v2/utils/dealUtil";
 import { inlineAddDealValidations } from "~community/crm/v2/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
@@ -59,10 +59,6 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     SEARCH_DEBOUNCE_DELAY
   );
 
-  const { stages } = useCrmStoreV2(
-    useShallow((state) => ({ stages: state.stages }))
-  );
-
   const contactFilters: CrmContactFilterRequest = {
     searchKeyword: debouncedContactSearch,
     size: DEFAULT_LOOKUP_PAGE_SIZE
@@ -76,7 +72,10 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
   const { data: currentUser, isLoading: isUserLoading } =
     useGetUserPersonalDetails();
 
-  const initialStageId = getInitialStageId(stages);
+  const { data: stages = [], isLoading: isStagesLoading } =
+    useGetDealStages(true);
+
+  const initialStageId = getInitialStageId(toStagesRecord(stages));
 
   const handleCreateDealSuccess = (createdDeal: CrmDealEntity) => {
     onDealCreated(createdDeal);
@@ -115,6 +114,7 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
 
   const isFormDisabled =
     isPending ||
+    isStagesLoading ||
     isUserLoading ||
     isCheckingCrmLimit ||
     !initialStageId ||

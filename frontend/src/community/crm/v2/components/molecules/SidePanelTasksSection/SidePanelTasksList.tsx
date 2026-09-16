@@ -1,13 +1,13 @@
 import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface SidePanelTasksListProps {
   tasks: CrmTaskEntity[];
   onAddTask: () => void;
+  addTaskLabel: string;
   isAddTaskDisabled?: boolean;
   showAddTaskAction?: boolean;
   onToggleComplete: (taskId: number, isCompleted: boolean) => void;
@@ -16,17 +16,11 @@ interface SidePanelTasksListProps {
 const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
   tasks,
   onAddTask,
+  addTaskLabel,
   isAddTaskDisabled,
   showAddTaskAction = true,
   onToggleComplete
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel",
-    "tasks"
-  );
-
   return (
     <>
       <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
@@ -53,7 +47,7 @@ const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
             disabled={isAddTaskDisabled}
             isLoading={isAddTaskDisabled}
           >
-            {translateText(["addTaskButtonEmptyView"])}
+            {addTaskLabel}
           </ButtonV2>
         </div>
       )}
