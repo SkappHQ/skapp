@@ -3,6 +3,7 @@ import { rejects } from "assert";
 
 import { employeeAttendanceEndpoints } from "~community/attendance/api/utils/attendanceEndPoints";
 import { attendanceQueryKeys } from "~community/attendance/api/utils/attendanceQueryKeys";
+import { invalidateAttendanceTimeRecordQueries } from "~community/attendance/api/utils/invalidateAttendanceQueries";
 import {
   dailyLogPreProcessor,
   timeRequestPreProcessor
@@ -259,6 +260,7 @@ export const useAddManualTimeEntry = (
           queryKey: attendanceQueryKeys.getEmployeeRequests()
         })
         .catch(rejects);
+      invalidateAttendanceTimeRecordQueries(queryClient);
     }
   });
 };
@@ -283,6 +285,7 @@ export const useEditClockInOut = (
           queryKey: attendanceQueryKeys.getEmployeeRequests()
         })
         .catch(rejects);
+      invalidateAttendanceTimeRecordQueries(queryClient);
     }
   });
 };

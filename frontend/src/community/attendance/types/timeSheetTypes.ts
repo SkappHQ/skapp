@@ -106,6 +106,11 @@ export interface TimeRequestDataType {
   requestType?: string;
 }
 
+export interface TimeEntryTimeErrorsType {
+  fromTime?: string;
+  toTime?: string;
+}
+
 export interface TimeRequestDataResponseType {
   items: TimeRequestDataType[];
   currentPage: number;
