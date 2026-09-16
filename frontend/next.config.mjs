@@ -444,6 +444,14 @@ const nextConfig = {
         destination: "/enterprise/report"
       },
       {
+        source: "/report/workforce-demographics",
+        destination: "/enterprise/report/workforce-demographics"
+      },
+      {
+        source: "/report/attendance-overview",
+        destination: "/enterprise/report/attendance-overview"
+      },
+      {
         source: "/crm",
         destination: "/community/crm/contacts"
       },
