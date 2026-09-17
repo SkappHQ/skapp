@@ -23,4 +23,6 @@ public class EmployeeTimeRecordImpl implements EmployeeTimeRecord {
 
 	private final String timeSlots;
 
+	private final Boolean isOngoingTimeRequest;
+
 }

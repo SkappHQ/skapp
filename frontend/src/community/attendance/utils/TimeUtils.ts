@@ -17,6 +17,9 @@ export const createEmptyDailyLog = (date: string): DailyLogType => ({
   holiday: null
 });
 
+export const hasOngoingTimeEntry = (record?: DailyLogType | null): boolean =>
+  Boolean(record?.timeSlots?.some((timeSlot) => timeSlot?.isActiveRightNow));
+
 export const convertTo24HourByDateString = (date: string) => {
   const dateTime = DateTime.fromISO(date, { zone: getCurrentTimeZone() });
   return dateTime.toFormat("HH:mm");
