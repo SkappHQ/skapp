@@ -481,8 +481,8 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	private void validateStartAndEndDates(LocalDate startDate, LocalDate endDate) {
-		if (startDate.getYear() < DateTimeUtils.getCurrentYear() - 1
-				|| endDate.getYear() <= DateTimeUtils.getCurrentYear() - 1 || startDate.isAfter(endDate)
+		int currentYear = timeZoneService.currentOrganizationYear();
+		if (startDate.getYear() < currentYear - 1 || endDate.getYear() <= currentYear - 1 || startDate.isAfter(endDate)
 				|| endDate.isBefore(startDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
@@ -856,8 +856,9 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 			managerTeamResourceAvailabilityDto.setEndDate(endDate);
 		}
 
-		if (DateTimeUtils.getYear(startDate) < DateTimeUtils.getCurrentYear() - 1
-				|| DateTimeUtils.getYear(endDate) < DateTimeUtils.getCurrentYear() - 1 || startDate.isAfter(endDate)) {
+		int currentYear = timeZoneService.currentOrganizationYear();
+		if (DateTimeUtils.getYear(startDate) < currentYear - 1 || DateTimeUtils.getYear(endDate) < currentYear - 1
+				|| startDate.isAfter(endDate)) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 		List<Long> teamsIds = managerTeamResourceAvailabilityDto.getTeamIds();
@@ -1273,9 +1274,9 @@ public class LeaveAnalyticsServiceImpl implements LeaveAnalyticsService {
 	}
 
 	public boolean invalidStartAndEndDate(LocalDate startDate, LocalDate endDate) {
-		return startDate.getYear() < DateTimeUtils.getCurrentYear() - 1
-				|| endDate.getYear() < DateTimeUtils.getCurrentYear() - 1 || startDate.isAfter(endDate)
-				|| endDate.isBefore(startDate);
+		int currentYear = timeZoneService.currentOrganizationYear();
+		return startDate.getYear() < currentYear - 1 || endDate.getYear() < currentYear - 1
+				|| startDate.isAfter(endDate) || endDate.isBefore(startDate);
 	}
 
 	@Override
