@@ -413,8 +413,7 @@
       "description": "Description",
       "tasks": {
         "title": "Tasks",
-        "emptyDescription": "No tasks yet. Create a task to follow up with this deal",
-        "emptyTitle": "No tasks"
+        "emptyDescription": "No tasks yet. Create a task to follow up with this deal"
       },
       "addTask": "Add task",
       "value": "Value",
