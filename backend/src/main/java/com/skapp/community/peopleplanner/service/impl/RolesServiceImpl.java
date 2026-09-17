@@ -12,7 +12,6 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.CommonModuleUtils;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -643,7 +642,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
-		CommonModuleUtils.setIfExists(DateTimeUtils::getCurrentUtcDate, employeeRole::setChangedDate);
+		CommonModuleUtils.setIfExists(timeZoneService::currentOrganizationDate, employeeRole::setChangedDate);
 		CommonModuleUtils.setIfExists(currentUser::getEmployee, employeeRole::setRoleChangedBy);
 		CommonModuleUtils.setIfExists(() -> employee, employeeRole::setEmployee);
 
