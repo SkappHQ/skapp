@@ -341,7 +341,8 @@
         "noContacts": "No contacts",
         "noContactsDescription": "No contacts associated with this company",
         "addContact": "Add Contact",
-        "dealsClosed": "Deals closed",
+        "dealsClosed_one": "Deal closed",
+        "dealsClosed_other": "Deals closed",
         "overdue": "overdue",
         "infiniteScrollLoadingMessage": "Loading contacts..."
       }
@@ -635,6 +636,9 @@
       "relatedTasksTitle": "Related Tasks",
       "noRelatedTasksTitle": "No tasks",
       "noRelatedTasksDescription": "No related tasks yet",
+      "addTaskButton": "Add task",
+      "emptyTitle": "No tasks",
+      "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
       "markAsDone": "Mark as Done",
       "statusDone": "Done",
       "assignedTo": "Assigned To",

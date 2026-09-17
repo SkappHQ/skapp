@@ -619,7 +619,9 @@ public class TimeServiceImpl implements TimeService {
 		timeRequestToSave = timeRequestDao.save(timeRequestToSave);
 
 		boolean attendanceConfigForAutoApproval = attendanceConfigService
-			.getAttendanceConfigByType(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES);
+			.getAttendanceConfigByType(AttendanceConfigType.AUTO_APPROVAL_FOR_CHANGES)
+				|| attendanceConfigService
+					.getAttendanceConfigByType(AttendanceConfigType.MANUAL_TIME_ENTRY_RESTRICTION_ENABLED);
 		if (attendanceConfigForAutoApproval) {
 			handleTimeEntryRequestAutoApproval(timeRequestToSave);
 		}
@@ -994,6 +996,7 @@ public class TimeServiceImpl implements TimeService {
 				timeRecordChip.setDate(timeRecord.getDate());
 				timeRecordChip.setWorkedHours(timeRecord.getWorkedHours());
 				timeRecordChip.setLeaveRequest(getLeaveRequestResponse(timeRecord.getDate(), leaveRequests, employee));
+				timeRecordChip.setIsOngoingTimeRequest(Boolean.TRUE.equals(timeRecord.getIsOngoingTimeRequest()));
 				populateEnterpriseChipFields(timeRecordChip, timeRecord, geoFencingEnabled);
 				timeRecordRow.add(timeRecordChip);
 			}
@@ -2197,17 +2200,19 @@ public class TimeServiceImpl implements TimeService {
 		return false;
 	}
 
+	protected boolean canManageManualTimeEntries(User currentUser) {
+		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
+		return Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
+				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
+				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
+	}
+
 	private void validateManualEntryRestriction(User currentUser) {
 		if (!isManualEntryRestrictionEnabled()) {
 			return;
 		}
 
-		EmployeeRole employeeRole = currentUser.getEmployee().getEmployeeRole();
-		boolean isAuthorized = Boolean.TRUE.equals(employeeRole.getIsSuperAdmin())
-				|| Role.ATTENDANCE_ADMIN.equals(employeeRole.getAttendanceRole())
-				|| Role.ATTENDANCE_MANAGER.equals(employeeRole.getAttendanceRole());
-
-		if (!isAuthorized) {
+		if (!canManageManualTimeEntries(currentUser)) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_MANUAL_ENTRY_RESTRICTED);
 		}
 	}

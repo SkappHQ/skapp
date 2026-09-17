@@ -28,6 +28,7 @@ const TaskRowSubtitle: FC<Props> = ({
     : null;
 
   const isContactVisible = isShowContact && contact != null;
+  const contactName = getContactDisplayName(contact);
 
   return (
     <div className="body3 leading-none mt-0.5 flex items-center gap-2">
@@ -55,13 +56,14 @@ const TaskRowSubtitle: FC<Props> = ({
 
       {isContactVisible && (
         <span
-          className={
+          className={`min-w-0 truncate ${
             isCompletedStyleApplied
               ? "line-through text-secondary-icon"
               : "text-secondary-text"
-          }
+          }`}
+          title={contactName}
         >
-          {getContactDisplayName(contact)}
+          {contactName}
         </span>
       )}
     </div>
