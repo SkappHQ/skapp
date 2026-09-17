@@ -14,11 +14,11 @@ import { useCheckDealNameExists } from "~community/crm/v2/api/DealApi";
 import { validateDealName } from "~community/crm/v2/utils/dealValidations";
 
 interface DealTitleSectionProps {
-  name?: string;
+  name: string;
   onSave: (name: string) => void;
 }
 
-const DealTitleSection: FC<DealTitleSectionProps> = ({ name = "", onSave }) => {
+const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
 
   const {
