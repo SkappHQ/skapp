@@ -296,7 +296,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
 
 		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao
-			.findOpenTaskSummaryByContactIds(contactIds, timeZoneService.currentOrganizationDayStart())
+			.findOpenTaskSummaryByContactIds(contactIds, timeZoneService.currentRequestDayStart())
 			.stream()
 			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
 
@@ -320,8 +320,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactMetricsById(Long id) {
 		log.info("getContactMetricsById: execution started");
 
-		CrmContactMetrics metrics = crmContactDao
-			.getContactMetricsById(id, timeZoneService.currentOrganizationDayStart())
+		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id, timeZoneService.currentRequestDayStart())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
 		log.info("getContactMetricsById: execution ended");
@@ -392,7 +391,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
 
 		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id,
-				timeZoneService.currentOrganizationDayStart());
+				timeZoneService.currentRequestDayStart());
 		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
 		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
 

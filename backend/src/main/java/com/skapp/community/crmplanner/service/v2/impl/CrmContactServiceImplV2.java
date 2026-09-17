@@ -44,7 +44,7 @@ public class CrmContactServiceImplV2 implements CrmContactServiceV2 {
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
 		Page<CrmContactMetricsResponseDtoV2> contactPage = crmContactDao.getContactMetricsV2(filterDto, pageable,
-				timeZoneService.currentOrganizationDayStart());
+				timeZoneService.currentRequestDayStart());
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactPage.getContent());
