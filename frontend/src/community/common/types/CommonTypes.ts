@@ -300,3 +300,9 @@ export interface EmployeeAvatarData {
 export type CalendarPopperPlacement = Required<
   Pick<PopperProps, "position" | "offset">
 >;
+
+export interface TimeOfDayType {
+  hour: number;
+  minute: number;
+  second: number;
+}
