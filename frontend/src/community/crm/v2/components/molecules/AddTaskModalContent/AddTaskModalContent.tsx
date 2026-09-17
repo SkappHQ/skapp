@@ -14,6 +14,7 @@ import {
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
+import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
 import {
   linkTaskToRelatedEntities,
   updateTaskRecord
@@ -84,20 +85,18 @@ const AddTaskModalContent: FC = () => {
     setOwners(updateOwnerRecord(owners, [defaultOwner]));
   }, [defaultOwner]);
 
-  const initialValues: CrmTaskEntity = useMemo(() => {
-    const values: CrmTaskEntity = {
+  const selectedContact = getSelectedContact(contacts, selectedContactId);
+
+  const initialValues: CrmTaskEntity = useMemo(
+    () => ({
       name: "",
       priority: CrmPriorityEnum.MEDIUM,
       ownerId: defaultOwner?.employeeId,
+      contactId: selectedContact?.id,
       notes: ""
-    };
-
-    if (selectedContactId !== null) {
-      values.contactId = selectedContactId;
-    }
-
-    return values;
-  }, [defaultOwner, selectedContactId]);
+    }),
+    [defaultOwner, selectedContact?.id]
+  );
 
   const formik = useFormik<CrmTaskEntity>({
     initialValues,
