@@ -9,6 +9,7 @@ import { useShallow } from "zustand/react/shallow";
 import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { formatTableValue } from "~community/crm/v2/utils/commonUtil";
 
 interface SidePanelContactInfoProps {
   contact: CrmContactEntity;
@@ -23,23 +24,17 @@ const SidePanelContactInfo: FC<SidePanelContactInfoProps> = ({ contact }) => {
 
   return (
     <div className="flex items-center justify-between max-w-[629px] w-full">
-      {contact.email && (
-        <SidePanelHeaderInfoItem
-          icon={
-            <EmailOutlineIcon
-              style={{ color: "var(--color-secondary-icon)" }}
-            />
-          }
-          value={contact.email}
-        />
-      )}
+      <SidePanelHeaderInfoItem
+        icon={
+          <EmailOutlineIcon style={{ color: "var(--color-secondary-icon)" }} />
+        }
+        value={formatTableValue(contact.email)}
+      />
 
-      {contact.contactNumber && (
-        <SidePanelHeaderInfoItem
-          icon={<PhoneIcon style={{ color: "var(--color-secondary-icon)" }} />}
-          value={contact.contactNumber}
-        />
-      )}
+      <SidePanelHeaderInfoItem
+        icon={<PhoneIcon style={{ color: "var(--color-secondary-icon)" }} />}
+        value={formatTableValue(contact.contactNumber)}
+      />
 
       {companyName && (
         <SidePanelHeaderInfoItem
