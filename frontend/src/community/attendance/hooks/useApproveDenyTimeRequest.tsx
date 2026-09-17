@@ -111,7 +111,7 @@ const useApproveDenyTimeRequest = () => {
     declineTimesheetRequest,
     isApproveDenyLoading,
     pendingTimeRequestId,
-    pendingRequestAction: currentRequesAction
+    currentRequesAction
   };
 };
 

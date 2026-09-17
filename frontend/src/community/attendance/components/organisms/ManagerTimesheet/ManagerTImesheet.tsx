@@ -33,7 +33,7 @@ const ManagerTimesheet = ({
     declineTimesheetRequest,
     isApproveDenyLoading,
     pendingTimeRequestId,
-    pendingRequestAction
+    currentRequesAction
   } = useApproveDenyTimeRequest();
 
   const { data: requestData, isLoading: isRequestLoading } =
@@ -61,7 +61,7 @@ const ManagerTimesheet = ({
           declineTimesheetRequest={declineTimesheetRequest}
           isApproveDenyLoading={isApproveDenyLoading}
           pendingTimeRequestId={pendingTimeRequestId}
-          pendingRequestAction={pendingRequestAction}
+          pendingRequestAction={currentRequesAction}
           tableName={TableNames.REQUESTS_AWAITING_FOR_APPROVAL}
         />
       )}
