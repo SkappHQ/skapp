@@ -1,5 +1,4 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { rejects } from "assert";
 import { useEffect } from "react";
 
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
@@ -41,6 +40,6 @@ export const useSyncRequestTimezone = (): void => {
     }
 
     useCommonStore.getState().setRequestTimezone(entryZone);
-    queryClient.invalidateQueries().catch(rejects);
+    void queryClient.invalidateQueries();
   }, [entryZone, queryClient]);
 };
