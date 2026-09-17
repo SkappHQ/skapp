@@ -435,7 +435,8 @@
         "saveTitle": "Save title",
         "discardTitle": "Discard title",
         "editTitle": "Edit title",
-        "editDescription": "Edit description"
+        "editDescription": "Edit description",
+        "copyLink": "Copy link to this deal"
       },
       "buttons": {
         "save": "Save",
@@ -480,7 +481,8 @@
           "errorTitle": "Failed to add deal",
           "errorDescription": "Please try again or contact support"
         }
-      }
+      },
+      "linkCopied": "Link copied"
     },
     "dealsTable": {
       "dealColumn": "Deal",
