@@ -3,6 +3,7 @@ import { DealRow } from "~community/crm/v2/types/CrmListViewConfigTypes";
 
 export const DEAL_COLUMN_MIN_WIDTH = 100;
 
+export const LINK_COPIED_POPOVER_DURATION = 2000;
 export const DEAL_NAME_MAX_LENGTH = 255;
 
 export const DEAL_FIELD_META: Partial<

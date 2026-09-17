@@ -27,7 +27,11 @@ import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import styles from "./styles";
 
-const AppBar = () => {
+interface Props {
+  isDrawerAvailable?: boolean;
+}
+
+const AppBar = ({ isDrawerAvailable = true }: Props) => {
   const router = useRouter();
   const classes = styles();
 
@@ -174,7 +178,7 @@ const AppBar = () => {
               />
             )}
 
-            {isBelow1024 && !isDrawerExpanded && (
+            {isDrawerAvailable && isBelow1024 && !isDrawerExpanded && (
               <button
                 className="flex cursor-pointer items-center justify-center w-10 h-10"
                 onClick={handleDrawer}

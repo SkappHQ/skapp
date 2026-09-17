@@ -22,6 +22,7 @@ export interface TimeRecordType {
     };
   };
   workedHours: number;
+  isOngoingTimeRequest?: boolean;
   clockInLocationStatus?: RecordLocationStatus;
   clockOutLocationStatus?: RecordLocationStatus;
 }
