@@ -85,13 +85,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
 
   const { filterCount } = useTimesheetRequestFilterState(true, hasFullList);
 
-  const isActionInProgress = Boolean(isApproveDenyLoading);
-
   const isRequestActionPending = (
     timeRequestId: number,
     action: TimeSheetRequestStates
   ): boolean =>
-    isActionInProgress &&
+    Boolean(isApproveDenyLoading) &&
     pendingTimeRequestId === timeRequestId &&
     pendingRequestAction === action;
 
@@ -280,7 +278,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 backgroundColor: theme.palette.grey[100],
                 margin: "0rem 0.75rem 0rem auto"
               }}
-              disabled={isActionInProgress}
+              disabled={isApproveDenyLoading}
               aria-busy={isRequestActionPending(
                 timesheetRequest?.timeRequestId,
                 TimeSheetRequestStates.DENIED
@@ -310,7 +308,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 border: `0.0625rem solid ${theme.palette.secondary.dark}`,
                 margin: "0rem auto 0rem 0rem"
               }}
-              disabled={isActionInProgress}
+              disabled={isApproveDenyLoading}
               aria-busy={isRequestActionPending(
                 timesheetRequest?.timeRequestId,
                 TimeSheetRequestStates.APPROVED
