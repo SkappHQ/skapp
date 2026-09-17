@@ -172,14 +172,14 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     }
 
     if (fetchedTasks) {
-      const taskItems = fetchedTasks.pages.flatMap((page) => page.items);
+      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
 
       setTasks(updateTaskRecord(tasks, taskItems));
       contactFields.taskIds = toTaskIds(taskItems);
     }
 
     if (fetchedDeals) {
-      const dealItems = fetchedDeals.pages.flatMap((page) => page.items);
+      const dealItems = fetchedDeals.pages.flatMap((page) => page?.items ?? []);
 
       setDeals(mergeDeals(deals, dealItems));
       contactFields.dealIds = toDealIds(dealItems);
@@ -190,7 +190,8 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
 
   const contact = contacts[contactId];
 
-  const canEditContact = isCrmSalesManager || contact?.ownerId === userId;
+  const canEditContact =
+    isCrmSalesManager || (userId != null && contact?.ownerId === userId);
 
   const canDeleteContact = isCrmSalesManager;
 
