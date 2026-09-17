@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import MockTheme from "~community/common/mocks/MockTheme";
+import "~community/common/mocks/mockTimeEntryDependencies";
 
 import TimeEntryExists from "./TimeEntryExists";
 
@@ -33,16 +34,6 @@ jest.mock("~community/common/hooks/useTranslator", () => ({
 jest.mock("~community/attendance/utils/TimeUtils", () => ({
   convertToUtc: jest.fn((time) => time)
 }));
-
-jest.mock("~community/common/hooks/useDisplayZone", () => ({
-  useEntryZone: jest.fn(() => "UTC")
-}));
-
-jest.mock(
-  "@rootcodelabs/skapp-ui",
-  () => require("~community/common/mocks/MockSkappUi"),
-  { virtual: true }
-);
 
 describe("TimeEntryExists", () => {
   const mockSetIsEmployeeTimesheetModalOpen = jest.fn();
