@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { TIME_ERROR_TIME_REQUEST_CANNOT_EDIT } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -16,10 +16,10 @@ const useApproveDenyTimeRequest = () => {
     number | null
   >(null);
 
-  const isRequestInFlightRef = useRef<boolean>(false);
+  const [isRequestInFlight, setIsRequestInFlight] = useState(false);
 
   const resetPendingRequest = (): void => {
-    isRequestInFlightRef.current = false;
+    setIsRequestInFlight(false);
     setPendingTimeRequestId(null);
   };
 
@@ -86,11 +86,12 @@ const useApproveDenyTimeRequest = () => {
     timeRequestId: number,
     status: TimeSheetRequestStates
   ): void => {
-    if (isRequestInFlightRef.current) return;
+    if (isRequestInFlight) return;
 
-    isRequestInFlightRef.current = true;
+    setIsRequestInFlight(true);
     setPendingTimeRequestId(timeRequestId);
     setCurrentRequestAction(status);
+
     approveDenyRequest({
       id: timeRequestId,
       status
