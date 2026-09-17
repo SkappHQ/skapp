@@ -7,6 +7,7 @@ import com.skapp.community.common.util.DateTimeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -16,6 +17,7 @@ import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TimeZoneServiceImpl implements TimeZoneService {
 
 	private final ObjectProvider<OrganizationService> organizationServiceProvider;
