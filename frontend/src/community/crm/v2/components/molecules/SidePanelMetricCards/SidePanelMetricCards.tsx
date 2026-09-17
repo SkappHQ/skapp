@@ -1,6 +1,7 @@
-import { Card } from "@rootcodelabs/skapp-ui";
+import { Card, Label } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
+import { CrmMetricLabelThemeEnum } from "~community/crm/v2/enums/common";
 import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 import { CrmMetricItem } from "~community/crm/v2/utils/companyUtil";
 
@@ -23,6 +24,22 @@ const SidePanelMetricCards: FC<SidePanelMetricCardsProps> = ({ metrics }) => {
                 ? formatMonetaryValueWithDecimals(metric.amount)
                 : metric.amount}
             </p>
+            {metric.chip && (
+              <Label
+                backgroundColor={
+                  metric.chip.variant === CrmMetricLabelThemeEnum.GREEN
+                    ? "bg-semantic-green-background"
+                    : "bg-semantic-red-background"
+                }
+                textColor={
+                  metric.chip.variant === CrmMetricLabelThemeEnum.GREEN
+                    ? "text-semantic-green-text"
+                    : "text-semantic-red-text"
+                }
+              >
+                {metric.chip.label}
+              </Label>
+            )}
           </div>
         </Card>
       ))}
