@@ -1,7 +1,7 @@
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { FC, useEffect } from "react";
-import { useShallow } from "zustand/shallow";
+import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import ROUTES from "~community/common/constants/routes";
@@ -21,6 +21,7 @@ const DealDetailPage: FC = () => {
 
   useInitializeCrmData();
 
+  const isRouterReady = router.isReady;
   const dealId = Number(router.query.id);
   const isValidDealId = Number.isInteger(dealId) && dealId > 0;
 
@@ -32,16 +33,16 @@ const DealDetailPage: FC = () => {
   );
 
   useEffect(() => {
-    if (!isValidDealId) return;
+    if (!isRouterReady || !isValidDealId) return;
 
     setSelectedDealId(dealId);
 
     return () => setSelectedDealId(null);
-  }, [dealId, isValidDealId]);
+  }, [isRouterReady, dealId, isValidDealId]);
 
   const { isError, error } = useGetDealById(
     dealId,
-    isValidDealId && isCrmDataInitialized
+    isRouterReady && isValidDealId && isCrmDataInitialized
   );
 
   const isViewDenied =
@@ -49,54 +50,62 @@ const DealDetailPage: FC = () => {
     CrmErrorMessageKeyEnum.DEAL_VIEW_DENIED;
 
   useEffect(() => {
-    if (!isViewDenied) return;
+    if (isViewDenied) {
+      router.replace(ROUTES.AUTH.UNAUTHORIZED);
+    }
+  }, [router, isViewDenied]);
 
-    void router.replace(ROUTES.AUTH.UNAUTHORIZED);
-  }, [isViewDenied]);
-
-  if (isViewDenied) return null;
+  const isDealReadable = isRouterReady && !isViewDenied;
+  const isDealUnavailable = isDealReadable && (!isValidDealId || isError);
+  const isDealVisible = isDealReadable && isValidDealId && !isError;
 
   return (
     <ContentLayout
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["deals", "title"]) }
+        {
+          label: translateText(["deals", "title"]),
+          onClick: () => router.push(ROUTES.CRM.DEALS)
+        }
       ]}
       pageHead={translateText(["deals", "detailsPageHead"])}
       title={translateText(["deals", "detailsTitle"])}
       isTitleHidden
       module={Modules.CRM}
     >
-      {!isValidDealId || isError ? (
-        <EmptyDataView
-          icon={<SearchIcon width="24" height="24" />}
-          title={translateText([
-            "deals",
-            "sidePanel",
-            "errors",
-            "dealNotFoundTitle"
-          ])}
-          description={translateText([
-            "deals",
-            "sidePanel",
-            "errors",
-            "dealNotFoundDescription"
-          ])}
-        />
-      ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-4">
-            <DealDetailIdBadge dealId={dealId} />
-            <div className="flex items-center gap-2">
-              <DealDetailActions
-                dealId={dealId}
-                onDeleted={() => router.push(ROUTES.CRM.DEALS)}
-              />
+      <>
+        {isDealUnavailable && (
+          <EmptyDataView
+            icon={<SearchIcon width="24" height="24" />}
+            title={translateText([
+              "deals",
+              "sidePanel",
+              "errors",
+              "dealNotFoundTitle"
+            ])}
+            description={translateText([
+              "deals",
+              "sidePanel",
+              "errors",
+              "dealNotFoundDescription"
+            ])}
+          />
+        )}
+        {isDealVisible && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <DealDetailIdBadge dealId={dealId} />
+              <div className="flex items-center gap-2">
+                <DealDetailActions
+                  dealId={dealId}
+                  onDeleted={() => router.push(ROUTES.CRM.DEALS)}
+                />
+              </div>
             </div>
+            <DealDetailContent dealId={dealId} />
           </div>
-          <DealDetailContent dealId={dealId} />
-        </div>
-      )}
+        )}
+      </>
     </ContentLayout>
   );
 };

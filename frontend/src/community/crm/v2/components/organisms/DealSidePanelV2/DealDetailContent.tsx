@@ -31,7 +31,6 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     deal,
     deals,
     board,
-    tasks,
     isCrmDataInitialized,
     setDeals,
     setBoardColumn,
@@ -41,7 +40,6 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
       deal: store.deals[dealId],
       deals: store.deals,
       board: store.board,
-      tasks: store.tasks,
       isCrmDataInitialized: store.isCrmDataInitialized,
       setDeals: store.setDeals,
       setBoardColumn: store.setBoardColumn,
@@ -81,15 +79,20 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
+  const taskFilter = useMemo(
+    () => ({ dealId, size: TASK_PAGE_SIZE }),
+    [dealId]
+  );
+
   const {
     data: dealTasksData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetTasksInfinite({ dealId, size: TASK_PAGE_SIZE }, true);
+  } = useGetTasksInfinite(taskFilter, isCrmDataInitialized);
 
   const dealTasks = useMemo(
-    () => dealTasksData?.pages.flatMap((page) => page.items) ?? [],
+    () => dealTasksData?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [dealTasksData]
   );
 
@@ -98,8 +101,8 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   useEffect(() => {
     if (!dealTasks.length) return;
 
-    setTasks(updateTaskRecord(tasks, dealTasks));
-  }, [dealTasks]);
+    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, dealTasks));
+  }, [dealTasks, setTasks]);
 
   if (!deal) {
     return <DealSidePanelSkeleton />;
