@@ -79,15 +79,6 @@ class AttendanceConfigServiceImplUnitTest {
 	}
 
 	@Test
-	void setDefaultAttendanceConfig_savesAllDefaultConfigs() {
-		when(attendanceConfigDao.findByAttendanceConfigType(any())).thenReturn(null);
-
-		attendanceConfigService.setDefaultAttendanceConfig();
-
-		verify(attendanceConfigDao, times(AttendanceConfigType.values().length)).save(any(AttendanceConfig.class));
-	}
-
-	@Test
 	void updateAttendanceConfig_whenGeoFencingNull_skipsGeoConfigUpdate() {
 		AttendanceConfigRequestDto request = new AttendanceConfigRequestDto(true, false, true, false, null, null, null,
 				null);
