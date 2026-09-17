@@ -299,7 +299,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 timesheetRequest?.timeRequestId,
                 TimeSheetRequestStates.DENIED
               ) ? (
-                <CircularProgress size="0.75rem" aria-hidden="true" />
+                <CircularProgress size={20} />
               ) : (
                 <CloseIcon fill={"black"} />
               )}
@@ -329,7 +329,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 timesheetRequest?.timeRequestId,
                 TimeSheetRequestStates.APPROVED
               ) ? (
-                <CircularProgress size="0.75rem" aria-hidden="true" />
+                <CircularProgress size={20} />
               ) : (
                 <CheckIcon fill={theme.palette.primary.dark} />
               )}
