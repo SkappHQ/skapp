@@ -18,9 +18,13 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
 interface DealDetailActionsProps {
   dealId: number;
+  onDeleted?: () => void;
 }
 
-const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
+const DealDetailActions: FC<DealDetailActionsProps> = ({
+  dealId,
+  onDeleted
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { isCrmSalesManager } = useSessionData();
 
@@ -114,6 +118,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           dealName={dealName}
+          onDeleted={onDeleted}
         />
       )}
     </>
