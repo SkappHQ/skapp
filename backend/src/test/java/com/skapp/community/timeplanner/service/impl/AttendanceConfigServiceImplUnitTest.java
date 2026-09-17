@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +45,9 @@ class AttendanceConfigServiceImplUnitTest {
 
 	@Mock
 	private UserService userService;
+
+	@Captor
+	private ArgumentCaptor<List<AttendanceConfig>> configsCaptor;
 
 	private MessageUtil originalMessageUtil;
 
@@ -76,6 +81,21 @@ class AttendanceConfigServiceImplUnitTest {
 			.getAttendanceConfigByType(AttendanceConfigType.CLOCK_IN_ON_NON_WORKING_DAYS));
 
 		assertEquals(TimeMessageConstant.TIME_ERROR_ATTENDANCE_CONFIG_NOT_FOUND, exception.getMessageKey());
+	}
+
+	@Test
+	void setDefaultAttendanceConfig_savesAllDefaultConfigs() {
+		when(attendanceConfigDao.findAll()).thenReturn(List.of());
+
+		attendanceConfigService.setDefaultAttendanceConfig();
+
+		verify(attendanceConfigDao).saveAll(configsCaptor.capture());
+		verify(attendanceConfigDao, never()).save(any(AttendanceConfig.class));
+		assertEquals(Set.of(AttendanceConfigType.values()),
+				configsCaptor.getValue()
+					.stream()
+					.map(AttendanceConfig::getAttendanceConfigType)
+					.collect(Collectors.toSet()));
 	}
 
 	@Test
