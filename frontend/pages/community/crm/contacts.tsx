@@ -15,6 +15,7 @@ import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import ContactModalControllerV2 from "~community/crm/v2/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanelV2 from "~community/crm/v2/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable as ContactTableV2 } from "~community/crm/v2/components/organisms/ContactTable/ContactTable";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
 import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -118,6 +119,7 @@ const ContactsV2 = () => {
         )}
 
         <ContactModalControllerV2 />
+        <TaskModalControllerV2 />
         <ContactTableV2 isCrmDataLoading={isCrmInitialDataLoading} />
       </>
     </ContentLayout>

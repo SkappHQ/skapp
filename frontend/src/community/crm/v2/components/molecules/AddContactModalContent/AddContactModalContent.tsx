@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -50,18 +50,21 @@ const AddContactModalContent: FC = () => {
       email: "",
       contactNumber: "",
       companyId: undefined,
-      ownerId: currentUser?.employeeId
-        ? Number(currentUser.employeeId)
-        : undefined
+      ownerId: undefined
     },
     onSubmit: (values) => createContact(values),
     validationSchema: getContactValidationSchema(translateText),
     validateOnChange: false,
-    validateOnBlur: true,
-    enableReinitialize: true
+    validateOnBlur: true
   });
 
-  const { setSubmitting } = formik;
+  const { setSubmitting, setFieldValue, values } = formik;
+
+  useEffect(() => {
+    if (currentUser?.employeeId && !values.ownerId) {
+      setFieldValue("ownerId", Number(currentUser.employeeId));
+    }
+  }, [currentUser?.employeeId, values.ownerId, setFieldValue]);
 
   const handleCloseModal = () => {
     setIsContactModalOpen(false);

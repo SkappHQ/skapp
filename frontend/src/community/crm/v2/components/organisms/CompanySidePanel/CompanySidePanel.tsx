@@ -223,6 +223,8 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       companyFields.contactIds = toContactIds(contactItems);
     }
 
+    if (Object.keys(companyFields).length === 0) return;
+
     setCompanies(updateCompany(companies, companyId, companyFields));
   }, [
     companyId,

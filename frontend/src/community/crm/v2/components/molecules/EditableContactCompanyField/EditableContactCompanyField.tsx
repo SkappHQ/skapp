@@ -19,8 +19,10 @@ import {
 import { ADD_NEW_COMPANY_OPTION_ID } from "~community/crm/v2/constants/contactConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmCompanyDomainSearchFilterRequest } from "~community/crm/v2/types/CrmTypes";
-import { CrmCompanyFilterRequest } from "~community/crm/v2/types/CrmTypes";
+import {
+  CrmCompanyDomainSearchFilterRequest,
+  CrmCompanyFilterRequest
+} from "~community/crm/v2/types/CrmTypes";
 import {
   getCompanyById,
   updateCompanyRecord

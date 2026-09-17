@@ -3,8 +3,12 @@ import { FormikProps } from "formik";
 import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
+import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { useCheckContactEmailExists } from "~community/crm/v2/api/ContactApi";
 import EditableContactCompanyField from "~community/crm/v2/components/molecules/EditableContactCompanyField/EditableContactCompanyField";
 import EditableContactOwnerField from "~community/crm/v2/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
@@ -13,10 +17,50 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   CONTACT_NUMBER_MAX_LENGTH
 } from "~community/crm/v2/constants/contactConstants";
-import { useContactEmailCheck } from "~community/crm/v2/hooks/useContactEmailCheck";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getOwnerById } from "~community/crm/v2/utils/commonUtil";
+import { getEmailDomain } from "~community/crm/v2/utils/contactUtil";
+
+interface UseContactEmailCheckParams {
+  email?: string;
+  originalEmail?: string;
+}
+
+interface UseContactEmailCheckReturn {
+  isDuplicateEmail: boolean;
+  isEmailCheckUnresolved: boolean;
+  suggestedDomain: string;
+}
+
+const useContactEmailCheck = ({
+  email,
+  originalEmail
+}: UseContactEmailCheckParams): UseContactEmailCheckReturn => {
+  const trimmedEmail = email?.trim() ?? "";
+  const trimmedOriginalEmail = originalEmail?.trim() ?? "";
+
+  const debouncedEmail = useDebounce(trimmedEmail, SEARCH_DEBOUNCE_DELAY);
+
+  const isEmailChanged = trimmedEmail !== trimmedOriginalEmail;
+  const isDebouncedEmailChanged = debouncedEmail !== trimmedOriginalEmail;
+  const isDebouncedEmailValid = isValidEmail().test(debouncedEmail);
+
+  const isEmailCheckEnabled = isDebouncedEmailValid && isDebouncedEmailChanged;
+
+  const { data: emailExistsData, isFetching } = useCheckContactEmailExists(
+    debouncedEmail,
+    isEmailCheckEnabled
+  );
+
+  return {
+    isDuplicateEmail:
+      isDebouncedEmailChanged && emailExistsData?.isExists === true,
+    isEmailCheckUnresolved:
+      isEmailChanged && (trimmedEmail !== debouncedEmail || isFetching),
+    suggestedDomain: isDebouncedEmailValid ? getEmailDomain(debouncedEmail) : ""
+  };
+};
 
 interface ContactModalFormProps {
   formik: FormikProps<CrmContactEntity>;
