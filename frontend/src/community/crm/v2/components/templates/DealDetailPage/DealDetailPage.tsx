@@ -11,6 +11,7 @@ import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import DealDetailActions from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailActions";
 import DealDetailContent from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailContent";
 import DealDetailIdBadge from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailIdBadge";
+import { CrmErrorMessageKeyEnum } from "~community/crm/v2/enums/common";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
@@ -38,10 +39,22 @@ const DealDetailPage: FC = () => {
     return () => setSelectedDealId(null);
   }, [dealId, isValidDealId]);
 
-  const { isError } = useGetDealById(
+  const { isError, error } = useGetDealById(
     dealId,
     isValidDealId && isCrmDataInitialized
   );
+
+  const isViewDenied =
+    error?.response?.data?.results?.[0]?.messageKey ===
+    CrmErrorMessageKeyEnum.DEAL_VIEW_DENIED;
+
+  useEffect(() => {
+    if (!isViewDenied) return;
+
+    void router.replace(ROUTES.AUTH.UNAUTHORIZED);
+  }, [isViewDenied]);
+
+  if (isViewDenied) return null;
 
   return (
     <ContentLayout
