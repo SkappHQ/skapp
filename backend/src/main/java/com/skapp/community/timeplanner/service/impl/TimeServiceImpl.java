@@ -947,7 +947,8 @@ public class TimeServiceImpl implements TimeService {
 		LocalDate startDate = managerTimeRecordFilterDto.getStartDate();
 		LocalDate endDate = managerTimeRecordFilterDto.getEndDate();
 
-		if (CommonModuleUtils.validateStartDateAndEndDate(startDate, endDate)) {
+		if (CommonModuleUtils.validateStartDateAndEndDate(startDate, endDate,
+				timeZoneService.currentOrganizationYear())) {
 			throw new ModuleException(TimeMessageConstant.TIME_ERROR_START_DATE_END_DATE_NOT_VALID);
 		}
 
