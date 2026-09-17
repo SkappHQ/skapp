@@ -41,3 +41,5 @@ export enum appModes {
 }
 
 export const DOMAIN = ".skapp.com";
+
+export const TIMEZONE_HEADER = "X-Timezone";
