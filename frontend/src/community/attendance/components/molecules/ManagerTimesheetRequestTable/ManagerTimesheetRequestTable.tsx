@@ -299,7 +299,7 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
               ) ? (
                 <CircularProgress size={20} />
               ) : (
-                <CloseIcon fill={"black"} />
+                <CloseIcon fill="black" />
               )}
             </IconButton>
             <IconButton
