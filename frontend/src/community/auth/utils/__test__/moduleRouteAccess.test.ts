@@ -76,7 +76,6 @@ describe("CRM route access decided from the token", () => {
   });
 
   test("a stale token still carrying CRM roles is let in after the downgrade", async () => {
-    // Same user, same moment, only the token differs
     expect(isAllowed(await requestPage("/crm/deals", CRM_ROLES))).toBe(true);
     expect(isAllowed(await requestPage("/crm/deals", BASE_ROLES))).toBe(false);
   });

@@ -55,6 +55,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const initialCheckDone = useRef(false);
   const isCheckingAuth = useRef(false);
 
+  // Callers hold the checkAuth they captured before the last refresh, and its
+  // copy of the token is the pre-refresh one. This always holds the current one
+  const latestAccessToken = useRef<string | null>(accessToken);
+
+  useEffect(() => {
+    latestAccessToken.current = accessToken;
+  }, [accessToken]);
+
   // Check authentication status
   const checkAuth = useCallback(async (): Promise<User | null> => {
     if (isCheckingAuth.current) return null;
@@ -63,7 +71,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     try {
       const userData = await checkUserAuthentication({
-        accessToken,
+        accessToken: latestAccessToken.current,
         setAccessToken,
         clearAccessToken
       });

@@ -15,21 +15,24 @@ interface ModuleAccessRule {
   requiredRole: string;
 }
 
-/**
- * Mirrors the module guards the proxy applies when a page is requested. The
- * proxy only runs on a page request, so a user whose roles change while they
- * sit on a page is never re-checked. These rules re-run that check in the
- * browser, keyed on the access token rather than on navigation.
- */
+// "/signin" and "/signup" also begin with "/sign", so match whole segments
+const isWithin = (currentPath: string, basePath: string): boolean =>
+  currentPath === basePath || currentPath.startsWith(`${basePath}/`);
+
+// The external signing link is public, and the proxy leaves it open too
+const isUnguardedPath = (currentPath: string): boolean =>
+  isWithin(currentPath, ROUTES.SIGN.DOCUMENT_ACCESS);
+
+// Mirrors the module guards in proxy.ts, which only run on a page request
 const MODULE_ACCESS_RULES: ModuleAccessRule[] = [
   {
     matches: (currentPath: string): boolean =>
-      currentPath.includes(ROUTES.SIGN.BASE),
+      isWithin(currentPath, ROUTES.SIGN.BASE),
     requiredRole: EmployeeTypes.ESIGN_EMPLOYEE
   },
   {
     matches: (currentPath: string): boolean =>
-      currentPath.startsWith(ROUTES.CRM.BASE),
+      isWithin(currentPath, ROUTES.CRM.BASE),
     requiredRole: RepresentativeTypes.CRM_SALES_REPRESENTATIVE
   }
 ];
@@ -40,12 +43,19 @@ const toPathname = (asPath: string): string =>
 export const isModuleAccessDenied = (
   currentPath: string,
   roles: string[]
-): boolean =>
-  MODULE_ACCESS_RULES.some(
+): boolean => {
+  if (isUnguardedPath(currentPath)) return false;
+
+  return MODULE_ACCESS_RULES.some(
     (rule: ModuleAccessRule) =>
       rule.matches(currentPath) && !roles.includes(rule.requiredRole)
   );
+};
 
+/**
+ * Sends a user to the dashboard when their roles stop covering the page they
+ * are on. Keyed on the access token, since that is what a refresh replaces.
+ */
 const useModuleAccessGuard = (): void => {
   const router = useRouter();
 
@@ -58,16 +68,11 @@ const useModuleAccessGuard = (): void => {
   useEffect(() => {
     if (!accessToken) return;
 
-    // Roles come from the token rather than the session object, because the
-    // token is what a refresh replaces
     const roles: unknown = extractClaimsFromToken(accessToken)?.roles;
 
-    // Nothing to judge against, so leave the user where they are
     if (!Array.isArray(roles) || roles.length === 0) return;
 
-    const currentPath = toPathname(router.asPath);
-
-    if (!isModuleAccessDenied(currentPath, roles)) return;
+    if (!isModuleAccessDenied(toPathname(router.asPath), roles)) return;
 
     void router.replace(ROUTES.DASHBOARD.BASE);
   }, [accessToken, router]);

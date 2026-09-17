@@ -50,7 +50,6 @@ const ESIGN_ROLES = [
   "ROLE_ESIGN_EMPLOYEE"
 ];
 
-// What the proxy decides for the same path and roles, on a page request
 const proxyBlocks = async (path: string, roles: string[]): Promise<boolean> => {
   const request = new NextRequest(new URL(`http://localhost${path}`));
 
@@ -83,7 +82,6 @@ describe("redirecting a user whose roles changed under them", () => {
 
     expect(replace).not.toHaveBeenCalled();
 
-    // The refresh that follows the downgrade replaces the token
     act(() => {
       useCommonStore.setState({ accessToken: createToken(BASE_ROLES) });
     });
@@ -152,7 +150,6 @@ describe("the guard agrees with the proxy", () => {
 });
 
 describe("downgrades that keep access to the page", () => {
-  // A CRM admin demoted to sales rep keeps ROLE_CRM_SALES_REPRESENTATIVE
   const CRM_REP_ONLY = [...BASE_ROLES, "ROLE_CRM_SALES_REPRESENTATIVE"];
 
   test("a demotion that keeps module access does not redirect", () => {
@@ -171,7 +168,6 @@ describe("downgrades that keep access to the page", () => {
     expect(await proxyBlocks("/crm/deals", CRM_REP_ONLY)).toBe(false);
   });
 
-  // Known gap: the guard is module level, the proxy is also page level
   test("a demotion within e-sign is NOT caught by the guard", () => {
     expect(
       isModuleAccessDenied("/sign/contacts", [
@@ -188,5 +184,61 @@ describe("downgrades that keep access to the page", () => {
         "ROLE_ESIGN_EMPLOYEE"
       ])
     ).toBe(true);
+  });
+});
+
+describe("paths that only look like e-sign routes", () => {
+  const withoutEsign = (path: string): boolean => {
+    jest.clearAllMocks();
+    currentPath = path;
+    useCommonStore.setState({ accessToken: createToken(BASE_ROLES) });
+
+    renderHook(() => useModuleAccessGuard());
+
+    return replace.mock.calls.length > 0;
+  };
+
+  test("/signin is not an e-sign route", () => {
+    expect(withoutEsign("/signin")).toBe(false);
+  });
+
+  test("/signup is not an e-sign route", () => {
+    expect(withoutEsign("/signup")).toBe(false);
+  });
+
+  test("/sign itself still is", () => {
+    expect(withoutEsign("/sign")).toBe(true);
+  });
+
+  test("/sign/inbox still is", () => {
+    expect(withoutEsign("/sign/inbox")).toBe(true);
+  });
+});
+
+describe("the external signing link stays open", () => {
+  // The proxy exempts this path via isUnguardedPath and does not route the
+  // verification sub-steps through its matcher at all
+  const openPaths: string[] = [
+    "/sign/document/access",
+    "/sign/document/access/mfa-verify",
+    "/sign/document/access/bankid-verify"
+  ];
+
+  test.each(openPaths)("%s is never gated by the guard", (path: string) => {
+    expect(isModuleAccessDenied(path, BASE_ROLES)).toBe(false);
+  });
+
+  test("a signed-in user without e-sign is not thrown off the link", () => {
+    jest.clearAllMocks();
+    currentPath = "/sign/document/access";
+    useCommonStore.setState({ accessToken: createToken(BASE_ROLES) });
+
+    renderHook(() => useModuleAccessGuard());
+
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  test("the proxy agrees the link is open", async () => {
+    expect(await proxyBlocks("/sign/document/access", BASE_ROLES)).toBe(false);
   });
 });

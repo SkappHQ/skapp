@@ -30,8 +30,6 @@ const BaseLayout = ({ children }: Props) => {
 
   const { sessionStatus } = useSessionData();
 
-  // The proxy only checks route access on a page request, so re-check it here
-  // for a user whose roles change while they stay on the page
   useModuleAccessGuard();
 
   const { token } = useFcmToken();
