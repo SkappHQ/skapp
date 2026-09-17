@@ -35,7 +35,7 @@ const DealSidePanelV2: FC = () => {
     closeCrmSidePanel();
   };
 
-  if (selectedDealId === null) return null;
+  if (selectedDealId == null) return null;
 
   return (
     <SidePanel

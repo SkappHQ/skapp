@@ -52,7 +52,7 @@ const DeleteDealModalV2: FC<Props> = ({
   );
 
   const handleSuccess = (): void => {
-    if (selectedDealId === null) return;
+    if (selectedDealId == null) return;
 
     setToastMessage({
       open: true,
@@ -86,7 +86,7 @@ const DeleteDealModalV2: FC<Props> = ({
   );
 
   const handleDeleteDeal = (): void => {
-    if (selectedDealId === null) return;
+    if (selectedDealId == null) return;
     deleteDeal(selectedDealId);
   };
 

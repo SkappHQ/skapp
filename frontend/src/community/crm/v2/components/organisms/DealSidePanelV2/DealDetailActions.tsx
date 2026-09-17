@@ -45,7 +45,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
     return () => clearTimeout(timer);
   }, [isLinkCopied]);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = async (): Promise<void> => {
     try {
       await copyToClipboard(
         `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
