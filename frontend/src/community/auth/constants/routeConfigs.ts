@@ -29,4 +29,8 @@ export const drawerHiddenProtectedRoutes = [
   ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW
 ];
 
-export const appBarOnlyProtectedRoutes = [ROUTES.REPORT.DETAIL_BASE];
+export const appBarOnlyProtectedRoutes = [
+  ROUTES.REPORT.HEADCOUNT_SUMMARY,
+  ROUTES.REPORT.WORKFORCE_DEMOGRAPHICS,
+  ROUTES.REPORT.ATTENDANCE_OVERVIEW
+];

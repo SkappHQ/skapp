@@ -136,7 +136,6 @@ const ROUTES = {
   CHANGE_SUPERVISORS: "/change-supervisors",
   REPORT: {
     BASE: "/report",
-    DETAIL_BASE: "/report/",
     HEADCOUNT_SUMMARY: "/report/headcount-summary",
     WORKFORCE_DEMOGRAPHICS: "/report/workforce-demographics",
     ATTENDANCE_OVERVIEW: "/report/attendance-overview"
