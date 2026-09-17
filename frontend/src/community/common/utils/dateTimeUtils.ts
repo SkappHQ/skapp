@@ -11,6 +11,7 @@ import {
 import {
   DropdownListType,
   OptionType,
+  TimeOfDayType,
   TranslatorFunctionType
 } from "~community/common/types/CommonTypes";
 
@@ -209,11 +210,14 @@ export const instantInZone = (
   zone: string | undefined
 ): DateTime => {
   const parsed = parseInstant(isoInstant);
-  return zone ? parsed.setZone(zone) : parsed.toLocal();
+  const zoned = zone ? parsed.setZone(zone) : parsed.toLocal();
+  return zoned.isValid ? zoned : parsed.toLocal();
 };
 
-export const nowInZone = (zone: string | undefined): DateTime =>
-  zone ? DateTime.now().setZone(zone) : DateTime.local();
+export const nowInZone = (zone: string | undefined): DateTime => {
+  const zoned = zone ? DateTime.now().setZone(zone) : DateTime.local();
+  return zoned.isValid ? zoned : DateTime.local();
+};
 
 export const currentDateIn = (zone: string | undefined): string =>
   nowInZone(zone).toFormat(DATE_FORMAT);
@@ -233,7 +237,7 @@ export const readsSameWallClock = (
 };
 
 export const millisUntilTodayAt = (
-  time: { hour: number; minute: number; second: number },
+  time: TimeOfDayType,
   zone: string | undefined
 ): number | undefined => {
   const now = nowInZone(zone);
@@ -250,10 +254,8 @@ export const formatInstant = (
 ): string => {
   if (!isoInstant) return "";
 
-  const parsed = parseInstant(isoInstant);
-  if (!parsed.isValid) return "";
-
-  return (zone ? parsed.setZone(zone) : parsed.toLocal()).toFormat(format);
+  const zoned = instantInZone(isoInstant, zone);
+  return zoned.isValid ? zoned.toFormat(format) : "";
 };
 
 export const parseTimestampToDate = (timestamp: string): Date => {
