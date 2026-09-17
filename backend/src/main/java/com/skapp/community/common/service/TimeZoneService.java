@@ -12,6 +12,8 @@ public interface TimeZoneService {
 
 	int currentOrganizationYear();
 
-	Instant currentOrganizationDayStart();
+	ZoneId requestTimezone();
+
+	Instant currentRequestDayStart();
 
 }

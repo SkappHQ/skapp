@@ -312,12 +312,12 @@ public class TimeAnalyticsServiceImpl implements TimeAnalyticsService {
 		responseDto.setIsLateArrival(timeRecord != null && isLateArrival(timeRecord));
 
 		if (timeRecord != null) {
-			ZoneId organizationZone = timeZoneService.organizationTimezone();
+			ZoneId requestZone = timeZoneService.requestTimezone();
 			responseDto.setTimeRecordId(timeRecord.getTimeRecordId());
 			responseDto.setClockInTime(timeRecord.getClockInTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime(), organizationZone) : null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockInTime(), requestZone) : null);
 			responseDto.setClockOutTime(timeRecord.getClockOutTime() != null
-					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime(), organizationZone) : null);
+					? DateTimeUtils.epochMillisToAmPmString(timeRecord.getClockOutTime(), requestZone) : null);
 			responseDto.setWorkedHours(formatWorkedHours(timeRecord.getWorkedHours()));
 		}
 
