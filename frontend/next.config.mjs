@@ -444,6 +444,10 @@ const nextConfig = {
         destination: "/enterprise/report"
       },
       {
+        source: "/report/headcount-summary",
+        destination: "/enterprise/report/headcount-summary"
+      },
+      {
         source: "/report/workforce-demographics",
         destination: "/enterprise/report/workforce-demographics"
       },

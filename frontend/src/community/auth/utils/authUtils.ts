@@ -75,6 +75,10 @@ export const IsAProtectedUrlWithAppBarOnly = (asPath: string): boolean =>
   appBarOnlyProtectedRoutes.some((prefix) => asPath.startsWith(prefix));
 
 export const IsAProtectedUrlWithDrawer = (asPath: string): boolean => {
+  if (IsAProtectedUrlWithAppBarOnly(asPath)) {
+    return false;
+  }
+
   const isADrawerHiddenProtectedRoute = drawerHiddenProtectedRoutes.some(
     (prefix) => {
       return asPath.startsWith(prefix);
