@@ -110,6 +110,10 @@ public class HolidayServiceImpl implements HolidayService {
 		Pageable pageable = PageRequest.of(holidayFilterDto.getPage(), pageSize,
 				Sort.by(holidayFilterDto.getSortOrder(), holidayFilterDto.getSortKey().toString()));
 
+		if (holidayFilterDto.getYear() == null && holidayFilterDto.getDate() == null) {
+			holidayFilterDto.setYear(timeZoneService.currentOrganizationYear());
+		}
+
 		Page<Holiday> holidays = holidayDao.findAllHolidays(holidayFilterDto, pageable);
 		PageDto pageDto = pageTransformer.transform(holidays);
 		List<HolidayResponseDto> list = peopleMapper

@@ -201,8 +201,7 @@ public class CommonModuleUtils {
 					holiday -> holiday.getHolidayDuration().toString().equals(leaveRequest.getLeaveState().toString()));
 	}
 
-	public static boolean validateStartDateAndEndDate(LocalDate startDate, LocalDate endDate) {
-		int currentYear = DateTimeUtils.getCurrentYear();
+	public static boolean validateStartDateAndEndDate(LocalDate startDate, LocalDate endDate, int currentYear) {
 		return startDate.getYear() < currentYear - 1 || endDate.getYear() < currentYear - 1
 				|| startDate.isAfter(endDate);
 	}

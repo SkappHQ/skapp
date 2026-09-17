@@ -156,20 +156,13 @@ public class HolidayRepositoryImpl implements HolidayRepository {
 			}
 			Integer year = holidayFilterDto.getYear();
 			LocalDate date = holidayFilterDto.getDate();
-			Predicate datePredicate;
 			if (year != null) {
-				datePredicate = criteriaBuilder.between(root.get(Holiday_.date),
-						DateTimeUtils.getUtcLocalDate(year, 1, 1), DateTimeUtils.getUtcLocalDate(year, 12, 31));
+				predicates.add(criteriaBuilder.between(root.get(Holiday_.date),
+						DateTimeUtils.getUtcLocalDate(year, 1, 1), DateTimeUtils.getUtcLocalDate(year, 12, 31)));
 			}
 			else if (date != null) {
-				datePredicate = criteriaBuilder.equal(root.get(Holiday_.date), date);
+				predicates.add(criteriaBuilder.equal(root.get(Holiday_.date), date));
 			}
-			else {
-				datePredicate = criteriaBuilder.between(root.get(Holiday_.date),
-						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 1, 1),
-						DateTimeUtils.getUtcLocalDate(DateTimeUtils.getCurrentYear(), 12, 31));
-			}
-			predicates.add(datePredicate);
 
 			Long workLocationId = holidayFilterDto.getWorkLocationId();
 			if (workLocationId != null && !workLocationId.equals(PeopleConstants.HOLIDAY_ALL_WORK_LOCATIONS_ID)) {
