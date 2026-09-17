@@ -1,5 +1,12 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { rejects } from "assert";
+import { useEffect } from "react";
+
 import { useGetOrganization } from "~community/common/api/OrganizationCreateApi";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { OrganizationDetailsType } from "~community/common/types/OrganizationCreateTypes";
+import { getBrowserTimezone } from "~community/common/utils/dateTimeUtils";
+import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface OrganizationQueryResponse {
@@ -22,4 +29,18 @@ export const useDisplayZone = (): string | undefined => {
 };
 
 export const useEntryZone = (): string =>
-  useDisplayZone() ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  useDisplayZone() ?? getBrowserTimezone();
+
+export const useSyncRequestTimezone = (): void => {
+  const entryZone = useEntryZone();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (entryZone === getRequestTimezone()) {
+      return;
+    }
+
+    useCommonStore.getState().setRequestTimezone(entryZone);
+    queryClient.invalidateQueries().catch(rejects);
+  }, [entryZone, queryClient]);
+};

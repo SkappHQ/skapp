@@ -60,6 +60,9 @@ export interface CommonStoreTypes extends actionTypes {
   accessToken: string | null;
   setAccessToken: (token: string) => void;
   clearAccessToken: () => void;
+
+  requestTimezone?: string;
+  setRequestTimezone: (timezone: string) => void;
 }
 
 interface VersionUpgradeActionTypes {
