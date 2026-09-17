@@ -803,7 +803,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 
 	@Override
 	public List<LeaveEntitlement> findFilteredEntitlementsByEmployeeIds(List<Long> employeeIds, LocalDate validFrom,
-			LocalDate validTo, ZoneId organizationZone) {
+			LocalDate validTo) {
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveEntitlement> query = cb.createQuery(LeaveEntitlement.class);

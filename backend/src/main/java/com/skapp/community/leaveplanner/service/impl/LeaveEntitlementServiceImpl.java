@@ -887,8 +887,8 @@ public class LeaveEntitlementServiceImpl implements LeaveEntitlementService {
 
 		Map<Long, List<LeaveEntitlement>> entitlementsByEmployee = new HashMap<>();
 		if (!employeeIds.isEmpty()) {
-			List<LeaveEntitlement> filteredEntitlements = leaveEntitlementDao.findFilteredEntitlementsByEmployeeIds(
-					employeeIds, validFrom, validTo, timeZoneService.organizationTimezone());
+			List<LeaveEntitlement> filteredEntitlements = leaveEntitlementDao
+				.findFilteredEntitlementsByEmployeeIds(employeeIds, validFrom, validTo);
 			for (LeaveEntitlement entitlement : filteredEntitlements) {
 				entitlementsByEmployee
 					.computeIfAbsent(entitlement.getEmployee().getEmployeeId(), k -> new ArrayList<>())

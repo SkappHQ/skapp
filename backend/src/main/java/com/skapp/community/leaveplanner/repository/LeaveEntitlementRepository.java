@@ -73,6 +73,6 @@ public interface LeaveEntitlementRepository {
 			Pageable pageable);
 
 	List<LeaveEntitlement> findFilteredEntitlementsByEmployeeIds(List<Long> employeeIds, LocalDate validFrom,
-			LocalDate validTo, ZoneId organizationZone);
+			LocalDate validTo);
 
 }
