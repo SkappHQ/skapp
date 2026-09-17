@@ -12,6 +12,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBarMenu";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
+import { useSyncRequestTimezone } from "~community/common/hooks/useDisplayZone";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
@@ -52,6 +53,8 @@ const AppBar = ({ isDrawerAvailable = true }: Props) => {
   );
 
   const { data: employee } = useGetUserPersonalDetails();
+
+  useSyncRequestTimezone();
 
   const handleCloseMenu = (): void => {
     setAnchorEl(null);
