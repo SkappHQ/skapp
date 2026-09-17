@@ -134,16 +134,15 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   );
 
   useEffect(() => {
-    if (!fetchedCompanies) return;
+    const incomingCompanies = [
+      ...(fetchedCompanies ?? []),
+      ...(companyLookupData?.items ?? [])
+    ];
 
-    setCompanies(updateCompanyRecord(companies, fetchedCompanies));
-  }, [fetchedCompanies]);
+    if (incomingCompanies.length === 0) return;
 
-  useEffect(() => {
-    if (!companyLookupData) return;
-
-    setCompanies(updateCompanyRecord(companies, companyLookupData.items));
-  }, [companyLookupData]);
+    setCompanies(updateCompanyRecord(companies, incomingCompanies));
+  }, [fetchedCompanies, companyLookupData]);
 
   const isEmptyFilterState =
     debouncedSearch === "" && selectedCompany === ALL_COMPANIES;
