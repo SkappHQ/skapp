@@ -16,8 +16,8 @@ import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -66,14 +66,14 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDtoV2> contacts = crmContactDao.findAllContactsForBoardInitV2();
+		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit();
 
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwnersV2();
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
-		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
+		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setOwners(owners);

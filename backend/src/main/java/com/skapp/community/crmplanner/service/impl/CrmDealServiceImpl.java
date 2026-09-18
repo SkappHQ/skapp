@@ -261,16 +261,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
-			.stream()
-			.map(this::toBoardContactDto)
-			.toList();
+		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit();
 
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
-			.stream()
-			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
-					o.getAuthPic()))
-			.toList();
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
@@ -284,10 +277,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private CrmBoardContactResponseDto toBoardContactDto(CrmContact contact) {
-		return CrmUtil.toBoardContactDto(crmMapper, contact);
 	}
 
 	private CrmDealByStageItemResponseDto toStageItemDto(CrmDeal deal, Map<Long, Long> taskCountMap) {

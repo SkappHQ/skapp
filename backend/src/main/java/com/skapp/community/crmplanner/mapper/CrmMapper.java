@@ -22,8 +22,6 @@ import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
@@ -95,12 +93,6 @@ public interface CrmMapper {
 	CrmBoardStageResponseDto crmDealStageToCrmBoardStageResponseDto(CrmDealStage crmDealStage);
 
 	List<CrmBoardStageResponseDto> crmDealStagesToCrmBoardStageResponseDtos(List<CrmDealStage> crmDealStages);
-
-	CrmBoardContactCompanyResponseDto crmCompanyToCrmBoardContactCompanyResponseDto(CrmCompany company);
-
-	CrmBoardContactResponseDto crmContactToCrmBoardContactResponseDto(CrmContact contact);
-
-	List<CrmBoardContactResponseDto> crmContactsToCrmBoardContactResponseDtos(List<CrmContact> contacts);
 
 	CrmBoardOwnerResponseDto employeeToCrmBoardOwnerResponseDto(Employee employee);
 
