@@ -16,6 +16,8 @@ import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSi
 import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
 import DealsKanbanBoardSkeletonV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardSkeletonV2";
 import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes as CrmSidePanelTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -100,10 +102,11 @@ const DealsV2 = () => {
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+        <SidePanelWrapperV2 isOpen={isCrmSidePanelOpen}>
           {selectedDealId !== null && <DealSidePanelV2 />}
           <AddDealSidePanelV2 />
-        </SidePanelWrapper>
+        </SidePanelWrapperV2>
+        <TaskModalControllerV2 />
         {isCrmInitialDataLoading ? (
           <DealsKanbanBoardSkeletonV2 laneCount={4} cardCount={5} />
         ) : (
