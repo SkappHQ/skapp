@@ -27,12 +27,6 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
-	private static final int EXACT_MATCH_RANK = 0;
-
-	private static final int PREFIX_MATCH_RANK = 1;
-
-	private static final int PARTIAL_MATCH_RANK = 2;
-
 	private final EntityManager entityManager;
 
 	@Override
@@ -92,15 +86,10 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 		List<Order> orders = new ArrayList<>();
 
 		if (searchKeyword != null) {
-			String escaped = StringUtils.escapeLikePattern(searchKeyword);
 			Expression<String> lowerName = cb.lower(workLocation.get(WorkLocation_.name));
 
-			Expression<Integer> relevanceRank = cb.<Integer>selectCase()
-				.when(cb.equal(lowerName, searchKeyword), EXACT_MATCH_RANK)
-				.when(cb.like(lowerName, escaped + "%", '\\'), PREFIX_MATCH_RANK)
-				.otherwise(PARTIAL_MATCH_RANK);
-
-			orders.add(cb.asc(relevanceRank));
+			orders.add(cb.asc(cb.locate(lowerName, searchKeyword)));
+			orders.add(cb.asc(cb.length(lowerName)));
 		}
 
 		orders.add(cb.asc(cb.lower(workLocation.get(WorkLocation_.name))));
