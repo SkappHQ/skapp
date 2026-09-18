@@ -44,13 +44,13 @@ export const CompanyTable: FC = () => {
     setSelectedCompanyId,
     openCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      companyIds: store.companyIds,
-      setCompanies: store.setCompanies,
-      setCompanyIds: store.setCompanyIds,
-      setSelectedCompanyId: store.setSelectedCompanyId,
-      openCrmSidePanel: store.openCrmSidePanel
+    useShallow((state) => ({
+      companies: state.companies,
+      companyIds: state.companyIds,
+      setCompanies: state.setCompanies,
+      setCompanyIds: state.setCompanyIds,
+      setSelectedCompanyId: state.setSelectedCompanyId,
+      openCrmSidePanel: state.openCrmSidePanel
     }))
   );
 
@@ -185,9 +185,7 @@ export const CompanyTable: FC = () => {
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: () => {
-          void fetchNextPage();
-        }
+        onLoadMore: fetchNextPage
       }}
       toolbar={{
         searchBar: {
