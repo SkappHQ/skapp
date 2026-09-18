@@ -45,6 +45,8 @@ const notoColorEmoji = Noto_Color_Emoji({
   weight: "400",
   subsets: ["emoji"],
   display: "swap",
+  preload: false,
+  fallback: ["Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"],
   variable: "--font-noto-color-emoji"
 });
 
