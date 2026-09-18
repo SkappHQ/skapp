@@ -18,12 +18,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install Prettier only
         run: |
-          cd frontend
-          npm install
+          mkdir -p "$RUNNER_TEMP/prettier"
+          cd "$RUNNER_TEMP/prettier"
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund --ignore-scripts \
+            prettier@^3.9.6 \
+            @trivago/prettier-plugin-sort-imports@^6.0.2
+          ln -s "$RUNNER_TEMP/prettier/node_modules" "$GITHUB_WORKSPACE/frontend/node_modules"
 
       - name: Check formatting
-        run: |
-          cd frontend
-          npm run check-format
+        working-directory: frontend
+        run: npm run check-format
