@@ -33,6 +33,10 @@ export const openInNewTab = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
+export const copyToClipboard = async (text: string): Promise<void> => {
+  await navigator.clipboard.writeText(text);
+};
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string

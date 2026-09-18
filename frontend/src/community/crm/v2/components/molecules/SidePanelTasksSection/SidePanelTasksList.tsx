@@ -1,0 +1,58 @@
+import { ButtonV2, PlusIcon } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
+
+import TaskRow from "~community/crm/v2/components/molecules/TaskRow/TaskRow";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+
+interface SidePanelTasksListProps {
+  tasks: CrmTaskEntity[];
+  onAddTask: () => void;
+  addTaskLabel: string;
+  isAddTaskDisabled?: boolean;
+  showAddTaskAction?: boolean;
+  onToggleComplete: (taskId: number, isCompleted: boolean) => void;
+}
+
+const SidePanelTasksList: FC<SidePanelTasksListProps> = ({
+  tasks,
+  onAddTask,
+  addTaskLabel,
+  isAddTaskDisabled,
+  showAddTaskAction = true,
+  onToggleComplete
+}) => {
+  return (
+    <>
+      <div className="border border-secondary-accent rounded-lg divide-y divide-secondary-accent w-full overflow-hidden">
+        {tasks.map((task) =>
+          task.id ? (
+            <TaskRow
+              key={task.id}
+              task={task}
+              taskId={task.id}
+              onToggleComplete={onToggleComplete}
+            />
+          ) : null
+        )}
+      </div>
+      {showAddTaskAction && (
+        <div className="flex">
+          <ButtonV2
+            type="button"
+            variant="line"
+            size="sm"
+            icon={<PlusIcon />}
+            iconPosition="end"
+            onClick={onAddTask}
+            disabled={isAddTaskDisabled}
+            isLoading={isAddTaskDisabled}
+          >
+            {addTaskLabel}
+          </ButtonV2>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default SidePanelTasksList;
