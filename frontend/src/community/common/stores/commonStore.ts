@@ -7,6 +7,7 @@ import { breadcrumbSlice } from "./slices/breadcrumbSlice";
 import { commonModalSlice } from "./slices/commonModalSlice";
 import { notificationsSlice } from "./slices/notificationsSlice";
 import { orgDetailsSlice } from "./slices/orgDetailsSlice";
+import { requestTimezoneSlice } from "./slices/requestTimezoneSlice";
 import { settingsModalSlice } from "./slices/settingsModalSlice";
 import { templateSlice } from "./slices/templateSlice";
 
@@ -22,7 +23,8 @@ export const useCommonStore = create<
       ...notificationsSlice(set),
       ...orgDetailsSlice(set),
       ...breadcrumbSlice(set),
-      ...authTokenSlice(set)
+      ...authTokenSlice(set),
+      ...requestTimezoneSlice(set)
     }),
     { name: "commonStore" }
   )

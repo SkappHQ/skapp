@@ -3,12 +3,15 @@ import type { DateRange } from "react-day-picker";
 
 import {
   DATE_FORMAT,
+  HALF_YEAR_IN_MONTHS,
   LONG_DATE_TIME_FORMAT,
+  MEDIUM_DATE_TIME_FORMAT,
   monthAbbreviations
 } from "~community/common/constants/timeConstants";
 import {
   DropdownListType,
   OptionType,
+  TimeOfDayType,
   TranslatorFunctionType
 } from "~community/common/types/CommonTypes";
 
@@ -180,16 +183,11 @@ export const getFormattedMonth = (
   date: string,
   format: "short" | "long" = "short"
 ): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  return dateIOS.toLocaleString({ month: format });
+  return DateTime.fromISO(date).toLocaleString({ month: format });
 };
 
 export const getFormattedYear = (date: string): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  const year = dateIOS.toLocaleString({ year: "numeric" });
-  return year;
+  return DateTime.fromISO(date).toLocaleString({ year: "numeric" });
 };
 
 export const convertDateToUTC = (date: string) => {
@@ -202,6 +200,62 @@ export const convertUTCStringToLocalDateTime = (
   isoString: string
 ): DateTime => {
   return DateTime.fromISO(isoString, { zone: "UTC" }).setZone("local");
+};
+
+export const parseInstant = (isoInstant: string): DateTime =>
+  DateTime.fromISO(isoInstant, { zone: "utc" });
+
+export const instantInZone = (
+  isoInstant: string,
+  zone: string | undefined
+): DateTime => {
+  const parsed = parseInstant(isoInstant);
+  const zoned = zone ? parsed.setZone(zone) : parsed.toLocal();
+  return zoned.isValid ? zoned : parsed.toLocal();
+};
+
+export const nowInZone = (zone: string | undefined): DateTime => {
+  const zoned = zone ? DateTime.now().setZone(zone) : DateTime.local();
+  return zoned.isValid ? zoned : DateTime.local();
+};
+
+export const currentDateIn = (zone: string | undefined): string =>
+  nowInZone(zone).toFormat(DATE_FORMAT);
+
+export const getBrowserTimezone = (): string =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+export const readsSameWallClock = (
+  zone: string,
+  otherZone: string
+): boolean => {
+  const yearStart = DateTime.now().startOf("year");
+  return [yearStart, yearStart.plus({ months: HALF_YEAR_IN_MONTHS })].every(
+    (instant) =>
+      instant.setZone(zone).offset === instant.setZone(otherZone).offset
+  );
+};
+
+export const millisUntilTodayAt = (
+  time: TimeOfDayType,
+  zone: string | undefined
+): number | undefined => {
+  const now = nowInZone(zone);
+  const target = now.set({ ...time, millisecond: 0 });
+  const remaining = target.diff(now).toMillis();
+
+  return remaining > 0 ? remaining : undefined;
+};
+
+export const formatInstant = (
+  isoInstant: string | null | undefined,
+  zone: string | undefined,
+  format: string = MEDIUM_DATE_TIME_FORMAT
+): string => {
+  if (!isoInstant) return "";
+
+  const zoned = instantInZone(isoInstant, zone);
+  return zoned.isValid ? zoned.toFormat(format) : "";
 };
 
 export const parseTimestampToDate = (timestamp: string): Date => {
@@ -592,9 +646,10 @@ export const generateTimezoneList = (): DropdownListType[] => {
 export const fromDateToRelativeTime = (
   date: string,
   translateText: TranslatorFunctionType,
-  language: string
+  language: string,
+  zone: string | undefined
 ): string => {
-  const dateTime = DateTime.fromISO(date).setLocale(language);
+  const dateTime = instantInZone(date, zone).setLocale(language);
   const relativeCalendar = dateTime ? dateTime.toRelativeCalendar() : "";
   const str: string = `${relativeCalendar ? relativeCalendar.toString() : "Unknown date"} at ${dateTime.toFormat("h:mm a")}`;
   const strArray = str.split(" ");

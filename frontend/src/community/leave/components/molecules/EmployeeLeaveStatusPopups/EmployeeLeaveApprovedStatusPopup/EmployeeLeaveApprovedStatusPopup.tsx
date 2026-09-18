@@ -4,9 +4,10 @@ import { FC } from "react";
 
 import { DAY_MONTH_YEAR_FORMAT } from "~community/attendance/constants/constants";
 import Icon from "~community/common/components/atoms/Icon/Icon";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import { formatInstant } from "~community/common/utils/dateTimeUtils";
 import StatusPopupColumn from "~community/leave/components/molecules/StatusPopupColumn/StatusPopupColumn";
 import StatusPopupRow from "~community/leave/components/molecules/StatusPopupRow/StatusPopupRow";
 import { useLeaveStore } from "~community/leave/store/store";
@@ -28,6 +29,7 @@ const EmployeeLeaveApprovedStatusPopup: FC<Props> = ({
 }) => {
   const { employeeLeaveRequestData } = useLeaveStore((state) => state);
   const translateText = useTranslator("leaveModule", "myRequests");
+  const displayZone = useDisplayZone();
 
   return (
     <>
@@ -63,15 +65,17 @@ const EmployeeLeaveApprovedStatusPopup: FC<Props> = ({
         />
         <StatusPopupRow
           label={translateText(["myLeaveRequests", "dateApplied"])}
-          durationDate={convertDateToFormat(
-            new Date(employeeLeaveRequestData.createdDate ?? ""),
+          durationDate={formatInstant(
+            employeeLeaveRequestData.createdDate,
+            displayZone,
             DAY_MONTH_YEAR_FORMAT
           )}
         />
         <StatusPopupRow
           label={translateText(["myLeaveRequests", "dateApproved"])}
-          durationDate={convertDateToFormat(
-            new Date(employeeLeaveRequestData.reviewedDate ?? ""),
+          durationDate={formatInstant(
+            employeeLeaveRequestData.reviewedDate,
+            displayZone,
             DAY_MONTH_YEAR_FORMAT
           )}
         />

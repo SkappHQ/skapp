@@ -11,10 +11,14 @@ import {
   convertToTimeZoneISO,
   convertUnixTimestampToISO
 } from "~community/attendance/utils/TimeUtils";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  currentDateIn
+} from "~community/common/utils/dateTimeUtils";
 
 export const timeRequestPreProcessor = (
-  requestResponce: TimeRequestDataResponseType
+  requestResponce: TimeRequestDataResponseType,
+  zone?: string
 ) => {
   const { items, ...rest } = requestResponce;
   const newRequestArray = items.reduce<TimeRequestDataType[]>((acc, record) => {
@@ -27,28 +31,30 @@ export const timeRequestPreProcessor = (
     } = record;
 
     const isoClockIn = initialClockIn
-      ? convertUnixTimestampToISO(initialClockIn as number)
+      ? convertUnixTimestampToISO(initialClockIn as number, zone)
       : null;
     const isoClockOut = initialClockOut
-      ? convertUnixTimestampToISO(initialClockOut as number)
+      ? convertUnixTimestampToISO(initialClockOut as number, zone)
       : null;
     const isoRequestedEndTime = requestedEndTime
-      ? convertUnixTimestampToISO(requestedEndTime as number)
+      ? convertUnixTimestampToISO(requestedEndTime as number, zone)
       : null;
     const isoRequestedStartTime = requestedStartTime
-      ? convertUnixTimestampToISO(requestedStartTime as number)
+      ? convertUnixTimestampToISO(requestedStartTime as number, zone)
       : null;
 
     const newRecord = {
-      initialClockIn: isoClockIn ? convertTo24HourByDateString(isoClockIn) : "",
+      initialClockIn: isoClockIn
+        ? convertTo24HourByDateString(isoClockIn, zone)
+        : "",
       initialClockOut: isoClockOut
-        ? convertTo24HourByDateString(isoClockOut)
+        ? convertTo24HourByDateString(isoClockOut, zone)
         : "",
       requestedEndTime: isoRequestedEndTime
-        ? convertTo24HourByDateString(isoRequestedEndTime)
+        ? convertTo24HourByDateString(isoRequestedEndTime, zone)
         : "",
       requestedStartTime: isoRequestedStartTime
-        ? convertTo24HourByDateString(isoRequestedStartTime)
+        ? convertTo24HourByDateString(isoRequestedStartTime, zone)
         : "",
       date: isoRequestedEndTime ? isoRequestedEndTime : "",
       ...rest
@@ -87,7 +93,11 @@ export const timeRecordPreProcessor = (
   };
 };
 
-export const dailyLogPreProcessor = (dailyLogList: DailyLogType[]) => {
+export const dailyLogPreProcessor = (
+  dailyLogList: DailyLogType[],
+  zone?: string,
+  organizationZone?: string
+) => {
   const newLogArray: DailyLogType[] = dailyLogList?.reduce<DailyLogType[]>(
     (acc, dailyLog) => {
       const { timeSlots, ...rest } = dailyLog;
@@ -95,8 +105,8 @@ export const dailyLogPreProcessor = (dailyLogList: DailyLogType[]) => {
       timeSlots.forEach((item) => {
         const { startTime, endTime, ...itemRest } = item;
         newTimeSlots.push({
-          startTime: convertToTimeZoneISO(startTime) || "",
-          endTime: convertToTimeZoneISO(endTime) || "",
+          startTime: convertToTimeZoneISO(startTime, zone) || "",
+          endTime: convertToTimeZoneISO(endTime, zone) || "",
           ...itemRest
         });
       });
@@ -109,8 +119,9 @@ export const dailyLogPreProcessor = (dailyLogList: DailyLogType[]) => {
     },
     []
   );
+  const today = currentDateIn(organizationZone);
   const filteredArray = newLogArray
     ?.reverse()
-    ?.filter((item) => new Date(item?.date) <= new Date());
+    ?.filter((item) => item?.date <= today);
   return filteredArray;
 };

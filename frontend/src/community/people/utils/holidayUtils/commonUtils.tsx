@@ -34,32 +34,21 @@ export const buildWorkLocationOptions = (
 };
 
 export const getFormattedYear = (date: string): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  const year = dateIOS.toLocaleString({ year: "numeric" });
-  return year;
+  return DateTime.fromISO(date).toLocaleString({ year: "numeric" });
 };
 
 export const getLongFormattedMonth = (date: string): string => {
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  return dateIOS.toLocaleString({ month: "long" });
+  return DateTime.fromISO(date).toLocaleString({ month: "long" });
 };
 
 export const getShortDayName = (date: string): string => {
-  if (date === undefined) return "";
-  const dateFormate = new Date(date);
-  const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-  const formattedDate = dateIOS.toFormat("EEE");
-  return formattedDate.slice(0, 3);
+  if (!date) return "";
+  return DateTime.fromISO(date).toFormat("EEE").slice(0, 3);
 };
 
 export const holidayDatePreprocessor = (date: string): string => {
   if (date) {
-    const dateFormate = new Date(date);
-    const dateIOS = DateTime.fromISO(dateFormate.toISOString());
-    const formattedDate = dateIOS.toFormat("dd-MM-YYYY");
-    return formattedDate;
+    return DateTime.fromISO(date).toFormat("dd-MM-yyyy");
   }
   return "";
 };

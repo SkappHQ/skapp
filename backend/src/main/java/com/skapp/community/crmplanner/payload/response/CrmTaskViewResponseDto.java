@@ -5,7 +5,7 @@ import com.skapp.community.crmplanner.type.CrmTaskPriority;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class CrmTaskViewResponseDto {
 
 	private Boolean isCompleted;
 
-	private LocalDateTime dueAt;
+	private Instant dueAt;
 
 	private String notes;
 

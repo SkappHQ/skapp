@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.repository;
 
+import java.time.Instant;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
@@ -17,9 +18,10 @@ public interface CrmContactRepository {
 
 	Page<CrmContact> findContacts(CrmContactMetricRequestDto filterDto, Pageable pageable);
 
-	Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto, Pageable pageable);
+	Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto, Pageable pageable,
+			Instant overdueBefore);
 
-	Optional<CrmContactMetrics> getContactMetricsById(Long contactId);
+	Optional<CrmContactMetrics> getContactMetricsById(Long contactId, Instant overdueBefore);
 
 	Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable);
 

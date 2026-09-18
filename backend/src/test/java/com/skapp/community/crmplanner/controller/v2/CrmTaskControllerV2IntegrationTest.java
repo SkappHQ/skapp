@@ -5,6 +5,8 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -202,7 +204,7 @@ class CrmTaskControllerV2IntegrationTest {
 		dto.setName("Follow up call");
 		dto.setTypeId(taskTypeId);
 		dto.setContactId(contactId);
-		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		dto.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		return dto;
 	}
 
@@ -224,7 +226,7 @@ class CrmTaskControllerV2IntegrationTest {
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(contact);
 		task.setCompany(company);
 		task.setOwner(employeeDao.getReferenceById(ownerId));
@@ -232,7 +234,7 @@ class CrmTaskControllerV2IntegrationTest {
 		return crmTaskDao.save(task);
 	}
 
-	private CrmTask savedTaskWithDueAt(String name, LocalDateTime dueAt) {
+	private CrmTask savedTaskWithDueAt(String name, Instant dueAt) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
@@ -251,7 +253,7 @@ class CrmTaskControllerV2IntegrationTest {
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(taskContact);
 		task.setCompany(taskCompany);
 		task.setDeal(taskDeal);
@@ -527,8 +529,8 @@ class CrmTaskControllerV2IntegrationTest {
 	@Test
 	@DisplayName("Get tasks sorted by due date descending - Returns the latest due date first")
 	void getTasks_SortByDueDateDesc_ReturnsLatestDueFirst() throws Exception {
-		savedTaskWithDueAt("Due Soon", DateTimeUtils.getCurrentUtcDateTime().plusDays(1));
-		savedTaskWithDueAt("Due Later", DateTimeUtils.getCurrentUtcDateTime().plusDays(30));
+		savedTaskWithDueAt("Due Soon", Instant.now().plus(1, ChronoUnit.DAYS));
+		savedTaskWithDueAt("Due Later", Instant.now().plus(30, ChronoUnit.DAYS));
 
 		performRequest(
 				get(BASE_PATH).param("sortKey", "DUE_AT").param("sortOrder", "DESC").accept(MediaType.APPLICATION_JSON),

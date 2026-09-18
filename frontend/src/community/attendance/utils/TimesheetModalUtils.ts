@@ -2,8 +2,7 @@ import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timeshe
 import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
   DailyLogType,
-  TimeAvailabilityType,
-  TimeEntryFormValueType
+  TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
 import { isToday } from "~community/attendance/utils/TimeUtils";
 
@@ -31,15 +30,16 @@ export const getTimeEntryModalType = (
 };
 
 export const getModalBeforeManualEntry = (
-  values: TimeEntryFormValueType,
+  entryStart: string,
   timeAvailability: TimeAvailabilityType,
-  slotType?: AttendanceSlotType | null
+  slotType?: AttendanceSlotType | null,
+  organizationZone?: string
 ): EmployeeTimesheetModalTypes | null => {
   const isOngoingSession =
     (slotType === AttendanceSlotType.START ||
       slotType === AttendanceSlotType.PAUSE ||
       slotType === AttendanceSlotType.RESUME) &&
-    isToday(values?.timeEntryDate);
+    isToday(entryStart, organizationZone);
 
   if (isOngoingSession) {
     return EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY;

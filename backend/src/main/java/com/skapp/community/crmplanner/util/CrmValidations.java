@@ -21,6 +21,7 @@ import lombok.experimental.UtilityClass;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -249,7 +250,7 @@ public class CrmValidations {
 		}
 	}
 
-	public static void validateTaskDueAt(LocalDateTime dueAt) {
+	public static void validateTaskDueAt(Instant dueAt) {
 		if (dueAt == null) {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_TASK_DUE_DATE_REQUIRED);
 		}

@@ -9,14 +9,12 @@ import {
 } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import {
-  convertToUtc,
-  getCurrentTimeZone
-} from "~community/attendance/utils/TimeUtils";
+import { convertToUtc } from "~community/attendance/utils/TimeUtils";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useEntryZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -32,6 +30,7 @@ interface Props {
 const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
+  const entryZone = useEntryZone();
   const { setToastMessage } = useToast();
   const classes = styles(theme);
   const {
@@ -67,7 +66,7 @@ const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
     manualEntryMutate({
       startTime: convertToUtc(fromDateTime) as string,
       endTime: convertToUtc(toDateTime) as string,
-      zoneId: getCurrentTimeZone()
+      zoneId: entryZone
     });
     setIsEmployeeTimesheetModalOpen(false);
   };
