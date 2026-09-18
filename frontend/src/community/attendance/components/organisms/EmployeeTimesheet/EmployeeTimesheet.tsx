@@ -44,22 +44,8 @@ const EmployeeTimesheet = (): JSX.Element => {
   const selfTargetEmployeeDetails: L1EmployeeType | undefined = useMemo(() => {
     if (!canDirectlyAddOrEditEntry || !user?.userId) return undefined;
 
-    return {
-      personal: {
-        general: {
-          firstName:
-            user?.employee?.firstName || user?.name || user?.email || "",
-          lastName: user?.employee?.lastName ?? ""
-        }
-      }
-    };
-  }, [
-    canDirectlyAddOrEditEntry,
-    user?.userId,
-    user?.employee,
-    user?.name,
-    user?.email
-  ]);
+    return { personal: { general: {} } };
+  }, [canDirectlyAddOrEditEntry, user?.userId]);
 
   return (
     <>
