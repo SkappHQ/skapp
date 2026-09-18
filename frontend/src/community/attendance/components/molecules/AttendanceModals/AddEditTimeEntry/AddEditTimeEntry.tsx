@@ -31,6 +31,7 @@ import {
   getTotalSlotTypeHours
 } from "~community/attendance/utils/TimeUtils";
 import { timeEntryValidation } from "~community/attendance/utils/validations";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicChip";
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
@@ -61,6 +62,7 @@ interface Props {
 }
 
 const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
+  const { user } = useAuth();
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
   const [duration, setDuration] = useState<string>();
@@ -349,9 +351,12 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     employeeTimesheetModalType ===
       EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE;
 
+  const isSelfDirectEntry =
+    directManualTimeEntryEligibleEmployee?.employeeId === user?.userId;
+
   return (
     <Form onSubmit={handleSubmit}>
-      {directManualTimeEntryEligibleEmployee && (
+      {directManualTimeEntryEligibleEmployee && !isSelfDirectEntry && (
         <InputField
           label={translateText(["directEntryEmployeeLabel"])}
           inputName={"direct_entry_employee"}

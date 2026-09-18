@@ -5,6 +5,7 @@ import { DailyLogType } from "~community/attendance/types/timeSheetTypes";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 import TimesheetDailyRecordTable from "../TimesheetDailyRecordTable/TimesheetDailyRecordTable";
 import TimesheetStatCard from "../TimesheetStatCard/TimesheetStatCard";
@@ -14,13 +15,17 @@ interface Props {
   dailyLogData: DailyLogType[];
   downloadEmployeeDailyLogCsv: () => void;
   isDailyLogLoading?: boolean;
+  targetEmployeeId?: number;
+  targetEmployeeDetails?: L1EmployeeType;
 }
 
 const TimesheetDailyLog = ({
   workSummaryData,
   dailyLogData,
   downloadEmployeeDailyLogCsv,
-  isDailyLogLoading = false
+  isDailyLogLoading = false,
+  targetEmployeeId,
+  targetEmployeeDetails
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
@@ -48,6 +53,8 @@ const TimesheetDailyLog = ({
         dailyLogData={dailyLogData}
         downloadEmployeeDailyLogCsv={downloadEmployeeDailyLogCsv}
         isDailyLogLoading={isDailyLogLoading}
+        targetEmployeeId={targetEmployeeId}
+        targetEmployeeDetails={targetEmployeeDetails}
       />
     </Box>
   );
