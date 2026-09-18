@@ -16,7 +16,8 @@ const MyTimeSheet: NextPage = () => {
   const {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectManualTimeEntryEligibleEmployee
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore(
     useShallow((state) => ({
       setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
