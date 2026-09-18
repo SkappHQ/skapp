@@ -16,6 +16,7 @@ import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSi
 import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
 import DealsKanbanBoardSkeletonV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardSkeletonV2";
 import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes as CrmSidePanelTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -23,7 +24,7 @@ import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 // Flip to true to serve the CRM Deals page from the normalized v2 store surface.
-const isCrmDealsV2 = false;
+const isCrmDealsV2 = true;
 
 const DealsV1 = () => {
   const translateText = useTranslator("crmModule");
@@ -104,6 +105,7 @@ const DealsV2 = () => {
           {selectedDealId !== null && <DealSidePanelV2 />}
           <AddDealSidePanelV2 />
         </SidePanelWrapper>
+        <TaskModalControllerV2 />
         {isCrmInitialDataLoading ? (
           <DealsKanbanBoardSkeletonV2 laneCount={4} cardCount={5} />
         ) : (
