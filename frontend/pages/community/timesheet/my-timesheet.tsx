@@ -55,8 +55,7 @@ const MyTimeSheet: NextPage = () => {
           canDirectlyAddOrEditEntry && user?.userId
             ? {
                 employeeId: user.userId,
-                employeeName: "",
-                hideEmployeeLabel: true
+                employeeName: ""
               }
             : null
         );
