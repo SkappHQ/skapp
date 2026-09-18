@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -43,6 +44,38 @@ public class EmployeeLeavePolicyRepositoryImpl implements EmployeeLeavePolicyRep
 		Predicate statusPredicate = cb.equal(root.get(EmployeeLeavePolicy_.status), status);
 
 		query.select(root).where(cb.and(employeePredicate, statusPredicate)).distinct(true);
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
+	public Optional<EmployeeLeavePolicy> findByEmployeeIdAndPolicyIdAndStatus(Long employeeId, Long policyId,
+			EmployeeLeavePolicyStatus status) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<EmployeeLeavePolicy> query = cb.createQuery(EmployeeLeavePolicy.class);
+		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);
+		Fetch<EmployeeLeavePolicy, LeavePolicy> policyFetch = root.fetch(EmployeeLeavePolicy_.policy, JoinType.INNER);
+		policyFetch.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		query.select(root)
+			.where(cb.equal(root.get(EmployeeLeavePolicy_.employee).get(Employee_.employeeId), employeeId),
+					cb.equal(root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.id), policyId),
+					cb.equal(root.get(EmployeeLeavePolicy_.status), status));
+
+		return entityManager.createQuery(query).getResultList().stream().findFirst();
+	}
+
+	@Override
+	public List<EmployeeLeavePolicy> findByEmployeeIdAndStatusOrderByPolicyNameAsc(Long employeeId,
+			EmployeeLeavePolicyStatus status) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<EmployeeLeavePolicy> query = cb.createQuery(EmployeeLeavePolicy.class);
+		Root<EmployeeLeavePolicy> root = query.from(EmployeeLeavePolicy.class);
+		Fetch<EmployeeLeavePolicy, LeavePolicy> policyFetch = root.fetch(EmployeeLeavePolicy_.policy, JoinType.INNER);
+		policyFetch.fetch(LeavePolicy_.leaveType, JoinType.LEFT);
+
+		query.select(root).where(buildEmployeeStatusPredicates(cb, root, employeeId, status));
+		query.orderBy(cb.asc(root.get(EmployeeLeavePolicy_.policy).get(LeavePolicy_.name)));
+
 		return entityManager.createQuery(query).getResultList();
 	}
 

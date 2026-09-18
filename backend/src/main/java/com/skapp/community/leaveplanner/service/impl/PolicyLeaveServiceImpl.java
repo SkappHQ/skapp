@@ -145,9 +145,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
-		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(currentUser.getEmployee().getEmployeeId(),
-					EmployeeLeavePolicyStatus.ACTIVE);
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByEmployeeIdAndStatusOrderByPolicyNameAsc(
+				currentUser.getEmployee().getEmployeeId(), EmployeeLeavePolicyStatus.ACTIVE);
 
 		List<EmployeePolicyBalanceResponseDto> balances = assignments.stream()
 			.map(assignment -> toBalanceCard(assignment, resolvedYear, hasSupervisor, today, cycleAnchor))
@@ -735,8 +734,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private EmployeeLeavePolicy resolveActiveAssignment(Employee employee, Long policyId) {
 		return employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(employee.getEmployeeId(), policyId,
-					EmployeeLeavePolicyStatus.ACTIVE)
+			.findByEmployeeIdAndPolicyIdAndStatus(employee.getEmployeeId(), policyId, EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 
