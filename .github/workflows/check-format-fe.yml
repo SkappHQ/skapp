@@ -1,4 +1,4 @@
-name: Build Node.js App
+name: Check Node.js App Formatting
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  build:
+  check-format:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +23,7 @@ jobs:
           cd frontend
           npm install
 
-      - name: Build project
+      - name: Check formatting
         run: |
           cd frontend
-          npm run build
+          npm run check-format
