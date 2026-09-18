@@ -43,15 +43,25 @@ const DealsKanbanBoardV2: FC<DealsKanbanBoardV2Props> = ({
     useSensor(KeyboardSensor)
   );
 
-  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const handleMoveError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "moveErrorTitle"]),
-      description: translateText(["toastMessages", "moveErrorDescription"])
+      title: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "moveErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "moveErrorDescription"
+      ])
     });
   };
 

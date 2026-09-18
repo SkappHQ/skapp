@@ -55,7 +55,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
   const menuItems = [
     {
       id: "delete",
-      label: translateText(["deleteDeal"]),
+      label: translateText(["deals", "sidePanel", "deleteDeal"]),
       icon: {
         start: (
           <DeleteButtonIcon
@@ -75,7 +75,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
       <Popover
         side="bottom"
         open={isLinkCopied}
-        content={translateText(["linkCopied"])}
+        content={translateText(["deals", "sidePanel", "linkCopied"])}
         className="body3 text-secondary-text rounded-lg px-3 py-2 shadow-lg"
       >
         <IconButton
@@ -90,8 +90,8 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
           onClick={handleCopyLink}
           aria-label={
             isLinkCopied
-              ? translateText(["linkCopied"])
-              : translateText(["ariaLabels", "copyLink"])
+              ? translateText(["deals", "sidePanel", "linkCopied"])
+              : translateAria(["deals", "sidePanel", "copyLink"])
           }
         />
       </Popover>
@@ -101,7 +101,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
           id="deal-actions"
           menuItems={menuItems}
           anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
+            "aria-label": translateAria(["deals", "sidePanel", "kebabMenu"])
           }}
           className={{
             anchorElement:

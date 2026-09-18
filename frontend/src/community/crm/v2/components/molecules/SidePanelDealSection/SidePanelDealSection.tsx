@@ -48,7 +48,8 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
   isFetchingNextPage = false,
   onFetchNextPage
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const [isAddingDeal, setIsAddingDeal] = useState(false);
 
@@ -91,11 +92,11 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
         onClick={handleAddDeal}
         disabled={isCheckingCrmLimit}
         isLoading={isCheckingCrmLimit}
-        aria-label={translateText(["ariaLabels", "addDealBtn"])}
+        aria-label={translateAria(["deals", "linkedSection", "addDealBtn"])}
         icon={<PlusIcon />}
         iconPosition="end"
       >
-        {translateText(["addDealBtn"])}
+        {translateText(["deals", "common", "buttons", "addDeal"])}
       </ButtonV2>
     );
   };
@@ -143,18 +144,30 @@ const SidePanelDealSection: FC<SidePanelDealSectionProps> = ({
     return (
       <EmptyDataView
         icon={<SearchIcon />}
-        title={translateText(["emptyTitle"])}
-        description={emptyDescription ?? translateText(["emptyDescription"])}
+        title={translateText(["deals", "linkedSection", "emptyTitle"])}
+        description={
+          emptyDescription ??
+          translateText(["deals", "linkedSection", "emptyDescription"])
+        }
         button={
           showAddDealAction
             ? {
-                children: translateText(["addDealBtn"]),
+                children: translateText([
+                  "deals",
+                  "common",
+                  "buttons",
+                  "addDeal"
+                ]),
                 variant: "tertiary",
                 onClick: handleAddDeal,
                 disabled: isCheckingCrmLimit,
                 isLoading: isCheckingCrmLimit,
                 icon: <PlusIcon />,
-                "aria-label": translateText(["ariaLabels", "addDealBtn"])
+                "aria-label": translateAria([
+                  "deals",
+                  "linkedSection",
+                  "addDealBtn"
+                ])
               }
             : undefined
         }

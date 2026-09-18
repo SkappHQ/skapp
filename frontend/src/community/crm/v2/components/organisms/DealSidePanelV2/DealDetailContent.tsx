@@ -25,7 +25,7 @@ interface DealDetailContentProps {
 }
 
 const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const { deal, deals, board, setDeals, setBoardColumn } = useCrmStoreV2(
@@ -59,8 +59,18 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "editErrorTitle"]),
-      description: translateText(["toastMessages", "editErrorDescription"])
+      title: translateText([
+        "deals",
+        "sidePanel",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "sidePanel",
+        "toastMessages",
+        "editErrorDescription"
+      ])
     });
   };
 
@@ -104,7 +114,9 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             />
           )}
           <div className="flex flex-col gap-3">
-            <h2 className="h2">{translateText(["tasks", "title"])}</h2>
+            <h2 className="h2">
+              {translateText(["deals", "sidePanel", "tasks", "title"])}
+            </h2>
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
               tasks={relatedTasks}

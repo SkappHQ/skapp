@@ -49,7 +49,8 @@ const initialValues: CrmDealEntity = {
 };
 
 const AddDealSidePanelV2: FC = () => {
-  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { setToastMessage } = useToast();
 
   const [selectedContact, setSelectedContact] =
@@ -136,8 +137,18 @@ const AddDealSidePanelV2: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
     closeCrmSidePanel();
     formik.resetForm();
@@ -149,8 +160,18 @@ const AddDealSidePanelV2: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -222,10 +243,12 @@ const AddDealSidePanelV2: FC = () => {
         isOpen={isOpen}
         onClose={handleClose}
         header={
-          <span className="pl-2 h1 text-black">{translateText(["title"])}</span>
+          <span className="pl-2 h1 text-black">
+            {translateText(["deals", "addPanel", "title"])}
+          </span>
         }
         closeOnBackdropClick
-        closeAriaLabel={translateText(["ariaLabels", "closePanel"])}
+        closeAriaLabel={translateAria(["deals", "addPanel", "closePanel"])}
         footer={
           <div className="flex justify-end px-6 py-3">
             <ButtonV2
@@ -236,9 +259,9 @@ const AddDealSidePanelV2: FC = () => {
               isLoading={isPending}
               icon={<PlusIcon fill="black" />}
               iconPosition="end"
-              aria-label={translateText(["ariaLabels", "addDeal"])}
+              aria-label={translateAria(["deals", "addPanel", "addDeal"])}
             >
-              {translateText(["buttons", "addDeal"])}
+              {translateText(["deals", "common", "buttons", "addDeal"])}
             </ButtonV2>
           </div>
         }
@@ -253,8 +276,18 @@ const AddDealSidePanelV2: FC = () => {
             <div className="w-2/3">
               <TextArea
                 name="description"
-                label={translateText(["labels", "description"])}
-                placeholder={translateText(["placeholders", "description"])}
+                label={translateText([
+                  "deals",
+                  "common",
+                  "labels",
+                  "description"
+                ])}
+                placeholder={translateText([
+                  "deals",
+                  "addPanel",
+                  "placeholders",
+                  "description"
+                ])}
                 value={values.description}
                 onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
@@ -269,7 +302,7 @@ const AddDealSidePanelV2: FC = () => {
                     ? formik.errors.description
                     : undefined
                 }
-                aria-label={translateText(["ariaLabels", "description"])}
+                aria-label={translateAria(["deals", "addPanel", "description"])}
               />
             </div>
 

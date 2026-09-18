@@ -1,0 +1,46 @@
+{
+  "deals": {
+    "common": {
+      "stage": "Stage",
+      "priority": "Priority",
+      "amount": "Amount",
+      "contact": "Contact"
+    },
+    "table": {
+      "clearSearch": "Clear search",
+      "listView": "List view",
+      "kanbanView": "Kanban view",
+      "switchDealView": "Switch deal view",
+      "openDealDetails": "Open deal details for {{name}}",
+      "inlineEdit": {
+        "value": "Value",
+        "dealOwner": "Deal Owner",
+        "contactName": "Contact Name"
+      }
+    },
+    "sidePanel": {
+      "kebabMenu": "Deal actions",
+      "saveTitle": "Save title",
+      "discardTitle": "Discard title",
+      "editTitle": "Edit title",
+      "editDescription": "Edit description",
+      "copyLink": "Copy link to this deal"
+    },
+    "addPanel": {
+      "closePanel": "Close add deal panel",
+      "addDeal": "Add deal",
+      "dealName": "Deal name",
+      "description": "Description",
+      "owner": "Deal owner"
+    },
+    "linkedSection": {
+      "addDealBtn": "Add Deal",
+      "inlineAdd": {
+        "group": "Add new deal",
+        "saveDeal": "Save deal",
+        "cancelAddDeal": "Cancel adding deal",
+        "clearContact": "Clear selected contact"
+      }
+    }
+  }
+}
