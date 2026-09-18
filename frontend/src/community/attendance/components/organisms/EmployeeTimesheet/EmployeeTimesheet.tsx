@@ -1,4 +1,4 @@
-import { JSX, useMemo, useState } from "react";
+import { JSX, useState } from "react";
 
 import {
   useGetDailyLogs,
@@ -14,7 +14,6 @@ import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/Timeshe
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { dateValidation } from "~community/common/utils/validation";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
-import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 const EmployeeTimesheet = (): JSX.Element => {
   const [startTime, setStartTime] = useState<string>("");
@@ -37,15 +36,15 @@ const EmployeeTimesheet = (): JSX.Element => {
 
   const { data: timeConfigData } = useDefaultCapacity();
 
-  const selfTargetEmployeeId = canDirectlyAddOrEditEntry
+  const isSelfDirectEntryEligible = canDirectlyAddOrEditEntry && !!user?.userId;
+
+  const selfTargetEmployeeId = isSelfDirectEntryEligible
     ? user?.userId
     : undefined;
 
-  const selfTargetEmployeeDetails: L1EmployeeType | undefined = useMemo(() => {
-    if (!canDirectlyAddOrEditEntry || !user?.userId) return undefined;
-
-    return { personal: { general: {} } };
-  }, [canDirectlyAddOrEditEntry, user?.userId]);
+  const selfTargetEmployeeDetails = isSelfDirectEntryEligible
+    ? { personal: { general: {} } }
+    : undefined;
 
   return (
     <>
