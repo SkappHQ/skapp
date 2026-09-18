@@ -95,7 +95,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     setSelectedDailyRecord,
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectManualTimeEntryEligibleEmployee
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
@@ -212,14 +213,15 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
         employeeName: concatStrings([
           employeeGeneralDetails?.firstName ?? "",
           employeeGeneralDetails?.lastName ?? ""
-        ]).trim(),
-        hideEmployeeLabel: isSelfTargetEntry
+        ]).trim()
       });
+      setIsSelfDirectTimeEntry(isSelfTargetEntry);
       handleEdit();
       return;
     }
 
     setDirectManualTimeEntryEligibleEmployee(null);
+    setIsSelfDirectTimeEntry(false);
     mutate();
   };
 

@@ -22,7 +22,8 @@ const MyTimeSheet: NextPage = () => {
       setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
       setDirectManualTimeEntryEligibleEmployee:
-        state.setDirectManualTimeEntryEligibleEmployee
+        state.setDirectManualTimeEntryEligibleEmployee,
+      setIsSelfDirectTimeEntry: state.setIsSelfDirectTimeEntry
     }))
   );
   const {
@@ -51,14 +52,11 @@ const MyTimeSheet: NextPage = () => {
       primaryButtonType={ButtonStyle.PRIMARY}
       isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
+        const isEligible = canDirectlyAddOrEditEntry && !!user?.userId;
         setDirectManualTimeEntryEligibleEmployee(
-          canDirectlyAddOrEditEntry && user?.userId
-            ? {
-                employeeId: user.userId,
-                employeeName: ""
-              }
-            : null
+          isEligible ? { employeeId: user.userId, employeeName: "" } : null
         );
+        setIsSelfDirectTimeEntry(isEligible);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
