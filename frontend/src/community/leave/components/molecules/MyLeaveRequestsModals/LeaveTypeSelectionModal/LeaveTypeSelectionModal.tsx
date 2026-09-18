@@ -1,4 +1,4 @@
-import { ButtonV2 } from "@rootcodelabs/skapp-ui";
+import { LargeModal } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -14,20 +14,36 @@ const LeaveTypeSelectionModal = () => {
     "leaveTypeSelectionModal"
   );
 
-  const { setMyLeaveRequestModalType } = useLeaveStore();
+  const translateModalTitle = useTranslator(
+    "leaveModule",
+    "myRequests",
+    "applyLeaveModal"
+  );
+
+  const { isMyRequestModalOpen, setMyLeaveRequestModalType } = useLeaveStore();
 
   return (
-    <div className="flex flex-col gap-4">
-      <LeaveAllocation />
-      <ButtonV2
-        variant={"tertiary"}
-        onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
-        icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
-        iconPosition="end"
-      >
-        {translateText(["cancelBtn"])}
-      </ButtonV2>
-    </div>
+    <LargeModal
+      id="leave-type-selection-modal"
+      isOpen={isMyRequestModalOpen}
+      onClose={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
+      modalHeader={translateModalTitle(["title"])}
+      backdropVariant="dark"
+      buttons={{
+        buttonRight: {
+          variant: "tertiary",
+          onClick: () => setMyLeaveRequestModalType(MyRequestModalEnums.NONE),
+          icon: <Icon name={IconName.RIGHT_ARROW_ICON} />,
+          iconPosition: "end",
+          children: translateText(["cancelBtn"])
+        }
+      }}
+      content={
+        <div className="flex flex-col gap-4">
+          <LeaveAllocation />
+        </div>
+      }
+    />
   );
 };
 

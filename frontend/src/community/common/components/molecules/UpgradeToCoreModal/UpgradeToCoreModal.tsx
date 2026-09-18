@@ -53,7 +53,6 @@ const UpgradeToCoreModal: React.FC<UpgradeToCoreModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       modalHeader={title}
-      className="h-[580px] w-[900px] max-h-[85vh] max-w-[65vw] overflow-hidden"
       content={content}
       image={imageElement}
       imagePosition="left"
