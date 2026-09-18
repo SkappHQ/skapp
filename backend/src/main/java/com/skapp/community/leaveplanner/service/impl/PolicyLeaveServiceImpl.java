@@ -62,7 +62,6 @@ import com.skapp.community.leaveplanner.util.PolicyLeaveUsageLookup;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.Holiday;
-import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
 import com.skapp.community.peopleplanner.service.PeopleService;
@@ -146,9 +145,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
-		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(currentUser.getEmployee().getEmployeeId(),
-					EmployeeLeavePolicyStatus.ACTIVE);
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByEmployeeIdAndStatusOrderByPolicyNameAsc(
+				currentUser.getEmployee().getEmployeeId(), EmployeeLeavePolicyStatus.ACTIVE);
 
 		List<EmployeePolicyBalanceResponseDto> balances = assignments.stream()
 			.map(assignment -> toBalanceCard(assignment, resolvedYear, hasSupervisor, today, cycleAnchor))
@@ -199,8 +197,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		User currentUser = userService.getCurrentUser();
 		Employee employee = currentUser.getEmployee();
 
-		List<EmployeeManagerResponseDto> managers = peopleService.getCurrentEmployeeManagers();
-		if (managers.isEmpty()) {
+		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(employee);
+		if (employeeManagers.isEmpty()) {
 			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_NO_MANAGER_FOUND);
 		}
 
@@ -227,7 +225,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.setIsAutoApproved(Boolean.FALSE);
 		attachSupportingDocuments(leaveRequest, policyLeaveRequestDto.getAttachments());
 
-		List<EmployeeManager> employeeManagers = employeeManagerDao.findByEmployee(employee);
 		if (Boolean.TRUE.equals(policy.getLeaveType().getIsAutoApproval())) {
 			autoApprove(leaveRequest, employeeManagers);
 		}
@@ -737,8 +734,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private EmployeeLeavePolicy resolveActiveAssignment(Employee employee, Long policyId) {
 		return employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(employee.getEmployeeId(), policyId,
-					EmployeeLeavePolicyStatus.ACTIVE)
+			.findByEmployeeIdAndPolicyIdAndStatus(employee.getEmployeeId(), policyId, EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 

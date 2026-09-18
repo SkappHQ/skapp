@@ -185,7 +185,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		EmployeeLeavePolicyUtil.validateRequiredFields(unassignLeavePolicyRequestDto);
 
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
+			.findByEmployeeIdAndPolicyIdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 

@@ -6,10 +6,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EmployeeLeavePolicyRepository {
 
 	List<EmployeeLeavePolicy> findByEmployeeIdsAndStatus(List<Long> employeeIds, EmployeeLeavePolicyStatus status);
+
+	Optional<EmployeeLeavePolicy> findByEmployeeIdAndPolicyIdAndStatus(Long employeeId, Long policyId,
+			EmployeeLeavePolicyStatus status);
+
+	List<EmployeeLeavePolicy> findByEmployeeIdAndStatusOrderByPolicyNameAsc(Long employeeId,
+			EmployeeLeavePolicyStatus status);
 
 	Page<EmployeeLeavePolicy> findByEmployeeIdAndStatusOrderByEffectiveFromDescIdDesc(Long employeeId,
 			EmployeeLeavePolicyStatus status, Pageable pageable);

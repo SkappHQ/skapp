@@ -15,12 +15,6 @@ public interface EmployeeLeavePolicyDao
 	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(Long employeeId,
 			Long leaveTypeId, EmployeeLeavePolicyStatus status);
 
-	Optional<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndPolicy_IdAndStatus(Long employeeId, Long policyId,
-			EmployeeLeavePolicyStatus status);
-
-	List<EmployeeLeavePolicy> findByEmployee_EmployeeIdAndStatusOrderByPolicy_NameAsc(Long employeeId,
-			EmployeeLeavePolicyStatus status);
-
 	List<EmployeeLeavePolicy> findByPolicy_IdAndStatus(Long policyId, EmployeeLeavePolicyStatus status);
 
 }
