@@ -247,7 +247,34 @@ class CrmDealControllerIntegrationTest {
 		return crmDealDao.save(deal);
 	}
 
+	private CrmDeal savedDealWithPriority(String name, CrmDealStage stage, CrmCompany company,
+			CrmDealPriority priority) {
+		CrmDeal deal = savedDeal(name, stage, company);
+		deal.setPriority(priority);
+		return crmDealDao.save(deal);
+	}
+
 	// --- Get deals tests ---
+
+	@Test
+	@DisplayName("Get deals sorted by priority - Returns severity order, not alphabetical order")
+	void getDeals_SortByPriority_ReturnsSeverityOrder() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Priority Sort Corp");
+		savedDealWithPriority("Priority High Deal", stage, company, CrmDealPriority.HIGH);
+		savedDealWithPriority("Priority Low Deal", stage, company, CrmDealPriority.LOW);
+		savedDealWithPriority("Priority Medium Deal", stage, company, CrmDealPriority.MEDIUM);
+
+		performRequest(get(BASE_PATH).param("companyId", company.getId().toString())
+			.param("sortKey", "PRIORITY")
+			.accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['priority']").value("LOW"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['priority']").value("MEDIUM"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][2]['priority']").value("HIGH"));
+	}
 
 	@Test
 	@DisplayName("Get deals filtered by companyId - Returns only deals linked to that company")
@@ -493,7 +520,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Active Corp"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(company.getId().intValue()));
 	}
 
 	@Test
@@ -511,7 +538,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
 	}
 
 	@Test
@@ -524,7 +551,7 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
 	}
 
 	@Test
@@ -553,8 +580,8 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("$.results[0].name").value("Updated Deal Name"))
 			.andExpect(jsonPath("$.results[0].amount").value("5000.50"))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Company"));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(newCompany.getId().intValue()));
 	}
 
 	@Test
@@ -578,8 +605,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("New Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value("New Corp"));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(newCompany.getId().intValue()));
 	}
 
 	@Test
@@ -602,8 +629,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("No Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(nullValue()));
 	}
 
 	@Test
@@ -631,8 +658,8 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].contactName").value("Deleted Company Contact"))
-			.andExpect(jsonPath("$.results[0].companyName").value(nullValue()));
+			.andExpect(jsonPath("$.results[0].contactId").value(newContact.getId().intValue()))
+			.andExpect(jsonPath("$.results[0].companyId").value(nullValue()));
 	}
 
 	@Test
@@ -664,10 +691,9 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['description']").value("Test deal description"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("HIGH"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(deal.getContact().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contactName']").value("Deal Test Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value("Deal Company"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(deal.getStage().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").exists())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(deal.getCompany().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(deal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").exists())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['closingAt']").doesNotExist());
 	}
 
@@ -692,8 +718,8 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(savedDeal.getId().intValue()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("No Company Deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['stage']['id']").value(savedDeal.getStage().getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['companyName']").value(nullValue()));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stageId']").value(savedDeal.getStage().getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(nullValue()));
 	}
 
 	@Test
@@ -773,7 +799,7 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].stage.name").value(newStage.getName()));
+			.andExpect(jsonPath("$.results[0].stageId").value(newStage.getId().intValue()));
 	}
 
 	@Test
@@ -889,7 +915,7 @@ class CrmDealControllerIntegrationTest {
 		performPatchRequest(deal.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath("$.results[0].owner.employeeId").value(2L));
+			.andExpect(jsonPath("$.results[0].ownerId").value(2L));
 	}
 
 	@Test

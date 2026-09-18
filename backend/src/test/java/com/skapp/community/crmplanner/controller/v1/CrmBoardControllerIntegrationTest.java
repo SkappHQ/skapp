@@ -40,6 +40,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
+
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
@@ -513,21 +516,19 @@ class CrmBoardControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Board init data - contact with a live company returns the nested company")
-	void getBoardInitData_ContactWithCompany_ReturnsNestedCompany() throws Exception {
+	@DisplayName("Board init data - contact with a live company returns the company id")
+	void getBoardInitData_ContactWithCompany_ReturnsCompanyId() throws Exception {
 		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
 			.with(SecurityTestUtils.bearerToken(repToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.id")
-				.value(company.getId().intValue()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.name")
-				.value("Board Test Company"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].companyId")
+				.value(company.getId().intValue()));
 	}
 
 	@Test
-	@DisplayName("Board init data - contact without a company omits the company object")
-	void getBoardInitData_ContactWithoutCompany_OmitsCompany() throws Exception {
+	@DisplayName("Board init data - contact without a company returns a null company id")
+	void getBoardInitData_ContactWithoutCompany_ReturnsNullCompanyId() throws Exception {
 		CrmContact orphan = new CrmContact();
 		orphan.setName("Board Orphan Contact");
 		orphan.setEmail("board.orphan@example.com");
@@ -540,13 +541,13 @@ class CrmBoardControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].name")
 				.value("Board Orphan Contact"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
-				.doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].companyId")
+				.value(contains(nullValue())));
 	}
 
 	@Test
-	@DisplayName("Board init data - contact whose company is soft deleted omits the company object")
-	void getBoardInitData_ContactWithDeletedCompany_OmitsCompany() throws Exception {
+	@DisplayName("Board init data - contact whose company is soft deleted returns a null company id")
+	void getBoardInitData_ContactWithDeletedCompany_ReturnsNullCompanyId() throws Exception {
 		CrmCompany deletedCompany = new CrmCompany();
 		deletedCompany.setName("Board Deleted Company");
 		crmCompanyDao.save(deletedCompany);
@@ -565,8 +566,8 @@ class CrmBoardControllerIntegrationTest {
 			.with(SecurityTestUtils.bearerToken(repToken)))
 			.andDo(print())
 			.andExpect(status().isOk())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
-				.doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].companyId")
+				.value(contains(nullValue())));
 	}
 
 	@Test

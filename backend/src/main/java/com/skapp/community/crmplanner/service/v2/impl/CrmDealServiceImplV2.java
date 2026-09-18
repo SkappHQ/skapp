@@ -7,7 +7,6 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
-import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
 import com.skapp.community.crmplanner.payload.request.CrmDealCreateRequestDto;
@@ -16,9 +15,9 @@ import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardInitDataResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
@@ -56,8 +55,6 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 
 	private final CrmMapper crmMapper;
 
-	private final CrmMapperV2 crmMapperV2;
-
 	private final UserService userService;
 
 	@Override
@@ -69,14 +66,14 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDtoV2> contacts = crmContactDao.findAllContactsForBoardInitV2();
+		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit();
 
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwnersV2();
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
 
-		CrmBoardInitDataResponseDtoV2 responseDto = new CrmBoardInitDataResponseDtoV2();
+		CrmBoardInitDataResponseDto responseDto = new CrmBoardInitDataResponseDto();
 		responseDto.setStages(stages);
 		responseDto.setContacts(contacts);
 		responseDto.setOwners(owners);
@@ -98,7 +95,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		Page<CrmDealResponseDtoV2> dealsPage = crmDealDao.findDealsV2(filterDto, ownerId,
+		Page<CrmDealResponseDto> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
 		PageDto pageDto = new PageDto();
@@ -127,7 +124,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		}
 
 		log.info("getDealById: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, deal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, deal));
 	}
 
 	@Override
@@ -138,7 +135,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		CrmDeal savedDeal = crmDealService.persistNewDeal(requestDto);
 
 		log.info("createDeal: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
 	@Override
@@ -149,7 +146,7 @@ public class CrmDealServiceImplV2 implements CrmDealServiceV2 {
 		CrmDeal savedDeal = crmDealService.applyDealEdit(id, requestDto);
 
 		log.info("editDeal: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toDealResponseDtoV2(crmMapperV2, savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
 }

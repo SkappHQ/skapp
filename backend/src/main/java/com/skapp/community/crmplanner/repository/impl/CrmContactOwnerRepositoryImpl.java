@@ -39,7 +39,7 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 	private final EntityManager entityManager;
 
 	@Override
-	public List<CrmBoardOwnerResponseDto> findAllOwnersV2() {
+	public List<CrmBoardOwnerResponseDto> findAllOwners() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmBoardOwnerResponseDto> query = cb.createQuery(CrmBoardOwnerResponseDto.class);
 		Root<Employee> employee = query.from(Employee.class);
@@ -47,26 +47,6 @@ public class CrmContactOwnerRepositoryImpl implements CrmContactOwnerRepository 
 		Join<Employee, EmployeeRole> employeeRole = employee.join(Employee_.employeeRole, JoinType.INNER);
 
 		query.select(cb.construct(CrmBoardOwnerResponseDto.class, employee.get(Employee_.employeeId),
-				employee.get(Employee_.firstName), employee.get(Employee_.lastName), employee.get(Employee_.authPic)));
-
-		query.where(cb.isTrue(user.get(User_.isActive)),
-				employeeRole.get(EmployeeRole_.crmRole).in(CrmConstants.ASSIGNABLE_CRM_ROLES));
-
-		query.orderBy(cb.asc(cb.lower(employee.get(Employee_.firstName))),
-				cb.asc(cb.lower(employee.get(Employee_.lastName))));
-
-		return entityManager.createQuery(query).getResultList();
-	}
-
-	@Override
-	public List<CrmOwnerResponseDto> findAllOwners() {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmOwnerResponseDto> query = cb.createQuery(CrmOwnerResponseDto.class);
-		Root<Employee> employee = query.from(Employee.class);
-		Join<Employee, User> user = employee.join(Employee_.user, JoinType.INNER);
-		Join<Employee, EmployeeRole> employeeRole = employee.join(Employee_.employeeRole, JoinType.INNER);
-
-		query.select(cb.construct(CrmOwnerResponseDto.class, employee.get(Employee_.employeeId),
 				employee.get(Employee_.firstName), employee.get(Employee_.lastName), employee.get(Employee_.authPic)));
 
 		query.where(cb.isTrue(user.get(User_.isActive)),

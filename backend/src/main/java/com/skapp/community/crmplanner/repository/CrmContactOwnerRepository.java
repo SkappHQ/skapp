@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.springframework.data.domain.Page;
@@ -13,8 +12,6 @@ public interface CrmContactOwnerRepository {
 
 	Page<Employee> findContactOwners(CrmContactOwnerFilterDto filterDto, Pageable pageable);
 
-	List<CrmOwnerResponseDto> findAllOwners();
-
-	List<CrmBoardOwnerResponseDto> findAllOwnersV2();
+	List<CrmBoardOwnerResponseDto> findAllOwners();
 
 }

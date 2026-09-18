@@ -26,7 +26,6 @@ import com.skapp.community.crmplanner.payload.request.CrmDealListReorderRequestD
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
 import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardInitDataResponseDto;
@@ -178,15 +177,13 @@ public class CrmDealServiceImpl implements CrmDealService {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		Page<CrmDeal> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
+		Page<CrmDealResponseDto> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
-		List<CrmDealResponseDto> deals = dealsPage.getContent().stream().map(this::toDealResponseDto).toList();
-
 		PageDto pageDto = pageTransformer.transform(dealsPage);
-		pageDto.setItems(deals);
+		pageDto.setItems(dealsPage.getContent());
 
-		log.info("getDeals: execution ended with {} result(s)", deals.size());
+		log.info("getDeals: execution ended with {} result(s)", dealsPage.getNumberOfElements());
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -264,16 +261,9 @@ public class CrmDealServiceImpl implements CrmDealService {
 				crmDealStageDao.findAllByIsDeletedFalseOrderByOrderIndexAsc());
 		List<CrmBoardStageResponseDto> stages = crmMapper.crmDealStagesToCrmBoardStageResponseDtos(visibleStages);
 
-		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit()
-			.stream()
-			.map(this::toBoardContactDto)
-			.toList();
+		List<CrmBoardContactResponseDto> contacts = crmContactDao.findAllContactsForBoardInit();
 
-		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners()
-			.stream()
-			.map(o -> new CrmBoardOwnerResponseDto(o.getEmployeeId(), o.getFirstName(), o.getLastName(),
-					o.getAuthPic()))
-			.toList();
+		List<CrmBoardOwnerResponseDto> owners = crmContactOwnerRepository.findAllOwners();
 
 		List<CrmTaskTypeResponseDto> taskTypes = crmMapper
 			.crmTaskTypesToCrmTaskTypeResponseDtos(crmTaskTypeDao.findAllByOrderByOrderIndexAscIdAsc());
@@ -287,14 +277,6 @@ public class CrmDealServiceImpl implements CrmDealService {
 
 		log.info("getBoardInitData: execution ended");
 		return new ResponseEntityDto(false, responseDto);
-	}
-
-	private CrmBoardContactResponseDto toBoardContactDto(CrmContact contact) {
-		return CrmUtil.toBoardContactDto(crmMapper, contact);
-	}
-
-	private CrmDealResponseDto toDealResponseDto(CrmDeal deal) {
-		return CrmUtil.toDealResponseDto(crmMapper, deal);
 	}
 
 	private CrmDealByStageItemResponseDto toStageItemDto(CrmDeal deal, Map<Long, Long> taskCountMap) {
@@ -434,7 +416,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
-		List<CrmDealResponseDtoV2> deals = crmDealDao.findDealsByIds(requestDto.getIds(), ownerId);
+		List<CrmDealResponseDto> deals = crmDealDao.findDealsByIds(requestDto.getIds(), ownerId);
 
 		log.info("getDealsByIds: execution ended with {} result(s)", deals.size());
 		return new ResponseEntityDto(false, deals);
