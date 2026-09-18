@@ -627,6 +627,7 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
+      "reopenTask": "Reopen task",
       "kebabMenuAriaLabel": "Task actions",
       "notes": "Notes",
       "noNotes": "No notes added",
@@ -652,6 +653,12 @@
         "medium": "Medium",
         "low": "Low"
       }
+    },
+    "reopenToastMessages": {
+      "successTitle": "Task reopened",
+      "successDescription": "Task reopened successfully",
+      "errorTitle": "Failed to reopen task",
+      "errorDescription": "Something went wrong. Please try again."
     },
     "deleteTaskModal": {
       "title": "Delete Task",

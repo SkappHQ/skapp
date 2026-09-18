@@ -35,6 +35,7 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import { getMissingDealIds, mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import {
+  getCompletedTasks,
   getTaskGroups,
   resolveTasks,
   toTaskDealIds,
@@ -153,6 +154,11 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     [visibleTaskIds, tasks]
   );
 
+  const completedTasksInView = useMemo(
+    () => getCompletedTasks(tasksInView),
+    [tasksInView]
+  );
+
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(
       () => getTaskGroups(tasksInView, tab, userId),
@@ -241,7 +247,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const renderCompletedTasksContent = () => (
     <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
       <TaskGroup
-        tasks={tasksInView}
+        tasks={completedTasksInView}
         isCheckTaskVisible={false}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
@@ -275,7 +281,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     }
 
     const isEmpty = isCompletedTab
-      ? visibleTaskIds.length === 0
+      ? completedTasksInView.length === 0
       : isOpenTasksEmpty;
 
     if (isEmpty) {

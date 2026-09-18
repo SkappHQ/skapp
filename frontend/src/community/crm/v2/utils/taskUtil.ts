@@ -215,6 +215,9 @@ export const getTaskGroups = (
   );
 };
 
+export const getCompletedTasks = (tasks: CrmTaskEntity[]): CrmTaskEntity[] =>
+  tasks.filter((task) => task.isCompleted);
+
 export interface CrmTaskLinks {
   companies: CrmCompanyRecord;
   contacts: CrmContactRecord;

@@ -3,7 +3,8 @@ import {
   EditIcon,
   KebabMenu,
   MenuItemProps,
-  SidePanel
+  SidePanel,
+  UndoIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -90,6 +91,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   const contact =
     task?.contactId != null ? contacts[task.contactId] : undefined;
   const deal = task?.dealId != null ? deals[task.dealId] : undefined;
+  const isTaskCompleted = task?.isCompleted === true;
 
   const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
 
@@ -161,6 +163,35 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
   };
 
+  const handleReopenSuccess = (updatedTask: CrmTaskEntity) => {
+    setTasks(updateTaskRecord(tasks, [updatedTask]));
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["reopenToastMessages", "successTitle"]),
+      description: translateText(["reopenToastMessages", "successDescription"])
+    });
+  };
+
+  const handleReopenError = () => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["reopenToastMessages", "errorTitle"]),
+      description: translateText(["reopenToastMessages", "errorDescription"])
+    });
+  };
+
+  const { mutate: reopenTask } = useUpdateTask(
+    handleReopenSuccess,
+    handleReopenError
+  );
+
+  const handleReopen = () => {
+    reopenTask({ id: taskId, task: { isCompleted: false } });
+  };
+
   const menuItems: MenuItemProps[] = useMemo(
     () => [
       {
@@ -172,6 +203,16 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           setIsTaskModalOpen(true);
         }
       },
+      ...(isTaskCompleted
+        ? [
+            {
+              id: "reopen",
+              label: translateText(["sidePanel", "reopenTask"]),
+              icon: { start: <UndoIcon width="16px" height="16px" /> },
+              onClick: handleReopen
+            }
+          ]
+        : []),
       {
         id: "delete",
         label: translateText(["sidePanel", "deleteTask"]),
@@ -192,7 +233,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         }
       }
     ],
-    [translateText]
+    [translateText, isTaskCompleted, handleReopen]
   );
 
   return (
