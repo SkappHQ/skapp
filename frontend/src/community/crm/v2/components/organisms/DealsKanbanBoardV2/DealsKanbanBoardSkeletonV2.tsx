@@ -1,7 +1,7 @@
 import { FC } from "react";
 
-import SkeletonShape from "~community/crm/components/atoms/SkeletonShape/SkeletonShape";
-import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
+import SkeletonShape from "~community/crm/v2/components/atoms/SkeletonShape/SkeletonShape";
+import DealCardSkeleton from "~community/crm/v2/components/molecules/DealCardSkeleton/DealCardSkeleton";
 
 interface DealsKanbanBoardSkeletonV2Props {
   laneCount: number;
