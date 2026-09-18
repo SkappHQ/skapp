@@ -81,6 +81,7 @@ const EmployeeTimesheet = (): JSX.Element => {
         isDailyLogLoading={isDailyLogLoading}
         targetEmployeeId={selfTargetEmployeeId}
         targetEmployeeDetails={selfTargetEmployeeDetails}
+        isSelfTargetEntry={canDirectlyAddOrEditEntry}
       />
       <EmployeeTimesheetRequestTable
         requestData={requestData}

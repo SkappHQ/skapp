@@ -17,6 +17,7 @@ interface Props {
   isDailyLogLoading?: boolean;
   targetEmployeeId?: number;
   targetEmployeeDetails?: L1EmployeeType;
+  isSelfTargetEntry?: boolean;
 }
 
 const TimesheetDailyLog = ({
@@ -25,7 +26,8 @@ const TimesheetDailyLog = ({
   downloadEmployeeDailyLogCsv,
   isDailyLogLoading = false,
   targetEmployeeId,
-  targetEmployeeDetails
+  targetEmployeeDetails,
+  isSelfTargetEntry
 }: Props): JSX.Element => {
   const translateText = useTranslator("attendanceModule", "timesheet");
 
@@ -55,6 +57,7 @@ const TimesheetDailyLog = ({
         isDailyLogLoading={isDailyLogLoading}
         targetEmployeeId={targetEmployeeId}
         targetEmployeeDetails={targetEmployeeDetails}
+        isSelfTargetEntry={isSelfTargetEntry}
       />
     </Box>
   );

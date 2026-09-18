@@ -56,6 +56,7 @@ interface Props {
   targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
+  isSelfTargetEntry?: boolean;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
@@ -64,7 +65,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   targetEmployeeId,
   targetEmployeeDetails,
   isRowInteractive,
-  isManualEntryRestricted
+  isManualEntryRestricted,
+  isSelfTargetEntry = false
 }) => {
   const { isFreeTier } = useSessionData();
 
@@ -210,7 +212,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
         employeeName: concatStrings([
           employeeGeneralDetails?.firstName ?? "",
           employeeGeneralDetails?.lastName ?? ""
-        ]).trim()
+        ]).trim(),
+        hideEmployeeLabel: isSelfTargetEntry
       });
       handleEdit();
       return;

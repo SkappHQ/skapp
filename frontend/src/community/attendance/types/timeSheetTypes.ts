@@ -232,6 +232,7 @@ export interface DirectEntryEmployeeType {
   employeeId: number;
   employeeName: string;
   date?: string;
+  hideEmployeeLabel?: boolean;
 }
 
 export interface DirectManualTimeEntryVariablesType {

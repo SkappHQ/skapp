@@ -31,6 +31,7 @@ interface Props {
   isDailyLogLoading?: boolean;
   targetEmployeeId?: number;
   targetEmployeeDetails?: L1EmployeeType;
+  isSelfTargetEntry?: boolean;
 }
 
 const TimesheetDailyRecordTable = ({
@@ -38,7 +39,8 @@ const TimesheetDailyRecordTable = ({
   downloadEmployeeDailyLogCsv,
   isDailyLogLoading,
   targetEmployeeId,
-  targetEmployeeDetails
+  targetEmployeeDetails,
+  isSelfTargetEntry
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
   const {
@@ -149,6 +151,7 @@ const TimesheetDailyRecordTable = ({
                   targetEmployeeDetails={targetEmployeeDetails}
                   isRowInteractive={isRowInteractive}
                   isManualEntryRestricted={isManualEntryRestricted}
+                  isSelfTargetEntry={isSelfTargetEntry}
                 />
               ))
             ) : (
@@ -162,6 +165,7 @@ const TimesheetDailyRecordTable = ({
                     targetEmployeeDetails={targetEmployeeDetails}
                     isRowInteractive={isRowInteractive}
                     isManualEntryRestricted={isManualEntryRestricted}
+                    isSelfTargetEntry={isSelfTargetEntry}
                   />
                 ))}
               </Box>
