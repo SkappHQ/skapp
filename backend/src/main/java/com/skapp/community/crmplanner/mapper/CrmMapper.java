@@ -37,13 +37,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "companyName", source = "company.name")
+	@Mapping(target = "stageId", source = "stage.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "companyId", source = "company.id")
 	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "contactName", source = "contact.name")
-	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
-
-	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
 
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "companyId", source = "company.id")
