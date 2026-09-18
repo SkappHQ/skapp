@@ -17,6 +17,7 @@ export const employeeTimesheetModalSlice = (
   currentAddTimeChanges: {} as CurrentAddTimeChangesType,
   employeeTimesheetModalType: EmployeeTimesheetModalTypes.ADD_TIME_ENTRY,
   directManualTimeEntryEligibleEmployee: null,
+  isSelfDirectTimeEntry: false,
 
   setSelectedDailyRecord: (record: DailyLogType) =>
     set((state: EmployeeTimesheetModalSliceType) => ({
@@ -49,5 +50,10 @@ export const employeeTimesheetModalSlice = (
     set((state: EmployeeTimesheetModalSliceType) => ({
       ...state,
       directManualTimeEntryEligibleEmployee: value
+    })),
+  setIsSelfDirectTimeEntry: (value: boolean) =>
+    set((state: EmployeeTimesheetModalSliceType) => ({
+      ...state,
+      isSelfDirectTimeEntry: value
     }))
 });

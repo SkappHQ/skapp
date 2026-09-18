@@ -43,7 +43,14 @@ const EmployeeTimesheet = (): JSX.Element => {
     : undefined;
 
   const selfTargetEmployeeDetails = isSelfDirectEntryEligible
-    ? { personal: { general: {} } }
+    ? {
+        personal: {
+          general: {
+            firstName: user?.employee?.firstName,
+            lastName: user?.employee?.lastName
+          }
+        }
+      }
     : undefined;
 
   return (
