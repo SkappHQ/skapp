@@ -1,6 +1,6 @@
 import { EmptyDataView, SearchIcon } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
@@ -8,6 +8,7 @@ import ROUTES from "~community/common/constants/routes";
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetDealById } from "~community/crm/v2/api/DealApi";
+import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
 import DealDetailActions from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailActions";
 import DealDetailContent from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailContent";
 import DealDetailIdBadge from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailIdBadge";
@@ -25,12 +26,15 @@ const DealDetailPage: FC = () => {
   const dealId = Number(router.query.id);
   const isValidDealId = Number.isInteger(dealId) && dealId > 0;
 
-  const { setSelectedDealId, isCrmDataInitialized } = useCrmStoreV2(
+  const { setSelectedDealId, isCrmDataInitialized, dealName } = useCrmStoreV2(
     useShallow((state) => ({
       setSelectedDealId: state.setSelectedDealId,
-      isCrmDataInitialized: state.isCrmDataInitialized
+      isCrmDataInitialized: state.isCrmDataInitialized,
+      dealName: state.deals[dealId]?.name
     }))
   );
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isRouterReady || !isValidDealId) return;
@@ -98,12 +102,21 @@ const DealDetailPage: FC = () => {
               <div className="flex items-center gap-2">
                 <DealDetailActions
                   dealId={dealId}
-                  onDeleted={() => router.push(ROUTES.CRM.DEALS)}
+                  onDeleteClick={() => setIsDeleteModalOpen(true)}
                 />
               </div>
             </div>
             <DealDetailContent dealId={dealId} />
           </div>
+        )}
+
+        {dealName && (
+          <DeleteDealModalV2
+            isOpen={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            dealName={dealName}
+            onDeleted={() => router.push(ROUTES.CRM.DEALS)}
+          />
         )}
       </>
     </ContentLayout>
