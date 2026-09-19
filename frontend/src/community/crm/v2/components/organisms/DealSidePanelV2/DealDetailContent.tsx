@@ -1,20 +1,19 @@
-import type { InfiniteData } from "@tanstack/react-query";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
+import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
+import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -28,19 +27,29 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const { deal, deals, board, setDeals, setBoardColumn } = useCrmStoreV2(
+  const {
+    deal,
+    deals,
+    board,
+    isCrmDataInitialized,
+    setDeals,
+    setBoardColumn,
+    setTasks
+  } = useCrmStoreV2(
     useShallow((store) => ({
       deal: store.deals[dealId],
       deals: store.deals,
       board: store.board,
+      isCrmDataInitialized: store.isCrmDataInitialized,
       setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn
+      setBoardColumn: store.setBoardColumn,
+      setTasks: store.setTasks
     }))
   );
 
   const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
     dealId,
-    true
+    isCrmDataInitialized
   );
 
   useEffect(() => {
@@ -70,17 +79,30 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
+  const taskFilter = useMemo(
+    () => ({ dealId, size: TASK_PAGE_SIZE }),
+    [dealId]
+  );
+
   const {
-    data: relatedTasksData,
+    data: dealTasksData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useGetRelatedTasks({ dealId, size: TASK_PAGE_SIZE });
+  } = useGetTasksInfinite(taskFilter, isCrmDataInitialized);
 
-  const relatedTasks =
-    (
-      relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined
-    )?.pages.flatMap((page) => page.items) ?? [];
+  const dealTasks = useMemo(
+    () => dealTasksData?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    [dealTasksData]
+  );
+
+  const dealTaskIds = useMemo(() => toTaskIds(dealTasks), [dealTasks]);
+
+  useEffect(() => {
+    if (!dealTasks.length) return;
+
+    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, dealTasks));
+  }, [dealTasks, setTasks]);
 
   if (!deal) {
     return <DealSidePanelSkeleton />;
@@ -107,7 +129,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <h2 className="h2">{translateText(["tasks", "title"])}</h2>
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
-              tasks={relatedTasks}
+              taskIds={dealTaskIds}
               emptyDescription={translateText(["tasks", "emptyDescription"])}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}

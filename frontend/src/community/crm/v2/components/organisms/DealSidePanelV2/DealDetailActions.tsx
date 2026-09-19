@@ -12,21 +12,19 @@ import ROUTES from "~community/common/constants/routes";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { copyToClipboard } from "~community/common/utils/commonUtil";
-import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDealModalV2/DeleteDealModalV2";
 import { LINK_COPIED_POPOVER_DURATION } from "~community/crm/v2/constants/dealConstants";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
 interface DealDetailActionsProps {
   dealId: number;
+  onDeleteClick: () => void;
 }
 
-const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
+const DealDetailActions: FC<DealDetailActionsProps> = ({
+  dealId,
+  onDeleteClick
+}) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { isCrmSalesManager } = useSessionData();
-
-  const dealName = useCrmStoreV2((store) => store.deals[dealId]?.name);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
 
@@ -41,7 +39,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
     return () => clearTimeout(timer);
   }, [isLinkCopied]);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = async (): Promise<void> => {
     try {
       await copyToClipboard(
         `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
@@ -66,7 +64,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
         )
       },
       activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
-      onClick: () => setIsDeleteModalOpen(true)
+      onClick: onDeleteClick
     }
   ];
 
@@ -107,13 +105,6 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
             anchorElement:
               "hover:bg-secondary-accent bg-tertiary-background w-9 h-9"
           }}
-        />
-      )}
-      {dealName && (
-        <DeleteDealModalV2
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          dealName={dealName}
         />
       )}
     </>
