@@ -94,6 +94,8 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
           isPending={isPending}
           confirmLabel={translateText(["buttons", "confirm"])}
           cancelLabel={translateText(["buttons", "cancel"])}
+          confirmAriaLabel={translateText(["ariaLabels", "confirm"])}
+          cancelAriaLabel={translateText(["ariaLabels", "cancel"])}
           onConfirm={handleDeleteDeal}
           onClose={onClose}
         />

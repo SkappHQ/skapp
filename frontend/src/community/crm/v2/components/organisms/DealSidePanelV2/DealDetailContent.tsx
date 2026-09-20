@@ -65,13 +65,19 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   );
 
   useEffect(() => {
-    if (!dealDetail || !fetchedTasks) return;
+    if (!dealDetail) return;
+
+    setDeals(mergeDeals(deals, [dealDetail]));
+  }, [dealDetail]);
+
+  useEffect(() => {
+    if (!fetchedTasks) return;
 
     setTasks(updateTaskRecord(tasks, dealTasks));
     setDeals(
-      mergeDeals(deals, [{ ...dealDetail, taskIds: toTaskIds(dealTasks) }])
+      mergeDeals(deals, [{ id: dealId, taskIds: toTaskIds(dealTasks) }])
     );
-  }, [dealDetail, fetchedTasks]);
+  }, [fetchedTasks]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
