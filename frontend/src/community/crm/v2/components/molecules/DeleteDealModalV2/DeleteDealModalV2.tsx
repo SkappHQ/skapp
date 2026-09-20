@@ -17,7 +17,7 @@ interface Props {
 }
 
 const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
-  const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const { setToastMessage } = useToast();
 

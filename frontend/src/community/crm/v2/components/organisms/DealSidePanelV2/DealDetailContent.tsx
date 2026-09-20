@@ -120,7 +120,12 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
               tasks={relatedTasks}
-              emptyDescription={translateText(["tasks", "emptyDescription"])}
+              emptyDescription={translateText([
+                "deals",
+                "sidePanel",
+                "tasks",
+                "emptyDescription"
+              ])}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
               onFetchNextPage={fetchNextPage}

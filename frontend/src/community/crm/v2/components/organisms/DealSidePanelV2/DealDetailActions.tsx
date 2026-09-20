@@ -21,7 +21,8 @@ interface DealDetailActionsProps {
 }
 
 const DealDetailActions: FC<DealDetailActionsProps> = ({ dealId }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { isCrmSalesManager } = useSessionData();
 
   const dealName = useCrmStoreV2((store) => store.deals[dealId]?.name);
