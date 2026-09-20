@@ -3,8 +3,8 @@ package com.skapp.community.crmplanner.controller.v2;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
-import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.service.v2.CrmTaskServiceV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +38,7 @@ public class CrmTaskControllerV2 {
 					+ "every matching task. Related records are carried as id references only.")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDtoV2 filterDto) {
+	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
 		ResponseEntityDto response = taskService.getTasks(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -50,8 +50,7 @@ public class CrmTaskControllerV2 {
 					+ "returns every related task).")
 	@GetMapping("/{id}/related")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getRelatedTasks(@PathVariable Long id,
-			CrmTaskRelatedFilterDtoV2 filterDto) {
+	public ResponseEntity<ResponseEntityDto> getRelatedTasks(@PathVariable Long id, CrmTaskRelatedFilterDto filterDto) {
 		ResponseEntityDto response = taskService.getRelatedTasks(id, filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

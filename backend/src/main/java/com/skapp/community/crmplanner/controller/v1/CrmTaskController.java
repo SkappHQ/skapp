@@ -1,7 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
@@ -37,15 +36,6 @@ public class CrmTaskController {
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
 		ResponseEntityDto response = taskService.getTasks(filterDto);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get completed tasks",
-			description = "Returns a paginated list of completed non-deleted CRM tasks with search and filter by owner and deal.")
-	@GetMapping("/completed")
-	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getCompletedTasks(CrmTaskCompletedFilterDto filterDto) {
-		ResponseEntityDto response = taskService.getCompletedTasks(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -86,11 +76,14 @@ public class CrmTaskController {
 	}
 
 	@Operation(summary = "Get related tasks",
-			description = "Returns paginated tasks filtered by contactId and/or dealId.")
-	@GetMapping("/related")
+			description = "Returns a paginated list of tasks related to the given task - i.e. tasks that share every "
+					+ "link the source task has, both its contact and its deal when it carries both. A task with "
+					+ "neither has no related tasks. Supports pagination only (size < 0 disables pagination and "
+					+ "returns every related task).")
+	@GetMapping("/{id}/related")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getRelatedTasks(CrmTaskRelatedFilterDto filterDto) {
-		ResponseEntityDto response = taskService.getRelatedTasks(filterDto);
+	public ResponseEntity<ResponseEntityDto> getRelatedTasks(@PathVariable Long id, CrmTaskRelatedFilterDto filterDto) {
+		ResponseEntityDto response = taskService.getRelatedTasks(id, filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

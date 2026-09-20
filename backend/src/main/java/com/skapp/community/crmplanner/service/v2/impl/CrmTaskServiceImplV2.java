@@ -7,13 +7,13 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.transformer.PageTransformer;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
-import com.skapp.community.crmplanner.mapper.CrmMapperV2;
+import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
-import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
+import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmTaskService;
 import com.skapp.community.crmplanner.service.v2.CrmTaskServiceV2;
@@ -38,7 +38,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	private final CrmTaskDao crmTaskDao;
 
-	private final CrmMapperV2 crmMapperV2;
+	private final CrmMapper crmMapper;
 
 	private final UserService userService;
 
@@ -46,14 +46,14 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getTasks(CrmTaskFilterDtoV2 filterDto) {
+	public ResponseEntityDto getTasks(CrmTaskFilterDto filterDto) {
 		log.info("getTasks: execution started");
 
 		User currentUser = userService.getCurrentUser();
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 
 		Pageable pageable = toPageable(filterDto.getPage(), filterDto.getSize());
-		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findTasksV2(ownerId, filterDto, pageable);
+		Page<CrmTaskResponseDto> taskPage = crmTaskDao.findTasks(ownerId, filterDto, pageable);
 
 		log.info("getTasks: execution ended");
 		return new ResponseEntityDto(false, toPageDto(taskPage));
@@ -61,7 +61,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getRelatedTasks(Long id, CrmTaskRelatedFilterDtoV2 filterDto) {
+	public ResponseEntityDto getRelatedTasks(Long id, CrmTaskRelatedFilterDto filterDto) {
 		log.info("getRelatedTasks: execution started");
 
 		CrmTaskLinkRefs linkRefs = crmTaskDao.findTaskLinkRefsById(id)
@@ -74,7 +74,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 
 		Long ownerId = CrmUtil.isCrmSalesRepresentative(currentUser) ? currentUser.getEmployee().getEmployeeId() : null;
 		CrmTaskRelatedParams params = new CrmTaskRelatedParams(linkRefs.getContactId(), linkRefs.getDealId(), ownerId);
-		Page<CrmTaskResponseDtoV2> taskPage = crmTaskDao.findRelatedTasksV2(id, params,
+		Page<CrmTaskResponseDto> taskPage = crmTaskDao.findRelatedTasks(id, params,
 				toPageable(filterDto.getPage(), filterDto.getSize()));
 
 		log.info("getRelatedTasks: execution ended");
@@ -95,7 +95,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		}
 
 		log.info("getTaskById: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, task));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDto(crmMapper, task));
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		CrmTask savedTask = crmTaskService.persistNewTask(requestDto);
 
 		log.info("createTask: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, savedTask));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDto(crmMapper, savedTask));
 	}
 
 	@Override
@@ -117,14 +117,14 @@ public class CrmTaskServiceImplV2 implements CrmTaskServiceV2 {
 		CrmTask updatedTask = crmTaskService.applyTaskEdit(id, requestDto);
 
 		log.info("editTask: execution ended");
-		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDtoV2(crmMapperV2, updatedTask));
+		return new ResponseEntityDto(false, CrmUtil.toTaskResponseDto(crmMapper, updatedTask));
 	}
 
 	private Pageable toPageable(int page, int size) {
 		return size <= 0 ? Pageable.unpaged() : PageRequest.of(Math.max(page, 0), size);
 	}
 
-	private PageDto toPageDto(Page<CrmTaskResponseDtoV2> taskPage) {
+	private PageDto toPageDto(Page<CrmTaskResponseDto> taskPage) {
 		PageDto pageDto = pageTransformer.transform(taskPage);
 		pageDto.setItems(taskPage.getContent());
 		return pageDto;
