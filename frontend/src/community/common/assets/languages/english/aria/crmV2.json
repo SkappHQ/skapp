@@ -30,8 +30,7 @@
       "closePanel": "Close add deal panel",
       "addDeal": "Add deal",
       "dealName": "Deal name",
-      "description": "Description",
-      "owner": "Deal owner"
+      "description": "Description"
     },
     "linkedSection": {
       "addDealBtn": "Add Deal",

@@ -3,11 +3,6 @@
     "crm": "CRM"
   },
   "common": {
-    "ownerPopupSearch": {
-      "placeholder": "None",
-      "searchPlaceholder": "Search Owner",
-      "noResults": "No results"
-    },
     "initData": {
       "errorTitle": "Couldn't load CRM data",
       "errorDescription": "Something went wrong. Please try again"
@@ -22,9 +17,7 @@
     "page": {
       "pageHead": "Deals | Skapp",
       "title": "Deals",
-      "addDealBtn": "Add Deal",
-      "detailsPageHead": "Deal Details | Skapp",
-      "detailsTitle": "Deal Details"
+      "addDealBtn": "Add Deal"
     },
     "defaultStageNames": {
       "LEAD": "Lead",
@@ -38,7 +31,6 @@
     "common": {
       "labels": {
         "dealName": "Deal name",
-        "stage": "Stage",
         "value": "Value",
         "priority": "Priority",
         "description": "Description",
@@ -127,21 +119,15 @@
       "toastMessages": {
         "editErrorTitle": "Oops! Something went wrong",
         "editErrorDescription": "Failed to update deal. Please try again"
-      },
-      "errors": {
-        "dealNotFoundTitle": "Deal not found",
-        "dealNotFoundDescription": "This deal is no longer available."
       }
     },
     "addPanel": {
       "title": "Add deal",
       "placeholders": {
-        "description": "Enter description",
-        "amount": "Enter amount"
+        "description": "Enter description"
       },
       "validations": {
         "stageRequired": "Stage is required",
-        "stageLoadError": "Failed to load stages. Please try again.",
         "ownerRequired": "Owner is required",
         "priorityRequired": "Priority is required"
       }
