@@ -17,7 +17,10 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/regex/regexPatterns";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { filterByValue } from "~community/common/utils/commonUtil";
-import { timeZonesList } from "~community/common/utils/data/timeZones";
+import {
+  generateTimeZoneDictionary,
+  generateTimezoneList
+} from "~community/common/utils/dateTimeUtils";
 import { usePeopleStore } from "~community/people/store/store";
 import { L3EmploymentDetailsType } from "~community/people/types/PeopleTypes";
 import { TeamNamesType } from "~community/people/types/TeamTypes";
@@ -101,12 +104,9 @@ const useEmployeeDetailsFormHandler = ({
 
   const { data: businessUnits } = useGetBusinessUnits();
 
-  const workTimeZoneDictionary: Record<string, string> = timeZonesList.reduce<
-    Record<string, string>
-  >((acc: Record<string, string>, curr: { value: string; label: string }) => {
-    acc[curr.value] = curr.label;
-    return acc;
-  }, {});
+  const timeZoneList = generateTimezoneList();
+
+  const workTimeZoneDictionary = generateTimeZoneDictionary(timeZoneList);
 
   const projectTeamList: DropdownListType[] = projectTeamNames?.map(
     (projectTeamName: TeamNamesType) => {
@@ -538,6 +538,7 @@ const useEmployeeDetailsFormHandler = ({
     selectedProbationStartDate,
     selectedProbationEndDate,
     workTimeZoneDictionary,
+    timeZoneList,
     workLocations,
     businessUnits,
     projectTeamList,
