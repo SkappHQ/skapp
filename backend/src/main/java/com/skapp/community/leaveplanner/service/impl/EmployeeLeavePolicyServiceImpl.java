@@ -89,8 +89,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 		EmployeeLeavePolicy currentActiveAssignment = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(),
-					policy.getLeaveType().getId(), EmployeeLeavePolicyStatus.ACTIVE)
+			.findByEmployeeIdAndLeaveTypeIdAndStatus(employee.getEmployeeId(), policy.getLeaveType().getId(),
+					EmployeeLeavePolicyStatus.ACTIVE)
 			.orElse(null);
 		EmployeeLeavePolicy employeeLeavePolicy = assignPolicyToEmployee(employee, policy, effectiveFrom,
 				assignLeavePolicyRequestDto.getEffectiveDateType(), currentActiveAssignment);
@@ -185,7 +185,7 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 		EmployeeLeavePolicyUtil.validateRequiredFields(unassignLeavePolicyRequestDto);
 
 		EmployeeLeavePolicy activeEmployeeLeavePolicy = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_IdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
+			.findByEmployeeIdAndPolicyIdAndStatus(unassignLeavePolicyRequestDto.getEmployeeId(),
 					unassignLeavePolicyRequestDto.getPolicyId(), EmployeeLeavePolicyStatus.ACTIVE)
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_EMPLOYEE_LEAVE_POLICY_NOT_FOUND));
 
