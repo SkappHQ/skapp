@@ -90,7 +90,9 @@ const AddTaskModalContent: FC = () => {
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: "",
+      typeId: undefined,
       priority: CrmPriorityEnum.MEDIUM,
+      dueAt: undefined,
       ownerId: defaultOwner?.employeeId,
       contactId: selectedContact?.id,
       notes: ""

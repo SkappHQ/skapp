@@ -1,20 +1,20 @@
-import type { InfiniteData } from "@tanstack/react-query";
 import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useGetRelatedTasks } from "~community/crm/api/TaskApi";
-import SidePanelTasksSection from "~community/crm/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
-import { TASK_PAGE_SIZE } from "~community/crm/constants/taskConstants";
-import { RelatedTasksPage } from "~community/crm/types/CommonTypes";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
+import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
+import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
+import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmTaskFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
@@ -28,26 +28,52 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const { deal, deals, board, setDeals, setBoardColumn } = useCrmStoreV2(
-    useShallow((store) => ({
-      deal: store.deals[dealId],
-      deals: store.deals,
-      board: store.board,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn
-    }))
-  );
+  const { deal, deals, board, tasks, setDeals, setTasks, setBoardColumn } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        deal: store.deals[dealId],
+        deals: store.deals,
+        board: store.board,
+        tasks: store.tasks,
+        setDeals: store.setDeals,
+        setTasks: store.setTasks,
+        setBoardColumn: store.setBoardColumn
+      }))
+    );
 
   const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
     dealId,
     true
   );
 
+  const taskFilters: CrmTaskFilterRequest = {
+    dealId,
+    size: TASK_PAGE_SIZE
+  };
+
+  const {
+    data: fetchedTasks,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useGetTasksInfinite(taskFilters);
+
   useEffect(() => {
+    const dealFields: CrmDealEntity = { id: dealId };
+
     if (dealDetail && isFetchedAfterMount) {
-      setDeals(mergeDeals(deals, [dealDetail]));
+      Object.assign(dealFields, dealDetail);
     }
-  }, [dealDetail, isFetchedAfterMount]);
+
+    if (fetchedTasks) {
+      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
+
+      setTasks(updateTaskRecord(tasks, taskItems));
+      dealFields.taskIds = toTaskIds(taskItems);
+    }
+
+    setDeals(mergeDeals(deals, [dealFields]));
+  }, [dealId, dealDetail, isFetchedAfterMount, fetchedTasks]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
@@ -69,18 +95,6 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const updateDeal = (fields: Partial<CrmDealEntity>): void => {
     editDeal({ ...fields, id: dealId });
   };
-
-  const {
-    data: relatedTasksData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useGetRelatedTasks({ dealId, size: TASK_PAGE_SIZE });
-
-  const relatedTasks =
-    (
-      relatedTasksData as unknown as InfiniteData<RelatedTasksPage> | undefined
-    )?.pages.flatMap((page) => page.items) ?? [];
 
   if (!deal) {
     return <DealSidePanelSkeleton />;
@@ -107,7 +121,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <h2 className="h2">{translateText(["tasks", "title"])}</h2>
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
-              tasks={relatedTasks}
+              taskIds={deal.taskIds}
               emptyDescription={translateText(["tasks", "emptyDescription"])}
               hasNextPage={hasNextPage}
               isFetchingNextPage={isFetchingNextPage}
