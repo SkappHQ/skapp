@@ -108,7 +108,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
 		CrmDeal savedDeal = persistNewDeal(requestDto);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
 	@Override
@@ -399,7 +399,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 		}
 
 		log.info("getDealById: execution ended", id);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(deal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, deal));
 	}
 
 	@Override
@@ -467,7 +467,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
 		CrmDeal savedDeal = applyDealEdit(id, requestDto);
-		return new ResponseEntityDto(false, crmMapper.crmDealToCrmDealResponseDto(savedDeal));
+		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
 	@Override
