@@ -46,10 +46,11 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     size: TASK_PAGE_SIZE
   };
 
-  const { data: dealDetail, isLoading: isDealLoading } = useGetDealById(
-    dealId,
-    true
-  );
+  const {
+    data: dealDetail,
+    isLoading: isDealLoading,
+    isFetchedAfterMount
+  } = useGetDealById(dealId, true);
 
   const {
     data: fetchedTasks,
@@ -60,24 +61,24 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   } = useGetTasksInfinite(taskFilters);
 
   const dealTasks = useMemo(
-    () => fetchedTasks?.pages.flatMap((page) => page.items) ?? [],
+    () => fetchedTasks?.pages.flatMap((page) => page?.items ?? []) ?? [],
     [fetchedTasks]
   );
 
   useEffect(() => {
-    if (!dealDetail) return;
+    const dealFields: CrmDealEntity = { id: dealId };
 
-    setDeals(mergeDeals(deals, [dealDetail]));
-  }, [dealDetail]);
+    if (dealDetail && isFetchedAfterMount) {
+      Object.assign(dealFields, dealDetail);
+    }
 
-  useEffect(() => {
-    if (!fetchedTasks) return;
+    if (fetchedTasks) {
+      setTasks(updateTaskRecord(tasks, dealTasks));
+      dealFields.taskIds = toTaskIds(dealTasks);
+    }
 
-    setTasks(updateTaskRecord(tasks, dealTasks));
-    setDeals(
-      mergeDeals(deals, [{ id: dealId, taskIds: toTaskIds(dealTasks) }])
-    );
-  }, [fetchedTasks]);
+    setDeals(mergeDeals(deals, [dealFields]));
+  }, [dealId, dealDetail, isFetchedAfterMount, fetchedTasks]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
@@ -100,7 +101,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
-  if (isDealLoading || isTasksLoading) {
+  if (isDealLoading || isTasksLoading || !deal) {
     return <DealSidePanelSkeleton />;
   }
 
