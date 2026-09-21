@@ -64,7 +64,6 @@ import com.skapp.community.peopleplanner.model.EmployeeManager;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.repository.EmployeeManagerDao;
 import com.skapp.community.peopleplanner.repository.HolidayDao;
-import com.skapp.community.peopleplanner.service.PeopleService;
 import com.skapp.community.peopleplanner.util.PeopleUtil;
 import com.skapp.community.peopleplanner.type.HolidayDuration;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -100,8 +99,6 @@ import java.util.function.Supplier;
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 	private final UserService userService;
-
-	private final PeopleService peopleService;
 
 	private final OrganizationService organizationService;
 
@@ -140,16 +137,19 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		requireLeavePoliciesEnabled();
 
 		User currentUser = userService.getCurrentUser();
-		boolean hasSupervisor = !peopleService.getCurrentEmployeeManagers().isEmpty();
+		Long employeeId = currentUser.getEmployee().getEmployeeId();
+		boolean hasSupervisor = employeeManagerDao.existsByEmployee(currentUser.getEmployee());
 		LocalDate today = DateTimeUtils.getCurrentUtcDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
-		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByEmployeeIdAndStatusOrderByPolicyNameAsc(
-				currentUser.getEmployee().getEmployeeId(), EmployeeLeavePolicyStatus.ACTIVE);
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao
+			.findByEmployeeIdAndStatusOrderByPolicyNameAsc(employeeId, EmployeeLeavePolicyStatus.ACTIVE);
+		Map<Long, PolicyLeaveBalanceDto> balancesByAssignment = calculateBalancesForYear(employeeId, assignments, year);
 
 		List<EmployeePolicyBalanceResponseDto> balances = assignments.stream()
-			.map(assignment -> toBalanceCard(assignment, resolvedYear, hasSupervisor, today, cycleAnchor))
+			.map(assignment -> toBalanceCard(assignment, balancesByAssignment.get(assignment.getId()), resolvedYear,
+					hasSupervisor, today))
 			.toList();
 
 		log.info("getCurrentUserPolicyBalances: execution ended");
@@ -520,10 +520,9 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 	}
 
-	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment, int year,
-			boolean hasSupervisor, LocalDate today, MonthDay cycleAnchor) {
+	private EmployeePolicyBalanceResponseDto toBalanceCard(EmployeeLeavePolicy assignment,
+			PolicyLeaveBalanceDto balance, int year, boolean hasSupervisor, LocalDate today) {
 		LeavePolicy policy = assignment.getPolicy();
-		PolicyLeaveBalanceDto balance = calculateBalanceForYear(assignment, year, today, cycleAnchor);
 
 		EmployeePolicyBalanceResponseDto card = new EmployeePolicyBalanceResponseDto();
 		card.setAssignmentId(assignment.getId());
@@ -738,13 +737,6 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			.orElseThrow(() -> new ModuleException(LeaveMessageConstant.LEAVE_ERROR_POLICY_LEAVE_POLICY_NOT_ASSIGNED));
 	}
 
-	private PolicyLeaveBalanceDto calculateBalanceForYear(EmployeeLeavePolicy assignment, int year, LocalDate today,
-			MonthDay cycleAnchor) {
-		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(year, cycleAnchor);
-		return calculateBalance(assignment, cycle, cycleAnchor, clampToCycle(today, cycle),
-				resolveAccrualAsOf(today, cycle));
-	}
-
 	private PolicyLeaveBalanceDto calculateBalanceForDate(EmployeeLeavePolicy assignment, LocalDate date) {
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		return calculateBalance(assignment, PolicyLeaveAccrualUtil.resolveCycleContaining(date, cycleAnchor),
@@ -936,9 +928,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
 		leaveRequest.setIsAutoApproved(Boolean.TRUE);
 		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
-		if (!employeeManagers.isEmpty()) {
-			leaveRequest.setReviewer(employeeManagers.getFirst().getManager());
-		}
+		leaveRequest.setReviewer(employeeManagers.getFirst().getManager());
 	}
 
 	private void notifyParticipants(User currentUser, PolicyLeaveRequest leaveRequest,

@@ -89,8 +89,8 @@ public class EmployeeLeavePolicyServiceImpl implements EmployeeLeavePolicyServic
 
 		LocalDate effectiveFrom = EmployeeLeavePolicyUtil.resolveEffectiveFrom(assignLeavePolicyRequestDto, employee);
 		EmployeeLeavePolicy currentActiveAssignment = employeeLeavePolicyDao
-			.findByEmployee_EmployeeIdAndPolicy_LeaveType_IdAndStatus(employee.getEmployeeId(),
-					policy.getLeaveType().getId(), EmployeeLeavePolicyStatus.ACTIVE)
+			.findByEmployeeIdAndLeaveTypeIdAndStatus(employee.getEmployeeId(), policy.getLeaveType().getId(),
+					EmployeeLeavePolicyStatus.ACTIVE)
 			.orElse(null);
 		EmployeeLeavePolicy employeeLeavePolicy = assignPolicyToEmployee(employee, policy, effectiveFrom,
 				assignLeavePolicyRequestDto.getEffectiveDateType(), currentActiveAssignment);

@@ -15,6 +15,9 @@ public interface EmployeeLeavePolicyRepository {
 	Optional<EmployeeLeavePolicy> findByEmployeeIdAndPolicyIdAndStatus(Long employeeId, Long policyId,
 			EmployeeLeavePolicyStatus status);
 
+	Optional<EmployeeLeavePolicy> findByEmployeeIdAndLeaveTypeIdAndStatus(Long employeeId, Long leaveTypeId,
+			EmployeeLeavePolicyStatus status);
+
 	List<EmployeeLeavePolicy> findByEmployeeIdAndStatusOrderByPolicyNameAsc(Long employeeId,
 			EmployeeLeavePolicyStatus status);
 
