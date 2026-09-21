@@ -122,16 +122,16 @@ const AddTaskModalContent: FC = () => {
       setTasks(updateTaskRecord(tasks, [createdTask]));
       setTaskIds([createdTask.id, ...taskIds]);
 
-      const linked = linkTaskToRelatedEntities(
+      const links = linkTaskToRelatedEntities(
         createdTask,
         companies,
         contacts,
         deals
       );
 
-      setCompanies({ ...companies, ...linked.companies });
-      setContacts({ ...contacts, ...linked.contacts });
-      setDeals({ ...deals, ...linked.deals });
+      setCompanies(links.companies);
+      setContacts(links.contacts);
+      setDeals(links.deals);
     }
 
     handleCloseModal();

@@ -120,6 +120,12 @@ const SkipToContentPopup = ({
     };
   }, [listItems]);
 
+  const handleOnButtonFocus = (event: FocusEvent<HTMLButtonElement>) => {
+    if (event.target.matches(":focus-visible")) {
+      handleOpenPopper();
+    }
+  };
+
   const handleOnButtonBlur = (event: FocusEvent<HTMLButtonElement>) => {
     if (
       !event.relatedTarget ||
@@ -164,7 +170,7 @@ const SkipToContentPopup = ({
         aria-haspopup="dialog"
         aria-expanded={isPopperOpen}
         aria-controls={isPopperOpen ? "skip-to-content-popup" : undefined}
-        onFocus={() => handleOpenPopper()}
+        onFocus={handleOnButtonFocus}
         onBlur={(event: FocusEvent<HTMLButtonElement>) =>
           handleOnButtonBlur(event)
         }

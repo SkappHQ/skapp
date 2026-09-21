@@ -5,26 +5,33 @@ import EmployeeTimesheet from "~community/attendance/components/organisms/Employ
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const MyTimeSheet: NextPage = () => {
   const translateText = useTranslator("attendanceModule");
+  const { user } = useAuth();
   const {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectManualTimeEntryEligibleEmployee
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore(
     useShallow((state) => ({
       setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
       setDirectManualTimeEntryEligibleEmployee:
-        state.setDirectManualTimeEntryEligibleEmployee
+        state.setDirectManualTimeEntryEligibleEmployee,
+      setIsSelfDirectTimeEntry: state.setIsSelfDirectTimeEntry
     }))
   );
-  const { isManualEntryRestricted, isLoading: isRestrictionLoading } =
-    useManualEntryRestriction();
+  const {
+    isManualEntryRestricted,
+    canDirectlyAddOrEditEntry,
+    isLoading: isRestrictionLoading
+  } = useManualEntryRestriction();
 
   return (
     <ContentLayout
@@ -46,7 +53,11 @@ const MyTimeSheet: NextPage = () => {
       primaryButtonType={ButtonStyle.PRIMARY}
       isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
-        setDirectManualTimeEntryEligibleEmployee(null);
+        const isEligible = canDirectlyAddOrEditEntry && !!user?.userId;
+        setDirectManualTimeEntryEligibleEmployee(
+          isEligible ? { employeeId: user.userId, employeeName: "" } : null
+        );
+        setIsSelfDirectTimeEntry(isEligible);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

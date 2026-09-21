@@ -9,6 +9,7 @@ import EmployeeTimesheetRequestTable from "~community/attendance/components/mole
 import TimesheetDailyLog from "~community/attendance/components/molecules/TimesheetDailyLog/TimesheetDailyLog";
 import TimesheetDailyLogFilter from "~community/attendance/components/molecules/TimesheetDailyLogFilter/TimesheetDailyLogFilter";
 import EmployeeTimesheetPopupController from "~community/attendance/components/organisms/EmployeeTimesheetPopupController/EmployeeTimesheetPopupController";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { downloadEmployeeDailyLogCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { dateValidation } from "~community/common/utils/validation";
@@ -18,6 +19,7 @@ const EmployeeTimesheet = (): JSX.Element => {
   const [startTime, setStartTime] = useState<string>("");
   const [endTime, setEndTime] = useState<string>("");
   const { user } = useAuth();
+  const { canDirectlyAddOrEditEntry } = useManualEntryRestriction();
 
   const { data: workSummaryData } = useGetEmployeeWorkSummary(
     startTime,
@@ -33,6 +35,23 @@ const EmployeeTimesheet = (): JSX.Element => {
     useGetTimeSheetRequests();
 
   const { data: timeConfigData } = useDefaultCapacity();
+
+  const isSelfDirectEntryEligible = canDirectlyAddOrEditEntry && !!user?.userId;
+
+  const selfTargetEmployeeId = isSelfDirectEntryEligible
+    ? user?.userId
+    : undefined;
+
+  const selfTargetEmployeeDetails = isSelfDirectEntryEligible
+    ? {
+        personal: {
+          general: {
+            firstName: user?.employee?.firstName,
+            lastName: user?.employee?.lastName
+          }
+        }
+      }
+    : undefined;
 
   return (
     <>
@@ -52,6 +71,9 @@ const EmployeeTimesheet = (): JSX.Element => {
           );
         }}
         isDailyLogLoading={isDailyLogLoading}
+        targetEmployeeId={selfTargetEmployeeId}
+        targetEmployeeDetails={selfTargetEmployeeDetails}
+        isSelfTargetEntry={canDirectlyAddOrEditEntry}
       />
       <EmployeeTimesheetRequestTable
         requestData={requestData}

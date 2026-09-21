@@ -1,10 +1,9 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
@@ -18,6 +17,7 @@ import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import DealTitleSection from "./DealTitleSection";
 
 interface DealDetailContentProps {
@@ -28,7 +28,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const { deal, deals, board, tasks, setDeals, setTasks, setBoardColumn } =
+  const { deal, deals, board, tasks, setDeals, setBoardColumn, setTasks } =
     useCrmStoreV2(
       useShallow((store) => ({
         deal: store.deals[dealId],
@@ -36,15 +36,10 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
         board: store.board,
         tasks: store.tasks,
         setDeals: store.setDeals,
-        setTasks: store.setTasks,
-        setBoardColumn: store.setBoardColumn
+        setBoardColumn: store.setBoardColumn,
+        setTasks: store.setTasks
       }))
     );
-
-  const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
-    dealId,
-    true
-  );
 
   const taskFilters: CrmTaskFilterRequest = {
     dealId,
@@ -52,11 +47,23 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   };
 
   const {
+    data: dealDetail,
+    isLoading: isDealLoading,
+    isFetchedAfterMount
+  } = useGetDealById(dealId, true);
+
+  const {
     data: fetchedTasks,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
+    isLoading: isTasksLoading,
+    fetchNextPage: fetchNextTasksPage,
+    hasNextPage: hasNextTasksPage,
+    isFetchingNextPage: isFetchingNextTasksPage
   } = useGetTasksInfinite(taskFilters);
+
+  const dealTasks = useMemo(
+    () => fetchedTasks?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    [fetchedTasks]
+  );
 
   useEffect(() => {
     const dealFields: CrmDealEntity = { id: dealId };
@@ -66,10 +73,8 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     }
 
     if (fetchedTasks) {
-      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
-
-      setTasks(updateTaskRecord(tasks, taskItems));
-      dealFields.taskIds = toTaskIds(taskItems);
+      setTasks(updateTaskRecord(tasks, dealTasks));
+      dealFields.taskIds = toTaskIds(dealTasks);
     }
 
     setDeals(mergeDeals(deals, [dealFields]));
@@ -96,7 +101,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
-  if (!deal) {
+  if (isDealLoading || isTasksLoading || !deal) {
     return <DealSidePanelSkeleton />;
   }
 
@@ -123,9 +128,9 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <SidePanelTasksSection
               taskIds={deal.taskIds}
               emptyDescription={translateText(["tasks", "emptyDescription"])}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              onFetchNextPage={fetchNextPage}
+              hasNextPage={hasNextTasksPage}
+              isFetchingNextPage={isFetchingNextTasksPage}
+              onFetchNextPage={fetchNextTasksPage}
             />
           </div>
         </div>
