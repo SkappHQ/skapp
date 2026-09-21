@@ -5,8 +5,8 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useDeleteDeal } from "~community/crm/v2/api/DealApi";
+import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { removeDeal } from "~community/crm/v2/utils/boardUtil";
 
@@ -94,6 +94,8 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
           isPending={isPending}
           confirmLabel={translateText(["buttons", "confirm"])}
           cancelLabel={translateText(["buttons", "cancel"])}
+          confirmAriaLabel={translateText(["ariaLabels", "confirm"])}
+          cancelAriaLabel={translateText(["ariaLabels", "cancel"])}
           onConfirm={handleDeleteDeal}
           onClose={onClose}
         />
