@@ -1,11 +1,11 @@
 import { Tabs } from "@rootcodelabs/skapp-ui";
 import { FC, useState } from "react";
 
-import TaskTabContent from "~community/crm/v2/components/molecules/TaskTabContent/TaskTabContent";
+import TaskTabContent from "~community/crm/components/molecules/TaskTabContent/TaskTabContent";
+import { useGetTasksTabs } from "~community/crm/hooks/useGetTasksTabs";
 import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
-import { useGetTasksTabs } from "~community/crm/v2/hooks/useGetTasksTabs";
 
-const TasksTableV2: FC = () => {
+const TasksTable: FC = () => {
   const tabs = useGetTasksTabs();
   const [activeTab, setActiveTab] = useState<CrmTaskTabEnum>(tabs[0]?.id);
 
@@ -26,4 +26,4 @@ const TasksTableV2: FC = () => {
   );
 };
 
-export default TasksTableV2;
+export default TasksTable;

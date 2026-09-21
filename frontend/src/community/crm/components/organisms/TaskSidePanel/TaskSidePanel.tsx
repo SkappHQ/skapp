@@ -11,6 +11,7 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import SidePanelTaskInfo from "~community/crm/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import { useGetDealById } from "~community/crm/v2/api/DealApi";
 import {
   useGetRelatedTasks,
@@ -21,7 +22,6 @@ import TaskTypeIcon from "~community/crm/v2/components/atoms/TaskTypeIcon/TaskTy
 import SidePanelDealSection from "~community/crm/v2/components/molecules/SidePanelDealSection/SidePanelDealSection";
 import SidePanelHeaderActionsSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderActionsSkeleton";
 import SidePanelHeaderSkeleton from "~community/crm/v2/components/molecules/SidePanelSkeleton/SidePanelHeaderSkeleton";
-import SidePanelTaskInfo from "~community/crm/v2/components/molecules/SidePanelTaskInfo/SidePanelTaskInfo";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import {
   TASK_DETAIL_ICON_SIZE,
@@ -43,7 +43,7 @@ interface Props {
   taskId: number;
 }
 
-const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
+const TaskSidePanel: FC<Props> = ({ taskId }) => {
   const translateText = useTranslator("crmModule", "tasks");
 
   const { setToastMessage } = useToast();
@@ -297,4 +297,4 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   );
 };
 
-export default TaskSidePanelV2;
+export default TaskSidePanel;

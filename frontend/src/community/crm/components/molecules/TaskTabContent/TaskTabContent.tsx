@@ -16,13 +16,13 @@ import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { getEmptyStateType } from "~community/common/utils/commonUtil";
+import TaskGroup from "~community/crm/components/molecules/TaskGroup/TaskGroup";
 import { useGetDealsByIds } from "~community/crm/v2/api/DealApi";
 import {
   useGetCompletedTasks,
   useGetTasks,
   useUpdateTask
 } from "~community/crm/v2/api/TaskApi";
-import TaskGroup from "~community/crm/v2/components/molecules/TaskGroup/TaskGroup";
 import {
   TASK_PAGE_SIZE,
   TASK_SKELETON_CONFIG
