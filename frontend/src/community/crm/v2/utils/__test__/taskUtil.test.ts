@@ -108,6 +108,9 @@ describe("getCompletedTasks", () => {
 
     getCompletedTasks(tasks);
 
-    expect(tasks).toHaveLength(2);
+    expect(tasks).toEqual([
+      { id: 1, name: "Call the contact", isCompleted: true },
+      { id: 2, name: "Send the proposal", isCompleted: false }
+    ]);
   });
 });

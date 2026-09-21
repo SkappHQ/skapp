@@ -126,10 +126,18 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const visibleTaskIds = useMemo(() => toTaskIds(fetchedTasks), [fetchedTasks]);
 
+  const newlyFetchedTasks = useMemo(
+    () =>
+      isCompletedTab
+        ? (completedTaskData?.pages.at(-1)?.items ?? [])
+        : (openTaskData?.items ?? []),
+    [isCompletedTab, completedTaskData, openTaskData]
+  );
+
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
-    setTasks(updateTaskRecord(tasks, fetchedTasks));
+    setTasks(updateTaskRecord(tasks, newlyFetchedTasks));
     setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
@@ -281,7 +289,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     }
 
     const isEmpty = isCompletedTab
-      ? completedTasksInView.length === 0
+      ? completedTasksInView.length === 0 && !hasNextPage && !isFetchingNextPage
       : isOpenTasksEmpty;
 
     if (isEmpty) {

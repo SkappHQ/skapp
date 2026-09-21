@@ -652,13 +652,11 @@
         "high": "High",
         "medium": "Medium",
         "low": "Low"
+      },
+      "reopenToastMessages": {
+        "successTitle": "Task reopened",
+        "successDescription": "Task reopened successfully"
       }
-    },
-    "reopenToastMessages": {
-      "successTitle": "Task reopened",
-      "successDescription": "Task reopened successfully",
-      "errorTitle": "Failed to reopen task",
-      "errorDescription": "Something went wrong. Please try again."
     },
     "deleteTaskModal": {
       "title": "Delete Task",

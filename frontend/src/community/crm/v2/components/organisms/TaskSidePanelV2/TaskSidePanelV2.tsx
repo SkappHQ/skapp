@@ -118,16 +118,21 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   );
 
   useEffect(() => {
-    if (!taskDetail && !relatedTasksData) return;
+    if (!taskDetail) return;
 
-    const currentTask: CrmTaskEntity = { ...taskDetail, id: taskId };
+    setTasks(updateTaskRecord(tasks, [{ ...taskDetail, id: taskId }]));
+  }, [taskDetail]);
 
-    if (relatedTasksData) {
-      currentTask.relatedTaskIds = toTaskIds(relatedTasks);
-    }
+  useEffect(() => {
+    if (!relatedTasksData) return;
+
+    const currentTask: CrmTaskEntity = {
+      id: taskId,
+      relatedTaskIds: toTaskIds(relatedTasks)
+    };
 
     setTasks(updateTaskRecord(tasks, [currentTask, ...relatedTasks]));
-  }, [taskDetail, relatedTasksData]);
+  }, [relatedTasksData]);
 
   useEffect(() => {
     if (!dealDetail) return;
@@ -169,8 +174,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["reopenToastMessages", "successTitle"]),
-      description: translateText(["reopenToastMessages", "successDescription"])
+      title: translateText(["sidePanel", "reopenToastMessages", "successTitle"]),
+      description: translateText([
+        "sidePanel",
+        "reopenToastMessages",
+        "successDescription"
+      ])
     });
   };
 
@@ -178,8 +187,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["reopenToastMessages", "errorTitle"]),
-      description: translateText(["reopenToastMessages", "errorDescription"])
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
     });
   };
 
