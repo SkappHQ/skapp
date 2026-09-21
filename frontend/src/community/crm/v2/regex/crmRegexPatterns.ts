@@ -9,3 +9,7 @@ export function isContactNameValid(): RegExp {
 export function isDealStageNameValid(): RegExp {
   return /^(?=.*\p{L})[\p{L}\p{N} \-.']+$/u;
 }
+
+export function isDealNameValid(): RegExp {
+  return /^[\p{L}\p{N} \-.,&'()/:@#|]+$/u;
+}
