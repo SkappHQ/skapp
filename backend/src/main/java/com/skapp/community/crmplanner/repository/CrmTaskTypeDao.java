@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CrmTaskTypeDao extends JpaRepository<CrmTaskType, Long> {
+public interface CrmTaskTypeDao extends JpaRepository<CrmTaskType, Long>, CrmTaskTypeRepository {
 
 	List<CrmTaskType> findAllByOrderByOrderIndexAscIdAsc();
 
