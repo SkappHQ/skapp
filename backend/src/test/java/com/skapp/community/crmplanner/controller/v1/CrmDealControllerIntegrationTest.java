@@ -294,6 +294,24 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deals whose company was soft deleted - Omits the company id")
+	void getDeals_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("List Deleted Co");
+		savedDeal("List Deleted Co Deal", stage, company);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performGetDealsRequest(company.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("List Deleted Co Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Get deals filtered by contactId - Returns only deals linked to that contact")
 	void getDeals_FilterByContactId_ReturnsMatchingDeals() throws Exception {
 		CrmDealStage stage = savedStage();
@@ -555,6 +573,21 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Create deal without CRM role - Returns Forbidden")
+	void createDeal_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Forbidden Deal Corp");
+		CrmContact contact = savedContact(company);
+		String nonCrmToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user3@gmail.com"),
+				1L);
+
+		mvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(validPayload(stage.getId(), contact.getId())))
+			.accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(nonCrmToken))).andDo(print()).andExpect(status().isForbidden());
+	}
+
+	@Test
 	@DisplayName("Edit deal - Happy Path - success")
 	void editDeal_ValidRequest_ReturnsSuccess() throws Exception {
 		CrmDealStage stage = savedStage();
@@ -723,6 +756,23 @@ class CrmDealControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get deal by ID whose company was soft deleted - Omits the company id")
+	void getDealById_SoftDeletedCompany_MasksCompany() throws Exception {
+		CrmDealStage stage = savedStage();
+		CrmCompany company = savedCompany("Deleted Co");
+		CrmDeal deal = savedDeal("Deleted Co Deal", stage, company);
+
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + deal.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(deal.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Get deal by ID as Sales Representative viewing another owner's deal - returns view-denied error")
 	void getDealById_SalesRepViewingOthersDeal_ReturnsBadRequest() throws Exception {
 		// user2@gmail.com is a CRM sales representative (employee ID 2)
@@ -864,6 +914,25 @@ class CrmDealControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath("$.results[0].message")
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_OWNER_ASSIGNMENT_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Edit a deal owned by someone else as a sales rep - Returns Bad Request")
+	void editDeal_SalesRepEditingOthersDeal_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		// Deal owned by admin (employee 1)
+		CrmDeal deal = savedDeal();
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		CrmDealEditRequestDto dto = new CrmDealEditRequestDto();
+		dto.setName("Hijacked Deal");
+
+		performPatchRequest(deal.getId(), dto).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
 	}
 
 	@Test
