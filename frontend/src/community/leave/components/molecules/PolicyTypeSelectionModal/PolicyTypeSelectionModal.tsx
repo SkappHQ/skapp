@@ -28,7 +28,7 @@ const PolicyTypeSelectionModal: FC<Props> = ({ isOpen, onClose, onSelect }) => {
       backdropVariant="dark"
       closeButtonAriaLabel={translateText(["closeBtnAriaLabel"])}
       content={
-        <div className="flex flex-col gap-4 pt-2 md:flex-row md:gap-8">
+        <div className="flex h-full flex-col gap-4 pt-2 md:flex-row md:gap-8">
           <PolicyTypeCard
             icon={<RefreshIcon className="size-16" stroke="currentColor" />}
             title={translateText(["basicInfo", "accrualTitle"])}
