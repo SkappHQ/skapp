@@ -6,10 +6,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  DEAL_PAGE_SIZE,
-  DEAL_SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/dealConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import {
   useGetDealsInfinite,
@@ -17,6 +13,8 @@ import {
 } from "~community/crm/v2/api/DealApi";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
+import { DEAL_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { DEAL_SEARCH_DEBOUNCE_DELAY } from "~community/crm/v2/constants/dealConstants";
 import { DealViewEnum } from "~community/crm/v2/enums/common";
 import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
