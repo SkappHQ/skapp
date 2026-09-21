@@ -91,6 +91,8 @@ public class DateTimeUtils {
 	private static final DateTimeFormatter INSTANT_ESIGN_CERT_FORMATTER = DateTimeFormatter
 		.ofPattern("MM/dd/yyyy hh:mm:ss a");
 
+	private static final Set<String> AVAILABLE_ZONE_IDS = Set.copyOf(ZoneId.getAvailableZoneIds());
+
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
 	}
@@ -497,8 +499,7 @@ public class DateTimeUtils {
 		if (timeZone == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
 		}
-		Set<String> validIDs = ZoneId.getAvailableZoneIds();
-		return validIDs.contains(timeZone);
+		return AVAILABLE_ZONE_IDS.contains(timeZone);
 	}
 
 	/**

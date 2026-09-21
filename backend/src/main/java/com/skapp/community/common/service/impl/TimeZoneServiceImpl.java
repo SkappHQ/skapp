@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -39,10 +39,9 @@ public class TimeZoneServiceImpl implements TimeZoneService {
 
 	@Override
 	public ZoneId requestTimezone() {
-		RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes != null && requestAttributes.getAttribute(CommonConstants.REQUEST_TIMEZONE_ATTRIBUTE,
-				RequestAttributes.SCOPE_REQUEST) instanceof ZoneId requestZone) {
-			return requestZone;
+		String timezone = requestHeader(CommonConstants.TIMEZONE_HEADER);
+		if (timezone != null && DateTimeUtils.isValidTimeZone(timezone)) {
+			return ZoneId.of(timezone);
 		}
 		return organizationTimezone();
 	}
@@ -51,6 +50,13 @@ public class TimeZoneServiceImpl implements TimeZoneService {
 	public Instant currentRequestDayStart() {
 		ZoneId requestZone = requestTimezone();
 		return DateTimeUtils.currentDateAt(requestZone).atStartOfDay(requestZone).toInstant();
+	}
+
+	private String requestHeader(String name) {
+		if (RequestContextHolder.getRequestAttributes() instanceof ServletRequestAttributes servletRequestAttributes) {
+			return servletRequestAttributes.getRequest().getHeader(name);
+		}
+		return null;
 	}
 
 }
