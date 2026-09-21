@@ -9,7 +9,7 @@ import TaskRowContent from "./TaskRowContent";
 interface Props {
   task: CrmTaskEntity;
   taskId: number;
-  onRowClick: (taskId: number) => void;
+  onRowClick?: (taskId: number) => void;
   onToggleComplete: (taskId: number, completed: boolean) => void;
   isShowContact?: boolean;
   isCheckTaskVisible?: boolean;
@@ -38,9 +38,9 @@ const TaskRow: FC<Props> = ({
       tabIndex={0}
       aria-label={translateText(["openTaskDetails"], { name: task.name })}
       className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer"
-      onClick={() => onRowClick(taskId)}
+      onClick={() => onRowClick?.(taskId)}
       onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") onRowClick(taskId);
+        if (event.key === "Enter" || event.key === " ") onRowClick?.(taskId);
       }}
     >
       {isCheckTaskVisible && (

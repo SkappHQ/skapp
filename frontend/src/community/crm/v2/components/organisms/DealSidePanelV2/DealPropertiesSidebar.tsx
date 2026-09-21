@@ -26,7 +26,7 @@ import {
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { getContactDisplayName } from "~community/crm/v2/utils/contactUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
@@ -53,13 +53,13 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
 
   const { deal, stagesRecord, contactRecord, companies, setCompanies, owners } =
     useCrmStoreV2(
-      useShallow((store) => ({
-        deal: dealId != null ? store.deals[dealId] : undefined,
-        stagesRecord: store.stages,
-        contactRecord: store.contacts,
-        companies: store.companies,
-        setCompanies: store.setCompanies,
-        owners: store.owners
+      useShallow((state) => ({
+        deal: dealId != null ? state.deals[dealId] : undefined,
+        stagesRecord: state.stages,
+        contactRecord: state.contacts,
+        companies: state.companies,
+        setCompanies: state.setCompanies,
+        owners: state.owners
       }))
     );
 
@@ -71,8 +71,10 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     SEARCH_DEBOUNCE_DELAY
   );
   const { data: contactLookupData } = useGetContactLookupV2(
-    debouncedContactSearchTerm,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    {
+      searchKeyword: debouncedContactSearchTerm,
+      size: DEFAULT_LOOKUP_PAGE_SIZE
+    },
     debouncedContactSearchTerm.length > 0
   );
   const contacts = useMemo(
@@ -96,7 +98,7 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      setCompanies(mergeCompanies(companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

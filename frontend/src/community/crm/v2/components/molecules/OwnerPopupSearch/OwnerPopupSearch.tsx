@@ -42,6 +42,7 @@ const OwnerPopupSearch: FC<Props> = ({
     ownerSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+
   const { data: ownerLookupData } = useGetOwnerLookupV2(
     debouncedOwnerSearch,
     DEFAULT_LOOKUP_PAGE_SIZE,

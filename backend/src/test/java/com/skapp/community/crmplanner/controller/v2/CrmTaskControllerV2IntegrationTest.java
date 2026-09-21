@@ -47,6 +47,7 @@ import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -174,6 +175,10 @@ class CrmTaskControllerV2IntegrationTest {
 	}
 
 	private CrmDeal savedDeal(String name) {
+		return savedDeal(name, contact);
+	}
+
+	private CrmDeal savedDeal(String name, CrmContact dealContact) {
 		CrmDealStage stage = new CrmDealStage();
 		stage.setName("Task Deal Stage");
 		stage.setColor("#000000");
@@ -185,7 +190,7 @@ class CrmTaskControllerV2IntegrationTest {
 		deal.setName(name);
 		deal.setPriority(CrmDealPriority.MEDIUM);
 		deal.setStage(stage);
-		deal.setContact(contact);
+		deal.setContact(dealContact);
 		deal.setCompany(company);
 		deal.setOwner(employeeDao.getReferenceById(1L));
 		deal.setOrderIndex("a0");
@@ -414,6 +419,37 @@ class CrmTaskControllerV2IntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Includes tasks linked only through the contact's deal")
+	void getTasks_ByContactId_IncludesDealLinkedTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+		savedTaskWith("Deal Linked Task", null, null, savedDeal("Contact Deal"), false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][*]['name']")
+				.value(containsInAnyOrder("Directly Linked Task", "Deal Linked Task")));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Excludes tasks on another contact's deal")
+	void getTasks_ByContactId_ExcludesOtherContactsDealTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+
+		CrmDeal otherDeal = savedDeal("Other Contact Deal", savedContact("Other Deal Contact"));
+		savedTaskWith("Other Deal Task", null, null, otherDeal, false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Directly Linked Task"));
 	}
 
 	@Test

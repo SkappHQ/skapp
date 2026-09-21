@@ -33,6 +33,10 @@ export const openInNewTab = (url: string) => {
   window.open(url, "_blank", "noopener,noreferrer");
 };
 
+export const copyToClipboard = async (text: string): Promise<void> => {
+  await navigator.clipboard.writeText(text);
+};
+
 export const getLabelByValue = (
   objectArray: DropdownListType[],
   value: number | string
@@ -237,8 +241,11 @@ export const scrollToFirstError = (theme: Theme) => {
   }
 };
 
-export const scrollToTop = (top: number = 0) => {
-  window.scrollTo({ top, behavior: "smooth" });
+export const scrollToTop = (
+  top: number = 0,
+  behavior: ScrollBehavior = "smooth"
+) => {
+  window.scrollTo({ top, behavior });
 };
 
 export const capitalizeFirstLetter = (string: string): string => {

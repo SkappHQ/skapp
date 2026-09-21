@@ -24,7 +24,11 @@ import {
   DailyLogType,
   TimeAvailabilityType
 } from "~community/attendance/types/timeSheetTypes";
-import { formatDuration, isToday } from "~community/attendance/utils/TimeUtils";
+import {
+  formatDuration,
+  hasOngoingTimeEntry,
+  isToday
+} from "~community/attendance/utils/TimeUtils";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { TooltipPlacement } from "~community/common/enums/ComponentEnums";
@@ -40,7 +44,7 @@ import {
   shouldMoveDownward,
   shouldMoveUpward
 } from "~community/common/utils/keyboardUtils";
-import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
+import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 import TimesheetTimelineBar from "../TimesheetTimelineBar/TimesheetTimelineBar";
 import styles from "./styles";
@@ -49,7 +53,7 @@ interface Props {
   record: DailyLogType;
   headerLength: number;
   targetEmployeeId?: number;
-  targetEmployeeDetails?: EmployeeDetails;
+  targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
 }
@@ -63,6 +67,12 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   isManualEntryRestricted
 }) => {
   const { isFreeTier } = useSessionData();
+
+  const isDirectEntryView = Boolean(targetEmployeeDetails && targetEmployeeId);
+
+  const isOngoingEntryLocked = isDirectEntryView && hasOngoingTimeEntry(record);
+
+  const isRowActionable = isRowInteractive && !isOngoingEntryLocked;
 
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -177,17 +187,29 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     handleAvailability
   );
 
+  const getRowTooltip = (): string | undefined => {
+    if (isOngoingEntryLocked) {
+      return translateText(["ongoingEntryCellTooltip"]);
+    }
+
+    if (isManualEntryRestricted && !targetEmployeeDetails) {
+      return translateText(["manualEntryRestrictedCellTooltip"]);
+    }
+  };
+
   const handleRowActivate = () => {
-    if (!isRowInteractive) return;
+    if (!isRowActionable) return;
 
     if (targetEmployeeDetails && targetEmployeeId) {
       if (getTimeEntryModalType(record) === null) return;
 
+      const employeeGeneralDetails = targetEmployeeDetails.personal?.general;
+
       setDirectManualTimeEntryEligibleEmployee({
         employeeId: targetEmployeeId,
         employeeName: concatStrings([
-          targetEmployeeDetails.firstName ?? "",
-          targetEmployeeDetails.lastName ?? ""
+          employeeGeneralDetails?.firstName ?? "",
+          employeeGeneralDetails?.lastName ?? ""
         ]).trim()
       });
       handleEdit();
@@ -203,14 +225,10 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
       direction="row"
       justifyContent="space-between"
       alignItems="center"
-      sx={classes.stackContainerStyle(isRowInteractive)}
+      sx={classes.stackContainerStyle(isRowActionable)}
       onClick={handleRowActivate}
-      aria-disabled={!isRowInteractive}
-      title={
-        isManualEntryRestricted && !targetEmployeeDetails
-          ? translateText(["manualEntryRestrictedCellTooltip"])
-          : undefined
-      }
+      aria-disabled={!isRowActionable}
+      title={getRowTooltip()}
       tabIndex={getTabIndex(isFreeTier)}
       onKeyDown={(e) => {
         if (shouldActivateButton(e.key)) {

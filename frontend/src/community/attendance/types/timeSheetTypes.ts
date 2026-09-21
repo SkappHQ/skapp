@@ -22,6 +22,7 @@ export interface TimeRecordType {
     };
   };
   workedHours: number;
+  isOngoingTimeRequest?: boolean;
   clockInLocationStatus?: RecordLocationStatus;
   clockOutLocationStatus?: RecordLocationStatus;
 }
@@ -104,6 +105,11 @@ export interface TimeRequestDataType {
   };
   date?: string;
   requestType?: string;
+}
+
+export interface TimeEntryTimeErrorsType {
+  fromTime?: string;
+  toTime?: string;
 }
 
 export interface TimeRequestDataResponseType {
@@ -228,7 +234,7 @@ export interface DirectEntryEmployeeType {
   date?: string;
 }
 
-export interface DirectManualTimeEntryVariablesType extends DirectEntryEmployeeType {
-  entryDate: string;
+export interface DirectManualTimeEntryVariablesType {
+  employeeId: number;
   payload: ManualEntryPayloadType;
 }

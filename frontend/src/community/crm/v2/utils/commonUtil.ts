@@ -10,35 +10,50 @@ import {
 const isEmptyValue = (value?: string | number) =>
   value === undefined || Number(value) === 0;
 
+export const getOwnerName = (
+  owners: CrmOwnerRecord,
+  ownerId?: number
+): string => {
+  if (!ownerId) return "";
+
+  const owner = owners[ownerId];
+
+  return [owner?.firstName, owner?.lastName].filter(Boolean).join(" ");
+};
+
 export const formatTableValue = (value?: string | number, prefix = "") =>
   isEmptyValue(value) ? "-" : `${prefix}${value}`;
 
 export const formatMonetaryValue = (value?: string) => {
   if (isEmptyValue(value)) return "-";
 
+  const parsed = Number(value);
+
+  if (Number.isNaN(parsed)) return "-";
+
   return `$${value?.split(".")[0]}`;
 };
 
-export const formatMonetaryValueWithDecimals = (value?: string | number) =>
-  isEmptyValue(value) ? "-" : `$${Number(value).toFixed(2)}`;
+export const formatMonetaryValueWithDecimals = (value?: string | number) => {
+  if (isEmptyValue(value)) return "-";
 
-export const formatCurrency = (
-  value: string | number | null | undefined
-): string => {
-  if (value == null || value === "") return "-";
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value);
-  if (Number.isNaN(parsed) || parsed === 0) return "-";
+  const parsed = Number(value);
+
+  if (Number.isNaN(parsed)) return "-";
+
   return `$${parsed.toFixed(2)}`;
 };
 
-export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
-  const ownerRecord: CrmOwnerRecord = {};
-  for (const owner of owners) {
-    if (owner.employeeId != null) {
-      ownerRecord[owner.employeeId] = owner;
-    }
+export const appendId = (ids: number[], id: number): number[] =>
+  ids.includes(id) ? ids : [...ids, id];
+
+export const getOwnerById = (
+  owners: CrmOwnerRecord,
+  ownerId?: number
+): CrmOwnerEntity | undefined => {
+  if (ownerId !== undefined) {
+    return owners[ownerId];
   }
-  return ownerRecord;
 };
 
 export const updateOwnerRecord = (
@@ -63,6 +78,16 @@ export const toStagesRecord = (stages: CrmStageEntity[]): CrmStageRecord => {
     }
   }
   return stageRecord;
+};
+
+export const toOwnersRecord = (owners: CrmOwnerEntity[]): CrmOwnerRecord => {
+  const ownerRecord: CrmOwnerRecord = {};
+  for (const owner of owners) {
+    if (owner.employeeId != null) {
+      ownerRecord[owner.employeeId] = owner;
+    }
+  }
+  return ownerRecord;
 };
 
 export const getOrderedStages = (stages: CrmStageRecord): CrmStageEntity[] =>

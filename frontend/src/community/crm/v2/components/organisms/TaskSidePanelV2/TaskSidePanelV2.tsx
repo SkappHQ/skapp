@@ -56,7 +56,6 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     owners,
     contacts,
     deals,
-    stages,
     setTasks,
     setDeals,
     setSelectedTaskId,
@@ -64,21 +63,20 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      tasks: store.tasks,
-      taskTypes: store.taskTypes,
-      owners: store.owners,
-      contacts: store.contacts,
-      deals: store.deals,
-      stages: store.stages,
-      setTasks: store.setTasks,
-      setDeals: store.setDeals,
-      setSelectedTaskId: store.setSelectedTaskId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      tasks: state.tasks,
+      taskTypes: state.taskTypes,
+      owners: state.owners,
+      contacts: state.contacts,
+      deals: state.deals,
+      setTasks: state.setTasks,
+      setDeals: state.setDeals,
+      setSelectedTaskId: state.setSelectedTaskId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      setTaskModalType: state.setTaskModalType
     }))
   );
 
@@ -89,10 +87,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   const task = tasks[taskId];
   const taskType = task?.typeId != null ? taskTypes[task.typeId] : undefined;
   const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
-  const contact = task?.contactId != null ? contacts[task.contactId] : undefined;
+  const contact =
+    task?.contactId != null ? contacts[task.contactId] : undefined;
   const deal = task?.dealId != null ? deals[task.dealId] : undefined;
-  const dealOwner = deal?.ownerId != null ? owners[deal.ownerId] : undefined;
-  const dealStage = deal?.stageId != null ? stages[deal.stageId] : undefined;
 
   const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
 
@@ -208,7 +205,12 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           <SidePanelHeaderSkeleton isShowLastUpdate={false} />
         ) : (
           <div className="flex items-center gap-4 pl-2">
-            <TaskTypeIcon typeName={taskType?.name} size={TASK_DETAIL_ICON_SIZE} />
+            {taskType && (
+              <TaskTypeIcon
+                typeName={taskType.name}
+                size={TASK_DETAIL_ICON_SIZE}
+              />
+            )}
             <span className="h1 text-black">{task.name}</span>
           </div>
         )
@@ -252,9 +254,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               <hr className="border-secondary-accent" />
               {!isDealLoading && (
                 <SidePanelDealSection
-                  deal={deal}
-                  owner={dealOwner}
-                  stage={dealStage}
+                  dealIds={deal?.id ? [deal.id] : []}
+                  showAddDealAction={false}
                   emptyDescription={translateText([
                     "sidePanel",
                     "noDealsDescription"
@@ -269,11 +270,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               </h2>
               <hr className="border-secondary-accent" />
               <SidePanelTasksSection
-                taskIds={task.relatedTaskIds ?? []}
-                emptyTitle={translateText([
-                  "sidePanel",
-                  "noRelatedTasksTitle"
-                ])}
+                taskIds={task?.relatedTaskIds ?? []}
+                emptyTitle={translateText(["sidePanel", "noRelatedTasksTitle"])}
                 emptyDescription={translateText([
                   "sidePanel",
                   "noRelatedTasksDescription"
