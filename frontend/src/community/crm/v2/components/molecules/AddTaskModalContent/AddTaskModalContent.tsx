@@ -14,6 +14,7 @@ import {
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
+import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
 import {
   linkTaskToRelatedEntities,
   updateTaskRecord
@@ -33,6 +34,7 @@ const AddTaskModalContent: FC = () => {
     companies,
     contacts,
     deals,
+    selectedContactId,
     setTasks,
     setTaskIds,
     setOwners,
@@ -48,6 +50,7 @@ const AddTaskModalContent: FC = () => {
       companies: store.companies,
       contacts: store.contacts,
       deals: store.deals,
+      selectedContactId: store.selectedContactId,
       setTasks: store.setTasks,
       setTaskIds: store.setTaskIds,
       setOwners: store.setOwners,
@@ -82,6 +85,8 @@ const AddTaskModalContent: FC = () => {
     setOwners(updateOwnerRecord(owners, [defaultOwner]));
   }, [defaultOwner]);
 
+  const selectedContact = getSelectedContact(contacts, selectedContactId);
+
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: "",
@@ -89,11 +94,10 @@ const AddTaskModalContent: FC = () => {
       priority: CrmPriorityEnum.MEDIUM,
       dueAt: undefined,
       ownerId: defaultOwner?.employeeId,
-      contactId: undefined,
-      dealId: undefined,
+      contactId: selectedContact?.id,
       notes: ""
     }),
-    [defaultOwner]
+    [defaultOwner, selectedContact?.id]
   );
 
   const formik = useFormik<CrmTaskEntity>({
@@ -124,6 +128,7 @@ const AddTaskModalContent: FC = () => {
         contacts,
         deals
       );
+
       setCompanies(links.companies);
       setContacts(links.contacts);
       setDeals(links.deals);
@@ -160,6 +165,7 @@ const AddTaskModalContent: FC = () => {
       priority: values.priority,
       dueAt: values.dueAt,
       ownerId: values.ownerId,
+      companyId: values.companyId,
       contactId: values.contactId,
       dealId: values.dealId,
       notes: values.notes?.trim()
@@ -172,7 +178,6 @@ const AddTaskModalContent: FC = () => {
     <TaskModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );
