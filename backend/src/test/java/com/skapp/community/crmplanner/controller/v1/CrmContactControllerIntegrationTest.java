@@ -73,8 +73,6 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists/email";
 
-	private static final String METRICS_PATH = BASE_PATH + "/metrics";
-
 	private static final String METRICS_BY_ID_PATH = BY_ID_PATH + "/metrics";
 
 	private static final String OWNERS_PATH = BASE_PATH + "/owners";
@@ -158,13 +156,12 @@ class CrmContactControllerIntegrationTest {
 		return performRequest(get(EXISTS_PATH).param("email", email).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performGetMetricsRequest() throws Exception {
-		return performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON));
+	private ResultActions performGetContactsRequest() throws Exception {
+		return performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performGetMetricsRequest(String searchKeyword) throws Exception {
-		return performRequest(
-				get(METRICS_PATH).param("searchKeyword", searchKeyword).accept(MediaType.APPLICATION_JSON));
+	private ResultActions performGetContactsRequest(String searchKeyword) throws Exception {
+		return performRequest(get(BASE_PATH).param("searchKeyword", searchKeyword).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetMetricsByIdRequest(Long id) throws Exception {
@@ -947,7 +944,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Get contact metrics with no contacts - Returns empty page")
 	void getContactMetrics_NoContacts_ReturnsEmptyPage() throws Exception {
-		performGetMetricsRequest().andDo(print())
+		performGetContactsRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['items']").isArray());
@@ -959,7 +956,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		savedContact(companyId, "metrics.contact@example.com");
 
-		performGetMetricsRequest().andDo(print())
+		performGetContactsRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1));
@@ -971,7 +968,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany("Metrics Shape Corp").getId();
 		Long contactId = savedNamedContact("ZeroMetricsContactUnique", companyId, "metrics.shape@example.com").getId();
 
-		performGetMetricsRequest("ZeroMetricsContactUnique").andDo(print())
+		performGetContactsRequest("ZeroMetricsContactUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
@@ -1002,7 +999,7 @@ class CrmContactControllerIntegrationTest {
 		savedTask(contactId, false, LocalDateTime.now().plusDays(3));
 		savedTask(contactId, false, LocalDateTime.now().minusDays(2));
 
-		String content = performGetMetricsRequest("AggMetricsContactUnique").andDo(print())
+		String content = performGetContactsRequest("AggMetricsContactUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
@@ -1028,7 +1025,7 @@ class CrmContactControllerIntegrationTest {
 	void getContactMetrics_ContactWithoutCompany_IsReturned() throws Exception {
 		savedNamedContact("NoCompanyContactUnique", null, "nocompany.metrics@example.com");
 
-		performGetMetricsRequest("NoCompanyContactUnique").andDo(print())
+		performGetContactsRequest("NoCompanyContactUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
@@ -1046,7 +1043,7 @@ class CrmContactControllerIntegrationTest {
 
 		// the lookup endpoint nulls this out, the metrics list does not - the
 		// inconsistency predates the migration and is carried over unchanged
-		performGetMetricsRequest("DeletedCoMetricsContactUnique").andDo(print())
+		performGetContactsRequest("DeletedCoMetricsContactUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
@@ -1064,8 +1061,7 @@ class CrmContactControllerIntegrationTest {
 		Long otherCompanyId = crmCompanyDao.save(otherCompany).getId();
 		savedContact(otherCompanyId, "other.company.contact@example.com");
 
-		performRequest(
-				get(METRICS_PATH).param("companyId", String.valueOf(companyId)).accept(MediaType.APPLICATION_JSON))
+		performRequest(get(BASE_PATH).param("companyId", String.valueOf(companyId)).accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -1078,7 +1074,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		savedContact(companyId, "keyword.contact@example.com");
 
-		performRequest(get(METRICS_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
+		performRequest(get(BASE_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -1088,7 +1084,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Get contact metrics without CRM role - Returns Forbidden")
 	void getContactMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
-		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+		performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
 			.andExpect(status().isForbidden());
 	}
 
