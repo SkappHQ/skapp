@@ -97,6 +97,8 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
+	private static final String METRICS_PATH = BASE_PATH + "/metrics";
+
 	private final JsonMapper objectMapper;
 
 	private final JwtService jwtService;
@@ -153,6 +155,13 @@ class CrmCompanyControllerIntegrationTest {
 	private ResultActions performSearchByDomainRequest(String domain, int limit) throws Exception {
 		return performRequest(get(SEARCH_BY_DOMAIN_PATH).param("domain", domain)
 			.param("limit", String.valueOf(limit))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetMetricsRequest(String searchKeyword) throws Exception {
+		return performRequest(get(METRICS_PATH).param("page", "0")
+			.param("size", "10")
+			.param("searchKeyword", searchKeyword)
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
@@ -579,13 +588,14 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics classification co");
 
-		assertThat(new BigDecimal(metrics.getOpenValue()))
+		assertThat(new BigDecimal(metrics.getMetrics().getOpenValue()))
 			.as("open value sums INITIAL + OPEN deals only; WON and LOST are excluded")
 			.isEqualByComparingTo("300");
-		assertThat(new BigDecimal(metrics.getAccountValue())).as("account value sums WON deals only")
+		assertThat(new BigDecimal(metrics.getMetrics().getAccountValue())).as("account value sums WON deals only")
 			.isEqualByComparingTo("400");
-		assertThat(metrics.getClosedDeals()).as("closed deals counts WON deals only").isEqualTo(1L);
-		assertThat(metrics.getOpenDeals()).as("open deals counts INITIAL + OPEN deals only; WON and LOST are excluded")
+		assertThat(metrics.getMetrics().getClosedDealsCount()).as("closed deals counts WON deals only").isEqualTo(1L);
+		assertThat(metrics.getMetrics().getOpenDealsCount())
+			.as("open deals counts INITIAL + OPEN deals only; WON and LOST are excluded")
 			.isEqualTo(2L);
 	}
 
@@ -601,12 +611,17 @@ class CrmCompanyControllerIntegrationTest {
 
 		CrmCompanyMetricsResponseDto metrics = fetchMetrics(company.getId(), "metrics lost only co");
 
-		assertThat(new BigDecimal(metrics.getOpenValue())).as("LOST deals are not open, so open value is zero")
+		assertThat(new BigDecimal(metrics.getMetrics().getOpenValue()))
+			.as("LOST deals are not open, so open value is zero")
 			.isEqualByComparingTo("0");
-		assertThat(new BigDecimal(metrics.getAccountValue())).as("LOST deals are not WON, so account value is zero")
+		assertThat(new BigDecimal(metrics.getMetrics().getAccountValue()))
+			.as("LOST deals are not WON, so account value is zero")
 			.isEqualByComparingTo("0");
-		assertThat(metrics.getClosedDeals()).as("LOST deals are not WON, so closed deal count is zero").isEqualTo(0L);
-		assertThat(metrics.getOpenDeals()).as("LOST deals are not open, so open deal count is zero").isEqualTo(0L);
+		assertThat(metrics.getMetrics().getClosedDealsCount())
+			.as("LOST deals are not WON, so closed deal count is zero")
+			.isEqualTo(0L);
+		assertThat(metrics.getMetrics().getOpenDealsCount()).as("LOST deals are not open, so open deal count is zero")
+			.isEqualTo(0L);
 	}
 
 	@Test
@@ -622,6 +637,90 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
 			.as("exact match first, then prefix match, then contains match")
 			.containsExactly("Rankacme", "Rankacme Corp", "Global Rankacme Partners");
+	}
+
+	@Test
+	@DisplayName("Get company metrics - Returns flat company fields and nested metrics with seeded values")
+	void getCompanyMetrics_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("MetricsCoUnique");
+		company.setWebsite("https://metrics-co.com");
+		company.setAddress("123 Metrics St");
+		company.setContactNumber("94771234567");
+		crmCompanyDao.save(company);
+		CrmContact contact = createMetricsContact(company, "metrics.unique@example.com");
+
+		CrmDealStage openStage = createStage("Metrics Open Stage", CrmDealStageType.OPEN, 1);
+		CrmDealStage wonStage = createStage("Metrics Won Stage", CrmDealStageType.WON, 2);
+
+		createDeal("Metrics Open Deal", company, contact, openStage, "200", false);
+		createDeal("Metrics Won Deal", company, contact, wonStage, "400", false);
+
+		ResultActions result = performGetMetricsRequest("MetricsCoUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("MetricsCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['website']").value("https://metrics-co.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['address']").value("123 Metrics St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactNumber']").value("94771234567"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['openDealsCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['closedDealsCount']").value(1));
+
+		String content = result.andReturn().getResponse().getContentAsString();
+		String openValue = JsonPath.read(content, "$.results[0].items[0].metrics.openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].items[0].metrics.accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value sums INITIAL + OPEN deals only")
+			.isEqualByComparingTo("200");
+		assertThat(new BigDecimal(accountValue)).as("account value sums WON deals only").isEqualByComparingTo("400");
+	}
+
+	@Test
+	@DisplayName("Get company metrics - Counts open and overdue tasks")
+	void getCompanyMetrics_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
+		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
+
+		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
+		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+
+		performGetMetricsRequest("TaskMetricsCoUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['metrics']['overdueTasksCount']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get company metrics - No paging params falls back to defaults and returns OK")
+	void getCompanyMetrics_NoPagingParams_ReturnsOk() throws Exception {
+		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get company metrics - Search matching nothing returns empty page")
+	void getCompanyMetrics_NoMatch_ReturnsEmptyPage() throws Exception {
+		createMetricsCompany("MetricsCoUnique");
+
+		performGetMetricsRequest("NoSuchCompanyXyz").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get company metrics without CRM role - Returns Forbidden")
+	void getCompanyMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(METRICS_PATH).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
