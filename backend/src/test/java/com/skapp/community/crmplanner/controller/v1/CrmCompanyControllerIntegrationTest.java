@@ -97,8 +97,6 @@ class CrmCompanyControllerIntegrationTest {
 
 	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
-	private static final String METRICS_PATH = BASE_PATH + "/metrics";
-
 	private final JsonMapper objectMapper;
 
 	private final JwtService jwtService;
@@ -158,8 +156,8 @@ class CrmCompanyControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performGetMetricsRequest(String searchKeyword) throws Exception {
-		return performRequest(get(METRICS_PATH).param("page", "0")
+	private ResultActions performGetCompaniesRequest(String searchKeyword) throws Exception {
+		return performRequest(get(BASE_PATH).param("page", "0")
 			.param("size", "10")
 			.param("searchKeyword", searchKeyword)
 			.accept(MediaType.APPLICATION_JSON));
@@ -655,7 +653,7 @@ class CrmCompanyControllerIntegrationTest {
 		createDeal("Metrics Open Deal", company, contact, openStage, "200", false);
 		createDeal("Metrics Won Deal", company, contact, wonStage, "400", false);
 
-		ResultActions result = performGetMetricsRequest("MetricsCoUnique").andDo(print())
+		ResultActions result = performGetCompaniesRequest("MetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
@@ -685,7 +683,7 @@ class CrmCompanyControllerIntegrationTest {
 		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
 		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
 
-		performGetMetricsRequest("TaskMetricsCoUnique").andDo(print())
+		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
@@ -696,7 +694,7 @@ class CrmCompanyControllerIntegrationTest {
 	@Test
 	@DisplayName("Get company metrics - No paging params falls back to defaults and returns OK")
 	void getCompanyMetrics_NoPagingParams_ReturnsOk() throws Exception {
-		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
+		performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
@@ -706,7 +704,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyMetrics_NoMatch_ReturnsEmptyPage() throws Exception {
 		createMetricsCompany("MetricsCoUnique");
 
-		performGetMetricsRequest("NoSuchCompanyXyz").andDo(print())
+		performGetCompaniesRequest("NoSuchCompanyXyz").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
@@ -718,7 +716,7 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanyMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
-		performRequest(get(METRICS_PATH).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
+		performRequest(get(BASE_PATH).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isForbidden());
 	}
