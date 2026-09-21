@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode, useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -73,7 +73,16 @@ const MyRequestModalController = () => {
     myRequestModalType === MyRequestModalEnums.LEAVE_TYPE_SELECTION;
 
   if (isLargeModal) {
-    return <>{modalContent()}</>;
+    return (
+      <LargeModal
+        id="apply-leave-modal"
+        isOpen={isMyRequestModalOpen}
+        onClose={handleCloseModal}
+        modalHeader={modalTitle}
+        content={modalContent()}
+        backdropVariant="dark"
+      />
+    );
   }
 
   return (

@@ -1,4 +1,4 @@
-import { LargeModal } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import {
   ChangeEvent,
   useCallback,
@@ -95,7 +95,6 @@ const ApplyPolicyLeaveModal = () => {
   const translateAria = useTranslator("leaveAria", "applyLeave");
 
   const {
-    isModalOpen,
     selectedYear,
     selectedPolicyBalance,
     selectedDates,
@@ -485,123 +484,118 @@ const ApplyPolicyLeaveModal = () => {
   };
 
   return (
-    <LargeModal
-      id="apply-policy-leave-modal"
-      isOpen={isModalOpen}
-      onClose={handleCancel}
-      modalHeader={translateText(["title"])}
-      backdropVariant="dark"
-      buttons={{
-        buttonLeft: {
-          variant: "tertiary",
-          onClick: handleCancel,
-          icon: <Icon name={IconName.CLOSE_ICON} />,
-          iconPosition: "end",
-          children: translateText(["cancelBtn"])
-        },
-        buttonRight: {
-          variant: "primary",
-          onClick: onSubmit,
-          isLoading: isApplyPending,
-          disabled: isSubmitDisabled || isApplyPending,
-          "aria-label": translateAria(["confirmApplyLeave"]),
-          icon: <Icon name={IconName.TICK_ICON} />,
-          iconPosition: "end",
-          children: translateText(["submitBtn"])
-        }
-      }}
-      content={
-        <div className="flex flex-col md:flex-row gap-3 md:gap-7">
-          <div className="flex flex-col gap-3">
-            <fieldset
-              ref={dateFieldRef}
-              tabIndex={-1}
-              aria-label={translateAria(["calendar", "selectDateForLeave"])}
-              className="min-w-0"
-            >
-              <CalendarDateRangePicker
-                selectedDates={selectedDates}
-                setSelectedDates={setSelectedDates}
-                setSelectedMonth={setSelectedMonth}
-                allowedDuration={selectedPolicyBalance.leaveType.minDuration}
-                allHolidays={allHolidays}
-                minDate={minDate}
-                maxDate={maxDate}
-                workingDays={workingDays}
-                myLeaveRequests={blockingLeaveRequests}
-              />
-            </fieldset>
-            <div className="flex flex-row items-center gap-2">
-              <p>
-                {translateText(["myPolicyBalance"], {
-                  policyName: selectedPolicyBalance.policyName
-                })}
-              </p>
-              <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 w-full">
-            {selectedDates.length && myTeams?.length ? (
-              <PolicyTeamAvailabilityCard
-                teams={myTeams}
-                resourceAvailability={resourceAvailability}
-              />
-            ) : (
-              <></>
-            )}
-            <DurationSelector
-              label={translateText(["selectDuration"])}
-              onChange={setSelectedDuration}
-              options={{
-                fullDay: LeaveStates.FULL_DAY,
-                halfDayMorning: LeaveStates.MORNING,
-                halfDayEvening: LeaveStates.EVENING
-              }}
-              disabledOptions={disabledDurationSelectorOptions}
-              value={selectedDuration}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col md:flex-row gap-3 md:gap-7">
+        <div className="flex flex-col gap-3">
+          <fieldset
+            ref={dateFieldRef}
+            tabIndex={-1}
+            aria-label={translateAria(["calendar", "selectDateForLeave"])}
+            className="min-w-0"
+          >
+            <CalendarDateRangePicker
+              selectedDates={selectedDates}
+              setSelectedDates={setSelectedDates}
+              setSelectedMonth={setSelectedMonth}
+              allowedDuration={selectedPolicyBalance.leaveType.minDuration}
+              allHolidays={allHolidays}
+              minDate={minDate}
+              maxDate={maxDate}
+              workingDays={workingDays}
+              myLeaveRequests={blockingLeaveRequests}
             />
-            <TextArea
-              label={translateText(["comment"])}
-              ariaLabel={{ icon: translateAria(["comment.icon"]) }}
-              placeholder={translateText(["addComment"])}
-              isRequired={selectedPolicyBalance.leaveType.isCommentMust}
-              isAttachmentRequired={
-                selectedPolicyBalance.leaveType.isAttachmentMust
-              }
-              maxLength={MAX_POLICY_LEAVE_COMMENT_LENGTH}
-              name="comment"
-              value={comment}
-              onChange={handleCommentChange}
-              iconName={
-                selectedPolicyBalance.leaveType.isAttachment
-                  ? IconName.ATTACHMENT_ICON
-                  : undefined
-              }
-              onIconClick={handleAttachmentIconClick}
-              error={{
-                comment: formErrors?.comment,
-                attachment: formErrors?.attachment
-              }}
-            />
-            <AttachmentSummary
-              attachments={attachments}
-              onDeleteBtnClick={handleDeleteAttachment}
-            />
-            {!isSubmitDisabled && (
-              <LeaveSummary
-                leaveTypeName={selectedPolicyBalance.policyName}
-                leaveTypeEmoji={selectedPolicyBalance.leaveType.emojiCode}
-                leaveDuration={selectedDuration}
-                startDate={selectedDates[0]}
-                endDate={selectedDates[1]}
-                resourceAvailability={resourceAvailability}
-                workingDays={workingDays}
-              />
-            )}
+          </fieldset>
+          <div className="flex flex-row items-center gap-2">
+            <p>
+              {translateText(["myPolicyBalance"], {
+                policyName: selectedPolicyBalance.policyName
+              })}
+            </p>
+            <PolicyLeaveBalanceCard policyBalance={selectedPolicyBalance} />
           </div>
         </div>
-      }
-    />
+        <div className="flex flex-col gap-3 w-full">
+          {selectedDates.length && myTeams?.length ? (
+            <PolicyTeamAvailabilityCard
+              teams={myTeams}
+              resourceAvailability={resourceAvailability}
+            />
+          ) : (
+            <></>
+          )}
+          <DurationSelector
+            label={translateText(["selectDuration"])}
+            onChange={setSelectedDuration}
+            options={{
+              fullDay: LeaveStates.FULL_DAY,
+              halfDayMorning: LeaveStates.MORNING,
+              halfDayEvening: LeaveStates.EVENING
+            }}
+            disabledOptions={disabledDurationSelectorOptions}
+            value={selectedDuration}
+          />
+          <TextArea
+            label={translateText(["comment"])}
+            ariaLabel={{ icon: translateAria(["comment.icon"]) }}
+            placeholder={translateText(["addComment"])}
+            isRequired={selectedPolicyBalance.leaveType.isCommentMust}
+            isAttachmentRequired={
+              selectedPolicyBalance.leaveType.isAttachmentMust
+            }
+            maxLength={MAX_POLICY_LEAVE_COMMENT_LENGTH}
+            name="comment"
+            value={comment}
+            onChange={handleCommentChange}
+            iconName={
+              selectedPolicyBalance.leaveType.isAttachment
+                ? IconName.ATTACHMENT_ICON
+                : undefined
+            }
+            onIconClick={handleAttachmentIconClick}
+            error={{
+              comment: formErrors?.comment,
+              attachment: formErrors?.attachment
+            }}
+          />
+          <AttachmentSummary
+            attachments={attachments}
+            onDeleteBtnClick={handleDeleteAttachment}
+          />
+          {!isSubmitDisabled && (
+            <LeaveSummary
+              leaveTypeName={selectedPolicyBalance.policyName}
+              leaveTypeEmoji={selectedPolicyBalance.leaveType.emojiCode}
+              leaveDuration={selectedDuration}
+              startDate={selectedDates[0]}
+              endDate={selectedDates[1]}
+              resourceAvailability={resourceAvailability}
+              workingDays={workingDays}
+            />
+          )}
+        </div>
+      </div>
+      <div className="flex flex-row gap-3 mt-4 justify-end">
+        <ButtonV2
+          variant={"tertiary"}
+          onClick={handleCancel}
+          icon={<Icon name={IconName.CLOSE_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["cancelBtn"])}
+        </ButtonV2>
+        <ButtonV2
+          variant={"primary"}
+          onClick={onSubmit}
+          isLoading={isApplyPending}
+          disabled={isSubmitDisabled || isApplyPending}
+          aria-label={translateAria(["confirmApplyLeave"])}
+          icon={<Icon name={IconName.TICK_ICON} />}
+          iconPosition="end"
+        >
+          {translateText(["submitBtn"])}
+        </ButtonV2>
+      </div>
+    </div>
   );
 };
 

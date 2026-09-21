@@ -1,4 +1,4 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode, useMemo } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -77,7 +77,16 @@ const PolicyLeaveModalController = () => {
     modalType === PolicyLeaveModalEnums.POLICY_SELECTION;
 
   if (isLargeModal) {
-    return <>{modalContent()}</>;
+    return (
+      <LargeModal
+        id="apply-policy-leave-modal"
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        modalHeader={modalTitle}
+        content={modalContent()}
+        backdropVariant="dark"
+      />
+    );
   }
 
   return (

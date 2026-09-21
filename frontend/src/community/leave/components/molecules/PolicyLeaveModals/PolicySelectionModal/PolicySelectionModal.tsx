@@ -1,4 +1,4 @@
-import { LargeModal } from "@rootcodelabs/skapp-ui";
+import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -14,37 +14,20 @@ const PolicySelectionModal = () => {
     "policySelectionModal"
   );
 
-  const translateModalTitle = useTranslator(
-    "leaveModule",
-    "myRequests",
-    "applyPolicyLeaveModal"
-  );
-
-  const isModalOpen = usePolicyLeaveStore((state) => state.isModalOpen);
   const setModalType = usePolicyLeaveStore((state) => state.setModalType);
 
   return (
-    <LargeModal
-      id="policy-selection-modal"
-      isOpen={isModalOpen}
-      onClose={() => setModalType(PolicyLeaveModalEnums.NONE)}
-      modalHeader={translateModalTitle(["title"])}
-      backdropVariant="dark"
-      buttons={{
-        buttonRight: {
-          variant: "tertiary",
-          onClick: () => setModalType(PolicyLeaveModalEnums.NONE),
-          icon: <Icon name={IconName.CLOSE_ICON} />,
-          iconPosition: "end",
-          children: translateText(["cancelBtn"])
-        }
-      }}
-      content={
-        <div className="flex flex-col gap-4">
-          <LeavePolicyAllocation />
-        </div>
-      }
-    />
+    <div className="flex flex-col gap-4">
+      <LeavePolicyAllocation />
+      <ButtonV2
+        variant={"tertiary"}
+        onClick={() => setModalType(PolicyLeaveModalEnums.NONE)}
+        icon={<Icon name={IconName.CLOSE_ICON} />}
+        iconPosition="end"
+      >
+        {translateText(["cancelBtn"])}
+      </ButtonV2>
+    </div>
   );
 };
 
