@@ -484,7 +484,7 @@ const ApplyPolicyLeaveModal = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 md:gap-7">
         <div className="flex flex-col gap-3">
           <fieldset
@@ -574,7 +574,7 @@ const ApplyPolicyLeaveModal = () => {
           )}
         </div>
       </div>
-      <div className="flex flex-row gap-3 mt-4 justify-end">
+      <div className="sticky bottom-0 mt-auto flex flex-row justify-end gap-3 bg-white pt-4">
         <ButtonV2
           variant={"tertiary"}
           onClick={handleCancel}
