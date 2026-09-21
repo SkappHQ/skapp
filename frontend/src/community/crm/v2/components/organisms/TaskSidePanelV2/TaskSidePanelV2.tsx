@@ -150,7 +150,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     handleClose();
   };
 
-  const handleMarkAsDoneError = () => {
+  const handleTaskUpdateError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -161,7 +161,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
   const { mutate: markTaskAsDone } = useUpdateTask(
     handleMarkAsDoneSuccess,
-    handleMarkAsDoneError
+    handleTaskUpdateError
   );
 
   const handleMarkAsDone = () => {
@@ -183,18 +183,9 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     });
   };
 
-  const handleReopenError = () => {
-    setToastMessage({
-      open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
-    });
-  };
-
   const { mutate: reopenTask } = useUpdateTask(
     handleReopenSuccess,
-    handleReopenError
+    handleTaskUpdateError
   );
 
   const handleReopen = () => {
