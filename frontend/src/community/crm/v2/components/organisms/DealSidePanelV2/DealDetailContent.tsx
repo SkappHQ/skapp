@@ -4,19 +4,20 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import DealSidePanelSkeleton from "~community/crm/components/organisms/DealSidePanel/DealSidePanelSkeleton";
 import { useEditDeal, useGetDealById } from "~community/crm/v2/api/DealApi";
 import { useGetTasksInfinite } from "~community/crm/v2/api/TaskApi";
 import SidePanelTasksSection from "~community/crm/v2/components/molecules/SidePanelTasksSection/SidePanelTasksSection";
 import { TASK_PAGE_SIZE } from "~community/crm/v2/constants/taskConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmTaskFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import { ingestEditedDeal } from "~community/crm/v2/utils/boardUtil";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import DealDescriptionSection from "./DealDescriptionSection";
 import DealPropertiesSidebar from "./DealPropertiesSidebar";
+import DealSidePanelSkeleton from "./DealSidePanelSkeleton";
 import DealTitleSection from "./DealTitleSection";
 
 interface DealDetailContentProps {
@@ -27,36 +28,56 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   const translateText = useTranslator("crmModule", "deals", "sidePanel");
   const { setToastMessage } = useToast();
 
-  const {
-    deal,
-    deals,
-    board,
-    isCrmDataInitialized,
-    setDeals,
-    setBoardColumn,
-    setTasks
-  } = useCrmStoreV2(
-    useShallow((store) => ({
-      deal: store.deals[dealId],
-      deals: store.deals,
-      board: store.board,
-      isCrmDataInitialized: store.isCrmDataInitialized,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setTasks: store.setTasks
-    }))
+  const { deal, deals, board, tasks, setDeals, setBoardColumn, setTasks } =
+    useCrmStoreV2(
+      useShallow((store) => ({
+        deal: store.deals[dealId],
+        deals: store.deals,
+        board: store.board,
+        tasks: store.tasks,
+        setDeals: store.setDeals,
+        setBoardColumn: store.setBoardColumn,
+        setTasks: store.setTasks
+      }))
+    );
+
+  const taskFilters: CrmTaskFilterRequest = {
+    dealId,
+    size: TASK_PAGE_SIZE
+  };
+
+  const { data: dealDetail, isLoading: isDealLoading } = useGetDealById(
+    dealId,
+    true
   );
 
-  const { data: dealDetail, isFetchedAfterMount } = useGetDealById(
-    dealId,
-    isCrmDataInitialized
+  const {
+    data: fetchedTasks,
+    isLoading: isTasksLoading,
+    fetchNextPage: fetchNextTasksPage,
+    hasNextPage: hasNextTasksPage,
+    isFetchingNextPage: isFetchingNextTasksPage
+  } = useGetTasksInfinite(taskFilters);
+
+  const dealTasks = useMemo(
+    () => fetchedTasks?.pages.flatMap((page) => page.items) ?? [],
+    [fetchedTasks]
   );
 
   useEffect(() => {
-    if (dealDetail && isFetchedAfterMount) {
-      setDeals(mergeDeals(deals, [dealDetail]));
-    }
-  }, [dealDetail, isFetchedAfterMount]);
+    if (!dealDetail) return;
+
+    setDeals(mergeDeals(deals, [dealDetail]));
+  }, [dealDetail]);
+
+  useEffect(() => {
+    if (!fetchedTasks) return;
+
+    setTasks(updateTaskRecord(tasks, dealTasks));
+    setDeals(
+      mergeDeals(deals, [{ id: dealId, taskIds: toTaskIds(dealTasks) }])
+    );
+  }, [fetchedTasks]);
 
   const handleSuccess = (updatedDeal: CrmDealEntity): void => {
     const next = ingestEditedDeal({ deals, board }, updatedDeal);
@@ -79,32 +100,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
     editDeal({ ...fields, id: dealId });
   };
 
-  const taskFilter = useMemo(
-    () => ({ dealId, size: TASK_PAGE_SIZE }),
-    [dealId]
-  );
-
-  const {
-    data: dealTasksData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage
-  } = useGetTasksInfinite(taskFilter, isCrmDataInitialized);
-
-  const dealTasks = useMemo(
-    () => dealTasksData?.pages.flatMap((page) => page?.items) ?? [],
-    [dealTasksData]
-  );
-
-  const dealTaskIds = useMemo(() => toTaskIds(dealTasks), [dealTasks]);
-
-  useEffect(() => {
-    if (!dealTasks.length) return;
-
-    setTasks(updateTaskRecord(useCrmStoreV2.getState().tasks, dealTasks));
-  }, [dealTasks, setTasks]);
-
-  if (!deal) {
+  if (isDealLoading || isTasksLoading) {
     return <DealSidePanelSkeleton />;
   }
 
@@ -129,11 +125,11 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
             <h2 className="h2">{translateText(["tasks", "title"])}</h2>
             <hr className="border-secondary-accent" />
             <SidePanelTasksSection
-              taskIds={dealTaskIds}
+              taskIds={deal.taskIds}
               emptyDescription={translateText(["tasks", "emptyDescription"])}
-              hasNextPage={hasNextPage}
-              isFetchingNextPage={isFetchingNextPage}
-              onFetchNextPage={fetchNextPage}
+              hasNextPage={hasNextTasksPage}
+              isFetchingNextPage={isFetchingNextTasksPage}
+              onFetchNextPage={fetchNextTasksPage}
             />
           </div>
         </div>

@@ -14,7 +14,10 @@ import {
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
-import { updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
+import {
+  linkTaskToRelatedEntities,
+  updateTaskRecord
+} from "~community/crm/v2/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
@@ -27,18 +30,30 @@ const AddTaskModalContent: FC = () => {
     tasks,
     taskIds,
     owners,
+    companies,
+    contacts,
+    deals,
     setTasks,
     setTaskIds,
     setOwners,
+    setCompanies,
+    setContacts,
+    setDeals,
     setIsTaskModalOpen
   } = useCrmStoreV2(
     useShallow((store) => ({
       tasks: store.tasks,
       taskIds: store.taskIds,
       owners: store.owners,
+      companies: store.companies,
+      contacts: store.contacts,
+      deals: store.deals,
       setTasks: store.setTasks,
       setTaskIds: store.setTaskIds,
       setOwners: store.setOwners,
+      setCompanies: store.setCompanies,
+      setContacts: store.setContacts,
+      setDeals: store.setDeals,
       setIsTaskModalOpen: store.setIsTaskModalOpen
     }))
   );
@@ -102,6 +117,16 @@ const AddTaskModalContent: FC = () => {
     if (createdTask.id !== undefined) {
       setTasks(updateTaskRecord(tasks, [createdTask]));
       setTaskIds([createdTask.id, ...taskIds]);
+
+      const links = linkTaskToRelatedEntities(
+        createdTask,
+        companies,
+        contacts,
+        deals
+      );
+      setCompanies(links.companies);
+      setContacts(links.contacts);
+      setDeals(links.deals);
     }
 
     handleCloseModal();

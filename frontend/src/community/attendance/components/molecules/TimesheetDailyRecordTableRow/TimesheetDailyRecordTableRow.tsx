@@ -56,6 +56,7 @@ interface Props {
   targetEmployeeDetails?: L1EmployeeType;
   isRowInteractive: boolean;
   isManualEntryRestricted: boolean;
+  isSelfTargetEntry?: boolean;
 }
 
 const TimesheetDailyRecordTableRow: FC<Props> = ({
@@ -64,7 +65,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
   targetEmployeeId,
   targetEmployeeDetails,
   isRowInteractive,
-  isManualEntryRestricted
+  isManualEntryRestricted,
+  isSelfTargetEntry = false
 }) => {
   const { isFreeTier } = useSessionData();
 
@@ -93,7 +95,8 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
     setSelectedDailyRecord,
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
-    setDirectManualTimeEntryEligibleEmployee
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
@@ -212,11 +215,13 @@ const TimesheetDailyRecordTableRow: FC<Props> = ({
           employeeGeneralDetails?.lastName ?? ""
         ]).trim()
       });
+      setIsSelfDirectTimeEntry(isSelfTargetEntry);
       handleEdit();
       return;
     }
 
     setDirectManualTimeEntryEligibleEmployee(null);
+    setIsSelfDirectTimeEntry(false);
     mutate();
   };
 

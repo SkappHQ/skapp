@@ -17,9 +17,6 @@
   --color-primary-background: var(--color-blue-light);
   --color-primary-background-dark: var(--color-blue-dark);
 
-  --font-family-sans:
-    var(--font-inter), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   --color-label-bg-seafoam: #a4d1c9;
   --color-label-bg-sand: #ffcecf;

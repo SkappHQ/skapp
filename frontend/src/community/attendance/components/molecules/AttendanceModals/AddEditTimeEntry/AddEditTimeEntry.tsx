@@ -87,7 +87,8 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     employeeTimesheetModalType,
     currentAddTimeChanges,
     setIsEmployeeTimesheetModalOpen,
-    directManualTimeEntryEligibleEmployee
+    directManualTimeEntryEligibleEmployee,
+    isSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
 
   const {
@@ -351,7 +352,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      {directManualTimeEntryEligibleEmployee && (
+      {directManualTimeEntryEligibleEmployee && !isSelfDirectTimeEntry && (
         <InputField
           label={translateText(["directEntryEmployeeLabel"])}
           inputName={"direct_entry_employee"}
