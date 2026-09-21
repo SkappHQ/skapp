@@ -3,7 +3,6 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.mapper.PeopleMapper;
 import com.skapp.community.peopleplanner.model.Employee;
