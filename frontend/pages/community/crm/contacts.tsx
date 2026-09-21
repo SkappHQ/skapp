@@ -5,13 +5,6 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import SidePanelWrapper from "~community/crm/components/atoms/SidePanelWrapper/SidePanelWrapper";
-import ContactModalController from "~community/crm/components/organisms/ContactModalController/ContactModalController";
-import ContactSidePanel from "~community/crm/components/organisms/ContactSidePanel/ContactSidePanel";
-import { ContactTable } from "~community/crm/components/organisms/ContactTable/ContactTable";
-import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
-import { useCrmStore } from "~community/crm/store/store";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
 import ContactModalControllerV2 from "~community/crm/v2/components/organisms/ContactModalController/ContactModalController";
 import ContactSidePanelV2 from "~community/crm/v2/components/organisms/ContactSidePanel/ContactSidePanel";
 import { ContactTable as ContactTableV2 } from "~community/crm/v2/components/organisms/ContactTable/ContactTable";
@@ -23,59 +16,7 @@ import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTyp
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-// Flip to true to serve the CRM Contacts page from the normalized v2 store surface.
-const isCrmContactsV2 = true;
-
-const ContactsV1 = () => {
-  const translateText = useTranslator("crmModule");
-  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
-
-  const { setIsContactModalOpen, setContactModalType, selectedContactId } =
-    useCrmStore(
-      useShallow((store) => ({
-        setIsContactModalOpen: store.setIsContactModalOpen,
-        setContactModalType: store.setContactModalType,
-        selectedContactId: store.selectedContactId
-      }))
-    );
-
-  const onPrimaryButtonClick = () => {
-    guardCrmCreate(CrmLimitResource.CONTACTS, () => {
-      setIsContactModalOpen(true);
-      setContactModalType(CrmModalTypes.ADD_CONTACT_MODAL);
-    });
-  };
-
-  return (
-    <ContentLayout
-      breadcrumbs={[
-        { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["contacts", "title"]) }
-      ]}
-      pageHead={translateText(["contacts", "pageHead"])}
-      title={translateText(["contacts", "title"])}
-      primaryButtonText={translateText(["contacts", "addContactBtn"])}
-      primaryBtnIconName={IconName.ADD_ICON}
-      onPrimaryButtonClick={onPrimaryButtonClick}
-      isPrimaryBtnLoading={isCheckingCrmLimit}
-      module={Modules.CRM}
-    >
-      <>
-        {selectedContactId && (
-          <SidePanelWrapper>
-            <ContactSidePanel />
-          </SidePanelWrapper>
-        )}
-
-        <ContactModalController />
-        <TaskModalController />
-        <ContactTable />
-      </>
-    </ContentLayout>
-  );
-};
-
-const ContactsV2 = () => {
+const Contacts: NextPage = () => {
   const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
@@ -125,8 +66,5 @@ const ContactsV2 = () => {
     </ContentLayout>
   );
 };
-
-const Contacts: NextPage = () =>
-  isCrmContactsV2 ? <ContactsV2 /> : <ContactsV1 />;
 
 export default Contacts;
