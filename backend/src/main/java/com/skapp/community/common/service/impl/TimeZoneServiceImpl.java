@@ -1,11 +1,12 @@
 package com.skapp.community.common.service.impl;
 
 import com.skapp.community.common.constant.CommonConstants;
-import com.skapp.community.common.service.OrganizationService;
+import com.skapp.community.common.model.Organization;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.util.DateTimeUtils;
+import com.skapp.community.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -20,11 +21,14 @@ import java.time.ZoneId;
 @Transactional(readOnly = true)
 public class TimeZoneServiceImpl implements TimeZoneService {
 
-	private final ObjectProvider<OrganizationService> organizationServiceProvider;
+	private final OrganizationDao organizationDao;
 
 	@Override
 	public ZoneId organizationTimezone() {
-		return organizationServiceProvider.getObject().getOrganizationZoneId();
+		return DateTimeUtils.requireZoneId(organizationDao.findTopByOrderByOrganizationIdDesc()
+			.map(Organization::getOrganizationTimeZone)
+			.filter(timeZone -> !StringUtils.isNullOrBlank(timeZone))
+			.orElse(CommonConstants.DEFAULT_ORGANIZATION_TIME_ZONE));
 	}
 
 	@Override
