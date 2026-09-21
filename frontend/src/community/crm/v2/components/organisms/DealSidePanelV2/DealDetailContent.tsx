@@ -92,7 +92,7 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
   } = useGetTasksInfinite(taskFilter, isCrmDataInitialized);
 
   const dealTasks = useMemo(
-    () => dealTasksData?.pages.flatMap((page) => page?.items ?? []) ?? [],
+    () => dealTasksData?.pages.flatMap((page) => page?.items) ?? [],
     [dealTasksData]
   );
 
