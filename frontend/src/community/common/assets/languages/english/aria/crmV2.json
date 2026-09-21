@@ -6,16 +6,18 @@
       "amount": "Amount",
       "contact": "Contact"
     },
-    "table": {
+    "header": {
       "clearSearch": "Clear search",
       "listView": "List view",
       "kanbanView": "Kanban view",
-      "switchDealView": "Switch deal view",
+      "switchDealView": "Switch deal view"
+    },
+    "table": {
       "openDealDetails": "Open deal details for {{name}}",
       "inlineEdit": {
         "value": "Value",
-        "dealOwner": "Deal Owner",
-        "contactName": "Contact Name"
+        "dealOwner": "Deal owner",
+        "contactName": "Contact name"
       }
     },
     "sidePanel": {
@@ -33,7 +35,7 @@
       "description": "Description"
     },
     "linkedSection": {
-      "addDealBtn": "Add Deal",
+      "addDealBtn": "Add deal",
       "inlineAdd": {
         "group": "Add new deal",
         "saveDeal": "Save deal",

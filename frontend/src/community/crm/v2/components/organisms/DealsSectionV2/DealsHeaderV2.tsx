@@ -32,25 +32,25 @@ const DealsHeaderV2: FC<Props> = ({
     {
       value: DealViewEnum.KANBAN,
       icon: <BoardIcon />,
-      ariaLabel: translateAria(["deals", "table", "kanbanView"])
+      ariaLabel: translateAria(["deals", "header", "kanbanView"])
     },
     {
       value: DealViewEnum.LIST,
       icon: <ListViewIcon />,
-      ariaLabel: translateAria(["deals", "table", "listView"])
+      ariaLabel: translateAria(["deals", "header", "listView"])
     }
   ];
 
   return (
     <div className="flex items-center justify-between gap-4">
       <InputField
-        placeholder={translateText(["deals", "table", "searchPlaceholder"])}
+        placeholder={translateText(["deals", "header", "searchPlaceholder"])}
         value={inputValue}
         onChange={(e) => onSearchChange(e.target.value)}
         type="search"
         variant="md"
         rightIcon={<SearchIcon />}
-        ariaLabelClearButton={translateAria(["deals", "table", "clearSearch"])}
+        ariaLabelClearButton={translateAria(["deals", "header", "clearSearch"])}
         customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         className="w-103 h-12"
       />
@@ -58,7 +58,7 @@ const DealsHeaderV2: FC<Props> = ({
         options={viewOptions}
         activeView={activeView}
         onChange={handleViewChange}
-        ariaLabel={translateAria(["deals", "table", "switchDealView"])}
+        ariaLabel={translateAria(["deals", "header", "switchDealView"])}
       />
     </div>
   );

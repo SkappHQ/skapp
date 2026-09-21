@@ -308,7 +308,6 @@ const AddDealSidePanelV2: FC = () => {
 
             <div className="w-1/3 min-w-0 flex flex-col gap-4">
               <DealPropertiesSection
-                translateText={translateText}
                 formik={formik}
                 contacts={contacts}
                 companies={companies}

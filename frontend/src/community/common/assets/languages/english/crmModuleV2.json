@@ -17,7 +17,7 @@
     "page": {
       "pageHead": "Deals | Skapp",
       "title": "Deals",
-      "addDealBtn": "Add Deal"
+      "addDealBtn": "Add deal"
     },
     "defaultStageNames": {
       "LEAD": "Lead",
@@ -69,15 +69,14 @@
         "deal": "Deal",
         "value": "Value",
         "stage": "Stage",
-        "contactName": "Contact Name",
-        "companyName": "Company Name",
+        "contactName": "Contact name",
+        "companyName": "Company name",
         "priority": "Priority",
-        "dealOwner": "Deal Owner"
+        "dealOwner": "Deal owner"
       },
       "sortAscending": "Ascending",
       "sortDescending": "Descending",
       "hideColumn": "Hide column",
-      "searchPlaceholder": "Search deals",
       "emptyDataState": {
         "title": "No deals available.",
         "description": "Add a new deal to get started"
@@ -94,6 +93,9 @@
         }
       }
     },
+    "header": {
+      "searchPlaceholder": "Search deals"
+    },
     "board": {
       "toastMessages": {
         "moveErrorTitle": "Couldn't move deal",
@@ -103,7 +105,7 @@
       }
     },
     "sidePanel": {
-      "deleteDeal": "Delete Deal",
+      "deleteDeal": "Delete deal",
       "linkCopied": "Link copied",
       "placeholders": {
         "description": "Add description"
@@ -144,7 +146,7 @@
       }
     },
     "deleteModal": {
-      "title": "Delete Deal",
+      "title": "Delete deal",
       "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
       "buttons": {
         "cancel": "Cancel",
