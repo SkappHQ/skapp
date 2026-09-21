@@ -1,6 +1,5 @@
 package com.skapp.community.timeplanner.payload.request;
 
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.timeplanner.type.TimeRecordActionTypes;
 import lombok.Getter;
 import lombok.Setter;
