@@ -37,6 +37,11 @@ export interface DropdownListType {
   emoji?: string;
 }
 
+export interface TimeZoneOption {
+  label: string;
+  value: string;
+}
+
 export interface ErrorResponse {
   response: {
     data: {

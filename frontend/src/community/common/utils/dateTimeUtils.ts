@@ -9,9 +9,9 @@ import {
   monthAbbreviations
 } from "~community/common/constants/timeConstants";
 import {
-  DropdownListType,
   OptionType,
   TimeOfDayType,
+  TimeZoneOption,
   TranslatorFunctionType
 } from "~community/common/types/CommonTypes";
 
@@ -601,7 +601,7 @@ export const formatDateRange = (
   return `${startFormat} ${start.year} to ${endFormat} ${end.year}`;
 };
 
-export const generateTimezoneList = (): DropdownListType[] => {
+export const generateTimezoneList = (): TimeZoneOption[] => {
   const date = new Date();
 
   const timezones = Intl.supportedValuesOf("timeZone");
@@ -632,14 +632,22 @@ export const generateTimezoneList = (): DropdownListType[] => {
         return null;
       }
     })
-    .filter(Boolean) as DropdownListType[];
+    .filter(Boolean) as TimeZoneOption[];
 
   return options.sort((a, b) => {
-    const offsetA = (a.label as string).match(/GMT([+-]\d+)/)?.[1] || "0";
-    const offsetB = (b.label as string).match(/GMT([+-]\d+)/)?.[1] || "0";
+    const offsetA = a.label.match(/GMT([+-]\d+)/)?.[1] || "0";
+    const offsetB = b.label.match(/GMT([+-]\d+)/)?.[1] || "0";
     return parseInt(offsetA) - parseInt(offsetB);
   });
 };
+
+export const generateTimeZoneDictionary = (
+  timeZones: TimeZoneOption[]
+): Record<string, string> =>
+  timeZones.reduce<Record<string, string>>((acc, timeZone) => {
+    acc[timeZone.value] = timeZone.label;
+    return acc;
+  }, {});
 
 // example: Input - 2024-12-02T14:10:00.036411
 // example: Output - after Today at 2:10 PM
