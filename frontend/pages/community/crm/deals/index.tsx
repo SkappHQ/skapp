@@ -72,7 +72,7 @@ const DealsV1 = () => {
 };
 
 const DealsV2 = () => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator("crmModuleV2");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const openCrmSidePanel = useCrmStoreV2((store) => store.openCrmSidePanel);
@@ -91,11 +91,11 @@ const DealsV2 = () => {
     <ContentLayout
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["deals", "title"]) }
+        { label: translateText(["deals", "page", "title"]) }
       ]}
-      pageHead={translateText(["deals", "pageHead"])}
-      title={translateText(["deals", "title"])}
-      primaryButtonText={translateText(["deals", "addDealBtn"])}
+      pageHead={translateText(["deals", "page", "pageHead"])}
+      title={translateText(["deals", "page", "title"])}
+      primaryButtonText={translateText(["deals", "page", "addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}

@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
+import { ErrorResponse } from "~community/common/types/CommonTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmDealEntity,
@@ -119,7 +120,7 @@ const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
 export const useGetDealById = (
   id: number,
   enabled?: boolean
-): UseQueryResult<CrmDealEntity> =>
+): UseQueryResult<CrmDealEntity, ErrorResponse> =>
   useQuery({
     queryKey: crmDealQueryKeys.DEAL_BY_ID(id),
     queryFn: () => fetchDealById(id),

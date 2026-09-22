@@ -1,6 +1,14 @@
-import { CrmTaskRecord } from "~community/crm/v2/types/CrmCommonTypes";
+import {
+  CrmTaskEntity,
+  CrmTaskRecord
+} from "~community/crm/v2/types/CrmCommonTypes";
 
-import { removeTaskFromRecord, removeTaskId } from "../taskUtil";
+import {
+  addMissingTasks,
+  getCompletedTasks,
+  removeTaskFromRecord,
+  removeTaskId
+} from "../taskUtil";
 
 describe("removeTaskId", () => {
   it("removes the id when it is present", () => {
@@ -66,5 +74,85 @@ describe("removeTaskFromRecord", () => {
     };
 
     expect(removeTaskFromRecord(tasks, 1)[2]).toBe(tasks[2]);
+  });
+});
+
+describe("getCompletedTasks", () => {
+  it("keeps only the completed tasks", () => {
+    const tasks: CrmTaskEntity[] = [
+      { id: 1, name: "Call the contact", isCompleted: true },
+      { id: 2, name: "Send the proposal", isCompleted: false }
+    ];
+
+    expect(getCompletedTasks(tasks)).toEqual([tasks[0]]);
+  });
+
+  it("drops a task once it is reopened", () => {
+    const tasks: CrmTaskEntity[] = [
+      { id: 1, name: "Call the contact", isCompleted: false }
+    ];
+
+    expect(getCompletedTasks(tasks)).toEqual([]);
+  });
+
+  it("treats a missing isCompleted flag as not completed", () => {
+    const tasks: CrmTaskEntity[] = [{ id: 1, name: "Call the contact" }];
+
+    expect(getCompletedTasks(tasks)).toEqual([]);
+  });
+
+  it("does not mutate the input array", () => {
+    const tasks: CrmTaskEntity[] = [
+      { id: 1, name: "Call the contact", isCompleted: true },
+      { id: 2, name: "Send the proposal", isCompleted: false }
+    ];
+
+    getCompletedTasks(tasks);
+
+    expect(tasks).toEqual([
+      { id: 1, name: "Call the contact", isCompleted: true },
+      { id: 2, name: "Send the proposal", isCompleted: false }
+    ]);
+  });
+});
+
+describe("addMissingTasks", () => {
+  it("adds tasks the record does not already hold", () => {
+    const tasks: CrmTaskRecord = { 1: { id: 1, name: "Call the contact" } };
+
+    expect(
+      addMissingTasks(tasks, [{ id: 2, name: "Send the proposal" }])
+    ).toEqual({
+      1: { id: 1, name: "Call the contact" },
+      2: { id: 2, name: "Send the proposal" }
+    });
+  });
+
+  it("keeps the stored task when the incoming one is stale", () => {
+    const tasks: CrmTaskRecord = {
+      1: { id: 1, name: "Call the contact", isCompleted: false }
+    };
+
+    const merged = addMissingTasks(tasks, [
+      { id: 1, name: "Call the contact", isCompleted: true }
+    ]);
+
+    expect(merged[1].isCompleted).toBe(false);
+  });
+
+  it("skips tasks without an id", () => {
+    const tasks: CrmTaskRecord = { 1: { id: 1, name: "Call the contact" } };
+
+    expect(addMissingTasks(tasks, [{ name: "Send the proposal" }])).toEqual({
+      1: { id: 1, name: "Call the contact" }
+    });
+  });
+
+  it("does not mutate the input record", () => {
+    const tasks: CrmTaskRecord = { 1: { id: 1, name: "Call the contact" } };
+
+    addMissingTasks(tasks, [{ id: 2, name: "Send the proposal" }]);
+
+    expect(tasks).toEqual({ 1: { id: 1, name: "Call the contact" } });
   });
 });
