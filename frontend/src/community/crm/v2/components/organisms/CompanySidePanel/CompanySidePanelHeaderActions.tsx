@@ -12,7 +12,8 @@ const CompanySidePanelHeaderActions: FC<CompanySidePanelHeaderActionsProps> = ({
   isCrmSalesManager,
   menuItems
 }) => {
-  const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   if (!isCrmSalesManager) {
     return null;
@@ -23,7 +24,7 @@ const CompanySidePanelHeaderActions: FC<CompanySidePanelHeaderActionsProps> = ({
       id="company-actions"
       menuItems={menuItems}
       anchorButton={{
-        "aria-label": translateText(["kebabMenuAriaLabel"])
+        "aria-label": translateAria(["companies", "sidePanel", "kebabMenu"])
       }}
       className={{
         anchorElement:

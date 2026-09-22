@@ -19,11 +19,7 @@ interface SidePanelCompanyHeaderProps {
 const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
   company
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
+  const translateText = useTranslator("crmModuleV2");
 
   const { website, contactNumber, address, industry } = company;
 
@@ -76,7 +72,7 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
               fill="var(--color-secondary-icon)"
             />
           }
-          value={translateText([industry])}
+          value={translateText(["companies", "industryOptions", industry])}
         />
       )}
     </div>

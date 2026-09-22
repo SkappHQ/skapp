@@ -68,7 +68,7 @@ interface CompanySidePanelProps {
 }
 
 const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
-  const translateText = useTranslator("crmModule", "companies", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
   const { isCrmSalesManager } = useSessionData();
   const { setToastMessage } = useToast();
 
@@ -121,8 +121,18 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["errors", "companyNotFoundTitle"]),
-      description: translateText(["errors", "companyNotFoundDescription"])
+      title: translateText([
+        "companies",
+        "sidePanel",
+        "errors",
+        "companyNotFoundTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "sidePanel",
+        "errors",
+        "companyNotFoundDescription"
+      ])
     });
     handleClose();
   };
@@ -253,7 +263,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     () => [
       {
         id: "edit",
-        label: translateText(["editCompany"]),
+        label: translateText(["companies", "sidePanel", "editCompany"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
         onClick: () => {
           setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
@@ -262,7 +272,7 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
       },
       {
         id: "delete",
-        label: translateText(["deleteCompany"]),
+        label: translateText(["companies", "sidePanel", "deleteCompany"]),
         icon: {
           start: (
             <DeleteButtonIcon
@@ -286,15 +296,15 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   const tabs: TabItem[] = [
     {
       id: CrmSidePanelTabEnum.TASKS,
-      label: translateText(["tabs", "tasks"])
+      label: translateText(["companies", "sidePanel", "tabs", "tasks"])
     },
     {
       id: CrmSidePanelTabEnum.DEALS,
-      label: translateText(["tabs", "deals"])
+      label: translateText(["companies", "sidePanel", "tabs", "deals"])
     },
     {
       id: CrmSidePanelTabEnum.CONTACTS,
-      label: translateText(["tabs", "contacts"])
+      label: translateText(["companies", "sidePanel", "tabs", "contacts"])
     }
   ];
 
@@ -367,7 +377,12 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
                 hasNextPage={hasNextTasksPage}
                 isFetchingNextPage={isFetchingNextTasksPage}
                 onFetchNextPage={fetchNextTasksPage}
-                emptyDescription={translateText(["tasks", "emptyDescription"])}
+                emptyDescription={translateText([
+                  "companies",
+                  "sidePanel",
+                  "tasks",
+                  "emptyDescription"
+                ])}
               />
             )}
           </>

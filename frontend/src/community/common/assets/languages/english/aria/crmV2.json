@@ -1,0 +1,25 @@
+{
+  "companies": {
+    "table": {
+      "search": "Search companies by name",
+      "clearSearch": "Clear search",
+      "filter": "Filter companies"
+    },
+    "sidePanel": {
+      "kebabMenu": "Company actions"
+    },
+    "modal": {
+      "companyName": "Company name",
+      "contactNumber": "Contact number",
+      "website": "Website",
+      "address": "Address",
+      "industry": "Industry",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteModal": {
+      "confirm": "Confirm delete company",
+      "cancel": "Cancel delete company"
+    }
+  }
+}

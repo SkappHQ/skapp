@@ -76,7 +76,7 @@ const CompaniesV1 = () => {
 };
 
 const CompaniesV2 = () => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator("crmModuleV2");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
@@ -101,11 +101,11 @@ const CompaniesV2 = () => {
     <ContentLayout
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["companies", "title"]) }
+        { label: translateText(["companies", "page", "title"]) }
       ]}
-      pageHead={translateText(["companies", "pageHead"])}
-      title={translateText(["companies", "title"])}
-      primaryButtonText={translateText(["companies", "addCompanyBtn"])}
+      pageHead={translateText(["companies", "page", "pageHead"])}
+      title={translateText(["companies", "page", "title"])}
+      primaryButtonText={translateText(["companies", "page", "addCompanyBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isCheckingCrmLimit}
