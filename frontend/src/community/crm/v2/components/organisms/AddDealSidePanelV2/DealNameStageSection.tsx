@@ -19,12 +19,18 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
   formik,
   isDuplicateName
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { getStageByName } = useStageNameMapper();
 
   let nameErrorMessage: string | undefined;
   if (isDuplicateName) {
-    nameErrorMessage = translateText(["validations", "dealNameExists"]);
+    nameErrorMessage = translateText([
+      "deals",
+      "common",
+      "validations",
+      "dealNameExists"
+    ]);
   } else if (formik.touched.name) {
     nameErrorMessage = formik.errors.name;
   }
@@ -79,8 +85,13 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
     <div className="flex gap-6 items-start">
       <div className="w-2/3">
         <InputField
-          label={translateText(["labels", "dealName"])}
-          placeholder={translateText(["placeholders", "dealName"])}
+          label={translateText(["deals", "common", "labels", "dealName"])}
+          placeholder={translateText([
+            "deals",
+            "common",
+            "placeholders",
+            "dealName"
+          ])}
           required
           name="name"
           value={formik.values.name ?? ""}
@@ -89,7 +100,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
           state={nameErrorMessage ? "error" : "default"}
           errorMessage={nameErrorMessage}
           fullWidth
-          aria-label={translateText(["ariaLabels", "dealName"])}
+          aria-label={translateAria(["deals", "addPanel", "dealName"])}
         />
       </div>
       <div className="w-1/3 pt-6.5">
@@ -102,10 +113,15 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
           variant={stageDropdownVariant}
           className="rounded-lg"
           width="55%"
-          placeholder={translateText(["placeholders", "stage"])}
+          placeholder={translateText([
+            "deals",
+            "common",
+            "placeholders",
+            "stage"
+          ])}
           required
           errorMessage={stageErrorMessage}
-          ariaLabel={translateText(["ariaLabels", "stage"])}
+          ariaLabel={translateAria(["deals", "common", "stage"])}
         />
       </div>
     </div>

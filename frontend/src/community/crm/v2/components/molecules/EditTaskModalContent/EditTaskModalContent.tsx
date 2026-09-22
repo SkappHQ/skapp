@@ -119,7 +119,6 @@ const EditTaskModalContent: FC<Props> = ({ taskId }) => {
     <TaskModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );
