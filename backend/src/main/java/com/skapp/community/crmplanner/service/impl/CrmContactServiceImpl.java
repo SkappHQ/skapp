@@ -28,13 +28,8 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.service.CrmContactService;
-import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
-import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
-import com.skapp.community.crmplanner.type.CrmDealSummary;
-import com.skapp.community.crmplanner.type.CrmTaskSummary;
-import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -45,14 +40,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -267,11 +258,11 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto) {
-		log.info("getContactMetrics: execution started");
+	public ResponseEntityDto getContacts(CrmContactMetricRequestDto filterDto) {
+		log.info("getContacts: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContactListItemDto> contactPage = crmContactDao.getContactMetrics(filterDto, pageable);
+		Page<CrmContactListItemDto> contactPage = crmContactDao.getContacts(filterDto, pageable);
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactPage.getContent());
@@ -279,7 +270,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 		pageDto.setTotalItems(contactPage.getTotalElements());
 		pageDto.setTotalPages(contactPage.getTotalPages());
 
-		log.info("getContactMetrics: execution ended");
+		log.info("getContacts: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 

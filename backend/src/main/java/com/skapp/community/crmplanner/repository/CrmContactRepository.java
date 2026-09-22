@@ -15,7 +15,7 @@ import java.util.Optional;
 
 public interface CrmContactRepository {
 
-	Page<CrmContactListItemDto> getContactMetrics(CrmContactMetricRequestDto filterDto, Pageable pageable);
+	Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable);
 
 	Optional<CrmContactMetrics> getContactMetricsById(Long contactId);
 

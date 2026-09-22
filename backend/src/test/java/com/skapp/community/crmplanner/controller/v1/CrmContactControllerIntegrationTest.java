@@ -1021,6 +1021,29 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contact metrics - A fractional deal amount keeps its scale")
+	void getContactMetrics_FractionalDealAmount_KeepsScale() throws Exception {
+		Long companyId = savedCompany("Fractional Corp").getId();
+		Long contactId = savedNamedContact("FractionalMetricsContactUnique", companyId,
+				"fractional.metrics@example.com")
+			.getId();
+
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "5000.55");
+
+		String content = performGetContactsRequest("FractionalMetricsContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].items[0].metrics.closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("a fractional WON amount survives the decimal cast")
+			.isEqualByComparingTo("5000.55");
+	}
+
+	@Test
 	@DisplayName("Get contact metrics - A contact with no company is still listed")
 	void getContactMetrics_ContactWithoutCompany_IsReturned() throws Exception {
 		savedNamedContact("NoCompanyContactUnique", null, "nocompany.metrics@example.com");
@@ -1343,7 +1366,7 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get contact metrics by ID - Task counts match GET /v1/crm/contact/{id}")
+	@DisplayName("Get contact metrics by ID - Counts tasks linked through the contact's deals")
 	void getContactMetricsById_TaskCounts_IncludeDealLinkedTasks() throws Exception {
 		Long companyId = savedCompany("ConsistencyCorp").getId();
 		Long contactId = savedNamedContact("ConsistencyContact", companyId, "consistency.metrics@example.com").getId();

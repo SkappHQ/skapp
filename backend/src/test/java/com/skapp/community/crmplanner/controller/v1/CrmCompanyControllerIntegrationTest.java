@@ -345,8 +345,7 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDeal::getId)
 			.contains(dealId);
-		assertThat(
-				crmContactDao.getContactMetrics(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
 			.extracting(CrmContactListItemDto::getId)
 			.contains(contactId);
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).contains(taskId);
@@ -363,7 +362,7 @@ class CrmCompanyControllerIntegrationTest {
 		CrmTask remainingTask = crmTaskDao.findById(taskId).orElseThrow();
 		assertThat(remainingTask.getIsDeleted()).isFalse();
 
-		PageDto contactsPage = (PageDto) contactService.getContactMetrics(new CrmContactMetricRequestDto())
+		PageDto contactsPage = (PageDto) contactService.getContacts(new CrmContactMetricRequestDto())
 			.getResults()
 			.get(0);
 		@SuppressWarnings("unchecked")

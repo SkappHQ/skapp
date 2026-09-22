@@ -26,7 +26,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -54,7 +53,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmContactListItemDto> getContactMetrics(CrmContactMetricRequestDto filterDto, Pageable pageable) {
+	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<CrmContactListItemDto> query = cb.createQuery(CrmContactListItemDto.class);
