@@ -39,6 +39,4 @@ public class CommonConstants {
 
 	public static final String TIMEZONE_HEADER = "X-Timezone";
 
-	public static final String DEFAULT_ORGANIZATION_TIME_ZONE = "UTC";
-
 }
