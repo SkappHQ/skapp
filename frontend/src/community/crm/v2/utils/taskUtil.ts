@@ -58,6 +58,18 @@ export const updateTaskRecord = (
   return updatedRecord;
 };
 
+export const addMissingTasks = (
+  existingTasks: CrmTaskRecord,
+  newTasks: CrmTaskEntity[]
+): CrmTaskRecord => {
+  const updatedRecord: CrmTaskRecord = { ...existingTasks };
+  for (const task of newTasks) {
+    if (task.id == null || updatedRecord[task.id]) continue;
+    updatedRecord[task.id] = { ...task };
+  }
+  return updatedRecord;
+};
+
 export const removeTaskId = (taskIds: number[], id: number): number[] =>
   taskIds.filter((taskId) => taskId !== id);
 

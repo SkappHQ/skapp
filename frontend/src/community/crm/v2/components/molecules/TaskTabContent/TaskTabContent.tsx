@@ -33,8 +33,12 @@ import {
   CrmSidePanelTypes,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
-import { getMissingDealIds, mergeDeals } from "~community/crm/v2/utils/dealUtil";
 import {
+  getMissingDealIds,
+  mergeDeals
+} from "~community/crm/v2/utils/dealUtil";
+import {
+  addMissingTasks,
   getCompletedTasks,
   getTaskGroups,
   resolveTasks,
@@ -126,18 +130,10 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const visibleTaskIds = useMemo(() => toTaskIds(fetchedTasks), [fetchedTasks]);
 
-  const newlyFetchedTasks = useMemo(
-    () =>
-      isCompletedTab
-        ? (completedTaskData?.pages.at(-1)?.items ?? [])
-        : (openTaskData?.items ?? []),
-    [isCompletedTab, completedTaskData, openTaskData]
-  );
-
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
-    setTasks(updateTaskRecord(tasks, newlyFetchedTasks));
+    setTasks(addMissingTasks(tasks, fetchedTasks));
     setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
