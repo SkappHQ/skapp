@@ -21,7 +21,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @Repository
 @RequiredArgsConstructor
@@ -38,7 +37,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
 		String rawSearchKeyword = workLocationFilterDto.getSearchKeyword();
 		String searchKeyword = rawSearchKeyword == null || rawSearchKeyword.isBlank() ? null
-				: rawSearchKeyword.trim().toLowerCase(Locale.ROOT);
+				: rawSearchKeyword.trim().toLowerCase();
 
 		List<Predicate> predicates = buildPredicates(cb, workLocation, searchKeyword);
 		query.where(predicates.toArray(new Predicate[0]));
