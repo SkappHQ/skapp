@@ -1,14 +1,11 @@
-import {
-  isBefore,
-  isToday,
-  isTomorrow,
-  parseISO,
-  startOfToday
-} from "date-fns";
 import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import {
+  instantInZone,
+  nowInZone
+} from "~community/common/utils/dateTimeUtils";
 
 export const getTaskValidationSchema = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -34,10 +31,14 @@ export const getTaskValidationSchema = (translator: TranslatorFunctionType) =>
     )
   });
 
-export const isOverdue = (dueAt: string): boolean =>
-  isBefore(parseISO(dueAt), startOfToday());
+export const isOverdue = (dueAt: string, zone: string | undefined): boolean =>
+  instantInZone(dueAt, zone).startOf("day") < nowInZone(zone).startOf("day");
 
-export const isDueToday = (dueAt: string): boolean => isToday(parseISO(dueAt));
+export const isDueToday = (dueAt: string, zone: string | undefined): boolean =>
+  instantInZone(dueAt, zone).hasSame(nowInZone(zone), "day");
 
-export const isDueTomorrow = (dueAt: string): boolean =>
-  isTomorrow(parseISO(dueAt));
+export const isDueTomorrow = (
+  dueAt: string,
+  zone: string | undefined
+): boolean =>
+  instantInZone(dueAt, zone).hasSame(nowInZone(zone).plus({ days: 1 }), "day");
