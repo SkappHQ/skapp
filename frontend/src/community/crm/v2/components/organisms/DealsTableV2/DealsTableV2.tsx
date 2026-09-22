@@ -70,7 +70,8 @@ const DealsTableV2: FC<Props> = ({
   enableRowReorder,
   onRowReorder
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { setToastMessage } = useToast();
 
   const {
@@ -99,8 +100,16 @@ const DealsTableV2: FC<Props> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      title: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
       description: translateText([
+        "deals",
+        "table",
         "inlineEdit",
         "toastMessages",
         "editErrorDescription"
@@ -118,9 +127,12 @@ const DealsTableV2: FC<Props> = ({
     [editDeal]
   );
 
-  const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
-    searchKeyword: `'${searchKeyword}'`
-  });
+  const noSearchResultsTitle = translateText(
+    ["deals", "table", "emptySearchState", "title"],
+    {
+      searchKeyword: `'${searchKeyword}'`
+    }
+  );
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];
@@ -130,7 +142,7 @@ const DealsTableV2: FC<Props> = ({
       return [
         {
           id: fieldConfig.field,
-          title: translateText([meta.titleKey]),
+          title: translateText(["deals", "table", "columns", meta.titleKey]),
           field: meta.rowKey,
           width: fieldConfig.width,
           minWidth: DEAL_COLUMN_MIN_WIDTH,
@@ -166,7 +178,7 @@ const DealsTableV2: FC<Props> = ({
               role="button"
               tabIndex={0}
               className="flex items-center gap-2 bg-transparent border-none p-0 cursor-pointer group"
-              aria-label={translateText(["openDealDetails"], {
+              aria-label={translateAria(["deals", "table", "openDealDetails"], {
                 name: deal.name
               })}
               onClick={() => deal.id != null && onDealClick?.(deal.id)}
@@ -269,22 +281,29 @@ const DealsTableV2: FC<Props> = ({
         sortConfig={sortConfig}
         onSort={onSort}
         menuLabels={{
-          sortAscending: translateText(["sortAscending"]),
-          sortDescending: translateText(["sortDescending"]),
-          hideField: translateText(["hideColumn"])
+          sortAscending: translateText(["deals", "table", "sortAscending"]),
+          sortDescending: translateText(["deals", "table", "sortDescending"]),
+          hideField: translateText(["deals", "table", "hideColumn"])
         }}
         emptyStateTitle={
           searchKeyword.trim()
             ? noSearchResultsTitle
-            : translateText(["noDealsTitle"])
+            : translateText(["deals", "table", "emptyDataState", "title"])
         }
         emptyStateDescription={
           searchKeyword.trim()
-            ? translateText(["noSearchResultsDescription"])
-            : translateText(["noDealsDescription"])
+            ? translateText([
+                "deals",
+                "table",
+                "emptySearchState",
+                "description"
+              ])
+            : translateText(["deals", "table", "emptyDataState", "description"])
         }
         scrollThreshold={0.8}
         infiniteScrollLoadingMessage={translateText([
+          "deals",
+          "table",
           "infiniteScrollLoadingMessage"
         ])}
       />

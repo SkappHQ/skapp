@@ -12,7 +12,6 @@ import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { CrmContactFilterRequest } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
   updateCompanyRecord
@@ -28,7 +27,8 @@ interface Props {
 }
 
 const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -43,15 +43,8 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
     searchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const contactLookupFilter: CrmContactFilterRequest = useMemo(
-    () => ({
-      searchKeyword: debouncedSearchTerm,
-      size: DEFAULT_LOOKUP_PAGE_SIZE
-    }),
-    [debouncedSearchTerm]
-  );
   const { data: contactLookupData } = useGetContactLookupV2(
-    contactLookupFilter,
+    { searchKeyword: debouncedSearchTerm, size: DEFAULT_LOOKUP_PAGE_SIZE },
     isEditing && debouncedSearchTerm.length > 0
   );
   const contacts = useMemo(
@@ -95,7 +88,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["inlineEdit", "ariaLabels", "contactName"])}
+      ariaLabel={translateAria(["deals", "table", "inlineEdit", "contactName"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -110,14 +103,16 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
         selectedContact={selectedContact}
         onChange={handleChange}
         onSearch={setSearchTerm}
-        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
+        placeholder={translateText(["deals", "common", "placeholders", "none"])}
         searchPlaceholder={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "contactSearch"
         ])}
         noResultsText={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "noResults"
         ])}

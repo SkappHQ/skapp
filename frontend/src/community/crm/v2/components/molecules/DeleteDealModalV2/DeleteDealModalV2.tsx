@@ -5,8 +5,8 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import CrmDeleteModalContent from "~community/crm/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useDeleteDeal } from "~community/crm/v2/api/DealApi";
+import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { removeDeal } from "~community/crm/v2/utils/boardUtil";
 
@@ -17,7 +17,8 @@ interface Props {
 }
 
 const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
-  const translateText = useTranslator("crmModule", "deals", "deleteDealModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { setToastMessage } = useToast();
 
@@ -51,8 +52,18 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "successDescription"
+      ])
     });
 
     const next = removeDeal({ deals, board, dealIds }, selectedDealId);
@@ -68,8 +79,18 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "errorDescription"
+      ])
     });
   };
 
@@ -87,13 +108,27 @@ const DeleteDealModalV2: FC<Props> = ({ isOpen, onClose, dealName }) => {
     <SmallModal
       isOpen={isOpen}
       onClose={onClose}
-      modalHeader={translateText(["title"])}
+      modalHeader={translateText(["deals", "deleteModal", "title"])}
       content={
         <CrmDeleteModalContent
-          description={translateText(["description"], { dealName })}
+          description={translateText(["deals", "deleteModal", "description"], {
+            dealName
+          })}
           isPending={isPending}
-          confirmLabel={translateText(["buttons", "confirm"])}
-          cancelLabel={translateText(["buttons", "cancel"])}
+          confirmLabel={translateText([
+            "deals",
+            "deleteModal",
+            "buttons",
+            "confirm"
+          ])}
+          cancelLabel={translateText([
+            "deals",
+            "deleteModal",
+            "buttons",
+            "cancel"
+          ])}
+          confirmAriaLabel={translateAria(["deals", "deleteModal", "confirm"])}
+          cancelAriaLabel={translateAria(["deals", "deleteModal", "cancel"])}
           onConfirm={handleDeleteDeal}
           onClose={onClose}
         />

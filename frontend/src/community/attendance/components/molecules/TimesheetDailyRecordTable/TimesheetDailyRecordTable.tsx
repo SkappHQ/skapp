@@ -18,7 +18,7 @@ import { useCommonStore } from "~community/common/stores/commonStore";
 import { IconName } from "~community/common/types/IconTypes";
 import { getTabIndex } from "~community/common/utils/keyboardUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
-import { EmployeeDetails } from "~community/people/types/EmployeeTypes";
+import { L1EmployeeType } from "~community/people/types/PeopleTypes";
 
 import TimesheetDailyRecordSkeleton from "../AttendanceSkeletons/TimesheetDailyRecordSkeleton";
 import TimesheetDailyRecordTableHeader from "../TimesheetDailyRecordTableHeader/TimesheetDailyRecordTableHeader";
@@ -30,7 +30,8 @@ interface Props {
   downloadEmployeeDailyLogCsv?: () => void;
   isDailyLogLoading?: boolean;
   targetEmployeeId?: number;
-  targetEmployeeDetails?: EmployeeDetails;
+  targetEmployeeDetails?: L1EmployeeType;
+  isSelfTargetEntry?: boolean;
 }
 
 const TimesheetDailyRecordTable = ({
@@ -38,7 +39,8 @@ const TimesheetDailyRecordTable = ({
   downloadEmployeeDailyLogCsv,
   isDailyLogLoading,
   targetEmployeeId,
-  targetEmployeeDetails
+  targetEmployeeDetails,
+  isSelfTargetEntry
 }: Props): JSX.Element => {
   const { isFreeTier } = useSessionData();
   const {
@@ -149,6 +151,7 @@ const TimesheetDailyRecordTable = ({
                   targetEmployeeDetails={targetEmployeeDetails}
                   isRowInteractive={isRowInteractive}
                   isManualEntryRestricted={isManualEntryRestricted}
+                  isSelfTargetEntry={isSelfTargetEntry}
                 />
               ))
             ) : (
@@ -162,6 +165,7 @@ const TimesheetDailyRecordTable = ({
                     targetEmployeeDetails={targetEmployeeDetails}
                     isRowInteractive={isRowInteractive}
                     isManualEntryRestricted={isManualEntryRestricted}
+                    isSelfTargetEntry={isSelfTargetEntry}
                   />
                 ))}
               </Box>

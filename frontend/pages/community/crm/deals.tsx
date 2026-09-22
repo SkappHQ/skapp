@@ -16,6 +16,8 @@ import AddDealSidePanelV2 from "~community/crm/v2/components/organisms/AddDealSi
 import DealSidePanelV2 from "~community/crm/v2/components/organisms/DealSidePanelV2/DealSidePanelV2";
 import DealsKanbanBoardSkeletonV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardSkeletonV2";
 import DealsSectionV2 from "~community/crm/v2/components/organisms/DealsSectionV2/DealsSectionV2";
+import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes as CrmSidePanelTypesV2 } from "~community/crm/v2/types/CrmTypes";
@@ -70,7 +72,7 @@ const DealsV1 = () => {
 };
 
 const DealsV2 = () => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator("crmModuleV2");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const openCrmSidePanel = useCrmStoreV2((store) => store.openCrmSidePanel);
@@ -89,21 +91,22 @@ const DealsV2 = () => {
     <ContentLayout
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["deals", "title"]) }
+        { label: translateText(["deals", "page", "title"]) }
       ]}
-      pageHead={translateText(["deals", "pageHead"])}
-      title={translateText(["deals", "title"])}
-      primaryButtonText={translateText(["deals", "addDealBtn"])}
+      pageHead={translateText(["deals", "page", "pageHead"])}
+      title={translateText(["deals", "page", "title"])}
+      primaryButtonText={translateText(["deals", "page", "addDealBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       isPrimaryBtnLoading={isCheckingCrmLimit}
       module={Modules.CRM}
       onPrimaryButtonClick={handleAddDeal}
     >
       <>
-        <SidePanelWrapper isOpen={isCrmSidePanelOpen}>
+        <SidePanelWrapperV2 isOpen={isCrmSidePanelOpen}>
           {selectedDealId !== null && <DealSidePanelV2 />}
           <AddDealSidePanelV2 />
-        </SidePanelWrapper>
+        </SidePanelWrapperV2>
+        <TaskModalControllerV2 />
         {isCrmInitialDataLoading ? (
           <DealsKanbanBoardSkeletonV2 laneCount={4} cardCount={5} />
         ) : (
