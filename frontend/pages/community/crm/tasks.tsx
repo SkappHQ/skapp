@@ -24,7 +24,8 @@ import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTyp
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
-const isCrmTasksV2 = false;
+// Flip to true to serve the CRM Tasks page from the normalized v2 store surface.
+const isCrmTasksV2 = true;
 
 const useFullHeightContainer = () => {
   const containerRef = useRef<HTMLDivElement>(null);

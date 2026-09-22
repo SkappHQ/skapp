@@ -41,7 +41,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const { setToastMessage } = useToast();
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModule",
+    "crmModuleV2",
     "deals",
     "defaultStageNames"
   );

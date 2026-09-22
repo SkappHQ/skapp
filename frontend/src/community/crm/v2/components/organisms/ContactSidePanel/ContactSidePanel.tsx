@@ -165,10 +165,18 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   }, [isContactError, isContactFetching, isMetricsError, isMetricsFetching]);
 
   useEffect(() => {
+    if (fetchedMetrics) {
+      setContacts(
+        updateContact(contacts, contactId, { metrics: fetchedMetrics })
+      );
+    }
+  }, [contactId, fetchedMetrics]);
+
+  useEffect(() => {
     const contactFields: CrmContactEntity = {};
 
-    if (fetchedContact && fetchedMetrics) {
-      Object.assign(contactFields, fetchedContact, { metrics: fetchedMetrics });
+    if (fetchedContact) {
+      Object.assign(contactFields, fetchedContact);
     }
 
     if (fetchedTasks) {
@@ -186,7 +194,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     }
 
     setContacts(updateContact(contacts, contactId, contactFields));
-  }, [contactId, fetchedContact, fetchedMetrics, fetchedTasks, fetchedDeals]);
+  }, [contactId, fetchedContact, fetchedTasks, fetchedDeals]);
 
   const contact = contacts[contactId];
 
