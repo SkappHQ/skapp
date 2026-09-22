@@ -23,7 +23,8 @@ const TaskRow: FC<Props> = ({
   isShowContact = false,
   isCheckTaskVisible = true
 }) => {
-  const translateText = useTranslator("crmModule", "tasks");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const isCompleted = task.isCompleted === true;
   const isCompletedStyleApplied = isCompleted && isCheckTaskVisible;
@@ -36,7 +37,9 @@ const TaskRow: FC<Props> = ({
     <div
       role="button"
       tabIndex={0}
-      aria-label={translateText(["openTaskDetails"], { name: task.name })}
+      aria-label={translateAria(["tasks", "row", "openTaskDetails"], {
+        name: task.name
+      })}
       className="relative flex items-center gap-4 p-3 min-w-0 min-h-[63px] bg-white hover:bg-secondary-background overflow-hidden cursor-pointer"
       onClick={() => onRowClick?.(taskId)}
       onKeyDown={(event) => {

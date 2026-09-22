@@ -147,18 +147,18 @@ export const getDueDateStatus = (
 
   if (!isCompleted && due < today) {
     return {
-      textKey: "dueDateOverdue",
+      textKey: "overdue",
       dayCount: getDayDifference(due, today),
       textColorClass: "text-semantic-red-text"
     };
   }
 
   if (!isCompleted && isDateTimeSimilar(due, today)) {
-    return { textKey: "dueDateToday", textColorClass: "text-secondary-text" };
+    return { textKey: "today", textColorClass: "text-secondary-text" };
   }
 
   return {
-    textKey: "dueDateDueOn",
+    textKey: "dueOn",
     dateValue: formatDateTimeWithOrdinalIndicatorWithoutYear(due),
     textColorClass: "text-secondary-text"
   };

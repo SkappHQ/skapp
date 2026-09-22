@@ -106,7 +106,7 @@ const TasksV1 = () => {
 };
 
 const TasksV2 = () => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator("crmModuleV2");
   const containerRef = useFullHeightContainer();
 
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
@@ -141,11 +141,11 @@ const TasksV2 = () => {
     <ContentLayout
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
-        { label: translateText(["tasks", "title"]) }
+        { label: translateText(["tasks", "page", "title"]) }
       ]}
-      pageHead={translateText(["tasks", "pageHead"])}
-      title={translateText(["tasks", "title"])}
-      primaryButtonText={translateText(["tasks", "addTaskBtn"])}
+      pageHead={translateText(["tasks", "page", "pageHead"])}
+      title={translateText(["tasks", "page", "title"])}
+      primaryButtonText={translateText(["tasks", "page", "addTaskBtn"])}
       primaryBtnIconName={IconName.ADD_ICON}
       onPrimaryButtonClick={onPrimaryButtonClick}
       isPrimaryBtnLoading={isCheckingCrmLimit || isCrmInitialDataLoading}

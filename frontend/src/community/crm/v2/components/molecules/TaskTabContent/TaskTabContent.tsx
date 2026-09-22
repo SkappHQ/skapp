@@ -33,7 +33,10 @@ import {
   CrmSidePanelTypes,
   CrmTaskFilterRequest
 } from "~community/crm/v2/types/CrmTypes";
-import { getMissingDealIds, mergeDeals } from "~community/crm/v2/utils/dealUtil";
+import {
+  getMissingDealIds,
+  mergeDeals
+} from "~community/crm/v2/utils/dealUtil";
 import {
   getTaskGroups,
   resolveTasks,
@@ -49,7 +52,8 @@ interface Props {
 }
 
 const TaskTabContent: FC<Props> = ({ tab }) => {
-  const translateText = useTranslator("crmModule", "tasks");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { userId } = useSessionData();
   const { setToastMessage } = useToast();
 
@@ -185,8 +189,18 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
+      title: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorDescription"
+      ])
     });
   };
 
@@ -205,7 +219,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     <div className="flex flex-col flex-1 min-h-0 px-2 pb-4 gap-4 overflow-y-auto">
       {overdue.length > 0 && (
         <TaskGroup
-          label={translateText(["table", "groupLabels", "overdue"])}
+          label={translateText(["tasks", "table", "groupLabels", "overdue"])}
           tasks={overdue}
           onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
@@ -213,7 +227,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       )}
       {dueToday.length > 0 && (
         <TaskGroup
-          label={translateText(["table", "groupLabels", "dueToday"])}
+          label={translateText(["tasks", "table", "groupLabels", "dueToday"])}
           tasks={dueToday}
           onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
@@ -221,7 +235,12 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       )}
       {dueTomorrow.length > 0 && (
         <TaskGroup
-          label={translateText(["table", "groupLabels", "dueTomorrow"])}
+          label={translateText([
+            "tasks",
+            "table",
+            "groupLabels",
+            "dueTomorrow"
+          ])}
           tasks={dueTomorrow}
           onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
@@ -229,7 +248,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
       )}
       {upcoming.length > 0 && (
         <TaskGroup
-          label={translateText(["table", "groupLabels", "upcoming"])}
+          label={translateText(["tasks", "table", "groupLabels", "upcoming"])}
           tasks={upcoming}
           onRowClick={handleRowClick}
           onToggleComplete={handleToggleComplete}
@@ -267,8 +286,13 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     if (isError) {
       return (
         <EmptyDataView
-          title={translateText(["table", "errorState", "title"])}
-          description={translateText(["table", "errorState", "description"])}
+          title={translateText(["tasks", "table", "errorState", "title"])}
+          description={translateText([
+            "tasks",
+            "table",
+            "errorState",
+            "description"
+          ])}
           icon={<SearchIcon />}
         />
       );
@@ -283,13 +307,23 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
         <EmptyDataView
           title={
             emptyStateType === EmptyStateTypeEnum.NO_DATA
-              ? translateText(["table", "emptyDataState", "title"])
-              : translateText(["table", "emptySearchState", "title"])
+              ? translateText(["tasks", "table", "emptyDataState", "title"])
+              : translateText(["tasks", "table", "emptySearchState", "title"])
           }
           description={
             emptyStateType === EmptyStateTypeEnum.NO_DATA
-              ? translateText(["table", "emptyDataState", "description"])
-              : translateText(["table", "emptySearchState", "description"])
+              ? translateText([
+                  "tasks",
+                  "table",
+                  "emptyDataState",
+                  "description"
+                ])
+              : translateText([
+                  "tasks",
+                  "table",
+                  "emptySearchState",
+                  "description"
+                ])
           }
           icon={<SearchIcon />}
         />
@@ -305,12 +339,13 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     <div className="flex flex-col h-full gap-4 overflow-hidden">
       <div className="p-1">
         <InputField
-          ariaLabelClearButton={translateText([
+          ariaLabelClearButton={translateAria([
+            "tasks",
             "table",
-            "clearButtonAriaLabel"
+            "clearSearch"
           ])}
           className="w-[25.75rem] h-[3rem]"
-          placeholder={translateText(["table", "search"])}
+          placeholder={translateText(["tasks", "table", "search"])}
           rightIcon={<SearchIcon />}
           value={searchTerm}
           onChange={handleSearchChange}
