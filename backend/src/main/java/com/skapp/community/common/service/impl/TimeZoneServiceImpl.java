@@ -1,6 +1,8 @@
 package com.skapp.community.common.service.impl;
 
 import com.skapp.community.common.constant.CommonConstants;
+import com.skapp.community.common.constant.CommonMessageConstant;
+import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.Organization;
 import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.service.TimeZoneService;
@@ -28,7 +30,8 @@ public class TimeZoneServiceImpl implements TimeZoneService {
 		return DateTimeUtils.requireZoneId(organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
 			.filter(timeZone -> !StringUtils.isNullOrBlank(timeZone))
-			.orElse(CommonConstants.DEFAULT_ORGANIZATION_TIME_ZONE));
+			.orElseThrow(() -> new ModuleException(
+					CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_NOT_CONFIGURED)));
 	}
 
 	@Override

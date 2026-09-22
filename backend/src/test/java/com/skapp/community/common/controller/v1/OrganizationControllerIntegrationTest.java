@@ -3,6 +3,7 @@ package com.skapp.community.common.controller.v1;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.payload.request.OrganizationDto;
 import com.skapp.community.common.payload.request.UpdateOrganizationRequestDto;
+import com.skapp.community.common.repository.OrganizationDao;
 import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
@@ -56,12 +57,15 @@ class OrganizationControllerIntegrationTest {
 
 	private final MessageUtil messageUtil;
 
+	private final OrganizationDao organizationDao;
+
 	private String authToken;
 
 	@BeforeEach
 	void setup() {
 		SecurityTestUtils.setupSecurityContext(authorityService, MockUserFactory.createSuperAdmin());
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
+		organizationDao.deleteAll();
 	}
 
 	private ResultActions performRequest(MockHttpServletRequestBuilder request) throws Exception {

@@ -228,7 +228,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 		return organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
 			.filter(timeZone -> !StringUtils.isNullOrBlank(timeZone))
-			.orElse(CommonConstants.DEFAULT_ORGANIZATION_TIME_ZONE);
+			.orElseThrow(
+					() -> new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_NOT_CONFIGURED));
 	}
 
 	@Override
