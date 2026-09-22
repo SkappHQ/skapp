@@ -19,6 +19,12 @@
       "title": "Deals",
       "addDealBtn": "Add deal"
     },
+    "detailsPage": {
+      "pageHead": "Deal Details | Skapp",
+      "title": "Deal Details",
+      "dealNotFoundTitle": "Deal not found",
+      "dealNotFoundDescription": "This deal is no longer available."
+    },
     "defaultStageNames": {
       "LEAD": "Lead",
       "QUALIFIED": "Qualified",
