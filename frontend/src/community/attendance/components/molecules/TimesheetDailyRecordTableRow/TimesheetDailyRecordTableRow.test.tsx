@@ -24,7 +24,7 @@ jest.mock("~community/common/hooks/useSessionData", () => ({
 }));
 
 jest.mock("~community/common/hooks/useDisplayZone", () => ({
-  useEntryZone: jest.fn(() => "UTC"),
+  useDisplayZone: jest.fn(() => "UTC"),
   useOrganizationZone: jest.fn(() => "UTC")
 }));
 

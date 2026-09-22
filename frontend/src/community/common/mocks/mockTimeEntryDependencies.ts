@@ -1,5 +1,5 @@
 jest.mock("~community/common/hooks/useDisplayZone", () => ({
-  useEntryZone: jest.fn(() => "UTC")
+  useDisplayZone: jest.fn(() => "UTC")
 }));
 
 jest.mock(

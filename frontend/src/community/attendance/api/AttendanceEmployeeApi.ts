@@ -22,7 +22,6 @@ import {
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import {
   useDisplayZone,
-  useEntryZone,
   useOrganizationZone
 } from "~community/common/hooks/useDisplayZone";
 import {
@@ -86,7 +85,7 @@ export const useGetPeriodAvailabilityMutation = (
   endTime: string,
   onSuccess: (data: TimeAvailabilityType) => void
 ) => {
-  const entryZone = useEntryZone();
+  const entryZone = useDisplayZone();
   const fetchPeriodAvailability = async () => {
     const startDateTime = convertToDateTime(date, startTime, entryZone);
     const endDateTime = convertToDateTime(date, endTime, entryZone);
@@ -306,7 +305,7 @@ export const useGetPeriodAvailability = (
   startTime: string,
   endTime: string
 ) => {
-  const entryZone = useEntryZone();
+  const entryZone = useDisplayZone();
   const dateTimeFromTime = convertToDateTime(date, startTime, entryZone);
   const dateTimeToTime = convertToDateTime(date, endTime, entryZone);
   const timestampStartTime = convertToMilliseconds(

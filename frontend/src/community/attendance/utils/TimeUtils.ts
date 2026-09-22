@@ -107,6 +107,10 @@ export const convertToDateTime = (
   time: string,
   zone?: string
 ): string | null => {
+  if (!zone) {
+    return null;
+  }
+
   const typedWallClock = DateTime.fromFormat(
     `${date} ${time}`,
     "yyyy-MM-dd hh:mm a",

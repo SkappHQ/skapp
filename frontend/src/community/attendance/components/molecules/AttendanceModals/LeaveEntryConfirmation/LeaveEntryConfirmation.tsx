@@ -14,7 +14,7 @@ import BasicChip from "~community/common/components/atoms/Chips/BasicChip/BasicC
 import IconChip from "~community/common/components/atoms/Chips/IconChip.tsx/IconChip";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
-import { useEntryZone } from "~community/common/hooks/useDisplayZone";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
@@ -30,7 +30,7 @@ interface Props {
 const LeaveEntryConfirmation = ({ fromDateTime, toDateTime }: Props) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const entryZone = useEntryZone();
+  const entryZone = useDisplayZone();
   const { setToastMessage } = useToast();
   const classes = styles(theme);
   const {
