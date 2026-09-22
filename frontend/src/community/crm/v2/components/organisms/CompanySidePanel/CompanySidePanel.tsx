@@ -194,21 +194,29 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
   }, [isCompanyError, isCompanyFetching, isMetricsError, isMetricsFetching]);
 
   useEffect(() => {
+    if (fetchedMetrics) {
+      setCompanies(
+        updateCompany(companies, companyId, { metrics: fetchedMetrics })
+      );
+    }
+  }, [companyId, fetchedMetrics]);
+
+  useEffect(() => {
     const companyFields: CrmCompanyEntity = {};
 
-    if (fetchedCompany && fetchedMetrics) {
-      Object.assign(companyFields, fetchedCompany, { metrics: fetchedMetrics });
+    if (fetchedCompany) {
+      Object.assign(companyFields, fetchedCompany);
     }
 
     if (fetchedTasks) {
-      const taskItems = fetchedTasks.pages.flatMap((page) => page.items ?? []);
+      const taskItems = fetchedTasks.pages.flatMap((page) => page?.items ?? []);
 
       setTasks(updateTaskRecord(tasks, taskItems));
       companyFields.taskIds = toTaskIds(taskItems);
     }
 
     if (fetchedDeals) {
-      const dealItems = fetchedDeals.pages.flatMap((page) => page.items ?? []);
+      const dealItems = fetchedDeals.pages.flatMap((page) => page?.items ?? []);
 
       setDeals(mergeDeals(deals, dealItems));
       companyFields.dealIds = toDealIds(dealItems);
@@ -216,24 +224,15 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
 
     if (fetchedContacts) {
       const contactItems = fetchedContacts.pages.flatMap(
-        (page) => page.items ?? []
+        (page) => page?.items ?? []
       );
 
       setContacts(updateContactRecord(contacts, contactItems));
       companyFields.contactIds = toContactIds(contactItems);
     }
 
-    if (Object.keys(companyFields).length === 0) return;
-
     setCompanies(updateCompany(companies, companyId, companyFields));
-  }, [
-    companyId,
-    fetchedCompany,
-    fetchedMetrics,
-    fetchedTasks,
-    fetchedDeals,
-    fetchedContacts
-  ]);
+  }, [companyId, fetchedCompany, fetchedTasks, fetchedDeals, fetchedContacts]);
 
   const handleDealCreated = (createdDeal: CrmDealEntity) => {
     setDeals(mergeDeals(deals, [createdDeal]));

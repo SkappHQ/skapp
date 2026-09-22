@@ -50,6 +50,8 @@ export interface EmployeeTimesheetModalSliceType extends Pick<
   | "currentAddTimeChanges"
   | "directManualTimeEntryEligibleEmployee"
   | "setDirectManualTimeEntryEligibleEmployee"
+  | "isSelfDirectTimeEntry"
+  | "setIsSelfDirectTimeEntry"
 > {}
 
 export interface EmployeeTimesheetFilterSliceTypes extends Pick<
