@@ -31,7 +31,10 @@ public class CrmTaskController {
 	private final CrmTaskService taskService;
 
 	@Operation(summary = "Get tasks",
-			description = "Returns all open non-deleted CRM tasks with search and filter by owner and deal.")
+			description = "Returns a paginated list of non-deleted CRM tasks. Supports search, filtering by owner, "
+					+ "contact, company, deal and completion state, and sorting via sortKey/sortOrder. Returns both "
+					+ "open and completed tasks unless isCompleted is supplied (size <= 0 disables pagination and "
+					+ "returns every match).")
 	@GetMapping
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getTasks(CrmTaskFilterDto filterDto) {
@@ -78,7 +81,7 @@ public class CrmTaskController {
 	@Operation(summary = "Get related tasks",
 			description = "Returns a paginated list of tasks related to the given task - i.e. tasks that share every "
 					+ "link the source task has, both its contact and its deal when it carries both. A task with "
-					+ "neither has no related tasks. Supports pagination only (size < 0 disables pagination and "
+					+ "neither has no related tasks. Supports pagination only (size <= 0 disables pagination and "
 					+ "returns every related task).")
 	@GetMapping("/{id}/related")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")

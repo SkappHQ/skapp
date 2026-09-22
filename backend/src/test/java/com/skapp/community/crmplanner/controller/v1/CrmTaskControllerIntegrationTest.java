@@ -150,12 +150,6 @@ class CrmTaskControllerIntegrationTest {
 			.accept(MediaType.APPLICATION_JSON), authToken);
 	}
 
-	private ResultActions performPatchRequest(Long id, CrmTaskEditRequestDto dto) throws Exception {
-		return performRequest(patch(BY_ID_PATH, id).contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(dto))
-			.accept(MediaType.APPLICATION_JSON), authToken);
-	}
-
 	private ResultActions performGetTasksRequest() throws Exception {
 		return performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON), authToken);
 	}
