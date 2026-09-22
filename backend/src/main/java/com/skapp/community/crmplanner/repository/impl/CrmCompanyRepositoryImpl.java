@@ -46,7 +46,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword) {
+	public Page<CrmCompanyMetricsResponseDto> getCompanies(Pageable pageable, String searchKeyword) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();

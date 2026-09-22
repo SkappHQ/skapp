@@ -4,10 +4,8 @@ import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 @AllArgsConstructor
 public class CrmCompanyMetricsResponseDto {
 

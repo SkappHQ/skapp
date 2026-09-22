@@ -15,7 +15,7 @@ public interface CrmCompanyRepository {
 
 	Page<CrmCompany> findCompanies(CrmCompanyFilterDto filterDto, Pageable pageable);
 
-	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword);
+	public Page<CrmCompanyMetricsResponseDto> getCompanies(Pageable pageable, String searchKeyword);
 
 	Optional<CrmCompanyMetrics> getCompanyMetricsById(Long companyId);
 

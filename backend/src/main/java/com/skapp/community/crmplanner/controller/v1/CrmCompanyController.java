@@ -41,7 +41,7 @@ public class CrmCompanyController {
 	@GetMapping("/lookup")
 	@PreAuthorize("hasRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> getCompaniesLookup(CrmCompanyFilterDto filterDto) {
-		ResponseEntityDto response = companyService.getCompanies(filterDto);
+		ResponseEntityDto response = companyService.getCompaniesLookup(filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -66,9 +66,9 @@ public class CrmCompanyController {
 			description = "Returns a paginated list of companies, each with its base details and metrics.")
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
-	public ResponseEntity<ResponseEntityDto> getCompanyMetrics(CrmCompanyMetricRequestDto requestDto) {
+	public ResponseEntity<ResponseEntityDto> getCompanies(CrmCompanyMetricRequestDto requestDto) {
 		Pageable pageable = PageRequest.of(requestDto.getPage(), requestDto.getSize());
-		ResponseEntityDto responseDto = companyService.getCompanyMetrics(requestDto.getSearchKeyword(), pageable);
+		ResponseEntityDto responseDto = companyService.getCompanies(requestDto.getSearchKeyword(), pageable);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

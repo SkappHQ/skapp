@@ -564,11 +564,11 @@ class CrmCompanyControllerIntegrationTest {
 		performSearchByDomainRequest("acme.com", 10).andDo(print()).andExpect(status().isForbidden());
 	}
 
-	// --- Company metrics tests ---
+	// --- getCompanies repository projection tests ---
 
 	@Test
 	@DisplayName("Company metrics classify WON and LOST as closed - open metrics exclude both")
-	void getCompanyMetrics_ClassifiesWonAndLostAsClosed() {
+	void getCompanies_ClassifiesWonAndLostAsClosed() {
 		CrmCompany company = createMetricsCompany("metrics classification co");
 		CrmContact contact = createMetricsContact(company, "metrics.classification@example.com");
 
@@ -599,7 +599,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Company metrics for a LOST-only company - reports zero open and zero closed")
-	void getCompanyMetrics_LostOnlyCompany_ReportsZeroOpenAndZeroClosed() {
+	void getCompanies_LostOnlyCompany_ReportsZeroOpenAndZeroClosed() {
 		CrmCompany company = createMetricsCompany("metrics lost only co");
 		CrmContact contact = createMetricsContact(company, "metrics.lostonly@example.com");
 
@@ -624,12 +624,12 @@ class CrmCompanyControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Company metrics search ranks exact match, then prefix match, then contains match")
-	void getCompanyMetrics_RanksByRelevance() {
+	void getCompanies_RanksByRelevance() {
 		createMetricsCompany("Global Rankacme Partners");
 		createMetricsCompany("Rankacme Corp");
 		createMetricsCompany("Rankacme");
 
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanyMetrics(PageRequest.of(0, 100), "rankacme")
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), "rankacme")
 			.getContent();
 
 		assertThat(metrics).extracting(CrmCompanyMetricsResponseDto::getName)
@@ -637,9 +637,11 @@ class CrmCompanyControllerIntegrationTest {
 			.containsExactly("Rankacme", "Rankacme Corp", "Global Rankacme Partners");
 	}
 
+	// --- getCompanies endpoint tests ---
+
 	@Test
-	@DisplayName("Get company metrics - Returns flat company fields and nested metrics with seeded values")
-	void getCompanyMetrics_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
+	@DisplayName("Get companies - Returns flat company fields and nested metrics with seeded values")
+	void getCompanies_HappyPath_ReturnsFlatCompanyFieldsAndMetrics() throws Exception {
 		CrmCompany company = createMetricsCompany("MetricsCoUnique");
 		company.setWebsite("https://metrics-co.com");
 		company.setAddress("123 Metrics St");
@@ -676,8 +678,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get company metrics - Counts open and overdue tasks")
-	void getCompanyMetrics_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
+	@DisplayName("Get companies - Counts open and overdue tasks")
+	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
 
 		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
@@ -692,16 +694,16 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get company metrics - No paging params falls back to defaults and returns OK")
-	void getCompanyMetrics_NoPagingParams_ReturnsOk() throws Exception {
+	@DisplayName("Get companies - No paging params falls back to defaults and returns OK")
+	void getCompanies_NoPagingParams_ReturnsOk() throws Exception {
 		performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON)).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL));
 	}
 
 	@Test
-	@DisplayName("Get company metrics - Search matching nothing returns empty page")
-	void getCompanyMetrics_NoMatch_ReturnsEmptyPage() throws Exception {
+	@DisplayName("Get companies - Search matching nothing returns empty page")
+	void getCompanies_NoMatch_ReturnsEmptyPage() throws Exception {
 		createMetricsCompany("MetricsCoUnique");
 
 		performGetCompaniesRequest("NoSuchCompanyXyz").andDo(print())
@@ -712,8 +714,8 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get company metrics without CRM role - Returns Forbidden")
-	void getCompanyMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
+	@DisplayName("Get companies without CRM role - Returns Forbidden")
+	void getCompanies_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
 
 		performRequest(get(BASE_PATH).param("page", "0").param("size", "10").accept(MediaType.APPLICATION_JSON))
@@ -722,8 +724,7 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private CrmCompanyMetricsResponseDto fetchMetrics(Long companyId, String searchKeyword) {
-		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao
-			.getCompanyMetrics(PageRequest.of(0, 100), searchKeyword)
+		List<CrmCompanyMetricsResponseDto> metrics = crmCompanyDao.getCompanies(PageRequest.of(0, 100), searchKeyword)
 			.getContent();
 
 		return metrics.stream()
