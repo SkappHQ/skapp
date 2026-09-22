@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.service.impl;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.UserDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.type.Role;
@@ -16,6 +17,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.EmployeeEmploy
 import com.skapp.community.peopleplanner.payload.request.employee.EmployeePersonalDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentCareerProgressionDetailsDto;
+import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentIdentificationAndDiversityDetailsDto;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.JobFamilyDao;
 import com.skapp.community.peopleplanner.repository.TeamDao;
@@ -49,10 +51,17 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 	private final WorkLocationDao workLocationDao;
 
+	private final BusinessUnitDao businessUnitDao;
+
 	@Override
 	public void validateCreateEmployeeRequestEmploymentDetails(EmployeeEmploymentDetailsDto employmentDetailsDto,
 			User user) {
 		if (employmentDetailsDto != null) {
+			if (employmentDetailsDto.getIdentificationAndDiversityDetails() != null) {
+				validatePayrollId(employmentDetailsDto.getIdentificationAndDiversityDetails(), user);
+				validateTin(employmentDetailsDto.getIdentificationAndDiversityDetails(), user);
+			}
+
 			if (employmentDetailsDto.getEmploymentDetails() != null) {
 				if (employmentDetailsDto.getEmploymentDetails().getEmployeeNumber() != null
 						&& !employmentDetailsDto.getEmploymentDetails().getEmployeeNumber().isEmpty()) {
@@ -77,6 +86,9 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 
 				Validations.validateWorkLocation(employmentDetailsDto.getEmploymentDetails().getWorkLocationId(),
 						workLocationDao);
+
+				Validations.validateBusinessUnit(employmentDetailsDto.getEmploymentDetails().getBusinessUnitId(),
+						businessUnitDao);
 
 				if (employmentDetailsDto.getEmploymentDetails() != null) {
 					// Check if a primary supervisor exists
@@ -348,6 +360,35 @@ public class EmployeeValidationServiceImpl implements EmployeeValidationService 
 					}
 				});
 			}
+		}
+	}
+
+	private void validatePayrollId(EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails,
+			User user) {
+		String payrollId = identificationDetails.getPayrollId();
+		if (payrollId == null || payrollId.isBlank()) {
+			return;
+		}
+
+		Validations.validatePayrollId(payrollId);
+
+		Long employeeId = user.getEmployee() != null ? user.getEmployee().getEmployeeId() : null;
+		if (employeeDao.existsByPayrollIdAndEmployeeIdNot(payrollId, employeeId)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST);
+		}
+	}
+
+	private void validateTin(EmployeeEmploymentIdentificationAndDiversityDetailsDto identificationDetails, User user) {
+		String tin = identificationDetails.getTin();
+		if (tin == null || tin.isBlank()) {
+			return;
+		}
+
+		Validations.validateTin(tin);
+
+		Long employeeId = user.getEmployee() != null ? user.getEmployee().getEmployeeId() : null;
+		if (employeeDao.existsByTinAndEmployeeIdNot(tin, employeeId)) {
+			throw new ModuleException(PeopleMessageConstant.PEOPLE_ERROR_TIN_ALREADY_EXIST);
 		}
 	}
 

@@ -2,6 +2,7 @@ const ROUTES = {
   AUTH: {
     SIGNUP: "/signup",
     SIGNIN: "/signin",
+    REDIRECT: "/redirect",
     ENTERPRISE_SIGNIN: "/enterprise/signin",
     DOMAIN_VERIFICATION: "/enterprise/domain-verification",
     RESET_PASSWORD: "/reset-password",
@@ -15,7 +16,11 @@ const ROUTES = {
     VERIFY_GUEST: "/verify/guest",
     VERIFY_GUEST_OTP: "/verify/guest-otp",
     FORGET_PASSWORD: "/forget-password",
-    SYSTEM_UPDATE: "/system-update"
+    SYSTEM_UPDATE: "/system-update",
+    OAUTH_AUTHORIZE: "/oauth2/authorize",
+    OAUTH_SIGNIN: "/auth/signin",
+    OAUTH_CONSENT: "/auth/oauth-consent",
+    OAUTH_REDIRECT: "/auth/redirect"
   },
   ORGANIZATION: {
     SETUP: "/setup-organization",
@@ -69,7 +74,10 @@ const ROUTES = {
     PENDING: "/people/directory/pending",
     USER_ACCOUNT: "/user-account",
     EDIT: (id: any) => `/people/directory/edit/${id}`,
-    ADD: "/people/directory/add"
+    ADD: "/people/directory/add",
+    GOOGLE_IMPORT_SYNCING: "/people/directory/import-google/syncing",
+    GOOGLE_IMPORT_REVIEW: "/people/directory/import-google/review",
+    SYNC_CHANGES: "/people/directory/sync-changes"
   },
   CONFIGURATIONS: {
     BASE: "/configurations",
@@ -126,11 +134,18 @@ const ROUTES = {
   },
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
+  REPORT: {
+    BASE: "/report",
+    HEADCOUNT_SUMMARY: "/report/headcount-summary",
+    WORKFORCE_DEMOGRAPHICS: "/report/workforce-demographics",
+    ATTENDANCE_OVERVIEW: "/report/attendance-overview"
+  },
   CRM: {
     BASE: "/crm",
     CONTACTS: "/crm/contacts",
     COMPANIES: "/crm/companies",
     DEALS: "/crm/deals",
+    DEAL_DETAIL: (id: number) => `/crm/deals/${id}`,
     TASKS: "/crm/tasks"
   },
   PROJECTS: {
@@ -183,6 +198,21 @@ export const employeeRestrictedRoutes = [
   ROUTES.PEOPLE.ADD
 ];
 
+export const nonSuperAdminRestrictedRoutes = [
+  ROUTES.PEOPLE.GOOGLE_IMPORT_SYNCING,
+  ROUTES.PEOPLE.GOOGLE_IMPORT_REVIEW,
+  ROUTES.PEOPLE.SYNC_CHANGES
+];
+
 export const managerRestrictedRoutes = [ROUTES.PEOPLE.ADD];
 
+export const leavePolicyManagementRestrictedRoutes = [
+  ROUTES.LEAVE.CREATE_LEAVE_POLICY
+];
+
 export const userRolesRestrictedRoutes = [ROUTES.CONFIGURATIONS.USER_ROLES];
+
+export const oAuthCallbackRoutes = [
+  ROUTES.AUTH.OAUTH_AUTHORIZE,
+  ROUTES.AUTH.OAUTH_CONSENT
+];

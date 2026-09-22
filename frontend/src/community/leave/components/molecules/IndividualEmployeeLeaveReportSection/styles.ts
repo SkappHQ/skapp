@@ -6,8 +6,13 @@ const styles = (): StyleProps => ({
     margin: "0rem auto",
     height: "auto"
   },
+  sectionsWrapper: {
+    gap: "1.5rem",
+    padding: "0.25rem"
+  },
   customContainerStyles: {
-    gap: "1.5rem"
+    gap: "1.5rem",
+    padding: "0rem"
   }
 });
 

@@ -43,4 +43,8 @@ public interface EmployeeDao
 	List<Employee> findByWorkLocationWorkLocationIdAndAccountStatusIn(Long workLocationId,
 			Set<AccountStatus> accountStatuses);
 
+	List<Employee> findByBusinessUnitBusinessUnitId(Long businessUnitId);
+
+	long countByBusinessUnitBusinessUnitIdAndAccountStatusIn(Long businessUnitId, Set<AccountStatus> accountStatuses);
+
 }

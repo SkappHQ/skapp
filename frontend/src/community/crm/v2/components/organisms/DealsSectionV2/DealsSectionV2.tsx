@@ -1,0 +1,263 @@
+import { SortConfig } from "@rootcodelabs/skapp-ui";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import {
+  DEAL_PAGE_SIZE,
+  DEAL_SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/constants/dealConstants";
+import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
+import {
+  useGetDealsInfinite,
+  useReorderDealInList
+} from "~community/crm/v2/api/DealApi";
+import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
+import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
+import { DealViewEnum } from "~community/crm/v2/enums/common";
+import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
+import {
+  getMissingCompanyIds,
+  updateCompanyRecord
+} from "~community/crm/v2/utils/companyUtil";
+import { resolveSortChange } from "~community/crm/v2/utils/dealListViewUtil";
+import {
+  mergeDeals,
+  reorderDealIds,
+  resolveDeals,
+  toDealIds
+} from "~community/crm/v2/utils/dealUtil";
+
+import DealsHeaderV2 from "./DealsHeaderV2";
+
+const DealsSectionV2: FC = () => {
+  const [inputValue, setInputValue] = useState("");
+  const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
+  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const handleReorderError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorDescription"
+      ])
+    });
+  };
+
+  const { mutate: reorderDeal } = useReorderDealInList(handleReorderError);
+  const translateText = useTranslator("crmModuleV2");
+  const { setToastMessage } = useToast();
+
+  const {
+    companies,
+    dealIds,
+    dealRecord,
+    setDeals,
+    setCompanies,
+    setDealIds,
+    setSelectedDealId,
+    openCrmSidePanel
+  } = useCrmStoreV2(
+    useShallow((state) => ({
+      companies: state.companies,
+      dealIds: state.dealIds,
+      dealRecord: state.deals,
+      setDeals: state.setDeals,
+      setCompanies: state.setCompanies,
+      setDealIds: state.setDealIds,
+      setSelectedDealId: state.setSelectedDealId,
+      openCrmSidePanel: state.openCrmSidePanel
+    }))
+  );
+
+  const {
+    columnConfig,
+    isConfigLoading,
+    handleColumnReorder,
+    handleColumnVisibilityChange,
+    handleSortChange,
+    handleColumnResize
+  } = useDealListViewConfig(activeView === DealViewEnum.LIST);
+
+  const {
+    data,
+    isLoading,
+    hasNextPage: hasNextPageRaw,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useGetDealsInfinite(
+    {
+      size: DEAL_PAGE_SIZE,
+      sortKey: columnConfig?.sort?.field,
+      sortOrder: columnConfig?.sort?.direction,
+      searchKeyword: debouncedSearch
+    },
+    activeView === DealViewEnum.LIST && !!columnConfig
+  );
+
+  const sortConfig = useMemo(
+    () =>
+      columnConfig?.sort
+        ? [
+            {
+              columnId: columnConfig.sort.field,
+              direction: columnConfig.sort.direction
+            }
+          ]
+        : [],
+    [columnConfig?.sort]
+  );
+
+  const handleSort = useCallback(
+    (nextSortConfig: SortConfig[]): void => {
+      handleSortChange(
+        resolveSortChange(nextSortConfig, columnConfig?.sort ?? null)
+      );
+    },
+    [handleSortChange, columnConfig?.sort]
+  );
+
+  const enableRowReorder =
+    activeView === DealViewEnum.LIST &&
+    !columnConfig?.sort &&
+    !debouncedSearch.trim();
+
+  const handleRowReorder = useCallback(
+    (movingId: string, previousId?: string, nextId?: string): void => {
+      const dealId = Number(movingId);
+      const previousDealId = previousId != null ? Number(previousId) : null;
+      const nextDealId = nextId != null ? Number(nextId) : null;
+
+      const previousDealIds = dealIds;
+      setDealIds(reorderDealIds(dealIds, dealId, previousDealId, nextDealId));
+
+      reorderDeal(
+        { dealId, previousDealId, nextDealId },
+        { onError: () => setDealIds(previousDealIds) }
+      );
+    },
+    [reorderDeal, translateText, dealIds]
+  );
+
+  const hasNextPage = Boolean(hasNextPageRaw);
+  const deals = useMemo(
+    () => resolveDeals(dealIds, dealRecord),
+    [dealIds, dealRecord]
+  );
+
+  useEffect(() => {
+    if (!data || activeView !== DealViewEnum.LIST) return;
+    const items = data.pages.flatMap((page) => page.items);
+    setDeals(mergeDeals(dealRecord, items));
+    setDealIds(toDealIds(items));
+  }, [data, activeView]);
+
+  const companyIds = useMemo(
+    () =>
+      deals
+        .map((deal) => deal.companyId)
+        .filter((id): id is number => id != null),
+    [deals]
+  );
+
+  const missingCompanyIds = useMemo(
+    () => getMissingCompanyIds(companyIds, companies),
+    [companyIds, companies]
+  );
+
+  const { data: fetchedCompanies } = useGetCompaniesByIds(
+    missingCompanyIds,
+    missingCompanyIds.length > 0
+  );
+
+  useEffect(() => {
+    if (fetchedCompanies && fetchedCompanies.length > 0) {
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
+    }
+  }, [fetchedCompanies]);
+
+  const loadMore = async (): Promise<void> => {
+    if (hasNextPage && !isFetchingNextPage) {
+      await fetchNextPage();
+    }
+  };
+
+  const handleDealClick = (dealId: number): void => {
+    setSelectedDealId(dealId);
+    openCrmSidePanel(CrmSidePanelTypes.DEAL_DETAIL_SIDE_PANEL);
+  };
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (containerRef.current) {
+        const offsetTop = containerRef.current.getBoundingClientRect().top;
+        containerRef.current.style.height = `calc(96vh - ${offsetTop}px)`;
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    const observer = new ResizeObserver(updateHeight);
+    if (containerRef.current?.parentElement) {
+      observer.observe(containerRef.current.parentElement);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+      observer.disconnect();
+    };
+  }, [activeView]);
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      <DealsHeaderV2
+        inputValue={inputValue}
+        onSearchChange={setInputValue}
+        activeView={activeView}
+        onViewChange={setActiveView}
+      />
+      <div ref={containerRef} className="flex flex-col w-full gap-4">
+        {activeView === DealViewEnum.LIST ? (
+          <DealsTableV2
+            searchKeyword={debouncedSearch}
+            isLoading={isLoading}
+            isConfigLoading={isConfigLoading}
+            deals={deals}
+            hasNextPage={hasNextPage}
+            onLoadMore={loadMore}
+            onDealClick={handleDealClick}
+            columnConfig={columnConfig}
+            sortConfig={sortConfig}
+            onColumnReorder={handleColumnReorder}
+            onColumnVisibilityChange={handleColumnVisibilityChange}
+            onColumnResize={handleColumnResize}
+            onSort={handleSort}
+            enableRowReorder={enableRowReorder}
+            onRowReorder={handleRowReorder}
+          />
+        ) : (
+          <DealsKanbanBoardV2 searchKeyword={debouncedSearch} />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DealsSectionV2;

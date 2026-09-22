@@ -1,4 +1,4 @@
-import { HandshakeIcon } from "@rootcodelabs/skapp-ui";
+import { HandshakeIcon, ReportIcon } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 import AddIcon from "~community/common/assets/Icons/AddIcon";
@@ -62,6 +62,7 @@ import EmailIcon from "~community/common/assets/Icons/EmailIcon";
 import EmojiIcon from "~community/common/assets/Icons/EmojiIcon";
 import EsignatureModuleIcon from "~community/common/assets/Icons/EsignatureModuleIcon";
 import ExpandIcon from "~community/common/assets/Icons/ExpandIcon";
+import ExportArrowIcon from "~community/common/assets/Icons/ExportArrowIcon";
 import EyeIcon from "~community/common/assets/Icons/EyeIcon";
 import FileIcon from "~community/common/assets/Icons/FileIcon";
 import FileUploadIcon from "~community/common/assets/Icons/FileUploadIcon";
@@ -157,6 +158,7 @@ import WaitingStatusIcon from "~community/common/assets/Icons/WaitingStatusIcon"
 import WarningAlertIcon from "~community/common/assets/Icons/WarningAlertIcon";
 import WarningIcon from "~community/common/assets/Icons/WarningIcon";
 import WarningSignIcon from "~community/common/assets/Icons/WarningSignIcon";
+import WarningTriangleIcon from "~community/common/assets/Icons/WarningTriangleIcon";
 import WrenchIcon from "~community/common/assets/Icons/WrenchIcon";
 import { IconName, IconProps } from "~community/common/types/IconTypes";
 import GreyPlusIcon from "~enterprise/settings/assets/Icons/GreyPlusIcon";
@@ -199,6 +201,7 @@ export const IconMapping: Partial<
   [IconName.RIGHT_ARROW_ICON]: RightArrowIcon,
   [IconName.LEFT_ARROW_ICON]: LeftArrowIcon,
   [IconName.UP_ARROW_ICON]: UpArrowIcon,
+  [IconName.EXPORT_ARROW_ICON]: ExportArrowIcon,
   [IconName.CLOCK_ICON]: ClockIcon,
   [IconName.DROP_DOWN_ICON]: DropDownArrow,
   [IconName.CHECK_CIRCLE_ICON]: CheckCircleIcon,
@@ -268,6 +271,7 @@ export const IconMapping: Partial<
   [IconName.NUDGE_BELL_ICON]: NudgeBellIcon,
   [IconName.UPGRADE_INFO_ICON]: UpgradeInfoIcon,
   [IconName.WARNING_SIGN_ICON]: WarningSignIcon,
+  [IconName.WARNING_TRIANGLE_ICON]: WarningTriangleIcon,
   [IconName.GOOGLE_ICON]: GoogleIcon,
   [IconName.DOCUMENTS_ICON]: DocumentsIcon,
   [IconName.PEOPLE_MODULE_ICON]: PeopleModuleIcon,
@@ -321,6 +325,7 @@ export const IconMapping: Partial<
   [IconName.GEM_ICON]: GemIcon,
   [IconName.DOWNLOAD_DOCUMENT_ICON]: DownloadDocumentIcon,
   [IconName.PROJECTS_ICON]: ProjectsIcon,
+  [IconName.REPORT_ICON]: ReportIcon,
   [IconName.INTEGRATIONS_ICON]: IntegrationsIcon,
   [IconName.INSTAGRAM_ICON]: InstagramIcon,
   [IconName.INVOICE_ICON]: InvoiceIcon,

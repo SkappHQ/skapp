@@ -1,6 +1,7 @@
 import { Divider, Stack } from "@mui/material";
 import { NextPage } from "next";
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import LeaveCarryForward from "~community/common/components/molecules/LeaveCarryForward/LeaveCarryForward";
 import SearchBox from "~community/common/components/molecules/SearchBox/SearchBox";
@@ -14,6 +15,7 @@ import LeaveEntitlementTable from "~community/leave/components/molecules/LeaveEn
 import CustomLeaveAllocationContent from "~community/leave/components/organisms/CustomLeaveAllocationContent/CustomLeaveAllocationContent";
 import LeaveEntitlementModalController from "~community/leave/components/organisms/LeaveEntitlementModalController/LeaveEntitlementModalController";
 import { LeaveEntitlementModelTypes } from "~community/leave/enums/LeaveEntitlementEnums";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -23,21 +25,29 @@ const LeaveEntitlements: NextPage = () => {
 
   const { data: leaveTypesList } = useGetLeaveTypes(false, true);
 
-  const { setLeaveTypes } = useLeaveStore((state) => ({
-    setLeaveTypes: state.setLeaveTypes
-  }));
+  const { setLeaveTypes } = useLeaveStore(
+    useShallow((state) => ({
+      setLeaveTypes: state.setLeaveTypes
+    }))
+  );
 
   const {
     page,
     leaveEntitlementTableSelectedYear,
     setLeaveEntitlementModalType
-  } = useLeaveStore((state) => ({
-    page: state.page,
-    leaveEntitlementTableSelectedYear: state.leaveEntitlementTableSelectedYear,
-    setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      page: state.page,
+      leaveEntitlementTableSelectedYear:
+        state.leaveEntitlementTableSelectedYear,
+      setLeaveEntitlementModalType: state.setLeaveEntitlementModalType
+    }))
+  );
 
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const { isLeavePoliciesEnabled, isLoading: isLeavePoliciesConfigLoading } =
+    useLeavePoliciesEnabled();
 
   useEffect(() => {
     setLeaveTypes(leaveTypesList ?? []);
@@ -70,6 +80,8 @@ const LeaveEntitlements: NextPage = () => {
       isDividerVisible
       primaryButtonType={ButtonStyle.SECONDARY}
       primaryButtonText={
+        !isLeavePoliciesConfigLoading &&
+        !isLeavePoliciesEnabled &&
         leaveEntitlementTableData &&
         leaveEntitlementTableData?.items.length > 0 &&
         translateText(["leaveEntitlements.bulkUploadBtnTxt"])
@@ -107,8 +119,12 @@ const LeaveEntitlements: NextPage = () => {
         </Stack>
         <Divider sx={{ my: "1.5rem" }} />
         <LeaveCarryForward />
-        <Divider sx={{ my: "1.5rem" }} />
-        <CustomLeaveAllocationContent />
+        {!isLeavePoliciesConfigLoading && !isLeavePoliciesEnabled && (
+          <>
+            <Divider sx={{ my: "1.5rem" }} />
+            <CustomLeaveAllocationContent />
+          </>
+        )}
         <LeaveEntitlementModalController />
       </>
     </ContentLayout>

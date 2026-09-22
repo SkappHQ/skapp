@@ -65,6 +65,8 @@ public interface CrmMapper {
 
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);
 
+	List<CrmCompanyResponseDto> crmCompaniesToCrmCompanyResponseDtos(List<CrmCompany> crmCompanies);
+
 	@Mapping(target = "email", source = "user.email")
 	CrmContactOwnerResponseDto employeeToCrmContactOwnerResponseDto(Employee employee);
 

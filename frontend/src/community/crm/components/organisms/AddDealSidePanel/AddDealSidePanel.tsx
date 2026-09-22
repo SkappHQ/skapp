@@ -1,6 +1,7 @@
 import { ButtonV2, SidePanel, TextArea } from "@rootcodelabs/skapp-ui";
 import { FormikHelpers, useFormik } from "formik";
 import { ChangeEvent, FC, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import PlusIcon from "~community/common/assets/Icons/PlusIcon";
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -20,6 +21,7 @@ import { CrmPriorityEnum } from "~community/crm/enums/common";
 import { useCrmStore } from "~community/crm/store/store";
 import {
   CrmContactLookup,
+  CrmContactLookupParams,
   CrmCreateDealPayload,
   CrmDealAddFormTypes,
   CrmDealResponseType
@@ -54,13 +56,15 @@ const AddDealSidePanel: FC = () => {
     closeCrmSidePanel,
     addDealToStage,
     setPreselectedStageId
-  } = useCrmStore((store) => ({
-    isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-    crmSidePanelType: store.crmSidePanelType,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    addDealToStage: store.addDealToStage,
-    setPreselectedStageId: store.setPreselectedStageId
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
+      crmSidePanelType: store.crmSidePanelType,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      addDealToStage: store.addDealToStage,
+      setPreselectedStageId: store.setPreselectedStageId
+    }))
+  );
 
   const isOpen =
     isCrmSidePanelOpen &&
@@ -71,9 +75,12 @@ const AddDealSidePanel: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
+  const contactLookupParams: CrmContactLookupParams = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
   const { data: contactLookupData } = useGetCrmContacts(
-    debouncedContactSearch,
-    DEFAULT_LOOKUP_PAGE_SIZE,
+    contactLookupParams,
     isOpen
   );
   const contacts = contactLookupData?.items ?? [];

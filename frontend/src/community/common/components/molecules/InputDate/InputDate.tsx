@@ -60,6 +60,7 @@ interface Props {
   inputStyle?: SxProps;
   tooltipStyles?: SxProps;
   label: string;
+  labelStyles?: SxProps;
   componentStyle?: SxProps;
   readOnly?: boolean;
   isWithLeaves?: boolean;
@@ -96,6 +97,7 @@ const InputDate: FC<Props> = ({
   tooltip,
   error,
   label,
+  labelStyles,
   componentStyle,
   required = false,
   disabled = false,
@@ -282,14 +284,17 @@ const InputDate: FC<Props> = ({
         <Typography
           component="label"
           lineHeight={1.5}
-          sx={{
-            fontWeight: 400,
-            color: disabled
-              ? theme.palette.grey[700]
-              : error
-                ? theme.palette.error.contrastText
-                : theme.palette.common.black
-          }}
+          sx={mergeSx([
+            {
+              fontWeight: 400,
+              color: disabled
+                ? theme.palette.grey[700]
+                : error
+                  ? theme.palette.error.contrastText
+                  : theme.palette.common.black
+            },
+            labelStyles
+          ])}
         >
           {label}
           {required && (
@@ -308,7 +313,7 @@ const InputDate: FC<Props> = ({
             id="emoji-field"
             title={tooltip}
             isDisabled={disabled}
-            aria-label={`${lowerCaseLabel} ${translateAria(["ariaLabel"])}`}
+            ariaLabel={`${lowerCaseLabel} ${translateAria(["ariaLabel"])}`}
           />
         )}
       </Stack>

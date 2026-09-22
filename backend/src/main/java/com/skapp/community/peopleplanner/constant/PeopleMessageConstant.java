@@ -146,6 +146,9 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_LEAVE_RESTRICTED_ROLE_ACCESS("api.error.people.leave-restricted-role-access"),
 	PEOPLE_ERROR_INVOICE_RESTRICTED_ROLE_ACCESS("api.error.people.invoice-restricted-role-access"),
 	PEOPLE_ERROR_CRM_RESTRICTED_ROLE_ACCESS("api.error.people.crm-restricted-role-access"),
+	PEOPLE_ERROR_INVALID_RESTRICTION_MODULE("api.error.people.invalid-restriction-module"),
+	PEOPLE_ERROR_INVALID_RESTRICTION_ROLE_LEVEL("api.error.people.invalid-restriction-role-level"),
+	PEOPLE_ERROR_RESTRICTION_ADD_REMOVE_OVERLAP("api.error.people.restriction-add-remove-overlap"),
 	PEOPLE_ERROR_FAMILY_DOB_FUTURE_DATE("api.error.people.family-dob-future-date"),
 	PEOPLE_ERROR_DOB_FUTURE_DATE("api.error.people.dob-future-date"),
 	PEOPLE_ERROR_EDUCATION_START_END_DATE("api.error.people.education-start-end-date"),
@@ -224,6 +227,7 @@ public enum PeopleMessageConstant implements MessageConstant {
 			"api.error.people.validation-cannot-add-secondary-supervisor-without-primary-supervisor"),
 	PEOPLE_ERROR_TRANSFER_NEW_SUPERVISOR_NOT_FOUND("api.error.people.transfer-supervisors.new-supervisor-not-found"),
 	PEOPLE_ERROR_TRANSFER_SUPERVISOR_SELF_ASSIGN("api.error.people.transfer-supervisors.self-assign"),
+	PEOPLE_ERROR_TRANSFER_SUPERVISOR_ALREADY_ASSIGNED("api.error.people.transfer-supervisors.already-assigned"),
 	PEOPLE_ERROR_TRANSFER_PRIMARY_SUPERVISOR_RECORD_NOT_FOUND(
 			"api.error.people.transfer-supervisors.primary-record-not-found"),
 	PEOPLE_ERROR_TRANSFER_TEAM_SUPERVISOR_RECORD_NOT_FOUND(
@@ -231,7 +235,12 @@ public enum PeopleMessageConstant implements MessageConstant {
 	PEOPLE_ERROR_EMPLOYEE_TERMINATION_OR_DELETION_ACTION_REQUIRED(
 			"api.error.people.employee-termination-or-deletion-action-required"),
 	PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND("api.error.people.validation-work-location-not-found"),
-	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found");
+	PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND("api.error.people.validation-business-unit-not-found"),
+	PEOPLE_ERROR_SKILL_NOT_FOUND("api.error.people.skill.not-found"),
+	PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH("api.error.people.validation.payroll-id-length"),
+	PEOPLE_ERROR_VALIDATION_TIN_LENGTH("api.error.people.validation.tin-length"),
+	PEOPLE_ERROR_PAYROLL_ID_ALREADY_EXIST("api.error.people.employee.payroll-id.exist"),
+	PEOPLE_ERROR_TIN_ALREADY_EXIST("api.error.people.employee.tin.exist");
 
 	private final String messageKey;
 

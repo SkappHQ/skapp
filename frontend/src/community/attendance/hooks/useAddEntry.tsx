@@ -8,22 +8,46 @@ import {
 import { TIME_FORMAT_AM_PM } from "~community/attendance/constants/constants";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
-import { AttendanceSlotType } from "~community/attendance/types/attendanceTypes";
 import {
+  DirectManualTimeEntryVariablesType,
   TimeAvailabilityType,
-  TimeEntryFormValueType
+  TimeEntryFormValueType,
+  TimeEntryTimeErrorsType
 } from "~community/attendance/types/timeSheetTypes";
 import {
   convertTo12HourByDateString,
   convertToDateTime,
   convertToUtc,
   getCurrentTimeZone,
-  getDuration,
-  isToday
+  getDuration
 } from "~community/attendance/utils/TimeUtils";
+import { getModalBeforeManualEntry } from "~community/attendance/utils/TimesheetModalUtils";
+import {
+  EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED,
+  PEOPLE_ERROR_NO_MANAGERS_FOUND,
+  TIME_ERROR_MANUAL_ENTRY_RESTRICTED
+} from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { ErrorResponse } from "~community/common/types/CommonTypes";
+import {
+  useAddDirectTimeEntry,
+  useEditDirectTimeEntry
+} from "~enterprise/attendance/api/AttendanceApi";
+
+const EMPLOYEE_TIME_ENTRY_MODALS_RETAINING_AVAILABILITY =
+  new Set<EmployeeTimesheetModalTypes>([
+    EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+    EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+  ]);
+
+const EMPLOYEE_TIME_ENTRY_MODALS_CARRYING_ENTERED_TIMES =
+  new Set<EmployeeTimesheetModalTypes>([
+    EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS,
+    EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY,
+    EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
+  ]);
 
 const useAddEntry = () => {
   const translateText = useTranslator("attendanceModule", "timesheet");
@@ -35,11 +59,21 @@ const useAddEntry = () => {
     setIsEmployeeTimesheetModalOpen,
     setEmployeeTimesheetModalType,
     setTimeAvailabilityForPeriod,
-    setCurrentAddTimeChanges
+    setCurrentAddTimeChanges,
+    directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
 
-  const onSuccessManual = () => {
+  const showErrorToast = (titleKey: string, descriptionKey: string) => {
+    setToastMessage({
+      open: true,
+      title: translateText([titleKey]),
+      description: translateText([descriptionKey]),
+      toastType: ToastType.ERROR
+    });
+  };
+
+  const onSuccessAddManualTimeEntry = () => {
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntrySuccessTitle"]),
@@ -48,7 +82,7 @@ const useAddEntry = () => {
     });
   };
 
-  const onSuccessEdit = () => {
+  const onSuccessEditManualTimeEntry = () => {
     setToastMessage({
       open: true,
       title: translateText(["addTimeEntrySuccessTitle"]),
@@ -65,50 +99,124 @@ const useAddEntry = () => {
       toastType: ToastType.ERROR
     });
   };
-  // Enhanced onError to handle "No manager Found" 400 error
-  const enhancedOnError = (error: any) => {
-    if (
-      error?.response?.data?.results?.[0]?.message === "No managers found"
-    ) {
-      setToastMessage({
-      open: true,
-      title: translateText(["addTimeEntryNoManagerErrorTitle"]),
-      description: translateText(["managerMissingErrorDes"]),
-      toastType: ToastType.ERROR
-    });
-    } else {
-      setToastMessage({
-        open: true,
-        title: translateText(["addTimeEntryErrorTitle"]),
-        description: translateText(["addTimeEntryErrorDes"]),
-        toastType: ToastType.ERROR
-      });
+  const enhancedOnError = (error: ErrorResponse) => {
+    const messageKey = error?.response?.data?.results?.[0]?.messageKey;
+
+    if (messageKey === TIME_ERROR_MANUAL_ENTRY_RESTRICTED) {
+      showErrorToast("addTimeEntryErrorTitle", "manualEntryRestrictedErrorDes");
+      return;
     }
+
+    if (messageKey === PEOPLE_ERROR_NO_MANAGERS_FOUND) {
+      showErrorToast(
+        "addTimeEntryNoManagerErrorTitle",
+        "managerMissingErrorDes"
+      );
+      return;
+    }
+
+    showErrorToast("addTimeEntryErrorTitle", "addTimeEntryErrorDes");
   };
 
+  const onDirectManualTimeEntryAddSuccess = () => {
+    setToastMessage({
+      open: true,
+      title: translateText(["directEntryAddedToastTitle"]),
+      description: translateText(["directEntryAddedToastDes"]),
+      toastType: ToastType.SUCCESS
+    });
+  };
+
+  const onDirectManualTimeEntryEditSuccess = () => {
+    setToastMessage({
+      open: true,
+      title: translateText(["directEntryUpdatedToastTitle"]),
+      description: translateText(["directEntryUpdatedToastDes"]),
+      toastType: ToastType.SUCCESS
+    });
+  };
+
+  const onDirectManualTimeEntryError = (error: ErrorResponse) => {
+    const isConflict =
+      error?.response?.data?.results?.[0]?.messageKey ===
+      EP_TIME_ERROR_DIRECT_ENTRY_REQUEST_ALREADY_RESOLVED;
+
+    showErrorToast(
+      "addTimeEntryErrorTitle",
+      isConflict ? "directEntryConflictErrorDes" : "directEntrySaveErrorDes"
+    );
+  };
+
+  const { mutate: addDirectManualTimeEntryMutate } = useAddDirectTimeEntry(
+    onDirectManualTimeEntryAddSuccess,
+    onDirectManualTimeEntryError
+  );
+
+  const { mutate: editDirectManualTimeEntryMutate } = useEditDirectTimeEntry(
+    onDirectManualTimeEntryEditSuccess,
+    onDirectManualTimeEntryError
+  );
+
   const { mutate: manualEntryMutate } = useAddManualTimeEntry(
-    onSuccessManual,
+    onSuccessAddManualTimeEntry,
     enhancedOnError
   );
 
   const { mutate: editClockInOutMutate } = useEditClockInOut(
-    onSuccessEdit,
+    onSuccessEditManualTimeEntry,
     onError
   );
 
   const isDurationValid = (fromTime: string, toTime: string): boolean => {
     const duration = getDuration(fromTime, toTime);
-    if (duration?.includes("-")) {
-      setToastMessage({
-        open: true,
-        title: translateText(["invalidTimeTitle"]),
-        description: translateText(["invalidTimeDes"]),
-        toastType: ToastType.ERROR
+    return !duration?.includes("-");
+  };
+
+  const submitManualTimeEntry = (
+    values: TimeEntryFormValueType,
+    timeAvailability: TimeAvailabilityType,
+    dateTimeFromTime: string | null,
+    dateTimeToTime: string | null,
+    setFromDateTime: Dispatch<SetStateAction<string>>,
+    setToDateTime: Dispatch<SetStateAction<string>>
+  ) => {
+    const employeeConfirmationModalType = getModalBeforeManualEntry(
+      values,
+      timeAvailability,
+      status
+    );
+
+    if (employeeConfirmationModalType === null) {
+      manualEntryMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        zoneId: getCurrentTimeZone()
       });
-      return false;
-    } else {
-      return true;
+      setIsEmployeeTimesheetModalOpen(false);
+      setCurrentAddTimeChanges(values);
+      return;
     }
+
+    if (
+      EMPLOYEE_TIME_ENTRY_MODALS_RETAINING_AVAILABILITY.has(
+        employeeConfirmationModalType
+      )
+    ) {
+      setTimeAvailabilityForPeriod(timeAvailability);
+    }
+
+    if (
+      EMPLOYEE_TIME_ENTRY_MODALS_CARRYING_ENTERED_TIMES.has(
+        employeeConfirmationModalType
+      )
+    ) {
+      setFromDateTime(dateTimeFromTime ?? "");
+      setToDateTime(dateTimeToTime ?? "");
+    }
+
+    setIsEmployeeTimesheetModalOpen(true);
+    setEmployeeTimesheetModalType(employeeConfirmationModalType);
+    setCurrentAddTimeChanges(values);
   };
 
   const handleTimeEntrySubmit = (
@@ -125,87 +233,72 @@ const useAddEntry = () => {
       values.timeEntryDate,
       values.toTime
     );
-    if (isDurationValid(values.fromTime, values.toTime)) {
-      if (
-        employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
-      ) {
-        if (
-          (status === AttendanceSlotType.START ||
-            status === AttendanceSlotType.PAUSE ||
-            status === AttendanceSlotType.RESUME) &&
-          isToday(values?.timeEntryDate)
-        ) {
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY
-          );
-        } else if (
-          timeAvailability?.editTimeRequests ||
-          timeAvailability?.manualEntryRequests?.length
-        ) {
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.TIME_REQUEST_EXISTS
-          );
-        } else if (timeAvailability?.timeSlotsExists) {
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.TIME_ENTRY_EXISTS
-          );
-        } else if (timeAvailability?.leaveRequest?.length) {
-          setTimeAvailabilityForPeriod(timeAvailability);
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.CONFIRM_TIME_ENTRY
-          );
-        } else if (timeAvailability?.holiday?.length) {
-          setTimeAvailabilityForPeriod(timeAvailability);
-          setFromDateTime(dateTimeFromTime ?? "");
-          setToDateTime(dateTimeToTime ?? "");
-          setIsEmployeeTimesheetModalOpen(true);
-          setEmployeeTimesheetModalType(
-            EmployeeTimesheetModalTypes.CONFIRM_HOLIDAY_TIME_ENTRY
-          );
-        } else {
-          manualEntryMutate({
-            startTime: convertToUtc(dateTimeFromTime),
-            endTime: convertToUtc(dateTimeToTime),
-            zoneId: getCurrentTimeZone()
-          });
-          setIsEmployeeTimesheetModalOpen(false);
+
+    if (!isDurationValid(values.fromTime, values.toTime)) return;
+
+    if (directManualTimeEntryEligibleEmployee) {
+      const existingRecordId = selectedDailyRecord?.timeRecordId || undefined;
+      const directManualTimeEntryRequest: DirectManualTimeEntryVariablesType = {
+        employeeId: directManualTimeEntryEligibleEmployee.employeeId,
+        payload: {
+          startTime: convertToUtc(dateTimeFromTime),
+          endTime: convertToUtc(dateTimeToTime),
+          recordId: existingRecordId,
+          zoneId: getCurrentTimeZone()
         }
-        setCurrentAddTimeChanges(values);
-      } else if (
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-      ) {
-        manualEntryMutate({
-          startTime: convertToUtc(dateTimeFromTime),
-          endTime: convertToUtc(dateTimeToTime),
-          zoneId: getCurrentTimeZone()
-        });
-        setIsEmployeeTimesheetModalOpen(false);
-      } else if (
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-        employeeTimesheetModalType ===
-          EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-      ) {
-        editClockInOutMutate({
-          startTime: convertToUtc(dateTimeFromTime),
-          endTime: convertToUtc(dateTimeToTime),
-          recordId: selectedDailyRecord?.timeRecordId ?? undefined,
-          zoneId: getCurrentTimeZone()
-        });
-        setIsEmployeeTimesheetModalOpen(false);
+      };
+
+      if (existingRecordId) {
+        editDirectManualTimeEntryMutate(directManualTimeEntryRequest);
+      } else {
+        addDirectManualTimeEntryMutate(directManualTimeEntryRequest);
       }
+      setIsEmployeeTimesheetModalOpen(false);
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
+    ) {
+      submitManualTimeEntry(
+        values,
+        timeAvailability,
+        dateTimeFromTime,
+        dateTimeToTime,
+        setFromDateTime,
+        setToDateTime
+      );
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+    ) {
+      manualEntryMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        zoneId: getCurrentTimeZone()
+      });
+      setIsEmployeeTimesheetModalOpen(false);
+      return;
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
+    ) {
+      editClockInOutMutate({
+        startTime: convertToUtc(dateTimeFromTime),
+        endTime: convertToUtc(dateTimeToTime),
+        recordId: selectedDailyRecord?.timeRecordId || undefined,
+        zoneId: getCurrentTimeZone()
+      });
+      setIsEmployeeTimesheetModalOpen(false);
     }
   };
 
@@ -213,12 +306,13 @@ const useAddEntry = () => {
     values: TimeEntryFormValueType,
     isGetTimeAvailabilityLoading: boolean
   ) => {
+    const timeSlots = selectedDailyRecord?.timeSlots ?? [];
+
     const currentRecordStartTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots[0]?.startTime ?? ""
+      timeSlots[0]?.startTime ?? ""
     );
     const currentRecordEndTime = convertTo12HourByDateString(
-      selectedDailyRecord?.timeSlots[selectedDailyRecord?.timeSlots?.length - 1]
-        ?.endTime ?? ""
+      timeSlots.at(-1)?.endTime ?? ""
     );
 
     if (
@@ -245,9 +339,8 @@ const useAddEntry = () => {
     fromTime: string,
     toTime: string,
     prevFromTime: string,
-    prevToTime: string,
-    isWithToast: boolean
-  ) => {
+    prevToTime: string
+  ): TimeEntryTimeErrorsType => {
     const prevStartTimeWithDate = DateTime.fromISO(prevFromTime);
     const prevEndTimeWithDate = prevToTime
       ? DateTime.fromISO(prevToTime)
@@ -261,12 +354,14 @@ const useAddEntry = () => {
       year: prevStartTimeWithDate.year
     });
 
-    if (clockInOutValidation(fromTime, toTime, isWithToast)) {
-      return true;
+    const sameTimeErrors = clockInOutValidation(fromTime, toTime);
+
+    if (sameTimeErrors.fromTime || sameTimeErrors.toTime) {
+      return sameTimeErrors;
     }
 
     if (prevEndTimeWithDate === null) {
-      return false;
+      return {};
     }
 
     const endTimeWithDate = DateTime.fromFormat(toTime, TIME_FORMAT_AM_PM).set({
@@ -276,48 +371,31 @@ const useAddEntry = () => {
     });
 
     if (startTimeWithDate >= prevEndTimeWithDate) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidClockInTitle"]),
-          description: translateText(["invalidClockInDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
+      return { fromTime: translateText(["invalidClockInDes"]) };
     }
     if (endTimeWithDate <= prevStartTimeWithDate) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidClockOutTitle"]),
-          description: translateText(["invalidClockOutDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
+      return { toTime: translateText(["invalidClockOutDes"]) };
     }
-    return false;
+    return {};
   };
 
   const clockInOutValidation = (
     fromTime: string,
-    toTime: string,
-    isWithToast: boolean
-  ) => {
-    if (!!fromTime && !!toTime && fromTime === toTime) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidEntryTitle"]),
-          description: translateText(["invalidEntryDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
-    } else {
-      return false;
+    toTime: string
+  ): TimeEntryTimeErrorsType => {
+    if (!fromTime || !toTime) {
+      return {};
     }
+
+    if (fromTime === toTime) {
+      return { fromTime: translateText(["invalidEntryDes"]) };
+    }
+
+    if (!isDurationValid(fromTime, toTime)) {
+      return { fromTime: translateText(["invalidTimeDes"]) };
+    }
+
+    return {};
   };
 
   return {

@@ -7,9 +7,10 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { getCurrentAndNextYear } from "~community/common/utils/dateTimeUtils";
 import { useGetLeaveAllocation } from "~community/leave/api/MyRequestApi";
-import LeaveAllocation from "~community/leave/components/molecules/LeaveAllocation/LeaveAllocation";
-import LeaveRequests from "~community/leave/components/molecules/LeaveRequests/LeaveRequests";
 import EmployeeLeaveStatusPopupController from "~community/leave/components/organisms/EmployeeLeaveStatusPopupController/EmployeeLeaveStatusPopupController";
+import MyLeaveAllocationSection from "~community/leave/components/organisms/MyLeaveAllocationSection/MyLeaveAllocationSection";
+import MyLeaveRequestsSection from "~community/leave/components/organisms/MyLeaveRequestsSection/MyLeaveRequestsSection";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import useGoogleAnalyticsEvent from "~enterprise/common/hooks/useGoogleAnalyticsEvent";
 import { GoogleAnalyticsTypes } from "~enterprise/common/types/GoogleAnalyticsTypes";
@@ -26,9 +27,18 @@ const MyRequests: NextPage = () => {
 
   const now = DateTime.now();
   const nextYear = now.plus({ years: 1 }).year;
+
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
   const { data: isEntitlementAvailableNextYear } = useGetLeaveAllocation(
-    nextYear.toString()
+    nextYear.toString(),
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled
   );
+
+  const isNextYearAvailable =
+    !isLeavePoliciesEnabled &&
+    (isEntitlementAvailableNextYear?.length ?? 0) > 0;
 
   useGoogleAnalyticsEvent({
     onMountEventType: GoogleAnalyticsTypes.GA4_LEAVE_REQUEST_PAGE_VIEWED,
@@ -49,8 +59,7 @@ const MyRequests: NextPage = () => {
       title={translateText(["myRequests.title"])}
       isDividerVisible={true}
       customRightContent={
-        isEntitlementAvailableNextYear &&
-        isEntitlementAvailableNextYear.length !== 0 ? (
+        isNextYearAvailable ? (
           <RoundedSelect
             id="leave-allocations-year-dropdown"
             value={selectedYear}
@@ -75,8 +84,8 @@ const MyRequests: NextPage = () => {
       }
     >
       <>
-        <LeaveAllocation />
-        <LeaveRequests />
+        <MyLeaveAllocationSection />
+        <MyLeaveRequestsSection />
         <EmployeeLeaveStatusPopupController />
       </>
     </ContentLayout>

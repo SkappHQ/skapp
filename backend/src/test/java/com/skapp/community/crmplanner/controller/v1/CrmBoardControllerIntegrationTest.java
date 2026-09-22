@@ -48,6 +48,7 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -105,6 +106,8 @@ class CrmBoardControllerIntegrationTest {
 
 	private CrmTaskType taskType;
 
+	private CrmTaskType emailTaskType;
+
 	@BeforeEach
 	void setup() {
 		adminToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
@@ -133,9 +136,14 @@ class CrmBoardControllerIntegrationTest {
 		contact.setOwner(employeeDao.getReferenceById(1L));
 		crmContactDao.save(contact);
 
+		emailTaskType = new CrmTaskType();
+		emailTaskType.setName("Email");
+		emailTaskType.setOrderIndex(1);
+		emailTaskType = crmTaskTypeDao.save(emailTaskType);
+
 		taskType = new CrmTaskType();
 		taskType.setName("Call");
-		taskType.setOrderIndex(1);
+		taskType.setOrderIndex(2);
 		taskType = crmTaskTypeDao.save(taskType);
 	}
 
@@ -439,6 +447,63 @@ class CrmBoardControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['name']").value("Rep Deal"));
 	}
 
+	@Test
+	@DisplayName("Deals grouped by stage as Sales Representative - taskCount excludes tasks owned by others")
+	void getDealsByStages_SalesRep_TaskCountExcludesOtherOwnersTasks() throws Exception {
+		CrmDeal repDeal = createDeal("Rep Deal", stage1, "a0", 2L);
+		createTask(repDeal, 2L);
+		createTask(repDeal, 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+
+		performPostDealsByStagesRequest(request, repToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(1));
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['taskCount']").value(2));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - search keyword matching deal ID returns matching deal")
+	void getDealsByStages_SearchKeywordMatchesDealId_ReturnsMatchingDeal() throws Exception {
+		CrmDeal deal = createDeal("Deal To Find By Id", stage1, "a0", 1L);
+		createDeal("Unrelated Deal", stage1, "b0", 1L);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+		request.setSearchKeyword(deal.getId().toString());
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'][0]['id']").value(deal.getId().intValue()));
+	}
+
+	@Test
+	@DisplayName("Deals grouped by stage - search keyword matching a soft-deleted deal's ID returns no deals")
+	void getDealsByStages_SearchKeywordMatchesSoftDeletedDealId_ReturnsNoDeals() throws Exception {
+		CrmDeal deal = createDeal("Deleted Deal For Id Search", stage1, "a0", 1L);
+		deal.setIsDeleted(true);
+		crmDealDao.save(deal);
+
+		CrmDealsByStagesRequestDto request = new CrmDealsByStagesRequestDto();
+		request.setStageIds(List.of(stage1.getId()));
+		request.setSearchKeyword(deal.getId().toString());
+
+		performPostDealsByStagesRequest(request, adminToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals'].length()").value(0));
+	}
+
 	private ResultActions performPostDealsByStagesRequest(CrmDealsByStagesRequestDto dto, String token)
 			throws Exception {
 		return mvc.perform(post("/v1/crm/board/deals-grouped-by-stages").contentType(MediaType.APPLICATION_JSON)
@@ -447,12 +512,106 @@ class CrmBoardControllerIntegrationTest {
 			.with(SecurityTestUtils.bearerToken(token)));
 	}
 
+	@Test
+	@DisplayName("Board init data - contact with a live company returns the nested company")
+	void getBoardInitData_ContactWithCompany_ReturnsNestedCompany() throws Exception {
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.id")
+				.value(company.getId().intValue()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + contact.getId() + ")].company.name")
+				.value("Board Test Company"));
+	}
+
+	@Test
+	@DisplayName("Board init data - contact without a company omits the company object")
+	void getBoardInitData_ContactWithoutCompany_OmitsCompany() throws Exception {
+		CrmContact orphan = new CrmContact();
+		orphan.setName("Board Orphan Contact");
+		orphan.setEmail("board.orphan@example.com");
+		orphan.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(orphan);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].name")
+				.value("Board Orphan Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
+				.doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Board init data - contact whose company is soft deleted omits the company object")
+	void getBoardInitData_ContactWithDeletedCompany_OmitsCompany() throws Exception {
+		CrmCompany deletedCompany = new CrmCompany();
+		deletedCompany.setName("Board Deleted Company");
+		crmCompanyDao.save(deletedCompany);
+
+		CrmContact orphan = new CrmContact();
+		orphan.setName("Board Deleted Company Contact");
+		orphan.setEmail("board.deletedco@example.com");
+		orphan.setCompany(deletedCompany);
+		orphan.setOwner(employeeDao.getReferenceById(1L));
+		crmContactDao.save(orphan);
+
+		deletedCompany.setIsDeleted(true);
+		crmCompanyDao.save(deletedCompany);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts'][?(@.id == " + orphan.getId() + ")].company.id")
+				.doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Board init data - returns task types ordered by orderIndex")
+	void getBoardInitData_ReturnsTaskTypes() throws Exception {
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['stages']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contacts']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owners']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['crmRoles']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['id']").value(emailTaskType.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['name']").value("Email"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][0]['orderIndex']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['id']").value(taskType.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['name']").value("Call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['orderIndex']").value(2));
+	}
+
+	@Test
+	@DisplayName("Board init data - without CRM role returns Forbidden")
+	void getBoardInitData_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		String noCrmRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user4@gmail.com"),
+				1L);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(noCrmRoleToken))).andDo(print()).andExpect(status().isForbidden());
+	}
+
 	private CrmTask createTask(CrmDeal deal) {
+		return createTask(deal, 1L);
+	}
+
+	private CrmTask createTask(CrmDeal deal, Long ownerId) {
 		CrmTask task = new CrmTask();
 		task.setName("Test Task");
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setOwner(employeeDao.getReferenceById(ownerId));
 		task.setDeal(deal);
 		task.setIsDeleted(false);
 		task.setIsCompleted(false);

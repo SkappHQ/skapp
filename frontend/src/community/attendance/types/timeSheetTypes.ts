@@ -22,6 +22,7 @@ export interface TimeRecordType {
     };
   };
   workedHours: number;
+  isOngoingTimeRequest?: boolean;
   clockInLocationStatus?: RecordLocationStatus;
   clockOutLocationStatus?: RecordLocationStatus;
 }
@@ -106,6 +107,11 @@ export interface TimeRequestDataType {
   requestType?: string;
 }
 
+export interface TimeEntryTimeErrorsType {
+  fromTime?: string;
+  toTime?: string;
+}
+
 export interface TimeRequestDataResponseType {
   items: TimeRequestDataType[];
   currentPage: number;
@@ -150,7 +156,7 @@ export interface HolidayType {
 }
 
 export interface DailyLogType {
-  timeRecordId: number;
+  timeRecordId: number | null;
   date: string;
   day: daysTypes;
   workedHours: number;
@@ -221,3 +227,14 @@ export const TimeUtilizationTrendTypes = {
   TREND_UP: "up",
   TREND_DOWN: "down"
 };
+
+export interface DirectEntryEmployeeType {
+  employeeId: number;
+  employeeName: string;
+  date?: string;
+}
+
+export interface DirectManualTimeEntryVariablesType {
+  employeeId: number;
+  payload: ManualEntryPayloadType;
+}

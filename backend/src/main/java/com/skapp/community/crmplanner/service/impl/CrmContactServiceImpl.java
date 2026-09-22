@@ -29,8 +29,10 @@ import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
+import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.service.CrmContactService;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
+import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
 import com.skapp.community.crmplanner.type.CrmDealSummary;
@@ -78,6 +80,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	private final CrmOwnerResolverService crmOwnerResolver;
 
+	private final CrmCompanyService crmCompanyService;
+
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto checkContactEmailExists(String email) {
@@ -96,7 +100,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createContact(CrmContactCreateRequestDto requestDto) {
-		log.info("createContact: execution started");
+		CrmContact savedContact = persistNewContact(requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public CrmContact persistNewContact(CrmContactCreateRequestDto requestDto) {
+		log.info("persistNewContact: execution started");
 
 		validateContactPayload(requestDto.getName(), requestDto.getEmail(), requestDto.getContactNumber(),
 				requestDto.getOwnerId());
@@ -109,10 +120,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_EMAIL_ALREADY_EXISTS);
 		}
 
-		CrmCompany company = requestDto.getCompanyId() != null
-				? crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
-					.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND))
-				: null;
+		CrmCompany company = resolveContactCompany(requestDto);
 		Employee owner = crmOwnerResolver.resolveOwner(requestDto.getOwnerId(), currentUser);
 
 		CrmContact contact = new CrmContact();
@@ -124,8 +132,22 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("createContact: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+		log.info("persistNewContact: execution ended");
+		return savedContact;
+	}
+
+	private CrmCompany resolveContactCompany(CrmContactCreateRequestDto requestDto) {
+		if (requestDto.getCompanyId() != null) {
+			return crmCompanyDao.findByIdAndIsDeletedFalse(requestDto.getCompanyId())
+				.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+		}
+
+		String companyName = requestDto.getCompanyName();
+		if (companyName != null && !companyName.isBlank()) {
+			return crmCompanyService.findOrCreateCompanyByName(companyName);
+		}
+
+		return null;
 	}
 
 	protected void validateContactCreationLimit() {
@@ -135,7 +157,14 @@ public class CrmContactServiceImpl implements CrmContactService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editContact(Long id, CrmContactEditRequestDto requestDto) {
-		log.info("editContact: execution started");
+		CrmContact savedContact = applyContactEdit(id, requestDto);
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+	}
+
+	@Override
+	@Transactional
+	public CrmContact applyContactEdit(Long id, CrmContactEditRequestDto requestDto) {
+		log.info("applyContactEdit: execution started");
 
 		User currentUser = userService.getCurrentUser();
 
@@ -187,8 +216,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		CrmContact savedContact = crmContactDao.save(contact);
 
-		log.info("editContact: execution ended");
-		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(savedContact));
+		log.info("applyContactEdit: execution ended");
+		return savedContact;
 	}
 
 	@Override
@@ -280,6 +309,18 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 		log.info("getContactMetrics: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getContactMetricsById(Long id) {
+		log.info("getContactMetricsById: execution started");
+
+		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
+
+		log.info("getContactMetricsById: execution ended");
+		return new ResponseEntityDto(false, metrics);
 	}
 
 	@Override

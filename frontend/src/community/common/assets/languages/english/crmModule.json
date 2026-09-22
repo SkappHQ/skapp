@@ -4,7 +4,19 @@
       "placeholder": "None",
       "searchPlaceholder": "Search Owner",
       "noResults": "No results"
+    },
+    "initData": {
+      "errorTitle": "Couldn't load CRM data",
+      "errorDescription": "Something went wrong. Please try again"
+    },
+    "priorityOptions": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
     }
+  },
+  "breadcrumbs": {
+    "crm": "CRM"
   },
   "contacts": {
     "pageHead": "Contacts | Skapp",
@@ -20,7 +32,8 @@
         "contactNumber": "Contact no.",
         "company": "Company",
         "owner": "Contact owner",
-        "suggested": "Suggested"
+        "suggested": "Suggested",
+        "addNewCompany": "Add \"{{companyName}}\" as a new company"
       },
       "placeholders": {
         "name": "Enter name",
@@ -290,7 +303,8 @@
     "table": {
       "clearButtonAriaLabel": "Clear search",
       "filterButtonAriaLabel": "Filter companies",
-      "search": "Search company",
+      "searchAriaLabel": "Search companies by name",
+      "search": "Search by company name",
       "infiniteScrollLoadingMessage": "Loading companies...",
       "closedDealsLabel": "Deals closed",
       "overdueLabel": "overdue",
@@ -327,7 +341,8 @@
         "noContacts": "No contacts",
         "noContactsDescription": "No contacts associated with this company",
         "addContact": "Add Contact",
-        "dealsClosed": "Deals closed",
+        "dealsClosed_one": "Deal closed",
+        "dealsClosed_other": "Deals closed",
         "overdue": "overdue",
         "infiniteScrollLoadingMessage": "Loading contacts..."
       }
@@ -366,6 +381,10 @@
       },
       "tasks": {
         "emptyDescription": "No tasks associated with this company"
+      },
+      "errors": {
+        "companyNotFoundTitle": "Company not found",
+        "companyNotFoundDescription": "This company is no longer available."
       }
     }
   },
@@ -416,15 +435,16 @@
         "saveTitle": "Save title",
         "discardTitle": "Discard title",
         "editTitle": "Edit title",
-        "editDescription": "Edit description"
+        "editDescription": "Edit description",
+        "copyLink": "Copy link to this deal"
       },
       "buttons": {
         "save": "Save",
         "discard": "Discard"
       },
       "toastMessages": {
-        "editErrorTitle": "Failed to update deal",
-        "editErrorDescription": "Something went wrong. Please try again"
+        "editErrorTitle": "Oops! Something went wrong",
+        "editErrorDescription": "Failed to update deal. Please try again"
       },
       "validations": {
         "dealNameRequired": "Deal name is required",
@@ -447,9 +467,7 @@
           "saveDeal": "Save deal",
           "cancelAddDeal": "Cancel adding deal",
           "contact": "Contact",
-          "clearContact": "Clear selected contact",
-          "saving": "Saving deal",
-          "loading": "Loading"
+          "clearContact": "Clear selected contact"
         },
         "validations": {
           "dealNameRequired": "Deal name is required",
@@ -463,7 +481,8 @@
           "errorTitle": "Failed to add deal",
           "errorDescription": "Please try again or contact support"
         }
-      }
+      },
+      "linkCopied": "Link copied"
     },
     "dealsTable": {
       "dealColumn": "Deal",
@@ -471,7 +490,11 @@
       "stageColumn": "Stage",
       "contactNameColumn": "Contact Name",
       "companyNameColumn": "Company Name",
+      "priorityColumn": "Priority",
       "dealOwnerColumn": "Deal Owner",
+      "sortAscending": "Ascending",
+      "sortDescending": "Descending",
+      "hideColumn": "Hide column",
       "searchPlaceholder": "Search deals",
       "clearSearchAriaLabel": "Clear search",
       "noDealsTitle": "No deals available.",
@@ -482,10 +505,36 @@
       "openDealDetails": "Open deal details for {{name}}",
       "listViewAriaLabel": "List view",
       "kanbanViewAriaLabel": "Kanban view",
-      "switchDealViewAriaLabel": "Switch deal view"
+      "switchDealViewAriaLabel": "Switch deal view",
+      "inlineEdit": {
+        "placeholders": {
+          "none": "None",
+          "stage": "Select stage",
+          "ownerSearch": "Search employees",
+          "contactSearch": "Search contacts",
+          "noResults": "No results"
+        },
+        "ariaLabels": {
+          "value": "Value",
+          "stage": "Stage",
+          "priority": "Priority",
+          "dealOwner": "Deal Owner",
+          "contactName": "Contact Name"
+        },
+        "toastMessages": {
+          "editErrorTitle": "Failed to update deal",
+          "editErrorDescription": "Oops! Something went wrong. Please try again"
+        }
+      }
     },
     "kanban": {
-      "addDealBtn": "Add deal"
+      "addDealBtn": "Add deal",
+      "toastMessages": {
+        "moveErrorTitle": "Couldn't move deal",
+        "moveErrorDescription": "Something went wrong and the change was reverted. Please try again.",
+        "loadMoreErrorTitle": "Couldn't load more deals",
+        "loadMoreErrorDescription": "Something went wrong. Please try again."
+      }
     },
     "deleteDealModal": {
       "title": "Delete Deal",
@@ -578,16 +627,22 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
+      "reopenTask": "Reopen task",
       "kebabMenuAriaLabel": "Task actions",
       "notes": "Notes",
       "noNotes": "No notes added",
       "dealsTitle": "Deals",
       "noDealsDescription": "No deals associated with this task",
       "relatedTasksTitle": "Related Tasks",
+      "noRelatedTasksTitle": "No tasks",
       "noRelatedTasksDescription": "No related tasks yet",
+      "addTaskButton": "Add task",
+      "emptyTitle": "No tasks",
+      "emptyDescription": "No tasks yet. Create a task to follow up with this contact",
       "markAsDone": "Mark as Done",
       "statusDone": "Done",
       "assignedTo": "Assigned To",
+      "noOwner": "No owner assigned",
       "priority": "Priority",
       "closingDate": "Closing Date",
       "noClosingDate": "No closing date",
@@ -597,6 +652,10 @@
         "high": "High",
         "medium": "Medium",
         "low": "Low"
+      },
+      "reopenToastMessages": {
+        "successTitle": "Task reopened",
+        "successDescription": "Task reopened successfully"
       }
     },
     "deleteTaskModal": {
@@ -615,6 +674,58 @@
         "successDescription": "The task has been deleted successfully.",
         "errorTitle": "Failed to delete task",
         "errorDescription": "Something went wrong. Please try again."
+      }
+    },
+    "taskModal": {
+      "labels": {
+        "type": "Type",
+        "task": "Task",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "type": "Select type",
+        "task": "Enter the task name",
+        "dueDate": "Select date",
+        "priority": "Select priority",
+        "contactName": "Select contact",
+        "deal": "Select deal",
+        "taskOwner": "Select task owner",
+        "notes": "Add message"
+      },
+      "taskTypes": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "other": "Other"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "ariaLabels": {
+        "type": "Task type",
+        "task": "Task name",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "removeOwner": "Remove task owner",
+        "clearContact": "Clear selected contact",
+        "clearDeal": "Clear selected deal",
+        "notes": "Notes",
+        "save": "Save task",
+        "cancel": "Cancel"
+      },
+      "emptyStates": {
+        "noOwners": "No task owners found",
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found"
       }
     },
     "addTaskModal": {
@@ -785,7 +896,11 @@
         "dueToday": "Today",
         "dueTomorrow": "Tomorrow",
         "upcoming": "Upcoming"
-      }
+      },
+      "dueDateOverdue_one": "Overdue by {{count}} day",
+      "dueDateOverdue_other": "Overdue by {{count}} days",
+      "dueDateToday": "Due today",
+      "dueDateDueOn": "Due on {{date}}"
     }
   }
 }

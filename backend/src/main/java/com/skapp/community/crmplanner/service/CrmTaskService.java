@@ -1,6 +1,7 @@
 package com.skapp.community.crmplanner.service;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskCreateRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskEditRequestDto;
@@ -15,7 +16,11 @@ public interface CrmTaskService {
 
 	ResponseEntityDto createTask(CrmTaskCreateRequestDto requestDto);
 
+	CrmTask persistNewTask(CrmTaskCreateRequestDto requestDto);
+
 	ResponseEntityDto editTask(Long id, CrmTaskEditRequestDto requestDto);
+
+	CrmTask applyTaskEdit(Long id, CrmTaskEditRequestDto requestDto);
 
 	ResponseEntityDto deleteTask(Long id);
 

@@ -3,10 +3,12 @@ import Grid from "@mui/material/Grid2";
 import { Box } from "@mui/system";
 import { DateTime } from "luxon";
 import { JSX } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import AvatarGroup from "~community/common/components/molecules/AvatarGroup/AvatarGroup";
 import { DATE_FORMAT } from "~community/common/constants/timeConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { getRelativeDates } from "~community/common/utils/dateTimeUtils";
 import { shouldActivateButton } from "~community/common/utils/keyboardUtils";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveRequest } from "~community/leave/types/ResourceAvailabilityTypes";
@@ -48,17 +50,28 @@ const AvailabilityCalendarCard = ({
     setIsOnLeaveModalOpen,
     setOnLeaveModalTitle,
     setTodaysAvailability
-  } = useLeaveStore((state) => ({
-    setIsManagerModal: state.setIsManagerModal,
-    setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen,
-    setOnLeaveModalTitle: state.setOnLeaveModalTitle,
-    setTodaysAvailability: state.setTodaysAvailability
-  }));
+  } = useLeaveStore(
+    useShallow((state) => ({
+      setIsManagerModal: state.setIsManagerModal,
+      setIsOnLeaveModalOpen: state.setIsOnLeaveModalOpen,
+      setOnLeaveModalTitle: state.setOnLeaveModalTitle,
+      setTodaysAvailability: state.setTodaysAvailability
+    }))
+  );
+
+  const getOnLeaveModalTitle = (): string => {
+    const { today, yesterday, tomorrow } = getRelativeDates();
+
+    if (actualDate === today) return translateText(["awayToday"]);
+    if (actualDate === yesterday) return translateText(["awayYesterday"]);
+    if (actualDate === tomorrow) return translateText(["awayTomorrow"]);
+    return translateText(["awayOnDate"], { date: actualDate });
+  };
 
   const handleOnLeaveModalOpen = () => {
     setIsManagerModal(true);
     setIsOnLeaveModalOpen(true);
-    setOnLeaveModalTitle(translateText(["onLeaveTitle"], { date: actualDate }));
+    setOnLeaveModalTitle(getOnLeaveModalTitle());
     setTodaysAvailability(onLeaveEmployees);
   };
 

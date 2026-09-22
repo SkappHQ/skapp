@@ -1,0 +1,147 @@
+import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useDeleteDeal } from "~community/crm/v2/api/DealApi";
+import CrmDeleteModalContent from "~community/crm/v2/components/molecules/CrmDeleteModalContent/CrmDeleteModalContent";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { removeDeal } from "~community/crm/v2/utils/boardUtil";
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  dealName: string;
+  onDeleted?: () => void;
+}
+
+const DeleteDealModalV2: FC<Props> = ({
+  isOpen,
+  onClose,
+  dealName,
+  onDeleted
+}) => {
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
+
+  const { setToastMessage } = useToast();
+
+  const {
+    selectedDealId,
+    setSelectedDealId,
+    closeCrmSidePanel,
+    deals,
+    board,
+    dealIds,
+    setDeals,
+    setBoardColumn,
+    setDealIds
+  } = useCrmStoreV2(
+    useShallow((store) => ({
+      selectedDealId: store.selectedDealId,
+      setSelectedDealId: store.setSelectedDealId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      deals: store.deals,
+      board: store.board,
+      dealIds: store.dealIds,
+      setDeals: store.setDeals,
+      setBoardColumn: store.setBoardColumn,
+      setDealIds: store.setDealIds
+    }))
+  );
+
+  const handleSuccess = (): void => {
+    if (selectedDealId == null) return;
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "successDescription"
+      ])
+    });
+
+    const next = removeDeal({ deals, board, dealIds }, selectedDealId);
+    setDeals(next.deals);
+    setBoardColumn(next.board);
+    setDealIds(next.dealIds);
+    onClose();
+    closeCrmSidePanel();
+    setSelectedDealId(null);
+    onDeleted?.();
+  };
+
+  const handleError = (): void => {
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "deleteModal",
+        "toastMessages",
+        "errorDescription"
+      ])
+    });
+  };
+
+  const { mutate: deleteDeal, isPending } = useDeleteDeal(
+    handleSuccess,
+    handleError
+  );
+
+  const handleDeleteDeal = (): void => {
+    if (selectedDealId == null) return;
+    deleteDeal(selectedDealId);
+  };
+
+  return (
+    <SmallModal
+      isOpen={isOpen}
+      onClose={onClose}
+      modalHeader={translateText(["deals", "deleteModal", "title"])}
+      content={
+        <CrmDeleteModalContent
+          description={translateText(["deals", "deleteModal", "description"], {
+            dealName
+          })}
+          isPending={isPending}
+          confirmLabel={translateText([
+            "deals",
+            "deleteModal",
+            "buttons",
+            "confirm"
+          ])}
+          cancelLabel={translateText([
+            "deals",
+            "deleteModal",
+            "buttons",
+            "cancel"
+          ])}
+          confirmAriaLabel={translateAria(["deals", "deleteModal", "confirm"])}
+          cancelAriaLabel={translateAria(["deals", "deleteModal", "cancel"])}
+          onConfirm={handleDeleteDeal}
+          onClose={onClose}
+        />
+      }
+    />
+  );
+};
+
+export default DeleteDealModalV2;

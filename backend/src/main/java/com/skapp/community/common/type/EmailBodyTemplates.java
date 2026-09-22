@@ -13,6 +13,12 @@ public enum EmailBodyTemplates implements EmailTemplates {
 	PEOPLE_MODULE_USER_INVITATION_MICROSOFT_SSO("people-module-user-invitation-microsoft-sso"),
 	PEOPLE_MODULE_USER_TERMINATION_V1("people-module-user-termination"),
 
+	// People Module — External Sync Templates
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_SYNC_PENDING_REVIEW("people-module-google-workspace-sync-pending-review"),
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_SYNC_FAILED("people-module-google-workspace-sync-failed"),
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_USER_REMOVED_SINGULAR("people-module-google-workspace-user-removed-singular"),
+	PEOPLE_MODULE_GOOGLE_WORKSPACE_USERS_REMOVED_PLURAL("people-module-google-workspace-users-removed-plural"),
+
 	// Holiday Templates
 	PEOPLE_MODULE_NEW_HOLIDAY_DECLARED("people-module-new-holiday-declared-employee"),
 	PEOPLE_MODULE_HOLIDAY_SINGLE_DAY_PENDING_LEAVE_REQUEST_CANCELED_EMPLOYEE(

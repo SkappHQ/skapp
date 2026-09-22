@@ -1,4 +1,5 @@
 import { FC } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -17,14 +18,16 @@ const DeleteContactModalContent: FC = () => {
     setIsContactModalOpen,
     getContactById,
     removeContact
-  } = useCrmStore((store) => ({
-    selectedContactId: store.selectedContactId,
-    setSelectedContactId: store.setSelectedContactId,
-    closeCrmSidePanel: store.closeCrmSidePanel,
-    setIsContactModalOpen: store.setIsContactModalOpen,
-    getContactById: store.getContactById,
-    removeContact: store.removeContact
-  }));
+  } = useCrmStore(
+    useShallow((store) => ({
+      selectedContactId: store.selectedContactId,
+      setSelectedContactId: store.setSelectedContactId,
+      closeCrmSidePanel: store.closeCrmSidePanel,
+      setIsContactModalOpen: store.setIsContactModalOpen,
+      getContactById: store.getContactById,
+      removeContact: store.removeContact
+    }))
+  );
 
   const translateText = useTranslator(
     "crmModule",

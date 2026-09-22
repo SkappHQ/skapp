@@ -1,11 +1,17 @@
+import { Stack } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 
 import PeopleLayout from "~community/common/components/templates/PeopleLayout/PeopleLayout";
+import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetLeaveTypes } from "~community/leave/api/LeaveApi";
 import UserAssignedLeaveTypes from "~community/leave/components/molecules/UserAssignedLeaveTypes/UserAssignedLeaveTypes";
 import UserLeaveHistory from "~community/leave/components/molecules/UserLeaveHistory/UserLeaveHistory";
+import UserLeavePolicies from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePolicies";
+import UserLeavePoliciesSkeleton from "~community/leave/components/molecules/UserLeavePolicies/UserLeavePoliciesSkeleton";
 import UserLeaveUtilization from "~community/leave/components/molecules/UserLeaveUtilization/UserLeaveUtilization";
+import { USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE } from "~community/leave/constants/leavePolicyConstants";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { LeaveType } from "~community/leave/types/CustomLeaveAllocationTypes";
 import UpgradeOverlay from "~enterprise/common/components/molecules/UpgradeOverlay/UpgradeOverlay";
@@ -33,6 +39,25 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
   );
 
   const { isAtLeastCoreTier } = useTier();
+
+  const { isSuperAdmin, isPeopleAdmin, isLeaveAdmin } = useSessionData();
+
+  const canViewLeavePolicies = Boolean(
+    isSuperAdmin || (isPeopleAdmin && isLeaveAdmin)
+  );
+
+  const { isLeavePoliciesEnabled, isLoading: isLeavePolicyConfigLoading } =
+    useLeavePoliciesEnabled();
+
+  const isPolicySectionLoading =
+    canViewLeavePolicies && isLeavePolicyConfigLoading;
+  const showLeavePolicies = canViewLeavePolicies && isLeavePoliciesEnabled;
+  const showAssignedLeaveTypes =
+    !isLeavePolicyConfigLoading && !isLeavePoliciesEnabled;
+
+  const employeeName = [employeeFirstName, employeeLastName]
+    .filter(Boolean)
+    .join(" ");
 
   const { resetLeaveRequestParams } = useLeaveStore((state) => state);
 
@@ -64,25 +89,44 @@ const IndividualEmployeeLeaveReportSection: FC<Props> = ({
       containerStyles={classes.container}
       pageHead={translateText(["pageHead"])}
     >
-      <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
-        <>
-          <UserAssignedLeaveTypes employeeId={selectedUser} pageSize={8} />
+      <Stack sx={classes.sectionsWrapper}>
+        {isPolicySectionLoading && <UserLeavePoliciesSkeleton />}
 
-          {leaveTypesList?.length > 0 && (
-            <UserLeaveUtilization
+        {showLeavePolicies && (
+          <UserLeavePolicies
+            employeeId={selectedUser}
+            employeeName={employeeName}
+          />
+        )}
+
+        <UpgradeOverlay customContainerStyles={classes.customContainerStyles}>
+          <>
+            {showAssignedLeaveTypes && (
+              <>
+                <h2 className="h2 text-black">{translateText(["pageHead"])}</h2>
+                <UserAssignedLeaveTypes
+                  employeeId={selectedUser}
+                  pageSize={USER_ASSIGNED_LEAVE_TYPES_PAGE_SIZE}
+                />
+              </>
+            )}
+
+            {leaveTypesList?.length > 0 && (
+              <UserLeaveUtilization
+                employeeId={selectedUser}
+                leaveTypesList={leaveTypesList}
+              />
+            )}
+
+            <UserLeaveHistory
               employeeId={selectedUser}
               leaveTypesList={leaveTypesList}
+              employeeLastName={employeeLastName}
+              employeeFirstName={employeeFirstName}
             />
-          )}
-
-          <UserLeaveHistory
-            employeeId={selectedUser}
-            leaveTypesList={leaveTypesList}
-            employeeLastName={employeeLastName}
-            employeeFirstName={employeeFirstName}
-          />
-        </>
-      </UpgradeOverlay>
+          </>
+        </UpgradeOverlay>
+      </Stack>
     </PeopleLayout>
   );
 };

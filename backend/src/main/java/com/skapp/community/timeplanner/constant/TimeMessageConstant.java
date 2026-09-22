@@ -19,6 +19,11 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_ATTENDANCE_CONFIG_NOT_FOUND("api.error.time.attendance.config.not.found"),
 	TIME_ERROR_ADMS_DEVICE_NOT_FOUND("api.error.time.adms.device.not-found"),
 	TIME_ERROR_ADMS_DEVICE_SERIAL_ALREADY_EXISTS("api.error.time.adms.device.serial-already-exists"),
+	TIME_ERROR_ADMS_DEVICE_WEBHOOK_CREDENTIALS_REQUIRED("api.error.time.adms.device.webhook-credentials-required"),
+	TIME_ERROR_ADMS_DEVICE_WEBHOOK_USERNAME_ALREADY_EXISTS(
+			"api.error.time.adms.device.webhook-username-already-exists"),
+	TIME_ERROR_ADMS_DEVICE_WEBHOOK_PASSWORD_TOO_SHORT("api.error.time.adms.device.webhook-password-too-short"),
+	TIME_ERROR_ADMS_DEVICE_WORK_LOCATION_NOT_FOUND("api.error.time.adms.device.work-location-not-found"),
 	TIME_ERROR_CLOCK_IN_NOT_EXISTS_FOR_CURRENT_DATE("api.error.time.clockin-not-exist-for-current.date"),
 	TIME_ERROR_TIME_CLOCK_IN_EXISTS_FOR_CURRENT_DATE("api.error.time.clockin-exist-for-current.date"),
 	TIME_ERROR_END_TIME_BEFORE_START_TIME("api.error.time.end-time-before-start-time"),
@@ -45,6 +50,7 @@ public enum TimeMessageConstant implements MessageConstant {
 	TIME_ERROR_INVALID_TIME_BLOCKS("api.error.time.invalid-time-blocks"),
 	TIME_ERROR_MONTH_REQUIRED("api.error.time.month-required"),
 	TIME_ERROR_MANAGER_OR_ABOVE_PERMISSIONS_REQUIRED("api.error.time.time-request-permission.not.found"),
+	TIME_ERROR_MANUAL_ENTRY_RESTRICTED("api.error.time.manual-entry-restricted"),
 	TIME_ERROR_PAUSE_RESUME_NOT_AVAILABLE("api.error.time.pause-resume-not-available");
 
 	private final String messageKey;

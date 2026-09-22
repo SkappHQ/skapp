@@ -64,6 +64,14 @@ export interface ResourceAvailabilityPayload {
   holidays: HolidayType[];
 }
 
+export interface MyLeaveRequestParamsType {
+  status?: string;
+  leaveType?: string;
+  page?: number;
+  sortKey?: string;
+  size: number;
+}
+
 export interface MyLeaveRequestPayloadType {
   leaveRequestId: number;
   startDate: string;

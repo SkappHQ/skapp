@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -34,6 +35,17 @@ public class LeavePolicyController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		ResponseEntityDto response = leavePolicyService.getAllLeavePolicies(leavePolicyFilterDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check leave policy name availability",
+			description = "Returns whether the given policy name is still available for the given leave type. "
+					+ "Names are compared case-insensitively across both active and inactive policies")
+	@GetMapping("/name-availability")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> checkLeavePolicyNameAvailability(
+			@RequestParam(required = false) String name, @RequestParam(required = false) Long leaveTypeId) {
+		ResponseEntityDto response = leavePolicyService.checkLeavePolicyNameAvailability(name, leaveTypeId);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -69,6 +81,26 @@ public class LeavePolicyController {
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
 	public ResponseEntity<ResponseEntityDto> activateLeavePolicy(@PathVariable Long id) {
 		ResponseEntityDto response = leavePolicyService.activateLeavePolicy(id);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Enable leave policies",
+			description = "Enables the leave policies feature for an existing tenant. Removes all existing leave "
+					+ "allocations, cancels pending leave requests and revokes approved leave requests that start in "
+					+ "the future. This action is irreversible.")
+	@PostMapping("/enable")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> enableLeavePolicies() {
+		ResponseEntityDto response = leavePolicyService.enableLeavePolicies();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get leave policy configuration",
+			description = "Returns whether the leave policies feature is enabled for the tenant")
+	@GetMapping("/config")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getLeavePolicyConfig() {
+		ResponseEntityDto response = leavePolicyService.getLeavePolicyConfig();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

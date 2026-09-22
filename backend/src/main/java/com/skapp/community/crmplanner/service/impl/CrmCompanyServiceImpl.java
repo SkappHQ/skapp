@@ -12,6 +12,7 @@ import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
 import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -23,13 +24,16 @@ import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
+import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.util.CrmValidations;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -103,6 +107,29 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		return new ResponseEntityDto(false, responseDto);
 	}
 
+	@Override
+	@Transactional
+	public CrmCompany findOrCreateCompanyByName(String name) {
+		log.info("findOrCreateCompanyByName: execution started");
+
+		CrmValidations.validateCompanyName(name);
+
+		Optional<CrmCompany> existingCompany = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse(name);
+		if (existingCompany.isPresent()) {
+			log.info("findOrCreateCompanyByName: matched an existing company");
+			return existingCompany.get();
+		}
+
+		validateCompanyCreationLimit();
+
+		CrmCompany newCompany = new CrmCompany();
+		newCompany.setName(name);
+		CrmCompany savedCompany = crmCompanyDao.save(newCompany);
+
+		log.info("findOrCreateCompanyByName: execution ended");
+		return savedCompany;
+	}
+
 	protected void validateCompanyCreationLimit() {
 		// This method is a placeholder for enterprise company creation limit validation
 	}
@@ -128,6 +155,51 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompanyById(Long id) {
+		log.info("getCompanyById: execution started");
+
+		CrmCompany company = crmCompanyDao.findByIdAndIsDeletedFalse(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		CrmCompanyResponseDto response = crmCompanyMapper.crmCompanyToCrmCompanyResponseDto(company);
+
+		log.info("getCompanyById: execution ended");
+		return new ResponseEntityDto(false, response);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompaniesByIds(CrmCompanyIdsRequestDto requestDto) {
+		log.info("getCompaniesByIds: execution started");
+
+		if (requestDto.getIds() == null || requestDto.getIds().isEmpty()) {
+			log.info("getCompaniesByIds: no ids provided, returning empty list");
+			return new ResponseEntityDto(false, Collections.emptyList());
+		}
+
+		CrmValidations.validateCompanyIds(requestDto.getIds());
+
+		List<CrmCompanyResponseDto> companies = crmCompanyMapper.crmCompaniesToCrmCompanyResponseDtos(
+				crmCompanyDao.findByIdInAndIsDeletedFalseOrderByIdAsc(requestDto.getIds()));
+
+		log.info("getCompaniesByIds: execution ended with {} result(s)", companies.size());
+		return new ResponseEntityDto(false, companies);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getCompanyMetricsById(Long id) {
+		log.info("getCompanyMetricsById: execution started");
+
+		CrmCompanyMetrics metrics = crmCompanyDao.getCompanyMetricsById(id)
+			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND));
+
+		log.info("getCompanyMetricsById: execution ended");
+		return new ResponseEntityDto(false, metrics);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
 		log.info("searchCompaniesByDomain: execution started");
 
@@ -136,9 +208,7 @@ public class CrmCompanyServiceImpl implements CrmCompanyService {
 		List<CrmCompany> companies = crmCompanyDao.findCompaniesByWebsiteDomain(requestDto.getDomain(),
 				requestDto.getLimit());
 
-		List<CrmCompanyResponseDto> companyDtos = companies.stream()
-			.map(crmCompanyMapper::crmCompanyToCrmCompanyResponseDto)
-			.toList();
+		List<CrmCompanyResponseDto> companyDtos = crmCompanyMapper.crmCompaniesToCrmCompanyResponseDtos(companies);
 
 		CrmCompanyDomainSearchResponseDto responseDto = new CrmCompanyDomainSearchResponseDto();
 		responseDto.setCompanies(companyDtos);

@@ -15,4 +15,6 @@ public class CrmContactFilterDto {
 
 	private Long dealId;
 
+	private Long companyId;
+
 }

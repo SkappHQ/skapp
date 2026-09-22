@@ -2,9 +2,11 @@ import { useEffect, useRef } from "react";
 
 import { useGetEmployee } from "~community/people/api/PeopleApi";
 import { useGetAllTeams } from "~community/people/api/TeamApi";
-import { TeamNamesType } from "~community/people/types/TeamTypes";
+import useDefaultTabNavigation from "~community/people/hooks/useDefaultTabNavigation";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
+import { EditPeopleFormTypes } from "~community/people/types/PeopleEditTypes";
+import { TeamNamesType } from "~community/people/types/TeamTypes";
 
 import DirectorySteppers from "../../molecules/DirectorySteppers/DirectorySteppers";
 import RouteChangeAreYouSureModal from "../../molecules/RouteChangeAreYouSureModal/RouteChangeAreYouSureModal";
@@ -17,7 +19,7 @@ interface Props {
 }
 const AccountSectionWrapper = ({ employeeId }: Props) => {
   const { data: employeeData } = useGetEmployee(employeeId);
-  const { data: teamData} = useGetAllTeams();
+  const { data: teamData } = useGetAllTeams();
 
   const accountSectionsRef = useRef<HTMLDivElement>(null);
 
@@ -31,8 +33,16 @@ const AccountSectionWrapper = ({ employeeId }: Props) => {
     setIsUnsavedModalSaveButtonClicked,
     setIsUnsavedModalDiscardButtonClicked,
     setEmployee,
-    setProjectTeamNames
+    setProjectTeamNames,
+    setNextStep
   } = usePeopleStore((state) => state);
+
+  useEffect(() => {
+    setCurrentStep(EditPeopleFormTypes.personal);
+    setNextStep(EditPeopleFormTypes.personal);
+  }, []);
+
+  useDefaultTabNavigation();
 
   useEffect(() => {
     if (employeeData) {

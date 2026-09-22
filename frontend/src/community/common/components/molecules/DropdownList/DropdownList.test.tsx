@@ -47,7 +47,7 @@ describe("DropdownList", () => {
     renderWithTheme(
       <DropdownList {...defaultProps} placeholder={placeholder} />
     );
-    expect(screen.getByText(placeholder)).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent(placeholder);
   });
 
   it("shows error message when error prop is provided", () => {

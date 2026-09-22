@@ -34,6 +34,8 @@ public interface LeaveRequestRepository {
 
 	List<LeaveRequest> findLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId);
 
+	List<LeaveRequest> findPendingAndApprovedLeaveRequestsForTodayByUser(LocalDate currentDate, Long employeeId);
+
 	List<LeaveRequest> findLeaveRequestAvailabilityForGivenDate(LocalDate date, Long employeeId);
 
 	List<LeaveRequest> findLeaveRequestsByDateRangeAndEmployees(LeaveRequestFilterDto leaveRequestFilterDto,

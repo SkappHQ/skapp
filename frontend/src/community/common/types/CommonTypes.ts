@@ -1,4 +1,5 @@
 import { type SxProps } from "@mui/material";
+import { type PopperProps } from "@rootcodelabs/skapp-ui";
 import { AppProps } from "next/app";
 import { JSX } from "react";
 import { type FileRejection } from "react-dropzone";
@@ -288,3 +289,14 @@ export type HTMLTableHeaderTypes = {
 export type TableTypes = {
   tableName: string;
 };
+
+export interface EmployeeAvatarData {
+  employeeId: number;
+  firstName: string;
+  lastName: string;
+  authPic?: string;
+}
+
+export type CalendarPopperPlacement = Required<
+  Pick<PopperProps, "position" | "offset">
+>;

@@ -52,7 +52,10 @@ public interface TimeMapper {
 	@Mapping(target = "initialClockOut", source = "clockOutTime")
 	@Mapping(target = "requestedStartTime", source = "requestedStartTime")
 	@Mapping(target = "requestedEndTime", source = "requestedEndTime")
-	@Mapping(target = "creationDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+	@Mapping(target = "createdBy", ignore = true)
+	@Mapping(target = "createdDate", ignore = true)
+	@Mapping(target = "lastModifiedBy", ignore = true)
+	@Mapping(target = "lastModifiedDate", ignore = true)
 	TimeRequest timeRequestDtoToTimeRequest(TimeRequestDto timeRequestDto, RequestStatus requestStatus,
 			Employee employee, TimeRecord timeRecord, Long clockInTime, Long clockOutTime, Long requestedStartTime,
 			Long requestedEndTime);
@@ -72,9 +75,10 @@ public interface TimeMapper {
 	@Mapping(target = "workedHours", expression = "java(0f)")
 	@Mapping(target = "breakHours", expression = "java(0f)")
 	@Mapping(target = "leaveHours", expression = "java(0f)")
-	@Mapping(target = "createdBy", expression = "java(\"admin\")")
-	@Mapping(target = "lastModifiedBy", expression = "java(\"admin\")")
-	@Mapping(target = "createdDate", expression = "java(java.time.LocalDateTime.now(java.time.ZoneOffset.UTC))")
+	@Mapping(target = "createdBy", ignore = true)
+	@Mapping(target = "createdDate", ignore = true)
+	@Mapping(target = "lastModifiedBy", ignore = true)
+	@Mapping(target = "lastModifiedDate", ignore = true)
 	TimeRecord buildNewTimeRecord(Employee employee, TimeRequest timeRequest, DayOfWeek day, LocalDate date);
 
 	List<ManagerTimeRequestResponseDto> timeRequestListToManagerTimeRequestResponseDtoList(

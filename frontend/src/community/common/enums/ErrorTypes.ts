@@ -5,5 +5,5 @@ export enum FileUploadErrorTypes {
 }
 
 export enum ErrorTypes {
-  EMAIL_MISMATCH_ERROR = "User email mismatch with current user",
+  EMAIL_MISMATCH_ERROR = "User email mismatch with current user"
 }

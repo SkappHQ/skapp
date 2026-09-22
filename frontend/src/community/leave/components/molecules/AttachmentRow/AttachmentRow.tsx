@@ -41,7 +41,10 @@ const AttachmentRow = ({ attachments }: Props) => {
         {attachments.map((attachment, index) => (
           <IconChip
             key={index}
-            label={getFileNameOfAttachmentFromUrl(attachment.url) || translateText(["myLeaveRequests", "uploadedAttachment"])}
+            label={
+              getFileNameOfAttachmentFromUrl(attachment.url) ||
+              translateText(["myLeaveRequests", "uploadedAttachment"])
+            }
             chipStyles={{
               backgroundColor: "grey.100",
               py: "0.75rem",

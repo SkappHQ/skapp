@@ -8,8 +8,9 @@ import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { AdminTypes } from "~community/common/types/AuthTypes";
+import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
 import { getConfigurationTabs } from "~community/configurations/utils/configurationTabsUtil";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { getEnterpriseConfigurationTabs } from "~enterprise/configurations/utils/configurationTabsUtil";
 
@@ -19,6 +20,7 @@ const Configurations: NextPage = () => {
   const translateText = useTranslator("configurations");
   const environment = useGetEnvironment();
   const isEnterprise = environment === appModes.ENTERPRISE;
+  const { isLeavePoliciesEnabled } = useLeavePoliciesEnabled();
 
   const allTabs = useMemo(
     () =>
@@ -30,33 +32,26 @@ const Configurations: NextPage = () => {
 
   const visibleTabs = useMemo(() => {
     const userRoles = user?.roles || [];
-    return allTabs.filter((tab) => {
-      return userRoles.some((role) =>
-        tab.requiredRoles.includes(role as AdminTypes)
-      );
-    });
-  }, [allTabs, user?.roles]);
+    return allTabs.filter(
+      (tab) =>
+        tab.requiredRoles.some((role) => userRoles.includes(role)) &&
+        !(tab.id === "leave" && isLeavePoliciesEnabled)
+    );
+  }, [allTabs, user?.roles, isLeavePoliciesEnabled]);
 
   const [activeTab, setActiveTab] = useState(visibleTabs[0]?.id);
 
   useEffect(() => {
-    if (!router.isReady || visibleTabs?.length === 0) return;
+    if (!router.isReady) return;
     const tabParam = router.query.tab as string | undefined;
     if (tabParam && visibleTabs.some((tab) => tab.id === tabParam)) {
-      if (tabParam !== activeTab) {
-        setActiveTab(tabParam);
-      }
+      setActiveTab(tabParam);
     }
-  }, [router.isReady, router.query.tab, visibleTabs]);
+  }, [router.isReady, router.query.tab]);
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-    const basePath = router.asPath.split("?")[0];
-    router.replace(
-      { pathname: router.pathname, query: { ...router.query, tab: id } },
-      `${basePath}?tab=${id}`,
-      { shallow: true, scroll: false }
-    );
+    replaceTabQueryParam(router.asPath, id);
   };
 
   return (

@@ -3,6 +3,7 @@ package com.skapp.community.peopleplanner.util;
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
+import com.skapp.community.common.repository.BusinessUnitDao;
 import com.skapp.community.common.repository.WorkLocationDao;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.Validation;
@@ -384,9 +385,27 @@ public class Validations {
 					List.of(String.valueOf(PeopleConstants.MAX_EMPLOYEE_NUMBER_LENGTH)));
 	}
 
+	public static void validatePayrollId(String payrollId) {
+		if (payrollId.length() > PeopleConstants.MAX_PAYROLL_ID_LENGTH)
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_PAYROLL_ID_LENGTH,
+					List.of(String.valueOf(PeopleConstants.MAX_PAYROLL_ID_LENGTH)));
+	}
+
+	public static void validateTin(String tin) {
+		if (tin.length() > PeopleConstants.MAX_TIN_LENGTH)
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_TIN_LENGTH,
+					List.of(String.valueOf(PeopleConstants.MAX_TIN_LENGTH)));
+	}
+
 	public static void validateWorkLocation(Long workLocationId, WorkLocationDao workLocationDao) {
-		if (workLocationId != null && !workLocationDao.existsById(workLocationId)) {
+		if (workLocationId != null && !workLocationDao.existsByWorkLocationIdAndIsDeletedFalse(workLocationId)) {
 			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_WORK_LOCATION_NOT_FOUND);
+		}
+	}
+
+	public static void validateBusinessUnit(Long businessUnitId, BusinessUnitDao businessUnitDao) {
+		if (businessUnitId != null && !businessUnitDao.existsById(businessUnitId)) {
+			throw new ValidationException(PeopleMessageConstant.PEOPLE_ERROR_VALIDATION_BUSINESS_UNIT_NOT_FOUND);
 		}
 	}
 

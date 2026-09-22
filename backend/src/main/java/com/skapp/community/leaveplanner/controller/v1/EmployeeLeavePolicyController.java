@@ -2,6 +2,8 @@ package com.skapp.community.leaveplanner.controller.v1;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.leaveplanner.payload.request.AssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.BulkAssignLeavePolicyRequestDto;
+import com.skapp.community.leaveplanner.payload.request.EmployeeLeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.UnassignLeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.service.EmployeeLeavePolicyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,17 @@ public class EmployeeLeavePolicyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Bulk assign leave policies to employees",
+			description = "Assigns policies to many employees from CSV-derived rows; each row is validated and processed independently")
+	@PostMapping("/bulk")
+	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> bulkAssignLeavePolicies(
+			@RequestBody BulkAssignLeavePolicyRequestDto bulkAssignLeavePolicyRequestDto) {
+		ResponseEntityDto response = employeeLeavePolicyService
+			.bulkAssignLeavePolicies(bulkAssignLeavePolicyRequestDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Unassign a leave policy from an employee",
 			description = "Closes the employee's open window for the policy; 404 if no active assignment exists")
 	@DeleteMapping
@@ -51,8 +64,9 @@ public class EmployeeLeavePolicyController {
 			description = "Returns the currently active (open) policy assignment windows for the employee")
 	@GetMapping("/employee/{employeeId}")
 	@PreAuthorize("hasAnyRole('ROLE_LEAVE_ADMIN', 'ROLE_PEOPLE_ADMIN')")
-	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId) {
-		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId);
+	public ResponseEntity<ResponseEntityDto> getEmployeeLeavePolicies(@PathVariable Long employeeId,
+			EmployeeLeavePolicyFilterDto filterDto) {
+		ResponseEntityDto response = employeeLeavePolicyService.getEmployeeLeavePolicies(employeeId, filterDto);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

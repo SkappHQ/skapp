@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
 
 import { LeaveEntitlementParamsType } from "~community/leave/types/LeaveEntitlementTypes";
+import { PolicyManagerLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveReviewTypes";
+import { PolicyLeaveRequestQueryParams } from "~community/leave/types/PolicyLeaveTypes";
 
 export const leaveQueryKeys = {
   ALL: ["all-leaves"],
@@ -61,6 +63,9 @@ export const leaveEntitlementQueryKeys = {
 };
 
 export const leaveAnalyticsQueryKeys = {
+  EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS_ALL: [
+    "employee-leave-entitlements"
+  ],
   EMPLOYEE_LEAVE_ENTITLEMENTS_FOR_ANALYTICS: function (employeeId: number) {
     return ["employee-leave-entitlements", employeeId];
   },
@@ -276,20 +281,89 @@ export const reportsQueryKeys = {
   }
 };
 
+export const policyLeaveTypeQueryKeys = {
+  ALL: ["policy-leave-type-settings"],
+  LIST: (isActive: boolean | undefined, page: number, size: number) => [
+    ...policyLeaveTypeQueryKeys.ALL,
+    "policy-leave-types",
+    isActive,
+    page,
+    size
+  ],
+  DETAIL: (id: number) => [
+    ...policyLeaveTypeQueryKeys.ALL,
+    "policy-leave-type",
+    id
+  ]
+};
+
+export const policyLeaveQueryKeys = {
+  ALL: ["policy-leave"],
+  MY_POLICY_BALANCES: (year: string) => [
+    ...policyLeaveQueryKeys.ALL,
+    "my-policy-balances",
+    year
+  ],
+  MY_POLICY_LEAVE_REQUESTS: (year: string) => [
+    ...policyLeaveQueryKeys.ALL,
+    "my-policy-leave-requests",
+    year
+  ],
+  MY_POLICY_LEAVE_REQUESTS_PAGE: (
+    queryParams: PolicyLeaveRequestQueryParams
+  ) => [
+    ...policyLeaveQueryKeys.MY_POLICY_LEAVE_REQUESTS(queryParams.year),
+    "page",
+    queryParams
+  ]
+};
+
+export const policyLeaveReviewQueryKeys = {
+  ALL: ["policy-leave-review"],
+  MANAGER_REQUESTS: (queryParams: PolicyManagerLeaveRequestQueryParams) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "manager-requests",
+    queryParams
+  ],
+  MANAGER_REQUEST: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "manager-request",
+    leaveRequestId
+  ],
+  MY_REQUEST: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "my-request",
+    leaveRequestId
+  ],
+  NUDGE_STATUS: (leaveRequestId: number | null) => [
+    ...policyLeaveReviewQueryKeys.ALL,
+    "nudge-status",
+    leaveRequestId
+  ]
+};
+
 export const leavePolicyQueryKeys = {
   ALL: ["leave-policies"],
-  POLICY_LEAVE_TYPES: ["policy-leave-types"],
-  LEAVE_POLICIES_INFINITE: function (
+  LEAVE_POLICY_CONFIG: ["leave-policies-config"],
+  LEAVE_POLICIES_INFINITE: (
     searchKeyword: string,
     leaveTypeId: string,
     size: number
-  ) {
-    return [
-      ...(this?.ALL || []),
-      "leave-policies-infinite",
-      searchKeyword,
-      leaveTypeId,
-      size
-    ];
-  }
+  ) => [
+    ...leavePolicyQueryKeys.ALL,
+    "leave-policies-infinite",
+    searchKeyword,
+    leaveTypeId,
+    size
+  ]
+};
+
+export const leavePolicyAssignmentQueryKeys = {
+  ALL: ["employee-leave-policies"],
+  EMPLOYEE_LEAVE_POLICIES: (employeeId: number, page: number, size: number) => [
+    "employee-leave-policies",
+    employeeId,
+    page,
+    size
+  ]
 };

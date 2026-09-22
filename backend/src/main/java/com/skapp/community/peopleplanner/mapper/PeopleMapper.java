@@ -22,7 +22,6 @@ import com.skapp.community.peopleplanner.model.EmployeeVisa;
 import com.skapp.community.peopleplanner.model.Holiday;
 import com.skapp.community.peopleplanner.model.JobFamily;
 import com.skapp.community.peopleplanner.model.JobTitle;
-import com.skapp.community.peopleplanner.model.ModuleRoleRestriction;
 import com.skapp.community.peopleplanner.model.Team;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeBulkDto;
@@ -36,7 +35,6 @@ import com.skapp.community.peopleplanner.payload.request.EmploymentVisaDto;
 import com.skapp.community.peopleplanner.payload.request.HolidayRequestDto;
 import com.skapp.community.peopleplanner.payload.request.JobFamilyDto;
 import com.skapp.community.peopleplanner.payload.request.JobTitleDto;
-import com.skapp.community.peopleplanner.payload.request.ModuleRoleRestrictionRequestDto;
 import com.skapp.community.peopleplanner.payload.request.TeamRequestDto;
 import com.skapp.community.peopleplanner.payload.request.employee.emergency.EmployeeEmergencyContactDetailsDto;
 import com.skapp.community.peopleplanner.payload.request.employee.employment.EmployeeEmploymentBasicDetailsManagerDetailsDto;
@@ -46,6 +44,7 @@ import com.skapp.community.peopleplanner.payload.request.employee.personal.Emplo
 import com.skapp.community.peopleplanner.payload.request.employee.personal.EmployeePersonalFamilyDetailsDto;
 import com.skapp.community.peopleplanner.payload.response.CreateEmployeeResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeAllDataExportResponseDto;
+import com.skapp.community.peopleplanner.payload.response.EmployeeBirthdayResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDataExportResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeDetailedResponseDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeJobFamilyDto;
@@ -59,7 +58,6 @@ import com.skapp.community.peopleplanner.payload.response.HolidayWorkLocationRes
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDetailDto;
 import com.skapp.community.peopleplanner.payload.response.JobFamilyResponseDto;
 import com.skapp.community.peopleplanner.payload.response.JobTitleResponseDetailDto;
-import com.skapp.community.peopleplanner.payload.response.ModuleRoleRestrictionResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamBasicDetailsResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamDetailResponseDto;
 import com.skapp.community.peopleplanner.payload.response.TeamEmployeeResponseDto;
@@ -166,6 +164,7 @@ public interface PeopleMapper {
 	@Mapping(target = "jobFamily", ignore = true)
 	@Mapping(target = "jobTitle", ignore = true)
 	@Mapping(target = "workLocation", ignore = true)
+	@Mapping(target = "businessUnit", ignore = true)
 	Employee employeeBulkDtoToEmployee(EmployeeBulkDto employeeBulkDto);
 
 	@Mapping(target = "primaryManager", ignore = true)
@@ -177,11 +176,6 @@ public interface PeopleMapper {
 	EmployeeDetailsDto employeeBulkDtoToEmployeeDetailsDto(EmployeeBulkDto employeeBulkDto);
 
 	EmployeeEmergency employeeEmergencyDtoToEmployeeEmergency(EmployeeEmergencyDto employeeEmergency);
-
-	ModuleRoleRestriction roleRestrictionRequestDtoToRestrictRole(
-			ModuleRoleRestrictionRequestDto moduleRoleRestrictionRequestDto);
-
-	ModuleRoleRestrictionResponseDto restrictRoleToRestrictRoleResponseDto(ModuleRoleRestriction restrictedRole);
 
 	List<EmployeeDetailedResponseDto> employeeListToEmployeeDetailedResponseDtoList(List<Employee> employees);
 
@@ -196,6 +190,12 @@ public interface PeopleMapper {
 	EmployeeSignInResponseDto employeeToEmployeeSignInResponseDto(Employee employee);
 
 	EmployeeBasicDetailsResponseDto employeeToEmployeeBasicDetailsResponseDto(Employee employee);
+
+	@Mapping(target = "jobFamily", source = "jobFamily.name")
+	@Mapping(target = "jobTitle", source = "jobTitle.name")
+	EmployeeBirthdayResponseDto employeeToEmployeeBirthdayResponseDto(Employee employee);
+
+	List<EmployeeBirthdayResponseDto> employeesToEmployeeBirthdayResponseDtos(List<Employee> employees);
 
 	List<HolidayBasicDetailsResponseDto> holidaysToHolidayBasicDetailsResponseDtos(List<Holiday> holidays);
 

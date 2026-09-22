@@ -2,24 +2,44 @@ package com.skapp.community.leaveplanner.service.impl;
 
 import com.skapp.community.common.exception.EntityNotFoundException;
 import com.skapp.community.common.exception.ModuleException;
+import com.skapp.community.common.model.OrganizationConfig;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.repository.OrganizationConfigDao;
+import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.mapper.LeaveMapper;
+import com.skapp.community.leaveplanner.model.EmployeeLeavePolicy;
+import com.skapp.community.leaveplanner.model.LeaveEntitlement;
 import com.skapp.community.leaveplanner.model.LeavePolicy;
+import com.skapp.community.leaveplanner.model.LeaveRequest;
+import com.skapp.community.leaveplanner.model.LeaveRequestEntitlement;
+import com.skapp.community.leaveplanner.model.PolicyLeaveRequest;
 import com.skapp.community.leaveplanner.model.PolicyLeaveType;
+import com.skapp.community.leaveplanner.payload.LeavePolicyAssignedEmployeeCountDto;
+import com.skapp.community.leaveplanner.payload.LeavePolicyConfigDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyAccrualDetailDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyFilterDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyRequestDto;
 import com.skapp.community.leaveplanner.payload.request.LeavePolicyUpdateRequestDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyConfigResponseDto;
+import com.skapp.community.leaveplanner.payload.response.LeavePolicyNameAvailabilityResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyResponseDto;
 import com.skapp.community.leaveplanner.payload.response.LeavePolicyStatusResponseDto;
+import com.skapp.community.leaveplanner.repository.EmployeeLeavePolicyDao;
+import com.skapp.community.leaveplanner.repository.LeaveEntitlementDao;
 import com.skapp.community.leaveplanner.repository.LeavePolicyDao;
+import com.skapp.community.leaveplanner.repository.LeaveRequestDao;
+import com.skapp.community.leaveplanner.repository.LeaveRequestEntitlementDao;
+import com.skapp.community.leaveplanner.repository.PolicyLeaveRequestDao;
 import com.skapp.community.leaveplanner.repository.PolicyLeaveTypeDao;
 import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.type.AccrualTiming;
+import com.skapp.community.leaveplanner.type.EmployeeLeavePolicyStatus;
 import com.skapp.community.leaveplanner.type.FirstAccrualType;
 import com.skapp.community.leaveplanner.type.LeavePolicyStatus;
+import com.skapp.community.leaveplanner.type.LeaveRequestStatus;
 import com.skapp.community.leaveplanner.type.PolicyType;
 import com.skapp.community.leaveplanner.util.LeavePolicyValidationUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +49,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -42,6 +67,20 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	private final PolicyLeaveTypeDao policyLeaveTypeDao;
 
 	private final LeaveMapper leaveMapper;
+
+	private final OrganizationConfigDao organizationConfigDao;
+
+	private final LeaveEntitlementDao leaveEntitlementDao;
+
+	private final LeaveRequestDao leaveRequestDao;
+
+	private final LeaveRequestEntitlementDao leaveRequestEntitlementDao;
+
+	private final EmployeeLeavePolicyDao employeeLeavePolicyDao;
+
+	private final PolicyLeaveRequestDao policyLeaveRequestDao;
+
+	private final JsonMapper jsonMapper;
 
 	@Override
 	@Transactional
@@ -106,7 +145,14 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		leavePolicy.setStatus(LeavePolicyStatus.INACTIVE);
 		leavePolicy = leavePolicyDao.save(leavePolicy);
 
-		log.info("deactivateLeavePolicy: policy deactivated successfully");
+		int cancelledRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatus(leavePolicy.getId(), LeaveRequestStatus.PENDING),
+				LeaveRequestStatus.CANCELLED);
+		int revokedRequests = voidPolicyLeaveRequests(
+				policyLeaveRequestDao.findByPolicy_IdAndStatusAndStartDateAfter(leavePolicy.getId(),
+						LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate()),
+				LeaveRequestStatus.REVOKED);
+		int endedAssignments = endActivePolicyAssignments(leavePolicy.getId());
 
 		return new ResponseEntityDto(false,
 				new LeavePolicyStatusResponseDto(leavePolicy.getId(), leavePolicy.getStatus()));
@@ -137,11 +183,19 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 	public ResponseEntityDto getAllLeavePolicies(LeavePolicyFilterDto leavePolicyFilterDto) {
 		log.info("getAllLeavePolicies: execution started");
 
-		Pageable pageable = PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
-		Page<LeavePolicy> leavePolicyPage = leavePolicyDao.findLeavePolicies(leavePolicyFilterDto, pageable);
+		Pageable pageable = leavePolicyFilterDto.getSize() < 0 ? Pageable.unpaged()
+				: PageRequest.of(leavePolicyFilterDto.getPage(), leavePolicyFilterDto.getSize());
+		Page<LeavePolicyAssignedEmployeeCountDto> leavePolicyPage = leavePolicyDao
+			.findLeavePolicies(leavePolicyFilterDto, pageable);
 
-		List<LeavePolicyResponseDto> leavePolicyResponseDtos = leaveMapper
-			.leavePolicyListToLeavePolicyResponseDtoList(leavePolicyPage.getContent());
+		List<LeavePolicyResponseDto> leavePolicyResponseDtos = new ArrayList<>();
+		for (LeavePolicyAssignedEmployeeCountDto leavePolicyAssignedEmployeeCountDto : leavePolicyPage.getContent()) {
+			LeavePolicyResponseDto leavePolicyResponseDto = leaveMapper
+				.leavePolicyToLeavePolicyResponseDto(leavePolicyAssignedEmployeeCountDto.getLeavePolicy());
+			leavePolicyResponseDto
+				.setAssignedEmployeeCount(leavePolicyAssignedEmployeeCountDto.getAssignedEmployeeCount());
+			leavePolicyResponseDtos.add(leavePolicyResponseDto);
+		}
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(leavePolicyResponseDtos);
@@ -151,6 +205,189 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		log.info("getAllLeavePolicies: execution ended");
 		return new ResponseEntityDto(false, pageDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto checkLeavePolicyNameAvailability(String name, Long leaveTypeId) {
+		log.info("checkLeavePolicyNameAvailability: execution started");
+
+		if (leaveTypeId == null) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_LEAVE_TYPE_REQUIRED);
+		}
+
+		LeavePolicyValidationUtil.validateName(name);
+
+		boolean isAvailable = !leavePolicyDao.existsByNameIgnoreCaseAndLeaveType_Id(name, leaveTypeId);
+
+		log.info("checkLeavePolicyNameAvailability: execution ended");
+		return new ResponseEntityDto(false, new LeavePolicyNameAvailabilityResponseDto(isAvailable));
+	}
+
+	@Override
+	@Transactional
+	public ResponseEntityDto enableLeavePolicies() {
+		log.info("enableLeavePolicies: execution started");
+
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+
+		if (existingConfig.isPresent() && isLeavePolicyEnabled(existingConfig.get())) {
+			throw new ModuleException(LeaveMessageConstant.LEAVE_ERROR_LEAVE_POLICY_ALREADY_ENABLED);
+		}
+
+		cancelPendingLeaveRequests();
+		revokeFutureApprovedLeaveRequests();
+		removeExistingLeaveAllocations();
+
+		String jsonValue = buildLeavePolicyConfigValue();
+
+		OrganizationConfig organizationConfig = existingConfig
+			.orElseGet(() -> new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), jsonValue));
+		organizationConfig.setOrganizationConfigValue(jsonValue);
+		organizationConfigDao.save(organizationConfig);
+
+		log.info("enableLeavePolicies: execution ended");
+
+		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(true));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntityDto getLeavePolicyConfig() {
+		log.info("getLeavePolicyConfig: execution started");
+
+		boolean enabled = isLeavePoliciesEnabled();
+
+		log.info("getLeavePolicyConfig: execution ended");
+		return new ResponseEntityDto(false, new LeavePolicyConfigResponseDto(enabled));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean isLeavePoliciesEnabled() {
+		log.info("isLeavePoliciesEnabled: execution started");
+		boolean enabled = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name())
+			.filter(this::isLeavePolicyEnabled)
+			.isPresent();
+		log.info("isLeavePoliciesEnabled: execution ended");
+		return enabled;
+	}
+
+	@Override
+	public void setDefaultLeavePolicyConfig() {
+		log.info("setDefaultLeavePolicyConfig: execution started");
+
+		Optional<OrganizationConfig> existingConfig = organizationConfigDao
+			.findOrganizationConfigByOrganizationConfigType(OrganizationConfigType.LEAVE_POLICY.name());
+		if (existingConfig.isPresent()) {
+			log.info("setDefaultLeavePolicyConfig: config already exists, skipping");
+			return;
+		}
+
+		organizationConfigDao
+			.save(new OrganizationConfig(OrganizationConfigType.LEAVE_POLICY.name(), buildLeavePolicyConfigValue()));
+
+		log.info("setDefaultLeavePolicyConfig: execution ended");
+	}
+
+	private int endActivePolicyAssignments(Long policyId) {
+		List<EmployeeLeavePolicy> assignments = employeeLeavePolicyDao.findByPolicy_IdAndStatus(policyId,
+				EmployeeLeavePolicyStatus.ACTIVE);
+		if (assignments.isEmpty()) {
+			return 0;
+		}
+
+		assignments.forEach(assignment -> assignment.setStatus(EmployeeLeavePolicyStatus.ENDED));
+		employeeLeavePolicyDao.saveAll(assignments);
+
+		return assignments.size();
+	}
+
+	private int voidPolicyLeaveRequests(List<PolicyLeaveRequest> policyLeaveRequests, LeaveRequestStatus status) {
+		if (policyLeaveRequests.isEmpty()) {
+			return 0;
+		}
+
+		policyLeaveRequests.forEach(policyLeaveRequest -> {
+			policyLeaveRequest.setStatus(status);
+			policyLeaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		});
+		policyLeaveRequestDao.saveAll(policyLeaveRequests);
+
+		return policyLeaveRequests.size();
+	}
+
+	private int removeExistingLeaveAllocations() {
+		List<LeaveEntitlement> entitlements = leaveEntitlementDao.findByIsActiveTrue();
+		if (entitlements.isEmpty()) {
+			return 0;
+		}
+
+		entitlements.forEach(entitlement -> {
+			entitlement.setTotalDaysAllocated(0F);
+			entitlement.setActive(false);
+		});
+		leaveEntitlementDao.saveAll(entitlements);
+
+		return entitlements.size();
+	}
+
+	private int cancelPendingLeaveRequests() {
+		return voidLeaveRequests(leaveRequestDao.findByStatus(LeaveRequestStatus.PENDING),
+				LeaveRequestStatus.CANCELLED);
+	}
+
+	private int revokeFutureApprovedLeaveRequests() {
+		List<LeaveRequest> futureApprovedRequests = leaveRequestDao
+			.findByStatusAndStartDateAfter(LeaveRequestStatus.APPROVED, DateTimeUtils.getCurrentUtcDate());
+
+		return voidLeaveRequests(futureApprovedRequests, LeaveRequestStatus.REVOKED);
+	}
+
+	private int voidLeaveRequests(List<LeaveRequest> leaveRequests, LeaveRequestStatus status) {
+		if (leaveRequests.isEmpty()) {
+			return 0;
+		}
+
+		leaveRequests.forEach(leaveRequest -> {
+			leaveRequest.setStatus(status);
+			leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		});
+		leaveRequestDao.saveAll(leaveRequests);
+
+		releaseEntitlementUsage(leaveRequests);
+
+		return leaveRequests.size();
+	}
+
+	private void releaseEntitlementUsage(List<LeaveRequest> leaveRequests) {
+		List<LeaveRequestEntitlement> leaveRequestEntitlements = leaveRequestEntitlementDao
+			.findAllByLeaveRequestIn(leaveRequests);
+		if (leaveRequestEntitlements.isEmpty()) {
+			return;
+		}
+
+		Map<Long, LeaveEntitlement> affectedEntitlements = new LinkedHashMap<>();
+		leaveRequestEntitlements.forEach(leaveRequestEntitlement -> {
+			LeaveEntitlement leaveEntitlement = leaveRequestEntitlement.getLeaveEntitlement();
+			leaveEntitlement
+				.setTotalDaysUsed(leaveEntitlement.getTotalDaysUsed() - leaveRequestEntitlement.getDaysUsed());
+			affectedEntitlements.put(leaveEntitlement.getEntitlementId(), leaveEntitlement);
+		});
+
+		leaveEntitlementDao.saveAll(affectedEntitlements.values());
+	}
+
+	private String buildLeavePolicyConfigValue() {
+		return jsonMapper.writeValueAsString(new LeavePolicyConfigDto(true));
+	}
+
+	private boolean isLeavePolicyEnabled(OrganizationConfig organizationConfig) {
+		LeavePolicyConfigDto config = jsonMapper.readValue(organizationConfig.getOrganizationConfigValue(),
+				LeavePolicyConfigDto.class);
+		return Boolean.TRUE.equals(config.getIsEnabled());
 	}
 
 	private LeavePolicy getLeavePolicyById(Long id) {
@@ -180,13 +417,21 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 
 		boolean carryoverEnabled = Boolean.TRUE.equals(accrualDto.getIsCarryoverEnabled());
 		leavePolicy.setIsCarryoverEnabled(carryoverEnabled);
-		leavePolicy.setCarryoverDate(carryoverEnabled ? accrualDto.getCarryoverDate() : null);
+		leavePolicy.setCarryoverExpiryDate(resolveCarryoverExpiryDate(carryoverEnabled, accrualDto));
 		leavePolicy.setMaxCarryoverDays(carryoverEnabled ? accrualDto.getMaxCarryoverDays() : null);
 
 		leavePolicy.setFirstAccrual(
 				accrualDto.getFirstAccrual() != null ? accrualDto.getFirstAccrual() : FirstAccrualType.PRORATED);
 		leavePolicy.setAccrualTiming(
 				accrualDto.getAccrualTiming() != null ? accrualDto.getAccrualTiming() : AccrualTiming.PERIOD_END);
+	}
+
+	private String resolveCarryoverExpiryDate(boolean carryoverEnabled, LeavePolicyAccrualDetailDto accrualDto) {
+		if (!carryoverEnabled) {
+			return null;
+		}
+		String carryoverExpiryDate = accrualDto.getCarryoverExpiryDate();
+		return carryoverExpiryDate == null || carryoverExpiryDate.isBlank() ? null : carryoverExpiryDate;
 	}
 
 }

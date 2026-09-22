@@ -51,7 +51,6 @@ describe("Validation Functions", () => {
     expect(regex.test("0123456789012345")).toBe(false);
     expect(regex.test("012345678901234")).toBe(true);
     expect(regex.test("+94712345678")).toBe(false);
-
   });
 
   test("isValidNameWithAccentsAndApostrophes()", () => {

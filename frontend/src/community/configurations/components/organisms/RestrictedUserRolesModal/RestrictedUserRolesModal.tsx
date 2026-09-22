@@ -1,22 +1,40 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { ButtonV2, SmallModal } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, Checkbox, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useFormik } from "formik";
 
-import Checkbox from "~community/common/components/atoms/Checkbox/Checkbox";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
-import { Modules } from "~community/common/enums/CommonEnums";
+import { Modules, RoleLevel } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { IconName } from "~community/common/types/IconTypes";
 import { useUpdateUserRoleRestrictions } from "~community/configurations/api/userRolesApi";
 import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { UserRoleRestrictionsType } from "~community/configurations/types/UserRolesTypes";
+import {
+  UserRoleRestrictionsType,
+  UserRoleRestrictionsUpdateType
+} from "~community/configurations/types/UserRolesTypes";
+import {
+  getRestrictionChanges,
+  hasSelectionChanged,
+  toggleRoleLevel
+} from "~community/configurations/utils/userRoles/roleRestrictionUtils";
 
 import styles from "./styles";
 
+const ROLE_LEVEL_LABEL_KEYS: Record<RoleLevel, string> = {
+  [RoleLevel.ADMIN]: "adminRoleLabel",
+  [RoleLevel.MANAGER]: "managerRoleLabel",
+  [RoleLevel.SENDER]: "senderRoleLabel",
+  [RoleLevel.SALES_MANAGER]: "salesManagerRoleLabel",
+  [RoleLevel.EMPLOYEE]: "employeeRoleLabel",
+  [RoleLevel.GUEST]: "guestRoleLabel",
+  [RoleLevel.NONE]: "noneRoleLabel",
+  [RoleLevel.SALES_REPRESENTATIVE]: "salesRepresentativeRoleLabel"
+};
+
 interface Props {
-  initialData: UserRoleRestrictionsType | undefined;
+  initialData: UserRoleRestrictionsType;
 }
 
 const RestrictedUserRolesModal = ({ initialData }: Props) => {
@@ -64,58 +82,47 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
   };
 
   const handleSubmit = () => {
-    // TODO: For ESIGN, the backend uses isManager to represent Sender role.
-    // This mapping will be removed after the backend's migration is completed.
-    const payload: UserRoleRestrictionsType = {
+    const { addedRoles, removedRoles } = getRestrictionChanges(
+      values.selected,
+      initialData.restrictions
+    );
+
+    const payload: UserRoleRestrictionsUpdateType = {
       module: moduleType,
-      isAdmin: values.isAdmin,
-      isManager:
-        moduleType === Modules.ESIGN ? values.isSender : values.isManager
+      addedRoles,
+      removedRoles
     };
 
     updateUserRoleRestrictions(payload);
   };
 
-  // TODO: For ESIGN, the backend uses isManager to represent Sender role.
-  // This mapping will be removed after the backend's migration is completed.
-  const { values, dirty, setFieldValue, resetForm } = useFormik({
+  const { values, setFieldValue, resetForm } = useFormik<{
+    selected: RoleLevel[];
+  }>({
     initialValues: {
-      isAdmin: initialData !== undefined ? initialData?.isAdmin : false,
-      isManager: initialData !== undefined ? initialData?.isManager : false,
-      isSender:
-        initialData !== undefined && moduleType === Modules.ESIGN
-          ? initialData?.isManager
-          : false
+      selected: initialData.restrictions
     },
     enableReinitialize: true,
     onSubmit: handleSubmit
   });
 
-  const getRestrictableRoles = (module: Modules): string[] => {
-    switch (module) {
-      case Modules.ATTENDANCE:
-      case Modules.PEOPLE:
-      case Modules.LEAVE:
-        return ["isAdmin", "isManager"];
-      case Modules.ESIGN:
-        return ["isAdmin", "isSender"];
-      case Modules.INVOICE:
-      case Modules.PM:
-        return ["isAdmin"];
-      case Modules.CRM:
-        return ["isAdmin", "isManager"];
-      default:
-        return [];
-    }
-  };
+  const restrictableRoles = initialData.restrictableRoles;
 
-  const restrictableRoles = getRestrictableRoles(moduleType);
+  const isSelectionChanged = hasSelectionChanged(
+    values.selected,
+    initialData.restrictions
+  );
+
+  const onRoleLevelChange = (roleLevel: RoleLevel) => {
+    setFieldValue("selected", toggleRoleLevel(values.selected, roleLevel));
+  };
 
   return (
     <SmallModal
       isOpen={isUserRoleModalOpen}
       onClose={handleCancelBtnClick}
       modalHeader={translateText(["restrictedUserRolesTitle"])}
+      closeButtonAriaLabel={translateText(["closeModalBtnAriaLabel"])}
       content={
         <Stack sx={classes.wrapper}>
           <Stack sx={classes.description}>
@@ -129,34 +136,14 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             </Box>
           </Stack>
           <Stack sx={classes.fieldWrapper}>
-            {restrictableRoles.includes("isAdmin") && (
+            {restrictableRoles.map((roleLevel) => (
               <Checkbox
-                label={translateText(["adminRoleLabel"])}
-                name="isAdmin"
-                checked={values.isAdmin}
-                onChange={() => setFieldValue("isAdmin", !values.isAdmin)}
+                key={roleLevel}
+                label={translateText([ROLE_LEVEL_LABEL_KEYS[roleLevel]])}
+                checked={values.selected.includes(roleLevel)}
+                onChange={() => onRoleLevelChange(roleLevel)}
               />
-            )}
-            {restrictableRoles.includes("isManager") && (
-              <Checkbox
-                label={
-                  moduleType === Modules.CRM
-                    ? translateText(["salesManagerRoleLabel"])
-                    : translateText(["managerRoleLabel"])
-                }
-                name="isManager"
-                checked={values.isManager}
-                onChange={() => setFieldValue("isManager", !values.isManager)}
-              />
-            )}
-            {restrictableRoles.includes("isSender") && (
-              <Checkbox
-                label={translateText(["senderRoleLabel"])}
-                name="isSender"
-                checked={values.isSender}
-                onChange={() => setFieldValue("isSender", !values.isSender)}
-              />
-            )}
+            ))}
           </Stack>
           <div className="flex flex-row justify-end gap-3 mt-4">
             <ButtonV2
@@ -170,7 +157,7 @@ const RestrictedUserRolesModal = ({ initialData }: Props) => {
             <ButtonV2
               variant={"primary"}
               onClick={handleSubmit}
-              disabled={!dirty}
+              disabled={!isSelectionChanged}
               icon={<Icon name={IconName.RIGHT_ARROW_ICON} />}
               iconPosition="end"
             >

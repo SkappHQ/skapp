@@ -3,10 +3,25 @@ export enum AuthMethods {
   GOOGLE = "GOOGLE",
   MICROSOFT = "MICROSOFT",
   GUEST = "GUEST",
-  CODE = "CODE",
+  CODE = "CODE"
 }
 
 export enum SignInStatus {
   SUCCESS = "SUCCESS",
   FAILURE = "FAILURE"
+}
+
+export enum SessionRefreshStatus {
+  SUCCESSFUL = "successful",
+  UNAUTHORIZED = "unauthorized",
+  ERROR = "error"
+}
+
+export enum AccessTokenMessageKey {
+  SESSION_COOKIE_READ = "SESSION_COOKIE_READ",
+  SESSION_COOKIE_UPDATED = "SESSION_COOKIE_UPDATED",
+  SESSION_REFRESHED = "SESSION_REFRESHED",
+  NO_ACTIVE_SESSION = "NO_ACTIVE_SESSION",
+  NOTHING_TO_SET = "NOTHING_TO_SET",
+  METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED"
 }

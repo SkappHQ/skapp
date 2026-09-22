@@ -15,6 +15,7 @@ import {
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/router";
 import { CSSProperties, JSX, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetUploadedImage } from "~community/common/api/FileHandleApi";
@@ -35,18 +36,14 @@ import {
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { themeSelector } from "~community/common/theme/themeSelector";
-import {
-  AdminTypes,
-  EmployeeTypes,
-  ManagerTypes
-} from "~community/common/types/AuthTypes";
 import { ThemeTypes } from "~community/common/types/AvailableThemeColors";
 import { IconName } from "~community/common/types/IconTypes";
 import { NotificationSummaryType } from "~community/common/types/notificationTypes";
 import { CommonStoreTypes } from "~community/common/types/zustand/StoreTypes";
-import { tenantID } from "~community/common/utils/axiosInterceptor";
 import getDrawerRoutes from "~community/common/utils/getDrawerRoutes";
 import { shouldActivateLink } from "~community/common/utils/keyboardUtils";
+import useCanViewLeavePolicies from "~community/leave/hooks/useCanViewLeavePolicies";
+import useLeavePoliciesEnabled from "~community/leave/hooks/useLeavePoliciesEnabled";
 import { useLeaveStore } from "~community/leave/store/store";
 import { useGetOrganizationCalendarStatus } from "~enterprise/common/api/CalendarApi";
 import Badge from "~enterprise/common/components/atoms/Badge/Badge";
@@ -55,6 +52,7 @@ import { SubmitRequestModalEnums } from "~enterprise/common/enums/Common";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import useS3Download from "~enterprise/common/hooks/useS3Download";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import FullScreenLoader from "../../molecules/FullScreenLoader/FullScreenLoader";
 import { StyledDrawer } from "./StyledDrawer";
@@ -72,13 +70,13 @@ const Drawer = (): JSX.Element => {
   const { user } = useAuth();
 
   const queryMatches = useMediaQuery();
-  const isBelow1024 = queryMatches(MediaQueries.BELOW_1024);
+  const isBelow600 = queryMatches(MediaQueries.BELOW_600);
 
   const environment = useGetEnvironment();
 
   const { s3FileUrls, downloadS3File } = useS3Download();
 
-  const { handleDrawer } = useDrawer(isBelow1024);
+  const { handleDrawer, isBelow1024 } = useDrawer();
 
   const { data: organizationDetails, isLoading: orgLoading } =
     useGetOrganization();
@@ -98,24 +96,30 @@ const Drawer = (): JSX.Element => {
     setExpandedDrawerListItem,
     setOrgData,
     setIsDrawerExpanded
-  } = useCommonStore((state: CommonStoreTypes | any) => ({
-    isDrawerExpanded: state.isDrawerExpanded,
-    expandedDrawerListItem: state.expandedDrawerListItem,
-    setExpandedDrawerListItem: state.setExpandedDrawerListItem,
-    setOrgData: state.setOrgData,
-    setIsDrawerExpanded: state.setIsDrawerExpanded
-  }));
+  } = useCommonStore(
+    useShallow((state: CommonStoreTypes | any) => ({
+      isDrawerExpanded: state.isDrawerExpanded,
+      expandedDrawerListItem: state.expandedDrawerListItem,
+      setExpandedDrawerListItem: state.setExpandedDrawerListItem,
+      setOrgData: state.setOrgData,
+      setIsDrawerExpanded: state.setIsDrawerExpanded
+    }))
+  );
 
-  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    globalLoginMethod: state.globalLoginMethod
-  }));
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
 
   const { data: organizationCalendarStatusData } =
     useGetOrganizationCalendarStatus();
 
-  const { setMyLeaveRequestModalType } = useLeaveStore((state) => ({
-    setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
-  }));
+  const { setMyLeaveRequestModalType } = useLeaveStore(
+    useShallow((state) => ({
+      setMyLeaveRequestModalType: state.setMyLeaveRequestModalType
+    }))
+  );
 
   const notificationLeaveCount = useGetNotificationSummaryCount(
     NotificationSummaryType.LEAVE_REQUEST
@@ -131,6 +135,11 @@ const Drawer = (): JSX.Element => {
 
   const isEnterprise = environment === appModes.ENTERPRISE;
 
+  const canViewLeavePolicies = useCanViewLeavePolicies();
+
+  const { isLeavePoliciesEnabled, isError: isLeavePoliciesConfigError } =
+    useLeavePoliciesEnabled(canViewLeavePolicies);
+
   const drawerRoutes = useMemo(
     () =>
       getDrawerRoutes({
@@ -138,14 +147,16 @@ const Drawer = (): JSX.Element => {
         tiers: user?.tiers?.length ? user.tiers : user?.tier ? [user.tier] : [],
         isEnterprise,
         globalLoginMethod,
-        tenantID: tenantID as string,
+        tenantID: getTenantId(),
         organizationCalendarGoogleStatus:
           organizationCalendarStatusData?.isGoogleCalendarEnabled ?? false,
         organizationCalendarMicrosoftStatus:
           organizationCalendarStatusData?.isMicrosoftCalendarEnabled ?? false,
         notificationLeaveCount,
         notificationTimesheetCount,
-        notificationSignCount
+        notificationSignCount,
+        isLeavePoliciesEnabled,
+        isLeavePoliciesConfigError
       }),
     [
       user,
@@ -154,7 +165,9 @@ const Drawer = (): JSX.Element => {
       organizationCalendarStatusData,
       notificationLeaveCount,
       notificationTimesheetCount,
-      notificationSignCount
+      notificationSignCount,
+      isLeavePoliciesEnabled,
+      isLeavePoliciesConfigError
     ]
   );
 
@@ -222,6 +235,8 @@ const Drawer = (): JSX.Element => {
       hideBackdrop={false}
       component="nav"
       aria-label={translateAria(["drawer"])}
+      isBelow600={isBelow600}
+      isBelow1024={isBelow1024}
     >
       <Stack
         sx={{
@@ -291,6 +306,7 @@ const Drawer = (): JSX.Element => {
                     }}
                     aria-expanded={isExpanded}
                     aria-controls={`sub-list-${routeId}`}
+                    aria-label={(!isDrawerExpanded && route?.name) || undefined}
                   >
                     <ListItemIcon sx={classes.listItemIcon}>
                       {route?.icon && (
@@ -330,7 +346,10 @@ const Drawer = (): JSX.Element => {
                         </Box>
                       )}
                     </ListItemIcon>
-                    <Box sx={classes.listItemContent(isDrawerExpanded)}>
+                    <Box
+                      aria-label={route?.name}
+                      sx={classes.listItemContent(isDrawerExpanded)}
+                    >
                       <ListItemText
                         primary={route?.name}
                         sx={classes.listItemText(
@@ -473,7 +492,11 @@ const Drawer = (): JSX.Element => {
         )}
       </Stack>
       <IconButton
-        sx={{ ...classes.iconBtn(isDrawerExpanded), visibility: "visible" }} // TO DO: Need to verify why this style affects other places which use this icon
+        sx={{
+          ...classes.iconBtn(isDrawerExpanded, isBelow1024),
+          visibility: "visible"
+        }}
+        // TO DO: Need to verify why this style affects other places which use this icon
         onClick={handleDrawer}
         data-testid={appDrawerTestId.buttons.drawerToggleBtn}
         aria-label={

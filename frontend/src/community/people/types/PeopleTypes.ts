@@ -166,6 +166,7 @@ export interface L3EmploymentDetailsType {
   probationEndDate?: string;
   workTimeZone?: string;
   workLocationId?: number;
+  businessUnitId?: number;
 }
 
 export interface L3CareerProgressionDetailsType {
@@ -182,6 +183,8 @@ export interface L3IdentificationAndDiversityDetailsType {
   ssn?: string;
   ethnicity?: EthnicityTypes;
   eeoJobCategory?: EEOJobCategoryTypes;
+  payrollId?: string;
+  tin?: string;
 }
 
 export interface L3PreviousEmploymentDetailsType {

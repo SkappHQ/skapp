@@ -20,7 +20,7 @@ public class LeavePolicyAccrualDetailDto {
 
 	private Boolean isCarryoverEnabled;
 
-	private String carryoverDate;
+	private String carryoverExpiryDate;
 
 	private Float maxCarryoverDays;
 

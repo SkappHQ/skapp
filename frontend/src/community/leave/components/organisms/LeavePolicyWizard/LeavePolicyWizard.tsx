@@ -6,7 +6,7 @@ import {
   IconButton
 } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { useFormik } from "formik";
+import { FormikProps, useFormik } from "formik";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
 
@@ -15,15 +15,20 @@ import ROUTES from "~community/common/constants/routes";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useAddLeavePolicy } from "~community/leave/api/LeavePolicyApi";
+import {
+  useAddLeavePolicy,
+  useCheckLeavePolicyNameAvailability
+} from "~community/leave/api/LeavePolicyApi";
 import { leavePolicyFormInitialValues } from "~community/leave/constants/leavePolicyConstants";
 import {
   LeavePolicyFormData,
+  LeavePolicyNameAvailabilityResult,
   LeavePolicyWizardSteps,
   PolicyType
 } from "~community/leave/types/LeavePolicyTypes";
 import {
   getLeavePolicyErrorToastKeys,
+  isDuplicatePolicyNameError,
   mapLeavePolicyFormToPayload
 } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 import { leavePolicyWizardValidation } from "~community/leave/utils/validations";
@@ -71,7 +76,8 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] =
     useState<boolean>(false);
 
-  const submittedNameRef = useRef<string>("");
+  const formikRef = useRef<FormikProps<LeavePolicyFormData> | null>(null);
+  const isAdvancingRef = useRef<boolean>(false);
 
   const steps = [
     translateText(["steps", "basicInfo"]),
@@ -83,23 +89,31 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     router.push(ROUTES.LEAVE.LEAVE_POLICIES);
   };
 
-  const handleBackToPolicyType = (): void => {
-    router.push(ROUTES.LEAVE.LEAVE_POLICIES);
-  };
-
   const handleSuccess = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["successToastTitle"]),
-      description: translateText(["successToastDescription"], {
-        policyName: submittedNameRef.current
-      })
+      description: translateText(["successToastDescription"])
     });
     handleClose();
   };
 
+  const showDuplicatePolicyNameError = (): void => {
+    formikRef.current?.setFieldTouched("policyName", true, false);
+    formikRef.current?.setFieldError(
+      "policyName",
+      translateText(["errors", "policyNameDuplicate"])
+    );
+    setActiveStep(LeavePolicyWizardSteps.BASIC_INFO);
+  };
+
   const handleError = (error: AxiosError): void => {
+    if (isDuplicatePolicyNameError(error)) {
+      showDuplicatePolicyNameError();
+      return;
+    }
+
     const { title, description } = getLeavePolicyErrorToastKeys(error);
 
     setToastMessage({
@@ -115,15 +129,21 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
     handleError
   );
 
+  const {
+    mutate: checkPolicyNameAvailability,
+    isPending: isCheckingPolicyName
+  } = useCheckLeavePolicyNameAvailability();
+
   const formik = useFormik<LeavePolicyFormData>({
     initialValues: { ...leavePolicyFormInitialValues, policyType },
     validationSchema: leavePolicyWizardValidation(translateText, isAccrual),
     validateOnBlur: false,
     onSubmit: (values) => {
-      submittedNameRef.current = values.policyName.trim();
       addLeavePolicy(mapLeavePolicyFormToPayload(values));
     }
   });
+
+  formikRef.current = formik;
 
   const handleFieldsChange = (values: Partial<LeavePolicyFormData>): void => {
     formik.setValues({ ...formik.values, ...values });
@@ -136,15 +156,40 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
   const isLastStep =
     !isAccrual || activeStep === LeavePolicyWizardSteps.SUMMARY;
 
+  const isFirstStep =
+    !isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO;
+
   const handleBack = (): void => {
-    if (!isAccrual || activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
-      handleBackToPolicyType();
+    if (isFirstStep) {
+      handleCancel();
     } else {
       setActiveStep((previous) => previous - 1);
     }
   };
 
-  const handleNext = async (): Promise<void> => {
+  const proceedFromCurrentStep = async (): Promise<void> => {
+    if (isLastStep) {
+      if (!isPending) {
+        await formik.submitForm();
+      }
+      return;
+    }
+
+    setActiveStep((previous) => previous + 1);
+  };
+
+  const handlePolicyNameAvailability = ({
+    isAvailable
+  }: LeavePolicyNameAvailabilityResult): void => {
+    if (!isAvailable) {
+      showDuplicatePolicyNameError();
+      return;
+    }
+
+    void proceedFromCurrentStep();
+  };
+
+  const advanceWizard = async (): Promise<void> => {
     const currentStepFields = STEP_FIELDS[activeStep];
     const validationErrors = await formik.validateForm();
     const hasStepError = currentStepFields.some(
@@ -161,14 +206,35 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
       return;
     }
 
-    if (isLastStep) {
-      if (!isPending) {
-        await formik.submitForm();
-      }
+    if (activeStep === LeavePolicyWizardSteps.BASIC_INFO) {
+      checkPolicyNameAvailability(
+        {
+          name: formik.values.policyName.trim(),
+          leaveTypeId: formik.values.leaveType
+        },
+        {
+          onSuccess: handlePolicyNameAvailability,
+          onError: handleError
+        }
+      );
       return;
     }
 
-    setActiveStep((previous) => previous + 1);
+    await proceedFromCurrentStep();
+  };
+
+  const handleNext = async (): Promise<void> => {
+    if (isAdvancingRef.current) {
+      return;
+    }
+
+    isAdvancingRef.current = true;
+
+    try {
+      await advanceWizard();
+    } finally {
+      isAdvancingRef.current = false;
+    }
   };
 
   const handleEditFromSummary = (step: LeavePolicyWizardSteps): void => {
@@ -220,12 +286,12 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
         <ButtonV2
           variant="tertiary"
           size="md"
-          icon={<ArrowLeftIcon />}
+          icon={!isFirstStep ? <ArrowLeftIcon /> : undefined}
           iconPosition="start"
           onClick={handleBack}
-          disabled={isPending}
+          disabled={isPending || isCheckingPolicyName}
         >
-          {translateText(["backBtnTxt"])}
+          {translateText([isFirstStep ? "cancelBtnTxt" : "backBtnTxt"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -233,7 +299,7 @@ const LeavePolicyWizard: FC<Props> = ({ policyType }) => {
           icon={!isLastStep ? <ArrowRightIcon /> : undefined}
           iconPosition="end"
           onClick={handleNext}
-          disabled={isPending}
+          disabled={isPending || isCheckingPolicyName}
         >
           {isLastStep
             ? translateText([isPending ? "savingBtnTxt" : "createPolicyBtnTxt"])

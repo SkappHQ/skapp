@@ -72,7 +72,12 @@ const DeleteWorkLocationModal = () => {
           variant: "error",
           onClick: handleConfirm,
           disabled: isPending,
-          icon: <Icon name={IconName.DELETE_BUTTON_ICON} fill="var(--color-semantic-red-text)" />,
+          icon: (
+            <Icon
+              name={IconName.DELETE_BUTTON_ICON}
+              fill="var(--color-semantic-red-text)"
+            />
+          ),
           iconPosition: "end",
           children: translateText(["deleteModal.confirmButton"])
         }

@@ -55,6 +55,11 @@ export interface CommonStoreTypes extends actionTypes {
   // Breadcrumbs
   breadcrumbs: BreadcrumbItem[];
   setBreadcrumbs: (items: BreadcrumbItem[]) => void;
+
+  // Auth token
+  accessToken: string | null;
+  setAccessToken: (token: string) => void;
+  clearAccessToken: () => void;
 }
 
 interface VersionUpgradeActionTypes {

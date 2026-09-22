@@ -145,5 +145,10 @@
     "empty": "empty",
     "userProfile": "User Profile of {{name}}",
     "selectEmployee": "Select employee {{employeeName}}"
+  },
+  "birthdayNotifications": {
+    "closeButton": "Close birthday notification",
+    "profilePhoto": "{{name}}'s profile photo",
+    "notificationPosition": "Notification {{current}} of {{total}}"
   }
 }

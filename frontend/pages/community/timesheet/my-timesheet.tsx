@@ -1,16 +1,37 @@
 import { NextPage } from "next";
+import { useShallow } from "zustand/react/shallow";
 
 import EmployeeTimesheet from "~community/attendance/components/organisms/EmployeeTimesheet/EmployeeTimesheet";
 import { EmployeeTimesheetModalTypes } from "~community/attendance/enums/timesheetEnums";
+import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
+import { useAuth } from "~community/auth/providers/AuthProvider";
 import ContentLayout from "~community/common/components/templates/ContentLayout/ContentLayout";
 import { ButtonStyle } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 
 const MyTimeSheet: NextPage = () => {
   const translateText = useTranslator("attendanceModule");
-  const { setIsEmployeeTimesheetModalOpen, setEmployeeTimesheetModalType } =
-    useAttendanceStore((state) => state);
+  const { user } = useAuth();
+  const {
+    setIsEmployeeTimesheetModalOpen,
+    setEmployeeTimesheetModalType,
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
+  } = useAttendanceStore(
+    useShallow((state) => ({
+      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
+      setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
+      setDirectManualTimeEntryEligibleEmployee:
+        state.setDirectManualTimeEntryEligibleEmployee,
+      setIsSelfDirectTimeEntry: state.setIsSelfDirectTimeEntry
+    }))
+  );
+  const {
+    isManualEntryRestricted,
+    canDirectlyAddOrEditEntry,
+    isLoading: isRestrictionLoading
+  } = useManualEntryRestriction();
 
   return (
     <ContentLayout
@@ -24,9 +45,19 @@ const MyTimeSheet: NextPage = () => {
       ]}
       pageHead={translateText(["timesheet.myTimesheet.pageHead"])}
       title={translateText(["timesheet.myTimesheet.title"])}
-      primaryButtonText={translateText(["timesheet.manualTimeEntryButtonTxt"])}
+      primaryButtonText={
+        !isManualEntryRestricted
+          ? translateText(["timesheet.manualTimeEntryButtonTxt"])
+          : undefined
+      }
       primaryButtonType={ButtonStyle.PRIMARY}
+      isPrimaryBtnDisabled={isRestrictionLoading}
       onPrimaryButtonClick={() => {
+        const isEligible = canDirectlyAddOrEditEntry && !!user?.userId;
+        setDirectManualTimeEntryEligibleEmployee(
+          isEligible ? { employeeId: user.userId, employeeName: "" } : null
+        );
+        setIsSelfDirectTimeEntry(isEligible);
         setIsEmployeeTimesheetModalOpen(true);
         setEmployeeTimesheetModalType(
           EmployeeTimesheetModalTypes.ADD_TIME_ENTRY

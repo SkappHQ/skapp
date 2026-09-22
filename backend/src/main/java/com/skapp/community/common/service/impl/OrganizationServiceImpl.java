@@ -19,9 +19,11 @@ import com.skapp.community.common.service.EncryptionDecryptionService;
 import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.type.OrganizationConfigType;
+import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.service.CrmConfigService;
 import com.skapp.community.leaveplanner.service.LeaveCycleService;
+import com.skapp.community.leaveplanner.service.LeavePolicyService;
 import com.skapp.community.leaveplanner.service.LeaveTypeService;
 import com.skapp.community.okrplanner.service.OkrConfigService;
 import com.skapp.community.timeplanner.model.TimeConfig;
@@ -35,6 +37,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.time.DayOfWeek;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +60,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	protected final LeaveTypeService leaveTypeService;
 
 	protected final LeaveCycleService leaveCycleService;
+
+	protected final LeavePolicyService leavePolicyService;
 
 	private final UserService userService;
 
@@ -212,6 +217,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		okrConfigService.setOkrDefaultConfig();
 		crmConfigService.setDefaultCrmConfig();
 		saveEmailServerConfigs(new EmailServerRequestDto(null, null, null, null, false));
+		leavePolicyService.setDefaultLeavePolicyConfig();
 
 		log.info("setDefaultOrganizationConfigs: execution ended");
 	}
@@ -221,6 +227,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 		return organizationDao.findTopByOrderByOrganizationIdDesc()
 			.map(Organization::getOrganizationTimeZone)
 			.orElse("UTC");
+	}
+
+	@Override
+	public ZoneId getOrganizationZoneId() {
+		return DateTimeUtils.resolveZoneId(getOrganizationTimeZone());
 	}
 
 	public void getDefaultTimeConfigs() {

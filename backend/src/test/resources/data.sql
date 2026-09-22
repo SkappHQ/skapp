@@ -78,9 +78,10 @@ VALUES (default, 'DEV', true),
 INSERT INTO employee_team (id, team_id, employee_id, is_supervisor)
 VALUES (default, 1, 1, true);
 
-INSERT INTO com_work_location (id, name, address)
-VALUES (1, 'Head Office', '123 Main Street'),
-       (2, 'Branch Office', '456 Second Avenue');
+INSERT INTO com_work_location (id, name, address, is_deleted)
+VALUES (1, 'Head Office', '123 Main Street', false),
+       (2, 'Branch Office', '456 Second Avenue', false),
+       (3, 'Closed Office', '789 Third Boulevard', true);
 
 INSERT INTO holiday (id, date, name, holiday_duration, is_active)
 VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-03-06', 'Poya Day', 'FULL_DAY', true),
@@ -92,7 +93,7 @@ VALUES (default, YEAR(CURRENT_TIMESTAMP) || '-03-06', 'Poya Day', 'FULL_DAY', tr
        (default, YEAR(CURRENT_TIMESTAMP + 1) || '-12-31', 'Future holiday', 'FULL_DAY', true);
 
 INSERT INTO shr_com_work_location_ppl_holiday (holiday_id, work_location_id)
-VALUES (1, 1), (1, 2), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1);
+VALUES (1, 1), (1, 2), (2, 1), (3, 1), (4, 1), (5, 1), (7, 1);
 
 INSERT INTO time_config(id, day_of_week, time_blocks, total_hours, is_week_start_day, start_hour, start_minute)
 VALUES (default, 'TUESDAY',

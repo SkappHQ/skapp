@@ -19,6 +19,10 @@ export function phoneNumberPattern(): RegExp {
   return /\d/;
 }
 
+export function nonDigitPattern(): RegExp {
+  return /\D/g;
+}
+
 export function isValidNameWithAccentsAndApostrophes(): RegExp {
   return /^[a-zA-Z\u00C0-\u00ff']+([ a-zA-Z\u00C0-\u00ff']+)*$/;
 }
@@ -111,6 +115,10 @@ export function allowsAlphaNumericWithHyphenAndUnderscore(): RegExp {
 
 export function matchWhitespace(): RegExp {
   return /\s/g;
+}
+
+export function matchesLeadingWhitespace(): RegExp {
+  return /^\s+/g;
 }
 
 export function removeNonAlphaNumericCharactersPattern(): RegExp {

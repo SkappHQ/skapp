@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 import MockTheme from "~community/common/mocks/MockTheme";
@@ -73,6 +73,6 @@ describe("Colored Circle", () => {
       </MockTheme>
     );
     const circle = screen.getByTestId("coloredCircle");
-    expect(circle).toHaveStyle("background-color: red");
+    expect(circle).toHaveStyle("background-color: rgb(255, 0, 0)");
   });
 });

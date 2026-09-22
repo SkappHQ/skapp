@@ -1,6 +1,8 @@
 package com.skapp.community.crmplanner.repository.impl;
 
+import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
+import com.skapp.community.crmplanner.constant.CrmConstants;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmCompany_;
 import com.skapp.community.crmplanner.model.CrmContact;
@@ -8,9 +10,15 @@ import com.skapp.community.crmplanner.model.CrmContact_;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmDealStage_;
+import com.skapp.community.crmplanner.model.CrmTask;
+import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
+import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
+import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
 import com.skapp.community.peopleplanner.model.Employee;
 import com.skapp.community.peopleplanner.model.Employee_;
@@ -33,9 +41,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -64,7 +74,140 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getContactTotalCount(cb, filterDto));
 	}
 
-	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<CrmContact> query) {
+	@Override
+	public Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<CrmContactMetricsResponseDtoV2> query = cb.createQuery(CrmContactMetricsResponseDtoV2.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+
+		Subquery<BigDecimal> closedValueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> valueDeal = closedValueSub.from(CrmDeal.class);
+		closedValueSub
+			.select(cb.coalesce(cb.sum(valueDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(valueDeal.get(CrmDeal_.contact), contact),
+					cb.equal(valueDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					cb.isFalse(valueDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> closedCountSub = query.subquery(Long.class);
+		Root<CrmDeal> countDeal = closedCountSub.from(CrmDeal.class);
+		closedCountSub.select(cb.count(countDeal.get(CrmDeal_.id)))
+			.where(cb.equal(countDeal.get(CrmDeal_.contact), contact),
+					cb.equal(countDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					cb.isFalse(countDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> openTaskSub = query.subquery(Long.class);
+		Root<CrmTask> openTask = openTaskSub.from(CrmTask.class);
+		openTaskSub.select(cb.count(openTask.get(CrmTask_.id)))
+			.where(cb.equal(openTask.get(CrmTask_.contact), contact), cb.isFalse(openTask.get(CrmTask_.isCompleted)),
+					cb.isFalse(openTask.get(CrmTask_.isDeleted)));
+
+		Subquery<Long> overdueTaskSub = query.subquery(Long.class);
+		Root<CrmTask> overdueTask = overdueTaskSub.from(CrmTask.class);
+		overdueTaskSub.select(cb.count(overdueTask.get(CrmTask_.id)))
+			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
+					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
+					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
+
+		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
+		pipelineRevenueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, pipelineDeal),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, activeDeal),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
+
+		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
+				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
+				company.get(CrmCompany_.id), owner.get(Employee_.employeeId),
+				cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub, openTaskSub,
+						overdueTaskSub, pipelineRevenueSub.cast(String.class), activeDealsCountSub)));
+
+		query.where(buildPredicates(cb, contact, owner, company, filterDto));
+		query.orderBy(buildOrderBy(cb, contact, query));
+
+		List<CrmContactMetricsResponseDtoV2> content = entityManager.createQuery(query)
+			.setFirstResult((int) pageable.getOffset())
+			.setMaxResults(pageable.getPageSize())
+			.getResultList();
+
+		return new PageImpl<>(content, pageable, getContactTotalCount(cb, filterDto));
+	}
+
+	@Override
+	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContactMetrics> query = cb.createQuery(CrmContactMetrics.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+
+		Subquery<BigDecimal> closedValueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> valueDeal = closedValueSub.from(CrmDeal.class);
+		closedValueSub
+			.select(cb.coalesce(cb.sum(valueDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(valueDeal.get(CrmDeal_.contact), contact),
+					cb.equal(valueDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					cb.isFalse(valueDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> closedCountSub = query.subquery(Long.class);
+		Root<CrmDeal> countDeal = closedCountSub.from(CrmDeal.class);
+		closedCountSub.select(cb.count(countDeal.get(CrmDeal_.id)))
+			.where(cb.equal(countDeal.get(CrmDeal_.contact), contact),
+					cb.equal(countDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON),
+					cb.isFalse(countDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> openTaskSub = query.subquery(Long.class);
+		Root<CrmTask> openTask = openTaskSub.from(CrmTask.class);
+		Join<CrmTask, CrmContact> openDirectContact = openTask.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> openTaskDeal = openTask.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> openDealContact = openTaskDeal.join(CrmDeal_.contact, JoinType.LEFT);
+		openTaskSub.select(cb.count(openTask.get(CrmTask_.id)))
+			.where(cb.or(cb.equal(openDirectContact.get(CrmContact_.id), contactId),
+					cb.equal(openDealContact.get(CrmContact_.id), contactId)),
+					cb.isFalse(openTask.get(CrmTask_.isCompleted)), cb.isFalse(openTask.get(CrmTask_.isDeleted)));
+
+		Subquery<Long> overdueTaskSub = query.subquery(Long.class);
+		Root<CrmTask> overdueTask = overdueTaskSub.from(CrmTask.class);
+		Join<CrmTask, CrmContact> overdueDirectContact = overdueTask.join(CrmTask_.contact, JoinType.LEFT);
+		Join<CrmTask, CrmDeal> overdueTaskDeal = overdueTask.join(CrmTask_.deal, JoinType.LEFT);
+		Join<CrmDeal, CrmContact> overdueDealContact = overdueTaskDeal.join(CrmDeal_.contact, JoinType.LEFT);
+		overdueTaskSub.select(cb.count(overdueTask.get(CrmTask_.id)))
+			.where(cb.or(cb.equal(overdueDirectContact.get(CrmContact_.id), contactId),
+					cb.equal(overdueDealContact.get(CrmContact_.id), contactId)),
+					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
+					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(LocalDate.now().atStartOfDay())));
+
+		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
+		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
+		pipelineRevenueSub
+			.select(cb.coalesce(cb.sum(pipelineDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
+			.where(cb.equal(pipelineDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, pipelineDeal),
+					cb.isFalse(pipelineDeal.get(CrmDeal_.isDeleted)));
+
+		Subquery<Long> activeDealsCountSub = query.subquery(Long.class);
+		Root<CrmDeal> activeDeal = activeDealsCountSub.from(CrmDeal.class);
+		activeDealsCountSub.select(cb.count(activeDeal.get(CrmDeal_.id)))
+			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, activeDeal),
+					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
+
+		query.select(cb.construct(CrmContactMetrics.class, closedValueSub.cast(String.class), closedCountSub,
+				openTaskSub, overdueTaskSub, pipelineRevenueSub.cast(String.class), activeDealsCountSub));
+		query.where(cb.equal(contact.get(CrmContact_.id), contactId), cb.isFalse(contact.get(CrmContact_.isDeleted)));
+
+		return Optional.ofNullable(entityManager.createQuery(query).getSingleResultOrNull());
+	}
+
+	private List<Order> buildOrderBy(CriteriaBuilder cb, Root<CrmContact> contact, CriteriaQuery<?> query) {
 		Subquery<BigDecimal> dealValueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> deal = dealValueSub.from(CrmDeal.class);
 		dealValueSub.select(cb.coalesce(cb.sum(deal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
@@ -109,6 +252,23 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
+	public List<CrmBoardContactResponseDtoV2> findAllContactsForBoardInitV2() {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmBoardContactResponseDtoV2> query = cb.createQuery(CrmBoardContactResponseDtoV2.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
+
+		query.select(cb.construct(CrmBoardContactResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name), company.get(CrmCompany_.id)));
+
+		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+
+		return entityManager.createQuery(query).getResultList();
+	}
+
+	@Override
 	public List<CrmContact> findAllContactsForBoardInit() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
@@ -141,6 +301,31 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
 	}
 
+	@Override
+	public Page<CrmContactLookupResponseDtoV2> findContactsForLookupV2(CrmContactFilterDto filterDto,
+			Pageable pageable) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<CrmContactLookupResponseDtoV2> query = cb.createQuery(CrmContactLookupResponseDtoV2.class);
+		Root<CrmContact> contact = query.from(CrmContact.class);
+		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
+
+		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
+
+		query.select(cb.construct(CrmContactLookupResponseDtoV2.class, contact.get(CrmContact_.id),
+				contact.get(CrmContact_.name),
+				cb.<Long>selectCase()
+					.when(cb.isTrue(company.get(CrmCompany_.isDeleted)), cb.nullLiteral(Long.class))
+					.otherwise(company.get(CrmCompany_.id))));
+		query.where(predicates.toArray(new Predicate[0]));
+		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
+
+		TypedQuery<CrmContactLookupResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		typedQuery.setFirstResult((int) pageable.getOffset());
+		typedQuery.setMaxResults(pageable.getPageSize());
+
+		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
+	}
+
 	private <T> List<Predicate> buildLookupPredicates(CriteriaBuilder cb, CriteriaQuery<T> query,
 			Root<CrmContact> contact, Join<CrmContact, CrmCompany> company, CrmContactFilterDto filterDto) {
 		List<Predicate> predicates = new ArrayList<>();
@@ -161,6 +346,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 				.where(cb.equal(deal.get(CrmDeal_.id), filterDto.getDealId()),
 						cb.isFalse(deal.get(CrmDeal_.isDeleted)));
 			predicates.add(contact.get(CrmContact_.id).in(dealSub));
+		}
+
+		if (filterDto.getCompanyId() != null) {
+			predicates.add(cb.equal(company.get(CrmCompany_.id), filterDto.getCompanyId()));
 		}
 
 		return predicates;
@@ -187,6 +376,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 
 		CrmContact results = entityManager.createQuery(query).getSingleResultOrNull();
 		return results;
+	}
+
+	private Predicate notInTerminalStage(CriteriaBuilder cb, Root<CrmDeal> deal) {
+		return cb.not(deal.get(CrmDeal_.stage).get(CrmDealStage_.stageType).in(CrmConstants.TERMINAL_STAGES));
 	}
 
 }

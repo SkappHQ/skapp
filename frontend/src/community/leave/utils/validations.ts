@@ -6,8 +6,10 @@ import {
   MAX_POLICY_NAME_LENGTH,
   MIN_ACCRUAL_CAP_DAYS,
   MIN_POLICY_DAYS,
-  MIN_WAITING_PERIOD_DAYS
+  MIN_WAITING_PERIOD_DAYS,
+  POLICY_DAYS_STEP
 } from "~community/leave/constants/leavePolicyConstants";
+import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
@@ -28,6 +30,26 @@ const isNumberInRange = (
     !Number.isNaN(numericValue) &&
     numericValue >= min &&
     (max === undefined || numericValue <= max)
+  );
+};
+
+const isPolicyDaysStepValid = (value: string | undefined): boolean => {
+  const numericValue = Number(value);
+  return (
+    value !== undefined &&
+    value !== "" &&
+    !Number.isNaN(numericValue) &&
+    Number.isInteger(numericValue / POLICY_DAYS_STEP)
+  );
+};
+
+const isWholeNumberOfDays = (value: string | undefined): boolean => {
+  const numericValue = Number(value);
+  return (
+    value !== undefined &&
+    value !== "" &&
+    !Number.isNaN(numericValue) &&
+    Number.isInteger(numericValue)
   );
 };
 
@@ -114,6 +136,28 @@ export const addLeaveTypeValidationSchema = (
       })
   });
 
+export const policyLeaveTypeValidationSchema = (
+  translateText: TranslatorFunctionType
+) =>
+  Yup.object({
+    name: Yup.string()
+      .trim()
+      .required(translateText(["emptyLeaveTypeNameError"]))
+      .max(
+        MAX_POLICY_LEAVE_TYPE_NAME_LENGTH,
+        translateText(["leaveTypeNameMaxLengthError"])
+      ),
+    emoji: Yup.string().required(translateText(["emptyLeaveTypeEmojiError"])),
+    colorCode: Yup.string()
+      .transform((value) => (value === null ? "" : value))
+      .required(translateText(["emptyLeaveTypeColorError"])),
+    minDuration: Yup.string().test(
+      "is-min-duration-valid",
+      translateText(["emptyLeaveDurationError"]),
+      (value) => value !== LeaveDurationTypes.NONE
+    )
+  });
+
 export const editLeavePolicyValidation = (
   translateText: TranslatorFunctionType
 ) =>
@@ -148,6 +192,11 @@ export const leavePolicyWizardValidation = (
               translateText(["errors", "accrualDaysInvalid"]),
               (value) =>
                 isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+            )
+            .test(
+              "accrual-days-step-valid",
+              translateText(["errors", "accrualDaysStepInvalid"]),
+              (value) => !value || isPolicyDaysStepValid(value)
             ),
           accrualFrequency: Yup.string().required(
             translateText(["errors", "frequencyRequired"])
@@ -156,33 +205,52 @@ export const leavePolicyWizardValidation = (
           waitingPeriodDays: Yup.string().when("hasWaitingPeriod", {
             is: true,
             then: (schema) =>
-              schema.test(
-                "waiting-period-days-valid",
-                translateText(["errors", "waitingPeriodDaysRequired"]),
-                (value) => isNumberInRange(value, MIN_WAITING_PERIOD_DAYS)
-              )
+              schema
+                .test(
+                  "waiting-period-days-valid",
+                  translateText(["errors", "waitingPeriodDaysRequired"]),
+                  (value) => isNumberInRange(value, MIN_WAITING_PERIOD_DAYS)
+                )
+                .test(
+                  "waiting-period-days-whole-number",
+                  translateText(["errors", "waitingPeriodDaysNotWholeNumber"]),
+                  (value) => !value || isWholeNumberOfDays(value)
+                )
           }),
           hasAccrualCap: Yup.boolean(),
           accrualCapDays: Yup.string().when("hasAccrualCap", {
             is: true,
             then: (schema) =>
-              schema.test(
-                "accrual-cap-days-valid",
-                translateText(["errors", "accrualCapRequired"]),
-                (value) => isNumberInRange(value, MIN_ACCRUAL_CAP_DAYS)
-              )
+              schema
+                .test(
+                  "accrual-cap-days-valid",
+                  translateText(["errors", "accrualCapRequired"]),
+                  (value) => isNumberInRange(value, MIN_ACCRUAL_CAP_DAYS)
+                )
+                .test(
+                  "accrual-cap-days-step-valid",
+                  translateText(["errors", "accrualCapStepInvalid"]),
+                  (value) => !value || isPolicyDaysStepValid(value)
+                )
           }),
           canCarryOver: Yup.boolean(),
           maxCarryOverDays: Yup.string().when("canCarryOver", {
             is: true,
             then: (schema) =>
-              schema.test(
-                "max-carryover-days-valid",
-                translateText(["errors", "maxCarryOverDaysInvalid"]),
-                (value) =>
-                  !value ||
-                  isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
-              )
+              schema
+                .required(translateText(["errors", "maxCarryOverDaysRequired"]))
+                .test(
+                  "max-carryover-days-valid",
+                  translateText(["errors", "maxCarryOverDaysInvalid"]),
+                  (value) =>
+                    !value ||
+                    isNumberInRange(value, MIN_POLICY_DAYS, MAX_POLICY_DAYS)
+                )
+                .test(
+                  "max-carryover-days-step-valid",
+                  translateText(["errors", "maxCarryOverDaysStepInvalid"]),
+                  (value) => !value || isPolicyDaysStepValid(value)
+                )
           })
         }
       : {})

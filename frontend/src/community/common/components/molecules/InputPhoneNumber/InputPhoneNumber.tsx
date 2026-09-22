@@ -1,13 +1,26 @@
 import { Stack, type SxProps, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
-import { type ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
+import {
+  type ChangeEvent,
+  type ClipboardEvent,
+  FC,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef
+} from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 
 import Tooltip from "~community/common/components/atoms/Tooltip/Tooltip";
 import { ZIndexEnums } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { phoneNumberPattern } from "~community/common/regex/regexPatterns";
+import {
+  nonDigitPattern,
+  phoneNumberPattern
+} from "~community/common/regex/regexPatterns";
+import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
 import {
   shouldActivateButton,
   shouldCloseDialog,
@@ -15,7 +28,11 @@ import {
 } from "~community/common/utils/keyboardUtils";
 
 import InputField from "../InputField/InputField";
-import { getPhoneNumberMaxLength } from "~community/common/utils/commonUtil";
+
+interface PhoneInputInstance {
+  state: { open: boolean };
+  setOpen: (open: boolean) => void;
+}
 
 interface Props {
   label: string;
@@ -61,7 +78,83 @@ const InputPhoneNumber: FC<Props> = ({
     "inputPhoneNumber"
   );
   const theme: Theme = useTheme();
-  const phoneInputRef = useRef<any>(null);
+  const phoneInputRef = useRef<PhoneInputInstance | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
+
+  const maxLength = getPhoneNumberMaxLength(countryCodeValue);
+
+  const handlePhoneNumberChange = useCallback(
+    async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+      const input = e.target;
+      const sanitizedValue = input.value.replace(nonDigitPattern(), "");
+
+      if (sanitizedValue !== input.value) {
+        const caretPosition = input.value
+          .slice(0, input.selectionStart ?? input.value.length)
+          .replace(nonDigitPattern(), "").length;
+
+        input.value = sanitizedValue;
+        input.setSelectionRange(caretPosition, caretPosition);
+      }
+
+      await onChange?.(e);
+    },
+    [onChange]
+  );
+
+  const handlePhoneNumberPaste = useCallback(
+    (e: ClipboardEvent<HTMLInputElement>): void => {
+      e.preventDefault();
+
+      if (readOnly || isDisabled || !onChange) {
+        return;
+      }
+
+      const input = e.target;
+
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+
+      const pastedDigits = e.clipboardData
+        .getData("Text")
+        .replace(nonDigitPattern(), "");
+
+      if (!pastedDigits) {
+        return;
+      }
+
+      const selectionStart = input.selectionStart ?? value.length;
+      const selectionEnd = input.selectionEnd ?? value.length;
+      const remainingLength =
+        maxLength - (value.length - (selectionEnd - selectionStart));
+      const insertedDigits = pastedDigits.slice(
+        0,
+        Math.max(remainingLength, 0)
+      );
+
+      if (!insertedDigits) {
+        return;
+      }
+
+      const caretPosition = selectionStart + insertedDigits.length;
+      const nativeValueSetter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )?.set;
+
+      nativeValueSetter?.call(
+        input,
+        `${value.slice(0, selectionStart)}${insertedDigits}${value.slice(
+          selectionEnd
+        )}`
+      );
+      input.setSelectionRange(caretPosition, caretPosition);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    },
+    [readOnly, isDisabled, onChange, value, maxLength]
+  );
 
   const handleCountryKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (shouldActivateButton(e.key)) {
@@ -81,18 +174,39 @@ const InputPhoneNumber: FC<Props> = ({
   };
 
   useEffect(() => {
+    const container = containerRef.current;
+
+    if (!container) {
+      return;
+    }
+
     const handleDropdownAccessibility = () => {
-      const list = document.querySelector(".country-list");
-      const options = document.querySelectorAll(".country-list .country");
+      const list = container.querySelector(".country-list");
+      const options = container.querySelectorAll<HTMLElement>(
+        ".country-list .country"
+      );
+      const searchItem = container.querySelector(".country-list .search");
 
       if (list) {
         list.setAttribute("role", "listbox");
+        list.setAttribute("aria-label", translateText(["countryList"]));
+        list.setAttribute("id", listboxId);
       }
 
-      options.forEach((el: any, index) => {
+      if (searchItem) {
+        searchItem.setAttribute("role", "group");
+      }
+
+      const searchBox = container.querySelector(".country-list .search-box");
+
+      if (searchBox) {
+        searchBox.setAttribute("aria-label", translateText(["countrySearch"]));
+      }
+
+      options.forEach((el: HTMLElement, index: number) => {
         const countryName = el?.querySelector(".country-name")?.textContent;
         const dialCode = el?.querySelector(".dial-code")?.textContent;
-        const id = `country-option-${index}`;
+        const id = `${listboxId}-option-${index}`;
 
         if (countryName && dialCode) {
           el.setAttribute("role", "option");
@@ -105,19 +219,42 @@ const InputPhoneNumber: FC<Props> = ({
         }
       });
 
-      const input = document.querySelector(".flag-dropdown input");
-      const selected = document.querySelector(".country.highlight");
+      const input = container.querySelector(".form-control");
 
-      if (input && selected) {
-        const selectedIndex = Array.from(options).indexOf(selected);
-        const selectedId = `country-option-${selectedIndex}`;
-        input.setAttribute("aria-activedescendant", selectedId);
+      if (input) {
+        input.setAttribute("aria-expanded", list ? "true" : "false");
+
+        const selected = list
+          ? container.querySelector<HTMLElement>(".country.highlight")
+          : null;
+        const selectedIndex = selected
+          ? Array.from(options).indexOf(selected)
+          : -1;
+
+        if (selectedIndex >= 0) {
+          input.setAttribute(
+            "aria-activedescendant",
+            `${listboxId}-option-${selectedIndex}`
+          );
+        } else {
+          input.removeAttribute("aria-activedescendant");
+        }
       }
     };
 
-    const interval = setInterval(handleDropdownAccessibility, 300);
-    return () => clearInterval(interval);
-  }, [countryCodeValue]);
+    handleDropdownAccessibility();
+
+    const observer = new MutationObserver(handleDropdownAccessibility);
+
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class"]
+    });
+
+    return () => observer.disconnect();
+  }, [countryCodeValue, translateText, listboxId]);
 
   return (
     // TODO: move styles to styles.ts
@@ -148,24 +285,17 @@ const InputPhoneNumber: FC<Props> = ({
         </Typography>
         {tooltip && <Tooltip title={tooltip} />}
       </Stack>
-      <Stack
-        direction="row"
-        alignItems="flex-start"
-        gap={1}
-        role="group"
-        aria-label={`${ariaLabel ? ariaLabel : label} ${translateText(["countryCode"])}`}
-      >
+      <Stack direction="row" alignItems="flex-start" gap={1} ref={containerRef}>
         <PhoneInput
           value={countryCodeValue}
           onChange={onChangeCountry}
           inputProps={{
             readOnly: true,
-            "aria-label": `${ariaLabel ? ariaLabel : label} ${translateText(["countryCode"])}`,
+            "aria-label": `${ariaLabel || label} ${translateText(["countryCode"])}`,
             role: "combobox",
-            "aria-expanded": phoneInputRef.current?.state.open
-              ? "true"
-              : "false",
+            "aria-expanded": "false",
             "aria-haspopup": "listbox",
+            "aria-controls": listboxId,
             tabIndex: -1
           }}
           disableDropdown={isDisabled}
@@ -230,7 +360,7 @@ const InputPhoneNumber: FC<Props> = ({
           inputName={inputName}
           placeHolder={placeHolder}
           value={value}
-          onChange={onChange}
+          onChange={handlePhoneNumberChange}
           readOnly={readOnly}
           componentStyle={{ mt: 0, width: "400%", ...componentStyle }}
           inputStyle={{
@@ -243,7 +373,7 @@ const InputPhoneNumber: FC<Props> = ({
           }}
           inputType="text"
           error={error}
-          maxLength={getPhoneNumberMaxLength(countryCodeValue)}
+          maxLength={maxLength}
           inputMode="numeric"
           onKeyDown={(e) => {
             // TODO: move this to a separate file and write unit test cases
@@ -257,12 +387,7 @@ const InputPhoneNumber: FC<Props> = ({
               e.preventDefault();
             }
           }}
-          onPaste={(e) => {
-            // TODO: move this to a separate file and write unit test cases
-            if (!phoneNumberPattern().test(e.clipboardData.getData("Text"))) {
-              e.preventDefault();
-            }
-          }}
+          onPaste={handlePhoneNumberPaste}
           ariaLabel={ariaLabel}
           isDisabled={isDisabled}
         />

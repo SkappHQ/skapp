@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.jayway.jsonpath.JsonPath;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
@@ -31,6 +32,7 @@ import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -58,13 +60,16 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
+import static com.skapp.support.TestConstants.RESULTS_PATH;
 import static com.skapp.support.TestConstants.STATUS_PATH;
 import static com.skapp.support.TestConstants.STATUS_SUCCESSFUL;
 import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -89,6 +94,8 @@ class CrmCompanyControllerIntegrationTest {
 	private static final String DELETE_PATH = BASE_PATH + "/{id}";
 
 	private static final String EDIT_PATH = BASE_PATH + "/{id}";
+
+	private static final String BY_IDS_PATH = BASE_PATH + "/ids";
 
 	private final JsonMapper objectMapper;
 
@@ -393,9 +400,15 @@ class CrmCompanyControllerIntegrationTest {
 			.as("open task summary still counts tasks of a deleted company")
 			.extracting(s -> s.getContactId())
 			.contains(contactId);
-		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId)))
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), null))
 			.as("deal task count still counts tasks of a deleted company")
 			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 1L))
+			.as("deal task count scoped to the task owner still counts tasks of a deleted company")
+			.containsEntry(dealId, 1L);
+		assertThat(crmTaskDao.countTasksByDealIds(java.util.List.of(dealId), 2L))
+			.as("deal task count scoped to another owner excludes the task")
+			.doesNotContainKey(dealId);
 	}
 
 	@Test
@@ -663,5 +676,313 @@ class CrmCompanyControllerIntegrationTest {
 	}
 
 	private int orderIndexCounter = 0;
+
+	private void createCompanyTask(Long companyId, LocalDateTime dueAt) {
+		CrmTaskType taskType = new CrmTaskType();
+		taskType.setName("Metrics Task Type");
+		taskType.setOrderIndex(1);
+		crmTaskTypeDao.save(taskType);
+
+		CrmTask task = new CrmTask();
+		task.setName("Metrics Task");
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setCompany(crmCompanyDao.getReferenceById(companyId));
+		task.setDueAt(dueAt);
+		crmTaskDao.save(task);
+	}
+
+	// --- getCompanyMetricsById ---
+
+	@Test
+	@DisplayName("Get company metrics by ID - Returns aggregated deal and task metrics")
+	void getCompanyMetricsById_HappyPath_ReturnsMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("MetricsByIdCo");
+		CrmContact contact = createMetricsContact(company, "metrics.byid@example.com");
+		CrmDealStage openStage = createStage("Open Stage", CrmDealStageType.OPEN, 1);
+		CrmDealStage wonStage = createStage("Won Stage", CrmDealStageType.WON, 2);
+		createDeal("Open Deal", company, contact, openStage, "200", false);
+		createDeal("Won Deal", company, contact, wonStage, "400", false);
+		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
+		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+
+		// Second company with its own deals and tasks - metrics must stay correlated to
+		// the
+		// requested company, so these values must not leak into the assertions below.
+		CrmCompany otherCompany = createMetricsCompany("OtherMetricsCo");
+		CrmContact otherContact = createMetricsContact(otherCompany, "metrics.other@example.com");
+		createDeal("Other Open Deal", otherCompany, otherContact, openStage, "999", false);
+		createDeal("Other Won Deal", otherCompany, otherContact, wonStage, "888", false);
+		createCompanyTask(otherCompany.getId(), LocalDateTime.now().plusDays(3));
+		createCompanyTask(otherCompany.getId(), LocalDateTime.now().minusDays(2));
+
+		String content = performRequest(
+				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openDealsCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealsCount']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String openValue = JsonPath.read(content, "$.results[0].openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value sums non-closed deals").isEqualByComparingTo("200");
+		assertThat(new BigDecimal(accountValue)).as("account value sums WON deals").isEqualByComparingTo("400");
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID with no deals or tasks - Returns zero metrics")
+	void getCompanyMetricsById_NoActivity_ReturnsZeroMetrics() throws Exception {
+		CrmCompany company = createMetricsCompany("EmptyMetricsCo");
+
+		String content = performRequest(
+				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openDealsCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['closedDealsCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String openValue = JsonPath.read(content, "$.results[0].openValue");
+		String accountValue = JsonPath.read(content, "$.results[0].accountValue");
+		assertThat(new BigDecimal(openValue)).as("open value is zero with no deals").isEqualByComparingTo("0");
+		assertThat(new BigDecimal(accountValue)).as("account value is zero with no deals").isEqualByComparingTo("0");
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID that does not exist - Returns Bad Request")
+	void getCompanyMetricsById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/999999/metrics").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	// --- getCompanyById ---
+
+	@Test
+	@DisplayName("Get company by ID - Returns base company details")
+	void getCompanyById_HappyPath_ReturnsCompany() throws Exception {
+		CrmCompany company = new CrmCompany();
+		company.setName("DetailCoUnique");
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://detail.com");
+		company.setAddress("1 Detail St");
+		company.setContactNumber("94770000001");
+		company = crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("DetailCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://detail.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Detail St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000001"));
+	}
+
+	@Test
+	@DisplayName("Get company by ID that does not exist - Returns Bad Request")
+	void getCompanyById_NotFound_ReturnsBadRequest() throws Exception {
+		performRequest(get(BASE_PATH + "/999999").accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get company by ID for a soft-deleted company - Returns Bad Request")
+	void getCompanyById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmCompany company = createMetricsCompany("DeletedDetailCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID for a soft-deleted company - Returns Bad Request")
+	void getCompanyMetricsById_SoftDeleted_ReturnsBadRequest() throws Exception {
+		CrmCompany company = createMetricsCompany("DeletedMetricsCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get company by ID without CRM role - Returns Forbidden")
+	void getCompanyById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmCompany company = createMetricsCompany("ForbiddenDetailCo");
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + company.getId()).accept(MediaType.APPLICATION_JSON)).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Get company metrics by ID without CRM role - Returns Forbidden")
+	void getCompanyMetricsById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmCompany company = createMetricsCompany("ForbiddenMetricsCo");
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performRequest(get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	// --- getCompaniesByIds (batch) ---
+
+	private ResultActions performBatchRequest(List<Long> ids) throws Exception {
+		CrmCompanyIdsRequestDto requestDto = new CrmCompanyIdsRequestDto();
+		requestDto.setIds(ids);
+		return performRequest(post(BY_IDS_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(requestDto))
+			.accept(MediaType.APPLICATION_JSON));
+	}
+
+	private CrmCompany savedBatchCompany(String name) {
+		CrmCompany company = new CrmCompany();
+		company.setName(name);
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://batch.com");
+		company.setAddress("1 Batch St");
+		company.setContactNumber("94770000010");
+		return crmCompanyDao.save(company);
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns base company fields for the requested id")
+	void getCompaniesByIds_HappyPath_ReturnsBaseFields() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchCoUnique");
+
+		performBatchRequest(List.of(company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("BatchCoUnique"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industry']")
+				.value(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA.name()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['website']").value("https://batch.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['address']").value("1 Batch St"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").value("94770000010"));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns matching companies and ignores unknown ids")
+	void getCompaniesByIds_WithUnknownIds_ReturnsOnlyExisting() throws Exception {
+		CrmCompany companyA = savedBatchCompany("BatchCoA");
+		CrmCompany companyB = savedBatchCompany("BatchCoB");
+
+		performBatchRequest(List.of(companyA.getId(), companyB.getId(), 999999L)).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(2))
+			.andExpect(jsonPath(RESULTS_PATH + "[*]['id']",
+					containsInAnyOrder(companyA.getId().intValue(), companyB.getId().intValue())));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Duplicate ids return the company once")
+	void getCompaniesByIds_DuplicateIds_ReturnsCompanyOnce() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchDupCo");
+
+		performBatchRequest(List.of(company.getId(), company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(company.getId()));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Returns live company and excludes soft-deleted one in the same request")
+	void getCompaniesByIds_MixedLiveAndSoftDeleted_ReturnsOnlyLive() throws Exception {
+		CrmCompany live = savedBatchCompany("BatchLiveCo");
+		CrmCompany deleted = savedBatchCompany("BatchGoneCo");
+		deleted.setIsDeleted(true);
+		crmCompanyDao.save(deleted);
+
+		performBatchRequest(List.of(live.getId(), deleted.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH + ".length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(live.getId()));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Excludes soft-deleted companies")
+	void getCompaniesByIds_SoftDeleted_Excluded() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchDeletedCo");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performBatchRequest(List.of(company.getId())).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Non-positive id returns Bad Request")
+	void getCompaniesByIds_NonPositiveId_ReturnsBadRequest() throws Exception {
+		CrmCompany company = savedBatchCompany("BatchInvalidCo");
+
+		performBatchRequest(List.of(company.getId(), -1L)).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_COMPANY_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Empty ids returns empty list")
+	void getCompaniesByIds_EmptyIds_ReturnsEmptyList() throws Exception {
+		performBatchRequest(List.of()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids - Null ids returns empty list")
+	void getCompaniesByIds_NullIds_ReturnsEmptyList() throws Exception {
+		performBatchRequest(null).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_PATH).isEmpty());
+	}
+
+	@Test
+	@DisplayName("Get companies by ids without CRM role - Returns Forbidden")
+	void getCompaniesByIds_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performBatchRequest(List.of(1L)).andDo(print()).andExpect(status().isForbidden());
+	}
 
 }

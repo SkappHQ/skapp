@@ -1,6 +1,7 @@
 package com.skapp.community.peopleplanner.model;
 
 import com.skapp.community.common.model.Auditable;
+import com.skapp.community.common.model.BusinessUnit;
 import com.skapp.community.common.model.Notification;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.util.converter.FieldEncryptionConverter;
@@ -34,6 +35,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Getter
@@ -89,6 +92,12 @@ public class Employee extends Auditable<String> {
 
 	@Column(name = "identification_no", length = 15)
 	private String identificationNo;
+
+	@Column(name = "payroll_id")
+	private String payrollId;
+
+	@Column(name = "tin")
+	private String tin;
 
 	@Column(name = "time_zone")
 	private String timeZone;
@@ -174,8 +183,14 @@ public class Employee extends Auditable<String> {
 	@JoinColumn(name = "work_location_id")
 	private WorkLocation workLocation;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "business_unit_id")
+	private BusinessUnit businessUnit;
+
 	public String getFullName() {
-		return firstName + " " + lastName;
+		return Stream.of(firstName, lastName)
+			.filter(namePart -> namePart != null && !namePart.isBlank())
+			.collect(Collectors.joining(" "));
 	}
 
 }

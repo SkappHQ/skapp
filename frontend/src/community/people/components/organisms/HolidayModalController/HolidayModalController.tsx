@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
@@ -31,26 +32,30 @@ const HolidayModalController: FC = () => {
     setIsHolidayModalOpen,
     setHolidayModalType,
     setIsBulkUpload
-  } = usePeopleStore((state) => ({
-    newCalenderDetails: state.newCalenderDetails,
-    newHolidayDetails: state.newHolidayDetails,
-    isHolidayModalOpen: state.isHolidayModalOpen,
-    holidayModalType: state.holidayModalType,
-    selectedYear: state.selectedYear,
-    setIsHolidayModalOpen: state.setIsHolidayModalOpen,
-    setHolidayModalType: state.setHolidayModalType,
-    setIsBulkUpload: state.setIsBulkUpload
-  }));
+  } = usePeopleStore(
+    useShallow((state) => ({
+      newCalenderDetails: state.newCalenderDetails,
+      newHolidayDetails: state.newHolidayDetails,
+      isHolidayModalOpen: state.isHolidayModalOpen,
+      holidayModalType: state.holidayModalType,
+      selectedYear: state.selectedYear,
+      setIsHolidayModalOpen: state.setIsHolidayModalOpen,
+      setHolidayModalType: state.setHolidayModalType,
+      setIsBulkUpload: state.setIsBulkUpload
+    }))
+  );
 
   const {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [bulkUploadData, setBulkUploadData] = useState<
     holidayBulkUploadResponse | undefined

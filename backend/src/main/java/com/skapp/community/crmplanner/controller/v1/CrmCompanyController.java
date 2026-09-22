@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -71,12 +72,39 @@ public class CrmCompanyController {
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Get company metrics by ID",
+			description = "Returns the aggregated task and deal metrics for a single company.")
+	@GetMapping("/{id}/metrics")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompanyMetricsById(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.getCompanyMetricsById(id);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Search companies by domain",
 			description = "Returns companies whose website field contains the given domain")
 	@GetMapping("/search-by-domain")
 	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
 	public ResponseEntity<ResponseEntityDto> searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto) {
 		ResponseEntityDto responseDto = companyService.searchCompaniesByDomain(requestDto);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get company by ID", description = "Returns the base details of a single company.")
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompanyById(@PathVariable Long id) {
+		ResponseEntityDto responseDto = companyService.getCompanyById(id);
+		return new ResponseEntity<>(responseDto, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get companies by ids",
+			description = "Returns the base details of the companies matching the given ids, "
+					+ "used to hydrate the client's company store. Soft-deleted companies are omitted.")
+	@PostMapping("/ids")
+	@PreAuthorize("hasAnyRole('ROLE_CRM_SALES_REPRESENTATIVE')")
+	public ResponseEntity<ResponseEntityDto> getCompaniesByIds(@RequestBody CrmCompanyIdsRequestDto requestDto) {
+		ResponseEntityDto responseDto = companyService.getCompaniesByIds(requestDto);
 		return new ResponseEntity<>(responseDto, HttpStatus.OK);
 	}
 

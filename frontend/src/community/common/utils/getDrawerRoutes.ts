@@ -11,6 +11,7 @@ import {
 import routes from "~community/common/utils/data/routes";
 import getEnterpriseDrawerRoutes from "~community/common/utils/getEnterpriseDrawerRoutes";
 import { TierEnum } from "~enterprise/common/enums/Common";
+import { isCoreOrProTier } from "~enterprise/common/utils/commonUtil";
 
 type Role =
   | AdminTypes
@@ -32,6 +33,8 @@ interface Props {
   notificationLeaveCount?: number;
   notificationTimesheetCount?: number;
   notificationSignCount?: number;
+  isLeavePoliciesEnabled?: boolean;
+  isLeavePoliciesConfigError?: boolean;
 }
 
 const getDrawerRoutes = ({
@@ -44,7 +47,9 @@ const getDrawerRoutes = ({
   organizationCalendarMicrosoftStatus,
   notificationLeaveCount = 0,
   notificationTimesheetCount = 0,
-  notificationSignCount = 0
+  notificationSignCount = 0,
+  isLeavePoliciesEnabled = false,
+  isLeavePoliciesConfigError = false
 }: Props) => {
   const allRoutes = isEnterprise
     ? getEnterpriseDrawerRoutes({
@@ -152,9 +157,34 @@ const getDrawerRoutes = ({
       }
 
       if (route?.name === "Leave") {
+        const canViewLeavePolicies = userRoles?.some((role) =>
+          [
+            AdminTypes.SUPER_ADMIN,
+            AdminTypes.LEAVE_ADMIN,
+            AdminTypes.PEOPLE_ADMIN
+          ].includes(role as AdminTypes)
+        );
+
+        const isLeavePoliciesVisible = Boolean(
+          canViewLeavePolicies &&
+          (isLeavePoliciesEnabled || isLeavePoliciesConfigError)
+        );
+
         if (!userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE)) {
-          return null;
+          if (!isLeavePoliciesVisible) {
+            return null;
+          }
+
+          return {
+            id: route?.id,
+            name: "Leave Policies",
+            url: ROUTES.LEAVE.LEAVE_POLICIES,
+            icon: route?.icon,
+            hasSubTree: false,
+            featureBadge: (route as RouteWithBadge)?.badge
+          };
         }
+
         const isLeaveEmployeeWithoutManagerOrAdminRole =
           userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
           !userRoles?.some((role) =>
@@ -163,7 +193,10 @@ const getDrawerRoutes = ({
             )
           );
 
-        if (isLeaveEmployeeWithoutManagerOrAdminRole) {
+        if (
+          isLeaveEmployeeWithoutManagerOrAdminRole &&
+          !isLeavePoliciesVisible
+        ) {
           const hasAdditionalRolesForLeaveEmployee =
             userRoles?.includes(EmployeeTypes.LEAVE_EMPLOYEE) &&
             userRoles?.some((role) =>
@@ -229,6 +262,12 @@ const getDrawerRoutes = ({
           hasSubTree: false,
           featureBadge: (route as RouteWithBadge)?.badge
         };
+      }
+
+      if (route?.name === "Report") {
+        if (!isCoreOrProTier(tiers)) {
+          return null;
+        }
       }
 
       if (route?.name === "Invoices") {
@@ -323,6 +362,18 @@ const getDrawerRoutes = ({
             );
 
             if (!isSubRouteAuthorized) return null;
+
+            if (
+              subRoute.id === "2E" &&
+              !isLeavePoliciesEnabled &&
+              !isLeavePoliciesConfigError
+            ) {
+              return null;
+            }
+
+            if (subRoute.id === "2C" && isLeavePoliciesEnabled) {
+              return null;
+            }
 
             // Add notification count to "All Requests" if there are pending requests
             if (subRoute.id === "2B" && notificationLeaveCount > 0) {

@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { JSX, useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import GoogleCalendarIcon from "~community/common/assets/Icons/GoogleCalendarIcon";
 import OutlookIcon from "~community/common/assets/Icons/OutlookIcon";
@@ -37,9 +38,11 @@ const AccountSettings = (): JSX.Element => {
   const translateText = useTranslator("settings");
   const { isEmployee } = useSessionData();
 
-  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    globalLoginMethod: state.globalLoginMethod
-  }));
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
 
   const [frontendRedirectUrl, setFrontendRedirectUrl] = useState<string>("");
 

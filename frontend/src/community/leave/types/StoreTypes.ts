@@ -205,7 +205,7 @@ export interface LeaveStore extends actionsTypes {
     startDate?: string;
     endDate?: string;
     sortKey?: string;
-    page?: number | string;
+    page: number;
     size?: string;
     managerType?: string[];
   };

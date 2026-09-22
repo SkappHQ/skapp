@@ -124,15 +124,16 @@ public class HolidayServiceImpl implements HolidayService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public ResponseEntityDto saveBulkHolidays(HolidayBulkRequestDto holidayBulkRequestDto) {
 		log.info("saveBulkHolidays: execution started");
 
 		List<HolidayDtoStatusResponseDto> holidayDtoStatusList = new ArrayList<>();
-		List<Holiday> savableHolidays = new ArrayList<>();
+		List<Holiday> savedHolidays = new ArrayList<>();
 		AtomicInteger holidaysOnCurrentDate = new AtomicInteger();
 		AtomicInteger holidaysOnPastDates = new AtomicInteger();
 
-		List<WorkLocation> allWorkLocations = workLocationDao.findAll();
+		List<WorkLocation> allWorkLocations = workLocationDao.findByIsDeletedFalse();
 		List<String> validWorkLocationNames = allWorkLocations.stream().map(WorkLocation::getName).toList();
 		Map<String, WorkLocation> workLocationsByName = allWorkLocations.stream()
 			.collect(Collectors.toMap(wl -> wl.getName().trim(), wl -> wl, (a, b) -> a));
@@ -151,8 +152,7 @@ public class HolidayServiceImpl implements HolidayService {
 				Set<WorkLocation> workLocations = resolveWorkLocations(holidayDto.getWorkLocations(),
 						workLocationsByName);
 				holiday.setWorkLocations(workLocations);
-
-				savableHolidays.add(holiday);
+				holidayDao.save(holiday);
 
 				LeaveRequestFilterDto leaveRequestFilterDto = new LeaveRequestFilterDto();
 				leaveRequestFilterDto.setEndDate(holidayDate);
@@ -162,6 +162,8 @@ public class HolidayServiceImpl implements HolidayService {
 				if (systemHolidays.isEmpty() && !leaveRequests.isEmpty()) {
 					leaveRequests.forEach(leaveRequest -> updateLeaveRequestDueHoliday(holiday, leaveRequest));
 				}
+
+				savedHolidays.add(holiday);
 			}
 			catch (ModuleException | DateTimeParseException e) {
 				log.warn("saveBulkHolidays: Found a record with error: {}", e.getMessage());
@@ -170,7 +172,6 @@ public class HolidayServiceImpl implements HolidayService {
 			}
 		});
 
-		List<Holiday> savedHolidays = holidayDao.saveAll(savableHolidays);
 		if (savedHolidays.size() == 1) {
 
 			Set<WorkLocation> holidayWorkLocations = savedHolidays.getFirst().getWorkLocations();
@@ -185,8 +186,8 @@ public class HolidayServiceImpl implements HolidayService {
 		}
 
 		HolidayBulkSaveResponseDto responseDto = getHolidayBulkUploadResponseSummaryText(
-				holidayBulkRequestDto.getHolidayDtoList().size(), savableHolidays.size(),
-				holidaysOnCurrentDate.get() > 0, holidaysOnPastDates.get() > 0, holidayDtoStatusList);
+				holidayBulkRequestDto.getHolidayDtoList().size(), savedHolidays.size(), holidaysOnCurrentDate.get() > 0,
+				holidaysOnPastDates.get() > 0, holidayDtoStatusList);
 
 		log.info("saveBulkHolidays: execution ended");
 		return new ResponseEntityDto(false, responseDto);

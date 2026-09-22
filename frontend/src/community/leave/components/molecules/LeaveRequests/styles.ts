@@ -1,11 +1,10 @@
-import { Theme } from "@mui/material";
-
-const styles = (theme: Theme) => ({
+const styles = () => ({
   iconStyles: {
-    display: "flex",
+    display: "inline-flex",
+    width: "fit-content",
     alignItems: "center",
     gap: "0.5rem",
-    backgroundColor: theme.palette.common.white,
+    backgroundColor: "var(--color-tertiary-background)",
     borderRadius: "9.375rem",
     padding: "0.5rem 1rem"
   }

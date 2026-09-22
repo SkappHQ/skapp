@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
@@ -37,7 +37,9 @@ describe("DefaultAvatar", () => {
         containerStyles={containerStyles}
       />
     );
-    expect(container.firstChild).toHaveStyle("background-color: red");
+    expect(container.firstChild).toHaveStyle(
+      "background-color: rgb(255, 0, 0)"
+    );
   });
 
   test("calls onClick handler when clicked", async () => {

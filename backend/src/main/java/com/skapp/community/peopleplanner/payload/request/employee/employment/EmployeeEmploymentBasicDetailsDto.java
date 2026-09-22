@@ -33,4 +33,6 @@ public class EmployeeEmploymentBasicDetailsDto {
 
 	private Long workLocationId;
 
+	private Long businessUnitId;
+
 }

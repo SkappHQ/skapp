@@ -1,5 +1,6 @@
 import { CrmBoardDealsGroupedRequest } from "~community/crm/types/BoardTypes";
 import {
+  CrmContactLookupParams,
   CrmDealFilterParams,
   CrmDealsByCompanyParams,
   RelatedTasksParams
@@ -12,9 +13,10 @@ export const crmDealQueryKeys = {
 
   DEAL_LOOKUP: (
     searchKeyword: string,
+    size: number,
     contactId?: number | null,
-    size?: number
-  ) => ["crm-deal-lookup", searchKeyword, contactId, size],
+    companyId?: number | null
+  ) => ["crm-deal-lookup", searchKeyword, size, contactId, companyId],
   GET_DEALS_BY_COMPANY: (params: CrmDealsByCompanyParams) => [
     "crm-deals",
     "company",
@@ -49,11 +51,10 @@ export const contactQueryKeys = {
     "crm-owners-lookup",
     searchKeyword
   ],
-  CONTACT_LOOKUP: (
-    searchKeyword: string,
-    size: number,
-    dealId?: number | null
-  ) => ["crm-contacts-lookup", searchKeyword, size, dealId],
+  CONTACT_LOOKUP: (params: CrmContactLookupParams) => [
+    "crm-contacts-lookup",
+    params
+  ],
   OWNER_LOOKUP: (searchKeyword: string, size: number) => [
     "crm-owners-lookup",
     searchKeyword,

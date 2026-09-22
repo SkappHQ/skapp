@@ -3,16 +3,13 @@ import { FC } from "react";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import {
-  accrualFrequencyItemList,
-  carryoverDateItemList,
-  firstAccrualItemList,
-  receiveAccruedTimeItemList
-} from "~community/leave/constants/leavePolicyConstants";
-import {
+  AccrualFrequency,
+  AccrualTiming,
+  FirstAccrualType,
   LeavePolicyFormData,
   LeavePolicyWizardSteps
 } from "~community/leave/types/LeavePolicyTypes";
-import { buildTranslatedOptionList } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
+import { formatCarryoverExpiryDate } from "~community/leave/utils/leavePolicy/leavePolicyUtils";
 
 import SummaryCard from "./SummaryCard";
 import SummaryItem from "./SummaryItem";
@@ -37,26 +34,86 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
     "createPolicy"
   );
 
-  const accrualFrequencyOptions = buildTranslatedOptionList(
-    accrualFrequencyItemList,
-    "accrualFrequency",
-    (suffixes) => translateText(["options", ...suffixes])
+  const translateOptions = useTranslator(
+    "leaveModule",
+    "leavePolicies",
+    "createPolicy",
+    "options"
   );
-  const carryoverDateOptions = buildTranslatedOptionList(
-    carryoverDateItemList,
-    "carryoverDate",
-    (suffixes) => translateText(["options", ...suffixes])
-  );
-  const firstAccrualOptions = buildTranslatedOptionList(
-    firstAccrualItemList,
-    "firstAccrual",
-    (suffixes) => translateText(["options", ...suffixes])
-  );
-  const receiveAccruedTimeOptions = buildTranslatedOptionList(
-    receiveAccruedTimeItemList,
-    "receiveAccruedTime",
-    (suffixes) => translateText(["options", ...suffixes])
-  );
+
+  const accrualFrequencyOptions = [
+    {
+      id: "daily",
+      label: translateOptions(["accrualFrequency", "daily"]),
+      value: AccrualFrequency.DAILY
+    },
+    {
+      id: "weekly",
+      label: translateOptions(["accrualFrequency", "weekly"]),
+      value: AccrualFrequency.WEEKLY
+    },
+    {
+      id: "every-other-week",
+      label: translateOptions(["accrualFrequency", "everyOtherWeek"]),
+      value: AccrualFrequency.EVERY_OTHER_WEEK
+    },
+    {
+      id: "twice-a-month",
+      label: translateOptions(["accrualFrequency", "twiceAMonth"]),
+      value: AccrualFrequency.TWICE_A_MONTH
+    },
+    {
+      id: "monthly",
+      label: translateOptions(["accrualFrequency", "monthly"]),
+      value: AccrualFrequency.MONTHLY
+    },
+    {
+      id: "quarterly",
+      label: translateOptions(["accrualFrequency", "quarterly"]),
+      value: AccrualFrequency.QUARTERLY
+    },
+    {
+      id: "twice-a-year",
+      label: translateOptions(["accrualFrequency", "twiceAYear"]),
+      value: AccrualFrequency.TWICE_A_YEAR
+    },
+    {
+      id: "yearly",
+      label: translateOptions(["accrualFrequency", "yearly"]),
+      value: AccrualFrequency.YEARLY
+    },
+    {
+      id: "on-anniversary",
+      label: translateOptions(["accrualFrequency", "onAnniversary"]),
+      value: AccrualFrequency.ON_ANNIVERSARY
+    }
+  ];
+
+  const firstAccrualOptions = [
+    {
+      id: "prorated",
+      label: translateOptions(["firstAccrual", "prorated"]),
+      value: FirstAccrualType.PRORATED
+    },
+    {
+      id: "full",
+      label: translateOptions(["firstAccrual", "full"]),
+      value: FirstAccrualType.FULL
+    }
+  ];
+
+  const receiveAccruedTimeOptions = [
+    {
+      id: "start-of-period",
+      label: translateOptions(["receiveAccruedTime", "startOfPeriod"]),
+      value: AccrualTiming.PERIOD_START
+    },
+    {
+      id: "end-of-period",
+      label: translateOptions(["receiveAccruedTime", "endOfPeriod"]),
+      value: AccrualTiming.PERIOD_END
+    }
+  ];
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -136,40 +193,40 @@ const SummaryStep: FC<Props> = ({ formData, onEdit }) => {
         />
       </SummaryCard>
 
-      <SummaryCard
-        title={translateText(["summary", "carryForwardTitle"])}
-        onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
-      >
-        <SummaryItem
-          label={translateText(["summary", "statusLabel"])}
-          value={
-            <LeavePolicyStatusBadge
-              isActive={formData.canCarryOver}
-              text={
-                formData.canCarryOver
-                  ? translateText(["summary", "activeStatus"])
-                  : translateText(["summary", "inactiveStatus"])
-              }
-            />
-          }
-        />
-        <SummaryItem
-          label={translateText(["summary", "maxCarryOverDaysLabel"])}
-          value={
-            formData.canCarryOver && formData.maxCarryOverDays
-              ? translateText(["summary", "maxCarryOverDaysValue"], {
-                  days: formData.maxCarryOverDays
-                })
-              : translateText(["summary", "carryOverNoLimit"])
-          }
-        />
-        {formData.canCarryOver && (
+      {formData.canCarryOver && (
+        <SummaryCard
+          title={translateText(["summary", "carryForwardTitle"])}
+          onEdit={() => onEdit(LeavePolicyWizardSteps.ENTITLEMENT_SETUP)}
+        >
           <SummaryItem
-            label={translateText(["summary", "carryOverDateLabel"])}
-            value={getOptionLabel(carryoverDateOptions, formData.carryOverDate)}
+            label={translateText(["summary", "statusLabel"])}
+            value={
+              <LeavePolicyStatusBadge
+                isActive
+                text={translateText(["summary", "activeStatus"])}
+              />
+            }
           />
-        )}
-      </SummaryCard>
+          <SummaryItem
+            label={translateText(["summary", "maxCarryOverDaysLabel"])}
+            value={
+              formData.maxCarryOverDays
+                ? translateText(["summary", "maxCarryOverDaysValue"], {
+                    days: formData.maxCarryOverDays
+                  })
+                : translateText(["summary", "carryOverNoLimit"])
+            }
+          />
+          <SummaryItem
+            label={translateText(["summary", "carryoverExpiryDateLabel"])}
+            value={
+              formData.carryoverExpiryDate
+                ? formatCarryoverExpiryDate(formData.carryoverExpiryDate)
+                : translateText(["summary", "carryoverNeverExpires"])
+            }
+          />
+        </SummaryCard>
+      )}
     </div>
   );
 };

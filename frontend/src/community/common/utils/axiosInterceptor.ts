@@ -1,17 +1,11 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
+import { useCommonStore } from "~community/common/stores/commonStore";
+import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { ApiVersions } from "../constants/configs";
 import { getApiUrl } from "./getConstants";
-
-const getSubDomain = (url: string, multipleValues: boolean = false) => {
-  const subdomain = multipleValues ? url.split(".") : url.split(".")[0];
-  return subdomain;
-};
-
-export const tenantID =
-  typeof window !== "undefined" ? getSubDomain(window.location.hostname) : "";
 
 const authFetch = axios.create({
   baseURL: getApiUrl() + ApiVersions.V1
@@ -22,7 +16,7 @@ export const authFetchV2 = axios.create({
 });
 
 const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken(useCommonStore.getState());
 
   if (
     accessToken &&
@@ -33,8 +27,9 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
   }
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
-  if (isEnterpriseMode && tenantID) {
-    config.headers["X-Tenant-ID"] = tenantID;
+  const tenantId = getTenantId();
+  if (isEnterpriseMode && tenantId) {
+    config.headers["X-Tenant-ID"] = tenantId;
   }
   return config;
 };

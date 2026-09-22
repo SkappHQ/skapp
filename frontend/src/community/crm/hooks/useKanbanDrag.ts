@@ -4,7 +4,11 @@ import type {
   DragStartEvent
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
@@ -36,10 +40,15 @@ interface UseKanbanDragReturn {
 }
 
 export const useKanbanDrag = (): UseKanbanDragReturn => {
-  const { boardStageDeals, setBoardStageDeals } = useCrmStore((store) => ({
-    boardStageDeals: store.boardStageDeals,
-    setBoardStageDeals: store.setBoardStageDeals
-  }));
+  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const { setToastMessage } = useToast();
+
+  const { boardStageDeals, setBoardStageDeals } = useCrmStore(
+    useShallow((store) => ({
+      boardStageDeals: store.boardStageDeals,
+      setBoardStageDeals: store.setBoardStageDeals
+    }))
+  );
 
   const [activeDeal, setActiveDeal] = useState<CrmBoardDealSliceType | null>(
     null
@@ -53,6 +62,12 @@ export const useKanbanDrag = (): UseKanbanDragReturn => {
     if (dragStartSnapshotRef.current) {
       setBoardStageDeals(dragStartSnapshotRef.current);
     }
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toastMessages", "editErrorTitle"]),
+      description: translateText(["toastMessages", "editErrorDescription"])
+    });
   };
 
   const { mutate: reorderDealWithinStage } =

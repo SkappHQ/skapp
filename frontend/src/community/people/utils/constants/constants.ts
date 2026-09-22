@@ -46,7 +46,10 @@ export const USER_BULK_HEADERS = [
   "ssn",
   "ethnicity",
   "eeo",
-  "passportNo"
+  "passportNo",
+  "payrollId",
+  "tin",
+  "businessUnit"
 ];
 
 export const DATE_FORMAT = {

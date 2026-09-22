@@ -7,11 +7,11 @@ import SearchableDropdown, {
 import useGetImageUrl from "~community/common/hooks/useGetImageUrl";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { OptionType } from "~community/common/types/CommonTypes";
+import { concatStrings } from "~community/common/utils/commonUtil";
 import {
   AllEmployeeDataType,
   EmployeeDataTeamType
 } from "~community/people/types/PeopleTypes";
-import { concatStrings } from "~community/common/utils/commonUtil";
 
 const EmployeeAvatarChip: FC<{ employee: AllEmployeeDataType }> = ({
   employee
@@ -42,7 +42,7 @@ interface SupervisorReassignmentModalSectionProps {
   isLoading: boolean;
   assignments: Record<number, OptionType>;
   getItems: (entityId: number) => SearchableDropdownItem[];
-  onSearch: (term: string) => void;
+  onSearch: (term: string, entityId: number) => void;
   onSelect: (
     entityId: number,
     selectedId: string,
@@ -76,7 +76,7 @@ const SupervisorReassignmentModalSection: FC<
   ) => {
     const term = e.target.value;
     setSearchValues({ [entityId]: term });
-    onSearch(term);
+    onSearch(term, entityId);
   };
 
   const handleItemSelect = (entityId: number, item: SearchableDropdownItem) => {
@@ -86,7 +86,7 @@ const SupervisorReassignmentModalSection: FC<
 
   const handleDropdownClose = (entityId: number) => {
     setSearchValues((prev) => ({ ...prev, [entityId]: "" }));
-    onSearch("");
+    onSearch("", entityId);
   };
 
   return (
@@ -135,8 +135,7 @@ const SupervisorReassignmentModalSection: FC<
                     variant="sm"
                     positionStrategy="fixed"
                     onClose={() => handleDropdownClose(id)}
-                    emptyMessage={translateText(["noEmployeesFound"])
-                    }
+                    emptyMessage={translateText(["noEmployeesFound"])}
                   />
                 ) : (
                   <InputField

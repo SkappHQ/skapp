@@ -10,20 +10,23 @@ export const DRAWER_ANIMATION_DURATION = "0.3s";
 export const DRAWER_TRANSFORM_DURATION = "0.05s";
 
 export const styles = ({ theme }: stylesProps) => ({
-  iconBtn: (isDrawerExpanded: boolean) => ({
-    display: { xs: "flex", sm: "none", lg: "flex" },
-    position: "absolute",
-    top: { xs: "2.5rem", lg: "2.65rem" },
-    right: { xs: "2.25rem", lg: isDrawerExpanded ? "1.5rem" : "1.05rem" },
-    height: "2.5rem",
-    width: "2.5rem",
-    zIndex: ZIndexEnums.MODAL,
-    visibility: {
-      xs: "visible",
-      lg: isDrawerExpanded ? "hidden" : "visible"
-    },
-    transition: `right ${DRAWER_ANIMATION_DURATION} ease, opacity ${DRAWER_ANIMATION_DURATION} ease, visibility ${DRAWER_ANIMATION_DURATION} ease, transform ${DRAWER_TRANSFORM_DURATION} ease`
-  }),
+  iconBtn: (isDrawerExpanded: boolean, isBelow1024: boolean) => {
+    const drawerToggleDisplay = isDrawerExpanded ? "flex" : "none";
+    const drawerToggleRight = isDrawerExpanded ? "1.5rem" : "1.05rem";
+    const drawerToggleVisibility = isDrawerExpanded ? "hidden" : "visible";
+
+    return {
+      display: isBelow1024 ? drawerToggleDisplay : "flex",
+      position: "absolute",
+      top: isBelow1024 ? "2.5rem" : "2.65rem",
+      right: isBelow1024 ? "2.25rem" : drawerToggleRight,
+      height: "2.5rem",
+      width: "2.5rem",
+      zIndex: ZIndexEnums.MODAL,
+      visibility: isBelow1024 ? "visible" : drawerToggleVisibility,
+      transition: `right ${DRAWER_ANIMATION_DURATION} ease, opacity ${DRAWER_ANIMATION_DURATION} ease, visibility ${DRAWER_ANIMATION_DURATION} ease, transform ${DRAWER_TRANSFORM_DURATION} ease`
+    };
+  },
   iconToggleBox: {
     position: "relative",
     display: "flex",

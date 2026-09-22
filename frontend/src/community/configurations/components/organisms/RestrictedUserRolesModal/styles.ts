@@ -13,7 +13,8 @@ const styles = () => ({
     marginX: "0.5rem"
   },
   fieldWrapper: {
-    paddingX: "0.875rem"
+    paddingX: "0.1875rem",
+    gap: "0.875rem"
   }
 });
 

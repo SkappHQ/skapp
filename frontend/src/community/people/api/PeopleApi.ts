@@ -1,5 +1,6 @@
 import {
   type UseInfiniteQueryResult,
+  type UseMutationResult,
   type UseQueryResult,
   useInfiniteQuery,
   useMutation,
@@ -7,8 +8,9 @@ import {
   useQueryClient
 } from "@tanstack/react-query";
 import { rejects } from "assert";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 
+import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import { appModes } from "~community/common/constants/configs";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
@@ -32,12 +34,24 @@ import {
 } from "~community/people/actions/PeopleDataPreprocessor";
 import {
   authEndpoints,
+  peopleConfigEndpoints,
   peoplesEndpoints
 } from "~community/people/api/utils/ApiEndpoints";
-import { peopleQueryKeys } from "~community/people/api/utils/QueryKeys";
+import {
+  peopleConfigQueryKeys,
+  peopleQueryKeys
+} from "~community/people/api/utils/QueryKeys";
 import { SkillTypes } from "~community/people/enums/PeopleEnums";
 import { usePeopleStore } from "~community/people/store/store";
-import { EmployeeType } from "~community/people/types/AddNewResourceTypes";
+import {
+  EmployeeType,
+  SystemPermissionTypes
+} from "~community/people/types/AddNewResourceTypes";
+import {
+  BirthdayNotificationPayloadType,
+  BirthdayNotificationTodayResponse,
+  MarkBirthdayNotificationsViewedResponse
+} from "~community/people/types/BirthdayNotificationTypes";
 import { EntitlementInfo } from "~community/people/types/EmployeeBulkUpload";
 import {
   BulkEmployeeDetails,
@@ -47,11 +61,20 @@ import {
   EmployeeDetails,
   EmployeeManagerType,
   MyManagersType,
+  PayrollIdExistsCheckParams,
+  PayrollIdExistsResponse,
   QuickAddEmployeePayload,
-  QuickAddEmployeeResponse
+  QuickAddEmployeeResponse,
+  TinExistsCheckParams,
+  TinExistsResponse
 } from "~community/people/types/EmployeeTypes";
 import { JobFamilies } from "~community/people/types/JobRolesTypes";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
+import {
+  BirthdayNotificationConfigPatchType,
+  BirthdayNotificationConfigResponse,
+  BirthdayNotificationConfigType
+} from "~community/people/types/PeopleConfigTypes";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import { EmployeeTimelineType } from "~enterprise/people/types/PeopleTypes";
 
@@ -251,19 +274,28 @@ export const useAddUserBulkEntitlementsWithoutCSV = (
 
 export const useGetSearchedEmployees = (
   searchTerm: string,
-  permission = "EMPLOYEES"
+  permission: SystemPermissionTypes = SystemPermissionTypes.EMPLOYEES,
+  selectedEmployeeId?: number | null
 ) => {
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
   const queryKey = peopleQueryKeys.EMPLOYEE_SEARCH(
     debouncedSearchTerm,
-    permission
+    permission,
+    selectedEmployeeId
   );
 
   const queryFn = async () => {
-    const sanitizedSearchTerm = removeSpecialCharacters(searchTerm, "_");
+    const sanitizedSearchTerm = removeSpecialCharacters(
+      debouncedSearchTerm,
+      "_"
+    );
     const endpoint = peoplesEndpoints.SEARCH_EMPLOYEE;
     const response = await authFetch.get(endpoint, {
-      params: { keyword: sanitizedSearchTerm, permission: permission }
+      params: {
+        keyword: sanitizedSearchTerm,
+        permission: permission,
+        ...(selectedEmployeeId != null && { selectedEmployeeId })
+      }
     });
     const processedData = searchEmployeeDataPreProcessor(
       response?.data?.results
@@ -275,7 +307,8 @@ export const useGetSearchedEmployees = (
     queryKey,
     queryFn,
     refetchOnWindowFocus: false,
-    enabled: debouncedSearchTerm.length > 0
+    enabled:
+      debouncedSearchTerm.length > 0 && debouncedSearchTerm === searchTerm
   });
 };
 
@@ -296,6 +329,47 @@ export const useCheckEmailAndIdentificationNo = (
       return response?.data?.results[0];
     },
     enabled: false
+  });
+};
+
+const checkPayrollIdExists = async (
+  params: PayrollIdExistsCheckParams
+): Promise<PayrollIdExistsResponse> => {
+  const response = await authFetch.get(
+    peoplesEndpoints.CHECK_PAYROLL_ID_EXISTS,
+    { params }
+  );
+  return response?.data?.results[0];
+};
+
+export const useCheckPayrollIdExists = (
+  payrollId?: string,
+  employeeId?: string
+): UseQueryResult<PayrollIdExistsResponse> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.PAYROLL_ID_EXISTS_KEYS(employeeId, payrollId),
+    queryFn: () => checkPayrollIdExists({ payrollId, employeeId }),
+    enabled: Boolean(payrollId)
+  });
+};
+
+const checkTinExists = async (
+  params: TinExistsCheckParams
+): Promise<TinExistsResponse> => {
+  const response = await authFetch.get(peoplesEndpoints.CHECK_TIN_EXISTS, {
+    params
+  });
+  return response?.data?.results[0];
+};
+
+export const useCheckTinExists = (
+  tin?: string,
+  employeeId?: string
+): UseQueryResult<TinExistsResponse> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.TIN_EXISTS_KEYS(employeeId, tin),
+    queryFn: () => checkTinExists({ tin, employeeId }),
+    enabled: Boolean(tin)
   });
 };
 
@@ -403,7 +477,8 @@ export const useResetSharePassword = () => {
 };
 
 export const useGetEmployeeById = (
-  memberId: number | undefined = undefined
+  memberId: number | undefined = undefined,
+  isEnabled: boolean = true
 ): UseQueryResult<EmployeeDetails> => {
   return useQuery({
     queryKey: peopleQueryKeys.EMPLOYEE_BY_ID(memberId),
@@ -431,7 +506,7 @@ export const useGetEmployeeById = (
         };
       }
     },
-    enabled: memberId !== 0
+    enabled: isEnabled && memberId !== 0
   });
 };
 
@@ -922,6 +997,87 @@ export const useReassignSupervisorsAndTerminateOrDeleteEmployee = (
         peopleQueryKeys.SUPERVISED_BY_ME
       ].forEach((queryKey) => queryClient.invalidateQueries({ queryKey }));
       onSuccess();
+    },
+    onError
+  });
+};
+
+export const useGetTodaysBirthdayNotifications = (
+  enabled: boolean
+): UseQueryResult<BirthdayNotificationPayloadType> => {
+  return useQuery({
+    queryKey: peopleQueryKeys.GET_TODAYS_BIRTHDAY_NOTIFICATIONS,
+    queryFn: async () => {
+      const response = await authFetch.get<BirthdayNotificationTodayResponse>(
+        peoplesEndpoints.GET_TODAYS_BIRTHDAY_NOTIFICATIONS
+      );
+      return response.data.results[0];
+    },
+    enabled
+  });
+};
+
+const markBirthdayNotificationsViewedToday = (): Promise<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+> =>
+  authFetch.patch<MarkBirthdayNotificationsViewedResponse>(
+    peoplesEndpoints.MARK_BIRTHDAY_NOTIFICATIONS_VIEWED_TODAY
+  );
+
+export const useMarkBirthdayNotificationsViewedToday = (
+  onSuccess: (
+    response: AxiosResponse<MarkBirthdayNotificationsViewedResponse>
+  ) => void
+): UseMutationResult<
+  AxiosResponse<MarkBirthdayNotificationsViewedResponse>,
+  AxiosError,
+  void
+> => {
+  return useMutation({
+    mutationFn: markBirthdayNotificationsViewedToday,
+    onSuccess
+  });
+};
+
+export const useGetBirthdayNotificationConfig =
+  (): UseQueryResult<BirthdayNotificationConfigType> => {
+    return useQuery({
+      queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG,
+      queryFn: async () => {
+        const response =
+          await authFetch.get<BirthdayNotificationConfigResponse>(
+            peopleConfigEndpoints.GET_BIRTHDAY_NOTIFICATION_CONFIG
+          );
+        return response.data.results[0];
+      }
+    });
+  };
+
+const updateBirthdayNotificationConfig = (
+  config: BirthdayNotificationConfigPatchType
+): Promise<AxiosResponse<BirthdayNotificationConfigResponse>> =>
+  authFetch.patch<BirthdayNotificationConfigResponse>(
+    peopleConfigEndpoints.UPDATE_BIRTHDAY_NOTIFICATION_CONFIG,
+    config
+  );
+
+export const useUpdateBirthdayNotificationConfig = (
+  onSuccess: (config: BirthdayNotificationConfigPatchType) => void,
+  onError: (error: AxiosError) => void
+): UseMutationResult<
+  AxiosResponse<BirthdayNotificationConfigResponse>,
+  AxiosError,
+  BirthdayNotificationConfigPatchType
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateBirthdayNotificationConfig,
+    onSuccess: (_data, config) => {
+      queryClient.invalidateQueries({
+        queryKey: peopleConfigQueryKeys.GET_BIRTHDAY_NOTIFICATION_CONFIG
+      });
+      onSuccess(config);
     },
     onError
   });

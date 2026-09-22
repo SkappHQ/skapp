@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { FC, ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { useGetEmailServerConfig } from "~community/common/api/settingsApi";
@@ -58,9 +59,11 @@ const SettingsSection: FC<SettingsSectionProps> = ({
     )
     .some((role) => managerRoles.includes(role));
 
-  const { globalLoginMethod } = useCommonEnterpriseStore((state) => ({
-    globalLoginMethod: state.globalLoginMethod
-  }));
+  const { globalLoginMethod } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      globalLoginMethod: state.globalLoginMethod
+    }))
+  );
 
   return (
     <>

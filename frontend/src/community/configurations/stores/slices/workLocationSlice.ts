@@ -46,8 +46,7 @@ export const workLocationSlice = (
         ? { tempGeofence: { ...state.tempGeofence, ...partial } }
         : {}
     ),
-  setIsFormDirty: (dirty) =>
-    set((state) => ({ ...state, isFormDirty: dirty })),
+  setIsFormDirty: (dirty) => set((state) => ({ ...state, isFormDirty: dirty })),
   setIsUnsavedModalOpen: (open) =>
     set((state) => ({ ...state, isUnsavedModalOpen: open }))
 });

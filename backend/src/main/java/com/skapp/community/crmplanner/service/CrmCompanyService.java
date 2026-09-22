@@ -3,6 +3,8 @@ package com.skapp.community.crmplanner.service;
 import org.springframework.data.domain.Pageable;
 
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.crmplanner.model.CrmCompany;
+import com.skapp.community.crmplanner.payload.request.CrmCompanyIdsRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyDomainSearchRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyEditDto;
@@ -16,7 +18,15 @@ public interface CrmCompanyService {
 
 	ResponseEntityDto createCompany(CrmCompanyCreateDto crmCompany);
 
+	CrmCompany findOrCreateCompanyByName(String name);
+
 	ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable);
+
+	ResponseEntityDto getCompanyMetricsById(Long id);
+
+	ResponseEntityDto getCompanyById(Long id);
+
+	ResponseEntityDto getCompaniesByIds(CrmCompanyIdsRequestDto requestDto);
 
 	ResponseEntityDto searchCompaniesByDomain(CrmCompanyDomainSearchRequestDto requestDto);
 

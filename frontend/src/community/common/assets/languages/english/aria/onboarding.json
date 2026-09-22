@@ -1,4 +1,7 @@
 {
+  "oAuthConsent": {
+    "ariaLabel": "Authorize access consent"
+  },
   "signInForm": {
     "password": {
       "showPassword": "Show password",

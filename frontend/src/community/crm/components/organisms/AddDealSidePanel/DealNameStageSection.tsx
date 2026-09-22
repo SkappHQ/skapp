@@ -4,7 +4,7 @@ import { FC, useEffect, useMemo } from "react";
 
 import MultipleSkeletons from "~community/common/components/molecules/Skeletons/MultipleSkeletons";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
+import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
 import { useCrmStore } from "~community/crm/store/store";
 import { CrmDealAddFormTypes } from "~community/crm/types/CommonTypes";
@@ -64,15 +64,7 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
       dealStages.map((s) => ({
         id: String(s.id),
         value: String(s.id),
-        label: (
-          <div className="inline-flex items-center gap-2.5">
-            <div
-              className="size-2 rounded-full shrink-0"
-              style={{ backgroundColor: STAGE_COLOR_MAP[s.color] }}
-            />
-            <span className="body2">{s.name}</span>
-          </div>
-        )
+        label: <StageLabel label={s.name} color={s.color} />
       })),
     [dealStages]
   );
@@ -94,22 +86,24 @@ const DealNameStageSection: FC<DealNameStageSectionProps> = ({
         />
       </div>
       <div className="w-1/3 pt-6.5">
-        {isStagesLoading ? (
-          <MultipleSkeletons numOfSkeletons={1} height={38} />
-        ) : (
-          <Dropdown
-            options={stageOptions}
-            value={formik.values.stageId}
-            onChange={(v) => formik.setFieldValue("stageId", v)}
-            variant={stageDropdownVariant}
-            className="rounded-lg"
-            width="55%"
-            placeholder={translateText(["placeholders", "stage"])}
-            required
-            errorMessage={stageErrorMessage}
-            ariaLabel={translateText(["ariaLabels", "stage"])}
-          />
-        )}
+        <div className="w-full max-w-[13.688rem]">
+          {isStagesLoading ? (
+            <MultipleSkeletons numOfSkeletons={1} height={48} />
+          ) : (
+            <Dropdown
+              options={stageOptions}
+              value={formik.values.stageId}
+              onChange={(v) => formik.setFieldValue("stageId", v)}
+              variant={stageDropdownVariant}
+              className="rounded-lg"
+              width="100%"
+              placeholder={translateText(["placeholders", "stage"])}
+              required
+              errorMessage={stageErrorMessage}
+              ariaLabel={translateText(["ariaLabels", "stage"])}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

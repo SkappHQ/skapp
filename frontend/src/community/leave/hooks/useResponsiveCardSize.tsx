@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useScreenSizeRange } from "~community/common/hooks/useScreenSizeRange";
 import { useCommonStore } from "~community/common/stores/commonStore";
@@ -8,9 +9,11 @@ const useResponsiveCardSize = (pageSize: number) => {
     useState<number>(pageSize);
   const [responsiveCardSize, setResponsiveCardSize] = useState<string>();
   const { isDesktopScreen, isTabScreen, isPhoneScreen } = useScreenSizeRange();
-  const { isDrawerToggled } = useCommonStore((state) => ({
-    isDrawerToggled: state.isDrawerExpanded
-  }));
+  const { isDrawerToggled } = useCommonStore(
+    useShallow((state) => ({
+      isDrawerToggled: state.isDrawerExpanded
+    }))
+  );
 
   useEffect(() => {
     setResponsivePageSize(

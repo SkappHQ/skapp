@@ -1,7 +1,7 @@
 import { JSX } from "react";
 
 import { SelectOption } from "~community/common/components/molecules/SquareSelect/SquareSelect";
-import { Modules } from "~community/common/enums/CommonEnums";
+import { Modules, RoleLevel } from "~community/common/enums/CommonEnums";
 import {
   AdminTypes,
   EmployeeTypes,
@@ -25,8 +25,19 @@ export interface UserRoleTableType {
 
 export interface UserRoleRestrictionsType {
   module: Modules;
-  isAdmin: boolean;
-  isManager: boolean;
+  restrictions: RoleLevel[];
+  restrictableRoles: RoleLevel[];
+}
+
+export interface UserRoleRestrictionsUpdateType {
+  module: Modules;
+  addedRoles: RoleLevel[];
+  removedRoles: RoleLevel[];
+}
+
+export interface RestrictionChanges {
+  addedRoles: RoleLevel[];
+  removedRoles: RoleLevel[];
 }
 
 export interface GrantableRoleTypes {

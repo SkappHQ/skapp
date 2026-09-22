@@ -15,4 +15,8 @@ public class EmployeeEmploymentIdentificationAndDiversityDetailsDto {
 
 	private EEO eeoJobCategory;
 
+	private String payrollId;
+
+	private String tin;
+
 }

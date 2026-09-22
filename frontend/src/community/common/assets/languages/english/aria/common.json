@@ -74,7 +74,9 @@
     "inputPhoneNumber": {
       "countryCode": "country code",
       "phoneNumber": "phone number",
-      "countryCodeDescription": "Country code +{{countryCode}}"
+      "countryCodeDescription": "Country code +{{countryCode}}",
+      "countryList": "Country List",
+      "countrySearch": "Search countries"
     },
     "search": {
       "label": "Enter Search Keyword",
@@ -111,6 +113,9 @@
   "contentLayout": {
     "backButton": "Back Button",
     "pageHeader": "Page header"
+  },
+  "contentWithAppBar": {
+    "contentAreaWithAppBar": "Main content area"
   },
   "contentWithDrawer": {
     "contentAreaWithDrawer": "Main content area with drawer"

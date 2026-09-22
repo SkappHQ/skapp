@@ -7,7 +7,7 @@ export interface ToastProps {
   title: string;
   description?: string;
   toastType?: ToastType;
-  autoHideDuration?: number;
+  autoHideDuration?: number | null;
   toastMsgButtonText?: string;
   handleToastClick?: () => void;
   isIcon?: boolean;

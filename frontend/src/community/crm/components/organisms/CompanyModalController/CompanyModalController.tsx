@@ -1,5 +1,6 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
 import { ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCrmStore } from "~community/crm/store/store";
@@ -12,15 +13,14 @@ import EditCompanyModalContent from "../../molecules/EditCompanyModalContent/Edi
 const CompanyModalController = () => {
   const translateText = useTranslator("crmModule", "companies");
 
-  const {
-    isCompanyModalOpen,
-    crmModalType,
-    setIsCompanyModalOpen
-  } = useCrmStore((store) => ({
-    isCompanyModalOpen: store.isCompanyModalOpen,
-    crmModalType: store.companyModalType,
-    setIsCompanyModalOpen: store.setIsCompanyModalOpen
-  }));
+  const { isCompanyModalOpen, crmModalType, setIsCompanyModalOpen } =
+    useCrmStore(
+      useShallow((store) => ({
+        isCompanyModalOpen: store.isCompanyModalOpen,
+        crmModalType: store.companyModalType,
+        setIsCompanyModalOpen: store.setIsCompanyModalOpen
+      }))
+    );
 
   const handleCloseModal = (): void => {
     setIsCompanyModalOpen(false);

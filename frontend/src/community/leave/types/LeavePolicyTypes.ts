@@ -1,6 +1,54 @@
+import { BulkStatusSummary } from "~community/common/types/BulkUploadTypes";
+
 export enum PolicyType {
   ACCRUAL = "ACCRUAL",
   FLEXIBLE = "FLEXIBLE"
+}
+
+export interface BulkAssignPolicyRow {
+  employeeName: string;
+  policyName: string;
+  effectiveDate: string;
+}
+
+export interface BulkAssignPolicyPayload {
+  assignments: BulkAssignPolicyRow[];
+}
+
+export interface BulkAssignPolicyErrorLog extends BulkAssignPolicyRow {
+  error: string;
+}
+
+export interface BulkAssignPolicyResponse {
+  bulkStatusSummary: BulkStatusSummary;
+  bulkRecordErrorLogs: BulkAssignPolicyErrorLog[];
+}
+
+export interface BulkAssignPolicyApiResponse {
+  results: BulkAssignPolicyResponse[];
+}
+
+export type BulkAssignCsvHeaders = Record<keyof BulkAssignPolicyRow, string>;
+
+export enum BulkAssignCsvError {
+  MISSING_COLUMNS = "MISSING_COLUMNS",
+  UNEXPECTED_COLUMNS = "UNEXPECTED_COLUMNS",
+  MALFORMED_ROWS = "MALFORMED_ROWS",
+  EMPTY_FILE = "EMPTY_FILE",
+  TOO_MANY_ROWS = "TOO_MANY_ROWS"
+}
+
+export interface BulkAssignCsvValidation {
+  error: BulkAssignCsvError | null;
+  missingColumns: string[];
+  unexpectedColumns: string[];
+  payload: BulkAssignPolicyPayload | null;
+}
+
+export enum BulkAssignPolicySteps {
+  INSTRUCTIONS = "INSTRUCTIONS",
+  UPLOAD = "UPLOAD",
+  SUMMARY = "SUMMARY"
 }
 
 export enum LeavePolicyStatus {
@@ -44,6 +92,25 @@ export interface LeavePolicyType {
   leaveTypeEmoji: string | null;
   policyType: PolicyType;
   status: LeavePolicyStatus;
+  assignedEmployeeCount: number;
+  // Accrual configuration is returned by the list endpoint for ACCRUAL policies.
+  accrualDays?: number | null;
+  frequency?: AccrualFrequency | null;
+  waitingPeriodDays?: number | null;
+  accrualCapDays?: number | null;
+  isCarryoverEnabled?: boolean | null;
+  carryoverExpiryDate?: string | null;
+  maxCarryoverDays?: number | null;
+  firstAccrual?: FirstAccrualType | null;
+  accrualTiming?: AccrualTiming | null;
+}
+
+export type CalendarUnit = "day" | "week" | "month" | "quarter" | "year";
+
+export interface AccrualPreviewRow {
+  date: string;
+  days: number;
+  balance: number;
 }
 
 export interface LeavePoliciesPage {
@@ -57,6 +124,7 @@ export interface GetLeavePoliciesInfiniteArgs {
   searchKeyword: string;
   leaveTypeId: string;
   size: number;
+  enabled?: boolean;
 }
 
 export interface GetLeavePoliciesParams {
@@ -70,19 +138,25 @@ export interface LeavePoliciesResponse {
   results: LeavePoliciesPage[];
 }
 
-export interface PolicyLeaveTypeType {
-  id: number;
+export interface CheckLeavePolicyNameAvailabilityParams {
   name: string;
-  emojiCode: string | null;
-  colorCode: string | null;
+  leaveTypeId: string;
 }
 
-export interface PolicyLeaveTypesResult {
-  leaveTypes: PolicyLeaveTypeType[];
+export interface LeavePolicyNameAvailabilityResult {
+  isAvailable: boolean;
 }
 
-export interface PolicyLeaveTypesResponse {
-  results: PolicyLeaveTypesResult[];
+export interface LeavePolicyNameAvailabilityResponse {
+  results: LeavePolicyNameAvailabilityResult[];
+}
+
+export interface LeavePolicyConfigResult {
+  isEnabled: boolean;
+}
+
+export interface LeavePolicyConfigResponse {
+  results: LeavePolicyConfigResult[];
 }
 
 export interface LeavePolicyFormData {
@@ -97,7 +171,7 @@ export interface LeavePolicyFormData {
   hasAccrualCap: boolean;
   accrualCapDays: string;
   canCarryOver: boolean;
-  carryOverDate: string;
+  carryoverExpiryDate: string;
   maxCarryOverDays: string;
   firstAccrual: string;
   receiveAccruedTime: string;
@@ -109,7 +183,7 @@ export interface AddLeavePolicyAccrualPayload {
   waitingPeriodDays?: number;
   accrualCapDays?: number;
   isCarryoverEnabled: boolean;
-  carryoverDate?: string;
+  carryoverExpiryDate?: string;
   maxCarryoverDays?: number;
   firstAccrual: string;
   accrualTiming: string;
@@ -144,7 +218,7 @@ export interface LeavePolicyResponseDto {
   waitingPeriodDays: number | null;
   accrualCapDays: number | null;
   isCarryoverEnabled: boolean | null;
-  carryoverDate: string | null;
+  carryoverExpiryDate: string | null;
   maxCarryoverDays: number | null;
   firstAccrual: FirstAccrualType | null;
   accrualTiming: AccrualTiming | null;
@@ -152,4 +226,55 @@ export interface LeavePolicyResponseDto {
 
 export interface LeavePolicyMutationResponse {
   results: LeavePolicyResponseDto[];
+}
+
+export enum EffectiveDateType {
+  JOIN_DATE = "JOIN_DATE",
+  SPECIFIC = "SPECIFIC"
+}
+
+export enum EmployeeLeavePolicyStatus {
+  ACTIVE = "ACTIVE",
+  ENDED = "ENDED"
+}
+
+export interface EmployeeLeavePolicyType {
+  id: number;
+  employeeId: number;
+  policyId: number;
+  policyName: string;
+  leaveTypeId: number;
+  leaveTypeName: string;
+  leaveTypeEmojiCode: string | null;
+  policyType: PolicyType;
+  effectiveDateType: EffectiveDateType;
+  effectiveFrom: string;
+  status: EmployeeLeavePolicyStatus;
+  totalDaysAllocated: number;
+  totalDaysUsed: number;
+  balanceInDays: number;
+  isUnlimited: boolean;
+}
+
+export interface EmployeeLeavePoliciesPage {
+  items: EmployeeLeavePolicyType[];
+  currentPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+export interface EmployeeLeavePoliciesResponse {
+  results: EmployeeLeavePoliciesPage[];
+}
+
+export interface AssignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
+  effectiveDateType: EffectiveDateType;
+  specificDate?: string;
+}
+
+export interface UnassignLeavePolicyPayload {
+  employeeId: number;
+  policyId: number;
 }

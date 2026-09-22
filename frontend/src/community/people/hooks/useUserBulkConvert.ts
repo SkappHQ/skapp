@@ -45,9 +45,12 @@ const useUserBulkConvert = () => {
               ? `${user?.phoneDialCode?.split("+")[1]} ${user?.phone}`
               : null,
           identificationNo: user?.identificationNo,
+          payrollId: user?.payrollId,
+          tin: user?.tin,
           permission: SystemPermissionTypes.EMPLOYEES,
           timeZone: String(user?.timeZone?.split("-")[0])?.trim(),
           workLocation: user?.workLocation ?? null,
+          businessUnit: user?.businessUnit ?? null,
           primaryManager: user?.primaryManager,
           joinedDate: user?.joinedDate,
           accountStatus: AccountStatus.PENDING,

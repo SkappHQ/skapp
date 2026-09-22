@@ -1,6 +1,7 @@
 import { ArrowRightIcon, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { parse } from "papaparse";
 import { Dispatch, FC, SetStateAction, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import DragAndDropField from "~community/common/components/molecules/DragAndDropField/DragAndDropField";
@@ -30,10 +31,7 @@ interface Props {
   setPopupType: (value: DirectoryModalTypes) => void;
 }
 
-const UserBulkCsvUpload: FC<Props> = ({
-  setBulkUploadData,
-  setPopupType
-}) => {
+const UserBulkCsvUpload: FC<Props> = ({ setBulkUploadData, setPopupType }) => {
   const { setToastMessage, toastMessage } = useToast();
   const { bulkUploadUsers, setBulkUploadUsers } = usePeopleStore(
     (state) => state
@@ -43,11 +41,13 @@ const UserBulkCsvUpload: FC<Props> = ({
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [, setAttachmentError] = useState(false);
   const [bulkUserAttachment, setBulkUserAttachment] = useState<

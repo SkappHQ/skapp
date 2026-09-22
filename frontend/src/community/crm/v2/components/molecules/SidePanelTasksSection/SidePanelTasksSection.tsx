@@ -1,0 +1,140 @@
+import { EmptyDataView, PlusIcon, SearchIcon } from "@rootcodelabs/skapp-ui";
+import { FC, startTransition, useOptimistic } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { ToastType } from "~community/common/enums/ComponentEnums";
+import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
+import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useToast } from "~community/common/providers/ToastProvider";
+import { useUpdateTask } from "~community/crm/v2/api/TaskApi";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
+import { resolveTasks, updateTask } from "~community/crm/v2/utils/taskUtil";
+import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
+import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
+
+import SidePanelTasksList from "./SidePanelTasksList";
+
+interface SidePanelTasksSectionProps {
+  taskIds?: number[];
+  showAddTaskAction?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onFetchNextPage: () => void;
+}
+
+const SidePanelTasksSection: FC<SidePanelTasksSectionProps> = ({
+  taskIds,
+  showAddTaskAction = true,
+  emptyTitle,
+  emptyDescription,
+  hasNextPage,
+  isFetchingNextPage,
+  onFetchNextPage
+}) => {
+  const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
+
+  const translateText = useTranslator("crmModule", "tasks");
+
+  const { setToastMessage } = useToast();
+
+  const { tasks, setTasks, setIsTaskModalOpen, setTaskModalType } =
+    useCrmStoreV2(
+      useShallow((state) => ({
+        tasks: state.tasks,
+        setTasks: state.setTasks,
+        setIsTaskModalOpen: state.setIsTaskModalOpen,
+        setTaskModalType: state.setTaskModalType
+      }))
+    );
+
+  const [optimisticTasks, setOptimisticTasks] = useOptimistic(tasks);
+
+  const showToggleError = () =>
+    setToastMessage({
+      open: true,
+      toastType: ToastType.ERROR,
+      title: translateText(["toggleErrorTitle"]),
+      description: translateText(["toggleErrorDescription"])
+    });
+
+  const handleToggleSuccess = (updatedTask: CrmTaskEntity) => {
+    if (updatedTask.id) {
+      setTasks(updateTask(tasks, updatedTask.id, updatedTask));
+    }
+  };
+
+  const { mutateAsync: updateCompletion } = useUpdateTask(handleToggleSuccess);
+
+  const handleToggleComplete = (taskId: number, isCompleted: boolean) => {
+    startTransition(async () => {
+      setOptimisticTasks(updateTask(tasks, taskId, { isCompleted }));
+
+      try {
+        await updateCompletion({ id: taskId, task: { isCompleted } });
+      } catch {
+        showToggleError();
+      }
+    });
+  };
+
+  const { loadingRef } = useInfiniteScroll({
+    hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: onFetchNextPage
+  });
+
+  const handleAddTask = () => {
+    guardCrmCreate(CrmLimitResource.TASKS, () => {
+      setTaskModalType(CrmModalTypes.ADD_TASK_MODAL);
+      setIsTaskModalOpen(true);
+    });
+  };
+
+  if (taskIds?.length) {
+    return (
+      <div>
+        <SidePanelTasksList
+          tasks={resolveTasks(taskIds, optimisticTasks)}
+          onAddTask={handleAddTask}
+          addTaskLabel={translateText(["sidePanel", "addTaskButton"])}
+          isAddTaskDisabled={isCheckingCrmLimit}
+          showAddTaskAction={showAddTaskAction}
+          onToggleComplete={handleToggleComplete}
+        />
+        <div ref={loadingRef} />
+      </div>
+    );
+  }
+
+  return (
+    <EmptyDataView
+      icon={<SearchIcon width="24" height="24" />}
+      title={emptyTitle ?? translateText(["sidePanel", "emptyTitle"])}
+      description={
+        emptyDescription ?? translateText(["sidePanel", "emptyDescription"])
+      }
+      button={
+        showAddTaskAction
+          ? {
+              children: translateText(["sidePanel", "addTaskButton"]),
+              variant: "tertiary",
+              onClick: handleAddTask,
+              disabled: isCheckingCrmLimit,
+              isLoading: isCheckingCrmLimit,
+              icon: <PlusIcon />,
+              "aria-label": translateText(["sidePanel", "addTaskButton"])
+            }
+          : undefined
+      }
+      className={{
+        wrapper: "h-[14.25rem] bg-secondary-background rounded-lg"
+      }}
+    />
+  );
+};
+
+export default SidePanelTasksSection;

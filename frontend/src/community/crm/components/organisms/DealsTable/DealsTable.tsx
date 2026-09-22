@@ -10,8 +10,8 @@ import { FC, ReactNode, useMemo } from "react";
 import HandshakeIcon from "~community/common/assets/Icons/HandshakeIcon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import OwnerAvatarChip from "~community/crm/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
+import StageLabel from "~community/crm/components/atoms/StageLabel/StageLabel";
 import { DEAL_TABLE_COLUMN_WIDTH_RATIO } from "~community/crm/constants/dealConstants";
-import { STAGE_COLOR_MAP } from "~community/crm/constants/stageConstants";
 import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { CrmDealResponseType } from "~community/crm/types/CommonTypes";
 import { formatValue } from "~community/crm/utils/crmUtil";
@@ -46,6 +46,7 @@ const DealsTable: FC<Props> = ({
   onDealClick
 }) => {
   const translateText = useTranslator("crmModule", "deals", "dealsTable");
+
   const { getStageByName } = useStageNameMapper();
 
   const noSearchResultsTitle = translateText(["noSearchResultsTitle"], {
@@ -171,15 +172,10 @@ const DealsTable: FC<Props> = ({
             </span>
           ),
           stage: (
-            <div className="inline-flex items-center gap-2">
-              <div
-                className="size-2 rounded-full shrink-0"
-                style={{
-                  backgroundColor: STAGE_COLOR_MAP[deal.stage.color]
-                }}
-              />
-              <span className="body2">{getStageByName(deal.stage.name)}</span>
-            </div>
+            <StageLabel
+              label={getStageByName(deal?.stage?.name)}
+              color={deal?.stage?.color}
+            />
           ),
           companyName: (
             <span

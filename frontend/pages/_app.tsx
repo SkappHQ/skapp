@@ -2,7 +2,7 @@ import { Theme, ThemeProvider } from "@mui/material/styles";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { onValue, ref } from "firebase/database";
 import App, { AppContext } from "next/app";
-import { Inter } from "next/font/google";
+import { Inter, Noto_Color_Emoji } from "next/font/google";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import "react-day-picker/dist/style.css";
@@ -39,6 +39,15 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter"
+});
+
+const notoColorEmoji = Noto_Color_Emoji({
+  weight: "400",
+  subsets: ["emoji"],
+  display: "swap",
+  preload: false,
+  fallback: ["Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"],
+  variable: "--font-noto-color-emoji"
 });
 
 function MyApp({
@@ -94,7 +103,7 @@ function MyApp({
     process.env.NEXT_PUBLIC_MODE !== appModes.ENTERPRISE;
 
   return (
-    <div className={inter.className}>
+    <div className={`${inter.className} ${notoColorEmoji.variable}`}>
       <AuthProvider>
         {shouldUseWebSocketProvider ? (
           <WebSocketProvider>
@@ -153,5 +162,4 @@ MyApp.getInitialProps = async (appContext: AppContext) => {
 
   return { ...appProps };
 };
-
 export default MyApp;

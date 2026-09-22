@@ -86,7 +86,10 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
     const router = useRouter();
     const { id } = router.query;
 
-    const { isPeopleManager, isProTier } = useSessionData();
+    const { isPeopleManager, isProTier, isSuperAdmin, isPeopleAdmin } =
+      useSessionData();
+
+    const canEditBusinessUnit = isSuperAdmin || isPeopleAdmin;
 
     const { employee, setTeamModalType, setIsTeamModalOpen } = usePeopleStore(
       (state) => state
@@ -139,6 +142,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       selectedProbationEndDate,
       workTimeZoneDictionary,
       workLocations,
+      businessUnits,
       projectTeamList,
       primaryManagerSearchTerm,
       secondaryManagerSearchTerm,
@@ -157,6 +161,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       dateOnChange,
       handleWorkTimeZoneChange,
       handleWorkLocationChange,
+      handleBusinessUnitChange,
       onPrimaryManagerSearchChange,
       onSecondaryManagerSearchChange,
       handlePrimaryManagerSelect,
@@ -649,6 +654,44 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 listboxMaxHeight="154px"
                 isDisabled={isInputsDisabled}
                 readOnly={isReadOnly || isProfileView}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+              <DropdownAutocomplete
+                itemList={
+                  businessUnits?.map((businessUnit) => ({
+                    label: businessUnit.name,
+                    value: String(businessUnit.businessUnitId)
+                  })) ?? []
+                }
+                inputName="businessUnitId"
+                label={translateText(["businessUnit"])}
+                value={
+                  values?.businessUnitId
+                    ? {
+                        label:
+                          businessUnits?.find(
+                            (unit) =>
+                              unit.businessUnitId === values.businessUnitId
+                          )?.name ?? "",
+                        value: String(values.businessUnitId)
+                      }
+                    : undefined
+                }
+                placeholder={
+                  isReadOnly || !canEditBusinessUnit
+                    ? ""
+                    : translateText(["selectBusinessUnit"])
+                }
+                onChange={handleBusinessUnitChange}
+                error={errors.businessUnitId ?? ""}
+                componentStyle={{
+                  mt: "0rem"
+                }}
+                listboxMaxHeight="154px"
+                isDisabled={isInputsDisabled}
+                readOnly={isReadOnly || isProfileView || !canEditBusinessUnit}
               />
             </Grid>
           </Grid>

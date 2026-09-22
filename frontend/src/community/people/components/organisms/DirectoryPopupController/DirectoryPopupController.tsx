@@ -1,5 +1,6 @@
-import { SmallModal } from "@rootcodelabs/skapp-ui";
+import { LargeModal, SmallModal } from "@rootcodelabs/skapp-ui";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { BulkSummaryFlows } from "~community/common/constants/stringConstants";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -15,9 +16,15 @@ import { usePeopleStore } from "~community/people/store/store";
 import { DirectoryModalTypes } from "~community/people/types/ModalTypes";
 import { QuickSetupModalTypeEnums } from "~enterprise/common/enums/Common";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
+import UploadTypeSelectModal from "~enterprise/people/components/molecules/UploadTypeSelectModal/UploadTypeSelectModal";
+import ConnectGoogleWorkspaceModal from "~enterprise/people/components/organisms/ConnectGoogleWorkspaceModal/ConnectGoogleWorkspaceModal";
 
 const DirectoryPopupController = () => {
   const translatedTexts = useTranslator("peopleModule", "peoples");
+  const translateGoogleWorkspace = useTranslator(
+    "peopleEnterprise",
+    "googleWorkspaceImport"
+  );
 
   const {
     directoryModalType,
@@ -31,11 +38,13 @@ const DirectoryPopupController = () => {
     ongoingQuickSetup,
     setQuickSetupModalType,
     stopAllOngoingQuickSetup
-  } = useCommonEnterpriseStore((state) => ({
-    ongoingQuickSetup: state.ongoingQuickSetup,
-    setQuickSetupModalType: state.setQuickSetupModalType,
-    stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
-  }));
+  } = useCommonEnterpriseStore(
+    useShallow((state) => ({
+      ongoingQuickSetup: state.ongoingQuickSetup,
+      setQuickSetupModalType: state.setQuickSetupModalType,
+      stopAllOngoingQuickSetup: state.stopAllOngoingQuickSetup
+    }))
+  );
 
   const [bulkUploadData, setBulkUploadData] = useState<BulkUploadResponse>();
 
@@ -51,6 +60,8 @@ const DirectoryPopupController = () => {
         return "Add people";
       case DirectoryModalTypes.UPLOAD_TYPE_SELECT:
         return translatedTexts(["uploadTypeSelectorModalTitle"]);
+      case DirectoryModalTypes.IMPORT_TYPE_SELECT:
+        return translateGoogleWorkspace(["chooserTitle"]);
       case DirectoryModalTypes.USER_CREDENTIALS:
         return translatedTexts(["shareCredentials"]);
       case DirectoryModalTypes.UNSAVED_CHANGES:
@@ -122,16 +133,44 @@ const DirectoryPopupController = () => {
         DirectoryModalTypes.GUEST_TO_INTERNAL_USER_CONFIRMATION && (
         <GuestToInternalUserConfirmationModal />
       )}
+      {directoryModalType === DirectoryModalTypes.IMPORT_TYPE_SELECT && (
+        <UploadTypeSelectModal />
+      )}
     </>
   );
 
+  const isConnectGoogleWorkspaceEnabled =
+    directoryModalType === DirectoryModalTypes.CONNECT_GOOGLE_WORKSPACE;
+
+  const isImportTypeSelectEnabled =
+    directoryModalType === DirectoryModalTypes.IMPORT_TYPE_SELECT;
+
   return (
-    <SmallModal
-      isOpen={isDirectoryModalOpen}
-      onClose={onClose}
-      modalHeader={getModalTitle()}
-      content={modalContent}
-    />
+    <>
+      <ConnectGoogleWorkspaceModal
+        isEnabled={isConnectGoogleWorkspaceEnabled}
+        isOpen={isDirectoryModalOpen}
+        onClose={onClose}
+      />
+      {isImportTypeSelectEnabled && (
+        <LargeModal
+          id="import-people-modal"
+          isOpen={isDirectoryModalOpen}
+          onClose={onClose}
+          modalHeader={getModalTitle()}
+          className="relative w-[831px] h-fit max-h-[85vh] overflow-hidden"
+          content={modalContent}
+        />
+      )}
+      {!isConnectGoogleWorkspaceEnabled && !isImportTypeSelectEnabled && (
+        <SmallModal
+          isOpen={isDirectoryModalOpen}
+          onClose={onClose}
+          modalHeader={getModalTitle()}
+          content={modalContent}
+        />
+      )}
+    </>
   );
 };
 

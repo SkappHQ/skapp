@@ -78,7 +78,8 @@ const defaultEmployee: L1EmployeeType = {
       joinedDate: undefined,
       probationStartDate: undefined,
       probationEndDate: undefined,
-      workTimeZone: undefined
+      workTimeZone: undefined,
+      businessUnitId: undefined
     },
     careerProgression: [],
     identificationAndDiversityDetails: {

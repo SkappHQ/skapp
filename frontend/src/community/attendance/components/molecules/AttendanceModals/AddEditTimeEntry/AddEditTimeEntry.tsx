@@ -17,6 +17,8 @@ import useAddEntry from "~community/attendance/hooks/useAddEntry";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
   TimeAvailabilityType,
+  TimeEntryFormValueType,
+  TimeEntryTimeErrorsType,
   TimeSlotsType
 } from "~community/attendance/types/timeSheetTypes";
 import {
@@ -47,8 +49,8 @@ import {
 } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { useGetEmployeeLeaveRequests } from "~community/leave/api/MyRequestApi";
+import { MY_LEAVE_REQUESTS_PER_PAGE } from "~community/leave/constants/stringConstants";
 import { LeaveStatusEnums } from "~community/leave/enums/MyRequestEnums";
-import { useLeaveStore } from "~community/leave/store/store";
 import { useGetAllHolidaysInfinite } from "~community/people/api/HolidayApi";
 
 import styles from "./styles";
@@ -75,26 +77,21 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     currentYear.toString()
   );
 
-  const { data: leaveRequests } = useGetEmployeeLeaveRequests();
-
-  const { setLeaveRequestParams } = useLeaveStore((state) => state);
-
-  useEffect(() => {
-    setLeaveRequestParams("status", [
-      LeaveStatusEnums.APPROVED,
-      LeaveStatusEnums.PENDING
-    ]);
-  }, []);
+  const { data: leaveRequests } = useGetEmployeeLeaveRequests({
+    status: `${LeaveStatusEnums.APPROVED},${LeaveStatusEnums.PENDING}`,
+    size: MY_LEAVE_REQUESTS_PER_PAGE
+  });
 
   const {
     selectedDailyRecord,
     employeeTimesheetModalType,
     currentAddTimeChanges,
-    setIsEmployeeTimesheetModalOpen
+    setIsEmployeeTimesheetModalOpen,
+    directManualTimeEntryEligibleEmployee,
+    isSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
 
   const {
-    isDurationValid,
     handleTimeEntrySubmit,
     isSubmitDisabled,
     clockInOutWithPrevTimeValidation,
@@ -107,13 +104,58 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     toTime: ""
   };
 
+  const getTimeEntryErrors = (
+    formValues: TimeEntryFormValueType
+  ): TimeEntryTimeErrorsType => {
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
+    ) {
+      return clockInOutWithPrevTimeValidation(
+        formValues.fromTime,
+        formValues.toTime,
+        selectedDailyRecord?.timeSlots[0]?.startTime as string,
+        selectedDailyRecord?.timeSlots[
+          selectedDailyRecord?.timeSlots?.length - 1
+        ]?.endTime as string
+      );
+    }
+
+    if (
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
+      employeeTimesheetModalType ===
+        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
+    ) {
+      return clockInOutValidation(formValues.fromTime, formValues.toTime);
+    }
+
+    return {};
+  };
+
   const { values, errors, setFieldValue, setFieldError, handleSubmit } =
     useFormik({
       initialValues,
       validationSchema: timeEntryValidation,
       validateOnChange: false,
       validateOnBlur: true,
-      onSubmit: (values) => {
+      onSubmit: (values, { setFieldError: setTimeEntryFieldError }) => {
+        const timeErrors = getTimeEntryErrors(values);
+
+        if (timeErrors.fromTime || timeErrors.toTime) {
+          if (timeErrors.fromTime) {
+            setTimeEntryFieldError("fromTime", timeErrors.fromTime);
+          }
+          if (timeErrors.toTime) {
+            setTimeEntryFieldError("toTime", timeErrors.toTime);
+          }
+          return;
+        }
+
         handleTimeEntrySubmit(
           values,
           timeAvailability as TimeAvailabilityType,
@@ -133,36 +175,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
     values.fromTime,
     values.toTime
   );
-
-  const isInvalidTimeForDisableButton = () => {
-    if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-    ) {
-      return clockInOutWithPrevTimeValidation(
-        values.fromTime,
-        values.toTime,
-        selectedDailyRecord?.timeSlots[0]?.startTime as string,
-        selectedDailyRecord?.timeSlots[
-          selectedDailyRecord?.timeSlots?.length - 1
-        ]?.endTime as string,
-        false
-      );
-    } else if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-    ) {
-      return clockInOutValidation(values.fromTime, values.toTime, false);
-    } else {
-      return false;
-    }
-  };
 
   useEffect(() => {
     if (
@@ -269,6 +281,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
     ) {
       void setFieldValue("timeEntryDate", selectedDailyRecord?.date);
+      setSelectedDate(DateTime.fromISO(selectedDailyRecord?.date as string));
     } else if (
       employeeTimesheetModalType === EmployeeTimesheetModalTypes.ADD_TIME_ENTRY
     ) {
@@ -310,7 +323,6 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         values.toTime,
         "WORK"
       );
-      isDurationValid(values.fromTime, values.toTime);
       setDuration(workHours);
     }
   }, [
@@ -321,44 +333,38 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   ]);
 
   useEffect(() => {
-    if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.EDIT_LEAVE_TIME_ENTRY
-    ) {
-      clockInOutWithPrevTimeValidation(
-        values.fromTime,
-        values.toTime,
-        selectedDailyRecord?.timeSlots[0]?.startTime as string,
-        selectedDailyRecord?.timeSlots[
-          selectedDailyRecord?.timeSlots?.length - 1
-        ]?.endTime as string,
-        true
-      );
-    } else if (
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_LEAVE_TIME_ENTRY ||
-      employeeTimesheetModalType ===
-        EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE
-    ) {
-      clockInOutValidation(values.fromTime, values.toTime, true);
-    }
-  }, [selectedDailyRecord?.timeSlots, values.fromTime, values.toTime]);
-
-  useEffect(() => {
     if (values.timeEntryDate) {
       const timeEntryDate = DateTime.fromISO(values.toTime);
       setSelectedDate(timeEntryDate);
     }
   }, []);
 
+  const clearTimeEntryTimeErrors = () => {
+    setFieldError("fromTime", "");
+    setFieldError("toTime", "");
+  };
+
+  const isDateReadOnly =
+    employeeTimesheetModalType ===
+      EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY ||
+    employeeTimesheetModalType ===
+      EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE;
+
   return (
     <Form onSubmit={handleSubmit}>
+      {directManualTimeEntryEligibleEmployee && !isSelfDirectTimeEntry && (
+        <InputField
+          label={translateText(["directEntryEmployeeLabel"])}
+          inputName={"direct_entry_employee"}
+          value={directManualTimeEntryEligibleEmployee.employeeName}
+          labelStyles={classes.disabledInputFieldLabel}
+          isDisabled
+        />
+      )}
       {(employeeTimesheetModalType ===
         EmployeeTimesheetModalTypes.ADD_TIME_ENTRY ||
+        employeeTimesheetModalType ===
+          EmployeeTimesheetModalTypes.ADD_TIME_ENTRY_BY_TABLE ||
         employeeTimesheetModalType ===
           EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY) && (
         <InputDate
@@ -373,9 +379,9 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           isWithLeaves
           isWithHolidays
           error={errors.timeEntryDate}
-          readOnly={
-            employeeTimesheetModalType ===
-            EmployeeTimesheetModalTypes.EDIT_AVAILABLE_TIME_ENTRY
+          readOnly={isDateReadOnly}
+          labelStyles={
+            isDateReadOnly ? classes.disabledInputFieldLabel : undefined
           }
           placeholder={translateText(["datePickerPlaceholder"])}
           maxDate={DateTime.fromISO(new Date()?.toISOString()?.split("T")[0])}
@@ -449,7 +455,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           time={convertToDateObjectBy12Hour(values.fromTime)}
           setTime={async (time: Date) => {
             await setFieldValue("fromTime", convertTo12HourByDateObject(time));
-            setFieldError("fromTime", "");
+            clearTimeEntryTimeErrors();
           }}
           error={errors.fromTime}
         />
@@ -466,7 +472,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           time={convertToDateObjectBy12Hour(values.toTime)}
           setTime={async (time: Date) => {
             await setFieldValue("toTime", convertTo12HourByDateObject(time));
-            setFieldError("toTime", "");
+            clearTimeEntryTimeErrors();
           }}
           error={errors.toTime}
         />
@@ -477,6 +483,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         value={duration}
         placeHolder="0h 00m"
         componentStyle={classes.inputField}
+        labelStyles={classes.disabledInputFieldLabel}
         isDisabled
       />
       {(employeeTimesheetModalType ===
@@ -489,6 +496,7 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
           value={breakHours}
           placeHolder="0h 00m"
           componentStyle={classes.inputField}
+          labelStyles={classes.disabledInputFieldLabel}
           isDisabled
         />
       )}
@@ -505,17 +513,17 @@ const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
         <ButtonV2
           variant={"primary"}
           type={"submit"}
-          disabled={
-            isSubmitDisabled(
-              values,
-              isGetTimeAvailabilityLoading &&
-                getAvailabilityFetchStatus !== "idle"
-            ) || isInvalidTimeForDisableButton()
-          }
+          disabled={isSubmitDisabled(
+            values,
+            isGetTimeAvailabilityLoading &&
+              getAvailabilityFetchStatus !== "idle"
+          )}
           icon={<Icon name={IconName.CHECK_ICON} />}
           iconPosition="end"
         >
-          {translateText(["submitRequestBtnTxt"])}
+          {directManualTimeEntryEligibleEmployee
+            ? translateText(["directEntrySaveBtnTxt"])
+            : translateText(["submitRequestBtnTxt"])}
         </ButtonV2>
       </div>
     </Form>

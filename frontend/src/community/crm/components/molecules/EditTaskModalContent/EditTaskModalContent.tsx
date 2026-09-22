@@ -1,5 +1,6 @@
 import { useFormik } from "formik";
 import { FC, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -22,11 +23,11 @@ const EditTaskModalContent: FC = () => {
   const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
 
   const { setIsTaskModalOpen, selectedTaskId, getTaskById } = useCrmStore(
-    (store) => ({
+    useShallow((store) => ({
       setIsTaskModalOpen: store.setIsTaskModalOpen,
       selectedTaskId: store.selectedTaskId,
       getTaskById: store.getTaskById
-    })
+    }))
   );
 
   const { getCategoryById } = useGetTaskTypeOptions(translateText);

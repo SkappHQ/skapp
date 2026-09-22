@@ -86,4 +86,19 @@ describe("useFormChangeDetector", () => {
     expect(result.current.hasChanged).toBe(false);
     expect(result.current.apiPayload).toEqual({});
   });
+
+  it("should detect personal details entered during the add flow", () => {
+    (usePeopleStore as jest.Mock).mockReturnValue({
+      employee: {
+        personal: { general: { firstName: "Ada", lastName: "Lovelace" } }
+      },
+      initialEmployee: {
+        personal: { general: { firstName: "", lastName: "" } }
+      },
+      currentStep: "Personal"
+    });
+
+    const { result } = renderHook(() => useFormChangeDetector());
+    expect(result.current.hasChanged).toBe(true);
+  });
 });

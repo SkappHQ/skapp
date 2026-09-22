@@ -1,10 +1,13 @@
+import { MAX_POLICY_LEAVE_TYPE_NAME_LENGTH } from "~community/leave/constants/policyLeaveTypeConstants";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import { LeaveTypeType } from "~community/leave/types/AddLeaveTypes";
 
 import {
   addEditCustomLeaveAllocationValidationSchema,
   addLeaveTypeValidationSchema,
-  customLeaveAllocationValidation
+  customLeaveAllocationValidation,
+  leavePolicyWizardValidation,
+  policyLeaveTypeValidationSchema
 } from "../validations";
 
 const mockTranslateText = (keys: string[]) => keys[0];
@@ -266,5 +269,169 @@ describe("addEditCustomLeaveAllocationValidationSchema", () => {
     await expect(schema.validate(invalidData)).rejects.toThrow(
       "integerNumberError"
     );
+  });
+});
+
+describe("policyLeaveTypeValidationSchema", () => {
+  const schema = policyLeaveTypeValidationSchema(mockTranslateText);
+
+  const validData = {
+    name: "Annual Leave",
+    emoji: "🌴",
+    colorCode: "#FFC107",
+    minDuration: LeaveDurationTypes.HALF_AND_FULL_DAY
+  };
+
+  it("should pass validation for a valid policy leave type", async () => {
+    await expect(schema.validate(validData)).resolves.toEqual(validData);
+  });
+
+  it("should fail when name is missing", async () => {
+    await expect(schema.validate({ ...validData, name: "" })).rejects.toThrow(
+      "emptyLeaveTypeNameError"
+    );
+  });
+
+  it("should fail when name is only whitespace", async () => {
+    await expect(
+      schema.validate({ ...validData, name: "   " })
+    ).rejects.toThrow("emptyLeaveTypeNameError");
+  });
+
+  it("should pass on the name max length boundary", async () => {
+    await expect(
+      schema.validate({
+        ...validData,
+        name: "A".repeat(MAX_POLICY_LEAVE_TYPE_NAME_LENGTH)
+      })
+    ).resolves.toBeTruthy();
+  });
+
+  it("should fail when name exceeds max length", async () => {
+    await expect(
+      schema.validate({
+        ...validData,
+        name: "A".repeat(MAX_POLICY_LEAVE_TYPE_NAME_LENGTH + 1)
+      })
+    ).rejects.toThrow("leaveTypeNameMaxLengthError");
+  });
+
+  it("should fail when emoji is missing", async () => {
+    await expect(schema.validate({ ...validData, emoji: "" })).rejects.toThrow(
+      "emptyLeaveTypeEmojiError"
+    );
+  });
+
+  it("should fail when colorCode is missing", async () => {
+    await expect(
+      schema.validate({ ...validData, colorCode: "" })
+    ).rejects.toThrow("emptyLeaveTypeColorError");
+  });
+
+  it("should fail when no leave duration is selected", async () => {
+    await expect(
+      schema.validate({ ...validData, minDuration: LeaveDurationTypes.NONE })
+    ).rejects.toThrow("emptyLeaveDurationError");
+  });
+});
+
+describe("leavePolicyWizardValidation", () => {
+  const mockTranslateNestedText = (keys: string[]) => keys[keys.length - 1];
+
+  const schema = leavePolicyWizardValidation(mockTranslateNestedText, true);
+
+  const validData = {
+    policyName: "Annual Accrual",
+    leaveType: "1",
+    accrualDays: "1.5",
+    accrualFrequency: "MONTHLY",
+    hasWaitingPeriod: false,
+    waitingPeriodDays: "",
+    hasAccrualCap: false,
+    accrualCapDays: "",
+    canCarryOver: false,
+    maxCarryOverDays: ""
+  };
+
+  describe("waitingPeriodDays", () => {
+    it("should pass for a whole number of waiting period days", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "30"
+        })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should fail for a fractional number of waiting period days", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "1.5"
+        })
+      ).rejects.toThrow("waitingPeriodDaysNotWholeNumber");
+    });
+
+    it("should fail when waiting period days is below the minimum", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: true,
+          waitingPeriodDays: "0"
+        })
+      ).rejects.toThrow("waitingPeriodDaysRequired");
+    });
+
+    it("should ignore waiting period days when there is no waiting period", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasWaitingPeriod: false,
+          waitingPeriodDays: "1.5"
+        })
+      ).resolves.toBeTruthy();
+    });
+  });
+
+  describe("maxCarryOverDays", () => {
+    it("should pass for a valid 0.5 step", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          canCarryOver: true,
+          maxCarryOverDays: "2.5"
+        })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should fail for a value that is not a multiple of 0.5", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          canCarryOver: true,
+          maxCarryOverDays: "1.7"
+        })
+      ).rejects.toThrow("maxCarryOverDaysStepInvalid");
+    });
+  });
+
+  describe("accrual day fields", () => {
+    it("should still accept 0.5 steps for accrual days", async () => {
+      await expect(
+        schema.validate({ ...validData, accrualDays: "0.5" })
+      ).resolves.toBeTruthy();
+    });
+
+    it("should still accept 0.5 steps for the accrual cap", async () => {
+      await expect(
+        schema.validate({
+          ...validData,
+          hasAccrualCap: true,
+          accrualCapDays: "10.5"
+        })
+      ).resolves.toBeTruthy();
+    });
   });
 });

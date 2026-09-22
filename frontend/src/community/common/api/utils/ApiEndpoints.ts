@@ -12,8 +12,14 @@ export const organizationCreateEndpoints = {
   CHECK_ORG_SETUP_STATUS: `/app-setup-status`
 };
 
+export const internalApiEndpoints = {
+  ACCESS_TOKEN: `/api/auth/access-token`,
+  CLEAR_COOKIES: `/api/clear-cookies`
+};
+
 export const authenticationEndpoints = {
   CREDENTIAL_SIGN_IN: `${ApiVersions.V1}/auth/session/sign-in`,
+  REFRESH_TOKEN: `${ApiVersions.V1}/auth/session/refresh-token`,
   CREDENTIAL_SIGN_UP: `${ApiVersions.V1}/auth/signup/super-admin`,
   RESET_PASSWORD: `${moduleAPIPath.AUTH}/reset-password`,
   CHANGE_PASSWORD: (userId: string | number) =>
@@ -66,4 +72,15 @@ export const storageAvailabilityEndpoints = {
 
 export const workLocationEndpoints = {
   ALL_WORK_LOCATIONS: `${moduleAPIPath.COMMON}/work-location/all`
+};
+
+export const businessUnitEndpoints = {
+  GET_BUSINESS_UNITS: `${moduleAPIPath.COMMON}/business-unit`,
+  CREATE_BUSINESS_UNIT: `${moduleAPIPath.COMMON}/business-unit`,
+  UPDATE_BUSINESS_UNIT: (id: number) =>
+    `${moduleAPIPath.COMMON}/business-unit/${id}`,
+  GET_BUSINESS_UNIT_SUMMARY: (id: number) =>
+    `${moduleAPIPath.COMMON}/business-unit/${id}/business-unit-summary`,
+  DELETE_BUSINESS_UNIT: (id: number) =>
+    `${moduleAPIPath.COMMON}/business-unit/${id}`
 };

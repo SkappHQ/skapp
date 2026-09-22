@@ -10,7 +10,8 @@ import { type SxProps } from "@mui/system";
 import { BreadcrumbItem, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { JSX, memo, useEffect, useMemo } from "react";
+import { ComponentProps, JSX, memo, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useAuth } from "~community/auth/providers/AuthProvider";
 import { signOut } from "~community/auth/utils/authUtils";
@@ -58,6 +59,7 @@ interface Props {
   dividerStyles?: SxProps;
   children: JSX.Element;
   secondaryBtnText?: string;
+  secondaryBtnVariant?: ComponentProps<typeof ButtonV2>["variant"];
   primaryButtonText?: string | boolean;
   primaryBtnIconName?: IconName;
   secondaryBtnIconName?: IconName;
@@ -103,6 +105,7 @@ const ContentLayout = ({
   children,
   primaryButtonText,
   secondaryBtnText,
+  secondaryBtnVariant = "secondary",
   primaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconName = IconName.ADD_ICON,
   secondaryBtnIconFill,
@@ -144,6 +147,14 @@ const ContentLayout = ({
     (state) => state
   );
 
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
+
   const isSuperAdmin = user?.roles?.includes(AdminTypes.SUPER_ADMIN);
   const tenantStatus = user?.tenantStatus;
 
@@ -179,7 +190,7 @@ const ContentLayout = ({
         TenantStatusEnums.TRIAL_ENDED_USER_LIMIT_EXCEEDED
       ].includes(tenantStatus)
     ) {
-      signOut();
+      signOut({ accessToken, setAccessToken, clearAccessToken });
       return;
     }
 
@@ -190,7 +201,7 @@ const ContentLayout = ({
     } else if (tenantStatus === TenantStatusEnums.ACTIVE) {
       setIsSubscriptionEndedModalOpen(false);
     }
-  }, [user?.tenantStatus]);
+  }, [user?.tenantStatus, accessToken, setAccessToken, clearAccessToken]);
 
   const { data: organizationDetails } = useGetOrganization(!!user);
 
@@ -206,11 +217,13 @@ const ContentLayout = ({
     setShowUserLimitBanner,
     showUserLimitBanner,
     setIsUserLimitExceeded
-  } = useUserLimitStore((state) => ({
-    setShowUserLimitBanner: state.setShowUserLimitBanner,
-    showUserLimitBanner: state.showUserLimitBanner,
-    setIsUserLimitExceeded: state.setIsUserLimitExceeded
-  }));
+  } = useUserLimitStore(
+    useShallow((state) => ({
+      setShowUserLimitBanner: state.setShowUserLimitBanner,
+      showUserLimitBanner: state.showUserLimitBanner,
+      setIsUserLimitExceeded: state.setIsUserLimitExceeded
+    }))
+  );
 
   const { data: storageAvailabilityData } = useStorageAvailability(!!user);
 
@@ -340,7 +353,7 @@ const ContentLayout = ({
             {secondaryBtnText && (
               <ButtonV2
                 isFullWidth={isBelow600}
-                variant={"secondary"}
+                variant={secondaryBtnVariant}
                 size={"md"}
                 onClick={onSecondaryButtonClick}
                 data-testid={contentLayoutTestId.buttons.secondaryButton}

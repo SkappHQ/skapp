@@ -27,7 +27,11 @@ import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 import styles from "./styles";
 
-const AppBar = () => {
+interface Props {
+  isDrawerAvailable?: boolean;
+}
+
+const AppBar = ({ isDrawerAvailable = true }: Props) => {
   const router = useRouter();
   const classes = styles();
 
@@ -37,7 +41,7 @@ const AppBar = () => {
 
   const queryMatches = useMediaQuery();
   const isBelow600 = queryMatches(MediaQueries.BELOW_600);
-  const { handleDrawer } = useDrawer();
+  const { handleDrawer, isDrawerExpanded, isBelow1024 } = useDrawer();
   const translateAria = useTranslator("commonAria", "components", "appBar");
 
   const { user } = useAuth();
@@ -174,7 +178,7 @@ const AppBar = () => {
               />
             )}
 
-            {isBelow600 && (
+            {isDrawerAvailable && isBelow1024 && !isDrawerExpanded && (
               <button
                 className="flex cursor-pointer items-center justify-center w-10 h-10"
                 onClick={handleDrawer}

@@ -1,22 +1,33 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
+import { useAuth } from "~community/auth/providers/AuthProvider";
+import { signOut } from "~community/auth/utils/authUtils";
 import { organizationCreateEndpoints } from "~community/common/api/utils/ApiEndpoints";
 import FullScreenLoader from "~community/common/components/molecules/FullScreenLoader/FullScreenLoader";
 import { appModes } from "~community/common/constants/configs";
 import { HTTP_OK } from "~community/common/constants/httpStatusCodes";
 import ROUTES from "~community/common/constants/routes";
-import { APP } from "~community/common/constants/stringConstants";
+import { useCommonStore } from "~community/common/stores/commonStore";
 import { OrganizationSetupStatus } from "~community/common/types/AuthTypes";
 import authFetch from "~community/common/utils/axiosInterceptor";
-import { useAuth } from "~community/auth/providers/AuthProvider";
-import { signOut } from "~community/auth/utils/authUtils";
+import {
+  isAuthHost,
+  isTenantSelectionHost
+} from "~enterprise/common/utils/tenantUtil";
 
 export default function Index() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const tenantId = window.location.host.split(".")[0];
+  const { accessToken, setAccessToken, clearAccessToken } = useCommonStore(
+    useShallow((state) => ({
+      accessToken: state.accessToken,
+      setAccessToken: state.setAccessToken,
+      clearAccessToken: state.clearAccessToken
+    }))
+  );
 
   const handleNavigation = useCallback(async () => {
     const isEnterprise = process.env.NEXT_PUBLIC_MODE === appModes.ENTERPRISE;
@@ -43,13 +54,22 @@ export default function Index() {
   }, []);
 
   const handleEnterpriseNavigation = async () => {
-    if (tenantId === APP) {
-      await signOut(false);
-      await router.replace(ROUTES.AUTH.SIGNIN);
-    } else {
-      const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
-      await router.replace(route);
+    if (isAuthHost()) {
+      await router.replace({
+        pathname: ROUTES.AUTH.SIGNIN,
+        query: router.query
+      });
+      return;
     }
+
+    if (isTenantSelectionHost()) {
+      await signOut({ accessToken, setAccessToken, clearAccessToken }, false);
+      await router.replace(ROUTES.AUTH.SIGNIN);
+      return;
+    }
+
+    const route = user ? ROUTES.DASHBOARD.BASE : ROUTES.AUTH.SIGNIN;
+    await router.replace(route);
   };
 
   const handleCommunityNavigation = async (

@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { TIME_ERROR_TIME_REQUEST_CANNOT_EDIT } from "~community/common/constants/errorMessageKeys";
+import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 
@@ -9,82 +11,107 @@ import { TimeSheetRequestStates } from "../enums/timesheetEnums";
 const useApproveDenyTimeRequest = () => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
   const { setToastMessage } = useToast();
-  const [currentRequester, setCurrentRequester] = useState<string>();
   const [currentRequesAction, setCurrentRequestAction] = useState<string>();
+  const [pendingTimeRequestId, setPendingTimeRequestId] = useState<
+    number | null
+  >(null);
 
-  const onSuccess = () => {
+  const [isRequestInFlight, setIsRequestInFlight] = useState(false);
+
+  const resetPendingRequest = (): void => {
+    setIsRequestInFlight(false);
+    setPendingTimeRequestId(null);
+  };
+
+  const handleSuccess = () => {
+    resetPendingRequest();
+
     if (currentRequesAction === TimeSheetRequestStates.APPROVED) {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateTexts(["approveSuccessTitle"]),
-        description: translateTexts(["approveSuccessDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["approveSuccessDes"]),
         isIcon: true
       });
     } else {
       setToastMessage({
         open: true,
-        toastType: "success",
+        toastType: ToastType.SUCCESS,
         title: translateTexts(["declineSuccessTitle"]),
-        description: translateTexts(["declineSuccessDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["declineSuccessDes"]),
         isIcon: true
       });
     }
   };
 
-  const onError = () => {
+  const handleError = (messageKey: string) => {
+    resetPendingRequest();
+
+    const isStaleRequest = messageKey === TIME_ERROR_TIME_REQUEST_CANNOT_EDIT;
+
+    if (isStaleRequest) {
+      setToastMessage({
+        open: true,
+        toastType: ToastType.ERROR,
+        title: translateTexts(["staleRequestConflictTitle"]),
+        description: translateTexts(["staleRequestConflictDes"])
+      });
+      return;
+    }
+
     if (currentRequesAction === TimeSheetRequestStates.APPROVED) {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateTexts(["approveFailTitle"]),
-        description: translateTexts(["approveFailDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["approveFailDes"]),
         isIcon: true
       });
     } else {
       setToastMessage({
         open: true,
-        toastType: "error",
+        toastType: ToastType.ERROR,
         title: translateTexts(["declineFailTitle"]),
-        description: translateTexts(["declineFailDes"], {
-          name: currentRequester
-        }),
+        description: translateTexts(["declineFailDes"]),
         isIcon: true
       });
     }
   };
 
   const { mutate: approveDenyRequest, isPending: isApproveDenyLoading } =
-    useApproveDenyTimeRequestAPI(onSuccess, onError);
+    useApproveDenyTimeRequestAPI(handleSuccess, handleError);
 
-  const approveTimesheetRequest = (timeRequestId: number, name: string) => {
-    setCurrentRequester(name);
-    setCurrentRequestAction(TimeSheetRequestStates.APPROVED);
+  const handleTimesheetRequest = (
+    timeRequestId: number,
+    status: TimeSheetRequestStates
+  ): void => {
+    if (isRequestInFlight) return;
+
+    setIsRequestInFlight(true);
+    setPendingTimeRequestId(timeRequestId);
+    setCurrentRequestAction(status);
+
     approveDenyRequest({
       id: timeRequestId,
-      status: TimeSheetRequestStates.APPROVED
+      status
     });
   };
 
-  const declineTimesheetRequest = (timeRequestId: number, name: string) => {
-    setCurrentRequester(name);
-    setCurrentRequestAction(TimeSheetRequestStates.DENIED);
-    approveDenyRequest({
-      id: timeRequestId,
-      status: TimeSheetRequestStates.DENIED
-    });
+  const approveTimesheetRequest = (timeRequestId: number): void => {
+    handleTimesheetRequest(timeRequestId, TimeSheetRequestStates.APPROVED);
+  };
+
+  const declineTimesheetRequest = (timeRequestId: number): void => {
+    handleTimesheetRequest(timeRequestId, TimeSheetRequestStates.DENIED);
   };
 
   return {
     approveTimesheetRequest,
     declineTimesheetRequest,
-    isApproveDenyLoading
+    isApproveDenyLoading,
+    pendingTimeRequestId,
+    currentRequesAction
   };
 };
 

@@ -5,8 +5,7 @@ interface NotificationParams {
 }
 
 export const useCalendarNotifications = () => {
-  const showNotification = (params: NotificationParams) => {
-  };
+  const showNotification = (params: NotificationParams) => {};
 
   return { showNotification };
 };

@@ -1,5 +1,6 @@
 package com.skapp.community.crmplanner.payload.response.board;
 
+import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,5 +17,7 @@ public class CrmBoardInitDataResponseDto {
 	private List<String> crmRoles;
 
 	private List<CrmBoardOwnerResponseDto> owners;
+
+	private List<CrmTaskTypeResponseDto> taskTypes;
 
 }

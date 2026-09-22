@@ -56,6 +56,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -343,6 +344,29 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Predicate employeePredicate = criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId);
 		Predicate statusPredicate = criteriaBuilder.equal(leaveRequest.get(LeaveRequest_.status),
 				LeaveRequestStatus.APPROVED);
+
+		Predicate datePredicate = criteriaBuilder.between(criteriaBuilder.literal(currentDate),
+				leaveRequest.get(LeaveRequest_.startDate), leaveRequest.get(LeaveRequest_.endDate));
+
+		criteriaQuery.where(criteriaBuilder.and(employeePredicate, statusPredicate, datePredicate));
+
+		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
+
+		return query.getResultList();
+	}
+
+	@Override
+	public List<LeaveRequest> findPendingAndApprovedLeaveRequestsForTodayByUser(LocalDate currentDate,
+			Long employeeId) {
+		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LeaveRequest> criteriaQuery = criteriaBuilder.createQuery(LeaveRequest.class);
+		Root<LeaveRequest> leaveRequest = criteriaQuery.from(LeaveRequest.class);
+
+		Join<LeaveRequest, Employee> employee = leaveRequest.join(LeaveRequest_.employee);
+
+		Predicate employeePredicate = criteriaBuilder.equal(employee.get(Employee_.employeeId), employeeId);
+		Predicate statusPredicate = leaveRequest.get(LeaveRequest_.status)
+			.in(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED);
 
 		Predicate datePredicate = criteriaBuilder.between(criteriaBuilder.literal(currentDate),
 				leaveRequest.get(LeaveRequest_.startDate), leaveRequest.get(LeaveRequest_.endDate));
@@ -771,7 +795,7 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		Root<LeaveRequest> root = criteriaQuery.from(LeaveRequest.class);
 		buildEmployeeLeavePredicates(criteriaBuilder, root, predicates, employeeId, leaveRequestFilterDto);
 		criteriaQuery.where(predicates.toArray(new Predicate[0]));
-		criteriaQuery.orderBy(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		criteriaQuery.orderBy(buildStableOrders(criteriaBuilder, root, page));
 
 		TypedQuery<LeaveRequest> query = entityManager.createQuery(criteriaQuery);
 		if (page.isPaged()) {
@@ -793,6 +817,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		return new PageImpl<>(results, page, results.size());
 	}
 
+	private List<Order> buildStableOrders(CriteriaBuilder criteriaBuilder, Root<LeaveRequest> root, Pageable page) {
+		List<Order> orders = new ArrayList<>(QueryUtils.toOrders(page.getSort(), root, criteriaBuilder));
+		orders.add(criteriaBuilder.desc(root.get(LeaveRequest_.leaveRequestId)));
+		return orders;
+	}
+
 	private void buildEmployeeLeavePredicates(CriteriaBuilder criteriaBuilder, Root<LeaveRequest> root,
 			List<Predicate> predicates, Long employeeId, LeaveRequestFilterDto leaveRequestFilterDto) {
 		predicates.add(criteriaBuilder.equal(root.get(LeaveRequest_.EMPLOYEE).get(Employee_.EMPLOYEE_ID), employeeId));
@@ -808,12 +838,12 @@ public class LeaveRequestRepositoryImpl implements LeaveRequestRepository {
 		}
 
 		if (leaveRequestFilterDto.getStartDate() != null && leaveRequestFilterDto.getEndDate() != null) {
-			Predicate dateBetween = criteriaBuilder.or(
-					criteriaBuilder.between(root.get(LeaveRequest_.START_DATE), leaveRequestFilterDto.getStartDate(),
+			Predicate dateOverlap = criteriaBuilder.and(
+					criteriaBuilder.lessThanOrEqualTo(root.get(LeaveRequest_.startDate),
 							leaveRequestFilterDto.getEndDate()),
-					criteriaBuilder.between(root.get(LeaveRequest_.END_DATE), leaveRequestFilterDto.getStartDate(),
-							leaveRequestFilterDto.getEndDate()));
-			predicates.add(dateBetween);
+					criteriaBuilder.greaterThanOrEqualTo(root.get(LeaveRequest_.endDate),
+							leaveRequestFilterDto.getStartDate()));
+			predicates.add(dateOverlap);
 		}
 	}
 

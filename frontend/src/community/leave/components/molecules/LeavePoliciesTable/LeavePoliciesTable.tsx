@@ -1,31 +1,36 @@
-import {
-  Dropdown,
-  InputField,
-  KebabMenu,
-  SearchIcon,
-  Table
-} from "@rootcodelabs/skapp-ui";
+import { KebabMenu } from "@rootcodelabs/skapp-ui";
 import { AxiosError } from "axios";
-import { ChangeEvent, FC, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 
+import TableView from "~community/common/components/organisms/TableView/TableView";
+import type {
+  GridHeader,
+  GridRow,
+  TableViewFilterContentArgs
+} from "~community/common/components/organisms/TableView/types";
 import { ToastType } from "~community/common/enums/ComponentEnums";
+import { TableNames } from "~community/common/enums/Table";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
   useActivateLeavePolicy,
-  useGetLeavePoliciesInfinite,
-  useGetPolicyLeaveTypes
+  useGetLeavePoliciesInfinite
 } from "~community/leave/api/LeavePolicyApi";
 import DeactivateLeavePolicyModal from "~community/leave/components/molecules/DeactivateLeavePolicyModal/DeactivateLeavePolicyModal";
-import EditLeavePolicyModal from "~community/leave/components/molecules/EditLeavePolicyModal/EditLeavePolicyModal";
-import LeavePoliciesTableSkeletonLoader from "~community/leave/components/molecules/LeavePoliciesTable/LeavePoliciesTableSkeletonLoader";
+import LeavePolicyFilterBody from "~community/leave/components/molecules/LeavePolicyFilterBody/LeavePolicyFilterBody";
 import LeavePolicyStatusBadge from "~community/leave/components/molecules/LeavePolicyStatusBadge/LeavePolicyStatusBadge";
 import LeaveTypeChip from "~community/leave/components/molecules/LeaveTypeChip/LeaveTypeChip";
 import {
   LEAVE_POLICY_PAGE_SIZE,
-  LEAVE_POLICY_SEARCH_DEBOUNCE_MS,
-  LEAVE_POLICY_SKELETON_ROW_COUNT
+  LEAVE_POLICY_SEARCH_DEBOUNCE_MS
 } from "~community/leave/constants/leavePolicyConstants";
 import useCanManageLeavePolicies from "~community/leave/hooks/useCanManageLeavePolicies";
 import {
@@ -37,9 +42,15 @@ import { getLeavePolicyErrorToastKeys } from "~community/leave/utils/leavePolicy
 
 interface Props {
   onCreatePolicy: () => void;
+  onEditPolicy: (policy: LeavePolicyType) => void;
+  onEmptyStateChange?: (isEmpty: boolean) => void;
 }
 
-const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
+const LeavePoliciesTable: FC<Props> = ({
+  onCreatePolicy,
+  onEditPolicy,
+  onEmptyStateChange
+}) => {
   const translateText = useTranslator("leaveModule", "leavePolicies");
   const canManagePolicies = useCanManageLeavePolicies();
   const { setToastMessage } = useToast();
@@ -47,9 +58,6 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [leaveTypeFilter, setLeaveTypeFilter] = useState<string>("");
   const [openKebabMenuId, setOpenKebabMenuId] = useState<number | null>(null);
-  const [editingPolicy, setEditingPolicy] = useState<LeavePolicyType | null>(
-    null
-  );
   const [deactivatingPolicy, setDeactivatingPolicy] =
     useState<LeavePolicyType | null>(null);
   const [activatingPolicyName, setActivatingPolicyName] = useState<string>("");
@@ -59,9 +67,12 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
       open: true,
       toastType: ToastType.SUCCESS,
       title: translateText(["activatePolicy", "successToastTitle"]),
-      description: translateText(["activatePolicy", "successToastDescription"], {
-        policyName: activatingPolicyName
-      }),
+      description: translateText(
+        ["activatePolicy", "successToastDescription"],
+        {
+          policyName: activatingPolicyName
+        }
+      ),
       isIcon: true
     });
   };
@@ -85,24 +96,6 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     LEAVE_POLICY_SEARCH_DEBOUNCE_MS
   );
 
-  const { data: policyLeaveTypes } = useGetPolicyLeaveTypes();
-
-  const leaveTypeFilterOptions = useMemo(
-    () => [
-      {
-        id: "all",
-        label: translateText(["leaveTypeFilterAllOption"]),
-        value: ""
-      },
-      ...(policyLeaveTypes?.leaveTypes ?? []).map((leaveType) => ({
-        id: String(leaveType.id),
-        label: leaveType.name,
-        value: String(leaveType.id)
-      }))
-    ],
-    [policyLeaveTypes, translateText]
-  );
-
   const {
     data: policyPages,
     isLoading,
@@ -120,132 +113,165 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     [policyPages]
   );
 
-  const tableData = useMemo(
-    () =>
-      policies.map((policy: LeavePolicyType) => ({
-        id: policy.id,
-        policyName: policy.name,
-        leaveType: policy,
-        policyType:
-          policy.policyType === PolicyType.ACCRUAL
-            ? translateText(["accrual"])
-            : translateText(["flexible"]),
-        status: policy.status,
-        actions: policy
-      })),
-    [policies, translateText]
+  const handleActivate = useCallback(
+    (policy: LeavePolicyType): void => {
+      if (isActivating) {
+        return;
+      }
+      setActivatingPolicyName(policy.name);
+      setOpenKebabMenuId(null);
+      activateLeavePolicy(policy.id);
+    },
+    [isActivating, activateLeavePolicy]
   );
 
-  type TableRow = (typeof tableData)[number];
-
-  const baseColumns = [
-    {
-      key: "policyName",
-      header: translateText(["policyNameHeader"]),
-      render: (value: unknown) => (
-        <span className="body1 text-black">{value as string}</span>
-      )
-    },
-    {
-      key: "leaveType",
-      header: translateText(["leaveTypeHeader"]),
-      render: (value: unknown) => {
-        const policy = value as LeavePolicyType;
-        return (
-          <LeaveTypeChip
-            name={policy.leaveTypeName}
-            emojiCode={policy.leaveTypeEmoji}
-          />
-        );
+  const tableHeaders = useMemo<GridHeader[]>(() => {
+    const baseHeaders: GridHeader[] = [
+      { id: "policyName", label: translateText(["policyNameHeader"]) },
+      { id: "leaveType", label: translateText(["leaveTypeHeader"]) },
+      {
+        id: "entitlementType",
+        label: translateText(["entitlementTypeHeader"])
+      },
+      { id: "status", label: translateText(["statusHeader"]) },
+      {
+        id: "assignedEmployees",
+        label: translateText(["assignedEmployeesHeader"])
       }
-    },
-    {
-      key: "policyType",
-      header: translateText(["policyTypeHeader"]),
-      render: (value: unknown) => (
-        <span className="body1 text-black">{value as string}</span>
-      )
-    },
-    {
-      key: "status",
-      header: translateText(["statusHeader"]),
-      render: (value: unknown) => {
-        const isActive =
-          (value as LeavePolicyStatus) === LeavePolicyStatus.ACTIVE;
-        return (
-          <LeavePolicyStatusBadge
-            isActive={isActive}
-            text={
-              isActive ? translateText(["active"]) : translateText(["inactive"])
-            }
-          />
-        );
-      }
-    }
-  ];
+    ];
 
-  const actionsColumn = {
-    key: "actions",
-    header: "",
-    width: "3.5rem",
-    render: (value: unknown) => {
-      const policy = value as LeavePolicyType;
-      return (
-        <KebabMenu
-          id={`leave-policy-kebab-menu-${policy.id}`}
-          isOpen={openKebabMenuId === policy.id}
-          onToggle={(isOpen: boolean) =>
-            setOpenKebabMenuId(isOpen ? policy.id : null)
-          }
-          menuItems={[
-            {
-              id: `leave-policy-edit-${policy.id}`,
-              label: translateText(["menuEdit"]),
-              onClick: () => setEditingPolicy(policy)
-            },
-            ...(policy.status === LeavePolicyStatus.ACTIVE
-              ? [
-                  {
-                    id: `leave-policy-deactivate-${policy.id}`,
-                    label: translateText(["menuDeactivate"]),
-                    onClick: () => setDeactivatingPolicy(policy)
-                  }
-                ]
-              : [
-                  {
-                    id: `leave-policy-activate-${policy.id}`,
-                    label: translateText(["menuActivate"]),
-                    onClick: () => handleActivate(policy)
-                  }
-                ])
-          ]}
-        />
-      );
+    if (!canManagePolicies) {
+      return baseHeaders;
     }
-  };
 
-  const columns = canManagePolicies
-    ? [...baseColumns, actionsColumn]
-    : baseColumns;
+    return [
+      ...baseHeaders,
+      { id: "actions", label: "", width: "3.5rem", align: "right" }
+    ];
+  }, [translateText, canManagePolicies]);
+
+  const tableRows = useMemo<GridRow[]>(
+    () =>
+      policies.map((policy: LeavePolicyType) => {
+        const isActive = policy.status === LeavePolicyStatus.ACTIVE;
+
+        return {
+          id: policy.id,
+          ariaLabel: policy.name,
+          policyName: <span className="body1 text-black">{policy.name}</span>,
+          leaveType: (
+            <LeaveTypeChip
+              name={policy.leaveTypeName}
+              emojiCode={policy.leaveTypeEmoji}
+            />
+          ),
+          entitlementType: (
+            <span className="body1 text-black">
+              {policy.policyType === PolicyType.ACCRUAL
+                ? translateText(["accrual"])
+                : translateText(["flexible"])}
+            </span>
+          ),
+          status: (
+            <LeavePolicyStatusBadge
+              isActive={isActive}
+              text={
+                isActive
+                  ? translateText(["active"])
+                  : translateText(["inactive"])
+              }
+            />
+          ),
+          assignedEmployees: (
+            <span className="body1 text-black">
+              {policy.assignedEmployeeCount}
+            </span>
+          ),
+          ...(canManagePolicies
+            ? {
+                actions: (
+                  <div
+                    className="flex justify-end"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <KebabMenu
+                      id={`leave-policy-kebab-menu-${policy.id}`}
+                      isOpen={openKebabMenuId === policy.id}
+                      onToggle={(isOpen: boolean) =>
+                        setOpenKebabMenuId(isOpen ? policy.id : null)
+                      }
+                      className={{
+                        kebabMenu: {
+                          menuItem: {
+                            container: "justify-start",
+                            label: "text-left"
+                          }
+                        }
+                      }}
+                      menuItems={[
+                        isActive
+                          ? {
+                              id: `leave-policy-deactivate-${policy.id}`,
+                              label: translateText(["menuDeactivate"]),
+                              onClick: () => setDeactivatingPolicy(policy)
+                            }
+                          : {
+                              id: `leave-policy-activate-${policy.id}`,
+                              label: translateText(["menuActivate"]),
+                              onClick: () => handleActivate(policy)
+                            }
+                      ]}
+                    />
+                  </div>
+                )
+              }
+            : {})
+        };
+      }),
+    [
+      policies,
+      translateText,
+      canManagePolicies,
+      openKebabMenuId,
+      handleActivate
+    ]
+  );
 
   const isFiltering = Boolean(debouncedSearch.trim() || leaveTypeFilter);
+  const isEmpty = !isLoading && !isFiltering && policies.length === 0;
 
-  const noDataState = {
-    title: translateText(["noPoliciesYetTitle"]),
-    ...(canManagePolicies
-      ? {
-          buttonText: translateText(["createPolicyBtnTxt"]),
-          onButtonClick: onCreatePolicy
-        }
-      : {})
-  };
+  useEffect(() => {
+    onEmptyStateChange?.(isEmpty);
+  }, [isEmpty, onEmptyStateChange]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(event.target.value);
   };
 
-  const handleLeaveTypeFilterChange = (value: string): void => {
-    setLeaveTypeFilter(value);
+  const handleApplyLeaveTypeFilter = (leaveTypeId: string): void => {
+    setLeaveTypeFilter(leaveTypeId);
+  };
+
+  const handleResetLeaveTypeFilter = (): void => {
+    setLeaveTypeFilter("");
+  };
+
+  const renderFilterContent = ({ onClose }: TableViewFilterContentArgs) => (
+    <LeavePolicyFilterBody
+      appliedLeaveTypeId={leaveTypeFilter}
+      onApply={handleApplyLeaveTypeFilter}
+      onReset={handleResetLeaveTypeFilter}
+      onClose={onClose}
+    />
+  );
+
+  const handleRowClick = (row: GridRow): void => {
+    const selectedPolicy = policies.find((policy) => policy.id === row.id);
+
+    if (selectedPolicy) {
+      onEditPolicy(selectedPolicy);
+    }
   };
 
   const handleLoadMore = async (): Promise<void> => {
@@ -254,70 +280,57 @@ const LeavePoliciesTable: FC<Props> = ({ onCreatePolicy }) => {
     }
   };
 
-  const handleCloseEditModal = (): void => {
-    setEditingPolicy(null);
-  };
-
   const handleCloseDeactivateModal = (): void => {
     setDeactivatingPolicy(null);
   };
 
-  const handleActivate = (policy: LeavePolicyType): void => {
-    if (isActivating) {
-      return;
-    }
-    setActivatingPolicyName(policy.name);
-    setOpenKebabMenuId(null);
-    activateLeavePolicy(policy.id);
-  };
-
   return (
     <div className="mt-4 flex flex-col gap-4">
-      <div className="flex flex-row items-center justify-between gap-3">
-        <div className="w-full max-w-lg">
-          <InputField
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder={translateText(["searchPlaceholder"])}
-            leftIcon={<SearchIcon className="size-4 text-secondary-icon" />}
-            fullWidth
-            aria-label={translateText(["searchPlaceholder"])}
-          />
-        </div>
-        <div className="w-full max-w-55">
-          <Dropdown
-            id="leave-policy-leave-type-filter"
-            ariaLabel={translateText(["leaveTypeFilterLabel"])}
-            value={leaveTypeFilter}
-            options={leaveTypeFilterOptions}
-            onChange={handleLeaveTypeFilterChange}
-            width="100%"
-          />
-        </div>
-      </div>
-      <Table<TableRow>
-        columns={columns}
-        data={tableData}
-        tableAriaLabel={translateText(["title"])}
+      <TableView
+        tableName={TableNames.LEAVE_POLICIES}
+        ariaLabel={{ regionAriaLabel: translateText(["title"]) }}
+        headers={tableHeaders}
+        rows={tableRows}
         isLoading={isLoading}
-        customSkeletonLoader={
-          <LeavePoliciesTableSkeletonLoader
-            rowCount={LEAVE_POLICY_SKELETON_ROW_COUNT}
-            showActionsColumn={canManagePolicies}
-          />
-        }
-        emptyStateType={isFiltering ? "no-search-results" : "no-data"}
-        onLoadMore={hasNextPage ? handleLoadMore : undefined}
-        hasMore={hasNextPage ?? false}
-        noDataState={noDataState}
-        noSearchResultsState={{
-          title: translateText(["noSearchResultsTitle"])
+        onRowClick={canManagePolicies ? handleRowClick : undefined}
+        toolbar={{
+          searchBar: {
+            value: searchTerm,
+            onChange: handleSearchChange,
+            placeholder: translateText(["searchPlaceholder"]),
+            "aria-label": translateText(["searchPlaceholder"])
+          }
         }}
-      />
-      <EditLeavePolicyModal
-        policy={editingPolicy}
-        isOpen={!!editingPolicy}
-        onClose={handleCloseEditModal}
+        filter={{
+          filterCount: leaveTypeFilter ? 1 : 0,
+          filterButtonAriaLabel: translateText(["leaveTypeFilterLabel"]),
+          popoverId: "leave-policy-leave-type-filter",
+          filterContent: renderFilterContent
+        }}
+        emptyState={
+          isFiltering
+            ? { title: translateText(["noSearchResultsTitle"]) }
+            : {
+                title: translateText(["noPoliciesYetTitle"]),
+                description: translateText(["noPoliciesYetDescription"]),
+                actions: canManagePolicies
+                  ? [
+                      {
+                        label: translateText(["createPolicyBtnTxt"]),
+                        onClick: onCreatePolicy,
+                        variant: "primary"
+                      }
+                    ]
+                  : undefined
+              }
+        }
+        infiniteScroll={{
+          isEnabled: true,
+          height: "34.5rem",
+          hasMore: hasNextPage,
+          isFetchingNextPage,
+          onLoadMore: handleLoadMore
+        }}
       />
       <DeactivateLeavePolicyModal
         policy={deactivatingPolicy}

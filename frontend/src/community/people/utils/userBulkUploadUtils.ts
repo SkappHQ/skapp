@@ -128,6 +128,7 @@ export const convertUserBulkCsvHeaders = (header: string) => {
     "Probation End Date": "probationEndDate",
     "Work Time Zone": "timeZone",
     "Work Location": "workLocation",
+    "Business Unit": "businessUnit",
     "Employment Type": "employeeType",
     "Job Family": "jobFamily",
     "Job Title": "jobTitle",
@@ -135,7 +136,9 @@ export const convertUserBulkCsvHeaders = (header: string) => {
     "Social Security No (SSN)": "ssn",
     Ethnicity: "ethnicity",
     "EEO Job Category": "eeo",
-    "Passport Number": "passportNo"
+    "Passport Number": "passportNo",
+    "Payroll ID": "payrollId",
+    TIN: "tin"
   };
   return headerSelector[header] || header;
 };

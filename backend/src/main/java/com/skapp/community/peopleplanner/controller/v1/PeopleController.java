@@ -8,8 +8,10 @@ import com.skapp.community.peopleplanner.payload.request.EmployeeFilterDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeIsAvailableDto;
 import com.skapp.community.peopleplanner.payload.request.EmployeeQuickAddDto;
 import com.skapp.community.peopleplanner.payload.request.NotificationSettingsPatchRequestDto;
+import com.skapp.community.peopleplanner.payload.request.PayrollIdExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.PermissionFilterDto;
 import com.skapp.community.peopleplanner.payload.request.ReassignSupervisorsAndTerminateOrDeleteEmployeeRequestDto;
+import com.skapp.community.peopleplanner.payload.request.TinExistsCheckDto;
 import com.skapp.community.peopleplanner.payload.request.employee.CreateEmployeeRequestDto;
 import com.skapp.community.peopleplanner.payload.response.EmployeeManagerResponseDto;
 import com.skapp.community.peopleplanner.service.PeopleReadService;
@@ -172,6 +174,24 @@ public class PeopleController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Check if a Payroll ID is unique",
+			description = "This endpoint checks whether the provided Payroll ID is already assigned to another employee.")
+	@GetMapping(value = "/exists/payroll-id")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> checkPayrollIdExists(PayrollIdExistsCheckDto payrollIdExistsCheckDto) {
+		ResponseEntityDto response = peopleService.checkPayrollIdExists(payrollIdExistsCheckDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Check if a TIN is unique",
+			description = "This endpoint checks whether the provided TIN is already assigned to another employee.")
+	@GetMapping(value = "/exists/tin")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_ADMIN')")
+	public ResponseEntity<ResponseEntityDto> checkTinExists(TinExistsCheckDto tinExistsCheckDto) {
+		ResponseEntityDto response = peopleService.checkTinExists(tinExistsCheckDto);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@Operation(summary = "Terminate an user", description = "Terminate an user account")
 	@PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ROLE_PEOPLE_ADMIN')")
 	@PatchMapping("/user/terminate/{userId}")
@@ -226,6 +246,24 @@ public class PeopleController {
 	@GetMapping("/user/notification/settings")
 	public ResponseEntity<ResponseEntityDto> getNotificationSettings() {
 		ResponseEntityDto response = peopleService.getNotificationSettings();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get today's birthday notifications",
+			description = "Returns the birthdays the current employee should be notified about today, if not already viewed.")
+	@GetMapping(value = "/birthday-notifications/today")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> getTodayBirthdayNotifications() {
+		ResponseEntityDto response = peopleService.getTodayBirthdayNotifications();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Mark today's birthday notifications as viewed",
+			description = "Marks today's birthday notifications as viewed for the current employee.")
+	@PatchMapping(value = "/birthday-notifications/mark-viewed-today")
+	@PreAuthorize("hasAnyRole('ROLE_PEOPLE_EMPLOYEE')")
+	public ResponseEntity<ResponseEntityDto> markTodayBirthdayNotificationsAsViewed() {
+		ResponseEntityDto response = peopleService.markTodayBirthdayNotificationsAsViewed();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

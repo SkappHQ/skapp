@@ -6,6 +6,7 @@ import {
 import {
   CurrentAddTimeChangesType,
   DailyLogType,
+  DirectEntryEmployeeType,
   TimeAvailabilityType
 } from "./timeSheetTypes";
 
@@ -18,6 +19,7 @@ interface actionsTypes {
     selectedFilters: Record<string, string[]>
   ) => void;
   resetTimesheetRequestParams: () => void;
+  restoreTimesheetRequestParams: () => void;
   setTimesheetRequestSelectedDates: (value: string[]) => void;
   setTimesheetRequestPagination: (page: number) => void;
   setTimesheetAnalyticsSelectedDates: (value: string[]) => void;
@@ -38,6 +40,10 @@ interface actionsTypes {
   resetEmployeeTimesheetRequestParams: () => void;
   setTimeAvailabilityForPeriod: (value: TimeAvailabilityType) => void;
   setCurrentAddTimeChanges: (value: CurrentAddTimeChangesType) => void;
+  setDirectManualTimeEntryEligibleEmployee: (
+    value: DirectEntryEmployeeType | null
+  ) => void;
+  setIsSelfDirectTimeEntry: (value: boolean) => void;
   setClockInType: (type: { [key: string]: (string | number)[] }) => void;
 }
 
@@ -92,6 +98,8 @@ export interface AttendanceStore extends actionsTypes {
   setTimesheetAnalyticsTeamName: (teamName: string) => void;
   timeAvailabilityForPeriod: TimeAvailabilityType;
   currentAddTimeChanges: CurrentAddTimeChangesType;
+  directManualTimeEntryEligibleEmployee: DirectEntryEmployeeType | null;
+  isSelfDirectTimeEntry: boolean;
   clockInType: {
     [key: string]: (string | number)[];
   };

@@ -2,6 +2,8 @@ import { JSX, memo } from "react";
 
 import { CommonModalType } from "~community/common/enums/CommonModalEnums";
 import { useCommonStore } from "~community/common/stores/commonStore";
+import BusinessUnitFormModal from "~community/configurations/components/molecules/BusinessUnitFormModal/BusinessUnitFormModal";
+import DeleteBusinessUnitModal from "~community/configurations/components/molecules/DeleteBusinessUnitModal/DeleteBusinessUnitModal";
 import ConfirmDeleteModal from "~enterprise/common/components/molecules/ConfirmDeleteModal/ConfirmDeleteModal";
 import CreateFolderModal from "~enterprise/common/components/molecules/CreateFolderModal/CreateFolderModal";
 import FolderNotEmptyModal from "~enterprise/common/components/molecules/FolderNotEmptyModal/FolderNotEmptyModal";
@@ -66,6 +68,29 @@ const CommonModalController = (): JSX.Element => {
           onClose={closeCommonModal}
           document={commonModalData?.document!}
           count={commonModalData?.documentCount ?? 0}
+        />
+      );
+    case CommonModalType.ADD_BUSINESS_UNIT:
+      return (
+        <BusinessUnitFormModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+        />
+      );
+    case CommonModalType.EDIT_BUSINESS_UNIT:
+      return (
+        <BusinessUnitFormModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          businessUnit={commonModalData?.businessUnit!}
+        />
+      );
+    case CommonModalType.DELETE_BUSINESS_UNIT:
+      return (
+        <DeleteBusinessUnitModal
+          isOpen={isCommonModalOpen}
+          onClose={closeCommonModal}
+          businessUnit={commonModalData?.businessUnit!}
         />
       );
     default:

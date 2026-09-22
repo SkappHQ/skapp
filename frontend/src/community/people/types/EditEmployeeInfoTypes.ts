@@ -33,7 +33,7 @@ export enum EditAllInformationType {
   personal = "Personal",
   emergency = "Emergency",
   employment = "Employment",
-  permission = "System Permissions",
+  permission = "Permissions",
   timeline = "Timeline",
   leave = "Leave",
   timesheeet = "Timesheet"

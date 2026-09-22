@@ -82,4 +82,10 @@ export const SUCCESS = "success";
 export const CANCEL = "cancel";
 
 export const APP = "app";
+export const AUTH = "auth";
 export const LOCALHOST = "localhost";
+
+export enum HttpMethods {
+  GET = "GET",
+  POST = "POST"
+}

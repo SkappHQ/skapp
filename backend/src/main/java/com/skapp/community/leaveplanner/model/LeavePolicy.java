@@ -64,8 +64,8 @@ public class LeavePolicy extends Auditable<String> {
 	@Column(name = "is_carryover_enabled", nullable = false)
 	private Boolean isCarryoverEnabled = Boolean.FALSE;
 
-	@Column(name = "carryover_date")
-	private String carryoverDate;
+	@Column(name = "carryover_expiry_date")
+	private String carryoverExpiryDate;
 
 	@Column(name = "max_carryover_days")
 	private Float maxCarryoverDays;

@@ -10,6 +10,7 @@ import React, {
   useState
 } from "react";
 
+import { useGetBusinessUnits } from "~community/common/api/BusinessUnitApi";
 import { useGetAllWorkLocations } from "~community/common/api/WorkLocationApi";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
@@ -98,6 +99,8 @@ const useEmployeeDetailsFormHandler = ({
 
   const { data: workLocations } = useGetAllWorkLocations();
 
+  const { data: businessUnits } = useGetBusinessUnits();
+
   const workTimeZoneDictionary: Record<string, string> = timeZonesList.reduce<
     Record<string, string>
   >((acc: Record<string, string>, curr: { value: string; label: string }) => {
@@ -121,10 +124,7 @@ const useEmployeeDetailsFormHandler = ({
     data: checkEmailAndIdentificationNo,
     refetch,
     isSuccess
-  } = useCheckEmailAndIdentificationNo(
-    debouncedEmail,
-    debouncedEmployeeNumber
-  );
+  } = useCheckEmailAndIdentificationNo(debouncedEmail, debouncedEmployeeNumber);
 
   useEffect(() => {
     if (employee?.employment?.employmentDetails?.email !== values.email) {
@@ -213,6 +213,21 @@ const useEmployeeDetailsFormHandler = ({
       employmentDetails: {
         ...employee?.employment?.employmentDetails,
         workLocationId: workLocationId
+      } as L3EmploymentDetailsType
+    });
+  };
+
+  const handleBusinessUnitChange = async (
+    e: SyntheticEvent,
+    value: DropdownListType
+  ): Promise<void> => {
+    const businessUnitId = Number(value.value);
+    setFieldError("businessUnitId", "");
+    await setFieldValue("businessUnitId", businessUnitId);
+    setEmploymentDetails({
+      employmentDetails: {
+        ...employee?.employment?.employmentDetails,
+        businessUnitId: businessUnitId
       } as L3EmploymentDetailsType
     });
   };
@@ -397,7 +412,11 @@ const useEmployeeDetailsFormHandler = ({
   useEffect(() => {
     const updatedData = checkEmailAndIdentificationNo;
     if (updatedData && isSuccess && !isProfileView && !isManager) {
-      if (updatedData.isWorkEmailExists && !formik.touched.email && !updatedData.isGuestUser) {
+      if (
+        updatedData.isWorkEmailExists &&
+        !formik.touched.email &&
+        !updatedData.isGuestUser
+      ) {
         setIsUniqueEmail(false);
       } else {
         setIsUniqueEmail(true);
@@ -520,6 +539,7 @@ const useEmployeeDetailsFormHandler = ({
     selectedProbationEndDate,
     workTimeZoneDictionary,
     workLocations,
+    businessUnits,
     projectTeamList,
     primaryManagerSearchTerm,
     secondaryManagerSearchTerm,
@@ -538,6 +558,7 @@ const useEmployeeDetailsFormHandler = ({
     dateOnChange,
     handleWorkTimeZoneChange,
     handleWorkLocationChange,
+    handleBusinessUnitChange,
     onPrimaryManagerSearchChange,
     onSecondaryManagerSearchChange,
     handlePrimaryManagerSelect,

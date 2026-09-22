@@ -2,10 +2,12 @@ package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,6 +20,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -58,6 +61,8 @@ public class DateTimeUtils {
 
 	public static final int LAST_DAY = 31;
 
+	public static final MonthDay CALENDAR_YEAR_START = MonthDay.of(JANUARY, FIRST_DAY);
+
 	public static final float MILLISECONDS_IN_AN_HOUR = 1000 * 60 * 60.0f;
 
 	public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -74,6 +79,9 @@ public class DateTimeUtils {
 	private static final DateTimeFormatter AM_PM_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
 
 	private static final DateTimeFormatter MONTH_DAY_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
+
+	private static final DateTimeFormatter DAY_MONTH_YEAR_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/uuuu")
+		.withResolverStyle(ResolverStyle.STRICT);
 
 	public static final String TIMESTAMP_POSTFIX = "_";
 
@@ -139,6 +147,24 @@ public class DateTimeUtils {
 		catch (DateTimeParseException ex) {
 			throw new DateTimeParseException("Failed to parse date-time string: " + dateTimeStr, dateTimeStr,
 					ex.getErrorIndex());
+		}
+	}
+
+	/**
+	 * Convert a user supplied date string to LocalDate without throwing on bad input.
+	 * @param dateStr Date string in "dd/MM/yyyy" format.
+	 * @return LocalDate instance, or null when the string is blank or not a real calendar
+	 * date.
+	 */
+	public static LocalDate parseDayMonthYearDate(String dateStr) {
+		if (StringUtils.isNullOrBlank(dateStr)) {
+			return null;
+		}
+		try {
+			return LocalDate.parse(dateStr, DAY_MONTH_YEAR_FORMATTER);
+		}
+		catch (DateTimeParseException exception) {
+			return null;
 		}
 	}
 
@@ -286,6 +312,24 @@ public class DateTimeUtils {
 	 */
 	public static LocalDate getUtcLocalDate(int year, int month, int day) {
 		return LocalDate.of(year, month, day);
+	}
+
+	/**
+	 * Returns the first day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 1 January of the given year.
+	 */
+	public static LocalDate getStartOfYear(int year) {
+		return LocalDate.of(year, JANUARY, FIRST_DAY);
+	}
+
+	/**
+	 * Returns the last day of the given year in UTC.
+	 * @param year The year to represent.
+	 * @return {@link LocalDate} representing 31 December of the given year.
+	 */
+	public static LocalDate getEndOfYear(int year) {
+		return LocalDate.of(year, DECEMBER, LAST_DAY);
 	}
 
 	/**
@@ -458,6 +502,24 @@ public class DateTimeUtils {
 	}
 
 	/**
+	 * Resolves a time zone string to a ZoneId, falling back to UTC if the value is null,
+	 * blank, or not a valid zone ID.
+	 * @param timezone The time zone ID string to resolve.
+	 * @return The resolved ZoneId, or UTC if the input is invalid.
+	 */
+	public static ZoneId resolveZoneId(String timezone) {
+		if (timezone == null) {
+			return UTC_ZONE_ID;
+		}
+		try {
+			return ZoneId.of(timezone);
+		}
+		catch (DateTimeException e) {
+			return UTC_ZONE_ID;
+		}
+	}
+
+	/**
 	 * Retrieves the current time as a string in the given time zone.
 	 * @param zoneId The ZoneId representing the target time zone. Cannot be null.
 	 * @return the formatted time string.
@@ -501,6 +563,15 @@ public class DateTimeUtils {
 			return Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalDateTime();
 		}
 		return Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalDateTime();
+	}
+
+	/**
+	 * Converts epoch milliseconds to an {@link Instant}.
+	 * @param epochMillis the epoch milliseconds to convert
+	 * @return the corresponding {@link Instant}
+	 */
+	public static Instant epochMillisToInstant(Long epochMillis) {
+		return Instant.ofEpochMilli(epochMillis);
 	}
 
 	/**
@@ -600,6 +671,16 @@ public class DateTimeUtils {
 		}
 	}
 
+	/**
+	 * Parses a month-day string in "MM-dd" format.
+	 * @param monthDay The month-day string to parse.
+	 * @return The corresponding MonthDay.
+	 * @throws DateTimeParseException If the string is not a valid month-day.
+	 */
+	public static MonthDay parseMonthDay(String monthDay) {
+		return MonthDay.parse(monthDay, MONTH_DAY_FORMATTER);
+	}
+
 	public static boolean isValidDate(String dateStr) {
 		if (dateStr != null && !dateStr.isBlank()) {
 			DateFormat sdf = new SimpleDateFormat(SIMPLE_DATE_FORMAT);
@@ -627,10 +708,14 @@ public class DateTimeUtils {
 	}
 
 	public static String epochMillisToAmPmString(Long epochMillis) {
+		return epochMillisToAmPmString(epochMillis, UTC_ZONE_ID);
+	}
+
+	public static String epochMillisToAmPmString(Long epochMillis, ZoneId zoneId) {
 		if (epochMillis == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
 		}
-		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(ZoneOffset.UTC).toLocalTime();
+		LocalTime time = Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalTime();
 		return time.format(AM_PM_FORMATTER);
 	}
 

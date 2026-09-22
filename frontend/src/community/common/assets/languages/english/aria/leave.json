@@ -17,6 +17,7 @@
       "filterSection": "Filter my leave requests",
       "statusFilterSection": "Leave Status Filters",
       "typeFilterSection": "Leave Type Filters",
+      "policyFilterSection": "Leave Policy Filters",
       "filterOption": "Filter Option, {{filterName}}",
       "filterSelected": "{{filterName}} selected",
       "downloadAttachment": "Download attachment",
@@ -34,6 +35,7 @@
     "allLeaveRequestTable": "Accessing All Leave Requests Table",
     "employeeName": "Employee name, {{firstName}} {{lastName}}",
     "leaveType": "Leave type, {{leaveType}}",
+    "attachment": "Attachment, {{fileName}}",
     "sort": "Sort by",
     "leaveRecordRow": "Leave request record for {{name}}, {{duration}} leave on {{date}} for {{leaveType}} leave, current status is {{leaveStatus}}. Click to open modal"
   },
@@ -76,7 +78,12 @@
     "customLeaveAllocationTable": {
       "selectYear": "Custom leave allocations by year",
       "filterButton": "Filter options",
-      "filterOption": "{{filterName}} option"
+      "filterOption": "{{filterName}} option",
+      "tableRegion": "Custom leave allocations table",
+      "pagination": "Custom leave allocations pagination",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "page": "Page {{page}}"
     }
   },
   "leaveTypeCard": {

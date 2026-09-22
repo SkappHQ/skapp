@@ -34,4 +34,12 @@ public class EmployeeLeavePolicyResponseDto {
 
 	private EmployeeLeavePolicyStatus status;
 
+	private Float totalDaysAllocated;
+
+	private Float totalDaysUsed;
+
+	private Float balanceInDays;
+
+	private Boolean isUnlimited;
+
 }
