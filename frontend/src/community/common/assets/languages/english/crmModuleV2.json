@@ -42,6 +42,11 @@
         "deals": "Deals",
         "contacts": "Contacts"
       },
+      "metrics": {
+        "accountValue": "Account value",
+        "openDeals": "Open deals",
+        "closedDeals": "Closed deals"
+      },
       "tasks": {
         "emptyDescription": "No tasks associated with this company"
       },
