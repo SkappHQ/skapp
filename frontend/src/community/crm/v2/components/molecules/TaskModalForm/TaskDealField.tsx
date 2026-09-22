@@ -3,7 +3,6 @@ import { FC, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
-import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
@@ -11,6 +10,7 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/constants/commonConstants";
 import { useGetDealLookupV2 } from "~community/crm/v2/api/DealApi";
+import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -46,10 +46,7 @@ const TaskDealField: FC<Props> = ({ formik }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const debouncedSearch = useDebounce(
-    searchTerm.trim(),
-    SEARCH_DEBOUNCE_DELAY
-  );
+  const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
 
   const companyScopeId =
     isCrmSidePanelOpen &&
@@ -97,8 +94,7 @@ const TaskDealField: FC<Props> = ({ formik }) => {
     [lookupItems]
   );
 
-  const selectedDeal =
-    values.dealId != null ? deals[values.dealId] : undefined;
+  const selectedDeal = values.dealId != null ? deals[values.dealId] : undefined;
 
   const handleSelect = (item: SearchableDropdownItem) => {
     const deal = lookupItems.find(

@@ -1,0 +1,28 @@
+{
+  "contacts": {
+    "table": {
+      "clearSearch": "Clear search",
+      "companyFilter": "Filter by company"
+    },
+    "sidePanel": {
+      "kebabMenu": "Contact actions"
+    },
+    "modal": {
+      "name": "Name",
+      "email": "Email",
+      "contactNumber": "Contact number",
+      "company": "Company",
+      "clearCompany": "Clear selected company",
+      "clearOwner": "Clear selected contact owner",
+      "save": "Save",
+      "cancel": {
+        "add": "Cancel add contact",
+        "edit": "Cancel edit contact"
+      }
+    },
+    "deleteModal": {
+      "confirm": "Confirm delete contact",
+      "cancel": "Cancel delete contact"
+    }
+  }
+}

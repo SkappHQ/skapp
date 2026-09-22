@@ -53,7 +53,8 @@ interface ContactTableProps {
 }
 
 export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
-  const translateText = useTranslator("crmModule", "contacts");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(ALL_COMPANIES);
@@ -150,7 +151,12 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   const companyOptions = [
     {
       id: ALL_COMPANIES,
-      label: translateText(["table", "companyFilter", "allCompanies"]),
+      label: translateText([
+        "contacts",
+        "table",
+        "companyFilter",
+        "allCompanies"
+      ]),
       value: ALL_COMPANIES
     }
   ];
@@ -172,33 +178,33 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
   const tableHeaders: GridHeader[] = [
     {
       id: "name",
-      label: translateText(["table", "columns", "nameHeader"]),
+      label: translateText(["contacts", "table", "columns", "name"]),
       width: "25%"
     },
     {
       id: "email",
-      label: translateText(["table", "columns", "emailHeader"]),
+      label: translateText(["contacts", "table", "columns", "email"]),
       width: "20%"
     },
     {
       id: "contactNumber",
-      label: translateText(["table", "columns", "phoneHeader"]),
+      label: translateText(["contacts", "table", "columns", "phone"]),
       width: "15%"
     },
     {
       id: "closedDealValue",
-      label: translateText(["table", "columns", "closedValueHeader"]),
+      label: translateText(["contacts", "table", "columns", "closedValue"]),
       width: "15%",
       align: "right"
     },
     {
       id: "openTasksCount",
-      label: translateText(["table", "columns", "tasksHeader"]),
+      label: translateText(["contacts", "table", "columns", "tasks"]),
       width: "15%"
     },
     {
       id: "owner",
-      label: translateText(["table", "columns", "contactOwnerHeader"]),
+      label: translateText(["contacts", "table", "columns", "contactOwner"]),
       width: "10%"
     }
   ];
@@ -248,7 +254,7 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
             <div className="subtitle4 text-secondary-text">
               {metrics?.closedDealCount !== undefined &&
               metrics.closedDealCount > 0
-                ? `${metrics.closedDealCount} ${translateText(["table", "closedDealsLabel"], { count: metrics.closedDealCount })}`
+                ? `${metrics.closedDealCount} ${translateText(["contacts", "table", "closedDealsLabel"], { count: metrics.closedDealCount })}`
                 : ""}
             </div>
           </div>
@@ -262,7 +268,7 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
                   backgroundColor="bg-semantic-red-background"
                   textColor="text-semantic-red-text"
                 >
-                  {`${metrics.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
+                  {`${metrics.overdueTasksCount} ${translateText(["contacts", "table", "overdueLabel"])}`}
                 </Label>
               )}
           </div>
@@ -295,11 +301,21 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
       emptyState={{
         icon: <SearchIcon />,
         title: isEmptyFilterState
-          ? translateText(["table", "emptyDataState", "title"])
-          : translateText(["table", "emptySearchState", "title"]),
+          ? translateText(["contacts", "table", "emptyDataState", "title"])
+          : translateText(["contacts", "table", "emptySearchState", "title"]),
         description: isEmptyFilterState
-          ? translateText(["table", "emptyDataState", "description"])
-          : translateText(["table", "emptySearchState", "description"])
+          ? translateText([
+              "contacts",
+              "table",
+              "emptyDataState",
+              "description"
+            ])
+          : translateText([
+              "contacts",
+              "table",
+              "emptySearchState",
+              "description"
+            ])
       }}
       onRowClick={handleRowClick}
       infiniteScroll={{
@@ -313,9 +329,13 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
         searchBar: {
           value: searchTerm,
           onChange: handleSearchChange,
-          placeholder: translateText(["table", "search"]),
-          "aria-label": translateText(["table", "search"]),
-          ariaLabelClearButton: translateText(["table", "clearButtonAriaLabel"])
+          placeholder: translateText(["contacts", "table", "search"]),
+          "aria-label": translateText(["contacts", "table", "search"]),
+          ariaLabelClearButton: translateAria([
+            "contacts",
+            "table",
+            "clearSearch"
+          ])
         },
         dropdown: {
           id: "crm-contacts-company-filter",
@@ -324,7 +344,7 @@ export const ContactTable: FC<ContactTableProps> = ({ isCrmDataLoading }) => {
           onChange: (value) => setSelectedCompany(value),
           width: "auto",
           menuWidth: "content",
-          ariaLabel: translateText(["table", "companyFilter", "ariaLabel"])
+          ariaLabel: translateAria(["contacts", "table", "companyFilter"])
         }
       }}
     />
