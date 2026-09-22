@@ -22,9 +22,7 @@ export const hasOngoingTimeEntry = (record?: DailyLogType | null): boolean =>
   Boolean(record?.timeSlots?.some((timeSlot) => timeSlot?.isActiveRightNow));
 
 export const convertTo24HourByDateString = (date: string, zone?: string) => {
-  const dateTime = DateTime.fromISO(date, {
-    zone: zone ?? getCurrentTimeZone()
-  });
+  const dateTime = DateTime.fromISO(date, { zone, setZone: !zone });
   return dateTime.toFormat("HH:mm");
 };
 
@@ -81,10 +79,10 @@ export const timeStringToSeconds = (timeString: string) => {
 
 export const getTimeDifference = (startTime: string, endTime: string) => {
   const startSeconds = timeStringToSeconds(
-    DateTime.fromISO(startTime).toFormat("HH:mm")
+    DateTime.fromISO(startTime, { setZone: true }).toFormat("HH:mm")
   );
   const endSeconds = timeStringToSeconds(
-    DateTime.fromISO(endTime).toFormat("HH:mm")
+    DateTime.fromISO(endTime, { setZone: true }).toFormat("HH:mm")
   );
   return endSeconds - startSeconds;
 };
@@ -150,7 +148,7 @@ export const getCurrentTimeZone = () => {
 };
 
 export const convertTo12HourByDateString = (date: string, zone?: string) => {
-  const dateTime = DateTime.fromISO(date, { zone });
+  const dateTime = DateTime.fromISO(date, { zone, setZone: !zone });
   return dateTime.toFormat("hh:mm a");
 };
 
