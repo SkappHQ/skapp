@@ -76,7 +76,7 @@ public class WorkLocationRepositoryImpl implements WorkLocationRepository {
 
 		if (searchKeyword != null) {
 			String escaped = StringUtils.escapeLikePattern(searchKeyword);
-			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), "%" + escaped + "%", '\\'));
+			predicates.add(cb.like(cb.lower(workLocation.get(WorkLocation_.name)), "%" + escaped + "%"));
 		}
 
 		return predicates;
