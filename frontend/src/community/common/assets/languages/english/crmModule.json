@@ -627,6 +627,7 @@
     "sidePanel": {
       "deleteTask": "Delete task",
       "editTask": "Edit task",
+      "reopenTask": "Reopen task",
       "kebabMenuAriaLabel": "Task actions",
       "notes": "Notes",
       "noNotes": "No notes added",
@@ -651,6 +652,10 @@
         "high": "High",
         "medium": "Medium",
         "low": "Low"
+      },
+      "reopenToastMessages": {
+        "successTitle": "Task reopened",
+        "successDescription": "Task reopened successfully"
       }
     },
     "deleteTaskModal": {

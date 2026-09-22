@@ -31,9 +31,9 @@ const PropertyField: FC<PropertyFieldProps> = ({
   onChange,
   onSave
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
   const resolvedPlaceholder =
-    placeholder ?? translateText(["placeholders", "none"]);
+    placeholder ?? translateText(["deals", "common", "placeholders", "none"]);
   const inputRef = useRef<HTMLDivElement>(null);
 
   const {
