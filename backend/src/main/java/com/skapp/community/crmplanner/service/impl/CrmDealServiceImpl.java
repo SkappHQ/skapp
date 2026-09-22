@@ -107,7 +107,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto createDeal(CrmDealCreateRequestDto requestDto) {
+		log.info("createDeal: execution started");
+
 		CrmDeal savedDeal = persistNewDeal(requestDto);
+
+		log.info("createDeal: execution ended");
 		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
@@ -180,8 +184,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 		Page<CrmDealResponseDto> dealsPage = crmDealDao.findDeals(filterDto, ownerId,
 				PageRequest.of(filterDto.getPage(), filterDto.getSize()));
 
-		PageDto pageDto = pageTransformer.transform(dealsPage);
+		PageDto pageDto = new PageDto();
 		pageDto.setItems(dealsPage.getContent());
+		pageDto.setCurrentPage(dealsPage.getNumber());
+		pageDto.setTotalItems(dealsPage.getTotalElements());
+		pageDto.setTotalPages(dealsPage.getTotalPages());
 
 		log.info("getDeals: execution ended with {} result(s)", dealsPage.getNumberOfElements());
 		return new ResponseEntityDto(false, pageDto);
@@ -386,7 +393,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntityDto getDealById(Long id) {
-		log.info("getDealById: execution started", id);
+		log.info("getDealById: execution started");
 
 		CrmDeal deal = crmDealDao.findByIdWithAssociations(id);
 		if (deal == null) {
@@ -398,7 +405,7 @@ public class CrmDealServiceImpl implements CrmDealService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_DEAL_VIEW_DENIED);
 		}
 
-		log.info("getDealById: execution ended", id);
+		log.info("getDealById: execution ended");
 		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, deal));
 	}
 
@@ -466,7 +473,11 @@ public class CrmDealServiceImpl implements CrmDealService {
 	@Override
 	@Transactional
 	public ResponseEntityDto editDeal(Long id, CrmDealEditRequestDto requestDto) {
+		log.info("editDeal: execution started");
+
 		CrmDeal savedDeal = applyDealEdit(id, requestDto);
+
+		log.info("editDeal: execution ended");
 		return new ResponseEntityDto(false, CrmUtil.toDealResponseDto(crmMapper, savedDeal));
 	}
 
