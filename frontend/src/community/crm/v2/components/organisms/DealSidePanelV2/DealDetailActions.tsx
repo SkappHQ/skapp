@@ -23,7 +23,8 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
   dealId,
   onDeleteClick
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { isCrmSalesManager } = useSessionData();
 
   const [isLinkCopied, setIsLinkCopied] = useState(false);
@@ -39,7 +40,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
     return () => clearTimeout(timer);
   }, [isLinkCopied]);
 
-  const handleCopyLink = async (): Promise<void> => {
+  const handleCopyLink = async () => {
     try {
       await copyToClipboard(
         `${window.location.origin}${ROUTES.CRM.DEAL_DETAIL(dealId)}`
@@ -53,7 +54,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
   const menuItems = [
     {
       id: "delete",
-      label: translateText(["deleteDeal"]),
+      label: translateText(["deals", "sidePanel", "deleteDeal"]),
       icon: {
         start: (
           <DeleteButtonIcon
@@ -73,7 +74,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
       <Popover
         side="bottom"
         open={isLinkCopied}
-        content={translateText(["linkCopied"])}
+        content={translateText(["deals", "sidePanel", "linkCopied"])}
         className="body3 text-secondary-text rounded-lg px-3 py-2 shadow-lg"
       >
         <IconButton
@@ -88,8 +89,8 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
           onClick={handleCopyLink}
           aria-label={
             isLinkCopied
-              ? translateText(["linkCopied"])
-              : translateText(["ariaLabels", "copyLink"])
+              ? translateText(["deals", "sidePanel", "linkCopied"])
+              : translateAria(["deals", "sidePanel", "copyLink"])
           }
         />
       </Popover>
@@ -99,7 +100,7 @@ const DealDetailActions: FC<DealDetailActionsProps> = ({
           id="deal-actions"
           menuItems={menuItems}
           anchorButton={{
-            "aria-label": translateText(["kebabMenuAriaLabel"])
+            "aria-label": translateAria(["deals", "sidePanel", "kebabMenu"])
           }}
           className={{
             anchorElement:

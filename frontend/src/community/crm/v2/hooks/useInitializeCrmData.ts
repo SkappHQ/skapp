@@ -19,7 +19,7 @@ interface UseInitializeCrmDataReturn {
 }
 
 export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
-  const translateText = useTranslator("crmModule", "common", "initData");
+  const translateText = useTranslator("crmModuleV2");
 
   const { setToastMessage } = useToast();
 
@@ -49,8 +49,8 @@ export const useInitializeCrmData = (): UseInitializeCrmDataReturn => {
       setToastMessage({
         open: true,
         toastType: ToastType.ERROR,
-        title: translateText(["errorTitle"]),
-        description: translateText(["errorDescription"])
+        title: translateText(["common", "initData", "errorTitle"]),
+        description: translateText(["common", "initData", "errorDescription"])
       });
     }
 

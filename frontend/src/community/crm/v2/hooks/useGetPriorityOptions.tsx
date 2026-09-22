@@ -6,7 +6,7 @@ import { PRIORITY_OPTIONS } from "~community/crm/v2/constants/taskConstants";
 import { CrmPriorityOption } from "~community/crm/v2/types/CrmTypes";
 
 export const useGetPriorityOptions = (): CrmPriorityOption[] => {
-  const translateText = useTranslator("crmModule", "common", "priorityOptions");
+  const translateText = useTranslator("crmModuleV2");
 
   return PRIORITY_OPTIONS.map((option) => ({
     id: option.key,
@@ -15,7 +15,7 @@ export const useGetPriorityOptions = (): CrmPriorityOption[] => {
       <Label backgroundColor={option.backgroundColor} className="py-2 px-3">
         {createElement(option.IconComponent)}
         <span className={`body3 ${option.textColor}`}>
-          {translateText([option.key])}
+          {translateText(["common", "priorityOptions", option.key])}
         </span>
       </Label>
     )

@@ -44,8 +44,16 @@ const DealsSectionV2: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      title: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
       description: translateText([
+        "deals",
+        "table",
         "inlineEdit",
         "toastMessages",
         "editErrorDescription"
@@ -54,7 +62,7 @@ const DealsSectionV2: FC = () => {
   };
 
   const { mutate: reorderDeal } = useReorderDealInList(handleReorderError);
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const {

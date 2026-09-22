@@ -17,7 +17,7 @@ import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmDa
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
 const DealDetailPage: FC = () => {
-  const translateText = useTranslator("crmModule");
+  const translateText = useTranslator("crmModuleV2");
   const router = useRouter();
 
   useInitializeCrmData();
@@ -68,12 +68,12 @@ const DealDetailPage: FC = () => {
       breadcrumbs={[
         { label: translateText(["breadcrumbs", "crm"]) },
         {
-          label: translateText(["deals", "title"]),
+          label: translateText(["deals", "page", "title"]),
           onClick: () => router.push(ROUTES.CRM.DEALS)
         }
       ]}
-      pageHead={translateText(["deals", "detailsPageHead"])}
-      title={translateText(["deals", "detailsTitle"])}
+      pageHead={translateText(["deals", "detailsPage", "pageHead"])}
+      title={translateText(["deals", "detailsPage", "title"])}
       isTitleHidden
       module={Modules.CRM}
     >
@@ -81,16 +81,10 @@ const DealDetailPage: FC = () => {
         {isDealUnavailable && (
           <EmptyDataView
             icon={<SearchIcon width="24" height="24" />}
-            title={translateText([
-              "deals",
-              "sidePanel",
-              "errors",
-              "dealNotFoundTitle"
-            ])}
+            title={translateText(["deals", "detailsPage", "dealNotFoundTitle"])}
             description={translateText([
               "deals",
-              "sidePanel",
-              "errors",
+              "detailsPage",
               "dealNotFoundDescription"
             ])}
           />
