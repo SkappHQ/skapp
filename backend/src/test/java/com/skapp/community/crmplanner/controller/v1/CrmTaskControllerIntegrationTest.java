@@ -724,7 +724,9 @@ class CrmTaskControllerIntegrationTest {
 
 		performGetRelatedRequest(task.getId()).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
 	}
 
 	@Test
@@ -739,7 +741,73 @@ class CrmTaskControllerIntegrationTest {
 
 		performGetByIdRequest(task.getId()).andDo(print())
 			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Get tasks - Soft-deleted tasks are excluded from the list")
+	void getTasks_WithDeletedTask_ExcludesDeleted() throws Exception {
+		savedTask("Live Task", false);
+		savedTask("Deleted Task", true, false, contactId, null);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Live Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks - Soft-deleted tasks are excluded")
+	void getRelatedTasks_ExcludesDeletedTasks() throws Exception {
+		CrmTask source = savedTask("Related Source Task", false);
+		savedTask("Live Related Task", false);
+		savedTask("Deleted Related Task", true, false, contactId, null);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Live Related Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get task by ID - Soft-deleted task returns Bad Request")
+	void getTaskById_SoftDeletedTask_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask("Deleted Detail Task", true, false, contactId, null);
+
+		performGetByIdRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get task by ID without CRM role - Returns Forbidden")
+	void getTaskById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask("Forbidden Detail Task", false);
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(BY_ID_PATH, task.getId()).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
+	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask("Forbidden Related Task", false);
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(BASE_PATH + "/" + task.getId() + "/related").accept(MediaType.APPLICATION_JSON), noRoleToken)
+			.andDo(print())
+			.andExpect(status().isForbidden());
 	}
 
 	// --- create / edit / delete helpers and tests ---
