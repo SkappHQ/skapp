@@ -13,7 +13,10 @@ import { useToast } from "~community/common/providers/ToastProvider";
 import DealStagesDraggableContent from "~community/configurations/components/molecules/DealStagesDraggableContent/DealStagesDraggableContent";
 import DraggableDealStageCardSkeleton from "~community/configurations/components/molecules/DraggableDealStageCard/DraggableDealStageCardSkeleton";
 import DealStageModalController from "~community/configurations/components/organisms/DealStageModalController/DealStageModalController";
-import { toStageReorderPayload } from "~community/configurations/utils/stageUtil";
+import {
+  reconcileDraftStages,
+  toStageReorderPayload
+} from "~community/configurations/utils/stageUtil";
 import {
   useGetDealStages,
   useReorderDealStages
@@ -68,9 +71,11 @@ const DealStagesSection: FC = () => {
   }, [fetchedStages]);
 
   useEffect(() => {
-    if (hasChanges) return;
-
-    setDraftStages(orderedStages);
+    setDraftStages((previousDraft) =>
+      hasChanges
+        ? reconcileDraftStages(previousDraft, orderedStages)
+        : orderedStages
+    );
   }, [orderedStages, hasChanges]);
 
   const handleSuccess = (reorderedStages: CrmStageEntity[]) => {
