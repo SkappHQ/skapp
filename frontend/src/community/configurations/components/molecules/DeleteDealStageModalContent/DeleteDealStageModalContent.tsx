@@ -16,7 +16,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModule",
+    "crmModuleV2",
     "deals",
     "defaultStageNames"
   );

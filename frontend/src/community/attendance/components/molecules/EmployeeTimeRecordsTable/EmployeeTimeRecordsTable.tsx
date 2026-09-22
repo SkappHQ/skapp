@@ -71,7 +71,8 @@ const EmployeeTimeRecordsTable = ({
     setSelectedDailyRecord,
     setDirectManualTimeEntryEligibleEmployee,
     setEmployeeTimesheetModalType,
-    setIsEmployeeTimesheetModalOpen
+    setIsEmployeeTimesheetModalOpen,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore(
     useShallow((state) => ({
       timesheetAnalyticsParams: state.timesheetAnalyticsParams,
@@ -80,7 +81,8 @@ const EmployeeTimeRecordsTable = ({
       setDirectManualTimeEntryEligibleEmployee:
         state.setDirectManualTimeEntryEligibleEmployee,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
-      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
+      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
+      setIsSelfDirectTimeEntry: state.setIsSelfDirectTimeEntry
     }))
   );
 
@@ -156,6 +158,7 @@ const EmployeeTimeRecordsTable = ({
     if (modalType === null) return;
 
     setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
+    setIsSelfDirectTimeEntry(false);
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
     setIsEmployeeTimesheetModalOpen(true);
