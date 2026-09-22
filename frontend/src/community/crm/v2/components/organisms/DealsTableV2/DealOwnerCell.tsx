@@ -16,7 +16,8 @@ interface Props {
 }
 
 const DealOwnerCell: FC<Props> = ({ dealId, ownerId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const [isEditing, setIsEditing] = useState(false);
 
   const owners = useCrmStoreV2(useShallow((store) => store.owners));
@@ -32,7 +33,7 @@ const DealOwnerCell: FC<Props> = ({ dealId, ownerId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["inlineEdit", "ariaLabels", "dealOwner"])}
+      ariaLabel={translateAria(["deals", "table", "inlineEdit", "dealOwner"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -50,14 +51,16 @@ const DealOwnerCell: FC<Props> = ({ dealId, ownerId, onSave }) => {
       <OwnerPopupSearch
         selectedUser={owner}
         onChange={handleChange}
-        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
+        placeholder={translateText(["deals", "common", "placeholders", "none"])}
         searchPlaceholder={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "ownerSearch"
         ])}
         noResultsText={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "noResults"
         ])}
