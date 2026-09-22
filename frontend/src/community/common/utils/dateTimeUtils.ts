@@ -222,9 +222,6 @@ export const nowInZone = (zone: string | undefined): DateTime => {
 export const currentDateIn = (zone: string | undefined): string =>
   nowInZone(zone).toFormat(DATE_FORMAT);
 
-export const getBrowserTimezone = (): string =>
-  Intl.DateTimeFormat().resolvedOptions().timeZone;
-
 export const readsSameWallClock = (
   zone: string,
   otherZone: string

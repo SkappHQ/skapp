@@ -1,6 +1,5 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
-import { TIMEZONE_HEADER } from "~community/common/constants/configs";
 import {
   COMMON_ERROR_INVALID_REFRESH_TOKEN,
   COMMON_ERROR_MISSING_COOKIE_IN_TOKEN
@@ -8,7 +7,7 @@ import {
 import { useCommonStore } from "~community/common/stores/commonStore";
 import { isEnterpriseMode } from "~community/common/utils/commonUtil";
 import { getApiUrl } from "~community/common/utils/getConstants";
-import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils";
+import { applyRequestTimezoneHeader } from "~community/common/utils/requestTimezoneUtils";
 import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { signOut } from "./authUtils";
@@ -25,7 +24,7 @@ const authAxios = axios.create({
 //  request interceptor
 authAxios.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
-    config.headers[TIMEZONE_HEADER] = getRequestTimezone();
+    applyRequestTimezoneHeader(config);
 
     const tenantId = getTenantId();
     if (isEnterpriseMode() && tenantId) {

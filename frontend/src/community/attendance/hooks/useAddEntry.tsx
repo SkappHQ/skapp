@@ -28,7 +28,7 @@ import {
 } from "~community/common/constants/errorMessageKeys";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import {
-  useEntryZone,
+  useDisplayZone,
   useOrganizationZone
 } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -66,7 +66,7 @@ const useAddEntry = () => {
     directManualTimeEntryEligibleEmployee
   } = useAttendanceStore((state) => state);
   const status = attendanceParams.slotType;
-  const entryZone = useEntryZone();
+  const entryZone = useDisplayZone();
   const organizationZone = useOrganizationZone();
 
   const showErrorToast = (titleKey: string, descriptionKey: string) => {

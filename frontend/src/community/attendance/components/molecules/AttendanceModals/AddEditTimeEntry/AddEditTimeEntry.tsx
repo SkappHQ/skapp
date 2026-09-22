@@ -38,7 +38,7 @@ import TimeInput from "~community/common/components/atoms/TimeInput/TimeInput";
 import Form from "~community/common/components/molecules/Form/Form";
 import InputDate from "~community/common/components/molecules/InputDate/InputDate";
 import InputField from "~community/common/components/molecules/InputField/InputField";
-import { useEntryZone } from "~community/common/hooks/useDisplayZone";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { datePatternReverse } from "~community/common/regex/regexPatterns";
 import { IconName } from "~community/common/types/IconTypes";
@@ -66,7 +66,7 @@ interface Props {
 const AddEditTimeEntry = ({ setFromDateTime, setToDateTime }: Props) => {
   const theme: Theme = useTheme();
   const translateText = useTranslator("attendanceModule", "timesheet");
-  const entryZone = useEntryZone();
+  const entryZone = useDisplayZone();
   const [duration, setDuration] = useState<string>();
   const [breakHours, setBreakHours] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<DateTime | undefined>(

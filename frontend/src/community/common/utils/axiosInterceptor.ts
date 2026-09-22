@@ -1,9 +1,8 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 import { getAccessToken } from "~community/auth/utils/authUtils";
-import { TIMEZONE_HEADER } from "~community/common/constants/configs";
 import { useCommonStore } from "~community/common/stores/commonStore";
-import { getRequestTimezone } from "~community/common/utils/requestTimezoneUtils";
+import { applyRequestTimezoneHeader } from "~community/common/utils/requestTimezoneUtils";
 import { getTenantId } from "~enterprise/common/utils/tenantUtil";
 
 import { ApiVersions } from "../constants/configs";
@@ -28,7 +27,7 @@ const requestInterceptorConfig = async (config: InternalAxiosRequestConfig) => {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  config.headers[TIMEZONE_HEADER] = getRequestTimezone();
+  applyRequestTimezoneHeader(config);
 
   const isEnterpriseMode = process.env.NEXT_PUBLIC_MODE === "enterprise";
   const tenantId = getTenantId();
