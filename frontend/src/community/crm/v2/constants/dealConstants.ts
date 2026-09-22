@@ -11,30 +11,30 @@ export const DEAL_FIELD_META: Partial<
 > = {
   [CrmDealSortEnum.NAME]: {
     rowKey: "dealName",
-    titleKey: "dealColumn"
+    titleKey: "deal"
   },
   [CrmDealSortEnum.AMOUNT]: {
     rowKey: "value",
-    titleKey: "valueColumn"
+    titleKey: "value"
   },
   [CrmDealSortEnum.STAGE]: {
     rowKey: "stage",
-    titleKey: "stageColumn"
+    titleKey: "stage"
   },
   [CrmDealSortEnum.COMPANY]: {
     rowKey: "companyName",
-    titleKey: "companyNameColumn"
+    titleKey: "companyName"
   },
   [CrmDealSortEnum.CONTACT]: {
     rowKey: "contactName",
-    titleKey: "contactNameColumn"
+    titleKey: "contactName"
   },
   [CrmDealSortEnum.PRIORITY]: {
     rowKey: "priority",
-    titleKey: "priorityColumn"
+    titleKey: "priority"
   },
   [CrmDealSortEnum.OWNER]: {
     rowKey: "dealOwner",
-    titleKey: "dealOwnerColumn"
+    titleKey: "dealOwner"
   }
 };

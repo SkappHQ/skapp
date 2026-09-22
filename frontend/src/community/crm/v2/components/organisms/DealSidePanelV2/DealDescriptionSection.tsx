@@ -14,7 +14,8 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
   description,
   onSave
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const isDescriptionEmpty = !description.trim();
 
@@ -41,7 +42,9 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="subtitle1">{translateText(["description"])}</p>
+      <p className="subtitle1">
+        {translateText(["deals", "common", "labels", "description"])}
+      </p>
       {isEditing ? (
         <div className="flex flex-col gap-3">
           <TextArea
@@ -60,10 +63,10 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
               type="button"
               variant="tertiary"
             >
-              {translateText(["buttons", "discard"])}
+              {translateText(["deals", "sidePanel", "buttons", "discard"])}
             </ButtonV2>
             <ButtonV2 onClick={save} size="md" type="button" variant="primary">
-              {translateText(["buttons", "save"])}
+              {translateText(["deals", "sidePanel", "buttons", "save"])}
             </ButtonV2>
           </div>
         </div>
@@ -72,13 +75,18 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           role="button"
           tabIndex={0}
           className="body2 text-left w-full cursor-pointer hover:bg-secondary-background rounded bg-transparent border-none"
-          aria-label={translateText(["ariaLabels", "editDescription"])}
+          aria-label={translateAria(["deals", "sidePanel", "editDescription"])}
           onClick={startEditing}
           onKeyDown={handleKeyDown}
         >
           {isDescriptionEmpty ? (
             <span className="text-secondary-text body2">
-              {translateText(["placeholders", "description"])}
+              {translateText([
+                "deals",
+                "sidePanel",
+                "placeholders",
+                "description"
+              ])}
             </span>
           ) : (
             description

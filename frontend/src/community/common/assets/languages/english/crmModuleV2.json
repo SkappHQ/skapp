@@ -126,6 +126,164 @@
         "errorTitle": "Failed to delete contact",
         "errorDescription": "Something went wrong. Please try again"
       }
+    },
+    "priorityOptions": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
+  },
+  "deals": {
+    "page": {
+      "pageHead": "Deals | Skapp",
+      "title": "Deals",
+      "addDealBtn": "Add deal"
+    },
+    "detailsPage": {
+      "pageHead": "Deal Details | Skapp",
+      "title": "Deal Details",
+      "dealNotFoundTitle": "Deal not found",
+      "dealNotFoundDescription": "This deal is no longer available."
+    },
+    "defaultStageNames": {
+      "LEAD": "Lead",
+      "QUALIFIED": "Qualified",
+      "DEMO_SCHEDULED": "Demo Scheduled",
+      "PROPOSAL_SENT": "Proposal Sent",
+      "NEGOTIATION": "Negotiation",
+      "WON": "Won",
+      "LOST": "Lost"
+    },
+    "common": {
+      "labels": {
+        "dealName": "Deal name",
+        "value": "Value",
+        "priority": "Priority",
+        "description": "Description",
+        "ownedBy": "Owned by",
+        "contact": "Contact"
+      },
+      "placeholders": {
+        "dealName": "Enter deal name",
+        "stage": "Select stage",
+        "none": "None",
+        "ownerSearch": "Search employees",
+        "contactSearch": "Search contacts",
+        "noResults": "No results"
+      },
+      "buttons": {
+        "addDeal": "Add deal"
+      },
+      "validations": {
+        "dealNameRequired": "Deal name is required",
+        "dealNameInvalidChars": "Deal name can only contain letters, numbers, spaces, and - . , & ' ( ) / : @ # |",
+        "dealNameMaxLength": "Deal name must be 255 characters or less",
+        "dealNameExists": "A deal with this name already exists",
+        "descriptionMaxLength": "Description must be 2000 characters or less",
+        "amountInvalid": "Please enter a valid positive amount",
+        "contactRequired": "Contact is required"
+      },
+      "toastMessages": {
+        "addSuccessTitle": "Deal added successfully",
+        "addSuccessDescription": "The new deal has been created",
+        "addErrorTitle": "Failed to add deal",
+        "addErrorDescription": "Please try again or contact support"
+      }
+    },
+    "table": {
+      "columns": {
+        "deal": "Deal",
+        "value": "Value",
+        "stage": "Stage",
+        "contactName": "Contact name",
+        "companyName": "Company name",
+        "priority": "Priority",
+        "dealOwner": "Deal owner"
+      },
+      "sortAscending": "Ascending",
+      "sortDescending": "Descending",
+      "hideColumn": "Hide column",
+      "emptyDataState": {
+        "title": "No deals available.",
+        "description": "Add a new deal to get started"
+      },
+      "emptySearchState": {
+        "title": "No deals found for {{searchKeyword}}",
+        "description": "Try adjusting your search or filters"
+      },
+      "infiniteScrollLoadingMessage": "Loading more deals...",
+      "inlineEdit": {
+        "toastMessages": {
+          "editErrorTitle": "Failed to update deal",
+          "editErrorDescription": "Oops! Something went wrong. Please try again"
+        }
+      }
+    },
+    "header": {
+      "searchPlaceholder": "Search deals"
+    },
+    "board": {
+      "toastMessages": {
+        "moveErrorTitle": "Oops! Something went wrong",
+        "moveErrorDescription": "Failed to update deal. Please try again",
+        "loadMoreErrorTitle": "Couldn't load more deals",
+        "loadMoreErrorDescription": "Something went wrong. Please try again."
+      }
+    },
+    "sidePanel": {
+      "deleteDeal": "Delete deal",
+      "linkCopied": "Link copied",
+      "placeholders": {
+        "description": "Add description"
+      },
+      "buttons": {
+        "save": "Save",
+        "discard": "Discard"
+      },
+      "tasks": {
+        "title": "Tasks",
+        "emptyDescription": "No tasks yet. Create a task to follow up with this deal"
+      },
+      "toastMessages": {
+        "editErrorTitle": "Oops! Something went wrong",
+        "editErrorDescription": "Failed to update deal. Please try again"
+      }
+    },
+    "addPanel": {
+      "title": "Add deal",
+      "placeholders": {
+        "description": "Enter description"
+      },
+      "validations": {
+        "stageRequired": "Stage is required",
+        "ownerRequired": "Owner is required",
+        "priorityRequired": "Priority is required"
+      }
+    },
+    "linkedSection": {
+      "emptyTitle": "No deals",
+      "emptyDescription": "No deals associated with this company",
+      "inlineAdd": {
+        "contactPlaceholder": "Search contact",
+        "validations": {
+          "dealNameInvalidChars": "Deal name can not contain special characters.",
+          "dealNameExists": "A deal with this name already exists for this contact. Please use a different name."
+        }
+      }
+    },
+    "deleteModal": {
+      "title": "Delete deal",
+      "description": "Are you sure you want to delete '{{dealName}}'? This will remove all tasks linked to this deal. This action cannot be undone.",
+      "buttons": {
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
+      "toastMessages": {
+        "successTitle": "Deal deleted",
+        "successDescription": "The deal has been deleted and all linked tasks have been removed.",
+        "errorTitle": "Failed to delete deal",
+        "errorDescription": "Something went wrong. Please try again."
+      }
     }
   }
 }
