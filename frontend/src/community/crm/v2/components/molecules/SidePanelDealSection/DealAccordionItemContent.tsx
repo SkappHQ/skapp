@@ -11,12 +11,12 @@ interface DealAccordionItemContentProps {
 const DealAccordionItemContent: FC<DealAccordionItemContentProps> = ({
   deal
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
 
   return (
     <div className="flex flex-col gap-1">
       <p className="subtitle4 text-secondary-text">
-        {translateText(["descriptionLabel"])}
+        {translateText(["deals", "common", "labels", "description"])}
       </p>
       <p className="body3">{formatTableValue(deal.description)}</p>
     </div>
