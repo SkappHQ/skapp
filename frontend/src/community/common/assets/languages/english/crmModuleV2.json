@@ -98,8 +98,8 @@
     },
     "board": {
       "toastMessages": {
-        "moveErrorTitle": "Couldn't move deal",
-        "moveErrorDescription": "Something went wrong and the change was reverted. Please try again.",
+        "moveErrorTitle": "Oops! Something went wrong",
+        "moveErrorDescription": "Failed to update deal. Please try again",
         "loadMoreErrorTitle": "Couldn't load more deals",
         "loadMoreErrorDescription": "Something went wrong. Please try again."
       }
