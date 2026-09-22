@@ -34,6 +34,10 @@
       "dealName": "Deal name",
       "description": "Description"
     },
+    "deleteModal": {
+      "cancel": "Cancel delete deal",
+      "confirm": "Confirm delete deal"
+    },
     "linkedSection": {
       "addDealBtn": "Add deal",
       "inlineAdd": {
