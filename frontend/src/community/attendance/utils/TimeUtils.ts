@@ -124,9 +124,12 @@ export const convertToDateTime = (
 };
 
 export const convertToTimeZoneISO = (isoTime: string, zone?: string) => {
+  if (!zone) {
+    return null;
+  }
+
   const dateTime = DateTime.fromISO(isoTime, { zone: "utc" });
-  const localDateTime = dateTime.setZone(zone ?? getCurrentTimeZone());
-  return localDateTime.toISO();
+  return dateTime.setZone(zone).toISO();
 };
 
 export const getDuration = (startTime: string, endTime: string) => {

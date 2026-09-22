@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
-import java.time.LocalTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -29,12 +29,12 @@ public class EmployeeDailyRecordsTimeSlotResponseDto {
 	@JsonDeserialize(using = Base64BooleanDeserializer.class)
 	private Boolean isManualEntry;
 
-	public LocalTime getStartTime() {
-		return this.startTime != null ? DateTimeUtils.epochMillisToUtcLocalTime(this.startTime) : null;
+	public Instant getStartTime() {
+		return this.startTime != null ? DateTimeUtils.epochMillisToInstant(this.startTime) : null;
 	}
 
-	public LocalTime getEndTime() {
-		return this.endTime != null ? DateTimeUtils.epochMillisToUtcLocalTime(this.endTime) : null;
+	public Instant getEndTime() {
+		return this.endTime != null ? DateTimeUtils.epochMillisToInstant(this.endTime) : null;
 	}
 
 }
