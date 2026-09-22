@@ -29,5 +29,54 @@
       "confirm": "Confirm delete task",
       "cancel": "Cancel delete task"
     }
+  },
+  "deals": {
+    "common": {
+      "stage": "Stage",
+      "priority": "Priority",
+      "amount": "Amount",
+      "contact": "Contact"
+    },
+    "header": {
+      "clearSearch": "Clear search",
+      "listView": "List view",
+      "kanbanView": "Kanban view",
+      "switchDealView": "Switch deal view"
+    },
+    "table": {
+      "openDealDetails": "Open deal details for {{name}}",
+      "inlineEdit": {
+        "value": "Value",
+        "dealOwner": "Deal owner",
+        "contactName": "Contact name"
+      }
+    },
+    "sidePanel": {
+      "kebabMenu": "Deal actions",
+      "saveTitle": "Save title",
+      "discardTitle": "Discard title",
+      "editTitle": "Edit title",
+      "editDescription": "Edit description",
+      "copyLink": "Copy link to this deal"
+    },
+    "addPanel": {
+      "closePanel": "Close add deal panel",
+      "addDeal": "Add deal",
+      "dealName": "Deal name",
+      "description": "Description"
+    },
+    "deleteModal": {
+      "cancel": "Cancel delete deal",
+      "confirm": "Confirm delete deal"
+    },
+    "linkedSection": {
+      "addDealBtn": "Add deal",
+      "inlineAdd": {
+        "group": "Add new deal",
+        "saveDeal": "Save deal",
+        "cancelAddDeal": "Cancel adding deal",
+        "clearContact": "Clear selected contact"
+      }
+    }
   }
 }

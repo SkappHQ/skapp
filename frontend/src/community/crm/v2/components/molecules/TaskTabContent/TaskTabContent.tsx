@@ -38,6 +38,8 @@ import {
   mergeDeals
 } from "~community/crm/v2/utils/dealUtil";
 import {
+  addMissingTasks,
+  getCompletedTasks,
   getTaskGroups,
   resolveTasks,
   toTaskDealIds,
@@ -132,7 +134,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   useEffect(() => {
     if (!openTaskData && !completedTaskData) return;
 
-    setTasks(updateTaskRecord(tasks, fetchedTasks));
+    setTasks(addMissingTasks(tasks, fetchedTasks));
     setTaskIds(visibleTaskIds);
   }, [openTaskData, completedTaskData, fetchedTasks]);
 
@@ -155,6 +157,11 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const tasksInView = useMemo(
     () => resolveTasks(visibleTaskIds, tasks),
     [visibleTaskIds, tasks]
+  );
+
+  const completedTasksInView = useMemo(
+    () => getCompletedTasks(tasksInView),
+    [tasksInView]
   );
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
@@ -260,7 +267,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const renderCompletedTasksContent = () => (
     <div className="flex flex-col h-full px-2 pb-4 gap-4 overflow-y-auto">
       <TaskGroup
-        tasks={tasksInView}
+        tasks={completedTasksInView}
         isCheckTaskVisible={false}
         onRowClick={handleRowClick}
         onToggleComplete={handleToggleComplete}
@@ -299,7 +306,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
     }
 
     const isEmpty = isCompletedTab
-      ? visibleTaskIds.length === 0
+      ? completedTasksInView.length === 0 && !hasNextPage && !isFetchingNextPage
       : isOpenTasksEmpty;
 
     if (isEmpty) {

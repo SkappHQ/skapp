@@ -48,7 +48,8 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
   onOwnerChange,
   onContactChange
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { getStageByName } = useStageNameMapper();
 
   const { deal, stagesRecord, contactRecord, companies, setCompanies, owners } =
@@ -158,12 +159,20 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
         variant="primary"
         className="rounded-lg"
         width="55%"
-        placeholder={translateText(["placeholders", "stage"])}
-        ariaLabel={translateText(["ariaLabels", "stage"])}
+        placeholder={translateText([
+          "deals",
+          "common",
+          "placeholders",
+          "stage"
+        ])}
+        ariaLabel={translateAria(["deals", "common", "stage"])}
       />
 
       <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
-        <PropertyRow label={translateText(["contact"])} required>
+        <PropertyRow
+          label={translateText(["deals", "common", "labels", "contact"])}
+          required
+        >
           <div className="flex flex-col w-full">
             <ContactPopupSearch
               contacts={contacts}
@@ -172,40 +181,76 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
               onChange={handleContactChange}
               onSearch={setContactSearchTerm}
               ariaRequired
-              placeholder={translateText(["placeholders", "none"])}
+              placeholder={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "none"
+              ])}
               searchPlaceholder={translateText([
+                "deals",
+                "common",
                 "placeholders",
                 "contactSearch"
               ])}
-              noResultsText={translateText(["placeholders", "noResults"])}
+              noResultsText={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "noResults"
+              ])}
             />
           </div>
         </PropertyRow>
 
         <PropertyField
-          label={translateText(["value"])}
+          label={translateText(["deals", "common", "labels", "value"])}
           value={deal.amount ?? ""}
-          placeholder={translateText(["placeholders", "none"])}
-          ariaLabel={translateText(["ariaLabels", "amount"])}
+          placeholder={translateText([
+            "deals",
+            "common",
+            "placeholders",
+            "none"
+          ])}
+          ariaLabel={translateAria(["deals", "common", "amount"])}
           validate={(value) => validateDealAmount(value, translateText)}
           onSave={onAmountChange}
         />
 
-        <PropertyRow label={translateText(["priority"])}>
+        <PropertyRow
+          label={translateText(["deals", "common", "labels", "priority"])}
+        >
           <PriorityDropdown
             value={deal.priority ?? CrmPriorityEnum.MEDIUM}
             onChange={handlePriorityChange}
           />
         </PropertyRow>
 
-        <PropertyRow label={translateText(["ownedBy"])}>
+        <PropertyRow
+          label={translateText(["deals", "common", "labels", "ownedBy"])}
+        >
           <div className="flex flex-col w-full">
             <OwnerPopupSearch
               selectedUser={selectedOwner}
               onChange={handleOwnerChange}
-              placeholder={translateText(["placeholders", "none"])}
-              searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
-              noResultsText={translateText(["placeholders", "noResults"])}
+              placeholder={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "none"
+              ])}
+              searchPlaceholder={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "ownerSearch"
+              ])}
+              noResultsText={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "noResults"
+              ])}
             />
           </div>
         </PropertyRow>

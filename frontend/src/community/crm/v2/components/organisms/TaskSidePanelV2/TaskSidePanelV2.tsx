@@ -3,7 +3,8 @@ import {
   EditIcon,
   KebabMenu,
   MenuItemProps,
-  SidePanel
+  SidePanel,
+  UndoIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -91,6 +92,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   const contact =
     task?.contactId != null ? contacts[task.contactId] : undefined;
   const deal = task?.dealId != null ? deals[task.dealId] : undefined;
+  const isTaskCompleted = task?.isCompleted === true;
 
   const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
 
@@ -117,16 +119,21 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   );
 
   useEffect(() => {
-    if (!taskDetail && !relatedTasksData) return;
+    if (!taskDetail) return;
 
-    const currentTask: CrmTaskEntity = { ...taskDetail, id: taskId };
+    setTasks(updateTaskRecord(tasks, [{ ...taskDetail, id: taskId }]));
+  }, [taskDetail]);
 
-    if (relatedTasksData) {
-      currentTask.relatedTaskIds = toTaskIds(relatedTasks);
-    }
+  useEffect(() => {
+    if (!relatedTasksData) return;
+
+    const currentTask: CrmTaskEntity = {
+      id: taskId,
+      relatedTaskIds: toTaskIds(relatedTasks)
+    };
 
     setTasks(updateTaskRecord(tasks, [currentTask, ...relatedTasks]));
-  }, [taskDetail, relatedTasksData]);
+  }, [relatedTasksData]);
 
   useEffect(() => {
     if (!dealDetail) return;
@@ -144,7 +151,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     handleClose();
   };
 
-  const handleMarkAsDoneError = () => {
+  const handleTaskUpdateError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -165,11 +172,35 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
   const { mutate: markTaskAsDone } = useUpdateTask(
     handleMarkAsDoneSuccess,
-    handleMarkAsDoneError
+    handleTaskUpdateError
   );
 
   const handleMarkAsDone = () => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
+  };
+
+  const handleReopenSuccess = (updatedTask: CrmTaskEntity) => {
+    setTasks(updateTaskRecord(tasks, [updatedTask]));
+
+    setToastMessage({
+      open: true,
+      toastType: ToastType.SUCCESS,
+      title: translateText(["sidePanel", "reopenToastMessages", "successTitle"]),
+      description: translateText([
+        "sidePanel",
+        "reopenToastMessages",
+        "successDescription"
+      ])
+    });
+  };
+
+  const { mutate: reopenTask } = useUpdateTask(
+    handleReopenSuccess,
+    handleTaskUpdateError
+  );
+
+  const handleReopen = () => {
+    reopenTask({ id: taskId, task: { isCompleted: false } });
   };
 
   const menuItems: MenuItemProps[] = useMemo(
@@ -183,6 +214,16 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           setIsTaskModalOpen(true);
         }
       },
+      ...(isTaskCompleted
+        ? [
+            {
+              id: "reopen",
+              label: translateText(["sidePanel", "reopenTask"]),
+              icon: { start: <UndoIcon width="16px" height="16px" /> },
+              onClick: handleReopen
+            }
+          ]
+        : []),
       {
         id: "delete",
         label: translateText(["tasks", "sidePanel", "deleteTask"]),
@@ -203,7 +244,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         }
       }
     ],
-    [translateText]
+    [translateText, isTaskCompleted, handleReopen]
   );
 
   return (
