@@ -3,7 +3,8 @@ import {
   EditIcon,
   KebabMenu,
   MenuItemProps,
-  SidePanel
+  SidePanel,
+  UndoIcon
 } from "@rootcodelabs/skapp-ui";
 import { FC, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -35,11 +36,7 @@ import {
   CrmSidePanelTypes
 } from "~community/crm/v2/types/CrmTypes";
 import { mergeDeals } from "~community/crm/v2/utils/dealUtil";
-import {
-  resolveTasks,
-  toTaskIds,
-  updateTaskRecord
-} from "~community/crm/v2/utils/taskUtil";
+import { toTaskIds, updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
 
 import TaskSidePanelSkeleton from "./TaskSidePanelSkeleton";
 
@@ -60,7 +57,6 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     owners,
     contacts,
     deals,
-    stages,
     setTasks,
     setDeals,
     setSelectedTaskId,
@@ -68,21 +64,20 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setIsTaskModalOpen,
     setTaskModalType
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      tasks: store.tasks,
-      taskTypes: store.taskTypes,
-      owners: store.owners,
-      contacts: store.contacts,
-      deals: store.deals,
-      stages: store.stages,
-      setTasks: store.setTasks,
-      setDeals: store.setDeals,
-      setSelectedTaskId: store.setSelectedTaskId,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setIsTaskModalOpen: store.setIsTaskModalOpen,
-      setTaskModalType: store.setTaskModalType
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      tasks: state.tasks,
+      taskTypes: state.taskTypes,
+      owners: state.owners,
+      contacts: state.contacts,
+      deals: state.deals,
+      setTasks: state.setTasks,
+      setDeals: state.setDeals,
+      setSelectedTaskId: state.setSelectedTaskId,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setIsTaskModalOpen: state.setIsTaskModalOpen,
+      setTaskModalType: state.setTaskModalType
     }))
   );
 
@@ -93,10 +88,10 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
   const task = tasks[taskId];
   const taskType = task?.typeId != null ? taskTypes[task.typeId] : undefined;
   const owner = task?.ownerId != null ? owners[task.ownerId] : undefined;
-  const contact = task?.contactId != null ? contacts[task.contactId] : undefined;
+  const contact =
+    task?.contactId != null ? contacts[task.contactId] : undefined;
   const deal = task?.dealId != null ? deals[task.dealId] : undefined;
-  const dealOwner = deal?.ownerId != null ? owners[deal.ownerId] : undefined;
-  const dealStage = deal?.stageId != null ? stages[deal.stageId] : undefined;
+  const isTaskCompleted = task?.isCompleted === true;
 
   const { data: taskDetail, isLoading } = useGetTaskById(taskId, isOpen);
 
@@ -122,22 +117,22 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     [relatedTasksData]
   );
 
-  const resolvedRelatedTasks = useMemo(
-    () => resolveTasks(task?.relatedTaskIds ?? [], tasks),
-    [task?.relatedTaskIds, tasks]
-  );
+  useEffect(() => {
+    if (!taskDetail) return;
+
+    setTasks(updateTaskRecord(tasks, [{ ...taskDetail, id: taskId }]));
+  }, [taskDetail]);
 
   useEffect(() => {
-    if (!taskDetail && !relatedTasksData) return;
+    if (!relatedTasksData) return;
 
-    const currentTask: CrmTaskEntity = { ...taskDetail, id: taskId };
-
-    if (relatedTasksData) {
-      currentTask.relatedTaskIds = toTaskIds(relatedTasks);
-    }
+    const currentTask: CrmTaskEntity = {
+      id: taskId,
+      relatedTaskIds: toTaskIds(relatedTasks)
+    };
 
     setTasks(updateTaskRecord(tasks, [currentTask, ...relatedTasks]));
-  }, [taskDetail, relatedTasksData]);
+  }, [relatedTasksData]);
 
   useEffect(() => {
     if (!dealDetail) return;
@@ -155,7 +150,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     handleClose();
   };
 
-  const handleMarkAsDoneError = () => {
+  const handleTaskUpdateError = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
@@ -166,38 +161,35 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
   const { mutate: markTaskAsDone } = useUpdateTask(
     handleMarkAsDoneSuccess,
-    handleMarkAsDoneError
+    handleTaskUpdateError
   );
-
-  const { mutate: updateRelatedTaskCompletion } = useUpdateTask();
 
   const handleMarkAsDone = () => {
     markTaskAsDone({ id: taskId, task: { isCompleted: true } });
   };
 
-  const applyCompletion = (id: number, completed: boolean) => {
-    setTasks(updateTaskRecord(tasks, [{ id, isCompleted: completed }]));
-  };
+  const handleReopenSuccess = (updatedTask: CrmTaskEntity) => {
+    setTasks(updateTaskRecord(tasks, [updatedTask]));
 
-  const handleToggleError = (id: number, wasCompleted: boolean) => {
-    applyCompletion(id, wasCompleted);
     setToastMessage({
       open: true,
-      toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
+      toastType: ToastType.SUCCESS,
+      title: translateText(["sidePanel", "reopenToastMessages", "successTitle"]),
+      description: translateText([
+        "sidePanel",
+        "reopenToastMessages",
+        "successDescription"
+      ])
     });
   };
 
-  const handleRelatedTaskToggleComplete = (id: number, completed: boolean) => {
-    const wasCompleted = tasks[id]?.isCompleted === true;
+  const { mutate: reopenTask } = useUpdateTask(
+    handleReopenSuccess,
+    handleTaskUpdateError
+  );
 
-    applyCompletion(id, completed);
-
-    updateRelatedTaskCompletion(
-      { id, task: { isCompleted: completed } },
-      { onError: () => handleToggleError(id, wasCompleted) }
-    );
+  const handleReopen = () => {
+    reopenTask({ id: taskId, task: { isCompleted: false } });
   };
 
   const menuItems: MenuItemProps[] = useMemo(
@@ -211,6 +203,16 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           setIsTaskModalOpen(true);
         }
       },
+      ...(isTaskCompleted
+        ? [
+            {
+              id: "reopen",
+              label: translateText(["sidePanel", "reopenTask"]),
+              icon: { start: <UndoIcon width="16px" height="16px" /> },
+              onClick: handleReopen
+            }
+          ]
+        : []),
       {
         id: "delete",
         label: translateText(["sidePanel", "deleteTask"]),
@@ -231,7 +233,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         }
       }
     ],
-    [translateText]
+    [translateText, isTaskCompleted, handleReopen]
   );
 
   return (
@@ -293,9 +295,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               <hr className="border-secondary-accent" />
               {!isDealLoading && (
                 <SidePanelDealSection
-                  deal={deal}
-                  owner={dealOwner}
-                  stage={dealStage}
+                  dealIds={deal?.id ? [deal.id] : []}
+                  showAddDealAction={false}
                   emptyDescription={translateText([
                     "sidePanel",
                     "noDealsDescription"
@@ -310,12 +311,8 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
               </h2>
               <hr className="border-secondary-accent" />
               <SidePanelTasksSection
-                tasks={resolvedRelatedTasks}
-                onToggleComplete={handleRelatedTaskToggleComplete}
-                emptyTitle={translateText([
-                  "sidePanel",
-                  "noRelatedTasksTitle"
-                ])}
+                taskIds={task?.relatedTaskIds ?? []}
+                emptyTitle={translateText(["sidePanel", "noRelatedTasksTitle"])}
                 emptyDescription={translateText([
                   "sidePanel",
                   "noRelatedTasksDescription"

@@ -34,6 +34,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const {
     values,
     errors,
+    touched,
     handleChange,
     handleBlur,
     dirty,
@@ -62,15 +63,15 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
   const priorityOptions = useGetPriorityOptions();
 
   const handleTypeChange = (value: string) => {
-    setFieldValue("typeId", Number(value));
+    setFieldValue("typeId", Number(value), true);
   };
 
   const handlePriorityChange = (value: string) => {
-    setFieldValue("priority", value as CrmPriorityEnum);
+    setFieldValue("priority", value as CrmPriorityEnum, true);
   };
 
   const handleDueDateSelect = (date: Date | undefined) => {
-    setFieldValue("dueAt", date?.toISOString() ?? null);
+    setFieldValue("dueAt", date?.toISOString() ?? null, true);
   };
 
   const dueDate = values.dueAt
@@ -83,8 +84,8 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         <InputField
           name="name"
           value={values.name ?? ""}
-          errorMessage={errors.name}
-          state={errors.name ? "error" : "default"}
+          errorMessage={touched.name ? errors.name : undefined}
+          state={touched.name && errors.name ? "error" : "default"}
           label={translateText(["labels", "task"])}
           placeholder={translateText(["placeholders", "task"])}
           onChange={handleChange}
@@ -103,8 +104,10 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               onChange={handleTypeChange}
               label={translateText(["labels", "type"])}
               placeholder={translateText(["placeholders", "type"])}
-              errorMessage={errors.typeId}
-              variant={errors.typeId ? "primary-error" : "primary"}
+              errorMessage={touched.typeId ? errors.typeId : undefined}
+              variant={
+                touched.typeId && errors.typeId ? "primary-error" : "primary"
+              }
               className="rounded-lg"
               ariaLabel={translateText(["ariaLabels", "type"])}
               width="100%"
@@ -140,8 +143,8 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
                   value={dueDate ? dueDate.toLocaleDateString() : ""}
                   label={translateText(["labels", "dueDate"])}
                   placeholder={translateText(["placeholders", "dueDate"])}
-                  errorMessage={errors.dueAt}
-                  state={errors.dueAt ? "error" : "default"}
+                  errorMessage={touched.dueAt ? errors.dueAt : undefined}
+                  state={touched.dueAt && errors.dueAt ? "error" : "default"}
                   aria-label={translateText(["ariaLabels", "dueDate"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
@@ -166,8 +169,8 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           value={values.notes ?? ""}
           label={translateText(["labels", "notes"])}
           placeholder={translateText(["placeholders", "notes"])}
-          errorMessage={errors.notes}
-          state={errors.notes ? "error" : "default"}
+          errorMessage={touched.notes ? errors.notes : undefined}
+          state={touched.notes && errors.notes ? "error" : "default"}
           onChange={handleChange}
           onBlur={handleBlur}
           rows={3}

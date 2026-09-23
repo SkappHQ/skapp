@@ -16,4 +16,6 @@ public interface EmployeeTimeRecord {
 
 	String getTimeSlots();
 
+	Boolean getIsOngoingTimeRequest();
+
 }
