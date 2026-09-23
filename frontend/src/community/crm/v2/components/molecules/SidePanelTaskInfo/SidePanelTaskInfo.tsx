@@ -28,7 +28,7 @@ const SidePanelTaskInfo: FC<Props> = ({
   contact,
   onMarkAsDone
 }) => {
-  const translateText = useTranslator("crmModule", "tasks", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
 
   const priorityConfig = getPriorityConfig(task.priority);
   const isCompleted = task.isCompleted === true;
@@ -53,12 +53,14 @@ const SidePanelTaskInfo: FC<Props> = ({
         }
       >
         {isCompleted
-          ? translateText(["statusDone"])
-          : translateText(["markAsDone"])}
+          ? translateText(["tasks", "sidePanel", "info", "statusDone"])
+          : translateText(["tasks", "sidePanel", "info", "markAsDone"])}
       </ButtonV2>
 
       <div className="flex flex-col border border-secondary-accent rounded-xl p-3 mt-4">
-        <PropertyRow label={translateText(["assignedTo"])}>
+        <PropertyRow
+          label={translateText(["tasks", "sidePanel", "info", "assignedTo"])}
+        >
           {owner ? (
             <OwnerAvatarChip
               id={String(owner.employeeId)}
@@ -66,33 +68,42 @@ const SidePanelTaskInfo: FC<Props> = ({
               size="xs"
             />
           ) : (
-            <span className="body2">{translateText(["noOwner"])}</span>
+            <span className="body2">
+              {translateText(["tasks", "sidePanel", "info", "noOwner"])}
+            </span>
           )}
         </PropertyRow>
 
-        <PropertyRow label={translateText(["priority"])}>
+        <PropertyRow
+          label={translateText(["tasks", "sidePanel", "info", "priority"])}
+        >
           <Label
             backgroundColor={priorityConfig.bgColor}
             textColor={priorityConfig.textColor}
           >
             <span className="flex items-center gap-1">
               {priorityConfig.icon}
-              {translateText(["priorityOptions", priorityConfig.key])}
+              {translateText(["common", "priorityOptions", priorityConfig.key])}
             </span>
           </Label>
         </PropertyRow>
 
-        <PropertyRow label={translateText(["closingDate"])}>
+        <PropertyRow
+          label={translateText(["tasks", "sidePanel", "info", "closingDate"])}
+        >
           <span className="body2">
             {task.dueAt
               ? formatDateWithOrdinalSuffix(task.dueAt)
-              : translateText(["noClosingDate"])}
+              : translateText(["tasks", "sidePanel", "info", "noClosingDate"])}
           </span>
         </PropertyRow>
 
-        <PropertyRow label={translateText(["contactName"])}>
+        <PropertyRow
+          label={translateText(["tasks", "sidePanel", "info", "contactName"])}
+        >
           <span className="body2">
-            {getContactDisplayName(contact) || translateText(["noContact"])}
+            {getContactDisplayName(contact) ||
+              translateText(["tasks", "sidePanel", "info", "noContact"])}
           </span>
         </PropertyRow>
       </div>

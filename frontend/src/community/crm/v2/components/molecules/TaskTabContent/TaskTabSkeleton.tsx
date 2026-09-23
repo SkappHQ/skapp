@@ -10,12 +10,12 @@ interface Props {
 }
 
 const TaskTabSkeleton: FC<Props> = ({ rowCount, groupCount }) => {
-  const translateText = useTranslator("crmModule", "tasks", "table");
+  const translateText = useTranslator("crmModuleV2");
 
   return (
     <div role="status" aria-busy={true} aria-live="polite">
       <span className="sr-only">
-        {translateText(["infiniteScrollLoadingMessage"])}
+        {translateText(["tasks", "table", "infiniteScrollLoadingMessage"])}
       </span>
       <div className="flex flex-col gap-4" aria-hidden="true">
         {Array.from({ length: groupCount }).map((_, groupIndex) => (
