@@ -23,7 +23,6 @@ const TaskRow: FC<Props> = ({
   isShowContact = false,
   isCheckTaskVisible = true
 }) => {
-  const translateText = useTranslator("crmModuleV2");
   const translateAria = useTranslator("crmAriaV2");
 
   const isCompleted = task.isCompleted === true;

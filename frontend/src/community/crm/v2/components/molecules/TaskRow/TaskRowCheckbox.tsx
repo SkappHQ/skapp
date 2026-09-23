@@ -15,7 +15,6 @@ const TaskRowCheckbox: FC<Props> = ({
   isCompleted,
   onToggleComplete
 }) => {
-  const translateText = useTranslator("crmModuleV2");
   const translateAria = useTranslator("crmAriaV2");
 
   return (

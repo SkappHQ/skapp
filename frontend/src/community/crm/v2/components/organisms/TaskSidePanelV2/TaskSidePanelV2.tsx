@@ -185,8 +185,14 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["sidePanel", "reopenToastMessages", "successTitle"]),
+      title: translateText([
+        "tasks",
+        "sidePanel",
+        "reopenToastMessages",
+        "successTitle"
+      ]),
       description: translateText([
+        "tasks",
         "sidePanel",
         "reopenToastMessages",
         "successDescription"
@@ -218,7 +224,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         ? [
             {
               id: "reopen",
-              label: translateText(["sidePanel", "reopenTask"]),
+              label: translateText(["tasks", "sidePanel", "reopenTask"]),
               icon: { start: <UndoIcon width="16px" height="16px" /> },
               onClick: handleReopen
             }

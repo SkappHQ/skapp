@@ -61,6 +61,11 @@
     "sidePanel": {
       "editTask": "Edit task",
       "deleteTask": "Delete task",
+      "reopenTask": "Reopen task",
+      "reopenToastMessages": {
+        "successTitle": "Task reopened",
+        "successDescription": "Task reopened successfully"
+      },
       "notes": "Notes",
       "noNotes": "No notes added",
       "dealsTitle": "Deals",
@@ -152,7 +157,8 @@
       "toastMessages": {
         "successTitle": "Task deleted",
         "successDescription": "The task has been deleted successfully.",
-        "errorTitle": "Failed to delete task"
+        "errorTitle": "Failed to delete task",
+        "errorDescription": "Something went wrong. Please try again."
       }
     }
   },
