@@ -4,9 +4,9 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   DEAL_DESCRIPTION_MAX_LENGTH,
   DEAL_NAME_MAX_LENGTH
-} from "~community/crm/constants/dealConstants";
-import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
+} from "~community/crm/v2/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+import { isDealNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
 
 export const dealNameValidation = (translator: TranslatorFunctionType) =>
   Yup.string()
