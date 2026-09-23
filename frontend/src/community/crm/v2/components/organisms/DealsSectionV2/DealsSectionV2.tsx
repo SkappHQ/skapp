@@ -30,6 +30,7 @@ import {
   mergeDeals,
   reorderDealIds,
   resolveDeals,
+  stripDealIdPrefix,
   toDealIds
 } from "~community/crm/v2/utils/dealUtil";
 
@@ -38,7 +39,10 @@ import DealsHeaderV2 from "./DealsHeaderV2";
 const DealsSectionV2: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
-  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(
+    stripDealIdPrefix(inputValue),
+    DEAL_SEARCH_DEBOUNCE_DELAY
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const handleReorderError = (): void => {
     setToastMessage({

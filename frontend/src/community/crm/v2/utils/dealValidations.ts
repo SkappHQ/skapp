@@ -15,12 +15,12 @@ export const dealNameValidation = (translator: TranslatorFunctionType) =>
       DEAL_NAME_MAX_LENGTH,
       translator(["deals", "common", "validations", "dealNameMaxLength"])
     )
+    .required(
+      translator(["deals", "common", "validations", "dealNameRequired"])
+    )
     .matches(
       isDealNameValid(),
       translator(["deals", "common", "validations", "dealNameInvalidChars"])
-    )
-    .required(
-      translator(["deals", "common", "validations", "dealNameRequired"])
     );
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>

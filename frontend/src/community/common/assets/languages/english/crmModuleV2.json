@@ -88,8 +88,8 @@
         "description": "Add a new deal to get started"
       },
       "emptySearchState": {
-        "title": "No deals found for {{searchKeyword}}",
-        "description": "Try adjusting your search or filters"
+        "title": "No deals found",
+        "description": "No deals match your search."
       },
       "infiniteScrollLoadingMessage": "Loading more deals...",
       "inlineEdit": {

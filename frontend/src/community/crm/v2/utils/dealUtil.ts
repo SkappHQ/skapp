@@ -29,6 +29,9 @@ export const getMissingDealIds = (
   return Array.from(unique);
 };
 
+export const stripDealIdPrefix = (searchKeyword: string): string =>
+  searchKeyword.replace(/^#/, "");
+
 export const mergeDeals = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]
