@@ -20,7 +20,6 @@ import com.skapp.community.crmplanner.model.CrmDeal_;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmCompanyMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmCompanyMetrics;
 import com.skapp.community.crmplanner.repository.CrmCompanyRepository;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -47,7 +46,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmCompanyMetricsResponseDto> getCompanyMetrics(Pageable pageable, String searchKeyword) {
+	public Page<CrmCompanyMetricsResponseDto> getCompanies(Pageable pageable, String searchKeyword) {
 		List<Long> closedStageIds = getClosedStageIds();
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -98,81 +97,6 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
 
 		query.select(cb.construct(CrmCompanyMetricsResponseDto.class, company.get(CrmCompany_.id),
-				company.get(CrmCompany_.name), company.get(CrmCompany_.contactNumber),
-				company.get(CrmCompany_.industry), company.get(CrmCompany_.website), company.get(CrmCompany_.address),
-				taskSubquery, overdueSubquery, openValueSubquery.cast(String.class),
-				accountValueSubquery.cast(String.class), closedCountSubquery, openCountSubquery));
-
-		query.where(buildPredicates(cb, company, searchKeyword));
-		query.orderBy(buildOrderBy(cb, company, searchKeyword));
-
-		List<CrmCompanyMetricsResponseDto> content = entityManager.createQuery(query)
-			.setFirstResult((int) pageable.getOffset())
-			.setMaxResults(pageable.getPageSize())
-			.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmCompany> countRoot = countQuery.from(CrmCompany.class);
-
-		countQuery.select(cb.countDistinct(countRoot.get(CrmCompany_.id)))
-			.where(buildPredicates(cb, countRoot, searchKeyword));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
-	}
-
-	@Override
-	public Page<CrmCompanyMetricsResponseDtoV2> getCompanyMetricsV2(Pageable pageable, String searchKeyword) {
-		List<Long> closedStageIds = getClosedStageIds();
-
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmCompanyMetricsResponseDtoV2> query = cb.createQuery(CrmCompanyMetricsResponseDtoV2.class);
-		Root<CrmCompany> company = query.from(CrmCompany.class);
-
-		Subquery<Long> taskSubquery = query.subquery(Long.class);
-		Root<CrmTask> subTask = taskSubquery.from(CrmTask.class);
-		taskSubquery.select(cb.count(subTask.get(CrmTask_.id)))
-			.where(cb.equal(subTask.get(CrmTask_.company), company), cb.isFalse(subTask.get(CrmTask_.isDeleted)),
-					cb.isFalse(subTask.get(CrmTask_.isCompleted)));
-
-		Subquery<Long> overdueSubquery = query.subquery(Long.class);
-		Root<CrmTask> subOverdueTask = overdueSubquery.from(CrmTask.class);
-		overdueSubquery.select(cb.count(subOverdueTask.get(CrmTask_.id)))
-			.where(cb.equal(subOverdueTask.get(CrmTask_.company), company),
-					cb.isFalse(subOverdueTask.get(CrmTask_.isDeleted)),
-					cb.isFalse(subOverdueTask.get(CrmTask_.isCompleted)),
-					cb.isNotNull(subOverdueTask.get(CrmTask_.dueAt)),
-					cb.lessThan(subOverdueTask.get(CrmTask_.dueAt), cb.localDateTime()));
-
-		Subquery<BigDecimal> openValueSubquery = query.subquery(BigDecimal.class);
-		Root<CrmDeal> openDeal = openValueSubquery.from(CrmDeal.class);
-		openValueSubquery
-			.select(cb.coalesce(cb.sum(openDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
-			.where(cb.equal(openDeal.get(CrmDeal_.company), company), cb.isFalse(openDeal.get(CrmDeal_.isDeleted)),
-					cb.not(openDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
-
-		Subquery<BigDecimal> accountValueSubquery = query.subquery(BigDecimal.class);
-		Root<CrmDeal> closedDeal = accountValueSubquery.from(CrmDeal.class);
-		accountValueSubquery
-			.select(cb.coalesce(cb.sum(closedDeal.get(CrmDeal_.amount).cast(BigDecimal.class)), BigDecimal.ZERO))
-			.where(cb.equal(closedDeal.get(CrmDeal_.company), company), cb.isFalse(closedDeal.get(CrmDeal_.isDeleted)),
-					cb.equal(closedDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON));
-
-		Subquery<Long> closedCountSubquery = query.subquery(Long.class);
-		Root<CrmDeal> closedCountDeal = closedCountSubquery.from(CrmDeal.class);
-		closedCountSubquery.select(cb.count(closedCountDeal.get(CrmDeal_.id)))
-			.where(cb.equal(closedCountDeal.get(CrmDeal_.company), company),
-					cb.isFalse(closedCountDeal.get(CrmDeal_.isDeleted)),
-					cb.equal(closedCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.stageType), CrmDealStageType.WON));
-
-		Subquery<Long> openCountSubquery = query.subquery(Long.class);
-		Root<CrmDeal> openCountDeal = openCountSubquery.from(CrmDeal.class);
-		openCountSubquery.select(cb.count(openCountDeal.get(CrmDeal_.id)))
-			.where(cb.equal(openCountDeal.get(CrmDeal_.company), company),
-					cb.isFalse(openCountDeal.get(CrmDeal_.isDeleted)),
-					cb.not(openCountDeal.get(CrmDeal_.stage).get(CrmDealStage_.id).in(closedStageIds)));
-
-		query.select(cb.construct(CrmCompanyMetricsResponseDtoV2.class, company.get(CrmCompany_.id),
 				company.get(CrmCompany_.name), company.get(CrmCompany_.industry), company.get(CrmCompany_.website),
 				company.get(CrmCompany_.address), company.get(CrmCompany_.contactNumber),
 				cb.construct(CrmCompanyMetrics.class, taskSubquery, overdueSubquery,
@@ -182,7 +106,7 @@ public class CrmCompanyRepositoryImpl implements CrmCompanyRepository {
 		query.where(buildPredicates(cb, company, searchKeyword));
 		query.orderBy(buildOrderBy(cb, company, searchKeyword));
 
-		List<CrmCompanyMetricsResponseDtoV2> content = entityManager.createQuery(query)
+		List<CrmCompanyMetricsResponseDto> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();
