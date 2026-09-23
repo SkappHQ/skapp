@@ -9,7 +9,7 @@ import {
   getHolidaysWithinDateRange,
   getLeaveRequestsWithinDateRange
 } from "~community/common/utils/calendarDateRangePickerUtils";
-import { getCurrentDateAtMidnight } from "~community/common/utils/dateTimeUtils";
+import { nowInZone } from "~community/common/utils/dateTimeUtils";
 import { LeaveDurationTypes } from "~community/leave/enums/LeaveTypeEnums";
 import {
   HolidayType,
@@ -23,25 +23,32 @@ import {
 
 export const getDefaultCalendarValue = ({
   selectedDates,
-  minDate
+  minDate,
+  zone
 }: {
   selectedDates: DateTime[];
   minDate: Date;
+  zone: string | undefined;
 }): DateTime => {
   if (selectedDates.length > 0) {
     return selectedDates[selectedDates.length - 1];
   }
 
-  if (minDate) {
-    const minDateTime = DateTime.fromJSDate(minDate);
-    const currentDate = getCurrentDateAtMidnight();
+  const today = nowInZone(zone).startOf("day");
 
-    if (minDateTime > currentDate) {
+  if (minDate) {
+    const minDay = DateTime.fromJSDate(minDate);
+    const minDateTime = DateTime.fromObject(
+      { year: minDay.year, month: minDay.month, day: minDay.day },
+      { zone }
+    );
+
+    if (minDateTime > today) {
       return minDateTime;
     }
   }
 
-  return getCurrentDateAtMidnight();
+  return today;
 };
 
 export const getDurationInitialValue = ({

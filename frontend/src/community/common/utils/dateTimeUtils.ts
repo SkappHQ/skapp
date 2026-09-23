@@ -424,10 +424,6 @@ export const getMonthStartAndEndDates = (month: number) => {
   };
 };
 
-export const getCurrentDateAtMidnight = () => {
-  return DateTime.now().startOf("day");
-};
-
 export const getRelativeDates = () => {
   const now = DateTime.now();
   return {
