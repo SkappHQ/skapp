@@ -1,18 +1,24 @@
 import { SmallModal } from "@rootcodelabs/skapp-ui";
-import { ReactNode } from "react";
+import { FC, ReactNode } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
 import DeleteDealStageModalContent from "~community/configurations/components/molecules/DeleteDealStageModalContent/DeleteDealStageModalContent";
-import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
-import { CrmModalTypes } from "~community/crm/types/ModalTypes";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
-const DealStageModalController = () => {
+interface DealStageModalControllerProps {
+  onStageCreated: () => void;
+}
+
+const DealStageModalController: FC<DealStageModalControllerProps> = ({
+  onStageCreated
+}) => {
   const translateText = useTranslator("configurations", "crm");
 
   const { isDealStageModalOpen, dealStageModalType, setIsDealStageModalOpen } =
-    useConfigurationStore(
+    useCrmStoreV2(
       useShallow((store) => ({
         isDealStageModalOpen: store.isDealStageModalOpen,
         dealStageModalType: store.dealStageModalType,
@@ -40,7 +46,7 @@ const DealStageModalController = () => {
   const getModalContent = (): ReactNode => {
     switch (dealStageModalType) {
       case CrmModalTypes.ADD_DEAL_STAGE_MODAL:
-        return <DealStageModalForm />;
+        return <DealStageModalForm onStageCreated={onStageCreated} />;
       case CrmModalTypes.EDIT_DEAL_STAGE_MODAL:
         return <DealStageModalForm isEdit />;
       case CrmModalTypes.DELETE_DEAL_STAGE_MODAL:

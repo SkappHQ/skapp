@@ -15,15 +15,16 @@ import {
 } from "@dnd-kit/sortable";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import DraggableDealStageCard from "~community/configurations/components/molecules/DealStageCard/DraggableDealStageCard";
-import { CrmDealStageEnum } from "~community/crm/enums/common";
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import DraggableDealStageCard from "~community/configurations/components/molecules/DraggableDealStageCard/DraggableDealStageCard";
+import { toStageIds } from "~community/configurations/utils/stageUtil";
+import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
+import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface DealStagesDraggableContentProps {
-  stagesData: CrmDealStageType[];
-  onStagesReorder: (stages: CrmDealStageType[]) => void;
-  onEdit: (stage: CrmDealStageType) => void;
-  onDelete: (stage: CrmDealStageType) => void;
+  stagesData: CrmStageEntity[];
+  onStagesReorder: (stages: CrmStageEntity[]) => void;
+  onEdit: (stage: CrmStageEntity) => void;
+  onDelete: (stage: CrmStageEntity) => void;
 }
 
 const DealStagesDraggableContent = ({
@@ -39,8 +40,8 @@ const DealStagesDraggableContent = ({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const isTerminalStage = (stageType: CrmDealStageEnum) =>
-    [CrmDealStageEnum.WON, CrmDealStageEnum.LOST].includes(stageType);
+  const isTerminalStage = (stageType?: CrmDealStageEnum) =>
+    stageType === CrmDealStageEnum.WON || stageType === CrmDealStageEnum.LOST;
 
   const initialStages = stagesData.filter(
     (stage) => stage.stageType === CrmDealStageEnum.INITIAL
@@ -82,21 +83,25 @@ const DealStagesDraggableContent = ({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={draggableStages.map((s) => s.id)}
+          items={toStageIds(draggableStages)}
           strategy={verticalListSortingStrategy}
         >
           <ul className="flex flex-col gap-4">
-            {activeStages.map((stage) => (
-              <DraggableDealStageCard
-                key={stage.id}
-                stage={stage}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                isTerminalStage={isTerminalStage(stage.stageType)}
-                isDeletable={stage.stageType === CrmDealStageEnum.OPEN}
-                isDraggable={stage.stageType === CrmDealStageEnum.OPEN}
-              />
-            ))}
+            {activeStages.map(
+              (stage) =>
+                stage.id !== undefined && (
+                  <DraggableDealStageCard
+                    key={stage.id}
+                    stage={stage}
+                    stageId={stage.id}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    isTerminalStage={isTerminalStage(stage.stageType)}
+                    isDeletable={stage.stageType === CrmDealStageEnum.OPEN}
+                    isDraggable={stage.stageType === CrmDealStageEnum.OPEN}
+                  />
+                )
+            )}
           </ul>
         </SortableContext>
       </DndContext>
@@ -106,15 +111,19 @@ const DealStagesDraggableContent = ({
           {translateText(["dealsSection", "dealCompleteStateNote"])}
         </p>
         <ul className="flex flex-col gap-4">
-          {terminalStages.map((stage) => (
-            <DraggableDealStageCard
-              key={stage.id}
-              stage={stage}
-              onEdit={onEdit}
-              isTerminalStage={isTerminalStage(stage.stageType)}
-              isDraggable={false}
-            />
-          ))}
+          {terminalStages.map(
+            (stage) =>
+              stage.id !== undefined && (
+                <DraggableDealStageCard
+                  key={stage.id}
+                  stage={stage}
+                  stageId={stage.id}
+                  onEdit={onEdit}
+                  isTerminalStage={isTerminalStage(stage.stageType)}
+                  isDraggable={false}
+                />
+              )
+          )}
         </ul>
       </div>
     </div>

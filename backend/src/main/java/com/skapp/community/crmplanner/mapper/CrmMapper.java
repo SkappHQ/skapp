@@ -21,8 +21,6 @@ import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskTypeResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
@@ -35,13 +33,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CrmMapper {
 
-	@Mapping(target = "companyName", source = "company.name")
+	@Mapping(target = "stageId", source = "stage.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
+	@Mapping(target = "companyId", source = "company.id")
 	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "contactName", source = "contact.name")
-	@Mapping(target = "owner", source = "owner")
 	CrmDealResponseDto crmDealToCrmDealResponseDto(CrmDeal crmDeal);
-
-	List<CrmDealResponseDto> crmDealsToCrmDealResponseDtos(List<CrmDeal> crmDeals);
 
 	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "companyId", source = "company.id")
@@ -90,12 +86,6 @@ public interface CrmMapper {
 	CrmBoardStageResponseDto crmDealStageToCrmBoardStageResponseDto(CrmDealStage crmDealStage);
 
 	List<CrmBoardStageResponseDto> crmDealStagesToCrmBoardStageResponseDtos(List<CrmDealStage> crmDealStages);
-
-	CrmBoardContactCompanyResponseDto crmCompanyToCrmBoardContactCompanyResponseDto(CrmCompany company);
-
-	CrmBoardContactResponseDto crmContactToCrmBoardContactResponseDto(CrmContact contact);
-
-	List<CrmBoardContactResponseDto> crmContactsToCrmBoardContactResponseDtos(List<CrmContact> contacts);
 
 	CrmBoardOwnerResponseDto employeeToCrmBoardOwnerResponseDto(Employee employee);
 
