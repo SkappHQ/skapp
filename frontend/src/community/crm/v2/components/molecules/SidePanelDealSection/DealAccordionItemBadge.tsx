@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmDealEntity } from "~community/crm/v2/types/CrmCommonTypes";
 

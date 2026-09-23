@@ -1,24 +1,19 @@
-import { useCallback } from "react";
-
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { DefaultStageNameEnum } from "~community/crm/v2/enums/common";
+import { getStageDisplayName } from "~community/crm/v2/utils/stageUtil";
 
-const useStageNameMapper = () => {
-  const translateText = useTranslator(
-    "crmModule",
+interface UseStageNameMapperReturn {
+  getStageByName: (name: string) => string;
+}
+
+export const useStageNameMapper = (): UseStageNameMapperReturn => {
+  const translateStageName = useTranslator(
+    "crmModuleV2",
     "deals",
     "defaultStageNames"
   );
 
-  const getStageByName = useCallback(
-    (name: string): string =>
-      Object.values(DefaultStageNameEnum).includes(name as DefaultStageNameEnum)
-        ? translateText([name])
-        : name,
-    []
-  );
+  const getStageByName = (name: string): string =>
+    getStageDisplayName(name, translateStageName);
 
   return { getStageByName };
 };
-
-export default useStageNameMapper;

@@ -2,7 +2,7 @@ import { InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, KeyboardEvent } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 
@@ -14,7 +14,8 @@ interface Props {
 }
 
 const DealValueCell: FC<Props> = ({ amount, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { isEditing, value, error, startEditing, changeValue, save, discard } =
     useInlineEditForm({
@@ -37,7 +38,7 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["inlineEdit", "ariaLabels", "value"])}
+      ariaLabel={translateAria(["deals", "table", "inlineEdit", "value"])}
       onStartEditing={startEditing}
       onClickOutside={save}
       display={
@@ -50,13 +51,13 @@ const DealValueCell: FC<Props> = ({ amount, onSave }) => {
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
+        placeholder={translateText(["deals", "common", "placeholders", "none"])}
         className="w-full"
         variant="sm"
         type="text"
         state={error ? "error" : "default"}
         errorMessage={error}
-        aria-label={translateText(["inlineEdit", "ariaLabels", "value"])}
+        aria-label={translateAria(["deals", "table", "inlineEdit", "value"])}
         autoFocus
       />
     </EditableCell>

@@ -2,7 +2,7 @@ import { InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, KeyboardEvent, useEffect, useRef } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 
 type PropertyFieldInputType = "text" | "number";
 
@@ -31,9 +31,9 @@ const PropertyField: FC<PropertyFieldProps> = ({
   onChange,
   onSave
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
   const resolvedPlaceholder =
-    placeholder ?? translateText(["placeholders", "none"]);
+    placeholder ?? translateText(["deals", "common", "placeholders", "none"]);
   const inputRef = useRef<HTMLDivElement>(null);
 
   const {

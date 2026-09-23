@@ -13,6 +13,13 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
+  getChangedStageFields,
+  getSelectedStage,
+  getStageDisplayName,
+  updateStage
+} from "~community/configurations/utils/stageUtil";
+import { getStageValidationSchema } from "~community/configurations/utils/stageValidations";
+import {
   useCreateDealStage,
   useUpdateDealStage
 } from "~community/crm/v2/api/DealApi";
@@ -21,13 +28,6 @@ import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
-import {
-  getChangedStageFields,
-  getSelectedStage,
-  getStageDisplayName,
-  updateStage
-} from "~community/crm/v2/utils/stageUtil";
-import { getStageValidationSchema } from "~community/crm/v2/utils/stageValidations";
 
 interface DealStageModalFormProps {
   isEdit?: boolean;
@@ -41,7 +41,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const { setToastMessage } = useToast();
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModule",
+    "crmModuleV2",
     "deals",
     "defaultStageNames"
   );

@@ -105,6 +105,29 @@ export const isStageNameTaken = (
   );
 };
 
+export const reconcileDraftStages = (
+  draftStages: CrmStageEntity[],
+  currentStages: CrmStageEntity[]
+): CrmStageEntity[] => {
+  const draftOrder = toStageIds(draftStages);
+  const reconciledStages: CrmStageEntity[] = [];
+
+  for (const stageId of draftOrder) {
+    const currentStage = currentStages.find((stage) => stage.id === stageId);
+    if (currentStage !== undefined) {
+      reconciledStages.push(currentStage);
+    }
+  }
+
+  for (const stage of currentStages) {
+    if (stage.id !== undefined && !draftOrder.includes(stage.id)) {
+      reconciledStages.push(stage);
+    }
+  }
+
+  return reconciledStages;
+};
+
 export const getStageDisplayName = (
   stageName: string,
   translateText: TranslatorFunctionType

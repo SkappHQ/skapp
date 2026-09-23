@@ -15,10 +15,10 @@ import {
 } from "@dnd-kit/sortable";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import DraggableDealStageCard from "~community/crm/v2/components/molecules/DraggableDealStageCard/DraggableDealStageCard";
+import DraggableDealStageCard from "~community/configurations/components/molecules/DraggableDealStageCard/DraggableDealStageCard";
+import { toStageIds } from "~community/configurations/utils/stageUtil";
 import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { toStageIds } from "~community/crm/v2/utils/stageUtil";
 
 interface DealStagesDraggableContentProps {
   stagesData: CrmStageEntity[];

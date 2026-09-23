@@ -27,7 +27,8 @@ interface Props {
 }
 
 const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -87,7 +88,7 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["inlineEdit", "ariaLabels", "contactName"])}
+      ariaLabel={translateAria(["deals", "table", "inlineEdit", "contactName"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -102,14 +103,16 @@ const DealContactCell: FC<Props> = ({ contactId, companyId, onSave }) => {
         selectedContact={selectedContact}
         onChange={handleChange}
         onSearch={setSearchTerm}
-        placeholder={translateText(["inlineEdit", "placeholders", "none"])}
+        placeholder={translateText(["deals", "common", "placeholders", "none"])}
         searchPlaceholder={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "contactSearch"
         ])}
         noResultsText={translateText([
-          "inlineEdit",
+          "deals",
+          "common",
           "placeholders",
           "noResults"
         ])}

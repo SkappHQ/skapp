@@ -10,7 +10,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckDealNameExists } from "~community/crm/v2/api/DealApi";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/v2/constants/commonConstants";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { validateDealName } from "~community/crm/v2/utils/dealValidations";
 
 interface DealTitleSectionProps {
@@ -19,7 +19,8 @@ interface DealTitleSectionProps {
 }
 
 const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const {
     isEditing,
@@ -51,7 +52,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
     trimmedTitle !== name.trim() && (dealNameData?.isExists ?? false);
 
   const nameErrorMessage = isDuplicateName
-    ? translateText(["validations", "dealNameExists"])
+    ? translateText(["deals", "common", "validations", "dealNameExists"])
     : error;
 
   const handleSave = () => {
@@ -90,14 +91,14 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
         <div className="w-1/3 shrink-0 flex justify-start items-center">
           <div className="flex gap-2">
             <IconButton
-              aria-label={translateText(["ariaLabels", "saveTitle"])}
+              aria-label={translateAria(["deals", "sidePanel", "saveTitle"])}
               isRounded
               icon={<TickIcon fill="var(--color-primary-accent)" />}
               onClick={handleSave}
               variant="outlined"
             />
             <IconButton
-              aria-label={translateText(["ariaLabels", "discardTitle"])}
+              aria-label={translateAria(["deals", "sidePanel", "discardTitle"])}
               isRounded
               icon={<CloseIcon />}
               onClick={discard}
@@ -115,7 +116,7 @@ const DealTitleSection: FC<DealTitleSectionProps> = ({ name, onSave }) => {
           role="button"
           tabIndex={0}
           className="h2 text-left w-full cursor-pointer hover:bg-secondary-background py-1 rounded bg-transparent border-none"
-          aria-label={translateText(["ariaLabels", "editTitle"])}
+          aria-label={translateAria(["deals", "sidePanel", "editTitle"])}
           onClick={startEditing}
           onKeyDown={handleTitleKeyDown}
         >

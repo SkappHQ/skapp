@@ -149,8 +149,8 @@ describe("useInitializeCrmData", () => {
     expect(mockSetToastMessage).toHaveBeenCalledWith({
       open: true,
       toastType: ToastType.ERROR,
-      title: "errorTitle",
-      description: "errorDescription"
+      title: "common.initData.errorTitle",
+      description: "common.initData.errorDescription"
     });
 
     const state = useCrmStoreV2.getState();

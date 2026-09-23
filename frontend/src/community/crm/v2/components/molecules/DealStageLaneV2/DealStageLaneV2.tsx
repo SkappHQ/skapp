@@ -17,7 +17,7 @@ import DraggableDealCardV2 from "~community/crm/v2/components/molecules/Draggabl
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/v2/constants/boardConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
 import {
@@ -45,15 +45,25 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   onAddDeal,
   isAddDealDisabled = false
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const handleLoadMoreError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "loadMoreErrorTitle"]),
-      description: translateText(["toastMessages", "loadMoreErrorDescription"])
+      title: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "loadMoreErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "loadMoreErrorDescription"
+      ])
     });
   };
 
@@ -211,7 +221,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
               disabled={isAddDealDisabled}
               isLoading={isAddDealDisabled}
             >
-              {translateText(["addDealBtn"])}
+              {translateText(["deals", "common", "buttons", "addDeal"])}
             </ButtonV2>
           </>
         )}

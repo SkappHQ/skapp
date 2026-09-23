@@ -3,8 +3,8 @@ import { FC, ReactNode } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import DealStageModalForm from "~community/crm/v2/components/molecules/DealStageModalForm/DealStageModalForm";
-import DeleteDealStageModalContent from "~community/crm/v2/components/molecules/DeleteDealStageModalContent/DeleteDealStageModalContent";
+import DealStageModalForm from "~community/configurations/components/molecules/DealStageModalForm/DealStageModalForm";
+import DeleteDealStageModalContent from "~community/configurations/components/molecules/DeleteDealStageModalContent/DeleteDealStageModalContent";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 

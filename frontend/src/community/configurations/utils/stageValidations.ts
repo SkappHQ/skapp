@@ -2,9 +2,9 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { isStageNameTaken } from "~community/configurations/utils/stageUtil";
 import { isDealStageNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { isStageNameTaken } from "~community/crm/v2/utils/stageUtil";
 
 export const getStageValidationSchema = (
   translator: TranslatorFunctionType,

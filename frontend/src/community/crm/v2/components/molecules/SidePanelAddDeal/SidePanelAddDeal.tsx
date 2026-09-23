@@ -48,7 +48,8 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
   companyId,
   defaultContact
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "sidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { setToastMessage } = useToast();
 
   const [selectedContact, setSelectedContact] = useState(defaultContact);
@@ -82,11 +83,17 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["inlineAddDeal", "toastMessages", "successTitle"]),
-      description: translateText([
-        "inlineAddDeal",
+      title: translateText([
+        "deals",
+        "common",
         "toastMessages",
-        "successDescription"
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addSuccessDescription"
       ])
     });
     onClose();
@@ -96,11 +103,17 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["inlineAddDeal", "toastMessages", "errorTitle"]),
-      description: translateText([
-        "inlineAddDeal",
+      title: translateText([
+        "deals",
+        "common",
         "toastMessages",
-        "errorDescription"
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addErrorDescription"
       ])
     });
   };
@@ -159,7 +172,13 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
     (trimmedDealName !== debouncedDealName || isDealNameCheckFetching);
 
   const nameErrorMessage = dealNameData?.isExists
-    ? translateText(["inlineAddDeal", "validations", "dealNameExists"])
+    ? translateText([
+        "deals",
+        "linkedSection",
+        "inlineAdd",
+        "validations",
+        "dealNameExists"
+      ])
     : formik.errors.name;
 
   const handleContactChange = (contact?: CrmContactEntity) => {
@@ -190,18 +209,22 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
               state={formik.errors.contactId ? "error" : "default"}
               errorMessage={formik.errors.contactId}
               placeholder={translateText([
-                "inlineAddDeal",
+                "deals",
+                "linkedSection",
+                "inlineAdd",
                 "contactPlaceholder"
               ])}
-              emptyMessage={translateText(["inlineAddDeal", "noResults"])}
-              ariaLabel={translateText([
-                "inlineAddDeal",
-                "ariaLabels",
-                "contact"
+              emptyMessage={translateText([
+                "deals",
+                "common",
+                "placeholders",
+                "noResults"
               ])}
-              clearAriaLabel={translateText([
-                "inlineAddDeal",
-                "ariaLabels",
+              ariaLabel={translateAria(["deals", "common", "contact"])}
+              clearAriaLabel={translateAria([
+                "deals",
+                "linkedSection",
+                "inlineAdd",
                 "clearContact"
               ])}
             />
@@ -210,21 +233,33 @@ const SidePanelAddDeal: FC<SidePanelAddDealProps> = ({
         onSave={handleSave}
         onCancel={onClose}
         onValueChange={(value: string) => formik.setFieldValue("name", value)}
-        placeholder={translateText(["inlineAddDeal", "dealNamePlaceholder"])}
+        placeholder={translateText([
+          "deals",
+          "common",
+          "placeholders",
+          "dealName"
+        ])}
         maxLength={DEAL_NAME_MAX_LENGTH}
         required
         errorMessage={nameErrorMessage}
         hasError={Boolean(nameErrorMessage) || Boolean(formik.errors.contactId)}
         ariaLabels={{
-          group: translateText(["inlineAddDeal", "ariaLabels", "group"]),
-          saveButton: translateText([
-            "inlineAddDeal",
-            "ariaLabels",
+          group: translateAria([
+            "deals",
+            "linkedSection",
+            "inlineAdd",
+            "group"
+          ]),
+          saveButton: translateAria([
+            "deals",
+            "linkedSection",
+            "inlineAdd",
             "saveDeal"
           ]),
-          cancelButton: translateText([
-            "inlineAddDeal",
-            "ariaLabels",
+          cancelButton: translateAria([
+            "deals",
+            "linkedSection",
+            "inlineAdd",
             "cancelAddDeal"
           ])
         }}

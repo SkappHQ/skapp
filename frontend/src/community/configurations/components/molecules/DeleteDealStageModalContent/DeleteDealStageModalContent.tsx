@@ -5,18 +5,18 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useDeleteDealStage } from "~community/crm/v2/api/DealApi";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   getSelectedStage,
   getStageDisplayName,
   removeStage
-} from "~community/crm/v2/utils/stageUtil";
+} from "~community/configurations/utils/stageUtil";
+import { useDeleteDealStage } from "~community/crm/v2/api/DealApi";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModule",
+    "crmModuleV2",
     "deals",
     "defaultStageNames"
   );

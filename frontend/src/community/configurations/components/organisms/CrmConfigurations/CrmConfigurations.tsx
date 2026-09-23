@@ -3,7 +3,7 @@ import { FC } from "react";
 
 import { appModes } from "~community/common/constants/configs";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import DealStagesSection from "~community/crm/v2/components/organisms/DealStagesSection/DealStagesSection";
+import DealStagesSection from "~community/configurations/components/organisms/DealStagesSection/DealStagesSection";
 import { useGetEnvironment } from "~enterprise/common/hooks/useGetEnvironment";
 import CrmCurrencyPreferences from "~enterprise/configurations/components/organisms/CrmCurrencyPreferences/CrmCurrencyPreferences";
 import CrmLimitModalController from "~enterprise/crm/components/organisms/CrmLimitModalController/CrmLimitModalController";

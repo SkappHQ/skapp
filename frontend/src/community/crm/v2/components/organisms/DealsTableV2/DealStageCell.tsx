@@ -4,7 +4,7 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 
@@ -16,7 +16,8 @@ interface Props {
 }
 
 const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { getStageByName } = useStageNameMapper();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -50,7 +51,7 @@ const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
   return (
     <EditableCell
       isEditing={isEditing}
-      ariaLabel={translateText(["inlineEdit", "ariaLabels", "stage"])}
+      ariaLabel={translateAria(["deals", "common", "stage"])}
       onStartEditing={() => setIsEditing(true)}
       onClickOutside={() => setIsEditing(false)}
       display={
@@ -67,8 +68,13 @@ const DealStageCell: FC<Props> = ({ stageId, onSave }) => {
         variant="primary"
         className="rounded-lg"
         width="100%"
-        placeholder={translateText(["inlineEdit", "placeholders", "stage"])}
-        ariaLabel={translateText(["inlineEdit", "ariaLabels", "stage"])}
+        placeholder={translateText([
+          "deals",
+          "common",
+          "placeholders",
+          "stage"
+        ])}
+        ariaLabel={translateAria(["deals", "common", "stage"])}
       />
     </EditableCell>
   );

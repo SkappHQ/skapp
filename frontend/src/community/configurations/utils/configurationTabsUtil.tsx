@@ -1,12 +1,12 @@
 import AttendanceConfiguration from "~community/attendance/components/organisms/AttendanceConfiguration/AttendanceConfiguration";
 import { AdminTypes } from "~community/common/types/AuthTypes";
 import UserRolesTable from "~community/configurations/components/molecules/UserRolesTable/UserRolesTable";
+import CrmConfigurations from "~community/configurations/components/organisms/CrmConfigurations/CrmConfigurations";
 import LeaveConfigurations from "~community/configurations/components/organisms/LeaveConfigurations/LeaveConfigurations";
 import OrganizationConfigurations from "~community/configurations/components/organisms/OrganizationConfigurations/OrganizationConfigurations";
 import PeopleConfigurations from "~community/configurations/components/organisms/PeopleConfigurations/PeopleConfigurations";
 import TimeConfigurations from "~community/configurations/components/organisms/TimeConfigurations/TimeConfigurations";
 import { ConfigurationTab } from "~community/configurations/types/ConfigurationTabTypes";
-import CrmConfigurationsV2 from "~community/crm/v2/components/organisms/CrmConfigurations/CrmConfigurations";
 
 export const getConfigurationTabs = (
   translateText: (keys: string[]) => string
@@ -55,7 +55,7 @@ export const getConfigurationTabs = (
       id: "crm",
       label: translateText(["tabs", "crm"]),
       requiredRoles: [AdminTypes.SUPER_ADMIN, AdminTypes.CRM_ADMIN],
-      component: <CrmConfigurationsV2 />,
+      component: <CrmConfigurations />,
       position: 7
     },
     {
