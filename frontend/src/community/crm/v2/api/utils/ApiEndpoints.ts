@@ -27,14 +27,11 @@ export const crmContactEndpoints = {
   OWNER_LOOKUP: `${moduleAPIPath.CRM}/contact/owners`
 };
 
-export const crmDealEndpointsV2 = {
+export const crmDealEndpoints = {
   CREATE_DEAL: `${moduleAPIPath.CRM}/deal`,
   GET_DEALS: `${moduleAPIPath.CRM}/deal`,
+  GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
   EDIT_DEAL: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`,
-  GET_DEAL_BY_ID: (id: number) => `${moduleAPIPath.CRM}/deal/${id}`
-};
-
-export const crmDealEndpoints = {
   GET_DEALS_BY_IDS: `${moduleAPIPath.CRM}/deal/ids`,
   REORDER_DEAL: `${moduleAPIPath.CRM}/deal/reorder`,
   CHECK_DEAL_NAME_EXISTS: `${moduleAPIPath.CRM}/deal/exists`,
