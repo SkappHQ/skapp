@@ -1,7 +1,6 @@
 import { Badge, Box, Skeleton, Stack } from "@mui/material";
 import { Breadcrumb, PageHeader } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
 import ClockWidget from "~community/attendance/components/molecules/ClockWidget/ClockWidget";
@@ -33,7 +32,6 @@ interface Props {
 }
 
 const AppBar = ({ isDrawerAvailable = true }: Props) => {
-  const router = useRouter();
   const classes = styles();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

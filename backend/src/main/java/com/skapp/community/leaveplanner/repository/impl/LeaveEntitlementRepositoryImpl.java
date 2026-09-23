@@ -47,7 +47,6 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -332,8 +331,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(@NotNull Long teamId,
-			ZoneId organizationZone) {
+	public LinkedHashMap<LeaveType, Long> findLeaveTypeAndEmployeeCountForTeam(Long teamId, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
@@ -363,7 +361,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	@Override
-	public Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(@NotNull Long teamId, ZoneId organizationZone) {
+	public Map<Long, Double> findLeaveTypeIdAllocatedLeaveDaysForTeam(Long teamId, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
@@ -394,7 +392,7 @@ public class LeaveEntitlementRepositoryImpl implements LeaveEntitlementRepositor
 	}
 
 	public List<LeaveEntitlement> findAllByEmployeeId(Long employeeId,
-			@NotNull LeaveEntitlementsFilterDto leaveEntitlementsFilterDto, ZoneId organizationZone) {
+			LeaveEntitlementsFilterDto leaveEntitlementsFilterDto, ZoneId organizationZone) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
 		CriteriaQuery<LeaveEntitlement> criteriaQuery = criteriaBuilder.createQuery(LeaveEntitlement.class);
 		Root<LeaveEntitlement> root = criteriaQuery.from(LeaveEntitlement.class);
