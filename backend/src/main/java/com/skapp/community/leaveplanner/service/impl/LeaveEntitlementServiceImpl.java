@@ -14,7 +14,6 @@ import com.skapp.community.common.service.BulkContextService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.BulkItemStatus;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.CommonModuleUtils;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
