@@ -26,7 +26,8 @@ interface Props {
 const TaskDealField: FC<Props> = ({ formik }) => {
   const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator("crmModule", "tasks", "taskModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const {
     deals,
@@ -118,18 +119,18 @@ const TaskDealField: FC<Props> = ({ formik }) => {
   return (
     <SelectableSearchField
       id="deal-search"
-      label={translateText(["labels", "deal"])}
-      placeholder={translateText(["placeholders", "deal"])}
+      label={translateText(["tasks", "modal", "labels", "deal"])}
+      placeholder={translateText(["tasks", "modal", "placeholders", "deal"])}
       selectedValue={selectedDeal?.name ?? ""}
       onClear={handleClear}
-      clearAriaLabel={translateText(["ariaLabels", "clearDeal"])}
-      fieldAriaLabel={translateText(["ariaLabels", "deal"])}
+      clearAriaLabel={translateAria(["tasks", "modal", "clearDeal"])}
+      fieldAriaLabel={translateAria(["tasks", "modal", "deal"])}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
       onSelect={handleSelect}
       isOpenOnFocus={isSearchEnabled}
-      emptyMessage={translateText(["emptyStates", "noDeals"])}
+      emptyMessage={translateText(["tasks", "modal", "emptyStates", "noDeals"])}
     />
   );
 };

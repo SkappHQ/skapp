@@ -26,7 +26,8 @@ interface Props {
 const TaskOwnerField: FC<Props> = ({ formik }) => {
   const { values, errors, setFieldValue } = formik;
 
-  const translateText = useTranslator("crmModule", "tasks", "taskModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { isCrmSalesManager } = useSessionData();
 
@@ -87,11 +88,11 @@ const TaskOwnerField: FC<Props> = ({ formik }) => {
 
   return selectedOwner ? (
     <SelectedOwnerField
-      label={translateText(["labels", "taskOwner"])}
+      label={translateText(["tasks", "modal", "labels", "taskOwner"])}
       owner={selectedOwner}
       onRemove={handleClearOwner}
       showRemoveButton={Boolean(isCrmSalesManager)}
-      ariaLabel={translateText(["ariaLabels", "removeOwner"])}
+      ariaLabel={translateAria(["tasks", "modal", "removeOwner"])}
       required
     />
   ) : (
@@ -99,13 +100,23 @@ const TaskOwnerField: FC<Props> = ({ formik }) => {
       id="owner-search"
       items={ownerDropdownItems}
       onSelect={handleOwnerSelect}
-      label={translateText(["labels", "taskOwner"])}
-      placeholder={translateText(["placeholders", "taskOwner"])}
+      label={translateText(["tasks", "modal", "labels", "taskOwner"])}
+      placeholder={translateText([
+        "tasks",
+        "modal",
+        "placeholders",
+        "taskOwner"
+      ])}
       value={ownerSearchTerm}
       onChange={(event) => setOwnerSearchTerm(event.target.value)}
       state={errors.ownerId ? "error" : "default"}
       errorMessage={errors.ownerId}
-      emptyMessage={translateText(["emptyStates", "noOwners"])}
+      emptyMessage={translateText([
+        "tasks",
+        "modal",
+        "emptyStates",
+        "noOwners"
+      ])}
       required
     />
   );
