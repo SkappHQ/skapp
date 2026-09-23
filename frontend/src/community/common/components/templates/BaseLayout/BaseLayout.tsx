@@ -13,6 +13,7 @@ import ContentWithAppBar from "~community/common/components/organisms/ContentWit
 import ContentWithDrawer from "~community/common/components/organisms/ContentWithDrawer/ContentWithDrawer";
 import ContentWithoutDrawer from "~community/common/components/organisms/ContentWithoutDrawer/ContentWithoutDrawer";
 import { appModes } from "~community/common/constants/configs";
+import useModuleAccessGuard from "~community/common/hooks/useModuleAccessGuard";
 import useSessionData from "~community/common/hooks/useSessionData";
 import BirthdayModalController from "~community/people/components/organisms/BirthdayModalController/BirthdayModalController";
 import { BirthdayNotificationProvider } from "~community/people/providers/BirthdayNotificationProvider";
@@ -32,6 +33,8 @@ const BaseLayout = ({ children }: Props) => {
   const { asPath } = useRouter();
 
   const { sessionStatus } = useSessionData();
+
+  useModuleAccessGuard();
 
   const { token } = useFcmToken();
 
