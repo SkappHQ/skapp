@@ -15,7 +15,7 @@ const TaskRowCheckbox: FC<Props> = ({
   isCompleted,
   onToggleComplete
 }) => {
-  const translateText = useTranslator("crmModule", "tasks");
+  const translateAria = useTranslator("crmAriaV2");
 
   return (
     <div className="shrink-0 flex items-center justify-center pr-1">
@@ -23,8 +23,12 @@ const TaskRowCheckbox: FC<Props> = ({
         checked={isCompleted}
         onChange={onToggleComplete}
         onClick={(e) => e.stopPropagation()}
-        aria-label={translateText(
-          [isCompleted ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"],
+        aria-label={translateAria(
+          [
+            "tasks",
+            "row",
+            isCompleted ? "checkTaskMarkIncomplete" : "checkTaskMarkComplete"
+          ],
           { name: task.name }
         )}
       />

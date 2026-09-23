@@ -14,17 +14,23 @@ export const getTaskValidationSchema = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .required(translator(["validations", "name"]))
+      .required(translator(["tasks", "modal", "validations", "name"]))
       .max(
         characterLengths.TASK_NAME_LENGTH,
-        translator(["validations", "nameLength"])
+        translator(["tasks", "modal", "validations", "nameLength"])
       ),
-    typeId: Yup.number().required(translator(["validations", "type"])),
-    dueAt: Yup.string().required(translator(["validations", "dueDate"])),
-    ownerId: Yup.number().required(translator(["validations", "owner"])),
+    typeId: Yup.number().required(
+      translator(["tasks", "modal", "validations", "type"])
+    ),
+    dueAt: Yup.string().required(
+      translator(["tasks", "modal", "validations", "dueDate"])
+    ),
+    ownerId: Yup.number().required(
+      translator(["tasks", "modal", "validations", "owner"])
+    ),
     notes: Yup.string().max(
       characterLengths.TASK_NOTES_LENGTH,
-      translator(["validations", "notesLength"])
+      translator(["tasks", "modal", "validations", "notesLength"])
     )
   });
 

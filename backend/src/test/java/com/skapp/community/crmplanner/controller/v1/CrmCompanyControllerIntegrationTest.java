@@ -350,7 +350,7 @@ class CrmCompanyControllerIntegrationTest {
 		Long taskId = crmTaskDao.save(task).getId();
 
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
-			.extracting(CrmDeal::getId)
+			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
 		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
 			.extracting(CrmContact::getId)
@@ -393,7 +393,7 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(dealItems).filteredOn(d -> d.getId().equals(dealId))
 			.as("deal remains visible after its company is deleted")
 			.singleElement()
-			.satisfies(d -> assertThat(d.getCompanyName()).as("deleted company is presented as blank").isNull());
+			.satisfies(d -> assertThat(d.getCompanyId()).as("deleted company is presented as blank").isNull());
 
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto()))
 			.as("task remains visible after its company is deleted")
