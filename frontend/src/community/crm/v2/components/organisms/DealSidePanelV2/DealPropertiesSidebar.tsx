@@ -17,7 +17,7 @@ import {
   SEARCH_DEBOUNCE_DELAY
 } from "~community/crm/v2/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
   CrmContactEntity,

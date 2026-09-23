@@ -2,7 +2,7 @@ import { FC } from "react";
 
 import { concatStrings } from "~community/common/utils/commonUtil";
 import StageLabel from "~community/crm/v2/components/atoms/StageLabel/StageLabel";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import {
   CrmDealEntity,
   CrmOwnerEntity,

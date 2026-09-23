@@ -2,7 +2,7 @@ import { InputField } from "@rootcodelabs/skapp-ui";
 import { ChangeEvent, FC, KeyboardEvent } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 

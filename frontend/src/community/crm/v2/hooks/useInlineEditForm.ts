@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 interface UseInlineEditFormParams {
   value: string;
@@ -7,11 +7,21 @@ interface UseInlineEditFormParams {
   onSave: (value: string) => void;
 }
 
-const useInlineEditForm = ({
+export interface UseInlineEditFormReturn {
+  isEditing: boolean;
+  value: string;
+  error?: string;
+  startEditing: () => void;
+  changeValue: (nextValue: string) => void;
+  save: () => Promise<boolean>;
+  discard: () => void;
+}
+
+export const useInlineEditForm = ({
   value,
   validate,
   onSave
-}: UseInlineEditFormParams) => {
+}: UseInlineEditFormParams): UseInlineEditFormReturn => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const formik = useFormik<{ value: string }>({
@@ -34,16 +44,19 @@ const useInlineEditForm = ({
   const { values, errors, setFieldValue, validateForm, submitForm, resetForm } =
     formik;
 
-  const startEditing = () => {
+  const startEditing = useCallback(() => {
     resetForm();
     setIsEditing(true);
-  };
+  }, [resetForm]);
 
-  const changeValue = (nextValue: string) => {
-    setFieldValue("value", nextValue, true);
-  };
+  const changeValue = useCallback(
+    (nextValue: string) => {
+      setFieldValue("value", nextValue, true);
+    },
+    [setFieldValue]
+  );
 
-  const save = async (): Promise<boolean> => {
+  const save = useCallback(async (): Promise<boolean> => {
     const validationErrors = await validateForm();
     if (validationErrors.value) {
       return false;
@@ -51,12 +64,12 @@ const useInlineEditForm = ({
     await submitForm();
     setIsEditing(false);
     return true;
-  };
+  }, [validateForm, submitForm]);
 
-  const discard = () => {
+  const discard = useCallback(() => {
     resetForm();
     setIsEditing(false);
-  };
+  }, [resetForm]);
 
   return {
     isEditing,
@@ -68,5 +81,3 @@ const useInlineEditForm = ({
     discard
   };
 };
-
-export default useInlineEditForm;

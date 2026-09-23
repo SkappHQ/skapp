@@ -10,7 +10,7 @@ import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckDealNameExists } from "~community/crm/v2/api/DealApi";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/crm/v2/constants/commonConstants";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { validateDealName } from "~community/crm/v2/utils/dealValidations";
 
 interface DealTitleSectionProps {

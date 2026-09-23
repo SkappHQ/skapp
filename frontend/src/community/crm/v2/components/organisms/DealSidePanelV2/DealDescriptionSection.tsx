@@ -2,7 +2,7 @@ import { ButtonV2, TextArea } from "@rootcodelabs/skapp-ui";
 import { FC, KeyboardEventHandler } from "react";
 
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import useInlineEditForm from "~community/crm/v2/hooks/useInlineEditForm";
+import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { validateDealDescription } from "~community/crm/v2/utils/dealValidations";
 
 interface DealDescriptionSectionProps {

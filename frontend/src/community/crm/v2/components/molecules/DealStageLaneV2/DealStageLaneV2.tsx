@@ -17,7 +17,7 @@ import DraggableDealCardV2 from "~community/crm/v2/components/molecules/Draggabl
 import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/v2/constants/boardConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
-import useStageNameMapper from "~community/crm/v2/hooks/useStageNameMapper";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
 import {
