@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
 import { useCheckContactEmailExists } from "~community/crm/v2/api/ContactApi";
 import EditableContactCompanyField from "~community/crm/v2/components/molecules/EditableContactCompanyField/EditableContactCompanyField";

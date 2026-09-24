@@ -7,6 +7,7 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetCompanyLookup,
   useSearchCompaniesByDomain
@@ -110,9 +111,12 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
     if (option.id === ADD_NEW_COMPANY_OPTION_ID) {
       return (
         <AddNewCompanyOption
-          label={translateText(["contacts", "modal", "labels", "addNewCompany"], {
-            companyName: trimmedSearch
-          })}
+          label={translateText(
+            ["contacts", "modal", "labels", "addNewCompany"],
+            {
+              companyName: trimmedSearch
+            }
+          )}
         />
       );
     }

@@ -131,11 +131,6 @@
         "errorTitle": "Failed to delete contact",
         "errorDescription": "Something went wrong. Please try again"
       }
-    },
-    "priorityOptions": {
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low"
     }
   },
   "deals": {
