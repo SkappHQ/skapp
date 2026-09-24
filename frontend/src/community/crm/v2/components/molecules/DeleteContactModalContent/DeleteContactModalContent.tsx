@@ -16,11 +16,8 @@ import {
 const DeleteContactModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "deleteContactModal"
-  );
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const {
     contacts,
@@ -75,10 +72,18 @@ const DeleteContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"], {
-        contactName: selectedContact?.name
-      })
+      title: translateText([
+        "contacts",
+        "deleteModal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText(
+        ["contacts", "deleteModal", "toastMessages", "successDescription"],
+        {
+          contactName: selectedContact?.name
+        }
+      )
     });
 
     handleCloseModal();
@@ -90,8 +95,18 @@ const DeleteContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "contacts",
+        "deleteModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "deleteModal",
+        "toastMessages",
+        "errorDescription"
+      ])
     });
   };
 
@@ -112,14 +127,24 @@ const DeleteContactModalContent: FC = () => {
 
   return (
     <CrmDeleteModalContent
-      description={translateText(["description"], {
+      description={translateText(["contacts", "deleteModal", "description"], {
         contactName: selectedContact?.name
       })}
       isPending={isPending}
-      confirmLabel={translateText(["buttons", "confirm"])}
-      cancelLabel={translateText(["buttons", "cancel"])}
-      confirmAriaLabel={translateText(["ariaLabels", "confirm"])}
-      cancelAriaLabel={translateText(["ariaLabels", "cancel"])}
+      confirmLabel={translateText([
+        "contacts",
+        "deleteModal",
+        "buttons",
+        "confirm"
+      ])}
+      cancelLabel={translateText([
+        "contacts",
+        "deleteModal",
+        "buttons",
+        "cancel"
+      ])}
+      confirmAriaLabel={translateAria(["contacts", "deleteModal", "confirm"])}
+      cancelAriaLabel={translateAria(["contacts", "deleteModal", "cancel"])}
       onConfirm={handleDeleteContact}
       onClose={handleCloseModal}
     />
