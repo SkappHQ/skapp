@@ -3,7 +3,7 @@ package com.skapp.community.crmplanner.repository;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
 import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
@@ -25,9 +25,7 @@ public interface CrmContactRepository {
 
 	Page<CrmContactLookupResponseDtoV2> findContactsForLookupV2(CrmContactFilterDto filterDto, Pageable pageable);
 
-	List<CrmContact> findAllContactsForBoardInit();
-
-	List<CrmBoardContactResponseDtoV2> findAllContactsForBoardInitV2();
+	List<CrmBoardContactResponseDto> findAllContactsForBoardInit();
 
 	CrmContact findByIdWithAssociations(Long id);
 

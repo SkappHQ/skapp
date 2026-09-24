@@ -5,21 +5,21 @@ import { CrmTaskTabEnum } from "~community/crm/v2/enums/common";
 import { CrmTaskTab } from "~community/crm/v2/types/CrmTypes";
 
 export const useGetTasksTabs = (): CrmTaskTab[] => {
-  const translateText = useTranslator("crmModule", "tasks", "tabs");
+  const translateText = useTranslator("crmModuleV2");
   const { isCrmSalesManager } = useSessionData();
 
   const allTabs: CrmTaskTab[] = [
     {
       id: CrmTaskTabEnum.MY_TASKS,
-      label: translateText(["myTasks"])
+      label: translateText(["tasks", "tabs", "myTasks"])
     },
     {
       id: CrmTaskTabEnum.ALL_TASKS,
-      label: translateText(["allTasks"])
+      label: translateText(["tasks", "tabs", "allTasks"])
     },
     {
       id: CrmTaskTabEnum.COMPLETED_TASKS,
-      label: translateText(["completedTasks"])
+      label: translateText(["tasks", "tabs", "completedTasks"])
     }
   ];
 
