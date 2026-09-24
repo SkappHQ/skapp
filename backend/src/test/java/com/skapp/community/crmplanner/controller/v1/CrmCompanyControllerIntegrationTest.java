@@ -354,8 +354,8 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
-		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContact::getId)
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
+			.extracting(CrmContactListItemDto::getId)
 			.contains(contactId);
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.extracting(CrmTaskResponseDto::getId)
@@ -373,7 +373,7 @@ class CrmCompanyControllerIntegrationTest {
 		CrmTask remainingTask = crmTaskDao.findById(taskId).orElseThrow();
 		assertThat(remainingTask.getIsDeleted()).isFalse();
 
-		PageDto contactsPage = (PageDto) contactService.getContactMetrics(new CrmContactMetricRequestDto())
+		PageDto contactsPage = (PageDto) contactService.getContacts(new CrmContactMetricRequestDto())
 			.getResults()
 			.get(0);
 		@SuppressWarnings("unchecked")
@@ -382,7 +382,9 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(contactItems).filteredOn(c -> c.getId().equals(contactId))
 			.as("contact remains visible after its company is deleted")
 			.singleElement()
-			.satisfies(c -> assertThat(c.getCompany()).as("deleted company is presented as blank").isNull());
+			.satisfies(c -> assertThat(c.getCompanyId())
+				.as("the list row still carries the company id after the company is soft deleted")
+				.isEqualTo(companyId));
 
 		// dealService.getDeals resolves the current user, but the MockMvc delete request
 		// above clears the security context, so re-establish it for this direct call

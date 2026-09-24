@@ -9,9 +9,6 @@ import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmCompanyCreateDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
@@ -53,8 +50,6 @@ public interface CrmMapper {
 
 	CrmCompanyLookupResponseDto crmCompanyToCrmCompanyLookupResponseDto(CrmCompany company);
 
-	CrmContactLookupResponseDto crmContactToCrmContactLookupResponseDto(CrmContact contact);
-
 	CrmCompany crmCompanyCreateDtoToCrmCompany(CrmCompanyCreateDto crmCompanyCreateDto);
 
 	CrmCompanyResponseDto crmCompanyToCrmCompanyResponseDto(CrmCompany crmCompany);
@@ -66,13 +61,9 @@ public interface CrmMapper {
 
 	CrmOwnerResponseDto employeeToCrmDealOwnerResponseDto(Employee employee);
 
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
 	CrmContactResponseDto crmContactToCrmContactResponseDto(CrmContact contact);
-
-	@Mapping(target = "closedDealValue", ignore = true)
-	@Mapping(target = "closedDealCount", ignore = true)
-	@Mapping(target = "openTasksCount", ignore = true)
-	@Mapping(target = "overdueTasksCount", ignore = true)
-	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	@Mapping(target = "typeId", source = "type.id")
 	@Mapping(target = "ownerId", source = "owner.employeeId")
@@ -88,8 +79,6 @@ public interface CrmMapper {
 	List<CrmBoardStageResponseDto> crmDealStagesToCrmBoardStageResponseDtos(List<CrmDealStage> crmDealStages);
 
 	CrmBoardOwnerResponseDto employeeToCrmBoardOwnerResponseDto(Employee employee);
-
-	CrmContactDetailResponseDto crmContactToCrmContactDetailResponseDto(CrmContact contact);
 
 	CrmDealDetailResponseDto crmDealToCrmDealDetailResponseDto(CrmDeal deal);
 

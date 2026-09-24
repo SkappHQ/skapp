@@ -17,13 +17,10 @@ import com.skapp.community.crmplanner.payload.request.CrmContactEditRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactOwnerFilterDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmExistsResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
 import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmContactOwnerRepository;
@@ -31,13 +28,8 @@ import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.service.CrmCompanyService;
 import com.skapp.community.crmplanner.service.CrmContactService;
-import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
-import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.service.CrmOwnerResolverService;
-import com.skapp.community.crmplanner.type.CrmDealSummary;
-import com.skapp.community.crmplanner.type.CrmTaskSummary;
-import com.skapp.community.crmplanner.util.CrmUtil;
 import com.skapp.community.crmplanner.util.CrmValidations;
 import com.skapp.community.peopleplanner.model.Employee;
 import lombok.RequiredArgsConstructor;
@@ -48,14 +40,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -270,44 +258,19 @@ public class CrmContactServiceImpl implements CrmContactService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto) {
-		log.info("getContactMetrics: execution started");
+	public ResponseEntityDto getContacts(CrmContactMetricRequestDto filterDto) {
+		log.info("getContacts: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContact> contactPage = crmContactDao.findContacts(filterDto, pageable);
-
-		List<Long> contactIds = contactPage.getContent().stream().map(CrmContact::getId).toList();
-
-		if (contactIds.isEmpty()) {
-			PageDto pageDto = new PageDto();
-			pageDto.setItems(List.of());
-			pageDto.setCurrentPage(contactPage.getNumber());
-			pageDto.setTotalItems(contactPage.getTotalElements());
-			pageDto.setTotalPages(contactPage.getTotalPages());
-			log.info("getContactMetrics: execution ended");
-			return new ResponseEntityDto(false, pageDto);
-		}
-
-		Map<Long, CrmDealSummary> dealSummaryMap = crmDealDao.findClosedDealSummaryByContactIds(contactIds)
-			.stream()
-			.collect(Collectors.toMap(CrmDealSummary::getContactId, Function.identity()));
-
-		Map<Long, CrmTaskSummary> taskSummaryMap = crmTaskDao.findOpenTaskSummaryByContactIds(contactIds)
-			.stream()
-			.collect(Collectors.toMap(CrmTaskSummary::getContactId, Function.identity()));
-
-		List<CrmContactListItemDto> contactDtos = contactPage.getContent()
-			.stream()
-			.map(c -> enrichWithMetrics(c, dealSummaryMap, taskSummaryMap))
-			.toList();
+		Page<CrmContactListItemDto> contactPage = crmContactDao.getContacts(filterDto, pageable);
 
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(contactDtos);
+		pageDto.setItems(contactPage.getContent());
 		pageDto.setCurrentPage(contactPage.getNumber());
 		pageDto.setTotalItems(contactPage.getTotalElements());
 		pageDto.setTotalPages(contactPage.getTotalPages());
 
-		log.info("getContactMetrics: execution ended");
+		log.info("getContacts: execution ended");
 		return new ResponseEntityDto(false, pageDto);
 	}
 
@@ -329,40 +292,16 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("getContactsLookup: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContact> contactPage = crmContactDao.findContactsForLookup(filterDto, pageable);
-
-		List<CrmContactLookupResponseDto> contactDtos = contactPage.getContent()
-			.stream()
-			.map(this::toLookupDto)
-			.toList();
+		Page<CrmContactLookupResponseDto> contactPage = crmContactDao.findContactsForLookup(filterDto, pageable);
 
 		PageDto pageDto = new PageDto();
-		pageDto.setItems(contactDtos);
+		pageDto.setItems(contactPage.getContent());
 		pageDto.setCurrentPage(contactPage.getNumber());
 		pageDto.setTotalItems(contactPage.getTotalElements());
 		pageDto.setTotalPages(contactPage.getTotalPages());
 
 		log.info("getContactsLookup: execution ended");
 		return new ResponseEntityDto(false, pageDto);
-	}
-
-	private CrmContactLookupResponseDto toLookupDto(CrmContact contact) {
-		return CrmUtil.toContactLookupDto(crmMapper, contact);
-	}
-
-	private CrmContactListItemDto enrichWithMetrics(CrmContact contact, Map<Long, CrmDealSummary> dealSummaryMap,
-			Map<Long, CrmTaskSummary> taskSummaryMap) {
-		CrmContactListItemDto dto = CrmUtil.toContactListItemDto(crmMapper, contact);
-
-		CrmDealSummary deals = dealSummaryMap.get(contact.getId());
-		dto.setClosedDealValue(deals != null ? deals.getTotalClosedValue() : BigDecimal.ZERO);
-		dto.setClosedDealCount(deals != null ? deals.getClosedDealCount() : 0L);
-
-		CrmTaskSummary tasks = taskSummaryMap.get(contact.getId());
-		dto.setOpenTasksCount(tasks != null ? tasks.getOpenTaskCount() : 0L);
-		dto.setOverdueTasksCount(tasks != null ? tasks.getOverdueTaskCount() : 0L);
-
-		return dto;
 	}
 
 	@Override
@@ -376,32 +315,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 			throw new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND);
 		}
 
-		List<CrmDeal> deals = crmDealDao.findByContactIdWithAssociations(id);
-		List<CrmTask> tasks = crmTaskDao.findByContactIdWithAssociations(id);
-
-		CrmContactDetailResponseDto dto = CrmUtil.toContactDetailDto(crmMapper, contact);
-
-		CrmContactDealMetrics dealMetrics = crmDealDao.findDealMetricsByContactId(id);
-		dto.setTotalRevenue(dealMetrics.getTotalRevenue().toPlainString());
-		dto.setPipelineRevenue(dealMetrics.getPipelineRevenue().toPlainString());
-		dto.setActiveDealsCount(dealMetrics.getActiveDealsCount());
-
-		CrmContactTaskMetrics taskMetrics = crmTaskDao.findTaskMetricsByContactId(id);
-		dto.setOpenTasksCount(taskMetrics.getOpenTasksCount());
-		dto.setOverdueTasksCount(taskMetrics.getOverdueTasksCount());
-
-		List<CrmDealDetailResponseDto> dealDtos = deals.stream()
-			.map(crmMapper::crmDealToCrmDealDetailResponseDto)
-			.toList();
-		dto.setDeals(dealDtos);
-
-		List<CrmTaskDetailResponseDto> taskDtos = tasks.stream()
-			.map(crmMapper::crmTaskToCrmTaskDetailResponseDto)
-			.toList();
-		dto.setTasks(taskDtos);
-
 		log.info("getContactById: execution ended");
-		return new ResponseEntityDto(false, dto);
+		return new ResponseEntityDto(false, crmMapper.crmContactToCrmContactResponseDto(contact));
 	}
 
 	private void validateContactPayload(String name, String email, String contactNumber, Long ownerId) {
