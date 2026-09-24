@@ -73,8 +73,6 @@ class CrmContactControllerIntegrationTest {
 
 	private static final String EXISTS_PATH = BASE_PATH + "/exists/email";
 
-	private static final String METRICS_PATH = BASE_PATH + "/metrics";
-
 	private static final String METRICS_BY_ID_PATH = BY_ID_PATH + "/metrics";
 
 	private static final String OWNERS_PATH = BASE_PATH + "/owners";
@@ -158,8 +156,12 @@ class CrmContactControllerIntegrationTest {
 		return performRequest(get(EXISTS_PATH).param("email", email).accept(MediaType.APPLICATION_JSON));
 	}
 
-	private ResultActions performGetMetricsRequest() throws Exception {
-		return performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON));
+	private ResultActions performGetContactsRequest() throws Exception {
+		return performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON));
+	}
+
+	private ResultActions performGetContactsRequest(String searchKeyword) throws Exception {
+		return performRequest(get(BASE_PATH).param("searchKeyword", searchKeyword).accept(MediaType.APPLICATION_JSON));
 	}
 
 	private ResultActions performGetMetricsByIdRequest(Long id) throws Exception {
@@ -359,7 +361,11 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").doesNotExist());
 	}
 
 	@Test
@@ -370,7 +376,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Jane Smith"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("jane.smith@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -389,12 +395,17 @@ class CrmContactControllerIntegrationTest {
 		CrmContactCreateRequestDto dto = createValidPayload(null);
 		dto.setCompanyName("Brand New Corp");
 
-		performPostRequest(dto).andDo(print())
+		String content = performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Brand New Corp"));
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
-		assertThat(crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Brand New Corp")).isPresent();
+		CrmCompany created = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Brand New Corp").orElseThrow();
+		assertThat((Integer) JsonPath.read(content, "$.results[0].companyId"))
+			.as("the newly created company is linked to the contact")
+			.isEqualTo(created.getId().intValue());
 	}
 
 	@Test
@@ -408,7 +419,7 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(existingId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(existingId));
 
 		assertEquals(1L, crmCompanyDao.countByIsDeletedFalse());
 	}
@@ -422,7 +433,7 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -435,13 +446,18 @@ class CrmContactControllerIntegrationTest {
 		CrmContactCreateRequestDto dto = createValidPayload(null);
 		dto.setCompanyName("Deleted Corp");
 
-		performPostRequest(dto).andDo(print())
+		String content = performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Deleted Corp"));
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
 
 		CrmCompany recreated = crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Deleted Corp").orElseThrow();
 		assertThat(recreated.getId()).isNotEqualTo(deleted.getId());
+		assertThat((Integer) JsonPath.read(content, "$.results[0].companyId"))
+			.as("the contact links to the recreated company, not the soft-deleted one")
+			.isEqualTo(recreated.getId().intValue());
 	}
 
 	@Test
@@ -455,8 +471,7 @@ class CrmContactControllerIntegrationTest {
 		performPostRequest(dto).andDo(print())
 			.andExpect(status().isCreated())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['name']").value("Integration Test Corp"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId));
 
 		assertThat(crmCompanyDao.findByNameIgnoreCaseAndIsDeletedFalse("Should Be Ignored")).isEmpty();
 	}
@@ -668,7 +683,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Updated Name Only"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("original@example.com"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactNumber']").doesNotExist())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId));
 	}
 
 	@Test
@@ -680,7 +695,7 @@ class CrmContactControllerIntegrationTest {
 		performPatchRawRequest(contactId, "{\"companyId\": null}").andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']").doesNotExist());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").doesNotExist());
 	}
 
 	@Test
@@ -695,7 +710,7 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Name Without Company"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['company']['id']").value(companyId));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId));
 	}
 
 	@Test
@@ -929,7 +944,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Get contact metrics with no contacts - Returns empty page")
 	void getContactMetrics_NoContacts_ReturnsEmptyPage() throws Exception {
-		performGetMetricsRequest().andDo(print())
+		performGetContactsRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['items']").isArray());
@@ -941,10 +956,121 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		savedContact(companyId, "metrics.contact@example.com");
 
-		performGetMetricsRequest().andDo(print())
+		performGetContactsRequest().andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
 			.andExpect(jsonPath("['results'][0]['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics - Returns the flat contact fields with nested metrics")
+	void getContactMetrics_WithContacts_ReturnsFlatContactAndMetrics() throws Exception {
+		Long companyId = savedCompany("Metrics Shape Corp").getId();
+		Long contactId = savedNamedContact("ZeroMetricsContactUnique", companyId, "metrics.shape@example.com").getId();
+
+		performGetContactsRequest("ZeroMetricsContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['id']").value(contactId))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("ZeroMetricsContactUnique"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['email']").value("metrics.shape@example.com"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['companyId']").value(companyId))
+			.andExpect(jsonPath("['results'][0]['items'][0]['ownerId']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['company']").doesNotExist())
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealValue']").value("0"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(0))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['pipelineRevenue']").value("0"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['activeDealsCount']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get contact metrics - Aggregates the contact's deals and tasks")
+	void getContactMetrics_WithDealsAndTasks_ReturnsAggregatedMetrics() throws Exception {
+		Long companyId = savedCompany("Aggregate Corp").getId();
+		Long contactId = savedNamedContact("AggMetricsContactUnique", companyId, "agg.metrics@example.com").getId();
+
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "150");
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "400");
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "600");
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.LOST), "999");
+		savedTask(contactId, false, LocalDateTime.now().plusDays(3));
+		savedTask(contactId, false, LocalDateTime.now().minusDays(2));
+
+		String content = performGetContactsRequest("AggMetricsContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['closedDealCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['openTasksCount']").value(2))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['overdueTasksCount']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['metrics']['activeDealsCount']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].items[0].metrics.closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("closed deal value sums WON deals only")
+			.isEqualByComparingTo("1000");
+
+		String pipelineRevenue = JsonPath.read(content, "$.results[0].items[0].metrics.pipelineRevenue");
+		assertThat(new BigDecimal(pipelineRevenue)).as("pipeline revenue excludes WON and LOST deals")
+			.isEqualByComparingTo("150");
+	}
+
+	@Test
+	@DisplayName("Get contact metrics - A fractional deal amount keeps its scale")
+	void getContactMetrics_FractionalDealAmount_KeepsScale() throws Exception {
+		Long companyId = savedCompany("Fractional Corp").getId();
+		Long contactId = savedNamedContact("FractionalMetricsContactUnique", companyId,
+				"fractional.metrics@example.com")
+			.getId();
+
+		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "5000.55");
+
+		String content = performGetContactsRequest("FractionalMetricsContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+
+		String closedDealValue = JsonPath.read(content, "$.results[0].items[0].metrics.closedDealValue");
+		assertThat(new BigDecimal(closedDealValue)).as("a fractional WON amount survives the decimal cast")
+			.isEqualByComparingTo("5000.55");
+	}
+
+	@Test
+	@DisplayName("Get contact metrics - A contact with no company is still listed")
+	void getContactMetrics_ContactWithoutCompany_IsReturned() throws Exception {
+		savedNamedContact("NoCompanyContactUnique", null, "nocompany.metrics@example.com");
+
+		performGetContactsRequest("NoCompanyContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['name']").value("NoCompanyContactUnique"))
+			.andExpect(jsonPath("['results'][0]['items'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get contact metrics - A soft-deleted company is still reported on the list row")
+	void getContactMetrics_DeletedCompany_StillReturnsCompanyId() throws Exception {
+		CrmCompany company = savedCompany("Deleted Metrics Corp");
+		savedNamedContact("DeletedCoMetricsContactUnique", company.getId(), "deletedco.metrics@example.com");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		// the lookup endpoint nulls this out, the metrics list does not - the
+		// inconsistency predates the migration and is carried over unchanged
+		performGetContactsRequest("DeletedCoMetricsContactUnique").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath("['results'][0]['totalItems']").value(1))
+			.andExpect(jsonPath("['results'][0]['items'][0]['companyId']").value(company.getId()));
 	}
 
 	@Test
@@ -958,8 +1084,7 @@ class CrmContactControllerIntegrationTest {
 		Long otherCompanyId = crmCompanyDao.save(otherCompany).getId();
 		savedContact(otherCompanyId, "other.company.contact@example.com");
 
-		performRequest(
-				get(METRICS_PATH).param("companyId", String.valueOf(companyId)).accept(MediaType.APPLICATION_JSON))
+		performRequest(get(BASE_PATH).param("companyId", String.valueOf(companyId)).accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -972,7 +1097,7 @@ class CrmContactControllerIntegrationTest {
 		Long companyId = savedCompany().getId();
 		savedContact(companyId, "keyword.contact@example.com");
 
-		performRequest(get(METRICS_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
+		performRequest(get(BASE_PATH).param("searchKeyword", "Test Contact").accept(MediaType.APPLICATION_JSON))
 			.andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -982,7 +1107,7 @@ class CrmContactControllerIntegrationTest {
 	@Test
 	@DisplayName("Get contact metrics without CRM role - Returns Forbidden")
 	void getContactMetrics_WithoutCrmRole_ReturnsForbidden() throws Exception {
-		performRequest(get(METRICS_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+		performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
 			.andExpect(status().isForbidden());
 	}
 
@@ -990,7 +1115,7 @@ class CrmContactControllerIntegrationTest {
 
 	@Test
 	@DisplayName("Get contact by ID - Returns full contact detail with zero metrics when no deals or tasks")
-	void getContactById_HappyPath_ReturnsContactDetail() throws Exception {
+	void getContactById_HappyPath_ReturnsBaseContact() throws Exception {
 		Long companyId = savedCompany().getId();
 		Long contactId = savedContact(companyId, "detail.contact@example.com").getId();
 
@@ -1000,13 +1125,11 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(contactId))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Test Contact"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['email']").value("detail.contact@example.com"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("0"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['deals']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isArray());
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deals']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").doesNotExist());
 	}
 
 	@Test
@@ -1032,64 +1155,6 @@ class CrmContactControllerIntegrationTest {
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
 			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
 				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND)));
-	}
-
-	@Test
-	@DisplayName("Get contact by ID with WON deal - Total revenue reflects deal amount")
-	void getContactById_WithWonDeal_TotalRevenueReflected() throws Exception {
-		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "won.deal@example.com").getId();
-		savedDeal(contactId, companyId, savedStage(CrmDealStageType.WON), "5000.00");
-
-		performGetByIdRequest(contactId).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("5000.00"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("0"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(0));
-	}
-
-	@Test
-	@DisplayName("Get contact by ID with OPEN deal - Pipeline revenue and active deal count reflect deal")
-	void getContactById_WithOpenDeal_PipelineRevenueAndActiveCountReflected() throws Exception {
-		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "open.deal@example.com").getId();
-		savedDeal(contactId, companyId, savedStage(CrmDealStageType.OPEN), "3000.00");
-
-		performGetByIdRequest(contactId).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalRevenue']").value("0"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['pipelineRevenue']").value("3000.00"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['activeDealsCount']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get contact by ID with overdue task - Open and overdue counts are correct")
-	void getContactById_WithOverdueTask_CountsAreCorrect() throws Exception {
-		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "overdue.task@example.com").getId();
-		savedTask(contactId, false, LocalDateTime.now().minusDays(1));
-
-		performGetByIdRequest(contactId).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get contact by ID with completed task - Open and overdue counts remain zero")
-	void getContactById_WithCompletedTask_OpenAndOverdueCountZero() throws Exception {
-		Long companyId = savedCompany().getId();
-		Long contactId = savedContact(companyId, "completed.task@example.com").getId();
-		savedTask(contactId, true, LocalDateTime.now().minusDays(1));
-
-		performGetByIdRequest(contactId).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['openTasksCount']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['overdueTasksCount']").value(0));
 	}
 
 	@Test
@@ -1202,6 +1267,41 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
+	@DisplayName("Get contacts lookup - Carries the company as an id, not a nested object")
+	void getContactsLookup_HappyPath_ReturnsContactWithCompanyId() throws Exception {
+		Long companyId = savedCompany("Lookup Shape Corp").getId();
+		savedNamedContact("Lookup Shape Contact", companyId, "lookup.shape@example.com");
+
+		performRequest(
+				get(LOOKUP_PATH).param("searchKeyword", "Lookup Shape Contact").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Lookup Shape Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['company']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get contacts lookup - A soft-deleted company is omitted from the row")
+	void getContactsLookup_DeletedCompany_ReturnsNullCompanyId() throws Exception {
+		CrmCompany company = savedCompany("Deleted Lookup Corp");
+		savedNamedContact("Orphaned Lookup Contact", company.getId(), "orphaned.lookup@example.com");
+		company.setIsDeleted(true);
+		crmCompanyDao.save(company);
+
+		performRequest(
+				get(LOOKUP_PATH).param("searchKeyword", "Orphaned Lookup Contact").accept(MediaType.APPLICATION_JSON))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Orphaned Lookup Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").doesNotExist());
+	}
+
+	@Test
 	@DisplayName("Lookup contacts without CRM role - Returns Forbidden")
 	void getContactsLookup_WithoutCrmRole_ReturnsForbidden() throws Exception {
 		performRequest(get(LOOKUP_PATH).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
@@ -1266,8 +1366,8 @@ class CrmContactControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get contact metrics by ID - Task counts match GET /v1/crm/contact/{id}")
-	void getContactMetricsById_TaskCounts_MatchContactDetail() throws Exception {
+	@DisplayName("Get contact metrics by ID - Counts tasks linked through the contact's deals")
+	void getContactMetricsById_TaskCounts_IncludeDealLinkedTasks() throws Exception {
 		Long companyId = savedCompany("ConsistencyCorp").getId();
 		Long contactId = savedNamedContact("ConsistencyContact", companyId, "consistency.metrics@example.com").getId();
 
@@ -1279,26 +1379,16 @@ class CrmContactControllerIntegrationTest {
 		savedDealTask(deal.getId(), false, LocalDateTime.now().plusDays(1));
 		savedDealTask(deal.getId(), false, LocalDateTime.now().minusDays(1));
 
-		String detail = performGetByIdRequest(contactId).andExpect(status().isOk())
-			.andReturn()
-			.getResponse()
-			.getContentAsString();
 		String metrics = performGetMetricsByIdRequest(contactId).andExpect(status().isOk())
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
 
-		int detailOpen = JsonPath.read(detail, "$.results[0].openTasksCount");
-		int detailOverdue = JsonPath.read(detail, "$.results[0].overdueTasksCount");
 		int metricsOpen = JsonPath.read(metrics, "$.results[0].openTasksCount");
 		int metricsOverdue = JsonPath.read(metrics, "$.results[0].overdueTasksCount");
 
-		assertThat(metricsOpen).as("open task count matches the contact detail endpoint")
-			.isEqualTo(detailOpen)
-			.isEqualTo(4);
-		assertThat(metricsOverdue).as("overdue task count matches the contact detail endpoint")
-			.isEqualTo(detailOverdue)
-			.isEqualTo(2);
+		assertThat(metricsOpen).as("tasks linked through the contact's deals are counted too").isEqualTo(4);
+		assertThat(metricsOverdue).as("overdue tasks linked through the contact's deals are counted too").isEqualTo(2);
 	}
 
 	@Test
