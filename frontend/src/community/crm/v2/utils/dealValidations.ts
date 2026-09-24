@@ -4,9 +4,9 @@ import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import {
   DEAL_DESCRIPTION_MAX_LENGTH,
   DEAL_NAME_MAX_LENGTH
-} from "~community/crm/constants/dealConstants";
-import { isDealNameValid } from "~community/crm/regex/crmRegexPatterns";
+} from "~community/crm/v2/constants/dealConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
+import { isDealNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
 
 export const dealNameValidation = (translator: TranslatorFunctionType) =>
   Yup.string()
@@ -15,13 +15,18 @@ export const dealNameValidation = (translator: TranslatorFunctionType) =>
       DEAL_NAME_MAX_LENGTH,
       translator(["deals", "common", "validations", "dealNameMaxLength"])
     )
-    .matches(
-      isDealNameValid(),
-      translator(["deals", "common", "validations", "dealNameInvalidChars"])
-    )
     .required(
       translator(["deals", "common", "validations", "dealNameRequired"])
-    );
+    )
+    .matches(isDealNameValid(), {
+      message: translator([
+        "deals",
+        "common",
+        "validations",
+        "dealNameInvalidChars"
+      ]),
+      excludeEmptyString: true
+    });
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -89,19 +94,19 @@ export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
     name: Yup.string()
       .trim()
       .max(DEAL_NAME_MAX_LENGTH)
-      .matches(
-        isDealNameValid(),
-        translator([
+      .required(
+        translator(["deals", "common", "validations", "dealNameRequired"])
+      )
+      .matches(isDealNameValid(), {
+        message: translator([
           "deals",
           "linkedSection",
           "inlineAdd",
           "validations",
           "dealNameInvalidChars"
-        ])
-      )
-      .required(
-        translator(["deals", "common", "validations", "dealNameRequired"])
-      ),
+        ]),
+        excludeEmptyString: true
+      }),
     contactId: Yup.string().required(
       translator(["deals", "common", "validations", "contactRequired"])
     )

@@ -10,7 +10,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
 const ContactModalController: FC = () => {
-  const translateText = useTranslator("crmModule", "contacts");
+  const translateText = useTranslator("crmModuleV2");
 
   const { isContactModalOpen, contactModalType, setIsContactModalOpen } =
     useCrmStoreV2(
@@ -28,11 +28,11 @@ const ContactModalController: FC = () => {
   const getModalTitle = (modalType: CrmModalTypes): string => {
     switch (modalType) {
       case CrmModalTypes.ADD_CONTACT_MODAL:
-        return translateText(["addContactModal", "title"]);
+        return translateText(["contacts", "modal", "addTitle"]);
       case CrmModalTypes.EDIT_CONTACT_MODAL:
-        return translateText(["editContactModal", "title"]);
+        return translateText(["contacts", "modal", "editTitle"]);
       case CrmModalTypes.DELETE_CONTACT_MODAL:
-        return translateText(["deleteContactModal", "title"]);
+        return translateText(["contacts", "deleteModal", "title"]);
       default:
         return "";
     }

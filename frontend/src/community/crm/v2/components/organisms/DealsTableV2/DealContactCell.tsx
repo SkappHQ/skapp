@@ -3,13 +3,13 @@ import { useShallow } from "zustand/react/shallow";
 
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import {
-  DEFAULT_LOOKUP_PAGE_SIZE,
-  SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmContactEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {

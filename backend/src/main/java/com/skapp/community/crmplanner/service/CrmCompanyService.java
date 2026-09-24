@@ -12,7 +12,7 @@ import com.skapp.community.crmplanner.payload.request.CrmCompanyFilterDto;
 
 public interface CrmCompanyService {
 
-	ResponseEntityDto getCompanies(CrmCompanyFilterDto filterDto);
+	ResponseEntityDto getCompaniesLookup(CrmCompanyFilterDto filterDto);
 
 	ResponseEntityDto checkCompanyNameExists(String name);
 
@@ -20,7 +20,7 @@ public interface CrmCompanyService {
 
 	CrmCompany findOrCreateCompanyByName(String name);
 
-	ResponseEntityDto getCompanyMetrics(String searchKeyword, Pageable pageable);
+	ResponseEntityDto getCompanies(String searchKeyword, Pageable pageable);
 
 	ResponseEntityDto getCompanyMetricsById(Long id);
 
