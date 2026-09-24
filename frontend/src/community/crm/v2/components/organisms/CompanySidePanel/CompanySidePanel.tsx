@@ -6,7 +6,7 @@ import {
   TabItem,
   Tabs
 } from "@rootcodelabs/skapp-ui";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { ToastType } from "~community/common/enums/ComponentEnums";
@@ -259,39 +259,35 @@ const CompanySidePanel: FC<CompanySidePanelProps> = ({ companyId }) => {
     isCrmSidePanelOpen &&
     crmSidePanelType === CrmSidePanelTypes.COMPANY_SIDE_PANEL;
 
-  const menuItems: MenuItemProps[] = useMemo(
-    () => [
-      {
-        id: "edit",
-        label: translateText(["companies", "sidePanel", "editCompany"]),
-        icon: { start: <EditIcon width="16px" height="16px" /> },
-        onClick: () => {
-          setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
-          setIsCompanyModalOpen(true);
-        }
-      },
-      {
-        id: "delete",
-        label: translateText(["companies", "sidePanel", "deleteCompany"]),
-        icon: {
-          start: (
-            <DeleteButtonIcon
-              width="12px"
-              height="14px"
-              fill="var(--color-semantic-red-text)"
-            />
-          )
-        },
-        activeBehavior:
-          "hover:bg-semantic-red-background text-semantic-red-text",
-        onClick: () => {
-          setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
-          setIsCompanyModalOpen(true);
-        }
+  const menuItems: MenuItemProps[] = [
+    {
+      id: "edit",
+      label: translateText(["companies", "sidePanel", "editCompany"]),
+      icon: { start: <EditIcon width="16px" height="16px" /> },
+      onClick: () => {
+        setCompanyModalType(CrmModalTypes.EDIT_COMPANY_MODAL);
+        setIsCompanyModalOpen(true);
       }
-    ],
-    [translateText]
-  );
+    },
+    {
+      id: "delete",
+      label: translateText(["companies", "sidePanel", "deleteCompany"]),
+      icon: {
+        start: (
+          <DeleteButtonIcon
+            width="12px"
+            height="14px"
+            fill="var(--color-semantic-red-text)"
+          />
+        )
+      },
+      activeBehavior: "hover:bg-semantic-red-background text-semantic-red-text",
+      onClick: () => {
+        setCompanyModalType(CrmModalTypes.DELETE_COMPANY_MODAL);
+        setIsCompanyModalOpen(true);
+      }
+    }
+  ];
 
   const tabs: TabItem[] = [
     {
