@@ -270,11 +270,6 @@
       "TRANSPORTATION_LOGISTICS_SUPPLY_CHAIN_AND_STORAGE": "Transportation, logistics, supply chain and storage",
       "UTILITIES": "Utilities",
       "WHOLESALE": "Wholesale"
-    },
-    "priorityOptions": {
-      "high": "High",
-      "medium": "Medium",
-      "low": "Low"
     }
   },
   "deals": {

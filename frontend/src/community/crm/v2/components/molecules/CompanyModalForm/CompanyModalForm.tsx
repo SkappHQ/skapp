@@ -38,7 +38,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         label: translateText(["companies", "industryOptions", industry]),
         value: industry
       })),
-    [translateIndustryOptions]
+    [translateText]
   );
 
   const {
