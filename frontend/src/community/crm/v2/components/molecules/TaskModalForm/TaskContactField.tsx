@@ -5,12 +5,12 @@ import { useShallow } from "zustand/react/shallow";
 import { SearchableDropdownItem } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
+import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
+import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
-import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
-import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
+} from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
@@ -29,7 +29,8 @@ interface Props {
 const TaskContactField: FC<Props> = ({ formik }) => {
   const { values, setFieldValue } = formik;
 
-  const translateText = useTranslator("crmModule", "tasks", "taskModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const {
     contacts,
@@ -121,18 +122,28 @@ const TaskContactField: FC<Props> = ({ formik }) => {
   return (
     <SelectableSearchField
       id="contact-search"
-      label={translateText(["labels", "contactName"])}
-      placeholder={translateText(["placeholders", "contactName"])}
+      label={translateText(["tasks", "modal", "labels", "contactName"])}
+      placeholder={translateText([
+        "tasks",
+        "modal",
+        "placeholders",
+        "contactName"
+      ])}
       selectedValue={getContactDisplayName(selectedContact)}
       onClear={handleClear}
-      clearAriaLabel={translateText(["ariaLabels", "clearContact"])}
-      fieldAriaLabel={translateText(["ariaLabels", "contactName"])}
+      clearAriaLabel={translateAria(["tasks", "modal", "clearContact"])}
+      fieldAriaLabel={translateAria(["tasks", "modal", "contactName"])}
       searchValue={searchTerm}
       onSearchChange={(event) => setSearchTerm(event.target.value)}
       items={dropdownItems}
       onSelect={handleSelect}
       isOpenOnFocus={isSearchEnabled}
-      emptyMessage={translateText(["emptyStates", "noContacts"])}
+      emptyMessage={translateText([
+        "tasks",
+        "modal",
+        "emptyStates",
+        "noContacts"
+      ])}
     />
   );
 };

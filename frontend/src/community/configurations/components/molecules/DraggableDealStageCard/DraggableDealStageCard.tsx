@@ -5,10 +5,10 @@ import { DragIcon, StatusCard } from "@rootcodelabs/skapp-ui";
 import Icon from "~community/common/components/atoms/Icon/Icon";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
+import { getStageDisplayName } from "~community/configurations/utils/stageUtil";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getStageDisplayName } from "~community/crm/v2/utils/stageUtil";
 
 interface DraggableDealStageCardProps {
   stage: CrmStageEntity;

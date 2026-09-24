@@ -1,11 +1,8 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
-import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
 import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
@@ -21,9 +18,7 @@ public interface CrmTaskRepository {
 
 	List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds);
 
-	List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto);
-
-	Page<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDtoV2 filterDto, Pageable pageable);
+	Page<CrmTaskResponseDto> findTasks(Long ownerId, CrmTaskFilterDto filterDto, Pageable pageable);
 
 	Optional<CrmTask> findByIdWithAssociations(Long id);
 
@@ -33,12 +28,8 @@ public interface CrmTaskRepository {
 
 	CrmContactTaskMetrics findTaskMetricsByContactId(Long contactId);
 
-	Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable);
-
 	Map<Long, Long> countTasksByDealIds(List<Long> dealIds, Long ownerId);
 
-	Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Long ownerId, Pageable pageable);
-
-	Page<CrmTaskResponseDtoV2> findRelatedTasksV2(Long taskId, CrmTaskRelatedParams params, Pageable pageable);
+	Page<CrmTaskResponseDto> findRelatedTasks(Long taskId, CrmTaskRelatedParams params, Pageable pageable);
 
 }

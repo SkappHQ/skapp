@@ -2,12 +2,13 @@ import * as Yup from "yup";
 
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { isDealStageNameValid } from "~community/crm/regex/crmRegexPatterns";
-import { CrmDealStageType } from "~community/crm/types/CommonTypes";
+import { isStageNameTaken } from "~community/configurations/utils/stageUtil";
+import { isDealStageNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
+import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-export const dealStageValidations = (
+export const getStageValidationSchema = (
   translator: TranslatorFunctionType,
-  dealStages: CrmDealStageType[] = [],
+  stages: CrmStageEntity[],
   currentStageId?: number
 ) =>
   Yup.object().shape({
@@ -29,17 +30,10 @@ export const dealStageValidations = (
       .test(
         "is-deal-stage-name-unique",
         translator(["dealStageModal", "validations", "nameExists"]),
-        (value) => {
-          return dealStages.every(
-            (stage) =>
-              stage.id === currentStageId ||
-              stage.name.trim().toLowerCase() !== value.trim().toLowerCase()
-          );
-        }
+        (value) => !isStageNameTaken(stages, value, currentStageId)
       ),
     description: Yup.string()
       .trim()
-      .optional()
       .max(
         characterLengths.DEAL_STAGE_DESCRIPTION_LENGTH,
         translator(["dealStageModal", "validations", "descriptionLength"])

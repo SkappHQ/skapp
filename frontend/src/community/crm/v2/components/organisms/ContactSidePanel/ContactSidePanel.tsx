@@ -59,11 +59,8 @@ interface ContactSidePanelProps {
 }
 
 const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel"
-  );
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const [activeTab, setActiveTab] = useState<CrmSidePanelTabEnum>(
     CrmSidePanelTabEnum.TASKS
@@ -107,8 +104,18 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["errors", "contactNotFoundTitle"]),
-      description: translateText(["errors", "contactNotFoundDescription"])
+      title: translateText([
+        "contacts",
+        "sidePanel",
+        "errors",
+        "contactNotFoundTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "sidePanel",
+        "errors",
+        "contactNotFoundDescription"
+      ])
     });
     closeCrmSidePanel();
   };
@@ -222,7 +229,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     if (canEditContact) {
       items.push({
         id: "edit",
-        label: translateText(["editContact"]),
+        label: translateText(["contacts", "sidePanel", "editContact"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
         onClick: () => {
           setContactModalType(CrmModalTypes.EDIT_CONTACT_MODAL);
@@ -234,7 +241,7 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
     if (canDeleteContact) {
       items.push({
         id: "delete",
-        label: translateText(["deleteContact"]),
+        label: translateText(["contacts", "sidePanel", "deleteContact"]),
         icon: {
           start: (
             <DeleteButtonIcon
@@ -259,11 +266,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
   const tabs: TabItem[] = [
     {
       id: CrmSidePanelTabEnum.TASKS,
-      label: translateText(["tabs", "tasks"])
+      label: translateText(["contacts", "sidePanel", "tabs", "tasks"])
     },
     {
       id: CrmSidePanelTabEnum.DEALS,
-      label: translateText(["tabs", "deals"])
+      label: translateText(["contacts", "sidePanel", "tabs", "deals"])
     }
   ];
 
@@ -291,7 +298,11 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
               id="contact-actions"
               menuItems={menuItems}
               anchorButton={{
-                "aria-label": translateText(["kebabMenuAriaLabel"])
+                "aria-label": translateAria([
+                  "contacts",
+                  "sidePanel",
+                  "kebabMenu"
+                ])
               }}
               className={{
                 anchorElement:
@@ -344,7 +355,12 @@ const ContactSidePanel: FC<ContactSidePanelProps> = ({ contactId }) => {
                 onDealCreated={handleDealCreated}
                 companyId={contact.companyId}
                 defaultContact={contact}
-                emptyDescription={translateText(["deals", "emptyDescription"])}
+                emptyDescription={translateText([
+                  "contacts",
+                  "sidePanel",
+                  "deals",
+                  "emptyDescription"
+                ])}
                 hasNextPage={hasNextDealsPage}
                 isFetchingNextPage={isFetchingNextDealsPage}
                 onFetchNextPage={fetchNextDealsPage}

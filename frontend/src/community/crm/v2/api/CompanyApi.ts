@@ -10,9 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import authFetch from "~community/common/utils/axiosInterceptor";
 import { crmCompanyEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmCompanyQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import {
@@ -31,7 +29,7 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchCompanies = async (
   params: CrmCompanyFilterRequest
 ): Promise<CrmCompanyListResponse> => {
-  const response = await authFetchV2.get(crmCompanyEndpoints.GET_COMPANIES, {
+  const response = await authFetch.get(crmCompanyEndpoints.GET_COMPANIES, {
     params
   });
   return response?.data?.results?.[0];

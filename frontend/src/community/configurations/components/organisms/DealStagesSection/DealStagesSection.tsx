@@ -10,13 +10,17 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import DealStagesDraggableContent from "~community/configurations/components/molecules/DealStagesDraggableContent/DealStagesDraggableContent";
+import DraggableDealStageCardSkeleton from "~community/configurations/components/molecules/DraggableDealStageCard/DraggableDealStageCardSkeleton";
+import DealStageModalController from "~community/configurations/components/organisms/DealStageModalController/DealStageModalController";
+import {
+  reconcileDraftStages,
+  toStageReorderPayload
+} from "~community/configurations/utils/stageUtil";
 import {
   useGetDealStages,
   useReorderDealStages
 } from "~community/crm/v2/api/DealApi";
-import DealStagesDraggableContent from "~community/crm/v2/components/molecules/DealStagesDraggableContent/DealStagesDraggableContent";
-import DraggableDealStageCardSkeleton from "~community/crm/v2/components/molecules/DraggableDealStageCard/DraggableDealStageCardSkeleton";
-import DealStageModalController from "~community/crm/v2/components/organisms/DealStageModalController/DealStageModalController";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
@@ -24,7 +28,6 @@ import {
   getOrderedStages,
   toStagesRecord
 } from "~community/crm/v2/utils/commonUtil";
-import { toStageReorderPayload } from "~community/crm/v2/utils/stageUtil";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
@@ -68,9 +71,11 @@ const DealStagesSection: FC = () => {
   }, [fetchedStages]);
 
   useEffect(() => {
-    if (hasChanges) return;
-
-    setDraftStages(orderedStages);
+    setDraftStages((previousDraft) =>
+      hasChanges
+        ? reconcileDraftStages(previousDraft, orderedStages)
+        : orderedStages
+    );
   }, [orderedStages, hasChanges]);
 
   const handleSuccess = (reorderedStages: CrmStageEntity[]) => {

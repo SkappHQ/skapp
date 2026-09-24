@@ -7,7 +7,7 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   useGetCompanyLookup,
   useSearchCompaniesByDomain
@@ -39,7 +39,7 @@ interface EditableContactCompanyFieldProps {
   companyId?: number | null;
   companyName?: string;
   suggestedDomain: string;
-  translateText: TranslatorFunctionType;
+  isEdit?: boolean;
   canAddNewCompany?: boolean;
   onSelect: (companyId: number) => void;
   onAddNew: (companyName: string) => void;
@@ -50,12 +50,14 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
   companyId,
   companyName,
   suggestedDomain,
-  translateText,
+  isEdit,
   canAddNewCompany,
   onSelect,
   onAddNew,
   onClear
 }) => {
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const [searchText, setSearchText] = useState("");
 
   const trimmedSearch = searchText.trim();
@@ -109,16 +111,21 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
     if (option.id === ADD_NEW_COMPANY_OPTION_ID) {
       return (
         <AddNewCompanyOption
-          label={translateText(["labels", "addNewCompany"], {
-            companyName: trimmedSearch
-          })}
+          label={translateText(
+            ["contacts", "modal", "labels", "addNewCompany"],
+            {
+              companyName: trimmedSearch
+            }
+          )}
         />
       );
     }
 
     if (option.isSuggested) {
       return (
-        <SuggestedBadge label={translateText(["labels", "suggested"])}>
+        <SuggestedBadge
+          label={translateText(["contacts", "modal", "labels", "suggested"])}
+        >
           {option.name}
         </SuggestedBadge>
       );
@@ -164,8 +171,14 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
       <SearchableDropdown
         id="contact-company"
         name="company"
-        label={translateText(["labels", "company"])}
-        placeholder={translateText(["placeholders", "company"])}
+        label={translateText(["contacts", "modal", "labels", "company"])}
+        placeholder={translateText([
+          "contacts",
+          "modal",
+          "placeholders",
+          "company",
+          isEdit ? "edit" : "add"
+        ])}
         items={dropdownItems}
         value={searchText}
         onChange={(event) => setSearchText(event.target.value)}
@@ -184,7 +197,7 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
 
   return (
     <InputField
-      label={translateText(["labels", "company"])}
+      label={translateText(["contacts", "modal", "labels", "company"])}
       value={selectedName ?? ""}
       readOnly
       fullWidth
@@ -194,13 +207,13 @@ const EditableContactCompanyField: FC<EditableContactCompanyFieldProps> = ({
           "h-6 inline-flex self-stretch pr-3 justify-start items-center gap-2"
       }}
       customStyles={{ gap: "gap-2" }}
-      aria-label={translateText(["ariaLabels", "company"])}
+      aria-label={translateAria(["contacts", "modal", "company"])}
       rightIcon={
         <ButtonV2
           variant="tertiary"
           type="button"
           onClick={handleClear}
-          aria-label={translateText(["ariaLabels", "clearCompany"])}
+          aria-label={translateAria(["contacts", "modal", "clearCompany"])}
           icon={<CloseIcon />}
         />
       }
