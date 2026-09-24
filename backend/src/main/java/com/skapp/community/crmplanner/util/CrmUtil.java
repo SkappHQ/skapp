@@ -3,7 +3,6 @@ package com.skapp.community.crmplanner.util;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
-import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -13,7 +12,7 @@ import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 
 import lombok.experimental.UtilityClass;
 
@@ -76,8 +75,8 @@ public class CrmUtil {
 		return dto;
 	}
 
-	public CrmTaskResponseDtoV2 toTaskResponseDtoV2(CrmMapperV2 crmMapperV2, CrmTask task) {
-		CrmTaskResponseDtoV2 dto = crmMapperV2.crmTaskToCrmTaskResponseDtoV2(task);
+	public CrmTaskResponseDto toTaskResponseDto(CrmMapper crmMapper, CrmTask task) {
+		CrmTaskResponseDto dto = crmMapper.crmTaskToCrmTaskResponseDto(task);
 		if (isCompanyDeleted(task.getCompany())) {
 			dto.setCompanyId(null);
 		}

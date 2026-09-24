@@ -16,7 +16,6 @@ import com.skapp.community.crmplanner.payload.response.CrmContactOwnerResponseDt
 import com.skapp.community.crmplanner.payload.response.CrmContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealDetailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmDealLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
@@ -25,7 +24,6 @@ import com.skapp.community.crmplanner.payload.response.CrmOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardOwnerResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmBoardStageResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmTaskDetailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmTaskViewResponseDto;
 import com.skapp.community.peopleplanner.model.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -77,18 +75,13 @@ public interface CrmMapper {
 	CrmContactListItemDto crmContactToCrmContactListItemDto(CrmContact contact);
 
 	@Mapping(target = "typeId", source = "type.id")
-	@Mapping(target = "typeName", source = "type.name")
+	@Mapping(target = "ownerId", source = "owner.employeeId")
 	@Mapping(target = "contactId", source = "contact.id")
-	@Mapping(target = "ownerName", source = "owner.fullName")
+	@Mapping(target = "companyId", source = "company.id")
+	@Mapping(target = "dealId", source = "deal.id")
 	CrmTaskResponseDto crmTaskToCrmTaskResponseDto(CrmTask crmTask);
 
-	CrmTaskViewResponseDto crmTaskToCrmTaskViewResponseDto(CrmTask crmTask);
-
 	List<CrmTaskTypeResponseDto> crmTaskTypesToCrmTaskTypeResponseDtos(List<CrmTaskType> crmTaskTypes);
-
-	CrmDealLookupResponseDto crmDealToCrmDealLookupResponseDto(CrmDeal crmDeal);
-
-	List<CrmTaskResponseDto> crmTasksToCrmTaskResponseDtos(List<CrmTask> crmTasks);
 
 	CrmBoardStageResponseDto crmDealStageToCrmBoardStageResponseDto(CrmDealStage crmDealStage);
 

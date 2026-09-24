@@ -13,6 +13,7 @@ import com.skapp.community.common.security.AuthorityService;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmCompanyMetricsResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
@@ -355,7 +357,9 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmContactDao.findContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
 			.extracting(CrmContact::getId)
 			.contains(contactId);
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto())).extracting(CrmTask::getId).contains(taskId);
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
+			.extracting(CrmTaskResponseDto::getId)
+			.contains(taskId);
 
 		performDeleteRequest(companyId).andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
@@ -395,9 +399,9 @@ class CrmCompanyControllerIntegrationTest {
 			.singleElement()
 			.satisfies(d -> assertThat(d.getCompanyId()).as("deleted company is presented as blank").isNull());
 
-		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto()))
+		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.as("task remains visible after its company is deleted")
-			.extracting(CrmTask::getId)
+			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
 
 		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
