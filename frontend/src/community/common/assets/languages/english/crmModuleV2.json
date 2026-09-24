@@ -191,8 +191,7 @@
         "noContactsDescription": "No contacts associated with this company",
         "dealsClosed_one": "Deal closed",
         "dealsClosed_other": "Deals closed",
-        "overdue": "overdue",
-        "infiniteScrollLoadingMessage": "Loading contacts..."
+        "overdue": "overdue"
       }
     },
     "modal": {

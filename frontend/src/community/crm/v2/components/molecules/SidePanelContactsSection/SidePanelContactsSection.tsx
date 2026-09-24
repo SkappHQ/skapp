@@ -184,13 +184,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: onFetchNextPage,
-        loadingMessage: translateText([
-          "companies",
-          "sidePanel",
-          "contactsSection",
-          "infiniteScrollLoadingMessage"
-        ])
+        onLoadMore: onFetchNextPage
       }}
     />
   );

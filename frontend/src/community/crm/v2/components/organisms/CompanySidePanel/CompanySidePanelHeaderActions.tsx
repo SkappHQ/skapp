@@ -12,7 +12,6 @@ const CompanySidePanelHeaderActions: FC<CompanySidePanelHeaderActionsProps> = ({
   isCrmSalesManager,
   menuItems
 }) => {
-  const translateText = useTranslator("crmModuleV2");
   const translateAria = useTranslator("crmAriaV2");
 
   if (!isCrmSalesManager) {
