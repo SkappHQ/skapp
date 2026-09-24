@@ -12,8 +12,7 @@ import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
-import { INDUSTRY_OPTION_KEYS } from "~community/crm/v2/constants/companyConstants";
-import { CrmIndustryEnum } from "~community/crm/v2/enums/common";
+import { useGetIndustryOptions } from "~community/crm/v2/hooks/useGetIndustryOptions";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface CompanyModalFormProps {
@@ -32,15 +31,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const translateText = useTranslator("crmModuleV2");
   const translateAria = useTranslator("crmAriaV2");
 
-  const industryOptions = Object.values(CrmIndustryEnum).map((industry) => ({
-    id: industry,
-    value: industry,
-    label: translateText([
-      "companies",
-      "industryOptions",
-      INDUSTRY_OPTION_KEYS[industry]
-    ])
-  }));
+  const { industryOptions } = useGetIndustryOptions();
 
   const {
     values,
