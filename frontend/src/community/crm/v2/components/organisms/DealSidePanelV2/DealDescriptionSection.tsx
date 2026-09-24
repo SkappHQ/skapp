@@ -6,7 +6,7 @@ import { useInlineEditForm } from "~community/crm/v2/hooks/useInlineEditForm";
 import { validateDealDescription } from "~community/crm/v2/utils/dealValidations";
 
 interface DealDescriptionSectionProps {
-  description: string;
+  description?: string;
   onSave: (description: string) => void;
 }
 
@@ -17,8 +17,6 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
   const translateText = useTranslator("crmModuleV2");
   const translateAria = useTranslator("crmAriaV2");
 
-  const isDescriptionEmpty = !description.trim();
-
   const {
     isEditing,
     value: editedDescription,
@@ -28,7 +26,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
     save,
     discard
   } = useInlineEditForm({
-    value: description,
+    value: description || "",
     validate: (value) => validateDealDescription(value, translateText),
     onSave
   });
@@ -79,7 +77,7 @@ const DealDescriptionSection: FC<DealDescriptionSectionProps> = ({
           onClick={startEditing}
           onKeyDown={handleKeyDown}
         >
-          {isDescriptionEmpty ? (
+          {!description ? (
             <span className="text-secondary-text body2">
               {translateText([
                 "deals",

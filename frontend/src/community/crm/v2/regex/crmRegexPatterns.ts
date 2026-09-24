@@ -10,6 +10,10 @@ export function isDealStageNameValid(): RegExp {
   return /^(?=.*\p{L})[\p{L}\p{N} \-.']+$/u;
 }
 
+export function dealIdSearchPrefix(): RegExp {
+  return /^#/;
+}
+
 export function isDealNameValid(): RegExp {
   return /^[\p{L}\p{N} \-.,&'()/:@#|]+$/u;
 }
