@@ -15,13 +15,18 @@ export const dealNameValidation = (translator: TranslatorFunctionType) =>
       DEAL_NAME_MAX_LENGTH,
       translator(["deals", "common", "validations", "dealNameMaxLength"])
     )
-    .matches(
-      isDealNameValid(),
-      translator(["deals", "common", "validations", "dealNameInvalidChars"])
-    )
     .required(
       translator(["deals", "common", "validations", "dealNameRequired"])
-    );
+    )
+    .matches(isDealNameValid(), {
+      message: translator([
+        "deals",
+        "common",
+        "validations",
+        "dealNameInvalidChars"
+      ]),
+      excludeEmptyString: true
+    });
 
 export const addDealValidations = (translator: TranslatorFunctionType) =>
   Yup.object().shape({
@@ -89,19 +94,19 @@ export const inlineAddDealValidations = (translator: TranslatorFunctionType) =>
     name: Yup.string()
       .trim()
       .max(DEAL_NAME_MAX_LENGTH)
-      .matches(
-        isDealNameValid(),
-        translator([
+      .required(
+        translator(["deals", "common", "validations", "dealNameRequired"])
+      )
+      .matches(isDealNameValid(), {
+        message: translator([
           "deals",
           "linkedSection",
           "inlineAdd",
           "validations",
           "dealNameInvalidChars"
-        ])
-      )
-      .required(
-        translator(["deals", "common", "validations", "dealNameRequired"])
-      ),
+        ]),
+        excludeEmptyString: true
+      }),
     contactId: Yup.string().required(
       translator(["deals", "common", "validations", "contactRequired"])
     )

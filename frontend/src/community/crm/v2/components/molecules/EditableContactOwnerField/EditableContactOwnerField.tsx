@@ -7,7 +7,7 @@ import SearchableDropdown, {
 } from "~community/common/components/molecules/SearchableDropdown/SearchableDropdown";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { concatStrings } from "~community/common/utils/commonUtil";
 import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
 import SelectedOwnerField from "~community/crm/v2/components/molecules/SelectedOwnerField/SelectedOwnerField";
@@ -22,16 +22,16 @@ import {
 interface EditableContactOwnerFieldProps {
   ownerId?: number;
   errorMessage?: string;
-  translateText: TranslatorFunctionType;
   onChange: (owner?: CrmOwnerEntity) => void;
 }
 
 const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
   ownerId,
   errorMessage,
-  translateText,
   onChange
 }) => {
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const [ownerSearchText, setOwnerSearchText] = useState("");
 
   const debouncedOwnerSearch = useDebounce(
@@ -70,11 +70,11 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
   if (selectedOwner) {
     return (
       <SelectedOwnerField
-        label={translateText(["labels", "owner"])}
+        label={translateText(["contacts", "modal", "labels", "owner"])}
         owner={selectedOwner}
         onRemove={() => onChange(undefined)}
         showRemoveButton
-        ariaLabel={translateText(["ariaLabels", "clearOwner"])}
+        ariaLabel={translateAria(["contacts", "modal", "clearOwner"])}
       />
     );
   }
@@ -109,15 +109,22 @@ const EditableContactOwnerField: FC<EditableContactOwnerFieldProps> = ({
       id="contact-owner-search"
       items={ownerDropdownItems}
       onSelect={handleOwnerSelect}
-      label={translateText(["labels", "owner"])}
-      placeholder={translateText(["placeholders", "owner"])}
+      label={translateText(["contacts", "modal", "labels", "owner"])}
+      placeholder={translateText([
+        "contacts",
+        "modal",
+        "placeholders",
+        "owner"
+      ])}
       value={ownerSearchText}
       onChange={(event) => setOwnerSearchText(event.target.value)}
       state={errorMessage ? "error" : "default"}
       errorMessage={errorMessage}
       isOpenOnFocus
       emptyMessage={
-        isFetching ? undefined : translateText(["emptyStates", "noOwners"])
+        isFetching
+          ? undefined
+          : translateText(["contacts", "modal", "emptyStates", "noOwners"])
       }
     />
   );

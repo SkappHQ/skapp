@@ -1,5 +1,5 @@
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { getStageDisplayName } from "~community/crm/v2/utils/stageUtil";
+import { getStageDisplayName } from "~community/configurations/utils/stageUtil";
 
 interface UseStageNameMapperReturn {
   getStageByName: (name: string) => string;
