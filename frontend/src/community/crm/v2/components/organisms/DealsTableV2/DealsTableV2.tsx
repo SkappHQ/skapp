@@ -155,10 +155,15 @@ const DealsTableV2: FC<Props> = ({
     });
   }, [columnConfig, translateText]);
 
-  const rowDragColumnId = useMemo(
-    () => columnHeaders.find((column) => column.visible)?.id,
-    [columnHeaders]
-  );
+  const rowDragColumnId = useMemo(() => {
+    const nonHideableField = columnConfig?.fields.find(
+      (fieldConfig) => !fieldConfig.isHideable
+    )?.field;
+
+    return (
+      nonHideableField ?? columnHeaders.find((column) => column.visible)?.id
+    );
+  }, [columnConfig, columnHeaders]);
 
   const tableRows = useMemo(
     (): DealRow[] =>
@@ -269,11 +274,7 @@ const DealsTableV2: FC<Props> = ({
         onColumnReorder={onColumnReorder}
         onColumnVisibilityChange={onColumnVisibilityChange}
         onColumnResize={onColumnResize}
-        rowDragColumn={
-          enableRowReorder
-            ? (rowDragColumnId as unknown as keyof DealRow)
-            : undefined
-        }
+        rowDragColumn={rowDragColumnId as unknown as keyof DealRow}
         onRowReorder={enableRowReorder ? onRowReorder : undefined}
         showColumnVisibilityToggle
         showKebabMenu
