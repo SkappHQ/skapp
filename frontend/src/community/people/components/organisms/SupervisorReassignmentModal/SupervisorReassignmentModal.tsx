@@ -29,13 +29,15 @@ interface SupervisorReassignmentModalProps {
   employeeId: number;
   actionType: EmployeeRemoveAction;
   onActionSuccess: () => void;
+  redirectAfterDelete?: boolean;
 }
 const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
   isOpen,
   onCancel,
   employeeId,
   actionType,
-  onActionSuccess
+  onActionSuccess,
+  redirectAfterDelete = true
 }) => {
   const translateText = useTranslator("peopleModule", "supervisorReassignment");
   const { setToastMessage } = useToast();
@@ -102,7 +104,9 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
           name: employeeName
         })
       });
-      router.push(ROUTES.PEOPLE.DIRECTORY);
+      if (redirectAfterDelete) {
+        router.push(ROUTES.PEOPLE.DIRECTORY);
+      }
     } else {
       setToastMessage({
         open: true,
@@ -119,7 +123,8 @@ const SupervisorReassignmentModal: FC<SupervisorReassignmentModalProps> = ({
     translateText,
     employeeName,
     router,
-    onActionSuccess
+    onActionSuccess,
+    redirectAfterDelete
   ]);
 
   const onActionError = useCallback(() => {
