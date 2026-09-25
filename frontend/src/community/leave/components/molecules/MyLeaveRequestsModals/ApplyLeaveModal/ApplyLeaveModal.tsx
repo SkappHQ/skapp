@@ -383,114 +383,116 @@ const ApplyLeaveModal = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col md:flex-row gap-3 md:gap-7">
-        <div className="flex flex-col gap-3">
-          <CalendarDateRangePicker
-            selectedDates={selectedDates}
-            setSelectedDates={setSelectedDates}
-            setSelectedMonth={setSelectedMonth}
-            allowedDuration={
-              selectedLeaveAllocationData.leaveType.leaveDuration
-            }
-            allHolidays={allHolidays}
-            minDate={firstDateOfYear}
-            maxDate={lastDateOfYear}
-            workingDays={workingDays}
-            myLeaveRequests={pendingAndApprovedLeaveRequests}
-            error={formErrors?.selectedDates}
-          />
-          <div className="hidden md:flex flex-row items-center gap-2">
-            <p>
-              {translateText(["myEntitlements"], {
-                leaveType: selectedLeaveAllocationData.leaveType.name
-              }) ?? ""}
-            </p>
-            <LeaveEntitlementBalanceCard
-              leaveEntitlementBalance={leaveEntitlementBalance}
+    <div className="flex h-full flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-7">
+          <div className="flex flex-col gap-3">
+            <CalendarDateRangePicker
+              selectedDates={selectedDates}
+              setSelectedDates={setSelectedDates}
+              setSelectedMonth={setSelectedMonth}
+              allowedDuration={
+                selectedLeaveAllocationData.leaveType.leaveDuration
+              }
+              allHolidays={allHolidays}
+              minDate={firstDateOfYear}
+              maxDate={lastDateOfYear}
+              workingDays={workingDays}
+              myLeaveRequests={pendingAndApprovedLeaveRequests}
+              error={formErrors?.selectedDates}
             />
+            <div className="hidden md:flex flex-row items-center gap-2">
+              <p>
+                {translateText(["myEntitlements"], {
+                  leaveType: selectedLeaveAllocationData.leaveType.name
+                }) ?? ""}
+              </p>
+              <LeaveEntitlementBalanceCard
+                leaveEntitlementBalance={leaveEntitlementBalance}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 w-full">
+            {selectedDates.length && myTeams?.length ? (
+              <TeamAvailabilityCard
+                teams={myTeams}
+                resourceAvailability={resourceAvailability}
+              />
+            ) : (
+              <></>
+            )}
+            <DurationSelector
+              label={translateText(["selectDuration"])}
+              onChange={(value) => setSelectedDuration(value)}
+              options={{
+                fullDay: LeaveStates.FULL_DAY,
+                halfDayMorning: LeaveStates.MORNING,
+                halfDayEvening: LeaveStates.EVENING
+              }}
+              disabledOptions={disabledDurationSelectorOptions}
+              value={selectedDuration}
+            />
+            <TextArea
+              label={translateText(["comment"])}
+              ariaLabel={{
+                icon: translateAria(["comment.icon"])
+              }}
+              placeholder={translateText(["addComment"])}
+              isRequired={
+                selectedLeaveAllocationData.leaveType.isCommentMandatory
+              }
+              isAttachmentRequired={
+                selectedLeaveAllocationData.leaveType.isAttachmentMandatory
+              }
+              maxLength={255}
+              name="comment"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              iconName={
+                selectedLeaveAllocationData.leaveType.isAttachment
+                  ? IconName.ATTACHMENT_ICON
+                  : undefined
+              }
+              onIconClick={() => {
+                process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
+                usedStoragePercentage >= NINETY_PERCENT
+                  ? setToastMessage({
+                      open: true,
+                      toastType: "error",
+                      title: translateStorageText(["storageTitle"]),
+                      description: translateStorageText(["contactAdminText"]),
+                      isIcon: true
+                    })
+                  : setMyLeaveRequestModalType(
+                      MyRequestModalEnums.ADD_ATTACHMENT
+                    );
+              }}
+              error={{
+                comment: formErrors?.comment,
+                attachment: formErrors?.attachment
+              }}
+            />
+            <AttachmentSummary
+              attachments={attachments}
+              onDeleteBtnClick={(attachment) =>
+                setAttachments(attachments.filter((a) => a !== attachment))
+              }
+            />
+            {!isApplyLeaveModalBtnDisabled && (
+              <LeaveSummary
+                leaveTypeName={selectedLeaveAllocationData.leaveType.name}
+                leaveTypeEmoji={selectedLeaveAllocationData.leaveType.emojiCode}
+                leaveDuration={selectedDuration}
+                startDate={selectedDates[0]}
+                endDate={selectedDates[1]}
+                resourceAvailability={resourceAvailability}
+                workingDays={workingDays}
+              />
+            )}
           </div>
         </div>
-        <div className="flex flex-col gap-3 w-full">
-          {selectedDates.length && myTeams?.length ? (
-            <TeamAvailabilityCard
-              teams={myTeams}
-              resourceAvailability={resourceAvailability}
-            />
-          ) : (
-            <></>
-          )}
-          <DurationSelector
-            label={translateText(["selectDuration"])}
-            onChange={(value) => setSelectedDuration(value)}
-            options={{
-              fullDay: LeaveStates.FULL_DAY,
-              halfDayMorning: LeaveStates.MORNING,
-              halfDayEvening: LeaveStates.EVENING
-            }}
-            disabledOptions={disabledDurationSelectorOptions}
-            value={selectedDuration}
-          />
-          <TextArea
-            label={translateText(["comment"])}
-            ariaLabel={{
-              icon: translateAria(["comment.icon"])
-            }}
-            placeholder={translateText(["addComment"])}
-            isRequired={
-              selectedLeaveAllocationData.leaveType.isCommentMandatory
-            }
-            isAttachmentRequired={
-              selectedLeaveAllocationData.leaveType.isAttachmentMandatory
-            }
-            maxLength={255}
-            name="comment"
-            value={comment}
-            onChange={(event) => setComment(event.target.value)}
-            iconName={
-              selectedLeaveAllocationData.leaveType.isAttachment
-                ? IconName.ATTACHMENT_ICON
-                : undefined
-            }
-            onIconClick={() => {
-              process.env.NEXT_PUBLIC_MODE === appModes.COMMUNITY &&
-              usedStoragePercentage >= NINETY_PERCENT
-                ? setToastMessage({
-                    open: true,
-                    toastType: "error",
-                    title: translateStorageText(["storageTitle"]),
-                    description: translateStorageText(["contactAdminText"]),
-                    isIcon: true
-                  })
-                : setMyLeaveRequestModalType(
-                    MyRequestModalEnums.ADD_ATTACHMENT
-                  );
-            }}
-            error={{
-              comment: formErrors?.comment,
-              attachment: formErrors?.attachment
-            }}
-          />
-          <AttachmentSummary
-            attachments={attachments}
-            onDeleteBtnClick={(attachment) =>
-              setAttachments(attachments.filter((a) => a !== attachment))
-            }
-          />
-          {!isApplyLeaveModalBtnDisabled && (
-            <LeaveSummary
-              leaveTypeName={selectedLeaveAllocationData.leaveType.name}
-              leaveTypeEmoji={selectedLeaveAllocationData.leaveType.emojiCode}
-              leaveDuration={selectedDuration}
-              startDate={selectedDates[0]}
-              endDate={selectedDates[1]}
-              resourceAvailability={resourceAvailability}
-              workingDays={workingDays}
-            />
-          )}
-        </div>
       </div>
-      <div className="flex flex-row gap-3 mt-4 justify-end">
+      <div className="mt-4 flex shrink-0 flex-row justify-end gap-3">
         <ButtonV2
           variant={"tertiary"}
           onClick={() => setMyLeaveRequestModalType(MyRequestModalEnums.NONE)}
