@@ -9,12 +9,11 @@ import com.skapp.community.common.payload.response.ResponseEntityDto;
 import com.skapp.community.common.repository.NotificationDao;
 import com.skapp.community.common.service.EmailService;
 import com.skapp.community.common.service.NotificationService;
-import com.skapp.community.common.service.OrganizationService;
 import com.skapp.community.common.service.UserService;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.type.EmailBodyTemplates;
 import com.skapp.community.common.type.NotificationCategory;
 import com.skapp.community.common.type.NotificationType;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.leaveplanner.constant.LeaveMessageConstant;
 import com.skapp.community.leaveplanner.constant.LeaveModuleConstant;
@@ -79,9 +78,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.MonthDay;
 import java.time.Year;
 import java.util.HashMap;
@@ -98,9 +97,9 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
-	private final UserService userService;
+	private final TimeZoneService timeZoneService;
 
-	private final OrganizationService organizationService;
+	private final UserService userService;
 
 	private final LeavePolicyService leavePolicyService;
 
@@ -139,7 +138,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		User currentUser = userService.getCurrentUser();
 		Long employeeId = currentUser.getEmployee().getEmployeeId();
 		boolean hasSupervisor = employeeManagerDao.existsByEmployee(currentUser.getEmployee());
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		int resolvedYear = resolveCycleYear(year, today, cycleAnchor);
 
@@ -253,7 +252,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 
 		User currentUser = userService.getCurrentUser();
 		MonthDay cycleAnchor = resolveCycleAnchor();
-		int resolvedYear = resolveCycleYear(filterDto.getYear(), DateTimeUtils.getCurrentUtcDate(), cycleAnchor);
+		int resolvedYear = resolveCycleYear(filterDto.getYear(), timeZoneService.currentOrganizationDate(),
+				cycleAnchor);
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolvedYear, cycleAnchor);
 
 		Page<PolicyLeaveRequest> leaveRequests = policyLeaveRequestDao.findMyRequests(
@@ -340,7 +340,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 		}
 		leaveRequest.setStatus(targetStatus);
 		leaveRequest.setReviewer(currentEmployee);
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 
 		PolicyLeaveRequest reviewedLeaveRequest = policyLeaveRequestDao.save(leaveRequest);
 		notifyReviewedLeaveRequest(reviewedLeaveRequest);
@@ -417,7 +417,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 			List<EmployeeLeavePolicy> assignments, Integer year) {
 		log.info("calculateBalancesForYear: execution started");
 
-		LocalDate today = DateTimeUtils.getCurrentUtcDate();
+		LocalDate today = timeZoneService.currentOrganizationDate();
 		MonthDay cycleAnchor = resolveCycleAnchor();
 		PolicyLeaveDateWindowDto cycle = PolicyLeaveAccrualUtil.resolveCycle(resolveCycleYear(year, today, cycleAnchor),
 				cycleAnchor);
@@ -439,8 +439,8 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 				NotificationType.LEAVE_REQUEST_NUDGE);
 	}
 
-	private boolean isNudgeAllowed(LocalDateTime lastNudgedDateTime) {
-		Duration sinceLastNudge = Duration.between(lastNudgedDateTime, DateTimeUtils.getCurrentUtcDateTime());
+	private boolean isNudgeAllowed(Instant lastNudgedDateTime) {
+		Duration sinceLastNudge = Duration.between(lastNudgedDateTime, Instant.now());
 		return sinceLastNudge.toHours() >= LeaveModuleConstant.HOURS_PER_DAY;
 	}
 
@@ -696,8 +696,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private float calculateRequestedDays(LocalDate startDate, LocalDate endDate, LeaveState leaveState,
 			List<Holiday> holidays) {
 		List<TimeConfig> timeConfigs = timeConfigDao.findAll();
-		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays,
-				organizationService.getOrganizationTimeZone());
+		float workingDays = LeaveModuleUtil.getWorkingDaysBetweenTwoDates(startDate, endDate, timeConfigs, holidays);
 		if (workingDays == 1f && isHalfDay(leaveState)) {
 			return LeaveModuleConstant.HALF_DAY;
 		}
@@ -927,7 +926,7 @@ public class PolicyLeaveServiceImpl implements PolicyLeaveService {
 	private void autoApprove(PolicyLeaveRequest leaveRequest, List<EmployeeManager> employeeManagers) {
 		leaveRequest.setStatus(LeaveRequestStatus.APPROVED);
 		leaveRequest.setIsAutoApproved(Boolean.TRUE);
-		leaveRequest.setReviewedDate(DateTimeUtils.getCurrentUtcDateTime());
+		leaveRequest.setReviewedDate(Instant.now());
 		leaveRequest.setReviewer(employeeManagers.getFirst().getManager());
 	}
 

@@ -62,7 +62,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
@@ -354,9 +355,8 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
-		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContactListItemDto::getId)
-			.contains(contactId);
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100), Instant.now())
+			.getContent()).extracting(CrmContactListItemDto::getId).contains(contactId);
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
@@ -406,10 +406,10 @@ class CrmCompanyControllerIntegrationTest {
 			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
 
-		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId).getOpenTasksCount())
+		assertThat(crmTaskDao.findTaskMetricsByContactId(contactId, Instant.now()).getOpenTasksCount())
 			.as("contact task metrics still count tasks of a deleted company")
 			.isEqualTo(1L);
-		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId)))
+		assertThat(crmTaskDao.findOpenTaskSummaryByContactIds(java.util.List.of(contactId), Instant.now()))
 			.as("open task summary still counts tasks of a deleted company")
 			.extracting(s -> s.getContactId())
 			.contains(contactId);
@@ -688,8 +688,8 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
 
-		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
-		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())
@@ -781,7 +781,7 @@ class CrmCompanyControllerIntegrationTest {
 
 	private int orderIndexCounter = 0;
 
-	private void createCompanyTask(Long companyId, LocalDateTime dueAt) {
+	private void createCompanyTask(Long companyId, Instant dueAt) {
 		CrmTaskType taskType = new CrmTaskType();
 		taskType.setName("Metrics Task Type");
 		taskType.setOrderIndex(1);
@@ -808,8 +808,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmDealStage wonStage = createStage("Won Stage", CrmDealStageType.WON, 2);
 		createDeal("Open Deal", company, contact, openStage, "200", false);
 		createDeal("Won Deal", company, contact, wonStage, "400", false);
-		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
-		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		// Second company with its own deals and tasks - metrics must stay correlated to
 		// the
@@ -818,8 +818,8 @@ class CrmCompanyControllerIntegrationTest {
 		CrmContact otherContact = createMetricsContact(otherCompany, "metrics.other@example.com");
 		createDeal("Other Open Deal", otherCompany, otherContact, openStage, "999", false);
 		createDeal("Other Won Deal", otherCompany, otherContact, wonStage, "888", false);
-		createCompanyTask(otherCompany.getId(), LocalDateTime.now().plusDays(3));
-		createCompanyTask(otherCompany.getId(), LocalDateTime.now().minusDays(2));
+		createCompanyTask(otherCompany.getId(), Instant.now().plus(3, ChronoUnit.DAYS));
+		createCompanyTask(otherCompany.getId(), Instant.now().minus(2, ChronoUnit.DAYS));
 
 		String content = performRequest(
 				get(BASE_PATH + "/" + company.getId() + "/metrics").accept(MediaType.APPLICATION_JSON))

@@ -11,6 +11,7 @@ import {
   ToastType
 } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
@@ -58,6 +59,7 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
   const translateAria = useTranslator("crmAriaV2");
   const { userId } = useSessionData();
   const { setToastMessage } = useToast();
+  const displayZone = useDisplayZone();
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
@@ -166,8 +168,8 @@ const TaskTabContent: FC<Props> = ({ tab }) => {
 
   const { overdue, dueToday, dueTomorrow, upcoming, isOpenTasksEmpty } =
     useMemo(
-      () => getTaskGroups(tasksInView, tab, userId),
-      [tasksInView, tab, userId]
+      () => getTaskGroups(tasksInView, tab, userId, displayZone),
+      [tasksInView, tab, userId, displayZone]
     );
 
   const { loadingRef } = useInfiniteScroll({

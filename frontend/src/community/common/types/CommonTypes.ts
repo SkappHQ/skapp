@@ -37,6 +37,11 @@ export interface DropdownListType {
   emoji?: string;
 }
 
+export interface TimeZoneOption {
+  label: string;
+  value: string;
+}
+
 export interface ErrorResponse {
   response: {
     data: {
@@ -300,3 +305,9 @@ export interface EmployeeAvatarData {
 export type CalendarPopperPlacement = Required<
   Pick<PopperProps, "position" | "offset">
 >;
+
+export interface TimeOfDayType {
+  hour: number;
+  minute: number;
+  second: number;
+}

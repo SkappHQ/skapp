@@ -50,6 +50,37 @@ describe("Date and Time Utility Functions", () => {
     expect(convertUnixTimestampToISO(unixTimestamp)).toBe(isoString);
   });
 
+  test("convertUnixTimestampToISO renders in the given zone, not the browser's", () => {
+    const unixTimestamp = DateTime.fromISO("2026-09-07T06:37:00Z").toMillis();
+
+    expect(convertUnixTimestampToISO(unixTimestamp, "Asia/Tokyo")).toBe(
+      "2026-09-07T15:37:00.000"
+    );
+    expect(convertUnixTimestampToISO(unixTimestamp, "America/Denver")).toBe(
+      "2026-09-07T00:37:00.000"
+    );
+  });
+
+  test("convertTo24HourByDateString renders in the given zone, not the browser's", () => {
+    const isoInstant = "2026-09-07T06:37:00Z";
+
+    expect(convertTo24HourByDateString(isoInstant, "Asia/Tokyo")).toBe("15:37");
+    expect(convertTo24HourByDateString(isoInstant, "America/Denver")).toBe(
+      "00:37"
+    );
+  });
+
+  test("convertToTimeZoneISO renders in the given zone, not the browser's", () => {
+    const isoInstant = "2026-09-07T06:37:00";
+
+    expect(convertToTimeZoneISO(isoInstant, "Asia/Tokyo")).toBe(
+      "2026-09-07T15:37:00.000+09:00"
+    );
+    expect(convertToTimeZoneISO(isoInstant, "America/Denver")).toBe(
+      "2026-09-07T00:37:00.000-06:00"
+    );
+  });
+
   test("generateTimeSlots", () => {
     const timeSlots = generateTimeSlots();
     expect(timeSlots.length).toBe(25);
@@ -119,14 +150,9 @@ describe("Date and Time Utility Functions", () => {
   });
 
   test("convertToMilliseconds", () => {
-    const timeString = "2023-11-03T12:00:00";
-    const milliseconds = DateTime.fromISO(timeString, {
-      zone: "Asia/Colombo"
-    })
-      .toUTC()
-      .toMillis();
-
-    expect(convertToMilliseconds(timeString)).toBe(milliseconds);
+    expect(convertToMilliseconds("2023-11-03T12:00:00Z")).toBe(
+      Date.UTC(2023, 10, 3, 12, 0, 0)
+    );
   });
 
   test("convertToDateTime", () => {
@@ -136,8 +162,12 @@ describe("Date and Time Utility Functions", () => {
       { zone: "Asia/Colombo" }
     ).toISO();
 
-    const result = convertToDateTime("2023-11-03", "12:00 PM");
+    const result = convertToDateTime("2023-11-03", "12:00 PM", "Asia/Colombo");
     expect(result).toBe(expectedDateTime);
+  });
+
+  test("convertToDateTime without a zone", () => {
+    expect(convertToDateTime("2023-11-03", "12:00 PM")).toBeNull();
   });
 
   test("convertToTimeZoneISO", () => {
@@ -145,7 +175,11 @@ describe("Date and Time Utility Functions", () => {
     const expectedTime = DateTime.fromISO(isoTime)
       .setZone("Asia/Colombo")
       .toISO();
-    expect(convertToTimeZoneISO(isoTime)).toBe(expectedTime);
+    expect(convertToTimeZoneISO(isoTime, "Asia/Colombo")).toBe(expectedTime);
+  });
+
+  test("convertToTimeZoneISO without a zone", () => {
+    expect(convertToTimeZoneISO("2023-11-03T12:00:00Z")).toBeNull();
   });
 
   describe("convertTo12HourByDateString", () => {

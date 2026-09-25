@@ -1,5 +1,6 @@
 package com.skapp.community.peopleplanner.service.impl;
 
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.exception.ValidationException;
 import com.skapp.community.common.model.User;
@@ -11,7 +12,6 @@ import com.skapp.community.common.type.Role;
 import com.skapp.community.common.type.RoleLevel;
 import com.skapp.community.common.type.VersionType;
 import com.skapp.community.common.util.CommonModuleUtils;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.peopleplanner.constant.PeopleMessageConstant;
 import com.skapp.community.peopleplanner.model.Employee;
@@ -54,6 +54,8 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 public class RolesServiceImpl implements RolesService {
+
+	private final TimeZoneService timeZoneService;
 
 	private final EmployeeRoleDao employeeRoleDao;
 
@@ -310,7 +312,7 @@ public class RolesServiceImpl implements RolesService {
 		employeeRole.setLeaveRole(Role.LEAVE_EMPLOYEE);
 		employeeRole.setAttendanceRole(Role.ATTENDANCE_EMPLOYEE);
 		employeeRole.setIsSuperAdmin(false);
-		employeeRole.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+		employeeRole.setChangedDate(timeZoneService.currentOrganizationDate());
 		employeeRole.setRoleChangedBy(employee);
 		return employeeRole;
 	}
@@ -515,7 +517,7 @@ public class RolesServiceImpl implements RolesService {
 		superAdminRoles.setInvoiceRole(Role.INVOICE_ADMIN);
 		superAdminRoles.setCrmRole(Role.CRM_ADMIN);
 		superAdminRoles.setIsSuperAdmin(true);
-		superAdminRoles.setChangedDate(DateTimeUtils.getCurrentUtcDate());
+		superAdminRoles.setChangedDate(timeZoneService.currentOrganizationDate());
 		superAdminRoles.setRoleChangedBy(employee);
 
 		employeeRoleDao.save(superAdminRoles);
@@ -640,7 +642,7 @@ public class RolesServiceImpl implements RolesService {
 			CommonModuleUtils.setIfExists(roleRequestDto::getIsSuperAdmin, employeeRole::setIsSuperAdmin);
 		}
 
-		CommonModuleUtils.setIfExists(DateTimeUtils::getCurrentUtcDate, employeeRole::setChangedDate);
+		CommonModuleUtils.setIfExists(timeZoneService::currentOrganizationDate, employeeRole::setChangedDate);
 		CommonModuleUtils.setIfExists(currentUser::getEmployee, employeeRole::setRoleChangedBy);
 		CommonModuleUtils.setIfExists(() -> employee, employeeRole::setEmployee);
 

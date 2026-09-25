@@ -6,6 +6,7 @@ import { FC, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import PickersDay from "~community/common/components/molecules/CalendarDateRangePickersDay/CalendarDateRangePickersDay";
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import {
@@ -61,6 +62,8 @@ const CalendarDateRangePicker: FC<Props> = ({
 
   const { setToastMessage } = useToast();
 
+  const displayZone = useDisplayZone();
+
   const { setIsApplyLeaveModalBtnDisabled } = useLeaveStore(
     useShallow((state) => ({
       setIsApplyLeaveModalBtnDisabled: state.setIsApplyLeaveModalBtnDisabled
@@ -105,7 +108,11 @@ const CalendarDateRangePicker: FC<Props> = ({
           <StaticDatePicker
             sx={classes.staticDatePicker}
             displayStaticWrapperAs="desktop"
-            value={getDefaultCalendarValue({ selectedDates, minDate })}
+            value={getDefaultCalendarValue({
+              selectedDates,
+              minDate,
+              zone: displayZone
+            })}
             localeText={{
               previousMonth: translateAria(["back"]),
               nextMonth: translateAria(["next"])

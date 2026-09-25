@@ -8,10 +8,10 @@ import { useShallow } from "zustand/react/shallow";
 import DeleteButtonIcon from "~community/common/assets/Icons/DeleteButtonIcon";
 import Table from "~community/common/components/molecules/Table/Table";
 import { TableNames } from "~community/common/enums/Table";
+import { useOrganizationZone } from "~community/common/hooks/useDisplayZone";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { testPassiveEventSupport } from "~community/common/utils/commonUtil";
-import { isDateGraterThanToday } from "~community/common/utils/dateTimeUtils";
 import SortByDropDown from "~community/people/components/molecules/SortByDropDown/SortByDropDown";
 import { usePeopleStore } from "~community/people/store/store";
 import { Holiday } from "~community/people/types/HolidayTypes";
@@ -27,7 +27,8 @@ import {
   handleIndividualDelete,
   handleIndividualSelectClick,
   handleSelectAllCheckboxClick,
-  isDeleteButtonDisabled
+  isDeleteButtonDisabled,
+  isFutureHoliday
 } from "~community/people/utils/holidayUtils/holidayTableUtils";
 import useProductTour from "~enterprise/common/hooks/useProductTour";
 import { useCommonEnterpriseStore } from "~enterprise/common/store/commonStore";
@@ -62,6 +63,8 @@ const HolidayTable: FC<Props> = ({
   const supportsPassive = testPassiveEventSupport();
 
   const { isPeopleAdmin } = useSessionData();
+
+  const organizationZone = useOrganizationZone();
 
   const { destroyDriverObj } = useProductTour();
 
@@ -135,9 +138,9 @@ const HolidayTable: FC<Props> = ({
     (id: number) => {
       const holiday = holidayData.find((holiday) => holiday.id === id);
 
-      return !isDateGraterThanToday(holiday?.date || "");
+      return !isFutureHoliday(holiday?.date || "", organizationZone);
     },
-    [holidayData]
+    [holidayData, organizationZone]
   );
 
   const tableHeaders = useMemo(
@@ -158,18 +161,28 @@ const HolidayTable: FC<Props> = ({
   );
 
   const deleteButtonDisabled = useMemo(
-    () => isDeleteButtonDisabled(holidayData),
-    [holidayData]
+    () => isDeleteButtonDisabled(holidayData, organizationZone),
+    [holidayData, organizationZone]
   );
 
   const isSelectAllCheckboxVisible = useMemo(
-    () => getSelectAllCheckboxVisibility(isPeopleAdmin, holidayData),
-    [holidayData, isPeopleAdmin]
+    () =>
+      getSelectAllCheckboxVisibility(
+        isPeopleAdmin,
+        holidayData,
+        organizationZone
+      ),
+    [holidayData, isPeopleAdmin, organizationZone]
   );
 
   const isSelectAllCheckboxChecked = useMemo(
-    () => getSelectAllCheckboxCheckedStatus(holidayData, selectedHolidays),
-    [holidayData, selectedHolidays]
+    () =>
+      getSelectAllCheckboxCheckedStatus(
+        holidayData,
+        selectedHolidays,
+        organizationZone
+      ),
+    [holidayData, selectedHolidays, organizationZone]
   );
 
   return (
@@ -200,7 +213,8 @@ const HolidayTable: FC<Props> = ({
               handleSelectAllCheckboxClick(
                 holidayData,
                 selectedHolidays,
-                setSelectedHolidays
+                setSelectedHolidays,
+                organizationZone
               )
           }}
           actionToolbar={{

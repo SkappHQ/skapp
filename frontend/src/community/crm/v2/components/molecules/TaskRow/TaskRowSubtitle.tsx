@@ -1,5 +1,6 @@
 import { FC } from "react";
 
+import { useDisplayZone } from "~community/common/hooks/useDisplayZone";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import {
   CrmContactEntity,
@@ -23,8 +24,10 @@ const TaskRowSubtitle: FC<Props> = ({
 }) => {
   const translateText = useTranslator("crmModuleV2");
 
+  const displayZone = useDisplayZone();
+
   const dueDateStatus = task.dueAt
-    ? getDueDateStatus(task.dueAt, task.isCompleted === true)
+    ? getDueDateStatus(task.dueAt, task.isCompleted === true, displayZone)
     : null;
 
   const isContactVisible = isShowContact && contact != null;

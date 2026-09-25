@@ -4,11 +4,11 @@ import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
 import com.skapp.community.common.type.Role;
-import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
 import org.openapitools.jackson.nullable.JsonNullable;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -205,7 +205,7 @@ class CrmTaskControllerIntegrationTest {
 		dto.setName("Follow up call");
 		dto.setTypeId(taskTypeId);
 		dto.setContactId(contactId);
-		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		dto.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		return dto;
 	}
 
@@ -227,7 +227,7 @@ class CrmTaskControllerIntegrationTest {
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(contact);
 		task.setCompany(company);
 		task.setOwner(employeeDao.getReferenceById(ownerId));
@@ -235,7 +235,7 @@ class CrmTaskControllerIntegrationTest {
 		return crmTaskDao.save(task);
 	}
 
-	private CrmTask savedTaskWithDueAt(String name, LocalDateTime dueAt) {
+	private CrmTask savedTaskWithDueAt(String name, Instant dueAt) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
@@ -254,7 +254,7 @@ class CrmTaskControllerIntegrationTest {
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(taskContact);
 		task.setCompany(taskCompany);
 		task.setDeal(taskDeal);
@@ -519,8 +519,8 @@ class CrmTaskControllerIntegrationTest {
 	@Test
 	@DisplayName("Get tasks sorted by due date descending - Returns the latest due date first")
 	void getTasks_SortByDueDateDesc_ReturnsLatestDueFirst() throws Exception {
-		savedTaskWithDueAt("Due Soon", DateTimeUtils.getCurrentUtcDateTime().plusDays(1));
-		savedTaskWithDueAt("Due Later", DateTimeUtils.getCurrentUtcDateTime().plusDays(30));
+		savedTaskWithDueAt("Due Soon", Instant.now().plus(1, ChronoUnit.DAYS));
+		savedTaskWithDueAt("Due Later", Instant.now().plus(30, ChronoUnit.DAYS));
 
 		performRequest(
 				get(BASE_PATH).param("sortKey", "DUE_AT").param("sortOrder", "DESC").accept(MediaType.APPLICATION_JSON),
@@ -865,7 +865,7 @@ class CrmTaskControllerIntegrationTest {
 	void createTask_WithOptionalFields_ReturnsCreated() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
 		dto.setPriority(CrmTaskPriority.HIGH);
-		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusYears(1));
+		dto.setDueAt(Instant.now().plus(365, ChronoUnit.DAYS));
 		dto.setNotes("Discuss renewal terms");
 
 		MvcResult result = performCreateRequest(dto).andDo(print())
@@ -900,7 +900,7 @@ class CrmTaskControllerIntegrationTest {
 	@DisplayName("Create task with a due date in the past - Returns Created and persists it")
 	void createTask_PastDueDate_ReturnsCreated() throws Exception {
 		CrmTaskCreateRequestDto dto = validPayload();
-		LocalDateTime pastDueAt = DateTimeUtils.getCurrentUtcDateTime().minusDays(1);
+		Instant pastDueAt = Instant.now().minus(1, ChronoUnit.DAYS);
 		dto.setDueAt(pastDueAt);
 
 		MvcResult result = performCreateRequest(dto).andDo(print())
@@ -1121,7 +1121,7 @@ class CrmTaskControllerIntegrationTest {
 		task.setName("Existing Task");
 		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(crmContactDao.getReferenceById(contactId));
 		task.setOwner(employeeDao.getReferenceById(1L));
 		return crmTaskDao.save(task);
@@ -1328,7 +1328,7 @@ class CrmTaskControllerIntegrationTest {
 		task.setName("Rep Task");
 		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setDueAt(Instant.now().plus(7, ChronoUnit.DAYS));
 		task.setContact(crmContactDao.getReferenceById(contactId));
 		task.setOwner(employeeDao.getReferenceById(2L));
 		task = crmTaskDao.save(task);

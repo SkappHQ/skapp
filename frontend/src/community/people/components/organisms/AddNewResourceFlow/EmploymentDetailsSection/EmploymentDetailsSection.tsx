@@ -31,8 +31,11 @@ import { allowsAlphaNumericWithHyphenAndUnderscore } from "~community/common/reg
 import { ManagerTypes } from "~community/common/types/AuthTypes";
 import { DropdownListType } from "~community/common/types/CommonTypes";
 import { filterByValue } from "~community/common/utils/commonUtil";
-import { timeZonesList } from "~community/common/utils/data/timeZones";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  generateTimeZoneDictionary,
+  generateTimezoneList
+} from "~community/common/utils/dateTimeUtils";
 import { isValidEmailPattern } from "~community/common/utils/validation";
 import {
   useCheckEmailAndIdentificationNo,
@@ -143,12 +146,9 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
       SystemPermissionTypes.MANAGERS
     );
 
-    const workTimeZoneDictionary: Record<string, string> = timeZonesList.reduce<
-      Record<string, string>
-    >((acc: Record<string, string>, curr: { value: string; label: string }) => {
-      acc[curr.value] = curr.label;
-      return acc;
-    }, {});
+    const timeZoneList = generateTimezoneList();
+
+    const workTimeZoneDictionary = generateTimeZoneDictionary(timeZoneList);
 
     const projectTeamList: DropdownListType[] = projectTeamNames?.map(
       (projectTeamName: TeamNamesType) => {
@@ -873,7 +873,7 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
 
             <Grid size={{ xs: 12, md: 6, xl: 4 }}>
               <DropdownAutocomplete
-                itemList={timeZonesList}
+                itemList={timeZoneList}
                 inputName="workTimeZone"
                 label={translateText(["workTimeZone"])}
                 value={

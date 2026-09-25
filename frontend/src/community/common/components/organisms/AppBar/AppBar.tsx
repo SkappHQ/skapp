@@ -1,7 +1,6 @@
 import { Badge, Box, Skeleton, Stack } from "@mui/material";
 import { Breadcrumb, PageHeader } from "@rootcodelabs/skapp-ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 
 import ClockWidget from "~community/attendance/components/molecules/ClockWidget/ClockWidget";
@@ -12,6 +11,7 @@ import Icon from "~community/common/components/atoms/Icon/Icon";
 import AppBarMenu from "~community/common/components/molecules/AppBarMenu/AppBarMenu";
 import Avatar from "~community/common/components/molecules/Avatar/Avatar";
 import { appBarTestId } from "~community/common/constants/testIds";
+import { useSyncRequestTimezone } from "~community/common/hooks/useDisplayZone";
 import useDrawer from "~community/common/hooks/useDrawer";
 import {
   MediaQueries,
@@ -32,7 +32,6 @@ interface Props {
 }
 
 const AppBar = ({ isDrawerAvailable = true }: Props) => {
-  const router = useRouter();
   const classes = styles();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -52,6 +51,8 @@ const AppBar = ({ isDrawerAvailable = true }: Props) => {
   );
 
   const { data: employee } = useGetUserPersonalDetails();
+
+  useSyncRequestTimezone();
 
   const handleCloseMenu = (): void => {
     setAnchorEl(null);

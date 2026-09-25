@@ -2,7 +2,6 @@ package com.skapp.community.common.util;
 
 import com.skapp.community.common.constant.CommonMessageConstant;
 import com.skapp.community.common.exception.ModuleException;
-import lombok.extern.slf4j.Slf4j;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -90,6 +89,8 @@ public class DateTimeUtils {
 
 	private static final DateTimeFormatter INSTANT_ESIGN_CERT_FORMATTER = DateTimeFormatter
 		.ofPattern("MM/dd/yyyy hh:mm:ss a");
+
+	private static final Set<String> AVAILABLE_ZONE_IDS = Set.copyOf(ZoneId.getAvailableZoneIds());
 
 	private DateTimeUtils() {
 		throw new UnsupportedOperationException("Utility class");
@@ -497,8 +498,7 @@ public class DateTimeUtils {
 		if (timeZone == null) {
 			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
 		}
-		Set<String> validIDs = ZoneId.getAvailableZoneIds();
-		return validIDs.contains(timeZone);
+		return AVAILABLE_ZONE_IDS.contains(timeZone);
 	}
 
 	/**
@@ -517,6 +517,52 @@ public class DateTimeUtils {
 		catch (DateTimeException e) {
 			return UTC_ZONE_ID;
 		}
+	}
+
+	public static ZoneId requireZoneId(String timezone) {
+		if (StringUtils.isNullOrBlank(timezone)) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
+		}
+		try {
+			return ZoneId.of(timezone);
+		}
+		catch (DateTimeException e) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_ORGANIZATION_TIMEZONE_FORMAT_INVALID);
+		}
+	}
+
+	public static LocalDate currentDateAt(ZoneId zoneId) {
+		if (zoneId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
+		}
+		return LocalDate.now(zoneId);
+	}
+
+	public static LocalDate toDateAt(Instant instant, ZoneId zoneId) {
+		if (instant == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_DATE_TIME_CANNOT_BE_NULL);
+		}
+		if (zoneId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
+		}
+		return instant.atZone(zoneId).toLocalDate();
+	}
+
+	public static LocalDate toDateAt(Long epochMillis, ZoneId zoneId) {
+		if (epochMillis == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
+		}
+		return toDateAt(Instant.ofEpochMilli(epochMillis), zoneId);
+	}
+
+	public static LocalTime toTimeAt(Long epochMillis, ZoneId zoneId) {
+		if (epochMillis == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_EPOCH_MILLIS_CANNOT_BE_NULL);
+		}
+		if (zoneId == null) {
+			throw new ModuleException(CommonMessageConstant.COMMON_ERROR_TIME_ZONE_CANNOT_BE_NULL);
+		}
+		return Instant.ofEpochMilli(epochMillis).atZone(zoneId).toLocalTime();
 	}
 
 	/**

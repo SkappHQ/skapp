@@ -10,14 +10,16 @@ import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 public interface CrmContactRepository {
 
-	Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable);
+	Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable,
+			Instant overdueBefore);
 
-	Optional<CrmContactMetrics> getContactMetricsById(Long contactId);
+	Optional<CrmContactMetrics> getContactMetricsById(Long contactId, Instant overdueBefore);
 
 	Page<CrmContactLookupResponseDto> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable);
 

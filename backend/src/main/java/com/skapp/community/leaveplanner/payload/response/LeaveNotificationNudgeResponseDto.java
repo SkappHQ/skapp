@@ -3,7 +3,7 @@ package com.skapp.community.leaveplanner.payload.response;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Setter
 @Getter
@@ -11,6 +11,6 @@ public class LeaveNotificationNudgeResponseDto {
 
 	private Boolean isNudge;
 
-	private LocalDateTime lastNudgedDateTime;
+	private Instant lastNudgedDateTime;
 
 }
