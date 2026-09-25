@@ -960,14 +960,16 @@ export const useEditEmployee = (employeeId: string) => {
   });
 };
 
+export const getSupervisedEmployeesAndTeams = (userId: number) =>
+  authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId));
+
 export const useGetSupervisedEmployeesAndTeams = (
   userId: number,
   enabled: boolean = true
 ): UseQueryResult<SupervisorRolesData> => {
   return useQuery({
     queryKey: peopleQueryKeys.SUPERVISOR_ROLES(userId),
-    queryFn: async () =>
-      await authFetch.get(peoplesEndpoints.GET_SUPERVISOR_ROLES(userId)),
+    queryFn: () => getSupervisedEmployeesAndTeams(userId),
     select: (data) => data?.data?.results[0],
     enabled: !!userId && enabled
   });
