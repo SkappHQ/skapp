@@ -1,13 +1,17 @@
 package com.skapp.community.crmplanner.payload.response;
 
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CrmTaskResponseDto {
 
 	private Long id;
@@ -16,24 +20,22 @@ public class CrmTaskResponseDto {
 
 	private Long typeId;
 
-	private String typeName;
-
 	private CrmTaskPriority priority;
 
 	private Boolean isCompleted;
 
 	private LocalDateTime dueAt;
 
+	private LocalDateTime lastModifiedDate;
+
 	private String notes;
+
+	private Long ownerId;
 
 	private Long contactId;
 
-	private String ownerName;
+	private Long companyId;
 
-	private CrmOwnerResponseDto owner;
-
-	private CrmContactLookupResponseDto contact;
-
-	private CrmDealLookupResponseDto deal;
+	private Long dealId;
 
 }

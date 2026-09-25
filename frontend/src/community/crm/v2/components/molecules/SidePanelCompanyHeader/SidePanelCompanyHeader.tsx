@@ -6,10 +6,10 @@ import {
 } from "@rootcodelabs/skapp-ui";
 import { FC } from "react";
 
-import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
 import { openInNewTab } from "~community/common/utils/commonUtil";
 import SidePanelHeaderInfoItem from "~community/crm/v2/components/molecules/SidePanelHeaderInfoItem/SidePanelHeaderInfoItem";
+import { useGetIndustryOptions } from "~community/crm/v2/hooks/useGetIndustryOptions";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 interface SidePanelCompanyHeaderProps {
@@ -19,11 +19,7 @@ interface SidePanelCompanyHeaderProps {
 const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
   company
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "industryOptions"
-  );
+  const { getIndustryLabel } = useGetIndustryOptions();
 
   const { website, contactNumber, address, industry } = company;
 
@@ -76,7 +72,7 @@ const SidePanelCompanyHeader: FC<SidePanelCompanyHeaderProps> = ({
               fill="var(--color-secondary-icon)"
             />
           }
-          value={translateText([industry])}
+          value={getIndustryLabel(industry)}
         />
       )}
     </div>

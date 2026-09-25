@@ -12,13 +12,10 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.model.CrmTaskType_;
 import com.skapp.community.crmplanner.model.CrmTask_;
-import com.skapp.community.crmplanner.payload.request.CrmTaskCompletedFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDto;
-import com.skapp.community.crmplanner.payload.request.CrmTaskFilterDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 import com.skapp.community.crmplanner.repository.CrmTaskRepository;
 import com.skapp.community.crmplanner.type.CrmContactTaskMetrics;
-import com.skapp.community.crmplanner.payload.request.CrmTaskRelatedFilterDto;
 import com.skapp.community.crmplanner.type.CrmTaskFilterParams;
 import com.skapp.community.crmplanner.type.CrmTaskLinkRefs;
 import com.skapp.community.crmplanner.type.CrmTaskRelatedParams;
@@ -59,68 +56,6 @@ import java.util.Optional;
 public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 	private final EntityManager entityManager;
-
-	@Override
-	public List<CrmTask> findTasks(Long ownerId, CrmTaskFilterDto filterDto) {
-		return buildFindTaskQuery(ownerId, filterDto);
-	}
-
-	@Override
-	public Page<CrmTask> findCompletedTasks(Long ownerId, CrmTaskCompletedFilterDto filterDto, Pageable pageable) {
-		return buildFindCompletedTasksQuery(ownerId, filterDto, pageable);
-	}
-
-	private List<CrmTask> buildFindTaskQuery(Long ownerId, CrmTaskFilterDto filterDto) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
-		Root<CrmTask> task = query.from(CrmTask.class);
-
-		applyFetchGraph(task);
-
-		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, false, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
-		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
-
-		query.select(task)
-			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
-					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
-
-		return entityManager.createQuery(query).getResultList();
-	}
-
-	private Page<CrmTask> buildFindCompletedTasksQuery(Long ownerId, CrmTaskCompletedFilterDto filterDto,
-			Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
-		Root<CrmTask> task = query.from(CrmTask.class);
-
-		applyFetchGraph(task);
-
-		CrmTaskFilterParams params = new CrmTaskFilterParams(ownerId, true, filterDto.getSearchKeyword(),
-				filterDto.getContactId(), filterDto.getDealId(), filterDto.getCompanyId());
-		List<Predicate> predicates = buildTaskPredicates(cb, task, params);
-
-		query.select(task)
-			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(cb.desc(task.get(Auditable_.lastModifiedDate)), cb.desc(task.get(CrmTask_.id)));
-
-		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-
-		List<CrmTask> content = typedQuery.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
-
-		List<Predicate> countPredicates = buildTaskPredicates(cb, countRoot, params);
-
-		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
-	}
 
 	@Override
 	public List<CrmTaskSummary> findOpenTaskSummaryByContactIds(List<Long> contactIds) {
@@ -217,9 +152,9 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Page<CrmTaskResponseDtoV2> findTasksV2(Long ownerId, CrmTaskFilterDtoV2 filterDto, Pageable pageable) {
+	public Page<CrmTaskResponseDto> findTasks(Long ownerId, CrmTaskFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
+		CriteriaQuery<CrmTaskResponseDto> query = cb.createQuery(CrmTaskResponseDto.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		query.select(buildTaskProjectionSelection(cb, task));
@@ -230,12 +165,12 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		query.where(buildTaskPredicates(cb, task, params).toArray(new Predicate[0]))
 			.orderBy(buildTaskOrder(cb, task, filterDto.getSortKey(), filterDto.getSortOrder()));
 
-		TypedQuery<CrmTaskResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		TypedQuery<CrmTaskResponseDto> typedQuery = entityManager.createQuery(query);
 		if (pageable.isPaged()) {
 			typedQuery.setFirstResult((int) pageable.getOffset());
 			typedQuery.setMaxResults(pageable.getPageSize());
 		}
-		List<CrmTaskResponseDtoV2> content = typedQuery.getResultList();
+		List<CrmTaskResponseDto> content = typedQuery.getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
@@ -262,13 +197,13 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 	}
 
 	@Override
-	public Page<CrmTaskResponseDtoV2> findRelatedTasksV2(Long taskId, CrmTaskRelatedParams params, Pageable pageable) {
+	public Page<CrmTaskResponseDto> findRelatedTasks(Long taskId, CrmTaskRelatedParams params, Pageable pageable) {
 		if (params.getContactId() == null && params.getDealId() == null) {
 			return Page.empty(pageable);
 		}
 
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTaskResponseDtoV2> query = cb.createQuery(CrmTaskResponseDtoV2.class);
+		CriteriaQuery<CrmTaskResponseDto> query = cb.createQuery(CrmTaskResponseDto.class);
 		Root<CrmTask> task = query.from(CrmTask.class);
 
 		query.select(buildTaskProjectionSelection(cb, task));
@@ -276,12 +211,12 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
 					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
 
-		TypedQuery<CrmTaskResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		TypedQuery<CrmTaskResponseDto> typedQuery = entityManager.createQuery(query);
 		if (pageable.isPaged()) {
 			typedQuery.setFirstResult((int) pageable.getOffset());
 			typedQuery.setMaxResults(pageable.getPageSize());
 		}
-		List<CrmTaskResponseDtoV2> content = typedQuery.getResultList();
+		List<CrmTaskResponseDto> content = typedQuery.getResultList();
 
 		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
 		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
@@ -313,14 +248,14 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 		return predicates;
 	}
 
-	private Selection<CrmTaskResponseDtoV2> buildTaskProjectionSelection(CriteriaBuilder cb, Root<CrmTask> task) {
+	private Selection<CrmTaskResponseDto> buildTaskProjectionSelection(CriteriaBuilder cb, Root<CrmTask> task) {
 		Join<CrmTask, CrmTaskType> type = task.join(CrmTask_.type, JoinType.LEFT);
 		Join<CrmTask, Employee> owner = task.join(CrmTask_.owner, JoinType.LEFT);
 		Join<CrmTask, CrmCompany> company = task.join(CrmTask_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		Join<CrmTask, CrmContact> contact = task.join(CrmTask_.contact, JoinType.LEFT);
 
-		return cb.construct(CrmTaskResponseDtoV2.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
+		return cb.construct(CrmTaskResponseDto.class, task.get(CrmTask_.id), task.get(CrmTask_.name),
 				type.get(CrmTaskType_.id), task.get(CrmTask_.priority), task.get(CrmTask_.isCompleted),
 				task.get(CrmTask_.dueAt), task.get(Auditable_.lastModifiedDate), task.get(CrmTask_.notes),
 				owner.get(Employee_.employeeId), contact.get(CrmContact_.id), company.get(CrmCompany_.id),
@@ -372,68 +307,6 @@ public class CrmTaskRepositoryImpl implements CrmTaskRepository {
 
 		return cb.or(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), contactId),
 				cb.equal(dealJoin.get(CrmDeal_.contact).get(CrmContact_.id), contactId));
-	}
-
-	private void applyFetchGraph(Root<CrmTask> root) {
-		root.fetch(CrmTask_.type);
-		root.fetch(CrmTask_.owner);
-		root.fetch(CrmTask_.contact, JoinType.LEFT);
-		root.fetch(CrmTask_.deal, JoinType.LEFT);
-	}
-
-	@Override
-	public Page<CrmTask> findRelatedTasks(CrmTaskRelatedFilterDto filterDto, Long ownerId, Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmTask> query = cb.createQuery(CrmTask.class);
-		Root<CrmTask> task = query.from(CrmTask.class);
-
-		applyFetchGraph(task);
-
-		CrmTaskRelatedParams params = new CrmTaskRelatedParams(filterDto.getContactId(), filterDto.getDealId(),
-				ownerId);
-		List<Predicate> predicates = buildRelatedTaskPredicates(cb, task, params);
-
-		query.select(task)
-			.where(predicates.toArray(new Predicate[0]))
-			.orderBy(cb.asc(cb.selectCase().when(cb.isNull(task.get(CrmTask_.dueAt)), 1).otherwise(0)),
-					cb.asc(task.get(CrmTask_.dueAt)), cb.asc(task.get(CrmTask_.id)));
-
-		TypedQuery<CrmTask> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-
-		List<CrmTask> content = typedQuery.getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmTask> countRoot = countQuery.from(CrmTask.class);
-
-		List<Predicate> countPredicates = buildRelatedTaskPredicates(cb, countRoot, params);
-
-		countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(content, pageable, total);
-	}
-
-	private List<Predicate> buildRelatedTaskPredicates(CriteriaBuilder cb, Root<CrmTask> root,
-			CrmTaskRelatedParams params) {
-		List<Predicate> predicates = new ArrayList<>();
-		predicates.add(cb.isFalse(root.get(CrmTask_.isDeleted)));
-
-		if (params.getOwnerId() != null) {
-			predicates.add(cb.equal(root.get(CrmTask_.owner).get(Employee_.employeeId), params.getOwnerId()));
-		}
-
-		List<Predicate> contextPredicates = new ArrayList<>();
-		if (params.getContactId() != null) {
-			contextPredicates.add(cb.equal(root.get(CrmTask_.contact).get(CrmContact_.id), params.getContactId()));
-		}
-		if (params.getDealId() != null) {
-			contextPredicates.add(cb.equal(root.get(CrmTask_.deal).get(CrmDeal_.id), params.getDealId()));
-		}
-		predicates.add(cb.or(contextPredicates.toArray(new Predicate[0])));
-
-		return predicates;
 	}
 
 	@Override

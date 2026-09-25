@@ -13,6 +13,264 @@
       "low": "Low"
     }
   },
+  "contacts": {
+    "page": {
+      "pageHead": "Contacts | Skapp",
+      "title": "Contacts",
+      "addContactBtn": "Add contact"
+    },
+    "table": {
+      "search": "Search contact",
+      "overdueLabel": "overdue",
+      "closedDealsLabel_one": "Deal closed",
+      "closedDealsLabel_other": "Deals closed",
+      "emptyDataState": {
+        "title": "No contacts available.",
+        "description": "Create a contact to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "companyFilter": {
+        "allCompanies": "All companies"
+      },
+      "columns": {
+        "name": "CONTACT",
+        "email": "EMAIL",
+        "phone": "CONTACT NO.",
+        "closedValue": "DEAL VALUE",
+        "tasks": "OPEN TASKS",
+        "contactOwner": "CONTACT OWNER"
+      }
+    },
+    "sidePanel": {
+      "lastUpdated": "Last updated",
+      "editContact": "Edit contact",
+      "deleteContact": "Delete contact",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals"
+      },
+      "metrics": {
+        "openTasks": "Open tasks",
+        "activeDeals": "No. of active deals",
+        "totalRevenue": "Total revenue",
+        "pipelineRevenue": "Revenue on pipeline",
+        "overdueChipLabel": "{{count}} Overdue"
+      },
+      "deals": {
+        "emptyDescription": "No deals associated with this contact"
+      },
+      "errors": {
+        "contactNotFoundTitle": "Contact not found",
+        "contactNotFoundDescription": "This contact is no longer available."
+      }
+    },
+    "modal": {
+      "addTitle": "Add contact",
+      "editTitle": "Edit contact",
+      "labels": {
+        "name": "Name",
+        "email": "Email",
+        "contactNumber": "Contact no.",
+        "company": "Company",
+        "owner": "Contact owner",
+        "suggested": "Suggested",
+        "addNewCompany": "Add \"{{companyName}}\" as a new company"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "email": "Enter email",
+        "contactNumber": "Enter contact no.",
+        "owner": "Search contact owner",
+        "company": {
+          "add": "Search by company name",
+          "edit": "Search company"
+        }
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "emptyStates": {
+        "noOwners": "No contact owners found"
+      },
+      "validations": {
+        "name": "Contact name is required",
+        "nameLength": "Contact name is too long",
+        "nameInvalidCharacters": "Contact name contains invalid characters",
+        "email": "Email is required",
+        "invalidEmail": "Invalid email address",
+        "emailLength": "Email is too long",
+        "emailExists": "A contact with this email already exists",
+        "contactNumber": "Invalid contact number",
+        "owner": "Owner is required"
+      },
+      "toastMessages": {
+        "addSuccessTitle": "Contact added successfully",
+        "addSuccessDescription": "You can view the contact details in the contact list.",
+        "addErrorTitle": "Failed to add contact",
+        "addErrorDescription": "Please try again or contact support",
+        "editSuccessTitle": "Contact updated successfully",
+        "editSuccessDescription": "Changes to the contact have been saved.",
+        "editErrorTitle": "Failed to update contact",
+        "editErrorDescription": "Please try again or contact support"
+      }
+    },
+    "deleteModal": {
+      "title": "Are you sure?",
+      "description": "Are you sure you want to delete '{{contactName}}'? This will permanently remove this contact along with all associated deals and tasks. This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toastMessages": {
+        "successTitle": "Contact deleted",
+        "successDescription": "{{contactName}} has been successfully deleted.",
+        "errorTitle": "Failed to delete contact",
+        "errorDescription": "Something went wrong. Please try again"
+      }
+    }
+  },
+  "companies": {
+    "page": {
+      "pageHead": "Companies | Skapp",
+      "title": "Companies",
+      "addCompanyBtn": "Add company"
+    },
+    "table": {
+      "search": "Search by company name",
+      "closedDealsLabel": "Deals closed",
+      "overdueLabel": "overdue",
+      "emptyDataState": {
+        "title": "No companies available.",
+        "description": "Create a company to get started."
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any results for your search. Please try a different term."
+      },
+      "columns": {
+        "name": "NAME",
+        "phone": "CONTACT NO.",
+        "tasks": "OPEN TASKS",
+        "pipeline": "OPEN IN PIPELINE",
+        "accountValue": "ACCOUNT VALUE"
+      }
+    },
+    "sidePanel": {
+      "editCompany": "Edit company",
+      "deleteCompany": "Delete company",
+      "tabs": {
+        "tasks": "Tasks",
+        "deals": "Deals",
+        "contacts": "Contacts"
+      },
+      "metrics": {
+        "accountValue": "Account value",
+        "openDeals": "Open deals",
+        "closedDeals": "Closed deals"
+      },
+      "tasks": {
+        "emptyDescription": "No tasks associated with this company"
+      },
+      "errors": {
+        "companyNotFoundTitle": "Company not found",
+        "companyNotFoundDescription": "This company is no longer available."
+      },
+      "contactsSection": {
+        "columns": {
+          "contact": "CONTACT",
+          "email": "EMAIL",
+          "contactNo": "CONTACT NO.",
+          "revenue": "REVENUE",
+          "openTasks": "OPEN TASKS"
+        },
+        "noContacts": "No contacts",
+        "noContactsDescription": "No contacts associated with this company",
+        "dealsClosed_one": "Deal closed",
+        "dealsClosed_other": "Deals closed",
+        "overdue": "overdue"
+      }
+    },
+    "modal": {
+      "addTitle": "Add company",
+      "editTitle": "Edit company",
+      "labels": {
+        "name": "Company name",
+        "contactNumber": "Contact no.",
+        "website": "Website URL",
+        "address": "Address",
+        "industry": "Industry"
+      },
+      "placeholders": {
+        "name": "Enter company name",
+        "contactNumber": "Enter contact no.",
+        "website": "Enter website",
+        "address": "Enter address"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "validations": {
+        "name": "Company name is required",
+        "companyExists": "A company with this name already exists",
+        "website": "Please enter a valid website URL",
+        "contactNumber": "Contact number is invalid",
+        "companyNameLength": "Company name must be less than 30 characters",
+        "characterLength": "Entry must be less than 50 characters",
+        "addressLength": "Address must be less than 100 characters"
+      },
+      "toastMessages": {
+        "errorTitle": "Oops! Something went wrong",
+        "addSuccessTitle": "Company added successfully",
+        "addSuccessDescription": "The company has been successfully added",
+        "addErrorDescription": "Failed to add the company. Please try again",
+        "editSuccessTitle": "Company updated successfully",
+        "editSuccessDescription": "The company has been successfully updated",
+        "editErrorDescription": "Failed to edit the company. Please try again"
+      }
+    },
+    "deleteModal": {
+      "title": "Delete company",
+      "description": "Are you sure you want to delete '{{companyName}}'? This will permanently remove this company. Any contacts linked to this company will become unlinked. This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toastMessages": {
+        "successTitle": "Company deleted",
+        "successDescription": "{{companyName}} has been deleted and linked contacts have been unlinked.",
+        "errorTitle": "Failed to delete company",
+        "errorDescription": "Something went wrong. Please try again"
+      }
+    },
+    "industryOptions": {
+      "none": "None",
+      "accommodationServices": "Accommodation services",
+      "administrativeAndSupportServices": "Administrative and support services",
+      "construction": "Construction",
+      "consumerServices": "Consumer services",
+      "education": "Education",
+      "entertainmentProviders": "Entertainment providers",
+      "farmingRanchingForestry": "Farming, ranching, forestry",
+      "financialServices": "Financial services",
+      "governmentAdministration": "Government administration",
+      "holdingCompanies": "Holding companies",
+      "hospitalsAndHealthCare": "Hospitals and health care",
+      "manufacturing": "Manufacturing",
+      "oilGasAndMining": "Oil, gas, and mining",
+      "professionalServices": "Professional services",
+      "realEstateAndEquipmentRentalServices": "Real estate and equipment rental services",
+      "retail": "Retail",
+      "technologyInformationAndMedia": "Technology, information and media",
+      "transportationLogisticsSupplyChainAndStorage": "Transportation, logistics, supply chain and storage",
+      "utilities": "Utilities",
+      "wholesale": "Wholesale"
+    }
+  },
   "deals": {
     "page": {
       "pageHead": "Deals | Skapp",
@@ -88,8 +346,8 @@
         "description": "Add a new deal to get started"
       },
       "emptySearchState": {
-        "title": "No deals found for {{searchKeyword}}",
-        "description": "Try adjusting your search or filters"
+        "title": "No deals found",
+        "description": "No deals match your search."
       },
       "infiniteScrollLoadingMessage": "Loading more deals...",
       "inlineEdit": {
@@ -162,6 +420,155 @@
         "successTitle": "Deal deleted",
         "successDescription": "The deal has been deleted and all linked tasks have been removed.",
         "errorTitle": "Failed to delete deal",
+        "errorDescription": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "tasks": {
+    "page": {
+      "pageHead": "Tasks | Skapp",
+      "title": "Tasks",
+      "addTaskBtn": "Add task"
+    },
+    "tabs": {
+      "myTasks": "My tasks",
+      "allTasks": "All tasks",
+      "completedTasks": "Completed"
+    },
+    "common": {
+      "toastMessages": {
+        "toggleErrorTitle": "Failed to update task",
+        "toggleErrorDescription": "Could not update the task status. Please try again."
+      }
+    },
+    "table": {
+      "search": "Search tasks",
+      "infiniteScrollLoadingMessage": "Loading tasks...",
+      "emptyDataState": {
+        "title": "No tasks",
+        "description": "No tasks to complete. You're all caught up!"
+      },
+      "emptySearchState": {
+        "title": "No results found.",
+        "description": "We couldn't find any matches for your search. Please try using a different term."
+      },
+      "errorState": {
+        "title": "Something went wrong",
+        "description": "Failed to load tasks. Please try again."
+      },
+      "groupLabels": {
+        "overdue": "Overdue",
+        "dueToday": "Today",
+        "dueTomorrow": "Tomorrow",
+        "upcoming": "Upcoming"
+      },
+      "dueDateStatus": {
+        "overdue_one": "Overdue by {{count}} day",
+        "overdue_other": "Overdue by {{count}} days",
+        "today": "Due today",
+        "dueOn": "Due on {{date}}"
+      }
+    },
+    "sidePanel": {
+      "editTask": "Edit task",
+      "deleteTask": "Delete task",
+      "reopenTask": "Reopen task",
+      "reopenToastMessages": {
+        "successTitle": "Task reopened",
+        "successDescription": "Task reopened successfully"
+      },
+      "notes": "Notes",
+      "noNotes": "No notes added",
+      "dealsTitle": "Deals",
+      "noDealsDescription": "No deals associated with this task",
+      "relatedTasksTitle": "Related tasks",
+      "noRelatedTasksTitle": "No tasks",
+      "noRelatedTasksDescription": "No related tasks yet",
+      "info": {
+        "markAsDone": "Mark as done",
+        "statusDone": "Done",
+        "assignedTo": "Assigned to",
+        "noOwner": "No owner assigned",
+        "priority": "Priority",
+        "closingDate": "Closing date",
+        "noClosingDate": "No closing date",
+        "contactName": "Contact",
+        "noContact": "No contact linked"
+      }
+    },
+    "linkedSection": {
+      "addTaskButton": "Add task",
+      "emptyTitle": "No tasks",
+      "emptyDescription": "No tasks yet. Create a task to follow up with this contact"
+    },
+    "modal": {
+      "addTitle": "Add task",
+      "editTitle": "Edit task",
+      "labels": {
+        "type": "Type",
+        "task": "Task",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "contactName": "Contact name",
+        "deal": "Deal",
+        "taskOwner": "Task owner",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "type": "Select type",
+        "task": "Enter the task name",
+        "dueDate": "Select date",
+        "priority": "Select priority",
+        "contactName": "Select contact",
+        "deal": "Select deal",
+        "taskOwner": "Select task owner",
+        "notes": "Add message"
+      },
+      "taskTypes": {
+        "call": "Call",
+        "email": "Email",
+        "meeting": "Meeting",
+        "other": "Other"
+      },
+      "buttons": {
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "emptyStates": {
+        "noOwners": "No task owners found",
+        "noContacts": "No contacts found",
+        "noDeals": "No deals found"
+      },
+      "validations": {
+        "type": "Please select a task type",
+        "name": "Task subject is required",
+        "nameLength": "Task name must be less than 255 characters",
+        "notesLength": "Notes must be less than 1000 characters",
+        "dueDate": "Please select a valid due date",
+        "owner": "Please select a task owner"
+      },
+      "toastMessages": {
+        "addSuccessTitle": "Task added successfully",
+        "addSuccessDescription": "Task has been added successfully",
+        "addErrorTitle": "Oops! Something went wrong",
+        "addErrorDescription": "Failed to add task. Please try again",
+        "editSuccessTitle": "Task updated",
+        "editSuccessDescription": "Task updated successfully",
+        "editErrorTitle": "Oops! Something went wrong",
+        "editErrorDescription": "Failed to update task. Please try again"
+      }
+    },
+    "deleteModal": {
+      "title": "Delete task",
+      "description": "Are you sure you want to delete this task? This action cannot be undone.",
+      "buttons": {
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "toastMessages": {
+        "successTitle": "Task deleted",
+        "successDescription": "The task has been deleted successfully.",
+        "errorTitle": "Failed to delete task",
         "errorDescription": "Something went wrong. Please try again."
       }
     }

@@ -20,11 +20,7 @@ import { getContactValidationSchema } from "~community/crm/v2/utils/contactValid
 const EditContactModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "editContactModal"
-  );
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     contacts,
@@ -88,8 +84,18 @@ const EditContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["contactToastMessages", "successTitle"]),
-      description: translateText(["contactToastMessages", "successDescription"])
+      title: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "editSuccessTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "editSuccessDescription"
+      ])
     });
   };
 
@@ -98,8 +104,18 @@ const EditContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["contactToastMessages", "errorTitle"]),
-      description: translateText(["contactToastMessages", "errorDescription"])
+      title: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "editErrorDescription"
+      ])
     });
   };
 
@@ -140,7 +156,7 @@ const EditContactModalContent: FC = () => {
     <ContactModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
+      isEdit
       originalEmail={selectedContact?.email}
       onCancel={handleCloseModal}
     />
