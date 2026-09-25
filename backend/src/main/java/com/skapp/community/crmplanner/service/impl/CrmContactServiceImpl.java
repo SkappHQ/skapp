@@ -4,6 +4,7 @@ import com.skapp.community.common.exception.ModuleException;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.payload.response.PageDto;
 import com.skapp.community.common.payload.response.ResponseEntityDto;
+import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.service.UserService;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
@@ -69,6 +70,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 	private final CrmOwnerResolverService crmOwnerResolver;
 
 	private final CrmCompanyService crmCompanyService;
+
+	private final TimeZoneService timeZoneService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -262,7 +265,8 @@ public class CrmContactServiceImpl implements CrmContactService {
 		log.info("getContacts: execution started");
 
 		Pageable pageable = PageRequest.of(filterDto.getPage(), filterDto.getSize());
-		Page<CrmContactListItemDto> contactPage = crmContactDao.getContacts(filterDto, pageable);
+		Page<CrmContactListItemDto> contactPage = crmContactDao.getContacts(filterDto, pageable,
+				timeZoneService.currentRequestDayStart());
 
 		PageDto pageDto = new PageDto();
 		pageDto.setItems(contactPage.getContent());
@@ -279,7 +283,7 @@ public class CrmContactServiceImpl implements CrmContactService {
 	public ResponseEntityDto getContactMetricsById(Long id) {
 		log.info("getContactMetricsById: execution started");
 
-		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id)
+		CrmContactMetrics metrics = crmContactDao.getContactMetricsById(id, timeZoneService.currentRequestDayStart())
 			.orElseThrow(() -> new ModuleException(CrmMessageConstant.CRM_ERROR_CONTACT_NOT_FOUND));
 
 		log.info("getContactMetricsById: execution ended");
