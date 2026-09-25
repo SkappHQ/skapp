@@ -355,9 +355,8 @@ class CrmCompanyControllerIntegrationTest {
 		assertThat(crmDealDao.findDeals(new CrmDealFilterDto(), null, PageRequest.of(0, 100)).getContent())
 			.extracting(CrmDealResponseDto::getId)
 			.contains(dealId);
-		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100)).getContent())
-			.extracting(CrmContactListItemDto::getId)
-			.contains(contactId);
+		assertThat(crmContactDao.getContacts(new CrmContactMetricRequestDto(), PageRequest.of(0, 100), Instant.now())
+			.getContent()).extracting(CrmContactListItemDto::getId).contains(contactId);
 		assertThat(crmTaskDao.findTasks(1L, new CrmTaskFilterDto(), Pageable.unpaged()).getContent())
 			.extracting(CrmTaskResponseDto::getId)
 			.contains(taskId);
@@ -689,8 +688,8 @@ class CrmCompanyControllerIntegrationTest {
 	void getCompanies_WithTasks_ReturnsOpenAndOverdueCounts() throws Exception {
 		CrmCompany company = createMetricsCompany("TaskMetricsCoUnique");
 
-		createCompanyTask(company.getId(), LocalDateTime.now().plusDays(5));
-		createCompanyTask(company.getId(), LocalDateTime.now().minusDays(1));
+		createCompanyTask(company.getId(), Instant.now().plus(5, ChronoUnit.DAYS));
+		createCompanyTask(company.getId(), Instant.now().minus(1, ChronoUnit.DAYS));
 
 		performGetCompaniesRequest("TaskMetricsCoUnique").andDo(print())
 			.andExpect(status().isOk())

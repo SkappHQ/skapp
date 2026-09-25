@@ -26,7 +26,7 @@ public class CrmTaskResponseDto {
 
 	private Instant dueAt;
 
-	private LocalDateTime lastModifiedDate;
+	private Instant lastModifiedDate;
 
 	private String notes;
 

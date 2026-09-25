@@ -1,6 +1,5 @@
 package com.skapp.community.crmplanner.repository.impl;
 
-import com.skapp.community.common.service.TimeZoneService;
 import com.skapp.community.common.model.Auditable_;
 import com.skapp.community.common.util.StringUtils;
 import com.skapp.community.crmplanner.constant.CrmConstants;
@@ -41,6 +40,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -50,12 +50,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CrmContactRepositoryImpl implements CrmContactRepository {
 
-	private final TimeZoneService timeZoneService;
-
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable) {
+	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable,
+			Instant overdueBefore) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<CrmContactListItemDto> query = cb.createQuery(CrmContactListItemDto.class);
@@ -89,8 +88,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		overdueTaskSub.select(cb.count(overdueTask.get(CrmTask_.id)))
 			.where(cb.equal(overdueTask.get(CrmTask_.contact), contact),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
-					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)), cb.lessThan(overdueTask.get(CrmTask_.dueAt),
-							cb.literal(timeZoneService.currentBusinessDayStart())));
+					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
@@ -124,7 +123,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId) {
+	public Optional<CrmContactMetrics> getContactMetricsById(Long contactId, Instant overdueBefore) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<CrmContactMetrics> query = cb.createQuery(CrmContactMetrics.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
@@ -163,8 +162,8 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			.where(cb.or(cb.equal(overdueDirectContact.get(CrmContact_.id), contactId),
 					cb.equal(overdueDealContact.get(CrmContact_.id), contactId)),
 					cb.isFalse(overdueTask.get(CrmTask_.isCompleted)), cb.isFalse(overdueTask.get(CrmTask_.isDeleted)),
-					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)), cb.lessThan(overdueTask.get(CrmTask_.dueAt),
-							cb.literal(timeZoneService.currentBusinessDayStart())));
+					cb.isNotNull(overdueTask.get(CrmTask_.dueAt)),
+					cb.lessThan(overdueTask.get(CrmTask_.dueAt), cb.literal(overdueBefore)));
 
 		Subquery<BigDecimal> pipelineRevenueSub = query.subquery(BigDecimal.class);
 		Root<CrmDeal> pipelineDeal = pipelineRevenueSub.from(CrmDeal.class);
