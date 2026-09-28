@@ -612,6 +612,7 @@ const PeopleTable: FC<Props> = ({
       <Box ref={listInnerRef}>
         <Table
           tableName={TableNames.PEOPLE}
+          containerClassName="table-custom-scroll"
           headers={tableHeaders}
           rows={transformToTableRows()}
           isLoading={isFetching && !isFetchingNextPage}
