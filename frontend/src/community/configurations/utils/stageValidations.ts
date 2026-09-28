@@ -3,8 +3,8 @@ import * as Yup from "yup";
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { isStageNameTaken } from "~community/configurations/utils/stageUtil";
-import { isDealStageNameValid } from "~community/crm/v2/regex/crmRegexPatterns";
-import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { isDealStageNameValid } from "~community/crm/regex/crmRegexPatterns";
+import { CrmStageEntity } from "~community/crm/types/CrmCommonTypes";
 
 export const getStageValidationSchema = (
   translator: TranslatorFunctionType,

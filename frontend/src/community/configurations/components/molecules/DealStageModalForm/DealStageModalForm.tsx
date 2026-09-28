@@ -22,12 +22,12 @@ import { getStageValidationSchema } from "~community/configurations/utils/stageV
 import {
   useCreateDealStage,
   useUpdateDealStage
-} from "~community/crm/v2/api/DealApi";
-import { DEAL_STAGE_COLORS } from "~community/crm/v2/constants/stageConstants";
-import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
-import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
+} from "~community/crm/api/DealApi";
+import { DEAL_STAGE_COLORS } from "~community/crm/constants/stageConstants";
+import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmStageEntity } from "~community/crm/types/CrmCommonTypes";
+import { getOrderedStages } from "~community/crm/utils/commonUtil";
 
 interface DealStageModalFormProps {
   isEdit?: boolean;
@@ -41,13 +41,13 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   const { setToastMessage } = useToast();
   const translateText = useTranslator("configurations", "crm");
   const translateStageName = useTranslator(
-    "crmModuleV2",
+    "crmModule",
     "deals",
     "defaultStageNames"
   );
 
   const { stages, setStages, setIsDealStageModalOpen, selectedDealStageId } =
-    useCrmStoreV2(
+    useCrmStore(
       useShallow((store) => ({
         stages: store.stages,
         setStages: store.setStages,

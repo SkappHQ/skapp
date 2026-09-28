@@ -1,5 +1,5 @@
-import { CrmDealStageEnum } from "~community/crm/v2/enums/common";
-import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { CrmDealStageEnum } from "~community/crm/enums/common";
+import { CrmStageEntity } from "~community/crm/types/CrmCommonTypes";
 
 import { isStageNameTaken, toStageReorderPayload } from "../stageUtil";
 

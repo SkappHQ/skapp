@@ -5,23 +5,23 @@ import ContentLayout from "~community/common/components/templates/ContentLayout/
 import { Modules } from "~community/common/enums/CommonEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { IconName } from "~community/common/types/IconTypes";
-import CompanyModalControllerV2 from "~community/crm/v2/components/organisms/CompanyModalController/CompanyModalController";
-import CompanySidePanelV2 from "~community/crm/v2/components/organisms/CompanySidePanel/CompanySidePanel";
-import { CompanyTable as CompanyTableV2 } from "~community/crm/v2/components/organisms/CompanyTable/CompanyTable";
-import TaskModalControllerV2 from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
-import SidePanelWrapperV2 from "~community/crm/v2/components/templates/SidePanelWrapper/SidePanelWrapper";
-import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
-import { useCrmStoreV2 } from "~community/crm/v2/store/store";
-import { CrmModalTypes as CrmModalTypesV2 } from "~community/crm/v2/types/CrmTypes";
+import CompanyModalController from "~community/crm/components/organisms/CompanyModalController/CompanyModalController";
+import CompanySidePanel from "~community/crm/components/organisms/CompanySidePanel/CompanySidePanel";
+import { CompanyTable } from "~community/crm/components/organisms/CompanyTable/CompanyTable";
+import TaskModalController from "~community/crm/components/organisms/TaskModalController/TaskModalController";
+import SidePanelWrapper from "~community/crm/components/templates/SidePanelWrapper/SidePanelWrapper";
+import { useInitializeCrmData } from "~community/crm/hooks/useInitializeCrmData";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmModalTypes } from "~community/crm/types/CrmTypes";
 import useCrmLimitGuard from "~enterprise/crm/hooks/useCrmLimitGuard";
 import { CrmLimitResource } from "~enterprise/crm/types/CrmLimitTypes";
 
 const Companies: NextPage = () => {
-  const translateText = useTranslator("crmModuleV2");
+  const translateText = useTranslator("crmModule");
   const { guardCrmCreate, isCheckingCrmLimit } = useCrmLimitGuard();
 
   const { setIsCompanyModalOpen, setCompanyModalType, selectedCompanyId } =
-    useCrmStoreV2(
+    useCrmStore(
       useShallow((store) => ({
         setIsCompanyModalOpen: store.setIsCompanyModalOpen,
         setCompanyModalType: store.setCompanyModalType,
@@ -34,7 +34,7 @@ const Companies: NextPage = () => {
   const onPrimaryButtonClick = () => {
     guardCrmCreate(CrmLimitResource.COMPANIES, () => {
       setIsCompanyModalOpen(true);
-      setCompanyModalType(CrmModalTypesV2.ADD_COMPANY_MODAL);
+      setCompanyModalType(CrmModalTypes.ADD_COMPANY_MODAL);
     });
   };
 
@@ -54,14 +54,14 @@ const Companies: NextPage = () => {
     >
       <>
         {selectedCompanyId && (
-          <SidePanelWrapperV2>
-            <CompanySidePanelV2 companyId={selectedCompanyId} />
-          </SidePanelWrapperV2>
+          <SidePanelWrapper>
+            <CompanySidePanel companyId={selectedCompanyId} />
+          </SidePanelWrapper>
         )}
 
-        <CompanyModalControllerV2 />
-        <TaskModalControllerV2 />
-        <CompanyTableV2 />
+        <CompanyModalController />
+        <TaskModalController />
+        <CompanyTable />
       </>
     </ContentLayout>
   );
