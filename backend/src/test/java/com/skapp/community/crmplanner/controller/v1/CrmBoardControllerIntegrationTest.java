@@ -8,6 +8,7 @@ import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmDealStage;
+import com.skapp.community.crmplanner.model.CrmIndustry;
 import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTaskType;
 import com.skapp.community.crmplanner.payload.request.CrmDealUpdateStageRequestDto;
@@ -16,6 +17,7 @@ import com.skapp.community.crmplanner.repository.CrmCompanyDao;
 import com.skapp.community.crmplanner.repository.CrmContactDao;
 import com.skapp.community.crmplanner.repository.CrmDealDao;
 import com.skapp.community.crmplanner.repository.CrmDealStageDao;
+import com.skapp.community.crmplanner.repository.CrmIndustryDao;
 import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -92,6 +94,8 @@ class CrmBoardControllerIntegrationTest {
 	private final CrmTaskDao crmTaskDao;
 
 	private final CrmTaskTypeDao crmTaskTypeDao;
+
+	private final CrmIndustryDao crmIndustryDao;
 
 	private String adminToken;
 
@@ -591,6 +595,43 @@ class CrmBoardControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['id']").value(taskType.getId()))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['name']").value("Call"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['taskTypes'][1]['orderIndex']").value(2));
+	}
+
+	@Test
+	@DisplayName("Board init data - Returns industries as id and name pairs ordered by name")
+	void getBoardInitData_IndustriesAreOrderedIdNamePairs() throws Exception {
+		savedIndustry("RETAIL", false);
+		savedIndustry("EDUCATION", false);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['name']").value("EDUCATION"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][0]['id']").isNumber())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['name']").value("RETAIL"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][1]['id']").isNumber());
+	}
+
+	@Test
+	@DisplayName("Board init data - Omits soft-deleted industries")
+	void getBoardInitData_OmitsSoftDeletedIndustries() throws Exception {
+		savedIndustry("RETAIL", false);
+		savedIndustry("AAA_DELETED", true);
+
+		mvc.perform(get("/v1/crm/board/init-data").accept(MediaType.APPLICATION_JSON)
+			.with(SecurityTestUtils.bearerToken(repToken)))
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries']").isNotEmpty())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['industries'][?(@.name == 'AAA_DELETED')]").isEmpty());
+	}
+
+	private void savedIndustry(String name, boolean isDeleted) {
+		CrmIndustry industry = new CrmIndustry();
+		industry.setName(name);
+		industry.setIsDeleted(isDeleted);
+		crmIndustryDao.save(industry);
 	}
 
 	@Test
