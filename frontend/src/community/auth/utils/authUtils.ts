@@ -147,7 +147,7 @@ const retrieveStoredAccessToken = async (): Promise<string | null> => {
     return retrievePromise;
   }
 
-  if (hasCheckedStoredToken) {
+  if (hasCheckedStoredToken || isAuthHost()) {
     return null;
   }
 
