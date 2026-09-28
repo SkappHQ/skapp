@@ -15,6 +15,7 @@ import {
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
 import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
+import { getSelectedDeal } from "~community/crm/v2/utils/dealUtil";
 import {
   linkTaskToRelatedEntities,
   updateTaskRecord
@@ -35,6 +36,7 @@ const AddTaskModalContent: FC = () => {
     contacts,
     deals,
     selectedContactId,
+    selectedDealId,
     setTasks,
     setTaskIds,
     setOwners,
@@ -51,6 +53,7 @@ const AddTaskModalContent: FC = () => {
       contacts: store.contacts,
       deals: store.deals,
       selectedContactId: store.selectedContactId,
+      selectedDealId: store.selectedDealId,
       setTasks: store.setTasks,
       setTaskIds: store.setTaskIds,
       setOwners: store.setOwners,
@@ -86,6 +89,7 @@ const AddTaskModalContent: FC = () => {
   }, [defaultOwner]);
 
   const selectedContact = getSelectedContact(contacts, selectedContactId);
+  const selectedDeal = getSelectedDeal(deals, selectedDealId);
 
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
@@ -95,9 +99,10 @@ const AddTaskModalContent: FC = () => {
       dueAt: undefined,
       ownerId: defaultOwner?.employeeId,
       contactId: selectedContact?.id,
+      dealId: selectedDeal?.id,
       notes: ""
     }),
-    [defaultOwner, selectedContact?.id]
+    [defaultOwner, selectedContact?.id, selectedDeal?.id]
   );
 
   const formik = useFormik<CrmTaskEntity>({

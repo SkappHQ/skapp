@@ -12,7 +12,6 @@ import DeleteDealModalV2 from "~community/crm/v2/components/molecules/DeleteDeal
 import DealDetailActions from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailActions";
 import DealDetailContent from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailContent";
 import DealDetailIdBadge from "~community/crm/v2/components/organisms/DealSidePanelV2/DealDetailIdBadge";
-import TaskModalController from "~community/crm/v2/components/organisms/TaskModalController/TaskModalController";
 import { CrmErrorMessageKeyEnum } from "~community/crm/v2/enums/common";
 import { useInitializeCrmData } from "~community/crm/v2/hooks/useInitializeCrmData";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
@@ -29,10 +28,9 @@ const DealDetailPage: FC = () => {
   const dealId = Number(router.query.id);
   const isValidDealId = Number.isInteger(dealId) && dealId > 0;
 
-  const { setSelectedDealId, isCrmDataInitialized, dealName } = useCrmStoreV2(
+  const { setSelectedDealId, dealName } = useCrmStoreV2(
     useShallow((state) => ({
       setSelectedDealId: state.setSelectedDealId,
-      isCrmDataInitialized: state.isCrmDataInitialized,
       dealName: state.deals[dealId]?.name
     }))
   );
@@ -79,19 +77,22 @@ const DealDetailPage: FC = () => {
       );
     }
 
-    if (isPending || !isCrmDataInitialized) return <DealDetailPageSkeleton />;
-
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
-          <DealDetailIdBadge dealId={dealId} />
-          <div className="flex items-center gap-2">
-            <DealDetailActions
-              dealId={dealId}
-              onDeleteClick={() => setIsDeleteModalOpen(true)}
-            />
+        {isPending ? (
+          <DealDetailPageSkeleton />
+        ) : (
+          <div className="flex items-start justify-between gap-4">
+            <DealDetailIdBadge dealId={dealId} />
+            <div className="flex items-center gap-2">
+              <DealDetailActions
+                dealId={dealId}
+                onDeleteClick={() => setIsDeleteModalOpen(true)}
+              />
+            </div>
           </div>
-        </div>
+        )}
+
         <DealDetailContent dealId={dealId} />
       </div>
     );
@@ -113,8 +114,6 @@ const DealDetailPage: FC = () => {
     >
       <>
         {getDealContent()}
-
-        <TaskModalController />
 
         {dealName && (
           <DeleteDealModalV2
