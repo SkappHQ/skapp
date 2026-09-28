@@ -43,7 +43,8 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     submitForm
   } = formik;
 
-  const translateText = useTranslator("crmModule", "tasks", "taskModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { taskTypes } = useCrmStoreV2(
     useShallow((store) => ({
@@ -55,7 +56,7 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
     () =>
       getTaskTypeOptions(taskTypes).map((option) => ({
         ...option,
-        label: translateText(["taskTypes", option.label])
+        label: translateText(["tasks", "modal", "taskTypes", option.label])
       })),
     [taskTypes]
   );
@@ -86,11 +87,16 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           value={values.name ?? ""}
           errorMessage={touched.name ? errors.name : undefined}
           state={touched.name && errors.name ? "error" : "default"}
-          label={translateText(["labels", "task"])}
-          placeholder={translateText(["placeholders", "task"])}
+          label={translateText(["tasks", "modal", "labels", "task"])}
+          placeholder={translateText([
+            "tasks",
+            "modal",
+            "placeholders",
+            "task"
+          ])}
           onChange={handleChange}
           onBlur={handleBlur}
-          aria-label={translateText(["ariaLabels", "task"])}
+          aria-label={translateAria(["tasks", "modal", "task"])}
           maxLength={characterLengths.TASK_NAME_LENGTH}
           fullWidth
           required
@@ -102,14 +108,19 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               options={taskTypeOptions}
               value={values.typeId?.toString()}
               onChange={handleTypeChange}
-              label={translateText(["labels", "type"])}
-              placeholder={translateText(["placeholders", "type"])}
+              label={translateText(["tasks", "modal", "labels", "type"])}
+              placeholder={translateText([
+                "tasks",
+                "modal",
+                "placeholders",
+                "type"
+              ])}
               errorMessage={touched.typeId ? errors.typeId : undefined}
               variant={
                 touched.typeId && errors.typeId ? "primary-error" : "primary"
               }
               className="rounded-lg"
-              ariaLabel={translateText(["ariaLabels", "type"])}
+              ariaLabel={translateAria(["tasks", "modal", "type"])}
               width="100%"
               required
             />
@@ -119,11 +130,16 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
               options={priorityOptions}
               value={values.priority}
               onChange={handlePriorityChange}
-              label={translateText(["labels", "priority"])}
-              placeholder={translateText(["placeholders", "priority"])}
+              label={translateText(["tasks", "modal", "labels", "priority"])}
+              placeholder={translateText([
+                "tasks",
+                "modal",
+                "placeholders",
+                "priority"
+              ])}
               className="rounded-lg"
               variant="primary"
-              ariaLabel={translateText(["ariaLabels", "priority"])}
+              ariaLabel={translateAria(["tasks", "modal", "priority"])}
               width="100%"
             />
           </div>
@@ -141,11 +157,16 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
                 <InputField
                   name="dueAt"
                   value={dueDate ? dueDate.toLocaleDateString() : ""}
-                  label={translateText(["labels", "dueDate"])}
-                  placeholder={translateText(["placeholders", "dueDate"])}
+                  label={translateText(["tasks", "modal", "labels", "dueDate"])}
+                  placeholder={translateText([
+                    "tasks",
+                    "modal",
+                    "placeholders",
+                    "dueDate"
+                  ])}
                   errorMessage={touched.dueAt ? errors.dueAt : undefined}
                   state={touched.dueAt && errors.dueAt ? "error" : "default"}
-                  aria-label={translateText(["ariaLabels", "dueDate"])}
+                  aria-label={translateAria(["tasks", "modal", "dueDate"])}
                   rightIcon={<CalendarIcon />}
                   fullWidth
                   readOnly
@@ -167,15 +188,20 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
         <TextArea
           name="notes"
           value={values.notes ?? ""}
-          label={translateText(["labels", "notes"])}
-          placeholder={translateText(["placeholders", "notes"])}
+          label={translateText(["tasks", "modal", "labels", "notes"])}
+          placeholder={translateText([
+            "tasks",
+            "modal",
+            "placeholders",
+            "notes"
+          ])}
           errorMessage={touched.notes ? errors.notes : undefined}
           state={touched.notes && errors.notes ? "error" : "default"}
           onChange={handleChange}
           onBlur={handleBlur}
           rows={3}
           maxLength={characterLengths.TASK_NOTES_LENGTH}
-          aria-label={translateText(["ariaLabels", "notes"])}
+          aria-label={translateAria(["tasks", "modal", "notes"])}
         />
       </div>
 
@@ -187,9 +213,9 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["ariaLabels", "cancel"])}
+          aria-label={translateAria(["tasks", "modal", "cancel"])}
         >
-          {translateText(["buttons", "cancel"])}
+          {translateText(["tasks", "modal", "buttons", "cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -197,9 +223,9 @@ const TaskModalForm: FC<Props> = ({ formik, isPending, onCancel }) => {
           onClick={submitForm}
           disabled={isPending || isSubmitting || !dirty}
           isLoading={isPending}
-          aria-label={translateText(["ariaLabels", "save"])}
+          aria-label={translateAria(["tasks", "modal", "save"])}
         >
-          {translateText(["buttons", "save"])}
+          {translateText(["tasks", "modal", "buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

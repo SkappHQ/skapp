@@ -126,12 +126,10 @@ const DealDetailContent: FC<DealDetailContentProps> = ({ dealId }) => {
 
       <div className="flex gap-6 items-start">
         <div className="flex-1 flex flex-col gap-6 min-w-0">
-          {deal.description && (
-            <DealDescriptionSection
-              description={deal.description}
-              onSave={(description) => updateDeal({ description })}
-            />
-          )}
+          <DealDescriptionSection
+            description={deal.description}
+            onSave={(description) => updateDeal({ description })}
+          />
           <div className="flex flex-col gap-3">
             <h2 className="h2">
               {translateText(["deals", "sidePanel", "tasks", "title"])}

@@ -25,7 +25,7 @@ import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 const AddTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     tasks,
@@ -138,8 +138,18 @@ const AddTaskModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["successTitle"]),
-      description: translateText(["successDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
@@ -148,8 +158,18 @@ const AddTaskModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["errorTitle"]),
-      description: translateText(["errorDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 

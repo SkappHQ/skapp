@@ -127,12 +127,12 @@ const DealsTableV2: FC<Props> = ({
     [editDeal]
   );
 
-  const noSearchResultsTitle = translateText(
-    ["deals", "table", "emptySearchState", "title"],
-    {
-      searchKeyword: `'${searchKeyword}'`
-    }
-  );
+  const noSearchResultsTitle = translateText([
+    "deals",
+    "table",
+    "emptySearchState",
+    "title"
+  ]);
 
   const columnHeaders = useMemo((): Column<DealRow>[] => {
     const fields = columnConfig?.fields ?? [];

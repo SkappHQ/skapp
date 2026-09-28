@@ -175,7 +175,7 @@ export const getContactMetricItems = (
 
   const openTasks: CrmMetricItem = {
     id: "openTasksCount",
-    title: translateText(["metrics", "openTasks"]),
+    title: translateText(["contacts", "sidePanel", "metrics", "openTasks"]),
     amount: metrics?.openTasksCount ?? 0
   };
 
@@ -184,9 +184,12 @@ export const getContactMetricItems = (
     metrics.overdueTasksCount > 0
   ) {
     openTasks.chip = {
-      label: translateText(["metrics", "overdueChipLabel"], {
-        count: String(metrics.overdueTasksCount)
-      }),
+      label: translateText(
+        ["contacts", "sidePanel", "metrics", "overdueChipLabel"],
+        {
+          count: String(metrics.overdueTasksCount)
+        }
+      ),
       variant: CrmMetricLabelThemeEnum.RED
     };
   }
@@ -195,18 +198,28 @@ export const getContactMetricItems = (
     openTasks,
     {
       id: "activeDealsCount",
-      title: translateText(["metrics", "activeDeals"]),
+      title: translateText(["contacts", "sidePanel", "metrics", "activeDeals"]),
       amount: metrics?.activeDealsCount ?? 0
     },
     {
       id: "closedDealValue",
-      title: translateText(["metrics", "totalRevenue"]),
+      title: translateText([
+        "contacts",
+        "sidePanel",
+        "metrics",
+        "totalRevenue"
+      ]),
       amount: metrics?.closedDealValue,
       isCurrency: true
     },
     {
       id: "pipelineRevenue",
-      title: translateText(["metrics", "pipelineRevenue"]),
+      title: translateText([
+        "contacts",
+        "sidePanel",
+        "metrics",
+        "pipelineRevenue"
+      ]),
       amount: metrics?.pipelineRevenue,
       isCurrency: true
     }

@@ -9,9 +9,7 @@ import {
 import { AxiosError } from "axios";
 
 import { ErrorResponse } from "~community/common/types/CommonTypes";
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import authFetch from "~community/common/utils/axiosInterceptor";
 import {
   CrmDealEntity,
   CrmStageEntity
@@ -26,7 +24,7 @@ import {
 } from "~community/crm/v2/types/CrmTypes";
 import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 
-import { crmDealEndpoints, crmDealEndpointsV2 } from "./utils/ApiEndpoints";
+import { crmDealEndpoints } from "./utils/ApiEndpoints";
 import {
   crmCompanyQueryKeys,
   crmContactQueryKeys,
@@ -54,7 +52,7 @@ export const useGetDealsByIds = (
 const fetchDeals = async (
   filters: CrmDealFilterRequest
 ): Promise<CrmDealListResponse> => {
-  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEALS, {
+  const response = await authFetch.get(crmDealEndpoints.GET_DEALS, {
     params: filters
   });
   return response?.data?.results?.[0];
@@ -115,7 +113,7 @@ export const useReorderDealInList = (
 };
 
 const fetchDealById = async (id: number): Promise<CrmDealEntity> => {
-  const response = await authFetchV2.get(crmDealEndpointsV2.GET_DEAL_BY_ID(id));
+  const response = await authFetch.get(crmDealEndpoints.GET_DEAL_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
@@ -131,8 +129,8 @@ export const useGetDealById = (
   });
 
 const createDeal = async (payload: CrmDealEntity): Promise<CrmDealEntity> => {
-  const response = await authFetchV2.post(
-    crmDealEndpointsV2.CREATE_DEAL,
+  const response = await authFetch.post(
+    crmDealEndpoints.CREATE_DEAL,
     payload
   );
   return response?.data?.results?.[0];
@@ -163,8 +161,8 @@ export const useCreateDeal = (
 
 const editDeal = async (deal: CrmDealEntity): Promise<CrmDealEntity> => {
   const { id, ...payload } = deal;
-  const response = await authFetchV2.patch(
-    crmDealEndpointsV2.EDIT_DEAL(id!),
+  const response = await authFetch.patch(
+    crmDealEndpoints.EDIT_DEAL(id!),
     payload
   );
   return response?.data?.results?.[0];

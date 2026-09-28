@@ -6,8 +6,8 @@ import { useShallow } from "zustand/react/shallow";
 import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import { isValidEmail } from "~community/common/regex/regexPatterns";
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { useCheckContactEmailExists } from "~community/crm/v2/api/ContactApi";
 import EditableContactCompanyField from "~community/crm/v2/components/molecules/EditableContactCompanyField/EditableContactCompanyField";
 import EditableContactOwnerField from "~community/crm/v2/components/molecules/EditableContactOwnerField/EditableContactOwnerField";
@@ -65,7 +65,7 @@ const useContactEmailCheck = ({
 interface ContactModalFormProps {
   formik: FormikProps<CrmContactEntity>;
   isPending: boolean;
-  translateText: TranslatorFunctionType;
+  isEdit?: boolean;
   originalEmail?: string;
   canAddNewCompany?: boolean;
   onCancel: () => void;
@@ -74,11 +74,13 @@ interface ContactModalFormProps {
 const ContactModalForm: FC<ContactModalFormProps> = ({
   formik,
   isPending,
-  translateText,
+  isEdit,
   originalEmail,
   canAddNewCompany,
   onCancel
 }) => {
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { isCrmSalesManager: canEditOwner } = useSessionData();
 
   const {
@@ -103,7 +105,7 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
   const emailFieldError = touched.email ? errors.email : undefined;
 
   const emailError = isDuplicateEmail
-    ? translateText(["validations", "emailExists"])
+    ? translateText(["contacts", "modal", "validations", "emailExists"])
     : emailFieldError;
 
   return (
@@ -113,11 +115,16 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         value={values.name}
         errorMessage={touched.name ? errors.name : undefined}
         state={touched.name && errors.name ? "error" : "default"}
-        label={translateText(["labels", "name"])}
-        placeholder={translateText(["placeholders", "name"])}
+        label={translateText(["contacts", "modal", "labels", "name"])}
+        placeholder={translateText([
+          "contacts",
+          "modal",
+          "placeholders",
+          "name"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "name"])}
+        aria-label={translateAria(["contacts", "modal", "name"])}
         maxLength={CONTACT_NAME_MAX_LENGTH}
         required
         fullWidth
@@ -128,21 +135,26 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         value={values.email}
         errorMessage={emailError}
         state={emailError ? "error" : "default"}
-        label={translateText(["labels", "email"])}
-        placeholder={translateText(["placeholders", "email"])}
+        label={translateText(["contacts", "modal", "labels", "email"])}
+        placeholder={translateText([
+          "contacts",
+          "modal",
+          "placeholders",
+          "email"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "email"])}
+        aria-label={translateAria(["contacts", "modal", "email"])}
         maxLength={CONTACT_EMAIL_MAX_LENGTH}
         required
         fullWidth
       />
 
       <EditableContactCompanyField
+        isEdit={isEdit}
         companyId={values.companyId}
         companyName={values.companyName}
         suggestedDomain={suggestedDomain}
-        translateText={translateText}
         canAddNewCompany={canAddNewCompany}
         onSelect={(companyId) => {
           setFieldValue("companyId", companyId);
@@ -162,11 +174,16 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         state={
           touched.contactNumber && errors.contactNumber ? "error" : "default"
         }
-        label={translateText(["labels", "contactNumber"])}
-        placeholder={translateText(["placeholders", "contactNumber"])}
+        label={translateText(["contacts", "modal", "labels", "contactNumber"])}
+        placeholder={translateText([
+          "contacts",
+          "modal",
+          "placeholders",
+          "contactNumber"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "contactNumber"])}
+        aria-label={translateAria(["contacts", "modal", "contactNumber"])}
         maxLength={CONTACT_NUMBER_MAX_LENGTH}
         fullWidth
       />
@@ -175,17 +192,16 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
         <EditableContactOwnerField
           ownerId={values.ownerId}
           errorMessage={touched.ownerId ? errors.ownerId : undefined}
-          translateText={translateText}
           onChange={(owner) => setFieldValue("ownerId", owner?.employeeId)}
         />
       ) : (
         selectedOwner && (
           <SelectedOwnerField
-            label={translateText(["labels", "owner"])}
+            label={translateText(["contacts", "modal", "labels", "owner"])}
             owner={selectedOwner}
             onRemove={() => setFieldValue("ownerId", undefined)}
             showRemoveButton={false}
-            ariaLabel={translateText(["ariaLabels", "clearOwner"])}
+            ariaLabel={translateAria(["contacts", "modal", "clearOwner"])}
           />
         )
       )}
@@ -198,9 +214,14 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["ariaLabels", "cancel"])}
+          aria-label={translateAria([
+            "contacts",
+            "modal",
+            "cancel",
+            isEdit ? "edit" : "add"
+          ])}
         >
-          {translateText(["buttons", "cancel"])}
+          {translateText(["contacts", "modal", "buttons", "cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -214,9 +235,9 @@ const ContactModalForm: FC<ContactModalFormProps> = ({
             isDuplicateEmail
           }
           isLoading={isPending}
-          aria-label={translateText(["ariaLabels", "save"])}
+          aria-label={translateAria(["contacts", "modal", "save"])}
         >
-          {translateText(["buttons", "save"])}
+          {translateText(["contacts", "modal", "buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

@@ -16,11 +16,7 @@ import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 const AddContactModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "addContactModal"
-  );
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     contacts,
@@ -83,8 +79,18 @@ const AddContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["contactToastMessages", "successTitle"]),
-      description: translateText(["contactToastMessages", "successDescription"])
+      title: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
@@ -93,8 +99,18 @@ const AddContactModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["contactToastMessages", "errorTitle"]),
-      description: translateText(["contactToastMessages", "errorDescription"])
+      title: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "contacts",
+        "modal",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -118,7 +134,6 @@ const AddContactModalContent: FC = () => {
     <ContactModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       canAddNewCompany
       onCancel={handleCloseModal}
     />

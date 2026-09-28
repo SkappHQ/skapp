@@ -1,4 +1,5 @@
 import { CrmDealStageEnum } from "../enums/common";
+import { dealIdSearchPrefix } from "../regex/crmRegexPatterns";
 import {
   CrmCompanyRecord,
   CrmContactRecord,
@@ -28,6 +29,9 @@ export const getMissingDealIds = (
   }
   return Array.from(unique);
 };
+
+export const stripDealIdPrefix = (searchKeyword: string): string =>
+  searchKeyword.trim().replace(dealIdSearchPrefix(), "");
 
 export const mergeDeals = (
   existing: CrmDealRecord,

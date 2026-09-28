@@ -10,9 +10,7 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import authFetch from "~community/common/utils/axiosInterceptor";
 import { crmContactEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import { crmContactQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
 import {
@@ -32,7 +30,7 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchContacts = async (
   params: CrmContactFilterRequest
 ): Promise<CrmContactListResponse> => {
-  const response = await authFetchV2.get(crmContactEndpoints.GET_CONTACTS, {
+  const response = await authFetch.get(crmContactEndpoints.GET_CONTACTS, {
     params
   });
   return response?.data?.results?.[0];
@@ -78,7 +76,7 @@ export const useGetContactMetrics = (
 const fetchContactLookup = async (
   params: CrmContactFilterRequest
 ): Promise<CrmContactListResponse> => {
-  const response = await authFetchV2.get(crmContactEndpoints.CONTACT_LOOKUP, {
+  const response = await authFetch.get(crmContactEndpoints.CONTACT_LOOKUP, {
     params
   });
   return response?.data?.results?.[0];
@@ -117,7 +115,7 @@ export const useGetOwnerLookupV2 = (
   });
 
 const fetchContactById = async (id: number): Promise<CrmContactEntity> => {
-  const response = await authFetchV2.get(
+  const response = await authFetch.get(
     crmContactEndpoints.GET_CONTACT_BY_ID(id)
   );
   return response?.data?.results?.[0];
@@ -154,7 +152,7 @@ export const useCheckContactEmailExists = (
 const createContact = async (
   payload: CrmContactEntity
 ): Promise<CrmContactEntity> => {
-  const response = await authFetchV2.post(
+  const response = await authFetch.post(
     crmContactEndpoints.CREATE_CONTACT,
     payload
   );
@@ -183,7 +181,7 @@ const editContact = async ({
   id,
   contact
 }: CrmContactUpdateRequest): Promise<CrmContactEntity> => {
-  const response = await authFetchV2.patch(
+  const response = await authFetch.patch(
     crmContactEndpoints.EDIT_CONTACT(id),
     contact
   );

@@ -21,7 +21,7 @@ const TaskRowSubtitle: FC<Props> = ({
   isShowContact,
   isCompletedStyleApplied
 }) => {
-  const translateText = useTranslator("crmModule", "tasks", "table");
+  const translateText = useTranslator("crmModuleV2");
 
   const dueDateStatus = task.dueAt
     ? getDueDateStatus(task.dueAt, task.isCompleted === true)
@@ -40,10 +40,13 @@ const TaskRowSubtitle: FC<Props> = ({
               : dueDateStatus.textColorClass
           }
         >
-          {translateText([dueDateStatus.textKey], {
-            date: dueDateStatus.dateValue,
-            count: dueDateStatus.dayCount
-          })}
+          {translateText(
+            ["tasks", "table", "dueDateStatus", dueDateStatus.textKey],
+            {
+              date: dueDateStatus.dateValue,
+              count: dueDateStatus.dayCount
+            }
+          )}
         </span>
       )}
 

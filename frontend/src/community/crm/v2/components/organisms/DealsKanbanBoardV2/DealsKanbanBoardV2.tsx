@@ -13,12 +13,12 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
+import { useGetDealsGroupedByStages } from "~community/crm/v2/api/BoardApi";
+import DealStageLaneV2 from "~community/crm/v2/components/molecules/DealStageLaneV2/DealStageLaneV2";
 import {
   DEFAULT_BOARD_PAGE_SIZE,
   DRAG_ACTIVATION_DISTANCE
-} from "~community/crm/constants/boardConstants";
-import { useGetDealsGroupedByStages } from "~community/crm/v2/api/BoardApi";
-import DealStageLaneV2 from "~community/crm/v2/components/molecules/DealStageLaneV2/DealStageLaneV2";
+} from "~community/crm/v2/constants/boardConstants";
 import { useKanbanDragV2 } from "~community/crm/v2/hooks/useKanbanDragV2";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";

@@ -31,7 +31,8 @@ import {
 } from "~community/crm/v2/utils/companyUtil";
 
 export const CompanyTable: FC = () => {
-  const translateText = useTranslator("crmModule", "companies");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm.trim(), SEARCH_DEBOUNCE_DELAY);
@@ -81,28 +82,28 @@ export const CompanyTable: FC = () => {
   const tableHeaders: GridHeader[] = [
     {
       id: "name",
-      label: translateText(["table", "columns", "nameHeader"]),
+      label: translateText(["companies", "table", "columns", "name"]),
       width: "25%"
     },
     {
       id: "contactNumber",
-      label: translateText(["table", "columns", "phoneHeader"]),
+      label: translateText(["companies", "table", "columns", "phone"]),
       width: "20%"
     },
     {
       id: "openTasksCount",
-      label: translateText(["table", "columns", "tasksHeader"]),
+      label: translateText(["companies", "table", "columns", "tasks"]),
       width: "15%"
     },
     {
       id: "openValue",
-      label: translateText(["table", "columns", "pipelineHeader"]),
+      label: translateText(["companies", "table", "columns", "pipeline"]),
       width: "20%",
       align: "right"
     },
     {
       id: "accountValue",
-      label: translateText(["table", "columns", "accountValueHeader"]),
+      label: translateText(["companies", "table", "columns", "accountValue"]),
       width: "20%",
       align: "right"
     }
@@ -135,7 +136,7 @@ export const CompanyTable: FC = () => {
                   backgroundColor="bg-semantic-red-background"
                   textColor="text-semantic-red-text"
                 >
-                  {`${metrics.overdueTasksCount} ${translateText(["table", "overdueLabel"])}`}
+                  {`${metrics.overdueTasksCount} ${translateText(["companies", "table", "overdueLabel"])}`}
                 </Label>
               )}
           </div>
@@ -151,7 +152,7 @@ export const CompanyTable: FC = () => {
             <div className="subtitle4 text-secondary-text">
               {metrics?.closedDealsCount !== undefined &&
               metrics.closedDealsCount > 0
-                ? `${metrics.closedDealsCount} ${translateText(["table", "closedDealsLabel"])}`
+                ? `${metrics.closedDealsCount} ${translateText(["companies", "table", "closedDealsLabel"])}`
                 : ""}
             </div>
           </div>
@@ -173,11 +174,21 @@ export const CompanyTable: FC = () => {
       emptyState={{
         icon: <SearchIcon />,
         title: hasSearchTerm
-          ? translateText(["table", "emptySearchState", "title"])
-          : translateText(["table", "emptyDataState", "title"]),
+          ? translateText(["companies", "table", "emptySearchState", "title"])
+          : translateText(["companies", "table", "emptyDataState", "title"]),
         description: hasSearchTerm
-          ? translateText(["table", "emptySearchState", "description"])
-          : translateText(["table", "emptyDataState", "description"])
+          ? translateText([
+              "companies",
+              "table",
+              "emptySearchState",
+              "description"
+            ])
+          : translateText([
+              "companies",
+              "table",
+              "emptyDataState",
+              "description"
+            ])
       }}
       onRowClick={handleRowClick}
       infiniteScroll={{
@@ -191,18 +202,19 @@ export const CompanyTable: FC = () => {
         searchBar: {
           value: searchTerm,
           onChange: handleSearchChange,
-          placeholder: translateText(["table", "search"]),
-          "aria-label": translateText(["table", "searchAriaLabel"]),
-          ariaLabelClearButton: translateText(["table", "clearButtonAriaLabel"])
+          placeholder: translateText(["companies", "table", "search"]),
+          "aria-label": translateAria(["companies", "table", "search"]),
+          ariaLabelClearButton: translateAria([
+            "companies",
+            "table",
+            "clearSearch"
+          ])
         }
       }}
       filter={{
         filterCount: 0,
         isDisabled: true,
-        filterButtonAriaLabel: translateText([
-          "table",
-          "filterButtonAriaLabel"
-        ]),
+        filterButtonAriaLabel: translateAria(["companies", "table", "filter"]),
         popoverId: "crm-companies-filter"
       }}
     />

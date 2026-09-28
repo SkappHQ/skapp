@@ -23,7 +23,7 @@ interface Props {
 const EditTaskModalContent: FC<Props> = ({ taskId }) => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "tasks", "editTaskModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const { tasks, setTasks, setIsTaskModalOpen } = useCrmStoreV2(
     useShallow((store) => ({
@@ -72,8 +72,18 @@ const EditTaskModalContent: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "editSuccessTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "editSuccessDescription"
+      ])
     });
   };
 
@@ -82,8 +92,18 @@ const EditTaskModalContent: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "editErrorDescription"
+      ])
     });
   };
 

@@ -1,4 +1,53 @@
 {
+  "contacts": {
+    "table": {
+      "clearSearch": "Clear search",
+      "companyFilter": "Filter by company"
+    },
+    "sidePanel": {
+      "kebabMenu": "Contact actions"
+    },
+    "modal": {
+      "name": "Name",
+      "email": "Email",
+      "contactNumber": "Contact number",
+      "company": "Company",
+      "clearCompany": "Clear selected company",
+      "clearOwner": "Clear selected contact owner",
+      "save": "Save",
+      "cancel": {
+        "add": "Cancel add contact",
+        "edit": "Cancel edit contact"
+      }
+    },
+    "deleteModal": {
+      "confirm": "Confirm delete contact",
+      "cancel": "Cancel delete contact"
+    }
+  },
+  "companies": {
+    "table": {
+      "search": "Search companies by name",
+      "clearSearch": "Clear search",
+      "filter": "Filter companies"
+    },
+    "sidePanel": {
+      "kebabMenu": "Company actions"
+    },
+    "modal": {
+      "companyName": "Company name",
+      "contactNumber": "Contact number",
+      "website": "Website",
+      "address": "Address",
+      "industry": "Industry",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteModal": {
+      "confirm": "Confirm delete company",
+      "cancel": "Cancel delete company"
+    }
+  },
   "deals": {
     "common": {
       "stage": "Stage",
@@ -46,6 +95,37 @@
         "cancelAddDeal": "Cancel adding deal",
         "clearContact": "Clear selected contact"
       }
+    }
+  },
+  "tasks": {
+    "row": {
+      "openTaskDetails": "Open task details panel for {{name}}",
+      "checkTaskMarkComplete": "Mark as complete: {{name}}",
+      "checkTaskMarkIncomplete": "Mark as incomplete: {{name}}"
+    },
+    "table": {
+      "clearSearch": "Clear search"
+    },
+    "sidePanel": {
+      "kebabMenu": "Task actions"
+    },
+    "modal": {
+      "type": "Task type",
+      "task": "Task name",
+      "dueDate": "Due date",
+      "priority": "Priority",
+      "contactName": "Contact name",
+      "deal": "Deal",
+      "removeOwner": "Remove task owner",
+      "clearContact": "Clear selected contact",
+      "clearDeal": "Clear selected deal",
+      "notes": "Notes",
+      "save": "Save task",
+      "cancel": "Cancel"
+    },
+    "deleteModal": {
+      "confirm": "Confirm delete task",
+      "cancel": "Cancel delete task"
     }
   }
 }

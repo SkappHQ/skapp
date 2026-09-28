@@ -15,7 +15,7 @@ import { getCompanyValidationSchema } from "~community/crm/v2/utils/companyValid
 const AddCompanyModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "companies", "companyModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     companies,
@@ -66,8 +66,18 @@ const AddCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "add", "successTitle"]),
-      description: translateText(["toastMessages", "add", "successDescription"])
+      title: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
@@ -76,8 +86,18 @@ const AddCompanyModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "add", "errorDescription"])
+      title: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "companies",
+        "modal",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -100,7 +120,6 @@ const AddCompanyModalContent: FC = () => {
     <CompanyModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );

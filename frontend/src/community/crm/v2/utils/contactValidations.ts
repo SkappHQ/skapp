@@ -17,29 +17,50 @@ export const getContactValidationSchema = (
   Yup.object().shape({
     name: Yup.string()
       .trim()
-      .max(CONTACT_NAME_MAX_LENGTH, translator(["validations", "nameLength"]))
+      .max(
+        CONTACT_NAME_MAX_LENGTH,
+        translator(["contacts", "modal", "validations", "nameLength"])
+      )
       .matches(isContactNameValid(), {
-        message: translator(["validations", "nameInvalidCharacters"]),
+        message: translator([
+          "contacts",
+          "modal",
+          "validations",
+          "nameInvalidCharacters"
+        ]),
         excludeEmptyString: true
       })
-      .required(translator(["validations", "name"])),
+      .required(translator(["contacts", "modal", "validations", "name"])),
     email: Yup.string()
       .trim()
-      .max(CONTACT_EMAIL_MAX_LENGTH, translator(["validations", "emailLength"]))
+      .max(
+        CONTACT_EMAIL_MAX_LENGTH,
+        translator(["contacts", "modal", "validations", "emailLength"])
+      )
       .matches(isValidEmail(), {
-        message: translator(["validations", "invalidEmail"])
+        message: translator([
+          "contacts",
+          "modal",
+          "validations",
+          "invalidEmail"
+        ])
       })
-      .required(translator(["validations", "email"])),
+      .required(translator(["contacts", "modal", "validations", "email"])),
     contactNumber: Yup.string()
       .trim()
       .nullable()
       .optional()
       .matches(isValidPhoneNumber(), {
-        message: translator(["validations", "contactNumber"]),
+        message: translator([
+          "contacts",
+          "modal",
+          "validations",
+          "contactNumber"
+        ]),
         excludeEmptyString: true
       }),
     companyId: Yup.number().nullable().optional(),
     ownerId: Yup.number()
       .nullable()
-      .required(translator(["validations", "owner"]))
+      .required(translator(["contacts", "modal", "validations", "owner"]))
   });

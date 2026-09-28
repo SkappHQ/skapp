@@ -24,7 +24,7 @@ public interface CrmContactService {
 
 	ResponseEntityDto deleteContact(Long id);
 
-	ResponseEntityDto getContactMetrics(CrmContactMetricRequestDto filterDto);
+	ResponseEntityDto getContacts(CrmContactMetricRequestDto filterDto);
 
 	ResponseEntityDto getContactMetricsById(Long id);
 

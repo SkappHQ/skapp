@@ -12,18 +12,14 @@ const SidePanelContactHeader: FC<SidePanelContactHeaderProps> = ({
   name,
   lastModifiedDate
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "contacts",
-    "contactDetailsPanel"
-  );
+  const translateText = useTranslator("crmModuleV2");
 
   return (
     <div className="flex flex-col gap-2 pl-2">
       <h2 className="h1 leading-[24px] tracking-[0.07px] text-black">{name}</h2>
       <p className="body2 leading-[24px] text-secondary-text">
         {lastModifiedDate &&
-          `${translateText(["lastUpdated"])} : ${formatISODateWithSuffix(lastModifiedDate)}`}
+          `${translateText(["contacts", "sidePanel", "lastUpdated"])} : ${formatISODateWithSuffix(lastModifiedDate)}`}
       </p>
     </div>
   );

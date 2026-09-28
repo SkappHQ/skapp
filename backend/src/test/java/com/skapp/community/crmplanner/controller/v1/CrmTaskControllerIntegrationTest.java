@@ -1,10 +1,14 @@
 package com.skapp.community.crmplanner.controller.v1;
 
+import com.jayway.jsonpath.JsonPath;
 import com.skapp.TestSkappApplication;
 import com.skapp.community.common.service.JwtService;
+import com.skapp.community.common.type.Role;
 import com.skapp.community.common.util.DateTimeUtils;
 import com.skapp.community.common.util.MessageUtil;
 import com.skapp.community.crmplanner.constant.CrmMessageConstant;
+import org.openapitools.jackson.nullable.JsonNullable;
+import java.time.LocalDateTime;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
@@ -21,13 +25,12 @@ import com.skapp.community.crmplanner.repository.CrmTaskDao;
 import com.skapp.community.crmplanner.repository.CrmTaskTypeDao;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
+import com.skapp.community.crmplanner.type.CrmIndustry;
 import com.skapp.community.crmplanner.type.CrmTaskPriority;
-import com.skapp.community.common.type.Role;
 import com.skapp.community.peopleplanner.repository.EmployeeDao;
 import com.skapp.community.peopleplanner.repository.EmployeeRoleDao;
 import com.skapp.support.SecurityTestUtils;
 import lombok.RequiredArgsConstructor;
-import org.openapitools.jackson.nullable.JsonNullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,14 +38,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import com.jayway.jsonpath.JsonPath;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.time.LocalDateTime;
 
 import static com.skapp.support.TestConstants.MESSAGE_PATH;
 import static com.skapp.support.TestConstants.RESULTS_0_PATH;
@@ -52,9 +53,10 @@ import static com.skapp.support.TestConstants.STATUS_UNSUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,29 +71,29 @@ class CrmTaskControllerIntegrationTest {
 
 	private static final String BASE_PATH = "/v1/crm/task";
 
-	private static final String BY_ID_PATH = "/v1/crm/task/{id}";
+	private static final String BY_ID_PATH = BASE_PATH + "/{id}";
 
-	private final JsonMapper objectMapper;
+	private final MockMvc mvc;
 
 	private final JwtService jwtService;
 
 	private final UserDetailsService userDetailsService;
 
-	private final MockMvc mvc;
+	private final JsonMapper objectMapper;
 
 	private final MessageUtil messageUtil;
 
-	private final CrmContactDao crmContactDao;
-
 	private final CrmCompanyDao crmCompanyDao;
+
+	private final CrmContactDao crmContactDao;
 
 	private final CrmDealDao crmDealDao;
 
 	private final CrmDealStageDao crmDealStageDao;
 
-	private final CrmTaskTypeDao crmTaskTypeDao;
-
 	private final CrmTaskDao crmTaskDao;
+
+	private final CrmTaskTypeDao crmTaskTypeDao;
 
 	private final EmployeeDao employeeDao;
 
@@ -101,19 +103,35 @@ class CrmTaskControllerIntegrationTest {
 
 	private Long contactId;
 
+	private Long companyId;
+
 	private Long taskTypeId;
 
 	private CrmTaskType taskType;
+
+	private CrmCompany company;
+
+	private CrmContact contact;
 
 	@BeforeEach
 	void setup() {
 		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user1@gmail.com"), 1L);
 
-		CrmContact contact = new CrmContact();
+		company = new CrmCompany();
+		company.setName("Task V2 Corp");
+		company.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		company.setWebsite("https://task-v2.com");
+		company.setAddress("9 Task Blvd");
+		company = crmCompanyDao.save(company);
+		companyId = company.getId();
+
+		contact = new CrmContact();
 		contact.setName("Task Test Contact");
-		contact.setEmail("task.contact@example.com");
+		contact.setEmail("task.contact.v2@example.com");
 		contact.setOwner(employeeDao.getReferenceById(1L));
-		contactId = crmContactDao.save(contact).getId();
+		contact.setCompany(company);
+		contact = crmContactDao.save(contact);
+		contactId = contact.getId();
 
 		taskType = new CrmTaskType();
 		taskType.setName("Call");
@@ -122,69 +140,677 @@ class CrmTaskControllerIntegrationTest {
 		taskTypeId = taskType.getId();
 	}
 
-	// --- GET tasks helpers and tests ---
-
-	private ResultActions performGetRequest(String token) throws Exception {
-		return mvc
-			.perform(get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token)));
+	private ResultActions performRequest(MockHttpServletRequestBuilder request, String token) throws Exception {
+		return mvc.perform(request.with(SecurityTestUtils.bearerToken(token)));
 	}
 
-	private ResultActions performGetRequest(String token, String searchKeyword, Long contactId, Long dealId)
-			throws Exception {
-		return performGetRequest(token, searchKeyword, contactId, dealId, null);
+	private ResultActions performCreateRequest(CrmTaskCreateRequestDto dto) throws Exception {
+		return performRequest(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON)
+			.content(objectMapper.writeValueAsString(dto))
+			.accept(MediaType.APPLICATION_JSON), authToken);
 	}
 
-	private ResultActions performGetRequest(String token, String searchKeyword, Long contactId, Long dealId,
-			Long companyId) throws Exception {
-		var request = get(BASE_PATH).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token));
-		if (searchKeyword != null) {
-			request = request.param("searchKeyword", searchKeyword);
-		}
-		if (contactId != null) {
-			request = request.param("contactId", contactId.toString());
-		}
-		if (dealId != null) {
-			request = request.param("dealId", dealId.toString());
-		}
-		if (companyId != null) {
-			request = request.param("companyId", companyId.toString());
-		}
-		return mvc.perform(request);
+	private ResultActions performGetTasksRequest() throws Exception {
+		return performRequest(get(BASE_PATH).accept(MediaType.APPLICATION_JSON), authToken);
 	}
 
-	private ResultActions performGetByIdRequest(Long id, String token) throws Exception {
-		return mvc
-			.perform(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON).with(SecurityTestUtils.bearerToken(token)));
+	private ResultActions performGetTasksRequest(String isCompleted) throws Exception {
+		return performRequest(get(BASE_PATH).param("isCompleted", isCompleted).accept(MediaType.APPLICATION_JSON),
+				authToken);
 	}
 
-	private CrmTask savedTask(String name, boolean isDeleted) {
-		return savedTask(name, isDeleted, false);
+	private ResultActions performGetByContactRequest(Long targetContactId) throws Exception {
+		return performRequest(
+				get(BASE_PATH).param("contactId", targetContactId.toString()).accept(MediaType.APPLICATION_JSON),
+				authToken);
 	}
 
-	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted) {
+	private ResultActions performGetRelatedRequest(Long taskId) throws Exception {
+		return performRequest(get(BASE_PATH + "/{id}/related", taskId).accept(MediaType.APPLICATION_JSON), authToken);
+	}
+
+	private ResultActions performGetUnpagedRequest() throws Exception {
+		return performRequest(get(BASE_PATH).param("size", "-1").accept(MediaType.APPLICATION_JSON), authToken);
+	}
+
+	private ResultActions performGetByIdRequest(Long id) throws Exception {
+		return performRequest(get(BY_ID_PATH, id).accept(MediaType.APPLICATION_JSON), authToken);
+	}
+
+	private CrmDeal savedDeal(String name) {
+		return savedDeal(name, contact);
+	}
+
+	private CrmDeal savedDeal(String name, CrmContact dealContact) {
+		CrmDealStage stage = new CrmDealStage();
+		stage.setName("Task Deal Stage");
+		stage.setColor("#000000");
+		stage.setOrderIndex(1);
+		stage.setStageType(CrmDealStageType.OPEN);
+		stage = crmDealStageDao.save(stage);
+
+		CrmDeal deal = new CrmDeal();
+		deal.setName(name);
+		deal.setPriority(CrmDealPriority.MEDIUM);
+		deal.setStage(stage);
+		deal.setContact(dealContact);
+		deal.setCompany(company);
+		deal.setOwner(employeeDao.getReferenceById(1L));
+		deal.setOrderIndex("a0");
+		return crmDealDao.save(deal);
+	}
+
+	private CrmTaskCreateRequestDto validPayload() {
+		CrmTaskCreateRequestDto dto = new CrmTaskCreateRequestDto();
+		dto.setName("Follow up call");
+		dto.setTypeId(taskTypeId);
+		dto.setContactId(contactId);
+		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		return dto;
+	}
+
+	private CrmContact savedContact(String name) {
+		CrmContact other = new CrmContact();
+		other.setName(name);
+		other.setEmail(name.toLowerCase().replace(' ', '.') + ".v2@example.com");
+		other.setOwner(employeeDao.getReferenceById(1L));
+		other.setCompany(company);
+		return crmContactDao.save(other);
+	}
+
+	private CrmTask savedTask(String name, boolean isCompleted) {
+		return savedTaskWith(name, company, contact, null, isCompleted);
+	}
+
+	private CrmTask savedTaskOwnedBy(String name, Long ownerId) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setOwner(employeeDao.getReferenceById(1L));
-		task.setIsDeleted(isDeleted);
-		task.setIsCompleted(isCompleted);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(contact);
+		task.setCompany(company);
+		task.setOwner(employeeDao.getReferenceById(ownerId));
+		task.setIsCompleted(false);
 		return crmTaskDao.save(task);
 	}
 
-	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId) {
+	private CrmTask savedTaskWithDueAt(String name, LocalDateTime dueAt) {
 		CrmTask task = new CrmTask();
 		task.setName(name);
 		task.setType(taskType);
 		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(dueAt);
+		task.setContact(contact);
+		task.setCompany(company);
 		task.setOwner(employeeDao.getReferenceById(1L));
-		task.setIsDeleted(isDeleted);
-		task.setIsCompleted(isCompleted);
-		if (linkedContactId != null) {
-			task.setContact(crmContactDao.getReferenceById(linkedContactId));
-		}
+		task.setIsCompleted(false);
 		return crmTaskDao.save(task);
 	}
+
+	private CrmTask savedTaskWith(String name, CrmCompany taskCompany, CrmContact taskContact, CrmDeal taskDeal,
+			boolean isCompleted) {
+		CrmTask task = new CrmTask();
+		task.setName(name);
+		task.setType(taskType);
+		task.setPriority(CrmTaskPriority.MEDIUM);
+		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
+		task.setContact(taskContact);
+		task.setCompany(taskCompany);
+		task.setDeal(taskDeal);
+		task.setOwner(employeeDao.getReferenceById(1L));
+		task.setIsCompleted(isCompleted);
+		return crmTaskDao.save(task);
+	}
+
+	// --- createTask ---
+
+	@Test
+	@DisplayName("Create task with contact and deal - Returns Created with id references only")
+	void createTask_WithContactAndDeal_ReturnsIdReferences() throws Exception {
+		CrmDeal deal = savedDeal("Task Linked Deal V2");
+
+		CrmTaskCreateRequestDto dto = validPayload();
+		dto.setDealId(deal.getId());
+
+		performCreateRequest(dto).andDo(print())
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Follow up call"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(taskTypeId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['dealId']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['type']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['owner']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['deal']").doesNotExist());
+	}
+
+	// --- getTasks ---
+
+	@Test
+	@DisplayName("Get tasks - Returns a paginated envelope carrying id references only")
+	void getTasks_ReturnsPagedIdReferencesOnly() throws Exception {
+		CrmTask task = savedTask("Open Task V2", false);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Open Task V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['typeId']").value(taskTypeId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactId']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['id']").value(task.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['type']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['owner']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['company']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['deal']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get tasks with a linked deal - Sends the deal id rather than the deal")
+	void getTasks_WithLinkedDeal_SendsDealIdOnly() throws Exception {
+		CrmDeal deal = savedDeal("Nested Deal V2");
+		savedTaskWith("Task With Deal V2", company, contact, deal, false);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task With Deal V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['dealId']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['deal']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get tasks with isCompleted true - Returns only completed tasks, paginated")
+	void getTasks_IsCompletedTrue_ReturnsOnlyCompleted() throws Exception {
+		savedTask("Open Task V2", false);
+		savedTask("Completed Task V2", true);
+
+		performGetTasksRequest("true").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Task V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get tasks with isCompleted false - Returns only open tasks")
+	void getTasks_IsCompletedFalse_ReturnsOnlyOpen() throws Exception {
+		savedTask("Open Task V2", false);
+		savedTask("Completed Task V2", true);
+
+		performGetTasksRequest("false").andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Open Task V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get tasks with page and size - Returns the requested page slice")
+	void getTasks_Paginated_ReturnsRequestedSlice() throws Exception {
+		savedTask("Task A", false);
+		savedTask("Task B", false);
+		savedTask("Task C", false);
+
+		performRequest(get(BASE_PATH).param("page", "0").param("size", "2").accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get tasks sorted by last modified date descending - Returns the most recently modified first")
+	void getTasks_SortByLastModifiedDesc_ReturnsMostRecentFirst() throws Exception {
+		savedTask("Completed First", true);
+		savedTask("Completed Second", true);
+
+		performRequest(get(BASE_PATH).param("isCompleted", "true")
+			.param("sortKey", "LAST_MODIFIED_DATE")
+			.param("sortOrder", "DESC")
+			.accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Second"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['name']").value("Completed First"));
+	}
+
+	@Test
+	@DisplayName("Get tasks without isCompleted - Returns both open and completed tasks")
+	void getTasks_NoIsCompleted_ReturnsBoth() throws Exception {
+		savedTask("Open Task V2", false);
+		savedTask("Completed Task V2", true);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Returns that contact's tasks")
+	void getTasks_ByContactId_ReturnsMatchingTasks() throws Exception {
+		savedTask("Related Task A", false);
+		savedTask("Related Task B", true);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Includes tasks linked only through the contact's deal")
+	void getTasks_ByContactId_IncludesDealLinkedTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+		savedTaskWith("Deal Linked Task", null, null, savedDeal("Contact Deal"), false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][*]['name']")
+				.value(containsInAnyOrder("Directly Linked Task", "Deal Linked Task")));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by contactId - Excludes tasks on another contact's deal")
+	void getTasks_ByContactId_ExcludesOtherContactsDealTasks() throws Exception {
+		savedTask("Directly Linked Task", false);
+
+		CrmDeal otherDeal = savedDeal("Other Contact Deal", savedContact("Other Deal Contact"));
+		savedTaskWith("Other Deal Task", null, null, otherDeal, false);
+
+		performGetByContactRequest(contactId).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Directly Linked Task"));
+	}
+
+	@Test
+	@DisplayName("Get tasks with size -1 - Returns every match in a single page")
+	void getTasks_UnpagedSize_ReturnsEveryMatchInOnePage() throws Exception {
+		for (int index = 0; index < 12; index++) {
+			savedTask("Bulk Task " + index, false);
+		}
+
+		performGetUnpagedRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(12))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(12))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by searchKeyword - Returns only tasks matching the keyword")
+	void getTasks_BySearchKeyword_ReturnsMatchingTasks() throws Exception {
+		savedTask("Alpha Report", false);
+		savedTask("Beta Report", false);
+
+		performRequest(get(BASE_PATH).param("searchKeyword", "Alpha").accept(MediaType.APPLICATION_JSON), authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Alpha Report"));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by dealId - Returns only tasks linked to that deal")
+	void getTasks_ByDealId_ReturnsMatchingTasks() throws Exception {
+		CrmDeal deal = savedDeal("Filter Deal V2");
+		savedTaskWith("Task On Deal", company, contact, deal, false);
+		savedTask("Task Without Deal", false);
+
+		performRequest(get(BASE_PATH).param("dealId", deal.getId().toString()).accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task On Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['dealId']").value(deal.getId()));
+	}
+
+	@Test
+	@DisplayName("Get tasks filtered by companyId - Returns only tasks linked to that company")
+	void getTasks_ByCompanyId_ReturnsMatchingTasks() throws Exception {
+		CrmCompany otherCompany = new CrmCompany();
+		otherCompany.setName("Other Task Corp");
+		otherCompany.setIndustry(CrmIndustry.TECHNOLOGY_INFORMATION_AND_MEDIA);
+		otherCompany = crmCompanyDao.save(otherCompany);
+
+		CrmContact otherContact = new CrmContact();
+		otherContact.setName("Other Contact");
+		otherContact.setEmail("other.contact.v2@example.com");
+		otherContact.setOwner(employeeDao.getReferenceById(1L));
+		otherContact.setCompany(otherCompany);
+		otherContact = crmContactDao.save(otherContact);
+
+		savedTask("Default Company Task", false);
+		savedTaskWith("Other Company Task", otherCompany, otherContact, null, false);
+
+		performRequest(
+				get(BASE_PATH).param("companyId", otherCompany.getId().toString()).accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Other Company Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['companyId']").value(otherCompany.getId()));
+	}
+
+	@Test
+	@DisplayName("Get tasks sorted by due date descending - Returns the latest due date first")
+	void getTasks_SortByDueDateDesc_ReturnsLatestDueFirst() throws Exception {
+		savedTaskWithDueAt("Due Soon", DateTimeUtils.getCurrentUtcDateTime().plusDays(1));
+		savedTaskWithDueAt("Due Later", DateTimeUtils.getCurrentUtcDateTime().plusDays(30));
+
+		performRequest(
+				get(BASE_PATH).param("sortKey", "DUE_AT").param("sortOrder", "DESC").accept(MediaType.APPLICATION_JSON),
+				authToken)
+			.andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Due Later"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['name']").value("Due Soon"));
+	}
+
+	@Test
+	@DisplayName("Get tasks sorted by last modified date ascending - Returns the earliest modified first")
+	void getTasks_SortByLastModifiedAsc_ReturnsEarliestFirst() throws Exception {
+		savedTask("Modified First", true);
+		savedTask("Modified Second", true);
+
+		performRequest(get(BASE_PATH).param("isCompleted", "true")
+			.param("sortKey", "LAST_MODIFIED_DATE")
+			.param("sortOrder", "ASC")
+			.accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Modified First"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][1]['name']").value("Modified Second"));
+	}
+
+	@Test
+	@DisplayName("Get tasks with size 0 - Returns every match unpaged rather than erroring")
+	void getTasks_SizeZero_ReturnsEveryMatch() throws Exception {
+		savedTask("Zero Size A", false);
+		savedTask("Zero Size B", false);
+		savedTask("Zero Size C", false);
+
+		performRequest(get(BASE_PATH).param("size", "0").accept(MediaType.APPLICATION_JSON), authToken).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(3))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get tasks as Sales Representative - Returns only the caller's own tasks")
+	void getTasks_AsSalesRep_ReturnsOnlyOwnTasks() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		savedTask("Admin Owned Task", false);
+		savedTaskOwnedBy("Rep Owned Task", 2L);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep Owned Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['ownerId']").value(2));
+	}
+
+	// --- getRelatedTasks ---
+
+	@Test
+	@DisplayName("Get related tasks for a contact-only source - Returns tasks sharing the contact, excluding the source")
+	void getRelatedTasks_ContactOnlySource_ReturnsMatchesExcludingSource() throws Exception {
+		CrmTask source = savedTask("Source Task", false);
+		savedTask("Shares The Contact", false);
+		savedTaskWith("Unrelated Task", null, savedContact("Other Related Contact"), null, false);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Shares The Contact"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactId']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks for a source with both links - Requires the contact and the deal to match")
+	void getRelatedTasks_ContactAndDealSource_RequiresBothToMatch() throws Exception {
+		CrmDeal deal = savedDeal("Both Links Deal");
+		CrmTask source = savedTaskWith("Source With Contact And Deal", company, contact, deal, false);
+		savedTaskWith("Shares Both", company, contact, deal, false);
+		savedTaskWith("Shares The Contact Only", company, contact, null, false);
+		savedTaskWith("Shares The Deal Only", company, savedContact("Deal Mate Contact"), deal, false);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Shares Both"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contactId']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['dealId']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks for a source with no contact or deal - Returns an empty page, not every task")
+	void getRelatedTasks_SourceWithoutLinks_ReturnsEmptyPage() throws Exception {
+		CrmTask source = savedTaskWith("Source Without Links", company, null, null, false);
+		savedTask("Some Other Task", false);
+		savedTask("Another Other Task", true);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get related tasks - A shared company alone does not make two tasks related")
+	void getRelatedTasks_SharesCompanyOnly_ReturnsNoMatches() throws Exception {
+		CrmTask source = savedTask("Source Task", false);
+		savedTaskWith("Same Company Different Contact", company, savedContact("Company Mate Contact"), null, false);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(0))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0));
+	}
+
+	@Test
+	@DisplayName("Get related tasks for a deal-only source - Matches tasks linked to the same deal")
+	void getRelatedTasks_DealOnlySource_ReturnsMatches() throws Exception {
+		CrmDeal deal = savedDeal("Shared Related Deal");
+		CrmTask source = savedTaskWith("Source With Deal", null, null, deal, false);
+		savedTaskWith("Another Task Same Deal", null, null, deal, false);
+		savedTask("Task Without The Deal", false);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Another Task Same Deal"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['dealId']").value(deal.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks - Includes both open and completed related tasks")
+	void getRelatedTasks_IncludesOpenAndCompleted() throws Exception {
+		CrmTask source = savedTask("Source Task", false);
+		savedTask("Open Related", false);
+		savedTask("Completed Related", true);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2));
+	}
+
+	@Test
+	@DisplayName("Get related tasks for a task that does not exist - Returns Bad Request")
+	void getRelatedTasks_TaskNotFound_ReturnsBadRequest() throws Exception {
+		performGetRelatedRequest(999999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	// --- getTaskById ---
+
+	@Test
+	@DisplayName("Get task by ID - Returns id references for type, owner, company and contact")
+	void getTaskById_HappyPath_ReturnsIdReferences() throws Exception {
+		CrmTask task = savedTask("Detail Task V2", false);
+
+		performGetByIdRequest(task.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(task.getId()))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Detail Task V2"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(taskTypeId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['ownerId']").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['companyId']").value(companyId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contactId))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['type']").doesNotExist())
+			.andExpect(jsonPath(RESULTS_0_PATH + "['contact']").doesNotExist());
+	}
+
+	@Test
+	@DisplayName("Get task by ID that does not exist - Returns Bad Request")
+	void getTaskById_NotFound_ReturnsBadRequest() throws Exception {
+		performGetByIdRequest(999999L).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL));
+	}
+
+	@Test
+	@DisplayName("Get related tasks as Sales Representative for another owner's source task - Returns view-denied error")
+	void getRelatedTasks_SalesRepViewingOthersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmTask task = savedTask("Admin Owned Source Task V2", false);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetRelatedRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Get task by ID as Sales Representative viewing another owner's task - Returns view-denied error")
+	void getTaskById_SalesRepViewingOthersTask_ReturnsBadRequest() throws Exception {
+		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
+		employeeRoleDao.flush();
+
+		CrmTask task = savedTask("Admin Owned Task V2", false);
+
+		authToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
+
+		performGetByIdRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
+	}
+
+	@Test
+	@DisplayName("Get tasks - Soft-deleted tasks are excluded from the list")
+	void getTasks_WithDeletedTask_ExcludesDeleted() throws Exception {
+		savedTask("Live Task", false);
+		savedTask("Deleted Task", true, false, contactId, null);
+
+		performGetTasksRequest().andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Live Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get related tasks - Soft-deleted tasks are excluded")
+	void getRelatedTasks_ExcludesDeletedTasks() throws Exception {
+		CrmTask source = savedTask("Related Source Task", false);
+		savedTask("Live Related Task", false);
+		savedTask("Deleted Related Task", true, false, contactId, null);
+
+		performGetRelatedRequest(source.getId()).andDo(print())
+			.andExpect(status().isOk())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Live Related Task"))
+			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
+	}
+
+	@Test
+	@DisplayName("Get task by ID - Soft-deleted task returns Bad Request")
+	void getTaskById_SoftDeletedTask_ReturnsBadRequest() throws Exception {
+		CrmTask task = savedTask("Deleted Detail Task", true, false, contactId, null);
+
+		performGetByIdRequest(task.getId()).andDo(print())
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
+			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
+				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
+	}
+
+	@Test
+	@DisplayName("Get task by ID without CRM role - Returns Forbidden")
+	void getTaskById_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask("Forbidden Detail Task", false);
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(BY_ID_PATH, task.getId()).accept(MediaType.APPLICATION_JSON), noRoleToken).andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
+	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
+		CrmTask task = savedTask("Forbidden Related Task", false);
+		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
+				1L);
+
+		performRequest(get(BASE_PATH + "/" + task.getId() + "/related").accept(MediaType.APPLICATION_JSON), noRoleToken)
+			.andDo(print())
+			.andExpect(status().isForbidden());
+	}
+
+	// --- create / edit / delete helpers and tests ---
 
 	private CrmTask savedTask(String name, boolean isDeleted, boolean isCompleted, Long linkedContactId,
 			CrmDeal linkedDeal) {
@@ -213,561 +839,6 @@ class CrmTaskControllerIntegrationTest {
 	}
 
 	@Test
-	@DisplayName("Get tasks with no tasks - Returns OK with empty tasks list")
-	void getTasks_NoTasks_ReturnsOkEmpty() throws Exception {
-		performGetRequest(authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get tasks excludes soft-deleted tasks - Returns only non-deleted")
-	void getTasks_WithDeletedTask_ExcludesDeleted() throws Exception {
-		savedTask("Active task", false);
-		savedTask("Deleted task", true);
-
-		performGetRequest(authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
-	}
-
-	@Test
-	@DisplayName("Get tasks excludes completed tasks - Returns only non-completed")
-	void getTasks_WithCompletedTask_ExcludesCompleted() throws Exception {
-		savedTask("Active task", false, false);
-		savedTask("Completed task", false, true);
-
-		performGetRequest(authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Active task"));
-	}
-
-	@Test
-	@DisplayName("Get tasks with search keyword matching contact name - Returns matching tasks")
-	void getTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
-		CrmContact contact = new CrmContact();
-		contact.setName("John Doe");
-		contact.setEmail("john@example.com");
-		contact.setOwner(employeeDao.getReferenceById(1L));
-		contact = crmContactDao.save(contact);
-
-		savedTask("Task 1", false, false, contact.getId());
-		savedTask("Task 2", false, false);
-
-		performGetRequest(authToken, "john", null, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task 1"));
-	}
-
-	@Test
-	@DisplayName("Get tasks with search keyword matching deal name - Returns matching tasks")
-	void getTasks_WithSearchKeywordMatchingDealName_ReturnsMatchingTasks() throws Exception {
-		CrmDeal deal = savedDeal("Special Deal", crmContactDao.getReferenceById(contactId), null);
-
-		savedTask("Task 1", false, false, contactId, deal);
-		savedTask("Task 2", false, false);
-
-		performGetRequest(authToken, "special", null, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task 1"));
-	}
-
-	@Test
-	@DisplayName("Get tasks filtered by contactId - Returns only tasks linked to that contact")
-	void getTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
-		CrmContact other = new CrmContact();
-		other.setName("Other Contact");
-		other.setEmail("other@example.com");
-		other.setOwner(employeeDao.getReferenceById(1L));
-		Long otherContactId = crmContactDao.save(other).getId();
-
-		savedTask("Task for main contact", false, false, contactId);
-		savedTask("Task for other contact", false, false, otherContactId);
-
-		performGetRequest(authToken, null, contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task for main contact"));
-	}
-
-	@Test
-	@DisplayName("Get tasks filtered by dealId - Returns only tasks linked to that deal")
-	void getTasks_FilterByDealId_ReturnsMatchingTasks() throws Exception {
-		CrmDeal deal = savedDeal("Test Deal", crmContactDao.getReferenceById(contactId), null);
-
-		savedTask("Task with deal", false, false, contactId, deal);
-		savedTask("Task without deal", false, false, contactId, null);
-
-		performGetRequest(authToken, null, null, deal.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task with deal"));
-	}
-
-	@Test
-	@DisplayName("Get tasks filtered by companyId - Returns only tasks linked to that company")
-	void getTasks_FilterByCompanyId_ReturnsMatchingTasks() throws Exception {
-		CrmCompany company = savedCompany("Task Filter Company");
-		CrmCompany otherCompany = savedCompany("Other Task Filter Company");
-
-		savedTask("Task for company", false, false, null, null, company);
-		savedTask("Task for other company", false, false, null, null, otherCompany);
-
-		performGetRequest(authToken, null, null, null, company.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Task for company"));
-	}
-
-	@Test
-	@DisplayName("Get tasks with combined search and contactId filter - Returns intersection")
-	void getTasks_SearchAndContactIdFilter_ReturnsIntersection() throws Exception {
-		savedTask("Follow up with main", false, false, contactId);
-		savedTask("Follow up without contact", false, false);
-
-		performGetRequest(authToken, "follow", contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['tasks'][0]['name']").value("Follow up with main"));
-	}
-
-	@Test
-	@DisplayName("Get task by id - Returns OK with task details")
-	void getTaskById_HappyPath_ReturnsOk() throws Exception {
-		CrmTask task = savedTask();
-
-		performGetByIdRequest(task.getId(), authToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(task.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Existing Task"));
-	}
-
-	@Test
-	@DisplayName("Get task by id with non-existent id - Returns Bad Request")
-	void getTaskById_NotFound_ReturnsBadRequest() throws Exception {
-		performGetByIdRequest(999999L, authToken).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
-	}
-
-	@Test
-	@DisplayName("Get task by id for soft-deleted task - Returns Bad Request")
-	void getTaskById_SoftDeletedTask_ReturnsBadRequest() throws Exception {
-		CrmTask task = savedTask();
-		task.setIsDeleted(true);
-		crmTaskDao.save(task);
-
-		performGetByIdRequest(task.getId(), authToken).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_NOT_FOUND)));
-	}
-
-	@Test
-	@DisplayName("Get task by id without CRM role - Returns Forbidden")
-	void getTaskById_WithoutCrmRole_ReturnsForbidden() throws Exception {
-		CrmTask task = savedTask();
-		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
-				1L);
-
-		performGetByIdRequest(task.getId(), noRoleToken).andDo(print()).andExpect(status().isForbidden());
-	}
-
-	@Test
-	@DisplayName("Sales rep getting another owner's task - Returns Bad Request with task-view-denied error")
-	void getTaskById_RepGettingOtherOwnersTask_ReturnsBadRequest() throws Exception {
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		CrmTask task = savedTask();
-
-		performGetByIdRequest(task.getId(), repToken).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_VIEW_DENIED)));
-	}
-
-	@Test
-	@DisplayName("Sales rep getting own task - Returns OK")
-	void getTaskById_RepGettingOwnTask_ReturnsOk() throws Exception {
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		CrmTask task = new CrmTask();
-		task.setName("Rep Task");
-		task.setType(crmTaskTypeDao.getReferenceById(taskTypeId));
-		task.setPriority(CrmTaskPriority.MEDIUM);
-		task.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
-		task.setContact(crmContactDao.getReferenceById(contactId));
-		task.setOwner(employeeDao.getReferenceById(2L));
-		task = crmTaskDao.save(task);
-
-		performGetByIdRequest(task.getId(), repToken).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['id']").value(task.getId()))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Rep Task"));
-	}
-
-	// --- GET related tasks helpers and tests ---
-
-	private ResultActions performGetRelatedTasksRequest(Long contactId, Long dealId) throws Exception {
-		var request = get(BASE_PATH + "/related").accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(authToken));
-		if (contactId != null) {
-			request = request.param("contactId", contactId.toString());
-		}
-		if (dealId != null) {
-			request = request.param("dealId", dealId.toString());
-		}
-		return mvc.perform(request);
-	}
-
-	@Test
-	@DisplayName("Get related tasks by contactId - Returns tasks sharing the same contact")
-	void getRelatedTasks_ByContactId_ReturnsMatchingTasks() throws Exception {
-		savedTask("Task A", false, false, contactId);
-		savedTask("Task B", false, false, contactId);
-		savedTask("Task C", false, false, null);
-
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2));
-	}
-
-	@Test
-	@DisplayName("Get related tasks with no matching context - Returns empty list")
-	void getRelatedTasks_NoMatch_ReturnsEmpty() throws Exception {
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty());
-	}
-
-	@Test
-	@DisplayName("Get related tasks by dealId - Returns tasks sharing the same deal")
-	void getRelatedTasks_ByDealId_ReturnsMatchingTasks() throws Exception {
-		CrmDeal deal = savedDeal("Related Deal", crmContactDao.getReferenceById(contactId), null);
-
-		savedTask("Task with deal", false, false, contactId, deal);
-		savedTask("Task without deal", false, false, contactId);
-
-		performGetRelatedTasksRequest(null, deal.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Task with deal"));
-	}
-
-	@Test
-	@DisplayName("Get related tasks includes completed tasks - Returns completed and open tasks")
-	void getRelatedTasks_IncludesCompletedTasks_ReturnsBoth() throws Exception {
-		savedTask("Open task", false, false, contactId);
-		savedTask("Completed task", false, true, contactId);
-
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2));
-	}
-
-	@Test
-	@DisplayName("Get related tasks excludes soft-deleted tasks - Returns only non-deleted")
-	void getRelatedTasks_ExcludesDeletedTasks() throws Exception {
-		savedTask("Active task", false, false, contactId);
-		savedTask("Deleted task", true, false, contactId);
-
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Active task"));
-	}
-
-	@Test
-	@DisplayName("Get related tasks returns pagination metadata")
-	void getRelatedTasks_ReturnsPaginationMetadata() throws Exception {
-		savedTask("Task A", false, false, contactId);
-		savedTask("Task B", false, false, contactId);
-
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get related tasks returns contact field in each item")
-	void getRelatedTasks_ReturnsContactInItems() throws Exception {
-		savedTask("Task with contact", false, false, contactId);
-
-		performGetRelatedTasksRequest(contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']").exists())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['contact']['id']").value(contactId));
-	}
-
-	@Test
-	@DisplayName("Sales rep sees only own related tasks - Returns only tasks owned by the rep")
-	void getRelatedTasks_RepSeesOnlyOwnTasks() throws Exception {
-		employeeDao.findById(2L).orElseThrow().getEmployeeRole().setCrmRole(Role.CRM_SALES_REPRESENTATIVE);
-		employeeRoleDao.flush();
-		String repToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"), 1L);
-
-		savedTask("Manager task", false, false, contactId);
-
-		CrmTask repTask = new CrmTask();
-		repTask.setName("Rep task");
-		repTask.setType(taskType);
-		repTask.setPriority(CrmTaskPriority.MEDIUM);
-		repTask.setOwner(employeeDao.getReferenceById(2L));
-		repTask.setContact(crmContactDao.getReferenceById(contactId));
-		crmTaskDao.save(repTask);
-
-		mvc.perform(get(BASE_PATH + "/related").param("contactId", contactId.toString())
-			.accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(repToken)))
-			.andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Rep task"));
-	}
-
-	@Test
-	@DisplayName("Get related tasks with no contactId and no dealId - Returns Bad Request")
-	void getRelatedTasks_NeitherContactIdNorDealId_ReturnsBadRequest() throws Exception {
-		performGetRelatedTasksRequest(null, null).andDo(print())
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_UNSUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + MESSAGE_PATH)
-				.value(messageUtil.getMessage(CrmMessageConstant.CRM_ERROR_TASK_CONTEXT_FILTER_REQUIRED)));
-	}
-
-	@Test
-	@DisplayName("Get related tasks without CRM role - Returns Forbidden")
-	void getRelatedTasks_WithoutCrmRole_ReturnsForbidden() throws Exception {
-		String noRoleToken = jwtService.generateAccessToken(userDetailsService.loadUserByUsername("user2@gmail.com"),
-				1L);
-		mvc.perform(get(BASE_PATH + "/related").accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(noRoleToken))).andExpect(status().isForbidden());
-	}
-
-	// --- GET completed tasks helpers and tests ---
-
-	private ResultActions performGetCompletedRequest(String token, String page, String size) throws Exception {
-		return mvc.perform(get(BASE_PATH + "/completed").param("page", page)
-			.param("size", size)
-			.accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(token)));
-	}
-
-	private ResultActions performGetCompletedRequest(String token, String page, String size, String searchKeyword,
-			Long contactId, Long dealId) throws Exception {
-		return performGetCompletedRequest(token, page, size, searchKeyword, contactId, dealId, null);
-	}
-
-	private ResultActions performGetCompletedRequest(String token, String page, String size, String searchKeyword,
-			Long contactId, Long dealId, Long companyId) throws Exception {
-		var request = get(BASE_PATH + "/completed").param("page", page)
-			.param("size", size)
-			.accept(MediaType.APPLICATION_JSON)
-			.with(SecurityTestUtils.bearerToken(token));
-		if (searchKeyword != null) {
-			request = request.param("searchKeyword", searchKeyword);
-		}
-		if (contactId != null) {
-			request = request.param("contactId", contactId.toString());
-		}
-		if (dealId != null) {
-			request = request.param("dealId", dealId.toString());
-		}
-		if (companyId != null) {
-			request = request.param("companyId", companyId.toString());
-		}
-		return mvc.perform(request);
-	}
-
-	@Test
-	@DisplayName("Get completed tasks - Returns paginated completed tasks")
-	void getCompletedTasks_ReturnsPaginatedCompletedTasks_ReturnsOk() throws Exception {
-		savedTask("Active task", false, false);
-		savedTask("Completed task 1", false, true);
-		savedTask("Completed task 2", false, true);
-
-		performGetCompletedRequest(authToken, "0", "10").andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(2))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(2))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks with no completed tasks - Returns empty page")
-	void getCompletedTasks_WithNoCompletedTasks_ReturnsEmptyPage() throws Exception {
-		savedTask("Active task", false, false);
-
-		performGetCompletedRequest(authToken, "0", "10").andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isArray())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items']").isEmpty())
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['currentPage']").value(0))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalPages']").value(0));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks with search keyword matching contact name - Returns matching tasks")
-	void getCompletedTasks_WithSearchKeywordMatchingContactName_ReturnsMatchingTasks() throws Exception {
-		CrmContact contact = new CrmContact();
-		contact.setName("Jane Smith");
-		contact.setEmail("jane@example.com");
-		contact.setOwner(employeeDao.getReferenceById(1L));
-		contact = crmContactDao.save(contact);
-
-		savedTask("Completed Task 1", false, true, contact.getId());
-		savedTask("Completed Task 2", false, true);
-
-		performGetCompletedRequest(authToken, "0", "10", "jane", null, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Task 1"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks with search keyword matching deal name - Returns matching tasks")
-	void getCompletedTasks_WithSearchKeywordMatchingDealName_ReturnsMatchingTasks() throws Exception {
-		CrmDeal deal = savedDeal("Completed Deal Search", crmContactDao.getReferenceById(contactId), null);
-
-		savedTask("Completed Task 1", false, true, contactId, deal);
-		savedTask("Completed Task 2", false, true);
-
-		performGetCompletedRequest(authToken, "0", "10", "search", null, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed Task 1"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks with search keyword matching task name - Returns matching tasks")
-	void getCompletedTasks_WithSearchKeywordMatchingTaskName_ReturnsMatchingTasks() throws Exception {
-		savedTask("Unique Task Name To Search", false, true);
-		savedTask("Other Completed Task", false, true);
-
-		performGetCompletedRequest(authToken, "0", "10", "unique", null, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Unique Task Name To Search"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks filtered by contactId - Returns only completed tasks for that contact")
-	void getCompletedTasks_FilterByContactId_ReturnsMatchingTasks() throws Exception {
-		CrmContact other = new CrmContact();
-		other.setName("Other Completed Contact");
-		other.setEmail("other.completed@example.com");
-		other.setOwner(employeeDao.getReferenceById(1L));
-		Long otherContactId = crmContactDao.save(other).getId();
-
-		savedTask("Completed for main", false, true, contactId);
-		savedTask("Completed for other", false, true, otherContactId);
-
-		performGetCompletedRequest(authToken, "0", "10", null, contactId, null).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed for main"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks filtered by dealId - Returns only completed tasks for that deal")
-	void getCompletedTasks_FilterByDealId_ReturnsMatchingTasks() throws Exception {
-		CrmDeal deal = savedDeal("Completed Deal", crmContactDao.getReferenceById(contactId), null);
-
-		savedTask("Completed with deal", false, true, contactId, deal);
-		savedTask("Completed without deal", false, true, contactId, null);
-
-		performGetCompletedRequest(authToken, "0", "10", null, null, deal.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed with deal"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	@Test
-	@DisplayName("Get completed tasks filtered by companyId - Returns only completed tasks for that company")
-	void getCompletedTasks_FilterByCompanyId_ReturnsMatchingTasks() throws Exception {
-		CrmCompany company = savedCompany("Completed Task Company");
-		CrmCompany otherCompany = savedCompany("Other Completed Task Company");
-
-		savedTask("Completed for company", false, true, null, null, company);
-		savedTask("Completed for other company", false, true, null, null, otherCompany);
-
-		performGetCompletedRequest(authToken, "0", "10", null, null, null, company.getId()).andDo(print())
-			.andExpect(status().isOk())
-			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'].length()").value(1))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['items'][0]['name']").value("Completed for company"))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['totalItems']").value(1));
-	}
-
-	// --- CREATE task helpers and tests ---
-
-	private ResultActions performCreateRequest(CrmTaskCreateRequestDto dto) throws Exception {
-		return mvc.perform(post(BASE_PATH).with(SecurityTestUtils.bearerToken(authToken))
-			.contentType(MediaType.APPLICATION_JSON)
-			.content(objectMapper.writeValueAsString(dto))
-			.accept(MediaType.APPLICATION_JSON));
-	}
-
-	private CrmTaskCreateRequestDto validPayload() {
-		CrmTaskCreateRequestDto dto = new CrmTaskCreateRequestDto();
-		dto.setName("Follow up call");
-		dto.setTypeId(taskTypeId);
-		dto.setContactId(contactId);
-		dto.setDueAt(DateTimeUtils.getCurrentUtcDateTime().plusDays(7));
-		return dto;
-	}
-
-	@Test
 	@DisplayName("Create task with valid payload - Returns Created with MEDIUM priority and current user as owner")
 	void createTask_HappyPath_ReturnsCreated() throws Exception {
 		MvcResult result = performCreateRequest(validPayload()).andDo(print())
@@ -777,7 +848,6 @@ class CrmTaskControllerIntegrationTest {
 			.andExpect(jsonPath(RESULTS_0_PATH + "['name']").value("Follow up call"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['priority']").value("MEDIUM"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(taskTypeId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['typeName']").value("Call"))
 			.andExpect(jsonPath(RESULTS_0_PATH + "['contactId']").value(contactId))
 			.andReturn();
 
@@ -1118,8 +1188,7 @@ class CrmTaskControllerIntegrationTest {
 		performEditRequest(task.getId(), dto).andDo(print())
 			.andExpect(status().isOk())
 			.andExpect(jsonPath(STATUS_PATH).value(STATUS_SUCCESSFUL))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(newTypeId))
-			.andExpect(jsonPath(RESULTS_0_PATH + "['typeName']").value("Email"));
+			.andExpect(jsonPath(RESULTS_0_PATH + "['typeId']").value(newTypeId));
 	}
 
 	@Test

@@ -9,11 +9,11 @@ import { FC, useMemo, useState } from "react";
 import useDebounce from "~community/common/hooks/useDebounce";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { concatStrings } from "~community/common/utils/commonUtil";
+import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
 import {
   DEFAULT_LOOKUP_PAGE_SIZE,
   SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
-import { useGetOwnerLookupV2 } from "~community/crm/v2/api/ContactApi";
+} from "~community/crm/v2/constants/commonConstants";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
 import OwnerOptionItem from "./OwnerOptionItem";

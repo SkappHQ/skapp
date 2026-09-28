@@ -13,7 +13,7 @@ import com.skapp.community.crmplanner.model.CrmDealStage_;
 import com.skapp.community.crmplanner.type.CrmDealSort;
 import com.skapp.community.crmplanner.payload.request.CrmDealFilterDto;
 import com.skapp.community.crmplanner.payload.request.board.CrmDealsByStagesRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
 import com.skapp.community.crmplanner.repository.CrmDealRepository;
 import com.skapp.community.crmplanner.type.CrmContactDealMetrics;
 import com.skapp.community.crmplanner.type.CrmDealPriority;
@@ -55,59 +55,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmDeal> findDeals(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable) {
+	public Page<CrmDealResponseDto> findDeals(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<Long> idQuery = cb.createQuery(Long.class);
-		Root<CrmDeal> dealRoot = idQuery.from(CrmDeal.class);
-		idQuery.select(dealRoot.get(CrmDeal_.id));
-		idQuery.where(buildPredicates(cb, dealRoot, filterDto, ownerId).toArray(new Predicate[0]));
-
-		idQuery.orderBy(cb.asc(dealRoot.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
-				cb.asc(dealRoot.get(CrmDeal_.orderIndex)), cb.asc(dealRoot.get(CrmDeal_.id)));
-
-		TypedQuery<Long> idTypedQuery = entityManager.createQuery(idQuery);
-		idTypedQuery.setFirstResult((int) pageable.getOffset());
-		idTypedQuery.setMaxResults(pageable.getPageSize());
-		List<Long> dealIds = idTypedQuery.getResultList();
-
-		if (dealIds.isEmpty()) {
-			CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-			Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
-			countQuery.select(cb.count(countRoot))
-				.where(buildPredicates(cb, countRoot, filterDto, ownerId).toArray(new Predicate[0]));
-			Long total = entityManager.createQuery(countQuery).getSingleResult();
-			return new PageImpl<>(new ArrayList<>(), pageable, total);
-		}
-
-		CriteriaQuery<CrmDeal> fetchQuery = cb.createQuery(CrmDeal.class);
-		Root<CrmDeal> deal = fetchQuery.from(CrmDeal.class);
-
-		deal.fetch(CrmDeal_.stage, JoinType.LEFT);
-		deal.fetch(CrmDeal_.company, JoinType.LEFT);
-		deal.fetch(CrmDeal_.contact, JoinType.LEFT);
-		deal.fetch(CrmDeal_.owner, JoinType.LEFT);
-
-		fetchQuery.select(deal).where(deal.get(CrmDeal_.id).in(dealIds));
-
-		fetchQuery.orderBy(cb.asc(deal.get(CrmDeal_.stage).get(CrmDealStage_.orderIndex)),
-				cb.asc(deal.get(CrmDeal_.orderIndex)), cb.asc(deal.get(CrmDeal_.id)));
-
-		List<CrmDeal> deals = entityManager.createQuery(fetchQuery).getResultList();
-
-		CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-		Root<CrmDeal> countRoot = countQuery.from(CrmDeal.class);
-		countQuery.select(cb.count(countRoot))
-			.where(buildPredicates(cb, countRoot, filterDto, ownerId).toArray(new Predicate[0]));
-		Long total = entityManager.createQuery(countQuery).getSingleResult();
-
-		return new PageImpl<>(deals, pageable, total);
-	}
-
-	@Override
-	public Page<CrmDealResponseDtoV2> findDealsV2(CrmDealFilterDto filterDto, Long ownerId, Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmDealResponseDtoV2> query = cb.createQuery(CrmDealResponseDtoV2.class);
+		CriteriaQuery<CrmDealResponseDto> query = cb.createQuery(CrmDealResponseDto.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.LEFT);
@@ -116,7 +66,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		Join<CrmDeal, CrmContact> contact = deal.join(CrmDeal_.contact, JoinType.LEFT);
 
-		query.select(cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+		query.select(cb.construct(CrmDealResponseDto.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
 				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
 				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), stage.get(CrmDealStage_.id),
 				owner.get(Employee_.employeeId), company.get(CrmCompany_.id), contact.get(CrmContact_.id)));
@@ -138,7 +88,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 			query.orderBy(cb.asc(listKey));
 		}
 
-		List<CrmDealResponseDtoV2> content = entityManager.createQuery(query)
+		List<CrmDealResponseDto> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();
@@ -187,9 +137,9 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 	}
 
 	@Override
-	public List<CrmDealResponseDtoV2> findDealsByIds(List<Long> dealIds, Long ownerId) {
+	public List<CrmDealResponseDto> findDealsByIds(List<Long> dealIds, Long ownerId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmDealResponseDtoV2> query = cb.createQuery(CrmDealResponseDtoV2.class);
+		CriteriaQuery<CrmDealResponseDto> query = cb.createQuery(CrmDealResponseDto.class);
 		Root<CrmDeal> deal = query.from(CrmDeal.class);
 
 		Join<CrmDeal, CrmDealStage> stage = deal.join(CrmDeal_.stage, JoinType.LEFT);
@@ -198,7 +148,7 @@ public class CrmDealRepositoryImpl implements CrmDealRepository {
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 		Join<CrmDeal, CrmContact> contact = deal.join(CrmDeal_.contact, JoinType.LEFT);
 
-		query.select(cb.construct(CrmDealResponseDtoV2.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
+		query.select(cb.construct(CrmDealResponseDto.class, deal.get(CrmDeal_.id), deal.get(CrmDeal_.name),
 				deal.get(CrmDeal_.description), deal.get(CrmDeal_.priority), deal.get(CrmDeal_.orderIndex),
 				deal.get(CrmDeal_.amount), deal.get(CrmDeal_.closingAt), stage.get(CrmDealStage_.id),
 				owner.get(Employee_.employeeId), company.get(CrmCompany_.id), contact.get(CrmContact_.id)));

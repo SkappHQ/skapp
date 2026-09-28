@@ -45,7 +45,8 @@ interface Props {
 }
 
 const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
-  const translateText = useTranslator("crmModule", "tasks");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { setToastMessage } = useToast();
 
@@ -154,8 +155,18 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toggleErrorTitle"]),
-      description: translateText(["toggleErrorDescription"])
+      title: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "common",
+        "toastMessages",
+        "toggleErrorDescription"
+      ])
     });
   };
 
@@ -174,8 +185,14 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["sidePanel", "reopenToastMessages", "successTitle"]),
+      title: translateText([
+        "tasks",
+        "sidePanel",
+        "reopenToastMessages",
+        "successTitle"
+      ]),
       description: translateText([
+        "tasks",
         "sidePanel",
         "reopenToastMessages",
         "successDescription"
@@ -196,7 +213,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
     () => [
       {
         id: "edit",
-        label: translateText(["sidePanel", "editTask"]),
+        label: translateText(["tasks", "sidePanel", "editTask"]),
         icon: { start: <EditIcon width="16px" height="16px" /> },
         onClick: () => {
           setTaskModalType(CrmModalTypes.EDIT_TASK_MODAL);
@@ -207,7 +224,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         ? [
             {
               id: "reopen",
-              label: translateText(["sidePanel", "reopenTask"]),
+              label: translateText(["tasks", "sidePanel", "reopenTask"]),
               icon: { start: <UndoIcon width="16px" height="16px" /> },
               onClick: handleReopen
             }
@@ -215,7 +232,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
         : []),
       {
         id: "delete",
-        label: translateText(["sidePanel", "deleteTask"]),
+        label: translateText(["tasks", "sidePanel", "deleteTask"]),
         icon: {
           start: (
             <DeleteButtonIcon
@@ -264,7 +281,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
             id="task-actions"
             menuItems={menuItems}
             anchorButton={{
-              "aria-label": translateText(["sidePanel", "kebabMenuAriaLabel"])
+              "aria-label": translateAria(["tasks", "sidePanel", "kebabMenu"])
             }}
             className={{
               anchorElement:
@@ -281,16 +298,16 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
           <div className="flex flex-col flex-1 gap-6 min-w-0">
             <div className="flex flex-col gap-1">
               <p className="subtitle1">
-                {translateText(["sidePanel", "notes"])}
+                {translateText(["tasks", "sidePanel", "notes"])}
               </p>
               <p className="subtitle3">
-                {task.notes ?? translateText(["sidePanel", "noNotes"])}
+                {task.notes ?? translateText(["tasks", "sidePanel", "noNotes"])}
               </p>
             </div>
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">
-                {translateText(["sidePanel", "dealsTitle"])}
+                {translateText(["tasks", "sidePanel", "dealsTitle"])}
               </h2>
               <hr className="border-secondary-accent" />
               {!isDealLoading && (
@@ -298,6 +315,7 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
                   dealIds={deal?.id ? [deal.id] : []}
                   showAddDealAction={false}
                   emptyDescription={translateText([
+                    "tasks",
                     "sidePanel",
                     "noDealsDescription"
                   ])}
@@ -307,13 +325,18 @@ const TaskSidePanelV2: FC<Props> = ({ taskId }) => {
 
             <div className="flex flex-col gap-3">
               <h2 className="h2">
-                {translateText(["sidePanel", "relatedTasksTitle"])}
+                {translateText(["tasks", "sidePanel", "relatedTasksTitle"])}
               </h2>
               <hr className="border-secondary-accent" />
               <SidePanelTasksSection
                 taskIds={task?.relatedTaskIds ?? []}
-                emptyTitle={translateText(["sidePanel", "noRelatedTasksTitle"])}
+                emptyTitle={translateText([
+                  "tasks",
+                  "sidePanel",
+                  "noRelatedTasksTitle"
+                ])}
                 emptyDescription={translateText([
+                  "tasks",
                   "sidePanel",
                   "noRelatedTasksDescription"
                 ])}

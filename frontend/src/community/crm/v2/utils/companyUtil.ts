@@ -34,18 +34,18 @@ export const getCompanyMetricItems = (
 ): CrmMetricItem[] => [
   {
     id: "accountValue",
-    title: translateText(["metrics", "accountValue"]),
+    title: translateText(["companies", "sidePanel", "metrics", "accountValue"]),
     amount: company.metrics?.accountValue,
     isCurrency: true
   },
   {
     id: "openDeals",
-    title: translateText(["metrics", "openDeals"]),
+    title: translateText(["companies", "sidePanel", "metrics", "openDeals"]),
     amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
-    title: translateText(["metrics", "closedDeals"]),
+    title: translateText(["companies", "sidePanel", "metrics", "closedDeals"]),
     amount: company.metrics?.closedDealsCount ?? 0
   }
 ];

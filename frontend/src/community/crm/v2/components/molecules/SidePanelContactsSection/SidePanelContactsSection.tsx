@@ -27,12 +27,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
   isFetchingNextPage,
   onFetchNextPage
 }) => {
-  const translateText = useTranslator(
-    "crmModule",
-    "companies",
-    "companyDetailsSidePanel",
-    "sidePanelCompanyContacts"
-  );
+  const translateText = useTranslator("crmModuleV2");
 
   const { contacts, companies, selectedCompanyId } = useCrmStoreV2(
     useShallow((state) => ({
@@ -48,28 +43,58 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
   const tableHeaders: GridHeader[] = [
     {
       id: "name",
-      label: translateText(["columns", "contact"]),
+      label: translateText([
+        "companies",
+        "sidePanel",
+        "contactsSection",
+        "columns",
+        "contact"
+      ]),
       width: "25%"
     },
     {
       id: "email",
-      label: translateText(["columns", "email"]),
+      label: translateText([
+        "companies",
+        "sidePanel",
+        "contactsSection",
+        "columns",
+        "email"
+      ]),
       width: "25%"
     },
     {
       id: "contactNumber",
-      label: translateText(["columns", "contactNo"]),
+      label: translateText([
+        "companies",
+        "sidePanel",
+        "contactsSection",
+        "columns",
+        "contactNo"
+      ]),
       width: "20%"
     },
     {
       id: "closedDealValue",
-      label: translateText(["columns", "revenue"]),
+      label: translateText([
+        "companies",
+        "sidePanel",
+        "contactsSection",
+        "columns",
+        "revenue"
+      ]),
       width: "15%",
       align: "right"
     },
     {
       id: "openTasksCount",
-      label: translateText(["columns", "openTasks"]),
+      label: translateText([
+        "companies",
+        "sidePanel",
+        "contactsSection",
+        "columns",
+        "openTasks"
+      ]),
       width: "15%"
     }
   ];
@@ -103,9 +128,17 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
             <div className="subtitle4 text-secondary-text">
               {metrics?.closedDealCount !== undefined &&
               metrics.closedDealCount > 0
-                ? `${metrics.closedDealCount} ${translateText(["dealsClosed"], {
-                    count: metrics.closedDealCount
-                  })}`
+                ? `${metrics.closedDealCount} ${translateText(
+                    [
+                      "companies",
+                      "sidePanel",
+                      "contactsSection",
+                      "dealsClosed"
+                    ],
+                    {
+                      count: metrics.closedDealCount
+                    }
+                  )}`
                 : ""}
             </div>
           </div>
@@ -119,7 +152,7 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
                   backgroundColor="bg-semantic-red-background"
                   textColor="text-semantic-red-text"
                 >
-                  {`${metrics.overdueTasksCount} ${translateText(["overdue"])}`}
+                  {`${metrics.overdueTasksCount} ${translateText(["companies", "sidePanel", "contactsSection", "overdue"])}`}
                 </Label>
               )}
           </div>
@@ -133,16 +166,25 @@ const SidePanelContactsSection: FC<SidePanelContactsSectionProps> = ({
       rows={transformToTableRows()}
       emptyState={{
         icon: <SearchIcon />,
-        title: translateText(["noContacts"]),
-        description: translateText(["noContactsDescription"])
+        title: translateText([
+          "companies",
+          "sidePanel",
+          "contactsSection",
+          "noContacts"
+        ]),
+        description: translateText([
+          "companies",
+          "sidePanel",
+          "contactsSection",
+          "noContactsDescription"
+        ])
       }}
       infiniteScroll={{
         isEnabled: true,
         height: "34.5rem",
         hasMore: hasNextPage,
         isFetchingNextPage,
-        onLoadMore: onFetchNextPage,
-        loadingMessage: translateText(["infiniteScrollLoadingMessage"])
+        onLoadMore: onFetchNextPage
       }}
     />
   );
