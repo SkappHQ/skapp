@@ -716,10 +716,23 @@ export const formatISODateWithSuffixLocal = (isoString: string): string => {
   return `${day}${suffix} ${date.toFormat("MMMM yyyy")}`;
 };
 
+export const formatInstantWithSuffix = (
+  isoInstant: string,
+  zone: string | undefined
+): string => {
+  const date = instantInZone(isoInstant, zone);
+  const day = date.day;
+
+  return `${day}${getDaySuffix(day)} ${date.toFormat("MMMM yyyy")}`;
+};
+
 // Example: "2024-03-05" → "March 2024"
-export const formatISODateToMonthYear = (isoString: string): string => {
+export const formatISODateToMonthYear = (
+  isoString: string,
+  zone: string | undefined
+): string => {
   if (isoString !== "") {
-    const date = DateTime.fromISO(isoString, { zone: "utc" });
+    const date = instantInZone(isoString, zone);
 
     return `${date.toFormat("MMMM")} ${date.year}`;
   }
