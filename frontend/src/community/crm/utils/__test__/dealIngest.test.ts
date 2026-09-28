@@ -1,13 +1,13 @@
-import { CrmPriorityEnum } from "../enums/common";
-import { CrmDealEntity } from "../types/CrmCommonTypes";
-import { CrmDealsByStagesResponse } from "../types/CrmTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmDealEntity } from "~community/crm/types/CrmCommonTypes";
+import { CrmDealsByStagesResponse } from "~community/crm/types/CrmTypes";
 import {
   ingestBoardStageDeals,
   ingestCreatedDeal,
   ingestEditedDeal,
   removeDeal
-} from "./boardUtil";
-import { reorderDealIds } from "./dealUtil";
+} from "../boardUtil";
+import { reorderDealIds } from "../dealUtil";
 
 const STAGE_A = 1;
 const STAGE_B = 2;

@@ -10,11 +10,11 @@ import { useShallow } from "zustand/react/shallow";
 import {
   useMoveDealBetweenStages,
   useReorderDealWithinStage
-} from "../api/BoardApi";
-import { CrmKanbanDragType } from "../enums/common";
-import { useCrmStore } from "../store/store";
-import { CrmBoardRecord } from "../types/CrmCommonTypes";
-import { CrmKanbanDragData } from "../types/CrmTypes";
+} from "~community/crm/api/BoardApi";
+import { CrmKanbanDragType } from "~community/crm/enums/common";
+import { useCrmStore } from "~community/crm/store/store";
+import { CrmBoardRecord } from "~community/crm/types/CrmCommonTypes";
+import { CrmKanbanDragData } from "~community/crm/types/CrmTypes";
 import {
   computeMoveNeighbors,
   computeReorderWithinStage,
@@ -22,7 +22,7 @@ import {
   moveDealBetweenColumns,
   reorderDealInColumn,
   resolveInsertIndex
-} from "../utils/boardUtil";
+} from "~community/crm/utils/boardUtil";
 
 interface UseKanbanDragProps {
   onError: (error: AxiosError) => void;

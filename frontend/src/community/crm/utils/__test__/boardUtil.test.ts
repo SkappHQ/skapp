@@ -1,8 +1,8 @@
 import type { ClientRect } from "@dnd-kit/core";
 
-import { CrmPriorityEnum } from "../enums/common";
-import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
-import { CrmDealsByStagesResponse } from "../types/CrmTypes";
+import { CrmPriorityEnum } from "~community/crm/enums/common";
+import { CrmDealEntity, CrmDealRecord } from "~community/crm/types/CrmCommonTypes";
+import { CrmDealsByStagesResponse } from "~community/crm/types/CrmTypes";
 import {
   computeInsertIndex,
   computeMoveNeighbors,
@@ -13,7 +13,7 @@ import {
   removeDealFromBoard,
   reorderDealInColumn,
   resolveInsertIndex
-} from "./boardUtil";
+} from "../boardUtil";
 
 const STAGE_A = 1;
 const STAGE_B = 2;

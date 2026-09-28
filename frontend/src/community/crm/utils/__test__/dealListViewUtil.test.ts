@@ -9,7 +9,7 @@ import {
   applyColumnVisibility,
   applyColumnWidth,
   resolveSortChange
-} from "./dealListViewUtil";
+} from "../dealListViewUtil";
 
 const field = (
   name: CrmDealSortEnum,
