@@ -51,7 +51,7 @@ public class TeamServiceImpl implements TeamService {
 	private final EmployeeDao employeeDao;
 
 	@NonNull
-	private final TeamDao teamDao;
+	protected final TeamDao teamDao;
 
 	@NonNull
 	private final EmployeeTeamDao employeeTeamDao;
