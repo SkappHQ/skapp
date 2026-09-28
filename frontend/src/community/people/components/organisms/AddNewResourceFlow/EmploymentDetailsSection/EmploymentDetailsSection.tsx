@@ -34,7 +34,8 @@ import { filterByValue } from "~community/common/utils/commonUtil";
 import {
   convertDateToFormat,
   generateTimeZoneDictionary,
-  generateTimezoneList
+  generateTimezoneList,
+  getTimeZoneLabel
 } from "~community/common/utils/dateTimeUtils";
 import { isValidEmailPattern } from "~community/common/utils/validation";
 import {
@@ -882,7 +883,10 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 value={
                   values?.workTimeZone
                     ? {
-                        label: workTimeZoneDictionary[values.workTimeZone],
+                        label: getTimeZoneLabel(
+                          workTimeZoneDictionary,
+                          values.workTimeZone
+                        ),
                         value: values.workTimeZone
                       }
                     : undefined

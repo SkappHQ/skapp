@@ -17,7 +17,9 @@ export const useOrganizationZone = (): string | undefined => {
   const organization = (data as OrganizationQueryResponse | undefined)
     ?.results?.[0];
 
-  return organization?.organizationTimeZone || undefined;
+  const organizationZone = organization?.organizationTimeZone;
+
+  return isValidZone(organizationZone) ? organizationZone : undefined;
 };
 
 export const useDisplayZone = (): string | undefined => {

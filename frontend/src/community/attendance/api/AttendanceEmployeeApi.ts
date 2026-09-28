@@ -214,6 +214,7 @@ export const useGetTimeSheetRequests = () => {
         }
       });
     },
+    enabled: !!displayZone,
     select(data) {
       return timeRequestPreProcessor(data?.data.results?.[0], displayZone);
     }

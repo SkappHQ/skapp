@@ -676,6 +676,12 @@ export const generateTimeZoneDictionary = (
     return acc;
   }, {});
 
+export const getTimeZoneLabel = (
+  dictionary: Record<string, string>,
+  timeZone: string
+): string =>
+  Object.hasOwn(dictionary, timeZone) ? dictionary[timeZone] : timeZone;
+
 // example: Input - 2024-12-02T14:10:00.036411
 // example: Output - after Today at 2:10 PM
 export const fromDateToRelativeTime = (

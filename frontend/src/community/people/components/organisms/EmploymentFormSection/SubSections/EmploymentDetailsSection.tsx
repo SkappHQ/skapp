@@ -25,7 +25,10 @@ import {
 } from "~community/common/constants/timeConstants";
 import useSessionData from "~community/common/hooks/useSessionData";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { convertDateToFormat } from "~community/common/utils/dateTimeUtils";
+import {
+  convertDateToFormat,
+  getTimeZoneLabel
+} from "~community/common/utils/dateTimeUtils";
 import SupervisorSelector from "~community/people/components/molecules/SupervisorSelector/SupervisorSelector";
 import { AccountStatusTypes } from "~community/people/enums/PeopleEnums";
 import useEmployeeDetailsFormHandler from "~community/people/hooks/useEmployeeDetailsFormHandler";
@@ -602,7 +605,10 @@ const EmploymentDetailsSection = forwardRef<FormMethods, Props>(
                 value={
                   values?.workTimeZone
                     ? {
-                        label: workTimeZoneDictionary[values.workTimeZone],
+                        label: getTimeZoneLabel(
+                          workTimeZoneDictionary,
+                          values.workTimeZone
+                        ),
                         value: values.workTimeZone
                       }
                     : undefined
