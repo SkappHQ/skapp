@@ -3,7 +3,7 @@ import type {
   GridRow,
   PageSizeSelectorProps,
   TableToolBarProps,
-  TableProps,
+  TableV2Props,
   TableV2Variant
 } from "@rootcodelabs/skapp-ui";
 import type { ReactNode } from "react";
@@ -72,7 +72,7 @@ export interface TableViewProps {
   isLoading?: boolean;
   skeletonRows?: number;
   loader?: ReactNode;
-  emptyState?: TableProps["emptyState"];
+  emptyState?: TableV2Props["emptyState"];
   onRowClick?: (row: GridRow, id: string | number) => void;
   className?: string;
   height?: string;

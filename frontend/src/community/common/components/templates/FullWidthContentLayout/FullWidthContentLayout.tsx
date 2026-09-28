@@ -1,12 +1,12 @@
-import { ButtonV2, ButtonProps } from "@rootcodelabs/skapp-ui";
+import { ButtonV2, ButtonV2Props } from "@rootcodelabs/skapp-ui";
 import { JSX } from "react";
 
 interface Props {
   title: string;
   children: JSX.Element;
   className?: string;
-  primaryButtonProps?: ButtonProps;
-  secondaryButtonProps?: ButtonProps;
+  primaryButtonProps?: ButtonV2Props;
+  secondaryButtonProps?: ButtonV2Props;
 }
 
 const FullWidthContentLayout = ({
