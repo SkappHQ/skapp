@@ -8,10 +8,9 @@ import { SEARCH_DEBOUNCE_DELAY } from "~community/common/constants/commonConstan
 import { characterLengths } from "~community/common/constants/stringConstants";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
-import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import SelectableSearchField from "~community/crm/components/molecules/SelectableSearchField/SelectableSearchField";
 import { useCheckCompanyNameExists } from "~community/crm/v2/api/CompanyApi";
 import AddIndustryOption from "~community/crm/v2/components/atoms/AddIndustryOption/AddIndustryOption";
+import SelectableSearchField from "~community/crm/v2/components/molecules/SelectableSearchField/SelectableSearchField";
 import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmCompanyEntity } from "~community/crm/v2/types/CrmCommonTypes";
@@ -24,7 +23,6 @@ import {
 interface CompanyModalFormProps {
   formik: FormikProps<CrmCompanyEntity>;
   isPending: boolean;
-  translateText: TranslatorFunctionType;
   originalName?: string;
   onCancel: () => void;
 }
@@ -32,11 +30,11 @@ interface CompanyModalFormProps {
 const CompanyModalForm: FC<CompanyModalFormProps> = ({
   formik,
   isPending,
-  translateText,
   originalName,
   onCancel
 }) => {
-  const translateCompanies = useTranslator("crmModule", "companies");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const { industries } = useCrmStoreV2(
     useShallow((store) => ({
@@ -72,27 +70,25 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
     companyNameData?.isExists;
 
   const nameError = isAlreadyNameExists
-    ? translateText(["validations", "companyExists"])
+    ? translateText(["companies", "modal", "validations", "companyExists"])
     : errors.name;
 
   const industryOptions = useMemo(
     () =>
-      getIndustryOptions(
-        industries,
-        translateCompanies,
-        industrySearchTerm,
-        true
-      ),
-    [industries, translateCompanies, industrySearchTerm]
+      getIndustryOptions(industries, translateText, industrySearchTerm, true),
+    [industries, translateText, industrySearchTerm]
   );
 
   const renderIndustryOptionContent = (option: CrmIndustryOption) => {
     if (option.id === ADD_NEW_INDUSTRY_OPTION_ID) {
       return (
         <AddIndustryOption
-          label={translateText(["labels", "addNewIndustry"], {
-            name: option.name
-          })}
+          label={translateText(
+            ["companies", "modal", "labels", "addNewIndustry"],
+            {
+              name: option.name
+            }
+          )}
         />
       );
     }
@@ -113,7 +109,7 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
   const selectedIndustryLabel =
     values.industryName ??
     (selectedIndustry
-      ? getIndustryDisplayName(selectedIndustry, translateCompanies)
+      ? getIndustryDisplayName(selectedIndustry, translateText)
       : "");
 
   const handleIndustrySearchChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -146,11 +142,16 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         value={values.name}
         errorMessage={nameError}
         state={nameError ? "error" : "default"}
-        label={translateText(["labels", "name"])}
-        placeholder={translateText(["placeholders", "name"])}
+        label={translateText(["companies", "modal", "labels", "name"])}
+        placeholder={translateText([
+          "companies",
+          "modal",
+          "placeholders",
+          "name"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "companyName"])}
+        aria-label={translateAria(["companies", "modal", "companyName"])}
         maxLength={characterLengths.COMPANY_NAME_LENGTH}
         required
         fullWidth
@@ -158,14 +159,19 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
 
       <InputField
         name="contactNumber"
-        label={translateText(["labels", "contactNumber"])}
+        label={translateText(["companies", "modal", "labels", "contactNumber"])}
         value={values.contactNumber}
-        placeholder={translateText(["placeholders", "contactNumber"])}
+        placeholder={translateText([
+          "companies",
+          "modal",
+          "placeholders",
+          "contactNumber"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
         errorMessage={errors.contactNumber}
         state={errors.contactNumber ? "error" : "default"}
-        aria-label={translateText(["ariaLabels", "contactNumber"])}
+        aria-label={translateAria(["companies", "modal", "contactNumber"])}
         fullWidth
       />
 
@@ -174,11 +180,16 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         value={values.website}
         errorMessage={errors.website}
         state={errors.website ? "error" : "default"}
-        label={translateText(["labels", "website"])}
-        placeholder={translateText(["placeholders", "website"])}
+        label={translateText(["companies", "modal", "labels", "website"])}
+        placeholder={translateText([
+          "companies",
+          "modal",
+          "placeholders",
+          "website"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "website"])}
+        aria-label={translateAria(["companies", "modal", "website"])}
         fullWidth
       />
 
@@ -187,27 +198,42 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
         value={values.address}
         errorMessage={errors.address}
         state={errors.address ? "error" : "default"}
-        label={translateText(["labels", "address"])}
-        placeholder={translateText(["placeholders", "address"])}
+        label={translateText(["companies", "modal", "labels", "address"])}
+        placeholder={translateText([
+          "companies",
+          "modal",
+          "placeholders",
+          "address"
+        ])}
         onChange={handleChange}
         onBlur={handleBlur}
-        aria-label={translateText(["ariaLabels", "address"])}
+        aria-label={translateAria(["companies", "modal", "address"])}
         fullWidth
       />
 
       <SelectableSearchField
         id="company-industry-search"
-        label={translateText(["labels", "industry"])}
-        placeholder={translateText(["placeholders", "industry"])}
+        label={translateText(["companies", "modal", "labels", "industry"])}
+        placeholder={translateText([
+          "companies",
+          "modal",
+          "placeholders",
+          "industry"
+        ])}
         selectedValue={selectedIndustryLabel}
         onClear={handleClearIndustry}
-        clearAriaLabel={translateText(["ariaLabels", "clearIndustry"])}
-        fieldAriaLabel={translateText(["ariaLabels", "industry"])}
+        clearAriaLabel={translateAria(["companies", "modal", "clearIndustry"])}
+        fieldAriaLabel={translateAria(["companies", "modal", "industry"])}
         searchValue={industrySearchTerm}
         onSearchChange={handleIndustrySearchChange}
         items={industryDropdownItems}
         onSelect={handleIndustrySelect}
-        emptyMessage={translateText(["emptyStates", "noIndustries"])}
+        emptyMessage={translateText([
+          "companies",
+          "modal",
+          "emptyStates",
+          "noIndustries"
+        ])}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
@@ -218,9 +244,9 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
           onClick={onCancel}
           icon={<CloseIcon />}
           iconPosition="end"
-          aria-label={translateText(["ariaLabels", "cancel"])}
+          aria-label={translateAria(["companies", "modal", "cancel"])}
         >
-          {translateText(["buttons", "cancel"])}
+          {translateText(["companies", "modal", "buttons", "cancel"])}
         </ButtonV2>
         <ButtonV2
           variant="primary"
@@ -228,9 +254,9 @@ const CompanyModalForm: FC<CompanyModalFormProps> = ({
           onClick={submitForm}
           disabled={isPending || isSubmitting || isAlreadyNameExists || !dirty}
           isLoading={isPending}
-          aria-label={translateText(["ariaLabels", "save"])}
+          aria-label={translateAria(["companies", "modal", "save"])}
         >
-          {translateText(["buttons", "save"])}
+          {translateText(["companies", "modal", "buttons", "save"])}
         </ButtonV2>
       </div>
     </div>

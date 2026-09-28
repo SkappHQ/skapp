@@ -451,7 +451,7 @@ export const theme = createTheme({
     ]
   },
   typography: {
-    fontFamily: "var(--font-inter), sans-serif",
+    fontFamily: "var(--font-inter), var(--font-noto-color-emoji), sans-serif",
     allVariants: { color: "#000000" },
     // Heading, Modal Header
     h1: {

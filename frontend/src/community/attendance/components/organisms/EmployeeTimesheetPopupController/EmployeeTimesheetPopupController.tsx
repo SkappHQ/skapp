@@ -18,7 +18,8 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
     employeeTimesheetModalType,
     setIsEmployeeTimesheetModalOpen,
     setCurrentAddTimeChanges,
-    setDirectManualTimeEntryEligibleEmployee
+    setDirectManualTimeEntryEligibleEmployee,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore((state) => state);
 
   const [fromDateTime, setFromDateTime] = useState<string>("");
@@ -63,6 +64,7 @@ const EmployeeTimesheetPopupController = (): JSX.Element => {
     if (!isEmployeeTimesheetModalOpen) {
       setCurrentAddTimeChanges(undefined);
       setDirectManualTimeEntryEligibleEmployee(null);
+      setIsSelfDirectTimeEntry(false);
     }
   }, [isEmployeeTimesheetModalOpen]);
 

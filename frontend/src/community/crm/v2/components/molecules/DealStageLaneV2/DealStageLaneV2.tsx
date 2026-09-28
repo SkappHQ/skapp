@@ -11,20 +11,20 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useInfiniteScroll } from "~community/common/hooks/useInfiniteScroll";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import DealCardSkeleton from "~community/crm/components/molecules/DealCardSkeleton/DealCardSkeleton";
-import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/constants/boardConstants";
-import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
 import { useFetchMoreStageDeals } from "~community/crm/v2/api/BoardApi";
+import DealCardSkeleton from "~community/crm/v2/components/molecules/DealCardSkeleton/DealCardSkeleton";
 import DraggableDealCardV2 from "~community/crm/v2/components/molecules/DraggableDealCardV2/DraggableDealCardV2";
+import { DEFAULT_BOARD_PAGE_SIZE } from "~community/crm/v2/constants/boardConstants";
 import { STAGE_COLOR_MAP } from "~community/crm/v2/constants/stageConstants";
 import { CrmKanbanDragType } from "~community/crm/v2/enums/common";
+import { useStageNameMapper } from "~community/crm/v2/hooks/useStageNameMapper";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmKanbanDragData } from "~community/crm/v2/types/CrmTypes";
 import {
   ingestBoardStageDeals,
   resolveColumnDeals
 } from "~community/crm/v2/utils/boardUtil";
-import { formatCurrency } from "~community/crm/v2/utils/commonUtil";
+import { formatMonetaryValueWithDecimals } from "~community/crm/v2/utils/commonUtil";
 
 interface DealStageLaneV2Props {
   stageId: number;
@@ -45,15 +45,25 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
   onAddDeal,
   isAddDealDisabled = false
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "kanban");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const handleLoadMoreError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "loadMoreErrorTitle"]),
-      description: translateText(["toastMessages", "loadMoreErrorDescription"])
+      title: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "loadMoreErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "board",
+        "toastMessages",
+        "loadMoreErrorDescription"
+      ])
     });
   };
 
@@ -67,15 +77,15 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      stage: store.stages[stageId],
-      column: store.board[stageId],
-      dealRecord: store.deals,
-      board: store.board,
-      dealIds: store.dealIds,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setDealIds: store.setDealIds
+    useShallow((state) => ({
+      stage: state.stages[stageId],
+      column: state.board[stageId],
+      dealRecord: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
     }))
   );
 
@@ -167,7 +177,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
               totalValue > 0 ? "" : "invisible"
             }`}
           >
-            {formatCurrency(totalValue)}
+            {formatMonetaryValueWithDecimals(totalValue)}
           </p>
         </div>
         <span className="flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full body3 bg-white px-1.5 text-secondary-text">
@@ -211,7 +221,7 @@ const DealStageLaneV2: FC<DealStageLaneV2Props> = ({
               disabled={isAddDealDisabled}
               isLoading={isAddDealDisabled}
             >
-              {translateText(["addDealBtn"])}
+              {translateText(["deals", "common", "buttons", "addDeal"])}
             </ButtonV2>
           </>
         )}

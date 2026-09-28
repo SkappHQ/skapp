@@ -30,15 +30,15 @@ interface UseDealListViewConfigReturn {
 export const useDealListViewConfig = (
   enabled: boolean
 ): UseDealListViewConfigReturn => {
-  const translateText = useTranslator("crmModule", "common", "initData");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const showConfigError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["errorTitle"]),
-      description: translateText(["errorDescription"])
+      title: translateText(["common", "initData", "errorTitle"]),
+      description: translateText(["common", "initData", "errorDescription"])
     });
   };
 

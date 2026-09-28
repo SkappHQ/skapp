@@ -138,6 +138,7 @@ const BusinessUnitFormModal: FC<Props> = ({
         "form",
         isEdit ? "editModalTitle" : "addModalTitle"
       ])}
+      closeButtonAriaLabel={translateText(["form", "closeButtonAriaLabel"])}
       content={
         <div className="flex flex-col gap-4">
           <InputField

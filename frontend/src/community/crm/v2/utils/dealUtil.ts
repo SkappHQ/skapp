@@ -1,14 +1,13 @@
-import { CrmDealEntity, CrmDealRecord } from "../types/CrmCommonTypes";
-
-export const toDealsRecord = (deals: CrmDealEntity[]): CrmDealRecord => {
-  const dealRecord: CrmDealRecord = {};
-  for (const deal of deals) {
-    if (deal.id != null) {
-      dealRecord[deal.id] = deal;
-    }
-  }
-  return dealRecord;
-};
+import { CrmDealStageEnum } from "../enums/common";
+import { dealIdSearchPrefix } from "../regex/crmRegexPatterns";
+import {
+  CrmCompanyRecord,
+  CrmContactRecord,
+  CrmDealEntity,
+  CrmDealRecord,
+  CrmStageRecord
+} from "../types/CrmCommonTypes";
+import { appendId } from "./commonUtil";
 
 export const toDealIds = (deals: CrmDealEntity[]): number[] => {
   const dealIds: number[] = [];
@@ -31,6 +30,9 @@ export const getMissingDealIds = (
   return Array.from(unique);
 };
 
+export const stripDealIdPrefix = (searchKeyword: string): string =>
+  searchKeyword.trim().replace(dealIdSearchPrefix(), "");
+
 export const mergeDeals = (
   existing: CrmDealRecord,
   incoming: CrmDealEntity[]
@@ -43,8 +45,14 @@ export const mergeDeals = (
   return merged;
 };
 
-export const appendDealId = (dealIds: number[], id: number): number[] =>
-  dealIds.includes(id) ? dealIds : [...dealIds, id];
+export const getSelectedDeal = (
+  deals: CrmDealRecord,
+  dealId: number | null
+) => {
+  if (dealId !== null) {
+    return deals[dealId];
+  }
+};
 
 export const removeDealId = (dealIds: number[], id: number): number[] =>
   dealIds.filter((dealId) => dealId !== id);
@@ -66,6 +74,59 @@ export const resolveDeals = (
   dealIds
     .map((id) => deals[id])
     .filter((deal): deal is CrmDealEntity => Boolean(deal));
+
+export interface CrmDealLinks {
+  companies?: CrmCompanyRecord;
+  contacts?: CrmContactRecord;
+}
+
+export const linkDealToRelatedEntities = (
+  deal: CrmDealEntity,
+  companies?: CrmCompanyRecord,
+  contacts?: CrmContactRecord
+): CrmDealLinks => {
+  const dealId = deal.id;
+  const linked: CrmDealLinks = { companies, contacts };
+
+  if (!dealId) {
+    return linked;
+  }
+
+  if (companies && deal.companyId) {
+    const company = companies[deal.companyId];
+
+    if (company?.dealIds) {
+      linked.companies = {
+        ...companies,
+        [deal.companyId]: {
+          ...company,
+          dealIds: appendId(company.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  if (contacts && deal.contactId) {
+    const contact = contacts[deal.contactId];
+
+    if (contact?.dealIds) {
+      linked.contacts = {
+        ...contacts,
+        [deal.contactId]: {
+          ...contact,
+          dealIds: appendId(contact.dealIds, dealId)
+        }
+      };
+    }
+  }
+
+  return linked;
+};
+
+export const getInitialStageId = (stages: CrmStageRecord): number | undefined =>
+  Object.values(stages).find(
+    (stage) => stage.stageType === CrmDealStageEnum.INITIAL
+  )?.id;
 
 export const reorderDealIds = (
   dealIds: number[],

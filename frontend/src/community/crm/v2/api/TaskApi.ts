@@ -10,14 +10,13 @@ import {
 } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 
-import authFetch, {
-  authFetchV2
-} from "~community/common/utils/axiosInterceptor";
+import authFetch from "~community/common/utils/axiosInterceptor";
+import { crmTaskEndpoints } from "~community/crm/v2/api/utils/ApiEndpoints";
 import {
-  crmTaskEndpoints,
-  crmTaskEndpointsV2
-} from "~community/crm/v2/api/utils/ApiEndpoints";
-import { crmTaskQueryKeys } from "~community/crm/v2/api/utils/QueryKeys";
+  crmCompanyQueryKeys,
+  crmContactQueryKeys,
+  crmTaskQueryKeys
+} from "~community/crm/v2/api/utils/QueryKeys";
 import { CrmTaskEntity } from "~community/crm/v2/types/CrmCommonTypes";
 import {
   CrmRelatedTasksFilter,
@@ -30,31 +29,21 @@ import { crmLimitationQueryKeys } from "~enterprise/crm/api/utils/QueryKeys";
 const fetchTasks = async (
   params: CrmTaskFilterRequest
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASKS, {
+  const response = await authFetch.get(crmTaskEndpoints.GET_TASKS, {
     params
   });
   return response?.data?.results?.[0];
 };
 
-export const useGetTasks = (
-  filter: CrmTaskFilterRequest,
-  enabled: boolean
-): UseQueryResult<CrmTaskListResponse> =>
-  useQuery({
-    queryKey: crmTaskQueryKeys.TASKS(filter),
-    queryFn: () => fetchTasks(filter),
-    enabled,
-    refetchOnWindowFocus: false
-  });
-
-export const useGetCompletedTasks = (
-  filter: CrmTaskFilterRequest,
-  enabled: boolean
-): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>> =>
+export const useGetTasksInfinite = (
+  params: CrmTaskFilterRequest,
+  enabled?: boolean
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>, AxiosError> =>
   useInfiniteQuery({
+    enabled,
+    queryKey: crmTaskQueryKeys.LIST(params),
+    queryFn: ({ pageParam }) => fetchTasks({ ...params, page: pageParam }),
     initialPageParam: 0,
-    queryKey: crmTaskQueryKeys.COMPLETED_TASKS(filter),
-    queryFn: ({ pageParam = 0 }) => fetchTasks({ ...filter, page: pageParam }),
     getNextPageParam: (lastPage) => {
       if (
         lastPage?.currentPage !== undefined &&
@@ -65,19 +54,51 @@ export const useGetCompletedTasks = (
       }
       return undefined;
     },
+    refetchOnWindowFocus: false
+  });
+
+export const useGetTasks = (
+  params: CrmTaskFilterRequest,
+  enabled?: boolean
+): UseQueryResult<CrmTaskListResponse, AxiosError> =>
+  useQuery({
+    queryKey: crmTaskQueryKeys.LIST(params),
+    queryFn: () => fetchTasks(params),
     enabled,
     refetchOnWindowFocus: false
   });
 
+export const useGetCompletedTasks = (
+  params: CrmTaskFilterRequest,
+  enabled?: boolean
+): UseInfiniteQueryResult<InfiniteData<CrmTaskListResponse>, AxiosError> =>
+  useInfiniteQuery({
+    queryKey: crmTaskQueryKeys.COMPLETED_LIST(params),
+    queryFn: ({ pageParam }) => fetchTasks({ ...params, page: pageParam }),
+    enabled,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      if (
+        lastPage?.currentPage !== undefined &&
+        lastPage?.totalPages !== undefined &&
+        lastPage.currentPage < lastPage.totalPages - 1
+      ) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+    refetchOnWindowFocus: false
+  });
+
 const fetchTaskById = async (id: number): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.get(crmTaskEndpointsV2.GET_TASK_BY_ID(id));
+  const response = await authFetch.get(crmTaskEndpoints.GET_TASK_BY_ID(id));
   return response?.data?.results?.[0];
 };
 
 export const useGetTaskById = (
   id: number,
-  enabled: boolean
-): UseQueryResult<CrmTaskEntity> =>
+  enabled?: boolean
+): UseQueryResult<CrmTaskEntity, AxiosError> =>
   useQuery({
     queryKey: crmTaskQueryKeys.TASK_BY_ID(id),
     queryFn: () => fetchTaskById(id),
@@ -89,8 +110,8 @@ const fetchRelatedTasks = async (
   id: number,
   filter: CrmRelatedTasksFilter
 ): Promise<CrmTaskListResponse> => {
-  const response = await authFetchV2.get(
-    crmTaskEndpointsV2.GET_RELATED_TASKS(id),
+  const response = await authFetch.get(
+    crmTaskEndpoints.GET_RELATED_TASKS(id),
     { params: filter }
   );
   return response?.data?.results?.[0];
@@ -121,7 +142,7 @@ export const useGetRelatedTasks = (
   });
 
 const createTask = async (task: CrmTaskEntity): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.post(crmTaskEndpointsV2.CREATE_TASK, task);
+  const response = await authFetch.post(crmTaskEndpoints.CREATE_TASK, task);
   return response?.data?.results?.[0];
 };
 
@@ -137,18 +158,25 @@ export const useCreateTask = (
       queryClient.invalidateQueries({
         queryKey: crmLimitationQueryKeys.GET_CRM_LIMITATION
       });
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
       onSuccess(createdTask);
     },
     onError
   });
 };
 
-const updateTask = async (
-  params: CrmTaskUpdateRequest
-): Promise<CrmTaskEntity> => {
-  const response = await authFetchV2.patch(
-    crmTaskEndpointsV2.UPDATE_TASK(params.id),
-    params.task
+const updateTask = async ({
+  id,
+  task
+}: CrmTaskUpdateRequest): Promise<CrmTaskEntity> => {
+  const response = await authFetch.patch(
+    crmTaskEndpoints.UPDATE_TASK(id),
+    task
   );
   return response?.data?.results?.[0];
 };
@@ -156,12 +184,23 @@ const updateTask = async (
 export const useUpdateTask = (
   onSuccess?: (updatedTask: CrmTaskEntity) => void,
   onError?: () => void
-): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskUpdateRequest> =>
-  useMutation({
+): UseMutationResult<CrmTaskEntity, AxiosError, CrmTaskUpdateRequest> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: updateTask,
-    onSuccess,
+    onSuccess: (updatedTask) => {
+      queryClient.invalidateQueries({
+        queryKey: crmCompanyQueryKeys.METRICS_ROOT
+      });
+      queryClient.invalidateQueries({
+        queryKey: crmContactQueryKeys.METRICS_ROOT
+      });
+      onSuccess?.(updatedTask);
+    },
     onError
   });
+};
 
 const deleteTask = async (id: number): Promise<void> => {
   await authFetch.delete(crmTaskEndpoints.DELETE_TASK(id));

@@ -110,5 +110,6 @@ export enum DefaultStageNameEnum {
 }
 
 export enum CrmErrorMessageKeyEnum {
-  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS"
+  DEAL_EXISTS = "CRM_ERROR_DEAL_EXISTS",
+  DEAL_VIEW_DENIED = "CRM_ERROR_DEAL_VIEW_DENIED"
 }

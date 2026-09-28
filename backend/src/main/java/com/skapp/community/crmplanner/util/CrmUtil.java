@@ -3,19 +3,13 @@ package com.skapp.community.crmplanner.util;
 import com.skapp.community.common.model.User;
 import com.skapp.community.common.type.Role;
 import com.skapp.community.crmplanner.mapper.CrmMapper;
-import com.skapp.community.crmplanner.mapper.CrmMapperV2;
 import com.skapp.community.crmplanner.model.CrmCompany;
 import com.skapp.community.crmplanner.model.CrmContact;
 import com.skapp.community.crmplanner.model.CrmDeal;
 import com.skapp.community.crmplanner.model.CrmTask;
-import com.skapp.community.crmplanner.payload.response.CrmContactDetailResponseDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
-import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.response.CrmDealResponseDto;
-import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.payload.response.board.CrmDealByStageItemResponseDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmDealResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmTaskResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.CrmTaskResponseDto;
 
 import lombok.experimental.UtilityClass;
 
@@ -38,42 +32,10 @@ public class CrmUtil {
 		return company != null && Boolean.TRUE.equals(company.getIsDeleted());
 	}
 
-	public CrmContactLookupResponseDto toContactLookupDto(CrmMapper crmMapper, CrmContact contact) {
-		CrmContactLookupResponseDto dto = crmMapper.crmContactToCrmContactLookupResponseDto(contact);
-		if (hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
-	}
-
-	public CrmContactListItemDto toContactListItemDto(CrmMapper crmMapper, CrmContact contact) {
-		CrmContactListItemDto dto = crmMapper.crmContactToCrmContactListItemDto(contact);
-		if (hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
-	}
-
-	public CrmContactDetailResponseDto toContactDetailDto(CrmMapper crmMapper, CrmContact contact) {
-		CrmContactDetailResponseDto dto = crmMapper.crmContactToCrmContactDetailResponseDto(contact);
-		if (hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
-	}
-
-	public CrmBoardContactResponseDto toBoardContactDto(CrmMapper crmMapper, CrmContact contact) {
-		CrmBoardContactResponseDto dto = crmMapper.crmContactToCrmBoardContactResponseDto(contact);
-		if (hasDeletedCompany(contact)) {
-			dto.setCompany(null);
-		}
-		return dto;
-	}
-
 	public CrmDealResponseDto toDealResponseDto(CrmMapper crmMapper, CrmDeal deal) {
 		CrmDealResponseDto dto = crmMapper.crmDealToCrmDealResponseDto(deal);
 		if (hasDeletedCompany(deal)) {
-			dto.setCompanyName(null);
+			dto.setCompanyId(null);
 		}
 		return dto;
 	}
@@ -86,24 +48,12 @@ public class CrmUtil {
 		return dto;
 	}
 
-	public CrmDealResponseDtoV2 toDealResponseDtoV2(CrmMapperV2 crmMapperV2, CrmDeal deal) {
-		CrmDealResponseDtoV2 dto = crmMapperV2.crmDealToCrmDealResponseDtoV2(deal);
-		maskDeletedCompaniesOnDeal(dto, deal);
-		return dto;
-	}
-
-	public CrmTaskResponseDtoV2 toTaskResponseDtoV2(CrmMapperV2 crmMapperV2, CrmTask task) {
-		CrmTaskResponseDtoV2 dto = crmMapperV2.crmTaskToCrmTaskResponseDtoV2(task);
+	public CrmTaskResponseDto toTaskResponseDto(CrmMapper crmMapper, CrmTask task) {
+		CrmTaskResponseDto dto = crmMapper.crmTaskToCrmTaskResponseDto(task);
 		if (isCompanyDeleted(task.getCompany())) {
 			dto.setCompanyId(null);
 		}
 		return dto;
-	}
-
-	private void maskDeletedCompaniesOnDeal(CrmDealResponseDtoV2 dto, CrmDeal deal) {
-		if (hasDeletedCompany(deal)) {
-			dto.setCompanyId(null);
-		}
 	}
 
 }

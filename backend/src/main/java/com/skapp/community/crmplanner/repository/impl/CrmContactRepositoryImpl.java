@@ -14,9 +14,9 @@ import com.skapp.community.crmplanner.model.CrmTask;
 import com.skapp.community.crmplanner.model.CrmTask_;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
 import com.skapp.community.crmplanner.repository.CrmContactRepository;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import com.skapp.community.crmplanner.type.CrmDealStageType;
@@ -26,7 +26,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
@@ -54,32 +53,10 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	private final EntityManager entityManager;
 
 	@Override
-	public Page<CrmContact> findContacts(CrmContactMetricRequestDto filterDto, Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
-		Root<CrmContact> contact = query.from(CrmContact.class);
-		Fetch<CrmContact, Employee> ownerFetch = contact.fetch(CrmContact_.owner, JoinType.INNER);
-		ownerFetch.fetch(Employee_.user, JoinType.LEFT);
-		Join<CrmContact, Employee> owner = (Join<CrmContact, Employee>) ownerFetch;
-		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
-				JoinType.LEFT);
-
-		query.where(buildPredicates(cb, contact, owner, company, filterDto));
-		query.orderBy(buildOrderBy(cb, contact, query));
-
-		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-
-		return new PageImpl<>(typedQuery.getResultList(), pageable, getContactTotalCount(cb, filterDto));
-	}
-
-	@Override
-	public Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto,
-			Pageable pageable) {
+	public Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
-		CriteriaQuery<CrmContactMetricsResponseDtoV2> query = cb.createQuery(CrmContactMetricsResponseDtoV2.class);
+		CriteriaQuery<CrmContactListItemDto> query = cb.createQuery(CrmContactListItemDto.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		Join<CrmContact, Employee> owner = contact.join(CrmContact_.owner, JoinType.INNER);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
@@ -126,7 +103,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 			.where(cb.equal(activeDeal.get(CrmDeal_.contact), contact), notInTerminalStage(cb, activeDeal),
 					cb.isFalse(activeDeal.get(CrmDeal_.isDeleted)));
 
-		query.select(cb.construct(CrmContactMetricsResponseDtoV2.class, contact.get(CrmContact_.id),
+		query.select(cb.construct(CrmContactListItemDto.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name), contact.get(CrmContact_.email), contact.get(CrmContact_.contactNumber),
 				contact.get(CrmContact_.lastContactAt), contact.get(Auditable_.lastModifiedDate),
 				company.get(CrmCompany_.id), owner.get(Employee_.employeeId),
@@ -136,7 +113,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		query.where(buildPredicates(cb, contact, owner, company, filterDto));
 		query.orderBy(buildOrderBy(cb, contact, query));
 
-		List<CrmContactMetricsResponseDtoV2> content = entityManager.createQuery(query)
+		List<CrmContactListItemDto> content = entityManager.createQuery(query)
 			.setFirstResult((int) pageable.getOffset())
 			.setMaxResults(pageable.getPageSize())
 			.getResultList();
@@ -252,14 +229,14 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public List<CrmBoardContactResponseDtoV2> findAllContactsForBoardInitV2() {
+	public List<CrmBoardContactResponseDto> findAllContactsForBoardInit() {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmBoardContactResponseDtoV2> query = cb.createQuery(CrmBoardContactResponseDtoV2.class);
+		CriteriaQuery<CrmBoardContactResponseDto> query = cb.createQuery(CrmBoardContactResponseDto.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 		company.on(cb.isFalse(company.get(CrmCompany_.isDeleted)));
 
-		query.select(cb.construct(CrmBoardContactResponseDtoV2.class, contact.get(CrmContact_.id),
+		query.select(cb.construct(CrmBoardContactResponseDto.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name), company.get(CrmCompany_.id)));
 
 		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
@@ -269,49 +246,15 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 	}
 
 	@Override
-	public List<CrmContact> findAllContactsForBoardInit() {
+	public Page<CrmContactLookupResponseDto> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
-		Root<CrmContact> contact = query.from(CrmContact.class);
-		contact.fetch(CrmContact_.company, JoinType.LEFT);
-
-		query.where(cb.isFalse(contact.get(CrmContact_.isDeleted)));
-		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
-
-		return entityManager.createQuery(query).getResultList();
-	}
-
-	@Override
-	public Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmContact> query = cb.createQuery(CrmContact.class);
-		Root<CrmContact> contact = query.from(CrmContact.class);
-		Join<CrmContact, CrmCompany> company = (Join<CrmContact, CrmCompany>) contact.fetch(CrmContact_.company,
-				JoinType.LEFT);
-
-		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
-
-		query.where(predicates.toArray(new Predicate[0]));
-		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
-
-		TypedQuery<CrmContact> typedQuery = entityManager.createQuery(query);
-		typedQuery.setFirstResult((int) pageable.getOffset());
-		typedQuery.setMaxResults(pageable.getPageSize());
-
-		return new PageImpl<>(typedQuery.getResultList(), pageable, getLookupTotalCount(cb, filterDto));
-	}
-
-	@Override
-	public Page<CrmContactLookupResponseDtoV2> findContactsForLookupV2(CrmContactFilterDto filterDto,
-			Pageable pageable) {
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<CrmContactLookupResponseDtoV2> query = cb.createQuery(CrmContactLookupResponseDtoV2.class);
+		CriteriaQuery<CrmContactLookupResponseDto> query = cb.createQuery(CrmContactLookupResponseDto.class);
 		Root<CrmContact> contact = query.from(CrmContact.class);
 		Join<CrmContact, CrmCompany> company = contact.join(CrmContact_.company, JoinType.LEFT);
 
 		List<Predicate> predicates = buildLookupPredicates(cb, query, contact, company, filterDto);
 
-		query.select(cb.construct(CrmContactLookupResponseDtoV2.class, contact.get(CrmContact_.id),
+		query.select(cb.construct(CrmContactLookupResponseDto.class, contact.get(CrmContact_.id),
 				contact.get(CrmContact_.name),
 				cb.<Long>selectCase()
 					.when(cb.isTrue(company.get(CrmCompany_.isDeleted)), cb.nullLiteral(Long.class))
@@ -319,7 +262,7 @@ public class CrmContactRepositoryImpl implements CrmContactRepository {
 		query.where(predicates.toArray(new Predicate[0]));
 		query.orderBy(cb.asc(cb.lower(contact.get(CrmContact_.name))), cb.asc(contact.get(CrmContact_.id)));
 
-		TypedQuery<CrmContactLookupResponseDtoV2> typedQuery = entityManager.createQuery(query);
+		TypedQuery<CrmContactLookupResponseDto> typedQuery = entityManager.createQuery(query);
 		typedQuery.setFirstResult((int) pageable.getOffset());
 		typedQuery.setMaxResults(pageable.getPageSize());
 

@@ -8,16 +8,16 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  DEFAULT_LOOKUP_PAGE_SIZE,
-  SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/commonConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import { useGetContactLookupV2 } from "~community/crm/v2/api/ContactApi";
 import {
   useCheckDealNameExists,
   useCreateDeal
 } from "~community/crm/v2/api/DealApi";
+import {
+  DEFAULT_LOOKUP_PAGE_SIZE,
+  SEARCH_DEBOUNCE_DELAY
+} from "~community/crm/v2/constants/commonConstants";
 import { CrmPriorityEnum } from "~community/crm/v2/enums/common";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import {
@@ -31,7 +31,7 @@ import {
 import { ingestCreatedDeal } from "~community/crm/v2/utils/boardUtil";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { addDealValidations } from "~community/crm/v2/utils/dealValidations";
 
@@ -49,7 +49,8 @@ const initialValues: CrmDealEntity = {
 };
 
 const AddDealSidePanelV2: FC = () => {
-  const translateText = useTranslator("crmModule", "deals", "addDealSidePanel");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
   const { setToastMessage } = useToast();
 
   const [selectedContact, setSelectedContact] =
@@ -69,19 +70,19 @@ const AddDealSidePanelV2: FC = () => {
     setBoardColumn,
     setDealIds
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      isCrmSidePanelOpen: store.isCrmSidePanelOpen,
-      crmSidePanelType: store.crmSidePanelType,
-      closeCrmSidePanel: store.closeCrmSidePanel,
-      setPreselectedStageId: store.setPreselectedStageId,
-      deals: store.deals,
-      board: store.board,
-      dealIds: store.dealIds,
-      companies: store.companies,
-      setCompanies: store.setCompanies,
-      setDeals: store.setDeals,
-      setBoardColumn: store.setBoardColumn,
-      setDealIds: store.setDealIds
+    useShallow((state) => ({
+      isCrmSidePanelOpen: state.isCrmSidePanelOpen,
+      crmSidePanelType: state.crmSidePanelType,
+      closeCrmSidePanel: state.closeCrmSidePanel,
+      setPreselectedStageId: state.setPreselectedStageId,
+      deals: state.deals,
+      board: state.board,
+      dealIds: state.dealIds,
+      companies: state.companies,
+      setCompanies: state.setCompanies,
+      setDeals: state.setDeals,
+      setBoardColumn: state.setBoardColumn,
+      setDealIds: state.setDealIds
     }))
   );
 
@@ -94,15 +95,13 @@ const AddDealSidePanelV2: FC = () => {
     contactSearchTerm.trim(),
     SEARCH_DEBOUNCE_DELAY
   );
-  const contactLookupFilter: CrmContactFilterRequest = useMemo(
-    () => ({
-      searchKeyword: debouncedContactSearch,
-      size: DEFAULT_LOOKUP_PAGE_SIZE
-    }),
-    [debouncedContactSearch]
-  );
+  const contactFilters: CrmContactFilterRequest = {
+    searchKeyword: debouncedContactSearch,
+    size: DEFAULT_LOOKUP_PAGE_SIZE
+  };
+
   const { data: contactLookupData } = useGetContactLookupV2(
-    contactLookupFilter,
+    contactFilters,
     isOpen
   );
   const contacts = useMemo(
@@ -126,7 +125,7 @@ const AddDealSidePanelV2: FC = () => {
   );
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      setCompanies(mergeCompanies(companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 
@@ -138,8 +137,18 @@ const AddDealSidePanelV2: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
     closeCrmSidePanel();
     formik.resetForm();
@@ -151,8 +160,18 @@ const AddDealSidePanelV2: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "deals",
+        "common",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -224,10 +243,12 @@ const AddDealSidePanelV2: FC = () => {
         isOpen={isOpen}
         onClose={handleClose}
         header={
-          <span className="pl-2 h1 text-black">{translateText(["title"])}</span>
+          <span className="pl-2 h1 text-black">
+            {translateText(["deals", "addPanel", "title"])}
+          </span>
         }
         closeOnBackdropClick
-        closeAriaLabel={translateText(["ariaLabels", "closePanel"])}
+        closeAriaLabel={translateAria(["deals", "addPanel", "closePanel"])}
         footer={
           <div className="flex justify-end px-6 py-3">
             <ButtonV2
@@ -238,9 +259,9 @@ const AddDealSidePanelV2: FC = () => {
               isLoading={isPending}
               icon={<PlusIcon fill="black" />}
               iconPosition="end"
-              aria-label={translateText(["ariaLabels", "addDeal"])}
+              aria-label={translateAria(["deals", "addPanel", "addDeal"])}
             >
-              {translateText(["buttons", "addDeal"])}
+              {translateText(["deals", "common", "buttons", "addDeal"])}
             </ButtonV2>
           </div>
         }
@@ -255,8 +276,18 @@ const AddDealSidePanelV2: FC = () => {
             <div className="w-2/3">
               <TextArea
                 name="description"
-                label={translateText(["labels", "description"])}
-                placeholder={translateText(["placeholders", "description"])}
+                label={translateText([
+                  "deals",
+                  "common",
+                  "labels",
+                  "description"
+                ])}
+                placeholder={translateText([
+                  "deals",
+                  "addPanel",
+                  "placeholders",
+                  "description"
+                ])}
                 value={values.description}
                 onChange={handleDescriptionChange}
                 onBlur={formik.handleBlur}
@@ -271,13 +302,12 @@ const AddDealSidePanelV2: FC = () => {
                     ? formik.errors.description
                     : undefined
                 }
-                aria-label={translateText(["ariaLabels", "description"])}
+                aria-label={translateAria(["deals", "addPanel", "description"])}
               />
             </div>
 
             <div className="w-1/3 min-w-0 flex flex-col gap-4">
               <DealPropertiesSection
-                translateText={translateText}
                 formik={formik}
                 contacts={contacts}
                 companies={companies}

@@ -10,7 +10,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
 const CompanyModalController = () => {
-  const translateText = useTranslator("crmModule", "companies");
+  const translateText = useTranslator("crmModuleV2");
 
   const { isCompanyModalOpen, companyModalType, setIsCompanyModalOpen } =
     useCrmStoreV2(
@@ -28,11 +28,11 @@ const CompanyModalController = () => {
   const getModalTitle = (modalType: CrmModalTypes) => {
     switch (modalType) {
       case CrmModalTypes.ADD_COMPANY_MODAL:
-        return translateText(["companyModal", "title", "add"]);
+        return translateText(["companies", "modal", "addTitle"]);
       case CrmModalTypes.EDIT_COMPANY_MODAL:
-        return translateText(["companyModal", "title", "edit"]);
+        return translateText(["companies", "modal", "editTitle"]);
       case CrmModalTypes.DELETE_COMPANY_MODAL:
-        return translateText(["deleteCompanyModal", "title"]);
+        return translateText(["companies", "deleteModal", "title"]);
       default:
         return "";
     }

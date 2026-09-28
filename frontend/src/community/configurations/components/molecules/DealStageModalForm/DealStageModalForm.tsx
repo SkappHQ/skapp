@@ -12,52 +12,73 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
+import {
+  getChangedStageFields,
+  getSelectedStage,
+  getStageDisplayName,
+  updateStage
+} from "~community/configurations/utils/stageUtil";
+import { getStageValidationSchema } from "~community/configurations/utils/stageValidations";
 import {
   useCreateDealStage,
-  useDealStageById,
   useUpdateDealStage
-} from "~community/crm/api/crmDealApi";
-import { CrmDealStageColorsEnum } from "~community/crm/enums/common";
-import useGetMappedDealStages from "~community/crm/hooks/useGetMappedDealStages";
-import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
-import {
-  CrmDealStageCreatePayload,
-  CrmDealStageFormTypes,
-  CrmDealStageUpdatePayload
-} from "~community/crm/types/CommonTypes";
-import {
-  dealStageColors,
-  getChangedDealStageFields
-} from "~community/crm/utils/crmUtil";
-import { dealStageValidations } from "~community/crm/utils/dealStageValidations";
+} from "~community/crm/v2/api/DealApi";
+import { DEAL_STAGE_COLORS } from "~community/crm/v2/constants/stageConstants";
+import { CrmDealStageColorsEnum } from "~community/crm/v2/enums/common";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
+import { CrmStageEntity } from "~community/crm/v2/types/CrmCommonTypes";
+import { getOrderedStages } from "~community/crm/v2/utils/commonUtil";
 
 interface DealStageModalFormProps {
   isEdit?: boolean;
+  onStageCreated?: () => void;
 }
 
 const DealStageModalForm: FC<DealStageModalFormProps> = ({
-  isEdit = false
+  isEdit = false,
+  onStageCreated
 }) => {
   const { setToastMessage } = useToast();
-  const { getStageByName } = useStageNameMapper();
-  const { dealStages } = useGetMappedDealStages();
   const translateText = useTranslator("configurations", "crm");
+  const translateStageName = useTranslator(
+    "crmModuleV2",
+    "deals",
+    "defaultStageNames"
+  );
 
-  const { setIsDealStageModalOpen, selectedDealStageId } =
-    useConfigurationStore(
+  const { stages, setStages, setIsDealStageModalOpen, selectedDealStageId } =
+    useCrmStoreV2(
       useShallow((store) => ({
+        stages: store.stages,
+        setStages: store.setStages,
         setIsDealStageModalOpen: store.setIsDealStageModalOpen,
         selectedDealStageId: store.selectedDealStageId
       }))
     );
 
-  const selectedDealStage = useDealStageById(selectedDealStageId!);
+  const orderedStages = getOrderedStages(stages);
 
-  const initialValues: CrmDealStageFormTypes = {
-    name: isEdit ? getStageByName(selectedDealStage!.name) : "",
-    description: isEdit ? (selectedDealStage?.description ?? "") : "",
-    color: isEdit ? selectedDealStage!.color : CrmDealStageColorsEnum.SKY
+  const selectedDealStage = getSelectedStage(stages, selectedDealStageId);
+
+  const initialValues: CrmStageEntity = {
+    name:
+      isEdit && selectedDealStage?.name !== undefined
+        ? getStageDisplayName(selectedDealStage.name, translateStageName)
+        : "",
+    description: isEdit ? selectedDealStage?.description : "",
+    color: selectedDealStage?.color ?? CrmDealStageColorsEnum.SKY
+  };
+
+  const handleCreateSuccess = () => {
+    onStageCreated?.();
+    handleSuccess();
+  };
+
+  const handleEditSuccess = (updatedStage: CrmStageEntity) => {
+    if (updatedStage.id !== undefined) {
+      setStages(updateStage(stages, updatedStage.id, updatedStage));
+    }
+    handleSuccess();
   };
 
   const handleSuccess = () => {
@@ -104,40 +125,38 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
   };
 
   const { mutate: createDealStage, isPending: isCreatePending } =
-    useCreateDealStage(handleSuccess, handleError);
+    useCreateDealStage(handleCreateSuccess, handleError);
 
   const { mutate: updateDealStage, isPending: isUpdatePending } =
-    useUpdateDealStage(handleSuccess, handleError);
+    useUpdateDealStage(handleEditSuccess, handleError);
 
-  const handleEdit = (values: CrmDealStageFormTypes) => {
-    const changedFields = getChangedDealStageFields(values, initialValues);
-    if (Object.keys(changedFields).length === 0) {
+  const handleEdit = (values: CrmStageEntity) => {
+    const changedFields = getChangedStageFields(initialValues, values);
+    if (
+      Object.keys(changedFields).length === 0 ||
+      selectedDealStage?.id === undefined
+    ) {
       handleCloseModal();
       return;
     }
 
-    const payload: CrmDealStageUpdatePayload = {
-      id: selectedDealStage!.id,
-      ...changedFields
-    };
-    updateDealStage(payload);
+    updateDealStage({ id: selectedDealStage.id, ...changedFields });
   };
 
-  const handleCreate = (values: CrmDealStageFormTypes) => {
-    const payload: CrmDealStageCreatePayload = {
-      name: values.name.trim(),
-      description: values.description.trim() || null,
+  const handleCreate = (values: CrmStageEntity) => {
+    createDealStage({
+      name: values.name?.trim(),
+      description: values.description?.trim(),
       color: values.color
-    };
-    createDealStage(payload);
+    });
   };
 
   const formik = useFormik({
     initialValues,
     onSubmit: isEdit ? handleEdit : handleCreate,
-    validationSchema: dealStageValidations(
+    validationSchema: getStageValidationSchema(
       translateText,
-      dealStages,
+      orderedStages,
       selectedDealStage?.id
     ),
     validateOnChange: false,
@@ -188,7 +207,7 @@ const DealStageModalForm: FC<DealStageModalFormProps> = ({
         label={translateText(["dealStageModal", "colorInputLabel"])}
         selectedColorId={values.color}
         onColorChange={(color) => setFieldValue("color", color.value)}
-        colors={dealStageColors}
+        colors={DEAL_STAGE_COLORS}
       />
 
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">

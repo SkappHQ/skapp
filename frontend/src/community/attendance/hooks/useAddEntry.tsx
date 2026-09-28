@@ -11,7 +11,8 @@ import { useAttendanceStore } from "~community/attendance/store/attendanceStore"
 import {
   DirectManualTimeEntryVariablesType,
   TimeAvailabilityType,
-  TimeEntryFormValueType
+  TimeEntryFormValueType,
+  TimeEntryTimeErrorsType
 } from "~community/attendance/types/timeSheetTypes";
 import {
   convertTo12HourByDateString,
@@ -168,17 +169,7 @@ const useAddEntry = () => {
 
   const isDurationValid = (fromTime: string, toTime: string): boolean => {
     const duration = getDuration(fromTime, toTime);
-    if (duration?.includes("-")) {
-      setToastMessage({
-        open: true,
-        title: translateText(["invalidTimeTitle"]),
-        description: translateText(["invalidTimeDes"]),
-        toastType: ToastType.ERROR
-      });
-      return false;
-    } else {
-      return true;
-    }
+    return !duration?.includes("-");
   };
 
   const submitManualTimeEntry = (
@@ -348,9 +339,8 @@ const useAddEntry = () => {
     fromTime: string,
     toTime: string,
     prevFromTime: string,
-    prevToTime: string,
-    isWithToast: boolean
-  ) => {
+    prevToTime: string
+  ): TimeEntryTimeErrorsType => {
     const prevStartTimeWithDate = DateTime.fromISO(prevFromTime);
     const prevEndTimeWithDate = prevToTime
       ? DateTime.fromISO(prevToTime)
@@ -364,12 +354,14 @@ const useAddEntry = () => {
       year: prevStartTimeWithDate.year
     });
 
-    if (clockInOutValidation(fromTime, toTime, isWithToast)) {
-      return true;
+    const sameTimeErrors = clockInOutValidation(fromTime, toTime);
+
+    if (sameTimeErrors.fromTime || sameTimeErrors.toTime) {
+      return sameTimeErrors;
     }
 
     if (prevEndTimeWithDate === null) {
-      return false;
+      return {};
     }
 
     const endTimeWithDate = DateTime.fromFormat(toTime, TIME_FORMAT_AM_PM).set({
@@ -379,48 +371,31 @@ const useAddEntry = () => {
     });
 
     if (startTimeWithDate >= prevEndTimeWithDate) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidClockInTitle"]),
-          description: translateText(["invalidClockInDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
+      return { fromTime: translateText(["invalidClockInDes"]) };
     }
     if (endTimeWithDate <= prevStartTimeWithDate) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidClockOutTitle"]),
-          description: translateText(["invalidClockOutDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
+      return { toTime: translateText(["invalidClockOutDes"]) };
     }
-    return false;
+    return {};
   };
 
   const clockInOutValidation = (
     fromTime: string,
-    toTime: string,
-    isWithToast: boolean
-  ) => {
-    if (!!fromTime && !!toTime && fromTime === toTime) {
-      if (isWithToast) {
-        setToastMessage({
-          open: true,
-          title: translateText(["invalidEntryTitle"]),
-          description: translateText(["invalidEntryDes"]),
-          toastType: ToastType.ERROR
-        });
-      }
-      return true;
-    } else {
-      return false;
+    toTime: string
+  ): TimeEntryTimeErrorsType => {
+    if (!fromTime || !toTime) {
+      return {};
     }
+
+    if (fromTime === toTime) {
+      return { fromTime: translateText(["invalidEntryDes"]) };
+    }
+
+    if (!isDurationValid(fromTime, toTime)) {
+      return { fromTime: translateText(["invalidTimeDes"]) };
+    }
+
+    return {};
   };
 
   return {

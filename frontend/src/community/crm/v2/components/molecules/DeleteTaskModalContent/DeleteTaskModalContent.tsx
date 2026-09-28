@@ -19,7 +19,8 @@ interface Props {
 const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "tasks", "deleteTaskModal");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const {
     tasks,
@@ -56,8 +57,18 @@ const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["toastMessages", "successTitle"]),
-      description: translateText(["toastMessages", "successDescription"])
+      title: translateText([
+        "tasks",
+        "deleteModal",
+        "toastMessages",
+        "successTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "deleteModal",
+        "toastMessages",
+        "successDescription"
+      ])
     });
   };
 
@@ -65,8 +76,18 @@ const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["toastMessages", "errorTitle"]),
-      description: translateText(["toastMessages", "errorDescription"])
+      title: translateText([
+        "tasks",
+        "deleteModal",
+        "toastMessages",
+        "errorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "deleteModal",
+        "toastMessages",
+        "errorDescription"
+      ])
     });
   };
 
@@ -81,12 +102,17 @@ const DeleteTaskModalContent: FC<Props> = ({ taskId }) => {
 
   return (
     <CrmDeleteModalContent
-      description={translateText(["description"])}
+      description={translateText(["tasks", "deleteModal", "description"])}
       isPending={isPending}
-      confirmLabel={translateText(["buttons", "confirm"])}
-      cancelLabel={translateText(["buttons", "cancel"])}
-      confirmAriaLabel={translateText(["ariaLabels", "confirm"])}
-      cancelAriaLabel={translateText(["ariaLabels", "cancel"])}
+      confirmLabel={translateText([
+        "tasks",
+        "deleteModal",
+        "buttons",
+        "confirm"
+      ])}
+      cancelLabel={translateText(["tasks", "deleteModal", "buttons", "cancel"])}
+      confirmAriaLabel={translateAria(["tasks", "deleteModal", "confirm"])}
+      cancelAriaLabel={translateAria(["tasks", "deleteModal", "cancel"])}
       onConfirm={handleDeleteTask}
       onClose={handleCloseModal}
     />

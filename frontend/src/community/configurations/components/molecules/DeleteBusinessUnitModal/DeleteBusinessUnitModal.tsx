@@ -158,6 +158,10 @@ const DeleteBusinessUnitModal: FC<Props> = ({
       isOpen={isOpen}
       onClose={onClose}
       modalHeader={translateText(["deleteModal", "title"])}
+      closeButtonAriaLabel={translateText([
+        "deleteModal",
+        "closeButtonAriaLabel"
+      ])}
       content={renderContent()}
       buttons={{
         buttonLeft: {

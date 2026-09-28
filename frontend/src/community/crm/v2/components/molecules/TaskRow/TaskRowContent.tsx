@@ -43,6 +43,7 @@ const TaskRowContent: FC<Props> = ({
       <div className="flex-1 min-w-0">
         <p
           className={`body2 leading-snug truncate ${isCompletedStyleApplied ? "line-through text-secondary-icon" : "text-black"}`}
+          title={task.name}
         >
           {task.name}
         </p>

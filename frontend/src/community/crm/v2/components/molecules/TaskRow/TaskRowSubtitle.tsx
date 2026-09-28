@@ -21,13 +21,14 @@ const TaskRowSubtitle: FC<Props> = ({
   isShowContact,
   isCompletedStyleApplied
 }) => {
-  const translateText = useTranslator("crmModule", "tasks", "table");
+  const translateText = useTranslator("crmModuleV2");
 
   const dueDateStatus = task.dueAt
     ? getDueDateStatus(task.dueAt, task.isCompleted === true)
     : null;
 
   const isContactVisible = isShowContact && contact != null;
+  const contactName = getContactDisplayName(contact);
 
   return (
     <div className="body3 leading-none mt-0.5 flex items-center gap-2">
@@ -39,10 +40,13 @@ const TaskRowSubtitle: FC<Props> = ({
               : dueDateStatus.textColorClass
           }
         >
-          {translateText([dueDateStatus.textKey], {
-            date: dueDateStatus.dateValue,
-            count: dueDateStatus.dayCount
-          })}
+          {translateText(
+            ["tasks", "table", "dueDateStatus", dueDateStatus.textKey],
+            {
+              date: dueDateStatus.dateValue,
+              count: dueDateStatus.dayCount
+            }
+          )}
         </span>
       )}
 
@@ -55,13 +59,14 @@ const TaskRowSubtitle: FC<Props> = ({
 
       {isContactVisible && (
         <span
-          className={
+          className={`min-w-0 truncate ${
             isCompletedStyleApplied
               ? "line-through text-secondary-icon"
               : "text-secondary-text"
-          }
+          }`}
+          title={contactName}
         >
-          {getContactDisplayName(contact)}
+          {contactName}
         </span>
       )}
     </div>

@@ -1,13 +1,17 @@
 package com.skapp.community.crmplanner.payload.response;
 
+import com.skapp.community.crmplanner.type.CrmContactMetrics;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CrmContactListItemDto {
 
 	private Long id;
@@ -20,16 +24,12 @@ public class CrmContactListItemDto {
 
 	private LocalDateTime lastContactAt;
 
-	private CrmCompanyLookupResponseDto company;
+	private LocalDateTime lastModifiedDate;
 
-	private CrmContactOwnerResponseDto owner;
+	private Long companyId;
 
-	private BigDecimal closedDealValue;
+	private Long ownerId;
 
-	private Long closedDealCount;
-
-	private Long openTasksCount;
-
-	private Long overdueTasksCount;
+	private CrmContactMetrics metrics;
 
 }

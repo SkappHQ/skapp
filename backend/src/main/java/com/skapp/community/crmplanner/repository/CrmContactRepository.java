@@ -1,11 +1,11 @@
 package com.skapp.community.crmplanner.repository;
 
 import com.skapp.community.crmplanner.model.CrmContact;
+import com.skapp.community.crmplanner.payload.response.CrmContactListItemDto;
+import com.skapp.community.crmplanner.payload.response.CrmContactLookupResponseDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactFilterDto;
 import com.skapp.community.crmplanner.payload.request.CrmContactMetricRequestDto;
-import com.skapp.community.crmplanner.payload.response.v2.CrmBoardContactResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactLookupResponseDtoV2;
-import com.skapp.community.crmplanner.payload.response.v2.CrmContactMetricsResponseDtoV2;
+import com.skapp.community.crmplanner.payload.response.board.CrmBoardContactResponseDto;
 import com.skapp.community.crmplanner.type.CrmContactMetrics;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,19 +15,13 @@ import java.util.Optional;
 
 public interface CrmContactRepository {
 
-	Page<CrmContact> findContacts(CrmContactMetricRequestDto filterDto, Pageable pageable);
-
-	Page<CrmContactMetricsResponseDtoV2> getContactMetricsV2(CrmContactMetricRequestDto filterDto, Pageable pageable);
+	Page<CrmContactListItemDto> getContacts(CrmContactMetricRequestDto filterDto, Pageable pageable);
 
 	Optional<CrmContactMetrics> getContactMetricsById(Long contactId);
 
-	Page<CrmContact> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable);
+	Page<CrmContactLookupResponseDto> findContactsForLookup(CrmContactFilterDto filterDto, Pageable pageable);
 
-	Page<CrmContactLookupResponseDtoV2> findContactsForLookupV2(CrmContactFilterDto filterDto, Pageable pageable);
-
-	List<CrmContact> findAllContactsForBoardInit();
-
-	List<CrmBoardContactResponseDtoV2> findAllContactsForBoardInitV2();
+	List<CrmBoardContactResponseDto> findAllContactsForBoardInit();
 
 	CrmContact findByIdWithAssociations(Long id);
 

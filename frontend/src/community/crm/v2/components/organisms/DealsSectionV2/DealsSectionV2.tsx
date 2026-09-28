@@ -6,10 +6,6 @@ import { ToastType } from "~community/common/enums/ComponentEnums";
 import useDebounce from "~community/common/hooks/useDebounce";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import {
-  DEAL_PAGE_SIZE,
-  DEAL_SEARCH_DEBOUNCE_DELAY
-} from "~community/crm/constants/dealConstants";
 import { useGetCompaniesByIds } from "~community/crm/v2/api/CompanyApi";
 import {
   useGetDealsInfinite,
@@ -17,19 +13,22 @@ import {
 } from "~community/crm/v2/api/DealApi";
 import DealsKanbanBoardV2 from "~community/crm/v2/components/organisms/DealsKanbanBoardV2/DealsKanbanBoardV2";
 import DealsTableV2 from "~community/crm/v2/components/organisms/DealsTableV2/DealsTableV2";
+import { DEAL_PAGE_SIZE } from "~community/crm/v2/constants/commonConstants";
+import { DEAL_SEARCH_DEBOUNCE_DELAY } from "~community/crm/v2/constants/dealConstants";
 import { DealViewEnum } from "~community/crm/v2/enums/common";
 import { useDealListViewConfig } from "~community/crm/v2/hooks/useDealListViewConfig";
 import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmSidePanelTypes } from "~community/crm/v2/types/CrmTypes";
 import {
   getMissingCompanyIds,
-  mergeCompanies
+  updateCompanyRecord
 } from "~community/crm/v2/utils/companyUtil";
 import { resolveSortChange } from "~community/crm/v2/utils/dealListViewUtil";
 import {
   mergeDeals,
   reorderDealIds,
   resolveDeals,
+  stripDealIdPrefix,
   toDealIds
 } from "~community/crm/v2/utils/dealUtil";
 
@@ -38,14 +37,25 @@ import DealsHeaderV2 from "./DealsHeaderV2";
 const DealsSectionV2: FC = () => {
   const [inputValue, setInputValue] = useState("");
   const [activeView, setActiveView] = useState(DealViewEnum.KANBAN);
-  const debouncedSearch = useDebounce(inputValue, DEAL_SEARCH_DEBOUNCE_DELAY);
+  const debouncedSearch = useDebounce(
+    stripDealIdPrefix(inputValue),
+    DEAL_SEARCH_DEBOUNCE_DELAY
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const handleReorderError = (): void => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["inlineEdit", "toastMessages", "editErrorTitle"]),
+      title: translateText([
+        "deals",
+        "table",
+        "inlineEdit",
+        "toastMessages",
+        "editErrorTitle"
+      ]),
       description: translateText([
+        "deals",
+        "table",
         "inlineEdit",
         "toastMessages",
         "editErrorDescription"
@@ -54,28 +64,28 @@ const DealsSectionV2: FC = () => {
   };
 
   const { mutate: reorderDeal } = useReorderDealInList(handleReorderError);
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
   const { setToastMessage } = useToast();
 
   const {
     companies,
     dealIds,
     dealRecord,
-    setCompanies,
     setDeals,
+    setCompanies,
     setDealIds,
     setSelectedDealId,
     openCrmSidePanel
   } = useCrmStoreV2(
-    useShallow((store) => ({
-      companies: store.companies,
-      dealIds: store.dealIds,
-      dealRecord: store.deals,
-      setCompanies: store.setCompanies,
-      setDeals: store.setDeals,
-      setDealIds: store.setDealIds,
-      setSelectedDealId: store.setSelectedDealId,
-      openCrmSidePanel: store.openCrmSidePanel
+    useShallow((state) => ({
+      companies: state.companies,
+      dealIds: state.dealIds,
+      dealRecord: state.deals,
+      setDeals: state.setDeals,
+      setCompanies: state.setCompanies,
+      setDealIds: state.setDealIds,
+      setSelectedDealId: state.setSelectedDealId,
+      openCrmSidePanel: state.openCrmSidePanel
     }))
   );
 
@@ -181,7 +191,7 @@ const DealsSectionV2: FC = () => {
 
   useEffect(() => {
     if (fetchedCompanies && fetchedCompanies.length > 0) {
-      setCompanies(mergeCompanies(companies, fetchedCompanies));
+      setCompanies(updateCompanyRecord(companies, fetchedCompanies));
     }
   }, [fetchedCompanies]);
 

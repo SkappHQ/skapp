@@ -13,8 +13,13 @@ import { useDefaultCapacity } from "~community/configurations/api/timeConfigurat
 const TimesheetRequestsPage: NextPage = () => {
   const translateText = useTranslator("attendanceModule");
 
-  const { approveTimesheetRequest, declineTimesheetRequest } =
-    useApproveDenyTimeRequest();
+  const {
+    approveTimesheetRequest,
+    declineTimesheetRequest,
+    isApproveDenyLoading,
+    pendingTimeRequestId,
+    pendingRequestAction
+  } = useApproveDenyTimeRequest();
 
   const router = useRouter();
 
@@ -51,6 +56,9 @@ const TimesheetRequestsPage: NextPage = () => {
         hasFullList={true}
         approveTimesheetRequest={approveTimesheetRequest}
         declineTimesheetRequest={declineTimesheetRequest}
+        isApproveDenyLoading={isApproveDenyLoading}
+        pendingTimeRequestId={pendingTimeRequestId}
+        pendingRequestAction={pendingRequestAction}
       />
     </ContentLayout>
   );

@@ -23,7 +23,8 @@ const DealsHeaderV2: FC<Props> = ({
   activeView,
   onViewChange
 }) => {
-  const translateText = useTranslator("crmModule", "deals", "dealsTable");
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
 
   const handleViewChange = (view: string) => onViewChange(view as DealViewEnum);
 
@@ -31,25 +32,25 @@ const DealsHeaderV2: FC<Props> = ({
     {
       value: DealViewEnum.KANBAN,
       icon: <BoardIcon />,
-      ariaLabel: translateText(["kanbanViewAriaLabel"])
+      ariaLabel: translateAria(["deals", "header", "kanbanView"])
     },
     {
       value: DealViewEnum.LIST,
       icon: <ListViewIcon />,
-      ariaLabel: translateText(["listViewAriaLabel"])
+      ariaLabel: translateAria(["deals", "header", "listView"])
     }
   ];
 
   return (
     <div className="flex items-center justify-between gap-4">
       <InputField
-        placeholder={translateText(["searchPlaceholder"])}
+        placeholder={translateText(["deals", "header", "searchPlaceholder"])}
         value={inputValue}
         onChange={(e) => onSearchChange(e.target.value)}
         type="search"
         variant="md"
         rightIcon={<SearchIcon />}
-        ariaLabelClearButton={translateText(["clearSearchAriaLabel"])}
+        ariaLabelClearButton={translateAria(["deals", "header", "clearSearch"])}
         customStyles={{ borderRadius: "rounded-[1.5rem]" }}
         className="w-103 h-12"
       />
@@ -57,7 +58,7 @@ const DealsHeaderV2: FC<Props> = ({
         options={viewOptions}
         activeView={activeView}
         onChange={handleViewChange}
-        ariaLabel={translateText(["switchDealViewAriaLabel"])}
+        ariaLabel={translateAria(["deals", "header", "switchDealView"])}
       />
     </div>
   );

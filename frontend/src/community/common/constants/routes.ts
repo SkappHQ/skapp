@@ -135,13 +135,17 @@ const ROUTES = {
   REMOVE_PEOPLE: "/remove-people",
   CHANGE_SUPERVISORS: "/change-supervisors",
   REPORT: {
-    BASE: "/report"
+    BASE: "/report",
+    HEADCOUNT_SUMMARY: "/report/headcount-summary",
+    WORKFORCE_DEMOGRAPHICS: "/report/workforce-demographics",
+    ATTENDANCE_OVERVIEW: "/report/attendance-overview"
   },
   CRM: {
     BASE: "/crm",
     CONTACTS: "/crm/contacts",
     COMPANIES: "/crm/companies",
     DEALS: "/crm/deals",
+    DEAL_DETAIL: (id: number) => `/crm/deals/${id}`,
     TASKS: "/crm/tasks"
   },
   PROJECTS: {

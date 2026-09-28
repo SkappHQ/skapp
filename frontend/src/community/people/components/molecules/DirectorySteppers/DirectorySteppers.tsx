@@ -10,7 +10,10 @@ import {
   EmployeeTypes,
   ManagerTypes
 } from "~community/common/types/AuthTypes";
-import { replaceTabQueryParam } from "~community/common/utils/commonUtil";
+import {
+  replaceTabQueryParam,
+  scrollToTop
+} from "~community/common/utils/commonUtil";
 import { useGetSupervisedByMe } from "~community/people/api/PeopleApi";
 import useFormChangeDetector from "~community/people/hooks/useFormChangeDetector";
 import { usePeopleStore } from "~community/people/store/store";
@@ -130,10 +133,12 @@ const DirectorySteppers = ({
 
   useEffect(() => {
     if (prevStep !== null && prevStep !== currentStep && formRef?.current) {
+      scrollToTop(0, "auto");
+
       const focusableElement = formRef.current.querySelector(
         'button, input, [tabindex]:not([tabindex="-1"])'
       ) as HTMLElement | null;
-      focusableElement?.focus();
+      focusableElement?.focus({ preventScroll: true });
     }
     setPrevStep(currentStep);
   }, [currentStep, formRef, prevStep]);

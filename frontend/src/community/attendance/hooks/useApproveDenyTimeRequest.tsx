@@ -12,8 +12,20 @@ const useApproveDenyTimeRequest = () => {
   const translateTexts = useTranslator("attendanceModule", "timesheet");
   const { setToastMessage } = useToast();
   const [currentRequesAction, setCurrentRequestAction] = useState<string>();
+  const [pendingTimeRequestId, setPendingTimeRequestId] = useState<
+    number | null
+  >(null);
+
+  const [isRequestInFlight, setIsRequestInFlight] = useState(false);
+
+  const resetPendingRequest = (): void => {
+    setIsRequestInFlight(false);
+    setPendingTimeRequestId(null);
+  };
 
   const handleSuccess = () => {
+    resetPendingRequest();
+
     if (currentRequesAction === TimeSheetRequestStates.APPROVED) {
       setToastMessage({
         open: true,
@@ -34,6 +46,8 @@ const useApproveDenyTimeRequest = () => {
   };
 
   const handleError = (messageKey: string) => {
+    resetPendingRequest();
+
     const isStaleRequest = messageKey === TIME_ERROR_TIME_REQUEST_CANNOT_EDIT;
 
     if (isStaleRequest) {
@@ -68,26 +82,36 @@ const useApproveDenyTimeRequest = () => {
   const { mutate: approveDenyRequest, isPending: isApproveDenyLoading } =
     useApproveDenyTimeRequestAPI(handleSuccess, handleError);
 
-  const approveTimesheetRequest = (timeRequestId: number) => {
-    setCurrentRequestAction(TimeSheetRequestStates.APPROVED);
+  const handleTimesheetRequest = (
+    timeRequestId: number,
+    status: TimeSheetRequestStates
+  ): void => {
+    if (isRequestInFlight) return;
+
+    setIsRequestInFlight(true);
+    setPendingTimeRequestId(timeRequestId);
+    setCurrentRequestAction(status);
+
     approveDenyRequest({
       id: timeRequestId,
-      status: TimeSheetRequestStates.APPROVED
+      status
     });
   };
 
-  const declineTimesheetRequest = (timeRequestId: number) => {
-    setCurrentRequestAction(TimeSheetRequestStates.DENIED);
-    approveDenyRequest({
-      id: timeRequestId,
-      status: TimeSheetRequestStates.DENIED
-    });
+  const approveTimesheetRequest = (timeRequestId: number): void => {
+    handleTimesheetRequest(timeRequestId, TimeSheetRequestStates.APPROVED);
+  };
+
+  const declineTimesheetRequest = (timeRequestId: number): void => {
+    handleTimesheetRequest(timeRequestId, TimeSheetRequestStates.DENIED);
   };
 
   return {
     approveTimesheetRequest,
     declineTimesheetRequest,
-    isApproveDenyLoading
+    isApproveDenyLoading,
+    pendingTimeRequestId,
+    currentRequesAction
   };
 };
 

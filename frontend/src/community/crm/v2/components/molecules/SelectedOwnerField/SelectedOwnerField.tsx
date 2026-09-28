@@ -4,7 +4,7 @@ import { FC } from "react";
 import OwnerAvatarChip from "~community/crm/v2/components/atoms/OwnerAvatarChip/OwnerAvatarChip";
 import { CrmOwnerEntity } from "~community/crm/v2/types/CrmCommonTypes";
 
-interface Props {
+interface SelectedOwnerFieldProps {
   label: string;
   owner: CrmOwnerEntity;
   onRemove: () => void;
@@ -13,7 +13,7 @@ interface Props {
   required?: boolean;
 }
 
-const SelectedOwnerField: FC<Props> = ({
+const SelectedOwnerField: FC<SelectedOwnerFieldProps> = ({
   label,
   owner,
   onRemove,

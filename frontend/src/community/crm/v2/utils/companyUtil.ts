@@ -1,6 +1,7 @@
 import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
 import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/v2/constants/commonConstants";
+import { INDUSTRY_OPTION_KEYS } from "~community/crm/v2/constants/companyConstants";
 import {
   CrmIndustryEnum,
   CrmMetricLabelThemeEnum
@@ -11,6 +12,16 @@ import {
   CrmIndustryEntity,
   CrmIndustryRecord
 } from "~community/crm/v2/types/CrmCommonTypes";
+
+export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
+  const companyIds: number[] = [];
+  for (const company of companies) {
+    if (company.id !== undefined) {
+      companyIds.push(company.id);
+    }
+  }
+  return companyIds;
+};
 
 export const normalizeCompanies = (items: CrmCompanyEntity[]) => {
   const companies: CrmCompanyRecord = {};
@@ -45,21 +56,26 @@ export const getCompanyMetricItems = (
 ): CrmMetricItem[] => [
   {
     id: "accountValue",
-    title: translateText(["sidePanel", "metrics", "accountValue"]),
+    title: translateText(["companies", "sidePanel", "metrics", "accountValue"]),
     amount: company.metrics?.accountValue,
     isCurrency: true
   },
   {
     id: "openDeals",
-    title: translateText(["sidePanel", "metrics", "openDeals"]),
+    title: translateText(["companies", "sidePanel", "metrics", "openDeals"]),
     amount: company.metrics?.openDealsCount ?? 0
   },
   {
     id: "closedDeals",
-    title: translateText(["sidePanel", "metrics", "closedDeals"]),
+    title: translateText(["companies", "sidePanel", "metrics", "closedDeals"]),
     amount: company.metrics?.closedDealsCount ?? 0
   }
 ];
+
+export const getCompanyById = (
+  companies: CrmCompanyRecord,
+  companyId: number
+): CrmCompanyEntity | undefined => companies[companyId];
 
 export const getSelectedCompany = (
   companies: CrmCompanyRecord,
@@ -183,12 +199,19 @@ export const mergeCompanies = (
   return merged;
 };
 
+const isCrmIndustryEnum = (value: string): value is CrmIndustryEnum =>
+  Object.values<string>(CrmIndustryEnum).includes(value);
+
 export const getIndustryDisplayName = (
   industry: CrmIndustryEntity,
   translateText: TranslatorFunctionType
 ): string =>
-  Object.values<string>(CrmIndustryEnum).includes(industry.name)
-    ? translateText(["industryOptions", industry.name])
+  isCrmIndustryEnum(industry.name)
+    ? translateText([
+        "companies",
+        "industryOptions",
+        INDUSTRY_OPTION_KEYS[industry.name]
+      ])
     : industry.name;
 
 export interface CrmIndustryOption {

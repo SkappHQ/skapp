@@ -10,7 +10,7 @@ import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 import { CrmModalTypes } from "~community/crm/v2/types/CrmTypes";
 
 const TaskModalController: FC = () => {
-  const translateText = useTranslator("crmModule", "tasks");
+  const translateText = useTranslator("crmModuleV2");
 
   const { isTaskModalOpen, taskModalType, selectedTaskId, setIsTaskModalOpen } =
     useCrmStoreV2(
@@ -29,11 +29,11 @@ const TaskModalController: FC = () => {
   const getModalTitle = (modalType: CrmModalTypes): string => {
     switch (modalType) {
       case CrmModalTypes.ADD_TASK_MODAL:
-        return translateText(["addTaskModal", "title"]);
+        return translateText(["tasks", "modal", "addTitle"]);
       case CrmModalTypes.EDIT_TASK_MODAL:
-        return translateText(["editTaskModal", "title"]);
+        return translateText(["tasks", "modal", "editTitle"]);
       case CrmModalTypes.DELETE_TASK_MODAL:
-        return translateText(["deleteTaskModal", "title"]);
+        return translateText(["tasks", "deleteModal", "title"]);
       default:
         return "";
     }

@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography } from "@mui/material";
+import { Box, CircularProgress, IconButton, Typography } from "@mui/material";
 import { type Theme, useTheme } from "@mui/material/styles";
 import { Badge, ButtonV2 } from "@rootcodelabs/skapp-ui";
 import { useRouter } from "next/navigation";
@@ -49,6 +49,8 @@ interface Props {
   approveTimesheetRequest: (timeRequestId: number) => void;
   declineTimesheetRequest: (timeRequestId: number) => void;
   isApproveDenyLoading?: boolean;
+  pendingTimeRequestId?: number | null;
+  pendingRequestAction?: string;
   tableName: TableNames;
 }
 
@@ -60,6 +62,8 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   approveTimesheetRequest,
   declineTimesheetRequest,
   isApproveDenyLoading,
+  pendingTimeRequestId,
+  pendingRequestAction,
   tableName
 }) => {
   const theme: Theme = useTheme();
@@ -80,6 +84,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
   } = useAttendanceStore((state) => state);
 
   const { filterCount } = useTimesheetRequestFilterState(true, hasFullList);
+
+  const isRequestActionPending = (
+    timeRequestId: number,
+    action: TimeSheetRequestStates
+  ): boolean =>
+    Boolean(isApproveDenyLoading) &&
+    pendingTimeRequestId === timeRequestId &&
+    pendingRequestAction === action;
 
   const onSuccess = () => {
     setToastMessage({
@@ -266,6 +278,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 backgroundColor: theme.palette.grey[100],
                 margin: "0rem 0.75rem 0rem auto"
               }}
+              disabled={isApproveDenyLoading}
+              aria-busy={isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.DENIED
+              )}
               aria-label={translateText(["declineButton.label"], {
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
@@ -276,7 +293,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 declineTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
-              <CloseIcon fill={"black"} />
+              {isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.DENIED
+              ) ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CloseIcon fill="black" />
+              )}
             </IconButton>
             <IconButton
               sx={{
@@ -284,6 +308,11 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 border: `0.0625rem solid ${theme.palette.secondary.dark}`,
                 margin: "0rem auto 0rem 0rem"
               }}
+              disabled={isApproveDenyLoading}
+              aria-busy={isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.APPROVED
+              )}
               aria-label={translateText(["approveButton.label"], {
                 recordName: `${timesheetRequest?.employee?.firstName} ${timesheetRequest?.employee?.lastName}`
               })}
@@ -294,7 +323,14 @@ const ManagerTimesheetRequestTable: FC<Props> = ({
                 approveTimesheetRequest(timesheetRequest?.timeRequestId);
               }}
             >
-              <CheckIcon fill={theme.palette.primary.dark} />
+              {isRequestActionPending(
+                timesheetRequest?.timeRequestId,
+                TimeSheetRequestStates.APPROVED
+              ) ? (
+                <CircularProgress size={20} />
+              ) : (
+                <CheckIcon fill={theme.palette.primary.dark} />
+              )}
             </IconButton>
           </>
         ) : (

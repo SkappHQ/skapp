@@ -1,6 +1,7 @@
 import { FormikProps } from "formik";
 import { FC, useEffect, useMemo, useState } from "react";
 
+import { useTranslator } from "~community/common/hooks/useTranslator";
 import ContactPopupSearch from "~community/crm/v2/components/molecules/ContactPopupSearch/ContactPopupSearch";
 import OwnerPopupSearch from "~community/crm/v2/components/molecules/OwnerPopupSearch/OwnerPopupSearch";
 import PriorityDropdown from "~community/crm/v2/components/molecules/PriorityDropdown/PriorityDropdown";
@@ -17,7 +18,6 @@ import { validateDealAmount } from "~community/crm/v2/utils/dealValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 interface DealPropertiesSectionProps {
-  translateText: (keys: string[]) => string;
   formik: FormikProps<CrmDealEntity>;
   contacts: CrmContactEntity[];
   companies: CrmCompanyRecord;
@@ -27,7 +27,6 @@ interface DealPropertiesSectionProps {
 }
 
 const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
-  translateText,
   formik,
   contacts,
   companies,
@@ -35,6 +34,9 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
   setSelectedContact,
   setContactSearchTerm
 }) => {
+  const translateText = useTranslator("crmModuleV2");
+  const translateAria = useTranslator("crmAriaV2");
+
   const { values, errors, touched, setFieldValue } = formik;
 
   const { data: currentUser } = useGetUserPersonalDetails();
@@ -76,7 +78,10 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
 
   return (
     <div className="border border-secondary-accent rounded-lg p-3 flex flex-col gap-2 w-full">
-      <PropertyRow label={translateText(["labels", "contactName"])} required>
+      <PropertyRow
+        label={translateText(["deals", "common", "labels", "contact"])}
+        required
+      >
         <div className="flex flex-col w-full">
           <ContactPopupSearch
             contacts={contacts}
@@ -84,9 +89,24 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
             selectedContact={selectedContact}
             onChange={handleContactChange}
             onSearch={setContactSearchTerm}
-            placeholder={translateText(["placeholders", "none"])}
-            searchPlaceholder={translateText(["placeholders", "contactSearch"])}
-            noResultsText={translateText(["placeholders", "noResults"])}
+            placeholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "none"
+            ])}
+            searchPlaceholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "contactSearch"
+            ])}
+            noResultsText={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "noResults"
+            ])}
             ariaInvalid={!!errors.contactId}
             ariaRequired
           />
@@ -99,30 +119,50 @@ const DealPropertiesSection: FC<DealPropertiesSectionProps> = ({
       </PropertyRow>
 
       <PropertyField
-        label={translateText(["labels", "value"])}
+        label={translateText(["deals", "common", "labels", "value"])}
         value={values.amount ?? ""}
-        placeholder={translateText(["placeholders", "none"])}
-        ariaLabel={translateText(["ariaLabels", "amount"])}
+        placeholder={translateText(["deals", "common", "placeholders", "none"])}
+        ariaLabel={translateAria(["deals", "common", "amount"])}
         validate={(value) => validateDealAmount(value, translateText)}
         onChange={(value) => setFieldValue("amount", value)}
         onSave={(value) => setFieldValue("amount", value)}
       />
 
-      <PropertyRow label={translateText(["labels", "priority"])}>
+      <PropertyRow
+        label={translateText(["deals", "common", "labels", "priority"])}
+      >
         <PriorityDropdown
           value={values.priority ?? CrmPriorityEnum.MEDIUM}
           onChange={handlePriorityChange}
         />
       </PropertyRow>
 
-      <PropertyRow label={translateText(["labels", "ownedBy"])} required>
+      <PropertyRow
+        label={translateText(["deals", "common", "labels", "ownedBy"])}
+        required
+      >
         <div className="flex flex-col w-full">
           <OwnerPopupSearch
             selectedUser={selectedOwner}
             onChange={handleOwnerChange}
-            placeholder={translateText(["placeholders", "none"])}
-            searchPlaceholder={translateText(["placeholders", "ownerSearch"])}
-            noResultsText={translateText(["placeholders", "noResults"])}
+            placeholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "none"
+            ])}
+            searchPlaceholder={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "ownerSearch"
+            ])}
+            noResultsText={translateText([
+              "deals",
+              "common",
+              "placeholders",
+              "noResults"
+            ])}
             ariaInvalid={!!errors.ownerId}
           />
           {errors.ownerId && (

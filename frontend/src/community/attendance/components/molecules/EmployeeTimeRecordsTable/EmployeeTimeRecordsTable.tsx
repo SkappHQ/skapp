@@ -5,7 +5,10 @@ import { useShallow } from "zustand/react/shallow";
 
 import { useGetDailyLogsByEmployeeId } from "~community/attendance/api/AttendanceEmployeeApi";
 import { useGetManagerTimeRecords } from "~community/attendance/api/attendanceManagerApi";
-import { RecordLocationStatus } from "~community/attendance/enums/timesheetEnums";
+import {
+  EmployeeTimesheetModalTypes,
+  RecordLocationStatus
+} from "~community/attendance/enums/timesheetEnums";
 import useManualEntryRestriction from "~community/attendance/hooks/useManualEntryRestriction";
 import { useAttendanceStore } from "~community/attendance/store/attendanceStore";
 import {
@@ -21,7 +24,8 @@ import {
 } from "~community/attendance/utils/AllTimeSheetTableUtils";
 import {
   createEmptyDailyLog,
-  formatDuration
+  formatDuration,
+  hasOngoingTimeEntry
 } from "~community/attendance/utils/TimeUtils";
 import { downloadManagerTimesheetCsv } from "~community/attendance/utils/TimesheetCsvUtil";
 import { getTimeEntryModalType } from "~community/attendance/utils/TimesheetModalUtils";
@@ -34,10 +38,7 @@ import useGetHoliday from "~community/common/hooks/useGetHoliday";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
 import { concatStrings } from "~community/common/utils/commonUtil";
-import {
-  convertYYYYMMDDToDateTime,
-  formatDateWithOrdinalIndicator
-} from "~community/common/utils/dateTimeUtils";
+import { convertYYYYMMDDToDateTime } from "~community/common/utils/dateTimeUtils";
 import { useDefaultCapacity } from "~community/configurations/api/timeConfigurationApi";
 import { getEmoji } from "~community/leave/utils/leaveTypes/LeaveTypeUtils";
 import { HolidayDurationType } from "~community/people/types/HolidayTypes";
@@ -70,7 +71,8 @@ const EmployeeTimeRecordsTable = ({
     setSelectedDailyRecord,
     setDirectManualTimeEntryEligibleEmployee,
     setEmployeeTimesheetModalType,
-    setIsEmployeeTimesheetModalOpen
+    setIsEmployeeTimesheetModalOpen,
+    setIsSelfDirectTimeEntry
   } = useAttendanceStore(
     useShallow((state) => ({
       timesheetAnalyticsParams: state.timesheetAnalyticsParams,
@@ -79,7 +81,8 @@ const EmployeeTimeRecordsTable = ({
       setDirectManualTimeEntryEligibleEmployee:
         state.setDirectManualTimeEntryEligibleEmployee,
       setEmployeeTimesheetModalType: state.setEmployeeTimesheetModalType,
-      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen
+      setIsEmployeeTimesheetModalOpen: state.setIsEmployeeTimesheetModalOpen,
+      setIsSelfDirectTimeEntry: state.setIsSelfDirectTimeEntry
     }))
   );
 
@@ -143,9 +146,19 @@ const EmployeeTimeRecordsTable = ({
 
     setHandledCell(cellKey);
     setPendingCell(null);
+
+    if (hasOngoingTimeEntry(dayRecord)) {
+      setEmployeeTimesheetModalType(
+        EmployeeTimesheetModalTypes.ONGOING_TIME_ENTRY_BY_EDIT
+      );
+      setIsEmployeeTimesheetModalOpen(true);
+      return;
+    }
+
     if (modalType === null) return;
 
     setDirectManualTimeEntryEligibleEmployee({ employeeId, employeeName });
+    setIsSelfDirectTimeEntry(false);
     setSelectedDailyRecord(dayRecord);
     setEmployeeTimesheetModalType(modalType);
     setIsEmployeeTimesheetModalOpen(true);
@@ -176,6 +189,88 @@ const EmployeeTimeRecordsTable = ({
     return translateText(["locationUnavailable"]);
   };
 
+  const getLocationPinCell = (
+    cellContent: JSX.Element,
+    timeSheetRecord: TimeRecordType
+  ): JSX.Element => {
+    const locationTooltipTitle = translateText(["locationPinTooltip"], {
+      clockIn: getLocationMessage(timeSheetRecord.clockInLocationStatus),
+      clockOut: getLocationMessage(timeSheetRecord.clockOutLocationStatus)
+    });
+
+    return (
+      <div className="flex flex-row items-center justify-center gap-1">
+        {cellContent}
+        <Tooltip content={locationTooltipTitle}>
+          <LocationPinIcon role="img" aria-label={locationTooltipTitle} />
+        </Tooltip>
+      </div>
+    );
+  };
+
+  const getOngoingEntryCell = (cellContent: JSX.Element): JSX.Element => (
+    <div
+      className="flex w-full cursor-not-allowed items-center justify-center"
+      title={translateText(["ongoingEntryCellTooltip"])}
+      aria-disabled={true}
+      aria-label={translateAria(["ongoingEntryCellLabel"])}
+    >
+      {cellContent}
+    </div>
+  );
+
+  const getDirectEntryCell = (
+    cellContent: JSX.Element,
+    directEntryEmployee: DirectEntryEmployeeType
+  ): JSX.Element => {
+    const isCellLoading =
+      pendingCell?.employeeId === directEntryEmployee.employeeId &&
+      pendingCell?.date === directEntryEmployee.date;
+
+    return (
+      <button
+        type="button"
+        aria-label={translateAria(["directEntryCellLabel"])}
+        aria-busy={isCellLoading}
+        disabled={isCellLoading}
+        className={`flex w-full items-center justify-center border-0 bg-transparent p-0 text-inherit ${
+          isCellLoading ? "cursor-wait opacity-50" : "cursor-pointer"
+        }`}
+        onClick={() => setPendingCell(directEntryEmployee)}
+      >
+        {cellContent}
+      </button>
+    );
+  };
+
+  const getTimeRecordCell = ({
+    cellContent,
+    timeSheetRecord,
+    employeeId,
+    employeeName,
+    isFutureDate
+  }: {
+    cellContent: JSX.Element;
+    timeSheetRecord: TimeRecordType;
+    employeeId?: number;
+    employeeName: string;
+    isFutureDate: boolean;
+  }): JSX.Element => {
+    if (!canDirectlyAddOrEditEntry || isFutureDate || !employeeId) {
+      return cellContent;
+    }
+
+    if (timeSheetRecord.isOngoingTimeRequest) {
+      return getOngoingEntryCell(cellContent);
+    }
+
+    return getDirectEntryCell(cellContent, {
+      employeeId,
+      employeeName,
+      date: timeSheetRecord.date
+    });
+  };
+
   const rows = useMemo(() => {
     if (
       !isRecordLoading &&
@@ -188,6 +283,11 @@ const EmployeeTimeRecordsTable = ({
         const timesheetData = record?.timeRecords;
 
         const totalWorkedHours = timeConfigData?.[0]?.totalHours ?? 0;
+
+        const employeeName = concatStrings([
+          employeeData?.firstName ?? "",
+          employeeData?.lastName ?? ""
+        ]).trim();
 
         const columns = timesheetData.reduce(
           (
@@ -292,75 +392,17 @@ const EmployeeTimeRecordsTable = ({
               );
             }
 
-            let finalCellData = data;
-            if (showLocationPin) {
-              const locationTooltipTitle = translateText(
-                ["locationPinTooltip"],
-                {
-                  clockIn: getLocationMessage(
-                    timeSheetRecord.clockInLocationStatus
-                  ),
-                  clockOut: getLocationMessage(
-                    timeSheetRecord.clockOutLocationStatus
-                  )
-                }
-              );
+            const cellContent = showLocationPin
+              ? getLocationPinCell(data, timeSheetRecord)
+              : data;
 
-              finalCellData = (
-                <div className="flex flex-row items-center justify-center gap-1">
-                  {data}
-                  <Tooltip content={locationTooltipTitle}>
-                    <LocationPinIcon
-                      role="img"
-                      aria-label={locationTooltipTitle}
-                    />
-                  </Tooltip>
-                </div>
-              );
-            }
-
-            if (canDirectlyAddOrEditEntry && !isFutureDate) {
-              const employeeId = employeeData?.employeeId;
-              const employeeName = concatStrings([
-                employeeData?.firstName ?? "",
-                employeeData?.lastName ?? ""
-              ]).trim();
-
-              if (employeeId) {
-                const openDirectEntry = () =>
-                  setPendingCell({
-                    employeeId,
-                    employeeName,
-                    date: timeSheetRecord.date
-                  });
-
-                const isCellLoading =
-                  pendingCell?.employeeId === employeeId &&
-                  pendingCell?.date === timeSheetRecord.date;
-
-                finalCellData = (
-                  <button
-                    type="button"
-                    aria-label={translateAria(["directEntryCellLabel"], {
-                      employeeName,
-                      date: formatDateWithOrdinalIndicator(dateAsISOString)
-                    })}
-                    aria-busy={isCellLoading}
-                    disabled={isCellLoading}
-                    className={`flex w-full items-center justify-center border-0 bg-transparent p-0 text-inherit ${
-                      isCellLoading
-                        ? "cursor-wait opacity-50"
-                        : "cursor-pointer"
-                    }`}
-                    onClick={openDirectEntry}
-                  >
-                    {finalCellData}
-                  </button>
-                );
-              }
-            }
-
-            acc[timeSheetRecord.date] = finalCellData;
+            acc[timeSheetRecord.date] = getTimeRecordCell({
+              cellContent,
+              timeSheetRecord,
+              employeeId: employeeData?.employeeId,
+              employeeName,
+              isFutureDate
+            });
             return acc;
           },
           {}

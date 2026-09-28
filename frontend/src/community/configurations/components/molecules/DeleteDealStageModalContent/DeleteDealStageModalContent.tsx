@@ -5,33 +5,44 @@ import { useShallow } from "zustand/react/shallow";
 import { ToastType } from "~community/common/enums/ComponentEnums";
 import { useTranslator } from "~community/common/hooks/useTranslator";
 import { useToast } from "~community/common/providers/ToastProvider";
-import { useConfigurationStore } from "~community/configurations/stores/configurationStore";
 import {
-  useDealStageById,
-  useDeleteDealStage
-} from "~community/crm/api/crmDealApi";
-import useStageNameMapper from "~community/crm/hooks/useStageNameMapper";
+  getSelectedStage,
+  getStageDisplayName,
+  removeStage
+} from "~community/configurations/utils/stageUtil";
+import { useDeleteDealStage } from "~community/crm/v2/api/DealApi";
+import { useCrmStoreV2 } from "~community/crm/v2/store/store";
 
 const DeleteDealStageModalContent: FC = () => {
   const translateText = useTranslator("configurations", "crm");
+  const translateStageName = useTranslator(
+    "crmModuleV2",
+    "deals",
+    "defaultStageNames"
+  );
   const { setToastMessage } = useToast();
-  const { getStageByName } = useStageNameMapper();
 
-  const { selectedDealStageId, setIsDealStageModalOpen } =
-    useConfigurationStore(
+  const { stages, setStages, selectedDealStageId, setIsDealStageModalOpen } =
+    useCrmStoreV2(
       useShallow((store) => ({
+        stages: store.stages,
+        setStages: store.setStages,
         selectedDealStageId: store.selectedDealStageId,
         setIsDealStageModalOpen: store.setIsDealStageModalOpen
       }))
     );
 
-  const selectedDealStage = useDealStageById(selectedDealStageId!);
+  const selectedDealStage = getSelectedStage(stages, selectedDealStageId);
 
   const handleCloseModal = () => {
     setIsDealStageModalOpen(false);
   };
 
   const handleSuccess = () => {
+    if (selectedDealStage?.id !== undefined) {
+      setStages(removeStage(stages, selectedDealStage.id));
+    }
+
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
@@ -72,15 +83,21 @@ const DeleteDealStageModalContent: FC = () => {
   );
 
   const handleDeleteStage = () => {
-    deleteStage(selectedDealStage!.id);
+    if (selectedDealStage?.id !== undefined) {
+      deleteStage(selectedDealStage.id);
+    }
   };
 
   return (
     <div className="flex flex-col">
       <div>
-        {translateText(["deleteDealStageModal", "description"], {
-          stageName: getStageByName(selectedDealStage!.name)
-        })}
+        {selectedDealStage?.name !== undefined &&
+          translateText(["deleteDealStageModal", "description"], {
+            stageName: getStageDisplayName(
+              selectedDealStage.name,
+              translateStageName
+            )
+          })}
       </div>
       <div className="flex flex-row justify-end py-[0.85rem] gap-[1rem]">
         <ButtonV2

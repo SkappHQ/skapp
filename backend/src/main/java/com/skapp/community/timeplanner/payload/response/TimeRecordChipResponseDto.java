@@ -16,6 +16,8 @@ public class TimeRecordChipResponseDto {
 
 	private Float workedHours;
 
+	private Boolean isOngoingTimeRequest;
+
 	private LeaveRequestResponseDto leaveRequest;
 
 }

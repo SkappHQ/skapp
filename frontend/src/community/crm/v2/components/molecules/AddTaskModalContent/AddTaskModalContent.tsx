@@ -14,31 +14,49 @@ import {
   CrmTaskEntity
 } from "~community/crm/v2/types/CrmCommonTypes";
 import { updateOwnerRecord } from "~community/crm/v2/utils/commonUtil";
-import { updateTaskRecord } from "~community/crm/v2/utils/taskUtil";
+import { getSelectedContact } from "~community/crm/v2/utils/contactUtil";
+import {
+  linkTaskToRelatedEntities,
+  updateTaskRecord
+} from "~community/crm/v2/utils/taskUtil";
 import { getTaskValidationSchema } from "~community/crm/v2/utils/taskValidations";
 import { useGetUserPersonalDetails } from "~community/people/api/PeopleApi";
 
 const AddTaskModalContent: FC = () => {
   const { setToastMessage } = useToast();
 
-  const translateText = useTranslator("crmModule", "tasks", "addTaskModal");
+  const translateText = useTranslator("crmModuleV2");
 
   const {
     tasks,
     taskIds,
     owners,
+    companies,
+    contacts,
+    deals,
+    selectedContactId,
     setTasks,
     setTaskIds,
     setOwners,
+    setCompanies,
+    setContacts,
+    setDeals,
     setIsTaskModalOpen
   } = useCrmStoreV2(
     useShallow((store) => ({
       tasks: store.tasks,
       taskIds: store.taskIds,
       owners: store.owners,
+      companies: store.companies,
+      contacts: store.contacts,
+      deals: store.deals,
+      selectedContactId: store.selectedContactId,
       setTasks: store.setTasks,
       setTaskIds: store.setTaskIds,
       setOwners: store.setOwners,
+      setCompanies: store.setCompanies,
+      setContacts: store.setContacts,
+      setDeals: store.setDeals,
       setIsTaskModalOpen: store.setIsTaskModalOpen
     }))
   );
@@ -67,6 +85,8 @@ const AddTaskModalContent: FC = () => {
     setOwners(updateOwnerRecord(owners, [defaultOwner]));
   }, [defaultOwner]);
 
+  const selectedContact = getSelectedContact(contacts, selectedContactId);
+
   const initialValues: CrmTaskEntity = useMemo(
     () => ({
       name: "",
@@ -74,11 +94,10 @@ const AddTaskModalContent: FC = () => {
       priority: CrmPriorityEnum.MEDIUM,
       dueAt: undefined,
       ownerId: defaultOwner?.employeeId,
-      contactId: undefined,
-      dealId: undefined,
+      contactId: selectedContact?.id,
       notes: ""
     }),
-    [defaultOwner]
+    [defaultOwner, selectedContact?.id]
   );
 
   const formik = useFormik<CrmTaskEntity>({
@@ -102,14 +121,35 @@ const AddTaskModalContent: FC = () => {
     if (createdTask.id !== undefined) {
       setTasks(updateTaskRecord(tasks, [createdTask]));
       setTaskIds([createdTask.id, ...taskIds]);
+
+      const links = linkTaskToRelatedEntities(
+        createdTask,
+        companies,
+        contacts,
+        deals
+      );
+
+      setCompanies(links.companies);
+      setContacts(links.contacts);
+      setDeals(links.deals);
     }
 
     handleCloseModal();
     setToastMessage({
       open: true,
       toastType: ToastType.SUCCESS,
-      title: translateText(["successTitle"]),
-      description: translateText(["successDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addSuccessTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addSuccessDescription"
+      ])
     });
   };
 
@@ -118,8 +158,18 @@ const AddTaskModalContent: FC = () => {
     setToastMessage({
       open: true,
       toastType: ToastType.ERROR,
-      title: translateText(["errorTitle"]),
-      description: translateText(["errorDescription"])
+      title: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addErrorTitle"
+      ]),
+      description: translateText([
+        "tasks",
+        "modal",
+        "toastMessages",
+        "addErrorDescription"
+      ])
     });
   };
 
@@ -135,6 +185,7 @@ const AddTaskModalContent: FC = () => {
       priority: values.priority,
       dueAt: values.dueAt,
       ownerId: values.ownerId,
+      companyId: values.companyId,
       contactId: values.contactId,
       dealId: values.dealId,
       notes: values.notes?.trim()
@@ -147,7 +198,6 @@ const AddTaskModalContent: FC = () => {
     <TaskModalForm
       formik={formik}
       isPending={isPending}
-      translateText={translateText}
       onCancel={handleCloseModal}
     />
   );
