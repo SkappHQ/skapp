@@ -1,8 +1,16 @@
+import { characterLengths } from "~community/common/constants/stringConstants";
 import { TranslatorFunctionType } from "~community/common/types/CommonTypes";
-import { CrmMetricLabelThemeEnum } from "~community/crm/enums/common";
+import { ADD_NEW_INDUSTRY_OPTION_ID } from "~community/crm/constants/commonConstants";
+import { INDUSTRY_OPTION_KEYS } from "~community/crm/constants/companyConstants";
+import {
+  CrmIndustryEnum,
+  CrmMetricLabelThemeEnum
+} from "~community/crm/enums/common";
 import {
   CrmCompanyEntity,
-  CrmCompanyRecord
+  CrmCompanyRecord,
+  CrmIndustryEntity,
+  CrmIndustryRecord
 } from "~community/crm/types/CrmCommonTypes";
 
 export const toCompanyIds = (companies: CrmCompanyEntity[]): number[] => {
@@ -87,6 +95,28 @@ export const removeCompany = (
   };
 };
 
+export const getCompanyFormInitialValues = (
+  company?: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: company?.name ?? "",
+  industryId: company?.industryId ?? null,
+  industryName: company?.industryName,
+  website: company?.website ?? "",
+  address: company?.address ?? "",
+  contactNumber: company?.contactNumber ?? ""
+});
+
+export const getTrimmedCompanyValues = (
+  values: CrmCompanyEntity
+): CrmCompanyEntity => ({
+  name: values.name?.trim(),
+  industryId: values.industryId,
+  industryName: values.industryName?.trim(),
+  website: values.website?.trim(),
+  address: values.address?.trim(),
+  contactNumber: values.contactNumber?.trim()
+});
+
 export const getChangedCompanyFields = (
   initialValues: CrmCompanyEntity,
   currentValues: CrmCompanyEntity
@@ -97,8 +127,12 @@ export const getChangedCompanyFields = (
     changedFields.name = currentValues.name;
   }
 
-  if (currentValues.industry !== initialValues.industry) {
-    changedFields.industry = currentValues.industry;
+  if (currentValues.industryId !== initialValues.industryId) {
+    changedFields.industryId = currentValues.industryId;
+  }
+
+  if (currentValues.industryName !== initialValues.industryName) {
+    changedFields.industryName = currentValues.industryName;
   }
 
   if (currentValues.website !== initialValues.website) {
@@ -125,6 +159,73 @@ export const getMissingCompanyIds = (
     if (!companies[id]) unique.add(id);
   }
   return Array.from(unique);
+};
+
+const isCrmIndustryEnum = (value: string): value is CrmIndustryEnum =>
+  Object.values<string>(CrmIndustryEnum).includes(value);
+
+export const getIndustryDisplayName = (
+  industry: CrmIndustryEntity,
+  translateText: TranslatorFunctionType
+): string =>
+  isCrmIndustryEnum(industry.name)
+    ? translateText([
+        "companies",
+        "industryOptions",
+        INDUSTRY_OPTION_KEYS[industry.name]
+      ])
+    : industry.name;
+
+export interface CrmIndustryOption {
+  id: string;
+  name: string;
+}
+
+export const getIndustryOptions = (
+  industries: CrmIndustryRecord,
+  translateText: TranslatorFunctionType,
+  searchKeyword: string,
+  canAddNewIndustry: boolean
+): CrmIndustryOption[] => {
+  const trimmedName = searchKeyword.trim();
+  const normalizedName = trimmedName.toLowerCase();
+
+  const options: CrmIndustryOption[] = Object.values(industries)
+    .map((industry) => ({
+      id: String(industry.id),
+      name: getIndustryDisplayName(industry, translateText)
+    }))
+    .filter((option) => option.name.toLowerCase().includes(normalizedName));
+
+  const isNameAvailable = !options.some(
+    (option) => option.name.toLowerCase() === normalizedName
+  );
+
+  if (
+    canAddNewIndustry &&
+    trimmedName.length > 0 &&
+    trimmedName.length <= characterLengths.INDUSTRY_NAME_LENGTH &&
+    isNameAvailable
+  ) {
+    options.push({ id: ADD_NEW_INDUSTRY_OPTION_ID, name: trimmedName });
+  }
+
+  return options;
+};
+
+export const addNewIndustryToRecord = (
+  industries: CrmIndustryRecord,
+  industryId: number | null | undefined,
+  industryName: string | undefined
+): CrmIndustryRecord => {
+  if (industryId == null || !industryName || industries[industryId]) {
+    return industries;
+  }
+
+  return {
+    ...industries,
+    [industryId]: { id: industryId, name: industryName }
+  };
 };
 
 export const updateCompanyRecord = (
