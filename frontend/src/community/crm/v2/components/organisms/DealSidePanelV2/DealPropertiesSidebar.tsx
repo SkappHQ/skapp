@@ -86,17 +86,15 @@ const DealPropertiesSidebar: FC<DealPropertiesSidebarProps> = ({
     [contactLookupData?.items]
   );
 
-  const dealCompanyId = deal?.companyId;
-
   const missingCompanyIds = useMemo(() => {
     const companyIds = toContactCompanyIds(contacts);
 
-    if (dealCompanyId != null) {
-      companyIds.push(dealCompanyId);
+    if (deal?.companyId != null) {
+      companyIds.push(deal.companyId);
     }
 
     return getMissingCompanyIds(companyIds, companies);
-  }, [dealCompanyId, contacts, companies]);
+  }, [deal, contacts, companies]);
   const { data: fetchedCompanies } = useGetCompaniesByIds(
     missingCompanyIds,
     missingCompanyIds.length > 0
